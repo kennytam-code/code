@@ -71,6 +71,42 @@
 #        set it False to reproduce v31.10 numbers exactly.
 #  [X5]  mfe_bps was initialised twice in two places.
 # ============================================================================
+# ============================================================================
+# ██ QUICK SETTINGS — the knobs you actually change, all in ONE place. ██
+# ----------------------------------------------------------------------------
+# Everything here wins over the detailed config blocks further down (they
+# read these via globals().get). Deeper machinery — cost model, gates,
+# loaders — stays where it is; this block is the daily-driver panel.
+# ============================================================================
+INSTRUMENT = 'BABA'            # which INSTRUMENTS entry to run
+IDX_FILE_PREFIX = r"G:\FIN_COMM\DeltaOne\Kenny\ADR\HST_front_month_"
+                               # SHARED HTI capture files:
+                               #   ..._0800utc.csv  16:00 HKT stock close
+                               #   ..._1900utc.csv  03:00 HKT T+1 close (LAST
+                               #                    tradable futures print)
+                               #   ..._0130utc.csv  09:30 HKT open (optional —
+                               #                    needed for executable
+                               #                    us_close hedging + mode 2)
+# ---- WHEN THE SIGNAL IS OBSERVED AND FILLED [HKX] ----------------------
+#   'us_close'  : signal at the 20:00/21:00 UTC US close; ADR fills MOC.
+#                 The futures are ALREADY SHUT then, so the hedge fills at
+#                 the NEXT tradable print (09:30 HKT open) — the entry
+#                 night rides on the ADR alone. Data-available today.
+#   'hti_close' : signal observed at 03:00 HKT (19:00 UTC) — one hour
+#                 BEFORE the US close — using the ADR's live 19:00 print;
+#                 BOTH legs fill together at 19:00 (ADR intraday at 3pm
+#                 ET, futures into the T+1 close). No unhedged night, no
+#                 look-ahead. Needs <NAME>_1900utc.csv ADR snaps.
+SIGNAL_TIMING = 'us_close'
+HEDGE_MODE = 'index_fut'       # 'index_fut' | 'us_etf' | 'none'   [HKS]
+HEDGE_TIMING = 'index_all'     # [HKT] 'index_all' | 'index_then_stock' |
+                               #       'stock_open_only'
+GAP_SOURCE = 'hti'             # 'hti' | 'hist_file' | 'proxy_splice' | 'off'
+N_VALUES = [10, 15, 20, 25, 30, 35, 40, 45, 50]
+THRESHOLD_VALUES = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0]
+TIME_STOP = 20                 # calendar days, hard cap (user-set)
+DIRECTION_FILTER = 'both'      # 'both' | 'long_only' | 'short_only'
+# ============================================================================
 import os          # [X1] BUGFIX: the paper desk calls os.path.* (get_manual_context,
                    # _read_ledger). Previously only `import os as _os` existed, further
                    # down at the FILE_PREFIX block, so setup_manual() raised NameError
@@ -84,10 +120,10 @@ from datetime import datetime, timedelta
 from statsmodels.tsa.stattools import adfuller
  
 # ############################################################################
-# [Y16]  INSTRUMENT SWITCH — THE ONLY LINE TO EDIT TO CHANGE UNDERLYING
+# [Y16] the instrument switch MOVED to QUICK SETTINGS at the very top —
+# this line only backstops a missing value and never overrides it.
 # ############################################################################
-INSTRUMENT = 'TSMC'          # 'TSMC' | 'UMC'
-# ############################################################################
+INSTRUMENT = globals().get('INSTRUMENT', 'BABA')
  
 # ============================================================================
 # [Y4][Y5] HTML OUTPUT LAYER — defined UP HERE (not at the end) so every
@@ -213,9 +249,14 @@ def _badge(text, kind='mut'):
     return f"<span class='vb {kind}'>{text}</span>"
  
 def _heat_styles(dfm):
-    """[Y4] Soft per-table diverging tint (no matplotlib): light red below
-    the table median, light green above, deeper at the extremes. Text stays
-    dark so the numbers remain readable — unlike a saturated colormap."""
+    """[Y33] Colour says SIGN first, magnitude second:
+      * every value >= 0  -> ONE sequential ramp, light green -> dark green
+        (an all-positive table used to paint its weaker half red, which
+        read as losses — it never was);
+      * every value <= 0  -> light red -> dark red by |value|;
+      * genuinely mixed   -> diverging AROUND ZERO (not around the median):
+        red only for actual negatives, green for actual positives.
+    Text stays dark so the numbers remain readable."""
     import numpy as _n2
     v = dfm.apply(_pd.to_numeric, errors='coerce').values.astype(float)
     out = _pd.DataFrame('', index=dfm.index, columns=dfm.columns)
@@ -223,18 +264,23 @@ def _heat_styles(dfm):
     if fin.sum() < 2:
         return out
     lo, hi = _n2.nanmin(v), _n2.nanmax(v)
-    md = _n2.nanmedian(v)
+    _grn = lambda a: f'background-color:rgba(46,160,67,{0.05 + 0.30 * a:.3f})'
+    _red = lambda a: f'background-color:rgba(220,53,69,{0.05 + 0.28 * a:.3f})'
     for i in range(v.shape[0]):
         for j in range(v.shape[1]):
             x = v[i, j]
             if not _n2.isfinite(x):
                 continue
-            if x >= md:
-                a = 0.0 if hi <= md else (x - md) / (hi - md)
-                out.iat[i, j] = f'background-color:rgba(46,160,67,{0.06 + 0.24 * a:.3f})'
-            else:
-                a = 0.0 if md <= lo else (md - x) / (md - lo)
-                out.iat[i, j] = f'background-color:rgba(220,53,69,{0.06 + 0.22 * a:.3f})'
+            if lo >= 0:                       # all positive: green ramp
+                a = 0.0 if hi <= lo else (x - lo) / (hi - lo)
+                out.iat[i, j] = _grn(a)
+            elif hi <= 0:                     # all negative: red ramp
+                a = 0.0 if hi <= lo else (hi - x) / (hi - lo)
+                out.iat[i, j] = _red(a)
+            elif x >= 0:                      # mixed, positive side
+                out.iat[i, j] = _grn(x / hi if hi > 0 else 0.0)
+            else:                             # mixed, negative side
+                out.iat[i, j] = _red(x / lo if lo < 0 else 0.0)
     return out
  
 def _style(frame, title='', heat=False, fmt='{:,.0f}'):
@@ -282,9 +328,17 @@ def show_html_table(frame, title='', note='', heat=False, fmt='{:,.0f}',
                 if not _f:
                     continue
                 _num = _pd.to_numeric(_plain[_c], errors='coerce')
-                _plain[_c] = [(_f.format(v) if _np.isfinite(v) else '\u2014')
-                              if _np.isreal(v) and _pd.notna(v) else _plain[_c].iloc[i]
-                              for i, v in enumerate(_num)]
+                _vals = []
+                for _i2, _v2 in enumerate(_num):
+                    if _pd.isna(_v2):
+                        # NaN that was NaN to begin with -> em-dash, not the
+                        # literal 'nan' (warm-up rows used to print '+nan');
+                        # a non-numeric string (a label) is left alone.
+                        _o2 = _plain[_c].iloc[_i2]
+                        _vals.append('\u2014' if _pd.isna(_o2) else _o2)
+                    else:
+                        _vals.append(_f.format(_v2))
+                _plain[_c] = _vals
         except Exception:
             pass
         if title:
@@ -292,7 +346,8 @@ def show_html_table(frame, title='', note='', heat=False, fmt='{:,.0f}',
             print('  ' + '\u2500' * min(max(len(str(title)), 20), 76))
         print(_plain.to_string())
         if note:
-            print('  ' + note)
+            for _wl in _wrap_box(note, _TXT_W - 4, indent=2):   # [Y39]
+                print('  ' + _wl)
         if HTML_OUTPUT:
             try:
                 _html_to_file(_style(frame, title, heat, fmt).to_html()
@@ -327,6 +382,21 @@ def show_html_table(frame, title='', note='', heat=False, fmt='{:,.0f}',
 # kv_table/show_html_table, so a clean run is short and a dirty one is loud.
 # ============================================================================
 _W = 78
+_TXT_W = 100      # [Y39] terminal prose width
+def _wrap_box(s, inner, indent=0):
+    """[Y39] Split a line to fit INSIDE a box, WRAPPING on word boundaries
+    instead of truncating with '...'. The old behaviour cut the day card's
+    most important content — the fair-value RESULT and the drift threshold
+    both fell off the right edge. Continuation lines get a hanging indent
+    so a wrapped formula still reads as one item."""
+    import textwrap as _tw
+    s = str(s)
+    if len(s) <= inner:
+        return [s]
+    _pad = ' ' * indent
+    _out = _tw.wrap(s, width=inner, subsequent_indent=_pad,
+                    break_long_words=False, break_on_hyphens=False)
+    return [l[:inner] for l in _out] or ['']
 _SAY_ICON = {'ok': '✓', 'info': '·', 'warn': '!', 'bad': '✗'}
 _SAY_CSS = {'ok': '#1e7e34', 'info': '#5f6b76', 'warn': '#b26a00', 'bad': '#c62828'}
 def _hr(ch='─'):
@@ -360,7 +430,11 @@ def say(text, level='info', detail=''):
             + (f" <span style='color:#8a949e'>{detail}</span>" if detail else '')
             + "</div>"))
         return
-    print(f"  {_SAY_ICON.get(level, '.')} {text}" + (f"  {detail}" if detail else ''))
+    _msg = f"{text}" + (f"  {detail}" if detail else '')
+    _wl = _wrap_box(_msg, _TXT_W - 6, indent=4)                # [Y39] wrap
+    print(f"  {_SAY_ICON.get(level, '.')} {_wl[0]}")
+    for _x in _wl[1:]:
+        print(f"    {_x}")
 def menu(items, title='WHAT TO RUN NEXT'):
     """[Y30] Aligned command list — commands left, one-line purpose right."""
     if HTML_OUTPUT and _in_jupyter():
@@ -403,7 +477,8 @@ def note_block(title, lines):
     print('  │ ' + title[:_inner - 2].ljust(_inner - 1) + '│')
     print('  ├' + '─' * _inner + '┤')
     for _l in lines:
-        print('  │ ' + str(_l)[:_inner - 2].ljust(_inner - 1) + '│')
+        for _w in _wrap_box(_l, _inner - 2, indent=2):     # [Y39] wrap
+            print('  │ ' + _w.ljust(_inner - 1) + '│')
     print('  └' + '─' * _inner + '┘')
 # ============================================================================
 # [Y5] GRID MATRICES AS HEAT MAPS — call show_grid_html() after the run
@@ -423,9 +498,21 @@ def kv_table(title, rows, note='', col='reading'):
     print('  ' + '\u2500' * min(max(len(str(title)), 20), 76))
     _w = max((len(str(r[0])) for r in _rows), default=10)
     for _a, _b, _c in _rows:
-        print(f"  {str(_a):<{_w}}  {_b}" + (f"   {_c}" if _c else ''))
+        _head = f"  {str(_a):<{_w}}  {_b}"
+        if not _c:
+            print(_head)
+            continue
+        # [Y39] keep a short note INLINE (that reads best); only a note that
+        # would run off the edge is wrapped onto hanging-indent lines.
+        if len(_head) + 3 + len(str(_c)) <= _TXT_W:
+            print(f"{_head}   {_c}")
+        else:
+            print(_head)
+            for _wl in _wrap_box(_c, _TXT_W - _w - 8, indent=0):
+                print(f"  {'':<{_w}}    {_wl}")
     if note:
-        print(f"  {note}")
+        for _wl in _wrap_box(note, _TXT_W - 4, indent=2):
+            print(f"  {_wl}")
  
 def show_grid_html():
     """[Y5] The three grid matrices (PnL / win rate / trades) plus Sharpe as
@@ -487,13 +574,12 @@ MARKET = 'HK'          # this file IS the HK book — see the header
 #     ~0.57. beta comes from a rolling regression [HKB], never 1.0,
 #     and the unhedged idio residual — not FX staleness — is what
 #     sets the entry floor [HK-H2].
-#  2. THE HEDGE PRINT IS STALE AT THE US CLOSE. The T+1 session ends
+#  2. THE FUTURES ARE SHUT AT THE US CLOSE. The T+1 session ends
 #     03:00 HKT = 19:00 UTC, BEFORE the US close (20:00 UTC summer /
-#     21:00 winter). The 2000/2100 UTC snaps are re-reads of that
-#     frozen close: 1h stale in summer, 2h in winter. Quantified by
-#     [HK2]; it is a signal-noise fact, not a loader bug. The real
-#     hedge is worked into the T+1 close (or the next session) — see
-#     HEDGE_TIMING.
+#     21:00 winter). Under us_close timing the 19:00 print is therefore
+#     1-2h-old INFORMATION in the signal (quantified by [HK2]) and the
+#     hedge can only FILL at the next session's open [HKX]. hti_close
+#     timing removes both problems by deciding at 19:00.
 #  3. ONE SHARED SNAPSHOT SET. The HTI files serve EVERY HK name, so
 #     they live under IDX_FILE_PREFIX, not per-instrument paths.
 #  4. PEGGED FX. USDHKD 7.75-7.85, deliverable, ~1bp half-spread. No
@@ -534,7 +620,8 @@ ETF_BORROW_ANN_BPS = 75              # us_etf mode: short-ETF borrow
 #     HST_front_month_0800utc.csv   16:00 HKT = HK stock close
 #     HST_front_month_2000utc.csv   US close, summer (DST)
 #     HST_front_month_2100utc.csv   US close, winter (STD)  <- ADD THIS
-IDX_FILE_PREFIX = r"G:\FIN_COMM\DeltaOne\Kenny\ADR\HST_front_month_"
+IDX_FILE_PREFIX = globals().get('IDX_FILE_PREFIX',
+    r"G:\FIN_COMM\DeltaOne\Kenny\ADR\HST_front_month_")  # QUICK SETTINGS wins
 IDX_FUT_MULTIPLIER = 50              # HK$ per index point
 # ---- how the hedge is put on ------------------------------------
 #   'index_fut' : HTI, beta-sized [HKB]. The DEFAULT and the thing the
@@ -551,7 +638,7 @@ IDX_FUT_MULTIPLIER = 50              # HK$ per index point
 #   'none'      : naked ADR. beta_hedge=0 zeroes the hedge leg in
 #                 every formula (PnL, costs, margin, FX). The baseline
 #                 every hedged variant must beat risk-adjusted.
-HEDGE_MODE = 'index_fut'
+HEDGE_MODE = globals().get('HEDGE_MODE', 'index_fut')  # QUICK SETTINGS wins
 # ---- [HKT] WHEN AND WITH WHAT THE HEDGE IS HELD -----------------
 # Three executable timings, compared head-to-head by hedge_timing_compare()
 # on IDENTICAL entries (the signal never changes):
@@ -577,10 +664,10 @@ HEDGE_MODE = 'index_fut'
 # add HST_front_month_0130utc.csv (09:30 HKT; HK has no DST so ONE file
 # year-round) to the capture job; 3. the ordinary's PX_OPEN (already
 # pulled from Bloomberg — no capture needed).
-HEDGE_TIMING = 'index_all'
+HEDGE_TIMING = globals().get('HEDGE_TIMING', 'index_all')  # QUICK SETTINGS wins
 ORD_HALF_SPREAD_BPS = 5.0     # 9988 touch is tight; measure per name
 BORROW_ORD_ANN_BPS = 100      # borrowing the HK line (long spread shorts it)
-GAP_SOURCE = 'hti'           # DEFAULT — exactly like the Taiwan book: the
+GAP_SOURCE = globals().get('GAP_SOURCE', 'hti')  # DEFAULT — exactly like the Taiwan book: the
                              # overnight gap comes from the CAPTURE-JOB
                              # SNAPSHOT CSVs and nothing else. Same file
                              # family, same loader, same [H1] timestamp
@@ -660,17 +747,28 @@ INSTRUMENTS = {
         NOTIONAL=500_000,               # ~12-13 HTI contracts at beta~0.7
         K_ADR_FALLBACK=250,             # ~2.5%/day — refresh from data
         K_FUT_FALLBACK=180,             # HTI ~1.8%/day — refresh from data
-        # ADR book: the BABA closing auction is enormous, half-spread
-        # ~1c on ~$120. HTI book: PLACEHOLDERS pending the QR read of
-        # the T+1 tail (02:00-03:00 HKT) — the [P6] procedure.
-        ADR_HALF_SPREAD_OPEN_BPS=1.5,  FUT_HALF_SPREAD_OPEN_BPS=5.0,
+        # [HK-COST] MEASURED off the QR screenshots, 2026-07-29
+        # 02:30-02:55 HKT (HCTQ6, the T+1 tail — exactly the window an
+        # hti_close hedge works into) and BABA 14:50-14:55 ET:
+        #   HCT quotes 4778/4780 (2 pts = ~4 bps FULL, sometimes 1 pt)
+        #     -> half-spread 2.5 bps with headroom (was a 6.0 guess);
+        #   depth ASYMMETRIC: bid 7-8 x ask 28-33 -> per-side L1 7 / 28;
+        #   tape ~1-2 contracts/print, ~45 contracts in 25 min
+        #     -> replenish 1.5/min, window volume ~US$1.5-2M;
+        #   BABA 115.44/115.47 (3c = ~1.3 bps half) an hour before the
+        #     close, ~$740M/day -> half 1.5 bps, window ~$150M.
+        # The OPEN-slot numbers are the HTI DAY session (deeper/tighter
+        # than the tail) — under us_close timing the hedge FILLS at the
+        # 09:30 HKT open but is COSTED off the close-book fields, which
+        # is deliberately conservative until the day-open QR is read.
+        ADR_HALF_SPREAD_OPEN_BPS=1.5,  FUT_HALF_SPREAD_OPEN_BPS=2.0,
         FUT_L1_BID_OPEN=40,  FUT_L1_ASK_OPEN=40,  FUT_REPLENISH_OPEN=10,
         ADR_WINDOW_VOL_OPEN_USD=250_000_000,
         FUT_WINDOW_VOL_OPEN_USD=30_000_000,
-        ADR_HALF_SPREAD_CLOSE_BPS=1.0, FUT_HALF_SPREAD_CLOSE_BPS=6.0,
-        FUT_L1_BID_CLOSE=15, FUT_L1_ASK_CLOSE=15, FUT_REPLENISH_CLOSE=2.0,
-        ADR_WINDOW_VOL_CLOSE_USD=1_000_000_000,
-        FUT_WINDOW_VOL_CLOSE_USD=10_000_000,
+        ADR_HALF_SPREAD_CLOSE_BPS=1.5, FUT_HALF_SPREAD_CLOSE_BPS=2.5,
+        FUT_L1_BID_CLOSE=7, FUT_L1_ASK_CLOSE=28, FUT_REPLENISH_CLOSE=1.5,
+        ADR_WINDOW_VOL_CLOSE_USD=150_000_000,
+        FUT_WINDOW_VOL_CLOSE_USD=2_000_000,
         MIN_ENTRY_DEV_BPS_INST=0,    # set from [HK-H2] x the multiplier the
                                      # [HK-1A] study justifies. The TW "2x
                                      # the FX floor" convention does NOT
@@ -681,11 +779,17 @@ INSTRUMENTS = {
         DIV_MAX_ONE_DAY=0.05,
         DIV_YIELD_EXPECTED_ANN=0.012,   # ~1%/yr regular + specials
         DRIFT_MAX_SIGMA_INST=0.50,   # China ADRs re-rate hard — start tight
-        ADR_FEE_OUT_BPS_INST=2,      # on-market exit. The 32bps depositary
+        ADR_FEE_OUT_BPS_INST=2,      # [HK-COST] on-market exit: commission
+                                     # ~1bp + SEC fee on sells ~0.3bp — 2bps
+                                     # covers it. The 32bps depositary
                                      # CANCELLATION fee belongs to the
                                      # Phase-2 conversion exit, not here.
-        FUT_FEE_IN_BPS_INST=1, FUT_FEE_OUT_BPS_INST=1,   # HTI fees+levy on
-                                     # a ~US$28k contract are <1bp
+                                     # (BABA's ~$0.02/ADS annual depositary
+                                     # service fee via DTC is noise.)
+        FUT_FEE_IN_BPS_INST=1, FUT_FEE_OUT_BPS_INST=1,   # [HK-COST] HCT
+                                     # exchange fee + SFC levy ~HK$6-7 =
+                                     # ~0.3bp on a ~US$30k contract; 1bp
+                                     # keeps headroom
         BETA_PRIOR_INST=0.70,        # user-measured anchor; refreshed at
                                      # runtime by the 2y daily regression
         MANUAL_EARNINGS=[],          # quarterly announcement dates
@@ -733,8 +837,17 @@ FUT_LOCAL_CLOSE_PATH = IDX_FILE_PREFIX + "0800utc.csv"   # 16:00 HKT = HK close
 # Taiwan-session anchor), while "1330utc.csv" above is 13:30 UTC = the US
 # summer OPEN. Different files. If that is too easy to mix up in the capture
 # job, rename this one to "1330tpe.csv" and change the line above to match.
-FUT_US_CLOSE_DST_PATH = IDX_FILE_PREFIX + "2000utc.csv"  # 20:00 UTC (US summer close)
-FUT_US_CLOSE_STD_PATH = IDX_FILE_PREFIX + "2100utc.csv"  # 21:00 UTC (US winter close)
+# [HK4] THE T+1 SESSION CLOSES AT 03:00 HKT = 19:00 UTC — and Hong Kong
+# has NO daylight saving, so unlike Taiwan there is ONE file, year-round,
+# and NO DST composite. There is no 20:00/21:00 print to capture because
+# the futures are already SHUT at the US close; the 1900 print is the
+# last real futures price of the day, full stop. (Legacy 2000utc/2100utc
+# files, if present, are read as a FALLBACK with a note — they were
+# re-reads of this same frozen 19:00 price under the old naming.)
+FUT_T1_CLOSE_PATH = IDX_FILE_PREFIX + "1900utc.csv"      # 03:00 HKT close
+SNAP_UTC_T1_CLOSE = '19:00'
+FUT_US_CLOSE_DST_PATH = IDX_FILE_PREFIX + "2000utc.csv"  # legacy fallback name
+FUT_US_CLOSE_STD_PATH = IDX_FILE_PREFIX + "2100utc.csv"  # legacy fallback name
 FUT_HK_OPEN_PATH = IDX_FILE_PREFIX + "0130utc.csv"       # [HKT] 09:30 HKT =
                                                          # HK stock open; no
                                                          # DST -> one file
@@ -1008,8 +1121,10 @@ FUNDING_TICKER = 'SOFRRATE Index'   # daily USD SOFR; verify on the
 STRESS_MULT = 1.2
 # (K_ADR_FALLBACK / K_FUT_FALLBACK: from the INSTRUMENTS dict [U0])
 # ---- Strategy parameters ----
-N_VALUES = [10, 15, 20, 25, 30, 35, 40]   # [G3][M4]
-THRESHOLD_VALUES = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0]  # [G3] extended
+N_VALUES = globals().get('N_VALUES',
+    [10, 15, 20, 25, 30, 35, 40, 45, 50])   # [G3][M4] QUICK SETTINGS wins
+THRESHOLD_VALUES = globals().get('THRESHOLD_VALUES',
+    [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0])  # [G3]
 ADF_WINDOW = 125
 # [Q3] WARM-UP. The backtest cannot trade until row max(window, n_zscore),
 # because the regime gate needs history. With ADF_WINDOW=125 that burns
@@ -1137,7 +1252,7 @@ _DRIFT_DOC = """[Z4] 5-row mean shift vs sqrt(5) x daily-
 #     which during a structural re-rating means fading the trend — the
 #     loss mode that produces the big losers.
 # Test both directions separately before trading either.
-DIRECTION_FILTER = 'both'   # 'both' | 'long_only' | 'short_only'
+DIRECTION_FILTER = globals().get('DIRECTION_FILTER', 'both')
 # [M5] PARAMETER SELECTION. 'best_pnl' = the old max-PnL-with-min-trades
 # rule (ignores drawdown entirely). 'risk_aware' = highest 3x3
 # neighbourhood Calmar among cells that clear a minimum win rate and a
@@ -1154,7 +1269,15 @@ COMPOSITE_WEIGHTS = dict(pnl=2.0, win=2.0,        # what you optimise FOR
 # (mean of results_trades over the selectable N rows). A cell below the
 # grid's own average frequency is a thin corner even if its stats shine.
 MIN_TRADES_GRID_MEAN = True
-MIN_WIN_RATE_SELECT = 65.0      # %
+MIN_WIN_RATE_SELECT = 55.0      # % [Y35] was 65 — on the first real BABA
+                                # run NO grid cell cleared 65% jointly with
+                                # the drawdown cap, so BOTH risk-aware
+                                # selectors returned empty and the choice
+                                # fell through to the raw PnL argmax — the
+                                # exact selection-bias failure the [33]
+                                # guards warn about. A 55% floor still
+                                # rejects coin-flip cells but leaves the
+                                # constrained selectors a live candidate set.
 # [U6] shortest lookback the selector may choose. A z-score window has to
 # hold enough points to estimate a mean and a sigma that are not themselves
 # noise. With a measured deviation half-life of ~2-3 days, N=10 is only ~4
@@ -1231,7 +1354,9 @@ ROLL_BLOCK_DAYS = 0           # [K1] deterministic belt-and-braces: block ALL
 # reaches X bps of notional. 0 = OFF (pure z-cross exits). Whether it
 # is on or off, the [S3] scan below always reports what each target
 # WOULD have done, using each trade's maximum favourable excursion.
-PROFIT_TARGET_BPS = 0
+# [V32-FIX2] PROFIT_TARGET_BPS was ASSIGNED HERE **AND** at [R9] below —
+# the second silently won, so setting this one did nothing. The single
+# definition now lives at [R9]; this block keeps only the rationale.
 HARD_STOP_BPS = 0   # [G6] unrealized loss (bps of notional) that force-
                     # exits next check; 0 = OFF. Suggested test: 250-400.
                     # Caps the big losers (re-rating trades that ride the
@@ -1299,7 +1424,7 @@ BLOCK_ENTRY_EXDATE_DAYS = 0   # OFF. The exposure this was meant to avoid does
 #                       bank partial reversion instead of waiting for 0.
 PROFIT_TARGET_BPS = 0       # e.g. 150; 0 = off
 PROFIT_TARGET_Z = 0.0       # e.g. 0.5; 0 = off
-TIME_STOP = 25   # [R1] calendar days, hard cap (user-set; was 15). With
+TIME_STOP = globals().get('TIME_STOP', 20)   # [R1] hard cap; QUICK SETTINGS wins. With
                  # carry ~1.3bp/day (long) / ~0.2bp/day (short) versus
                  # ~38bps of round-trip fees, patience is cheap and
                  # re-entry is expensive; let the gamma exit decide
@@ -1839,18 +1964,29 @@ def build_dst_composite(dst_path, std_path, label,
         load_snapshot_csv(std_path, 'Fut_std', expected_utc=std_utc),
         label)
 _SNAPS_TOLERANT = GAP_SOURCE in ('proxy_splice', 'off')
+_US_CLOSE_PATH_USED = FUT_T1_CLOSE_PATH   # for the stale-filter registry
 try:
-    if EXEC_TIMING == 'open':
-        df_fut2130 = build_dst_composite(FUT_US_OPEN_DST_PATH,
-                                         FUT_US_OPEN_STD_PATH, 'US-open',
-                                         dst_utc=SNAP_UTC_US_OPEN_DST,
-                                         std_utc=SNAP_UTC_US_OPEN_STD)
-    else:
-        # [35] close mode (TSM): DST-correct US-close snapshot
+    # [HK4] the futures snap pair for this book: 08:00 UTC (HK stock
+    # close) and 19:00 UTC (03:00 HKT, the T+1 session close — the LAST
+    # tradable futures print of the day). No DST composite: neither time
+    # shifts, ever. The 'Fut_2130' SLOT NAME is kept (hundreds of lines
+    # read it) but its content is the 19:00 print.
+    try:
+        df_fut2130 = load_snapshot_csv(FUT_T1_CLOSE_PATH, 'Fut_2130',
+                                       expected_utc=SNAP_UTC_T1_CLOSE)
+        print(f"[HK4] T+1-close snap: {len(df_fut2130)} rows "
+              f"({FUT_T1_CLOSE_PATH})")
+    except FileNotFoundError:
+        # legacy naming: the same frozen 19:00 price captured at
+        # 20:00/21:00 UTC under the old TW-style file names
+        print(f"[HK4] no {FUT_T1_CLOSE_PATH} — falling back to the LEGACY "
+              f"2000utc/2100utc names (same frozen 03:00-HKT price, old "
+              f"naming). Rename the capture to 1900utc when convenient.")
         df_fut2130 = build_dst_composite(FUT_US_CLOSE_DST_PATH,
-                                         FUT_US_CLOSE_STD_PATH, 'US-close',
+                                         FUT_US_CLOSE_STD_PATH, 'T+1 close',
                                          dst_utc=SNAP_UTC_US_CLOSE_DST,
                                          std_utc=SNAP_UTC_US_CLOSE_STD)
+        _US_CLOSE_PATH_USED = FUT_US_CLOSE_DST_PATH
     df_fut1330 = load_snapshot_csv(FUT_LOCAL_CLOSE_PATH, 'Fut_1330',
                                    expected_utc=SNAP_UTC_LOCAL_CLOSE)
 except Exception as _e:
@@ -1992,8 +2128,8 @@ def load_external_index_history(path, tz=None, dt_col=None, px_col=None,
     _hk = _snap_at(8 * 60, 'Fut_1330')       # 16:00 HKT stock close
     _us = _snap_at(19 * 60, 'Fut_2130')      # 03:00 HKT T+1 close
     print(f"[HKH] built {len(_hk):,} HK-close (08:00 UTC) and {len(_us):,} "
-          f"T+1-close (19:00 UTC) prints — the 19:00 print IS what the "
-          f"20:00/21:00 capture snaps re-read [HK0.2]")
+          f"T+1-close (19:00 UTC) prints — same moments as the capture "
+          f"snaps [HK4]")
     if len(_hk) < 100 or len(_us) < 100:
         print(f"[HKH] WARNING: thin extraction — check HIST_IDX_TZ (is the "
               f"file really {_tz}?) and HIST_IDX_TOL_MIN (currently {_tol}min)")
@@ -2120,6 +2256,21 @@ elif GAP_SOURCE in ('proxy_splice', 'off'):
 # futures are unwound and the stock goes on). Missing file = mode 2 is
 # reported as unavailable; everything else runs.
 df_fut0130 = None
+df_adr1900 = None
+if SIGNAL_TIMING == 'hti_close':
+    # [HKX] the 19:00 UTC ADR print — the signal's anchor in this timing.
+    # Per-name file, same family: <FILE_PREFIX>1900utc.csv
+    try:
+        df_adr1900 = load_snapshot_csv(FILE_PREFIX + "1900utc.csv",
+                                       'ADR_1900', expected_utc='19:00')
+        print(f"[HKX] ADR 19:00 UTC snap: {len(df_adr1900)} rows")
+    except Exception as _e:
+        print(f"[HKX] WARNING: SIGNAL_TIMING='hti_close' needs "
+              f"{FILE_PREFIX}1900utc.csv ({_e}) — falling back to "
+              f"'us_close'. Add the ADR 19:00 UTC snap to the capture job "
+              f"to enable the no-look-ahead timing.")
+        SIGNAL_TIMING = 'us_close'
+        df_adr1900 = None
 try:
     df_fut0130 = load_snapshot_csv(FUT_HK_OPEN_PATH, 'Fut_0130',
                                    expected_utc=SNAP_UTC_HK_OPEN)
@@ -2204,6 +2355,10 @@ if df_fut0130 is not None and len(df_fut0130):
     _f0 = df_fut0130.copy()
     _f0['Date'] = _f0['Date'].astype(str)
     df = pd.merge(df, _f0[['Date', 'Fut_0130']], on='Date', how='left')
+if df_adr1900 is not None and len(df_adr1900):
+    _a19 = df_adr1900.copy()
+    _a19['Date'] = _a19['Date'].astype(str)
+    df = pd.merge(df, _a19[['Date', 'ADR_1900']], on='Date', how='left')
 df['gap_is_proxy'] = df['Date'].isin(_PROXY_DATES) \
     if _PROXY_DATES else False
 if PRECLOSE_ENABLED and df_fut_pre is not None and df_adr_pre is not None:
@@ -2237,11 +2392,8 @@ stale_hk = (
 #     verify a few on QR). Only when timestamps were unavailable does
 #     the old equality drop apply.
 eq_2130 = np.isclose(df['Fut_2130'], df['Fut_1330'], rtol=0.0, atol=1e-9)
-_ts_open_ok = (SNAPSHOT_TS_VALIDATED.get(FUT_US_OPEN_DST_PATH, False)
-               and SNAPSHOT_TS_VALIDATED.get(FUT_US_OPEN_STD_PATH, False)) \
-    if EXEC_TIMING == 'open' else \
-    (SNAPSHOT_TS_VALIDATED.get(FUT_US_CLOSE_DST_PATH, False)
-     and SNAPSHOT_TS_VALIDATED.get(FUT_US_CLOSE_STD_PATH, False))
+# [HK4] one file, one registry entry (legacy composite registers the DST name)
+_ts_open_ok = SNAPSHOT_TS_VALIDATED.get(_US_CLOSE_PATH_USED, False)
 n_hk = int(stale_hk.sum())
 n_eq = int((eq_2130 & ~stale_hk).sum())
 if n_hk > 0:
@@ -2282,7 +2434,15 @@ def _inp(check, reading, note='', level=None):
                         (_badge(reading, level) + ' ' if level else '')
                         + ('' if level else reading), note))
     if not (HTML_OUTPUT and _in_jupyter()):
-        print(f"  {check:<34} {reading}" + (f"   {note}" if note else ''))
+        _h = f"  {check:<34} {reading}"
+        if not note:
+            print(_h)
+        elif len(_h) + 3 + len(str(note)) <= _TXT_W:      # [Y39] inline if it fits
+            print(f"{_h}   {note}")
+        else:
+            print(_h)
+            for _wl in _wrap_box(note, _TXT_W - 42, indent=0):
+                print(f"  {'':<34}   {_wl}")
  
 def _audit(msg):
     global _audit_flags
@@ -2356,9 +2516,10 @@ for _col, _lim in _series_checks.items():
                f"{_d0[:4]}{'...' if len(_d0) > 4 else ''} — possible stale feed")
 # (3) FX plausibility band (USDTWD has lived ~27-34 for two decades)
 _fx = pd.to_numeric(df['TWD (Last)'], errors='coerce')
-_fx_bad = (_fx < 25) | (_fx > 36)
+_fx_bad = (_fx < FX_SANE_BAND[0]) | (_fx > FX_SANE_BAND[1])   # [HK0] peg band
 if _fx_bad.any():
-    _audit(f"TWD (Last): {int(_fx_bad.sum())} values outside 25-36 — wrong "
+    _audit(f"{FX_LBL}: {int(_fx_bad.sum())} values outside "
+           f"{FX_SANE_BAND[0]}-{FX_SANE_BAND[1]} — wrong "
            f"quote convention or corrupt data: "
            f"{df.loc[_fx_bad, ['Date', 'TWD (Last)']].head(5).to_string(index=False)}")
 # (4)[G5] ADR parity: TSM_close x FX / (2330_close x 5). The v17 rule
@@ -3030,6 +3191,53 @@ elif HEDGE_MODE == 'none':
     df['beta_hedge'] = 0.0
     print("[HKS] HEDGE_MODE='none': naked ADR — beta_hedge=0 zeroes the "
           "hedge leg (PnL, costs, margin, FX) everywhere")
+# ============================================================
+# [HKX] EXECUTABLE HEDGE FILLS — the look-ahead the first live run had,
+# removed. The futures CLOSE at 03:00 HKT (19:00 UTC); the US closes at
+# 20:00/21:00 UTC. A signal observed at the US close therefore CANNOT
+# have been hedged at the 19:00 print — that fill was retroactive, and
+# on a series whose deviations half-live in ~0.2 days, retroactive
+# fills manufacture P&L. So:
+#   SIGNAL_TIMING='us_close' : the hedge fills at the NEXT tradable
+#       futures print — the 09:30 HKT open (Fut_0130 of the next row).
+#       The ENTRY NIGHT RIDES UNHEDGED on the ADR in every mode; that
+#       is the price of deciding at a time the futures market is shut.
+#       (No 0130 file -> next evening's 19:00 print, a 24h window —
+#       add the 0130 capture to cut it to ~5.5h.)
+#   SIGNAL_TIMING='hti_close': signal and BOTH fills at 19:00 UTC —
+#       ADR intraday at 3pm ET (deep book, screenshots confirm ~3c
+#       wide), futures worked into the T+1 close. No unhedged night.
+# MARKING NOTE: run_backtest uses ONE price series for hedge fills and
+# intra-hold marks, so under 'us_close' the daily marks of an open
+# hedge are one session forward of the ADR mark. Trade entry/exit P&L
+# is exact; the daily equity PATH (Sharpe/MaxDD cosmetics) carries that
+# half-day smear. 'hti_close' has no such smear.
+# ============================================================
+# [HKX-M] FILL price and MARK price are DIFFERENT SERIES here, and
+# conflating them is a look-ahead. The fill is tomorrow's HK open (you
+# decide tonight, you deal in the morning). The MARK on night t can only
+# use what EXISTS on night t — the 19:00 UTC print. Marking an open hedge
+# with tomorrow's open would leak ~5.5h of future index into every daily
+# equity point, and therefore into Sharpe, MaxDD, VaR, MAE/MFE and any
+# HARD_STOP / PROFIT_TARGET trigger. So: 'Hedge Px' = fills,
+# 'Hedge Mark Px' = marks, and run_backtest uses each where it belongs.
+df['Hedge Mark Px'] = df['Hedge Px']       # default: same series
+if HEDGE_MODE == 'index_fut':
+    df['Hedge Mark Px'] = df['Fut_2130']   # last observable print, always
+    if SIGNAL_TIMING == 'us_close':
+        if 'Fut_0130' in df.columns and df['Fut_0130'].notna().mean() > 0.5:
+            df['Hedge Px'] = df['Fut_0130'].shift(-1).fillna(df['Fut_2130'])
+            say("[HKX] hedge fills at the NEXT 09:30-HKT open (executable); "
+                "the entry night rides unhedged on the ADR", 'info')
+        else:
+            df['Hedge Px'] = df['Fut_2130'].shift(-1).fillna(df['Fut_2130'])
+            say(f"[HKX] no {FUT_HK_OPEN_PATH} — hedge modeled at the NEXT "
+                f"EVENING'S 19:00 print (24h unhedged). Add the 0130utc "
+                f"capture to cut that window to ~5.5h.", 'warn')
+    else:
+        df['Hedge Px'] = df['Fut_2130']
+        say("[HKX] hti_close timing: both legs fill together at 19:00 UTC — "
+            "no unhedged night, no look-ahead", 'ok')
 # [S2] per-row funding rate (decimal). Merge the SOFR series, forward-
 # fill the odd missing print, fall back to the constant if unavailable.
 if 'df_sofr' in dir() and df_sofr is not None and len(df_sofr):
@@ -3117,17 +3325,10 @@ else:
          f"at the {CONTRACT_BREAK_PCT*100:.0f}% threshold — the 13:30 "
          f"series is continuous", level='ok')
 # [S5] flag the rows sitting just before a detected ex-date
-df['pre_exdate'] = False
-if BLOCK_ENTRY_EXDATE_DAYS > 0:
-    for _i in df.index[df['div_ret_hedge'] > 0.0005]:
-        df.loc[max(_i - BLOCK_ENTRY_EXDATE_DAYS, 0):_i, 'pre_exdate'] = True
-    for _i in df.index[df['div_ret_adr'] > 0.0005]:
-        df.loc[max(_i - BLOCK_ENTRY_EXDATE_DAYS, 0):_i, 'pre_exdate'] = True
-    if df['pre_exdate'].any():
-        print(f"[S5] {int(df['pre_exdate'].sum())} row(s) blocked for entry: "
-              f"within {BLOCK_ENTRY_EXDATE_DAYS} rows of a detected ex-date "
-              f"(hedge or ADR). Set BLOCK_ENTRY_EXDATE_DAYS=0 once you have "
-              f"confirmed the SSF contract is dividend-adjusted.")
+# [S5][V32-FIX1] the pre-ex-date flag USED to be built here — but its
+# second loop reads df['div_ret_adr'], which is only created ~80 lines
+# BELOW. It survived because the switch defaults to 0; turning it on
+# raised a KeyError. The block now sits right after div_ret_adr exists.
 # ============================================================
 # [HKE] EARNINGS ENTRY BLOCK (new for HK; inert for TW where
 # EARNINGS_BLOCK_DAYS=0). China ADRs gap hard on quarterly prints,
@@ -3214,6 +3415,18 @@ else:
     # line was the reason). TSM quarterly ~0.5% was unaffected.
     df.loc[df['div_ret_adr'] > DIV_MAX_ONE_DAY, 'div_ret_adr'] = 0.0
     df.loc[df['div_ret_adr'] < DIV_MIN_ONE_DAY, 'div_ret_adr'] = 0.0   # [W1]
+# [S5][V32-FIX1] flag rows just before a detected ex-date — MOVED here so
+# BLOCK_ENTRY_EXDATE_DAYS > 0 no longer dies on a missing column.
+df['pre_exdate'] = False
+if BLOCK_ENTRY_EXDATE_DAYS > 0:
+    for _i in df.index[df['div_ret_hedge'] > 0.0005]:
+        df.loc[max(_i - BLOCK_ENTRY_EXDATE_DAYS, 0):_i, 'pre_exdate'] = True
+    for _i in df.index[df['div_ret_adr'] > 0.0005]:
+        df.loc[max(_i - BLOCK_ENTRY_EXDATE_DAYS, 0):_i, 'pre_exdate'] = True
+    if df['pre_exdate'].any():
+        print(f"[S5] {int(df['pre_exdate'].sum())} row(s) blocked for entry: "
+              f"within {BLOCK_ENTRY_EXDATE_DAYS} rows of a detected ex-date "
+              f"(ordinary or ADR).")
 # ============================================================================
 # [U5] DIVIDEND-CARRY ADJUSTMENT — removes a FAKE signal spike worth ~700 bps
 # ----------------------------------------------------------------------------
@@ -3235,6 +3448,30 @@ else:
 # is. Applies to the SIGNAL only; the two-leg P&L already books both cash
 # flows separately ([T3] margin credit + the ADR dividend charge).
 # ============================================================================
+# ============================================================
+# [HK-DIV] DIVIDEND LOGIC, REVIEWED FOR HK (2026-07). What changed vs
+# Taiwan and what deliberately did NOT:
+#   * NO hedge-leg dividend at all: an index future carries expected
+#     index dividends in its BASIS — the TAIFEX margin-cash mechanism
+#     is deleted, not disabled ([R5][HKS]).
+#   * NO withholding wrinkle: HK-listed (Cayman-incorporated) names pay
+#     gross to both lines, so the GROSS TR fields are the right ones
+#     and no tax haircut is modelled — correct for BABA/9988.
+#   * [U5] SIGNAL carry still applies and still matters: the 9988
+#     ex-date and the BABA ADS ex-date are set separately (usually 0-2
+#     sessions apart for a dual-primary listing; the depositary can lag
+#     more). Between them the fair is cum/ex mismatched exactly as in
+#     Taiwan. BABA pays ONE regular + occasional special per year, so
+#     this bites ~1-2x/yr at ~100-250 bps of premium — big enough to
+#     fake an entry, which is what [U5] removes.
+#   * The ADR leg still accrues its OWN dividend cash over a hold
+#     ([26], div_ret_adr) — unchanged, still correct here.
+#   * DIV_MIN_ONE_DAY=15bps noise floor / DIV_MAX_ONE_DAY=5% cap both
+#     clear BABA's realistic per-event sizes (~1-2.5%).
+#   * Runtime check below: an HK-vs-ADS ex-date LAG beyond 5 rows gets
+#     a warning — for a dual-primary name that usually means one side's
+#     ex-date was mis-detected, not a real depositary lag.
+# ============================================================
 DIV_CARRY_ADJ = True          # False reproduces the old (spiking) behaviour
 DIV_CARRY_MAX_ROWS = 30       # safety: release the carry after this many rows
                               # even if no ADR ex-date was detected
@@ -3262,6 +3499,13 @@ if DIV_CARRY_ADJ:
         df['Fair (futures)'] = df['Fair (futures)'] * (1.0 + df['div_carry'])
         df['Fair Price'] = (df['Fair (futures)'] if FAIR_MODE == 'futures'
                             else df['Fair (spot_gap)'])
+        _lag_rows = int((df['div_carry'] > 0).astype(int)
+                        .groupby((df['div_carry'] == 0).cumsum()).sum().max())
+        if _lag_rows > 5:
+            print(f"[HK-DIV] WARNING: a carry window ran {_lag_rows} rows — "
+                  f"a dual-primary HK/ADS pair usually goes ex within 0-2 "
+                  f"sessions. Check both ex-date detections before trusting "
+                  f"the premium through that stretch.")
         print(f"[U5] dividend carry applied on {_n_adj} row(s); peak carry "
               f"{_pk:.0f} bps — that is the fake premium spike removed from the "
               f"signal (the two-leg P&L is unaffected, it books both cash flows)")
@@ -3319,7 +3563,21 @@ _inp("hedge dividend treatment [R5][HKS]",
 # exchange TAQ data for the specific top-PnL dates.
 session.stop()   # [7] all Bloomberg requests done
 # [35] the ADR price at the chosen execution time
-df['ADR Ref Px'] = df['TSM US (Open)'] if EXEC_TIMING == 'open' else df['TSM US (Close)']
+# [HKX] the price the SIGNAL is computed on — and the ADR fill:
+#   us_close  : the daily close (MOC fill; futures info is 1-2h old)
+#   hti_close : the 19:00 UTC print (both legs live and fillable together)
+if SIGNAL_TIMING == 'hti_close' and 'ADR_1900' in df.columns \
+        and df['ADR_1900'].notna().mean() >= 0.90:
+    df['ADR Ref Px'] = df['ADR_1900']
+    print(f"[HKX] signal + ADR fills at 19:00 UTC "
+          f"({df['ADR_1900'].notna().mean()*100:.0f}% coverage)")
+else:
+    if SIGNAL_TIMING == 'hti_close':
+        print("[HKX] WARNING: ADR_1900 coverage < 90% — a mixed-timing "
+              "z-window would be dishonest; using 'us_close' instead")
+        SIGNAL_TIMING = 'us_close'
+    df['ADR Ref Px'] = (df['TSM US (Open)'] if EXEC_TIMING == 'open'
+                        else df['TSM US (Close)'])
 df['Exec Px'] = df['ADR Ref Px']
 # [V1] signal definition switch. 'dollar' = ADR - Fair (USD);
 # 'premium' = (ADR/Fair - 1) in bps (scale-invariant). Everything
@@ -3514,7 +3772,7 @@ for _i in _top_idx:
         'ord close': float(_r['2330 TT (Close)']),
         'SSF 13:30': float(_r['Fut_1330']),
         f'SSF {EXEC_TIMING}': float(_r['Fut_2130']),
-        'o/n SSF': f"{_r['fut_gap_ret']*100:+.2f}%",
+        f'o/n {HEDGE_LBL}': f"{_r['fut_gap_ret']*100:+.2f}%",
         'FX d/d': f"{_fx_chg.loc[_i]*100:+.2f}%",
         'verdict': (_badge('inputs sane — real dislocation', 'ok')
                     if _verdict and _verdict[0].startswith('inputs individually')
@@ -3568,13 +3826,14 @@ elif _c_next < -0.15 and abs(_c_next) > abs(_c_same):
     print("       spread predicts the NEXT fixing change). Whatever the ticker")
     print("       name says, this is not US-open-concurrent FX. Fix: find the")
     print("       true 13:30/14:30 UTC code on BFIX <GO> (check its history is")
-    print("       actually populated at those times), or snapshot USDTWD BGN")
+    print(f"       actually populated at those times), or snapshot {FX_LBL}")
     print("       intraday in the same capture job as the futures files.")
 elif abs(_c_next) <= 0.15:
     print("    -> VERDICT: consistent with US-open-concurrent (or FX simply is")
     print("       not a material spread driver in this sample).")
 else:
-    print("    -> unexpected sign: check the quote convention (TWD per USD?)")
+    print(f"    -> unexpected sign: check the quote convention "
+          f"({LOCAL_CCY} per USD?)")
     print("       before anything else.")
 # ============================================================
 # [HK-H2] THE ENTRY FLOOR — RESIDUAL, NOT FX NOISE.
@@ -3929,7 +4188,11 @@ def run_backtest(df, n_zscore, threshold, track_adf=False,
                 else df['beta'].values)
     exec_px_arr = df['Exec Px'].values
     fut_arr = (df['Hedge Px'].values if 'Hedge Px' in df.columns
-               else df['Fut_2130'].values)  # hedge fills (was Fut_2130)
+               else df['Fut_2130'].values)  # hedge FILLS
+    # [HKX-M] the price an OPEN hedge is marked at on night t — the last
+    # print that exists then, never the fill that happens tomorrow.
+    fut_mark_arr = (df['Hedge Mark Px'].values
+                    if 'Hedge Mark Px' in df.columns else fut_arr)
     hedge_arr = df['Hedge Idx'].values  # [24][26] roll-safe TR spine
     adr_close_arr = df['TSM US (Close)'].values
     fx_arr = (df['TWD (Last)'].values if 'TWD (Last)' in df.columns
@@ -3962,12 +4225,17 @@ def run_backtest(df, n_zscore, threshold, track_adf=False,
     # in both books.
     _divf = np.ones(len(df))
     fut_adj_arr = fut_arr * _divf
+    fut_mark_adj_arr = fut_mark_arr * _divf        # [HKX-M]
     # [R7] fold detected breaks into the contract id so _hedge_growth
     # splices across them exactly as it does at a genuine roll
     if 'contract_break' in df.columns and df['contract_break'].any():
         ym_arr = ym_arr + np.cumsum(df['contract_break'].values.astype(int)) * 1000
-    def _hedge_growth(t, e_fut_raw, e_ym):
-        """[27][I3][J1] Hybrid hedge valuation, CONTRACT-aware. While
+    def _hedge_growth(t, e_fut_raw, e_ym, px=None):
+        """[27][I3][J1] Hybrid hedge valuation, CONTRACT-aware.
+        [HKX-M] px=None -> the FILL series (entry/exit). Pass
+        fut_mark_adj_arr for a MID-HOLD MARK: on night t the fill price
+        does not exist yet, so marking with it would be a look-ahead.
+        While
         the file still quotes the ENTRY's contract (same contract_id;
         under the confirmed next-month convention that means the same
         calendar month), raw prices are the actual fills (exact). Once
@@ -3977,13 +4245,14 @@ def run_backtest(df, n_zscore, threshold, track_adf=False,
         contract is weeks from expiry) — the splice is only a change
         of marking source, so no roll cost; under expiry_3rd_wed the
         position genuinely rolls and the cost is charged at exit."""
+        _px = fut_adj_arr if px is None else px
         _e_adj = e_fut_raw * _divf[entry_day]   # [R5] same adjusted path
         if ym_arr[t] == e_ym:
-            return fut_adj_arr[t] / _e_adj
+            return _px[t] / _e_adj
         b = t
         while ym_arr[b] != e_ym:
             b -= 1
-        return (fut_adj_arr[b] / _e_adj) * (hedge_arr[t] / hedge_arr[b])
+        return (_px[b] / _e_adj) * (hedge_arr[t] / hedge_arr[b])
     _dd = np.diff(dates_dt) / np.timedelta64(1, 'D')
     gap_next = np.r_[_dd.astype(int), 999]  # [25] days to the next data row
     n_days = len(df)
@@ -4196,7 +4465,8 @@ def run_backtest(df, n_zscore, threshold, track_adf=False,
                 adr_leg = (position * (exec_px_arr[t] - entry_price) * shares
                            + div_accrued)
                 fut_leg = (-position * entry_beta * trade_notional
-                           * (_hedge_growth(t, entry_fut_raw, entry_ym) - 1.0)
+                           * (_hedge_growth(t, entry_fut_raw, entry_ym,
+                                            fut_mark_adj_arr) - 1.0)  # [HKX-M]
                            * (hfx_arr[entry_day] / hfx_arr[t]))   # [HKS]
                 fut_leg += fut_div_cash   # [T3] margin-account dividend
                 unrealized_pnl = adr_leg + fut_leg
@@ -4230,7 +4500,8 @@ def run_backtest(df, n_zscore, threshold, track_adf=False,
                 _adr_u = position * (exec_px_arr[t] - entry_price) \
                          * (trade_notional / entry_price)
                 _fut_u = (-position * entry_beta * trade_notional
-                          * (_hedge_growth(t, entry_fut_raw, entry_ym) - 1.0)
+                          * (_hedge_growth(t, entry_fut_raw, entry_ym,
+                                           fut_mark_adj_arr) - 1.0)  # [HKX-M]
                           * (hfx_arr[entry_day] / hfx_arr[t]))   # [HKS]
                 if (_adr_u + _fut_u) / trade_notional * 1e4 < -HARD_STOP_BPS:
                     exit_signal = True
@@ -4298,11 +4569,10 @@ def run_backtest(df, n_zscore, threshold, track_adf=False,
                                    f'< carry {carry_to_next:.0f}'
                                    + (f' over {_days_to_next}cd' if _days_to_next > 1 else '')
                                    + ')')
-            # [R9] EXIT 3b: profit targets (checked before the time stop
-            # so a target that fires on the same row wins the label)
-            if not exit_signal and PROFIT_TARGET_BPS > 0 and _u_bps >= PROFIT_TARGET_BPS:
-                exit_signal = True
-                exit_reason = f'Profit target {PROFIT_TARGET_BPS}bps'
+            # [R9] EXIT 3b: z-band profit target. [V32-FIX3] the BPS
+            # target was checked HERE a second time — identical condition
+            # to the [S2] check above the hard stop, so the duplicate could
+            # never fire; removed. The [S2] one is the single check.
             if (not exit_signal and PROFIT_TARGET_Z > 0
                     and np.isfinite(z_today) and abs(z_today) <= PROFIT_TARGET_Z):
                 exit_signal = True
@@ -4637,7 +4907,7 @@ if HTML_OUTPUT and _in_jupyter():          # [Y23] one settings table
         {'setting': f'of which fees (ADR+{HEDGE_LBL}+FX)',
          'value': f"{_fee_sum:.0f} bps "
                   f"(ADR {ADR_FEE_IN_BPS}+{ADR_FEE_OUT_BPS}, "
-                  f"SSF {FUT_FEE_IN_BPS}+{FUT_FEE_OUT_BPS}, FX 2x"
+                  f"{HEDGE_LBL} {FUT_FEE_IN_BPS}+{FUT_FEE_OUT_BPS}, FX 2x"
                   f"{FX_SPOT_HALF_SPREAD_BPS if FX_EXEC_MODE == 'spot_next_open' else FX_NDF_HALF_SPREAD_BPS:g})"},
         {'setting': 'of which spread + impact',
          'value': f"{bps_normal - _fee_sum:.1f} bps"},
@@ -4881,7 +5151,6 @@ if MIN_TRADES_GRID_MEAN:
                   f"but NO selectable cell reaches it — keeping "
                   f"{_eff_min_trades}. The grid is top-heavy; extend "
                   f"THRESHOLD_VALUES downward.")
-banner(f"TOP 5 PARAMETER SETS (ranked by Net PnL, min {_eff_min_trades} trades)")
 _rows = []
 for _flat in np.argsort(results_pnl, axis=None)[::-1]:
     _i, _j = divmod(int(_flat), len(THRESHOLD_VALUES))
@@ -4963,6 +5232,22 @@ _pass = ((results_trades >= _eff_min_trades)
          & (results_winrate >= MIN_WIN_RATE_SELECT)
          & (np.abs(results_ddpct) <= MAX_DD_SELECT_PCT)   # [N1] % of deployed
          & (results_pnl > 0))
+# [Y35] AUTO-RELAX: if the joint constraints empty the candidate set, drop
+# ONLY the win-rate floor (the softest, most sample-noisy constraint) and
+# say so — an empty set otherwise silently degrades the whole selection to
+# the raw in-sample argmax, which is the worst of all options.
+if not _pass.any():
+    _pass = ((results_trades >= _eff_min_trades)
+             & _n_ok
+             & (results_tpy >= MIN_TRADES_PER_YEAR)
+             & (np.abs(results_ddpct) <= MAX_DD_SELECT_PCT)
+             & (results_pnl > 0))
+    if _pass.any():
+        say(f"[Y35] no cell cleared the win-rate floor "
+            f"({MIN_WIN_RATE_SELECT:.0f}%) jointly with the other limits — "
+            f"floor DROPPED for selection (drawdown/trade floors kept) so "
+            f"the risk-aware ranking still runs instead of degrading to "
+            f"the raw PnL argmax", 'warn')
 _calmar_raw = results_pnl / np.maximum(np.abs(results_maxdd), 1.0)
 _metric = (results_tstat if SELECT_RANK == 'tstat'
            else results_lb if SELECT_RANK == 'lb' else _calmar_raw)
@@ -5203,7 +5488,7 @@ def print_trade_details(trades_list, title, thresh):
     [Y4] In Jupyter a SUMMARY TABLE is rendered first — the per-trade
     re-derivation below it is unchanged, because the whole point of that
     block is that it can be checked line by line."""
-    banner(title)
+    # [Y36] no separate banner — the table itself carries the title
     if not trades_list:
         print("  (no trades)")
         return
@@ -5281,7 +5566,7 @@ def print_trade_details(trades_list, title, thresh):
               f"${_t['fut_leg_pnl']:,.0f}{_roll_note}")
         if _t.get('fut_div_cash') is not None and abs(_t.get('fut_div_cash') or 0) > 0.5:
             print(f"                  + hedge-leg dividend "
-                  f"${_t['fut_div_cash']:+,.0f} [T3] (long SSF is credited the "
+                  f"${_t['fut_div_cash']:+,.0f} [T3] (long hedge credited the "
                   f"cash dividend, short is debited — this is why the quoted "
                   f"futures may fall on the ex-date without the hedge losing)")
         print(f"      GROSS     : ADR ${_t['adr_leg_pnl']:,.0f} + {HEDGE_LBL} "
@@ -5337,7 +5622,6 @@ if HTML_OUTPUT and _in_jupyter():
              "structurally-premium ADR the short-spread side is short the "
              "re-rating, so an asymmetry can be the sample, not the edge.")
 else:
-    banner("[J6] DIRECTION SPLIT — is the edge symmetric?")
     for _r6 in _j6:
         print(f"  {_r6['side']:<38} {_r6['trades']:3d} trades | net "
               f"${_r6['net']:>9,.0f} | win {_r6['win %']:3.0f}%")
@@ -5352,13 +5636,22 @@ else:
 # scan does not model, so treat it as a direction, not a forecast.
 _tr_all = result_base['trades']
 if _tr_all and 'mfe_bps' in _tr_all[0]:
-    banner(f"[S3] PROFIT-TAKING SCAN — N={best_n}, Z={best_thresh} "
-           f"(current PROFIT_TARGET_BPS={PROFIT_TARGET_BPS})")
     _mf = [t['mfe_bps'] for t in _tr_all]
     _act = [t['net_pnl'] / t['trade_notional'] * 1e4 for t in _tr_all]
     _base_pnl = sum(t['net_pnl'] for t in _tr_all)
     _s3 = []
-    for _tg in (50, 100, 150, 200, 300, 400):
+    # [Y34] DYNAMIC TARGET LADDER — the fixed (50..400) ladder stopped
+    # exactly where it got interesting: the MFE tail. Extend the ladder
+    # to the distribution actually observed: fixed rungs up to 400, then
+    # the MFE p90 / p95 / p99 rounded to 50s, capped at the max. A run
+    # whose trades peak at +1,000 bps now scans 500/600/800-style rungs
+    # instead of stopping at 400.
+    _tail_rungs = sorted({int(round(np.percentile(_mf, q) / 50.0) * 50)
+                          for q in (90, 95, 99)} | {500, 600})
+    _ladder = [t for t in
+               sorted(set([50, 100, 150, 200, 300, 400] + _tail_rungs))
+               if 0 < t <= max(_mf)]
+    for _tg in _ladder:
         _tot, _hit = 0.0, 0
         for _t in _tr_all:
             if _t['mfe_bps'] >= _tg:
@@ -5375,11 +5668,15 @@ if _tr_all and 'mfe_bps' in _tr_all[0]:
     if HTML_OUTPUT and _in_jupyter():
         show_html_table(
             pd.DataFrame(_s3).set_index('target bps'),
-            title=f"[S3] PROFIT-TAKING SCAN — N={best_n}, Z={best_thresh} "
-                  f"(PROFIT_TARGET_BPS={PROFIT_TARGET_BPS} now)",
+            title=(f"[S3] PROFIT-TAKING SCAN — REFERENCE ONLY "
+                   f"(N={best_n}, Z={best_thresh})"),
             fmt={'est. PnL': '${:,.0f}', 'vs actual': '${:+,.0f}',
                  'trades reaching it': '{:.0f}', 'of': '{:.0f}'},
-            note=f"MFE across {len(_tr_all)} trades: median "
+            note=f"NOTHING HERE IS ACTIVE. PROFIT_TARGET_BPS is "
+                 f"{PROFIT_TARGET_BPS}"
+                 f"{' (OFF — exits stay z-cross / gamma / time stop)' if not PROFIT_TARGET_BPS else ' (ON)'}"
+                 f"; this table only reports what each target WOULD have "
+                 f"banked. MFE across {len(_tr_all)} trades: median "
                  f"{np.median(_mf):+.0f} / p75 {np.percentile(_mf, 75):+.0f} "
                  f"/ p90 {np.percentile(_mf, 90):+.0f} / max {max(_mf):+.0f} "
                  f"bps, vs realised median {np.median(_act):+.0f} bps — that "
@@ -5436,7 +5733,6 @@ if _tr_all:
     _mfe = np.array([t['mfe_bps'] for t in _tr_all])
     _cap = np.array([t['net_pnl'] / t['trade_notional'] * 1e4 for t in _tr_all])
     _give = _mfe - _cap
-    banner("[R8] PROFIT LEFT ON THE TABLE (peak unrealised vs what was booked)")
     _r8 = [('peak unrealised (MFE)', np.median(_mfe),
             np.percentile(_mfe, 75), _mfe.max()),
            ('actually captured', np.median(_cap),
@@ -5476,8 +5772,6 @@ _hold_days = set()
 for _t in result_base['trades']:
     _hold_days.update(range(_t['entry_day'], _t.get('exit_day', _t['entry_day']) + 1))
 _first_w4 = first_tradable_row(best_n)   # [X3]
-banner(f"[W4] MISSED-ENTRY AUDIT at the selected N={best_n} Z={best_thresh} "
-       f"(15 largest |deviation| days)")
 _w4_rows = []          # [Y4] collected, rendered once below
 for _i in _sb_dev.abs().nlargest(15).index:
     _dv = float(_sb_dev.loc[_i]); _zz = float(_z_w4.loc[_i]) if _i in _z_w4.index else np.nan
@@ -5537,7 +5831,9 @@ if HTML_OUTPUT and _in_jupyter():
 else:
     print(f"  {'date':<12}{'dev':>7}{'z':>7}  verdict")
     for _d4, _dv4, _zz4, _v4 in _w4_rows:
-        print(f"  {_d4:<12}{_dv4:>+7.0f}{_zz4:>+7.2f}  {_v4}")
+        # a warm-up row has no z yet — show a dash, not '+nan'
+        _z4s = f"{_zz4:+.2f}" if _zz4 == _zz4 else '\u2014'
+        print(f"  {_d4:<12}{_dv4:>+7.0f}{_z4s:>7}  {_v4}")
 print("  A spike with a large |dev| but a small |z| means the ROLLING SIGMA was")
 print("  already wide — the move was big in bps but ordinary for that regime.")
 print("  A spike blocked by drift means the premium was RE-RATING, not")
@@ -5556,7 +5852,6 @@ def why_no_trades(start, end, n=None, thresh=None, show=10):
     _n = int(n if n is not None else best_n)
     _th = float(thresh if thresh is not None else best_thresh)
     _w = df[(df['Date'] >= str(start)) & (df['Date'] <= str(end))]
-    banner(f"[X6] ENTRY VERDICT PER ROW  {start} .. {end}  (N={_n}, Z={_th})")
     if not len(_w):
         print("  no aligned rows in that window — the hole is in the DATA, not "
               "the gates. Check the [QC] merge/stale/timestamp drops above.")
@@ -5684,7 +5979,6 @@ print_trade_details(sorted(result_base['trades'], key=lambda t: t['net_pnl'])[:5
 # Same signals, same trades; only the PnL accounting differs. The gap
 # per trade IS the realized stock-vs-hedge noise your futures hedge
 # leaves uncovered during the hold.
-banner(f"PNL MODE COMPARISON — N={best_n}, Z={best_thresh}")
 result_conv = run_backtest(df, best_n, best_thresh, pnl_mode='convergence')
 if HTML_OUTPUT and _in_jupyter():
     show_html_table(
@@ -5732,7 +6026,6 @@ if result_base['trades'] and result_conv['trades'] \
 # Quantifies the phantom PnL the v8 raw-file accounting would have
 # booked on trades that straddled a contract roll in the snapshot
 # files (the roll-safe hedge index removes it).
-banner(f"ROLL IMPACT ON THE FUTURES LEG — N={best_n}, Z={best_thresh}")
 if result_base['trades']:
     _fr = df['Fut_2130'].values
     _hg = df['Hedge Idx'].values
@@ -5772,7 +6065,6 @@ if result_base['trades']:
 # ============================================================
 # [4] COST SENSITIVITY — best parameters
 # ============================================================
-banner(f"COST SENSITIVITY — N={best_n}, Z={best_thresh}")
 cost_sens, _cs_rows = {}, []
 for m in [0.50, 0.75, 1.00, 1.25, 1.50]:
     r = run_backtest(df, best_n, best_thresh, cost_mult=m)
@@ -5796,7 +6088,6 @@ else:
 # ============================================================
 # [5] EXECUTION-LAG ROBUSTNESS — best parameters
 # ============================================================
-banner(f"EXECUTION-LAG ROBUSTNESS — N={best_n}, Z={best_thresh}")
 result_lag = run_backtest(df, best_n, best_thresh, lag_exec=True)
 result_lag_e = run_backtest(df, best_n, best_thresh, lag_exec='entry_only')  # [G4]
 # [18] Close-fill variant: DECIDE on the open-print signal, FILL both
@@ -5980,7 +6271,6 @@ lag_retention = (result_lag['net_pnl'] / result_base['net_pnl'] * 100
 # ============================================================
 # [6] PNL CONCENTRATION + [10] DST SPLIT — best parameters
 # ============================================================
-banner(f"PNL CONCENTRATION & DST SPLIT — N={best_n}, Z={best_thresh}")
 top5_share = np.nan
 winter_pnl = summer_pnl = 0.0
 n_winter = n_summer = 0
@@ -6022,7 +6312,6 @@ if result_base['trades']:
 # ============================================================
 # [15] OPTIMAL PARAMETERS — TRADE ANATOMY (human-readable)
 # ============================================================
-banner(f"TRADE ANATOMY — N={best_n}, Z={best_thresh}")
 if result_base['trades']:
     _dt = pd.DataFrame(result_base['trades'])
     _car = (_dt['funding_cost'] + _dt['borrow_cost']
@@ -6050,7 +6339,7 @@ if result_base['trades']:
                   ('hold', f"{_dt['hold_days_calendar'].mean():.1f}cd avg",
                    f"{int(_dt['hold_days_calendar'].max())}cd max"),
                   ('leg split (avg)',
-                   (f"ADR ${_dt['adr_leg_pnl'].mean():,.0f} / SSF "
+                   (f"ADR ${_dt['adr_leg_pnl'].mean():,.0f} / {HEDGE_LBL} "
                     f"${_dt['fut_leg_pnl'].mean():,.0f}"
                     if _dt['adr_leg_pnl'].notna().any() else 'n/a'),
                    f"avg hedge beta {_dt['entry_beta'].mean():.2f}")])
@@ -6310,7 +6599,6 @@ else:
                            f'trades) to judge snapshot timing'))
 n_fail = sum(1 for s, _ in checks if s == 'FAIL')
 n_warn = sum(1 for s, _ in checks if s == 'WARN')
-banner("EXECUTIVE SUMMARY")
 print(f"""
 DATA
   Sample: {df['Date'].iloc[0]} to {df['Date'].iloc[-1]} | {len(df)} days after filters
@@ -7026,6 +7314,10 @@ def run_backtest_lots(df, n_zscore, threshold, max_adds=2, add_step_z=1.0,
     k_fut_arr = df['k_fut'].values
     _divf = _np.ones(len(df))
     fut_adj_arr = fut_arr * _divf
+    # [HKX-M] same fill/mark split as run_backtest
+    _fmk = (df['Hedge Mark Px'].values if 'Hedge Mark Px' in df.columns
+            else fut_arr)
+    fut_mark_adj_arr = _fmk * _divf
     _dd = _np.diff(dates_dt) / _np.timedelta64(1, 'D')
     gap_next = _np.r_[_dd.astype(int), 999]
     n_days = len(df)
@@ -7042,14 +7334,16 @@ def run_backtest_lots(df, n_zscore, threshold, max_adds=2, add_step_z=1.0,
                      ).fillna(0.0).values
     adf_p_arr, gamma_arr = get_signal_stats(_test_ser)
  
-    def _hedge_growth(t, e_fut_raw, e_ym, e_day):
+    def _hedge_growth(t, e_fut_raw, e_ym, e_day, px=None):
+        """[HKX-M] px=None -> FILL series; pass fut_mark_adj_arr to MARK."""
+        _px = fut_adj_arr if px is None else px
         _e_adj = e_fut_raw * _divf[e_day]
         if ym_arr[t] == e_ym:
-            return fut_adj_arr[t] / _e_adj
+            return _px[t] / _e_adj
         b = t
         while ym_arr[b] != e_ym:
             b -= 1
-        return (fut_adj_arr[b] / _e_adj) * (hedge_arr[t] / hedge_arr[b])
+        return (_px[b] / _e_adj) * (hedge_arr[t] / hedge_arr[b])
  
     def _cap_and_snap(want_notional, t, direction):
         # [HKC] SAME beta-aware arithmetic as run_backtest: the book cap
@@ -7078,13 +7372,16 @@ def run_backtest_lots(df, n_zscore, threshold, max_adds=2, add_step_z=1.0,
             return _nc * _c_usd / _bt
         return want_notional
  
-    def _lot_pnl(lot, t):
+    def _lot_pnl(lot, t, mark=True):
+        """[HKX-M] mark=True values an OPEN lot with the observable
+        price; the CLOSE path passes mark=False to use the fill."""
         sh = lot['notional'] / lot['entry_px']
         adr_leg = (lot['dir'] * (exec_px_arr[t] - lot['entry_px']) * sh
                    + lot['div_accrued'])
         fut_leg = (-lot['dir'] * lot['beta'] * lot['notional']
                    * (_hedge_growth(t, lot['entry_fut'], lot['ym'],
-                                    lot['day']) - 1.0)
+                                    lot['day'],
+                                    fut_mark_adj_arr if mark else None) - 1.0)
                    * (fx_arr[lot['day']] / fx_arr[t]))
         fut_leg += lot['fut_div_cash']
         return adr_leg, fut_leg
@@ -7099,7 +7396,7 @@ def run_backtest_lots(df, n_zscore, threshold, max_adds=2, add_step_z=1.0,
             + lot['beta'] * lot['notional'] * (margin_ann_bps() / 1e4) / 360 * cd
  
     def _close_lot(lot, t, reason):
-        adr_leg, fut_leg = _lot_pnl(lot, t)
+        adr_leg, fut_leg = _lot_pnl(lot, t, mark=False)   # [HKX-M] real fill
         gross = adr_leg + fut_leg
         _ka = k_adr_arr[t] if not _np.isnan(k_adr_arr[t]) else K_ADR_FALLBACK
         _kf = k_fut_arr[t] if not _np.isnan(k_fut_arr[t]) else K_FUT_FALLBACK
@@ -7384,20 +7681,27 @@ def hedge_mode_compare(n=None, z=None, modes=('index_fut', 'us_etf', 'none')):
 # or naked-then-stock. Same signal, same entries, same ADR leg; ONLY the
 # hedge leg's instrument, window and cost stack change.
 # ============================================================================
-# The real-world timeline per trade (entry day e, exit day x):
-#   US close e      ADR fills at the MOC. Mode 1+2 also put on the HTI
-#                   hedge (worked into the 03:00-HKT T+1 close). Mode 3
-#                   holds the ADR NAKED overnight.
-#   HK open e+1     (09:30 HKT = 01:30 UTC) Mode 2 unwinds the futures at
-#                   the Fut_0130 print and shorts/buys the ORDINARY at its
-#                   opening auction — the position becomes a true
-#                   ADR-vs-ordinary pair, premium locked, idio risk gone.
-#                   Mode 3 puts the stock on here too.
-#   US close x      ADR exits at the MOC (the signal's exit). The stock
-#                   leg cannot trade now (HK is shut) —
-#   HK open x+1     — so it unwinds at the next opening auction. That
-#                   ~5.5h stock-leg tail, like mode 3's naked overnight,
-#                   is real risk the table shows rather than hides.
+# The real-world timeline per trade (entry day e, exit day x) DEPENDS ON
+# SIGNAL_TIMING [HKX]:
+# under 'hti_close' (signal at 19:00 UTC, both legs live):
+#   19:00 UTC e     ADR fills at 3pm ET; modes 1+2 put the HTI hedge on
+#                   into the T+1 close. Mode 3 stays naked.
+#   HK open e+1     (09:30 HKT) mode 2 unwinds the futures at Fut_0130
+#                   and switches to the ORDINARY at its opening auction —
+#                   a true ADR-vs-ordinary pair, premium locked, idio
+#                   risk gone. Mode 3 puts the stock on here.
+#   exit x          ADR out at 19:00 UTC; futures unwound with it
+#                   (mode 1) / stock unwound at the NEXT HK open (2, 3).
+# under 'us_close' (signal at the US close, futures already SHUT):
+#   US close e      ADR fills MOC. NOTHING can hedge tonight — every
+#                   mode rides the entry night naked. At the next HK
+#                   open the hedge goes on: futures (mode 1) or the
+#                   stock (mode 3). Mode 2 "futures overnight then
+#                   stock" is IMPOSSIBLE here — there is no overnight
+#                   futures fill to make — so it is reported as mode 3.
+#   US close x      ADR exits MOC; the hedge unwinds at the next HK
+#                   open (futures and stock alike). That tail window is
+#                   real risk the table shows rather than hides.
 # COSTS per mode (constant-bps arithmetic; impact terms are already in the
 # base run's exec_cost and identical across modes on the ADR leg):
 #   1  futures RT + margin over the hold                      (= base run)
@@ -7453,8 +7757,11 @@ def hedge_timing_compare(trades=None):
             hedge_pnl=(t['fut_leg_pnl'] if t['fut_leg_pnl'] == t['fut_leg_pnl']
                        else 0.0),
             extra_cost=0.0, net=t['net_pnl']))
-        # ---- mode 2: futures overnight only, then the stock
-        if e + 1 < _n and np.isfinite(_f0130[e + 1]):
+        # ---- mode 2: futures overnight only, then the stock.
+        # ONLY EXISTS under hti_close — a us_close signal cannot fill
+        # futures overnight (market shut), so there mode 2 IS mode 3.
+        if SIGNAL_TIMING == 'hti_close' and e + 1 < _n \
+                and np.isfinite(_f0130[e + 1]):
             legA = (-d * be * N * (_f0130[e + 1] / _f2130[e] - 1.0)
                     * (_hfx[e] / _hfx[e + 1]))
             _margin1 = be * N * (margin_ann_bps() / 1e4) / 360 * 1
@@ -7464,7 +7771,7 @@ def hedge_timing_compare(trades=None):
                 hedge_pnl=legA + stock_leg, extra_cost=_d_cost,
                 net=(t['net_pnl'] - t['fut_leg_pnl'] + legA + stock_leg
                      - _d_cost)))
-        else:
+        elif SIGNAL_TIMING == 'hti_close':
             _skip2 += 1
         # ---- mode 3: naked overnight, then the stock; no futures costs
         _fut_cost_refund = (_fut_rt_bps / 1e4 * be * N
@@ -7474,9 +7781,15 @@ def hedge_timing_compare(trades=None):
             net=(t['net_pnl'] - t['fut_leg_pnl'] + stock_leg
                  - stock_cost + _fut_cost_refund)))
     _rows = []
-    _lbl = {'index_all': f'1. {HEDGE_LBL} futures all the way',
-            'index_then_stock': f'2. {HEDGE_LBL} overnight -> stock at HK open',
-            'stock_open_only': '3. naked overnight -> stock at HK open'}
+    if SIGNAL_TIMING == 'hti_close':
+        _lbl = {'index_all': f'1. {HEDGE_LBL} futures all the way (on at 19:00)',
+                'index_then_stock': f'2. {HEDGE_LBL} overnight -> stock at HK open',
+                'stock_open_only': '3. naked overnight -> stock at HK open'}
+    else:
+        _lbl = {'index_all': f'1. {HEDGE_LBL} futures from the next HK open',
+                'index_then_stock': '2. (= mode 3 under us_close: no overnight '
+                                    'futures fill exists)',
+                'stock_open_only': '3. naked overnight -> stock at HK open'}
     for m, lst in out.items():
         if not lst:
             _rows.append({'timing': _lbl[m], 'trades': 0, 'net PnL': np.nan,

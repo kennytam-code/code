@@ -71,6 +71,25 @@
 #        set it False to reproduce v31.10 numbers exactly.
 #  [X5]  mfe_bps was initialised twice in two places.
 # ============================================================================
+# ============================================================================
+# ██ QUICK SETTINGS — the knobs you actually change, all in ONE place. ██
+# ----------------------------------------------------------------------------
+# Everything here wins over the detailed config blocks further down (they
+# read these via globals().get). Deeper machinery — cost model, gates,
+# loaders, paths — stays where it is; this block is the daily-driver panel.
+# ============================================================================
+INSTRUMENT = 'TSMC'            # 'TSMC' | 'UMC' | 'ASX'
+FAIR_MODE = 'spot_gap'         # 'spot_gap' | 'futures'  — [M1] user default
+                               # changed to spot_gap (v32): fair anchored to
+                               # the ordinary close projected by the SSF gap.
+                               # 'futures' (the v31.12 default) remains the
+                               # arb-consistent alternative — A/B them.
+EXEC_TIMING = 'close'          # 'close' (MOC) | 'open'
+N_VALUES = [10, 15, 20, 25, 30, 35, 40, 45, 50]
+THRESHOLD_VALUES = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0]
+TIME_STOP = 20                 # calendar days, hard cap (user-set)
+DIRECTION_FILTER = 'both'      # 'both' | 'long_only' | 'short_only'
+# ============================================================================
 import os          # [X1] BUGFIX: the paper desk calls os.path.* (get_manual_context,
                    # _read_ledger). Previously only `import os as _os` existed, further
                    # down at the FILE_PREFIX block, so setup_manual() raised NameError
@@ -84,10 +103,10 @@ from datetime import datetime, timedelta
 from statsmodels.tsa.stattools import adfuller
  
 # ############################################################################
-# [Y16]  INSTRUMENT SWITCH — THE ONLY LINE TO EDIT TO CHANGE UNDERLYING
+# [Y16] the instrument switch MOVED to QUICK SETTINGS at the very top —
+# this line only backstops a missing value and never overrides it.
 # ############################################################################
-INSTRUMENT = 'TSMC'          # 'TSMC' | 'UMC'
-# ############################################################################
+INSTRUMENT = globals().get('INSTRUMENT', 'TSMC')
  
 # ============================================================================
 # [Y4][Y5] HTML OUTPUT LAYER — defined UP HERE (not at the end) so every
@@ -213,9 +232,14 @@ def _badge(text, kind='mut'):
     return f"<span class='vb {kind}'>{text}</span>"
  
 def _heat_styles(dfm):
-    """[Y4] Soft per-table diverging tint (no matplotlib): light red below
-    the table median, light green above, deeper at the extremes. Text stays
-    dark so the numbers remain readable — unlike a saturated colormap."""
+    """[Y33] Colour says SIGN first, magnitude second:
+      * every value >= 0  -> ONE sequential ramp, light green -> dark green
+        (an all-positive table used to paint its weaker half red, which
+        read as losses — it never was);
+      * every value <= 0  -> light red -> dark red by |value|;
+      * genuinely mixed   -> diverging AROUND ZERO (not around the median):
+        red only for actual negatives, green for actual positives.
+    Text stays dark so the numbers remain readable."""
     import numpy as _n2
     v = dfm.apply(_pd.to_numeric, errors='coerce').values.astype(float)
     out = _pd.DataFrame('', index=dfm.index, columns=dfm.columns)
@@ -223,18 +247,23 @@ def _heat_styles(dfm):
     if fin.sum() < 2:
         return out
     lo, hi = _n2.nanmin(v), _n2.nanmax(v)
-    md = _n2.nanmedian(v)
+    _grn = lambda a: f'background-color:rgba(46,160,67,{0.05 + 0.30 * a:.3f})'
+    _red = lambda a: f'background-color:rgba(220,53,69,{0.05 + 0.28 * a:.3f})'
     for i in range(v.shape[0]):
         for j in range(v.shape[1]):
             x = v[i, j]
             if not _n2.isfinite(x):
                 continue
-            if x >= md:
-                a = 0.0 if hi <= md else (x - md) / (hi - md)
-                out.iat[i, j] = f'background-color:rgba(46,160,67,{0.06 + 0.24 * a:.3f})'
-            else:
-                a = 0.0 if md <= lo else (md - x) / (md - lo)
-                out.iat[i, j] = f'background-color:rgba(220,53,69,{0.06 + 0.22 * a:.3f})'
+            if lo >= 0:                       # all positive: green ramp
+                a = 0.0 if hi <= lo else (x - lo) / (hi - lo)
+                out.iat[i, j] = _grn(a)
+            elif hi <= 0:                     # all negative: red ramp
+                a = 0.0 if hi <= lo else (hi - x) / (hi - lo)
+                out.iat[i, j] = _red(a)
+            elif x >= 0:                      # mixed, positive side
+                out.iat[i, j] = _grn(x / hi if hi > 0 else 0.0)
+            else:                             # mixed, negative side
+                out.iat[i, j] = _red(x / lo if lo < 0 else 0.0)
     return out
  
 def _style(frame, title='', heat=False, fmt='{:,.0f}'):
@@ -282,9 +311,17 @@ def show_html_table(frame, title='', note='', heat=False, fmt='{:,.0f}',
                 if not _f:
                     continue
                 _num = _pd.to_numeric(_plain[_c], errors='coerce')
-                _plain[_c] = [(_f.format(v) if _np.isfinite(v) else '\u2014')
-                              if _np.isreal(v) and _pd.notna(v) else _plain[_c].iloc[i]
-                              for i, v in enumerate(_num)]
+                _vals = []
+                for _i2, _v2 in enumerate(_num):
+                    if _pd.isna(_v2):
+                        # NaN that was NaN to begin with -> em-dash, not the
+                        # literal 'nan' (warm-up rows used to print '+nan');
+                        # a non-numeric string (a label) is left alone.
+                        _o2 = _plain[_c].iloc[_i2]
+                        _vals.append('\u2014' if _pd.isna(_o2) else _o2)
+                    else:
+                        _vals.append(_f.format(_v2))
+                _plain[_c] = _vals
         except Exception:
             pass
         if title:
@@ -292,7 +329,8 @@ def show_html_table(frame, title='', note='', heat=False, fmt='{:,.0f}',
             print('  ' + '\u2500' * min(max(len(str(title)), 20), 76))
         print(_plain.to_string())
         if note:
-            print('  ' + note)
+            for _wl in _wrap_box(note, _TXT_W - 4, indent=2):   # [Y39]
+                print('  ' + _wl)
         if HTML_OUTPUT:
             try:
                 _html_to_file(_style(frame, title, heat, fmt).to_html()
@@ -327,6 +365,21 @@ def show_html_table(frame, title='', note='', heat=False, fmt='{:,.0f}',
 # kv_table/show_html_table, so a clean run is short and a dirty one is loud.
 # ============================================================================
 _W = 78
+_TXT_W = 100      # [Y39] terminal prose width
+def _wrap_box(s, inner, indent=0):
+    """[Y39] Split a line to fit INSIDE a box, WRAPPING on word boundaries
+    instead of truncating with '...'. The old behaviour cut the day card's
+    most important content — the fair-value RESULT and the drift threshold
+    both fell off the right edge. Continuation lines get a hanging indent
+    so a wrapped formula still reads as one item."""
+    import textwrap as _tw
+    s = str(s)
+    if len(s) <= inner:
+        return [s]
+    _pad = ' ' * indent
+    _out = _tw.wrap(s, width=inner, subsequent_indent=_pad,
+                    break_long_words=False, break_on_hyphens=False)
+    return [l[:inner] for l in _out] or ['']
 _SAY_ICON = {'ok': '✓', 'info': '·', 'warn': '!', 'bad': '✗'}
 _SAY_CSS = {'ok': '#1e7e34', 'info': '#5f6b76', 'warn': '#b26a00', 'bad': '#c62828'}
 def _hr(ch='─'):
@@ -360,7 +413,11 @@ def say(text, level='info', detail=''):
             + (f" <span style='color:#8a949e'>{detail}</span>" if detail else '')
             + "</div>"))
         return
-    print(f"  {_SAY_ICON.get(level, '.')} {text}" + (f"  {detail}" if detail else ''))
+    _msg = f"{text}" + (f"  {detail}" if detail else '')
+    _wl = _wrap_box(_msg, _TXT_W - 6, indent=4)                # [Y39] wrap
+    print(f"  {_SAY_ICON.get(level, '.')} {_wl[0]}")
+    for _x in _wl[1:]:
+        print(f"    {_x}")
 def menu(items, title='WHAT TO RUN NEXT'):
     """[Y30] Aligned command list — commands left, one-line purpose right."""
     if HTML_OUTPUT and _in_jupyter():
@@ -403,7 +460,8 @@ def note_block(title, lines):
     print('  │ ' + title[:_inner - 2].ljust(_inner - 1) + '│')
     print('  ├' + '─' * _inner + '┤')
     for _l in lines:
-        print('  │ ' + str(_l)[:_inner - 2].ljust(_inner - 1) + '│')
+        for _w in _wrap_box(_l, _inner - 2, indent=2):     # [Y39] wrap
+            print('  │ ' + _w.ljust(_inner - 1) + '│')
     print('  └' + '─' * _inner + '┘')
 # ============================================================================
 # [Y5] GRID MATRICES AS HEAT MAPS — call show_grid_html() after the run
@@ -423,9 +481,21 @@ def kv_table(title, rows, note='', col='reading'):
     print('  ' + '\u2500' * min(max(len(str(title)), 20), 76))
     _w = max((len(str(r[0])) for r in _rows), default=10)
     for _a, _b, _c in _rows:
-        print(f"  {str(_a):<{_w}}  {_b}" + (f"   {_c}" if _c else ''))
+        _head = f"  {str(_a):<{_w}}  {_b}"
+        if not _c:
+            print(_head)
+            continue
+        # [Y39] keep a short note INLINE (that reads best); only a note that
+        # would run off the edge is wrapped onto hanging-indent lines.
+        if len(_head) + 3 + len(str(_c)) <= _TXT_W:
+            print(f"{_head}   {_c}")
+        else:
+            print(_head)
+            for _wl in _wrap_box(_c, _TXT_W - _w - 8, indent=0):
+                print(f"  {'':<{_w}}    {_wl}")
     if note:
-        print(f"  {note}")
+        for _wl in _wrap_box(note, _TXT_W - 4, indent=2):
+            print(f"  {_wl}")
  
 def show_grid_html():
     """[Y5] The three grid matrices (PnL / win rate / trades) plus Sharpe as
@@ -619,7 +689,7 @@ SNAP_UTC_PRECLOSE_STD = '20:45'
 # observe-and-fill problem and the open-print noise), but needs the
 # extra snapshot file(s) below and measures a DIFFERENT edge — the
 # open dislocation partly decays intraday, so test, don't assume.
-EXEC_TIMING = 'close'   # [R2] user default: MOC, not the open
+EXEC_TIMING = globals().get('EXEC_TIMING', 'close')  # [R2] QUICK SETTINGS wins
 # [H1] SNAPSHOT TIMESTAMP VALIDATION — the snapshot CSVs carry the
 # capture timestamp in the 4th column (UTC, e.g.
 # '2024-09-24T13:29:58.428784' for the 21:30-TW/13:30-UTC snap). The
@@ -855,8 +925,10 @@ FUNDING_TICKER = 'SOFRRATE Index'   # daily USD SOFR; verify on the
 STRESS_MULT = 1.2
 # (K_ADR_FALLBACK / K_FUT_FALLBACK: from the INSTRUMENTS dict [U0])
 # ---- Strategy parameters ----
-N_VALUES = [10, 15, 20, 25, 30, 35, 40]   # [G3][M4]
-THRESHOLD_VALUES = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0]  # [G3] extended
+N_VALUES = globals().get('N_VALUES',
+    [10, 15, 20, 25, 30, 35, 40, 45, 50])   # [G3][M4] QUICK SETTINGS wins
+THRESHOLD_VALUES = globals().get('THRESHOLD_VALUES',
+    [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0])  # [G3]
 ADF_WINDOW = 125
 # [Q3] WARM-UP. The backtest cannot trade until row max(window, n_zscore),
 # because the regime gate needs history. With ADF_WINDOW=125 that burns
@@ -984,7 +1056,7 @@ _DRIFT_DOC = """[Z4] 5-row mean shift vs sqrt(5) x daily-
 #     which during a structural re-rating means fading the trend — the
 #     loss mode that produces the big losers.
 # Test both directions separately before trading either.
-DIRECTION_FILTER = 'both'   # 'both' | 'long_only' | 'short_only'
+DIRECTION_FILTER = globals().get('DIRECTION_FILTER', 'both')
 # [M5] PARAMETER SELECTION. 'best_pnl' = the old max-PnL-with-min-trades
 # rule (ignores drawdown entirely). 'risk_aware' = highest 3x3
 # neighbourhood Calmar among cells that clear a minimum win rate and a
@@ -1001,7 +1073,15 @@ COMPOSITE_WEIGHTS = dict(pnl=2.0, win=2.0,        # what you optimise FOR
 # (mean of results_trades over the selectable N rows). A cell below the
 # grid's own average frequency is a thin corner even if its stats shine.
 MIN_TRADES_GRID_MEAN = True
-MIN_WIN_RATE_SELECT = 65.0      # %
+MIN_WIN_RATE_SELECT = 55.0      # % [Y35] was 65 — on the first real BABA
+                                # run NO grid cell cleared 65% jointly with
+                                # the drawdown cap, so BOTH risk-aware
+                                # selectors returned empty and the choice
+                                # fell through to the raw PnL argmax — the
+                                # exact selection-bias failure the [33]
+                                # guards warn about. A 55% floor still
+                                # rejects coin-flip cells but leaves the
+                                # constrained selectors a live candidate set.
 # [U6] shortest lookback the selector may choose. A z-score window has to
 # hold enough points to estimate a mean and a sigma that are not themselves
 # noise. With a measured deviation half-life of ~2-3 days, N=10 is only ~4
@@ -1167,7 +1247,7 @@ BLOCK_ENTRY_EXDATE_DAYS = 0   # OFF. The exposure this was meant to avoid does
 #                       bank partial reversion instead of waiting for 0.
 PROFIT_TARGET_BPS = 0       # e.g. 150; 0 = off
 PROFIT_TARGET_Z = 0.0       # e.g. 0.5; 0 = off
-TIME_STOP = 25   # [R1] calendar days, hard cap (user-set; was 15). With
+TIME_STOP = globals().get('TIME_STOP', 20)   # [R1] hard cap; QUICK SETTINGS wins. With
                  # carry ~1.3bp/day (long) / ~0.2bp/day (short) versus
                  # ~38bps of round-trip fees, patience is cheap and
                  # re-entry is expensive; let the gamma exit decide
@@ -1250,7 +1330,7 @@ MIN_EDGE_MULT = 1.5
 # next-month contract) is slow-moving and absorbed by the z-score
 # de-meaning. [C2] prints BOTH fairs on extreme days so the anchor
 # effect is visible.
-FAIR_MODE = 'futures'   # 'spot_gap' | 'futures'
+FAIR_MODE = globals().get('FAIR_MODE', 'spot_gap')  # QUICK SETTINGS wins
 # [V1] SIGNAL_MODE — what the z-score is computed on:
 #   'dollar'  : Spread = ADR - Fair  (absolute USD; the original, kept
 #               so every earlier backtest stays comparable).
@@ -1341,6 +1421,11 @@ _MANUAL = dict(ctx=None, days=[], pos=None, marks=[], closed=[])
 # note-scanning code is kept ONLY as a fallback so ledgers written by v31.10
 # and earlier still load; anything written from now on uses the columns.
 _LED_COLS = ['instrument', 'date', 'point', 'side', 'notional',
+             # [Y37g] the gate's LEVELS, not just its verdict — gamma is
+             # the AR(1) slope of the de-trended deviation, hl the implied
+             # half-life in days, drift the [Z4] mean-shift ratio. Logged
+             # every day so a TREND in the gate is visible in the ledger.
+             'gamma', 'hl', 'drift',
              # [Y32] the integer units of the real ticket — first-class
              # columns so a rebuild reads the fill, never re-derives it
              # (an fx_fill amendment must not flip a rounding boundary)
@@ -1466,6 +1551,33 @@ def _pos_from_entry_row(e):
               f"the note (legacy ledger). Re-run enter(...) to write it "
               f"properly.")
     return _dir, float(_nt)
+def _freeze_regime24(e):
+    """[Y24] freeze the REGIME as it was on the (first) entry date so the
+    position-health monitor can compare against it later. Rebuilt from the
+    ledger every time, so it survives a kernel restart."""
+    c = _MANUAL['ctx']
+    try:
+        _p24 = _MANUAL['pos']
+        _s24 = _series_before(str(e['date']))
+        _n24 = int(c['n'])
+        _p24['entry_mu'] = (float(np.mean(_s24[-_n24:]))
+                            if len(_s24) >= 3 else float('nan'))
+        _sd24 = (float(np.std(_s24[-_n24:], ddof=0))
+                 if len(_s24) >= 3 else float('nan'))
+        _prem24 = next((float(_d24['premium'])
+                        for _d24 in _MANUAL['days']
+                        if str(_d24['date']) == str(e['date'])),
+                       float('nan'))
+        _p24['entry_z'] = ((_prem24 - _p24['entry_mu']) / _sd24
+                           if (_prem24 == _prem24 and _sd24 == _sd24
+                               and _sd24 > 0) else float('nan'))
+        _ok24, _, _gm24, _ = _gate(_n24, str(e['date']))
+        _p24['entry_gate'] = bool(_ok24)
+        _p24['entry_hl'] = (np.log(0.5) / np.log(1.0 + max(_gm24, -0.999))
+                            if (_gm24 == _gm24 and _gm24 < 0)
+                            else float('nan'))
+    except Exception:
+        pass
 def _rebuild():
     """[U3] Derive days / open position / mark path FROM THE LEDGER. Called
     after every write, so memory and file can never disagree."""
@@ -1479,15 +1591,67 @@ def _rebuild():
     cl = cl.sort_values('date')
     _MANUAL['days'] = [dict(date=str(r['date']), premium=float(r['premium_bps']),
                             adr=float(r['adr']), fut=float(r['fut']),
-                            fx=float(r['fx']))
+                            fx=float(r['fx']),
+                            # [Y37] Taiwan anchors, for the live fair
+                            ordinary=_led_num(r, 'ordinary'),
+                            fut_1330=_led_num(r, 'fut_1330'))
                        for _, r in cl.iterrows()
                        if str(r['premium_bps']) not in ('', 'nan')]
     # 2. open position = the last ENTRY with no EXIT dated on/after it
     ent = led[led['point'] == 'ENTRY'].sort_values('date')
     ext = led[led['point'] == 'EXIT'].sort_values('date')
     _MANUAL['pos'] = None
-    if len(ent):
-        e = ent.iloc[-1]
+    # [Y38] ADD-ON SUPPORT: every ENTRY row dated after the last EXIT is an
+    # open LEG (the first is the base clip, later ones are add_to() adds).
+    # They blend into ONE position with share-weighted / contract-weighted
+    # average entry prices — algebraically EXACT for P&L, because
+    #   sum_i sh_i x (now - adr_i)  ==  (sum sh_i) x (now - avg_adr).
+    # The time stop anchors on the FIRST leg's date (conservative).
+    _last_x = str(ext['date'].astype(str).max()) if len(ext) else ''
+    open_ent = ent[ent['date'].astype(str) > _last_x] if len(ent) else ent
+    if len(open_ent) > 1:
+        _legs = []
+        for _, _er in open_ent.iterrows():
+            _d_i, _nt_i = _pos_from_entry_row(_er)
+            try:
+                _sh_i = _led_num(_er, 'shares') if 'shares' in _er.index else None
+                _cn_i = (_led_num(_er, 'contracts')
+                         if 'contracts' in _er.index else None)
+                if _sh_i and _cn_i:
+                    _cu = c['contract_sh'] * float(_er['fut']) / float(_er['fx'])
+                    _u_i = dict(shares=int(_sh_i), contracts=int(_cn_i),
+                                c_usd=_cu,
+                                adr_notional=int(_sh_i) * float(_er['adr']),
+                                hedge_notional=int(_cn_i) * _cu)
+                else:
+                    _u_i = _units(_nt_i, float(_er['adr']), float(_er['fut']),
+                                  float(_er['fx']))
+            except Exception:
+                _u_i = _units(_nt_i, float(_er['adr']), float(_er['fut']),
+                              float(_er['fx']))
+            _legs.append(dict(dir=_d_i, adr=float(_er['adr']),
+                              fut=float(_er['fut']), fx=float(_er['fx']),
+                              date=str(_er['date']), **_u_i))
+        if len({_l['dir'] for _l in _legs}) > 1:
+            print("[Y38] WARNING: mixed LONG/SHORT entry legs in the open "
+                  "stretch — keeping only legs matching the FIRST one")
+            _legs = [_l for _l in _legs if _l['dir'] == _legs[0]['dir']]
+        _tsh = sum(_l['shares'] for _l in _legs)
+        _tcn = sum(_l['contracts'] for _l in _legs)
+        _an = sum(_l['adr_notional'] for _l in _legs)
+        _hn = sum(_l['hedge_notional'] for _l in _legs)
+        _MANUAL['pos'] = dict(
+            date=_legs[0]['date'], dir=_legs[0]['dir'], notional=_an,
+            entry_adr=sum(_l['shares'] * _l['adr'] for _l in _legs) / _tsh,
+            entry_fut=sum(_l['contracts'] * _l['fut'] for _l in _legs) / _tcn,
+            entry_fx=sum(_l['hedge_notional'] * _l['fx'] for _l in _legs) / _hn,
+            note=f"{len(_legs)} legs (base + {len(_legs) - 1} add)",
+            shares=_tsh, contracts=_tcn, adr_notional=_an, hedge_notional=_hn,
+            mismatch=_an - _hn, n_legs=len(_legs),
+            c_usd=_hn / _tcn if _tcn else float('nan'))
+        e = open_ent.iloc[0]   # [Y24] freeze anchors on the FIRST leg below
+    if len(open_ent) == 1:
+        e = open_ent.iloc[-1]
         later = ext[ext['date'].astype(str) >= str(e['date'])]
         if not len(later):
             _dir, _nt = _pos_from_entry_row(e)
@@ -1517,31 +1681,9 @@ def _rebuild():
                                                  float(e['fx'])))
             except Exception:
                 pass
-            # [Y24] freeze the REGIME as it was on the entry date, so the
-            # position-health monitor can compare against it later. Rebuilt
-            # from the ledger every time, so it survives a kernel restart.
-            try:
-                _p24 = _MANUAL['pos']
-                _s24 = _series_before(str(e['date']))
-                _n24 = int(c['n'])
-                _p24['entry_mu'] = (float(np.mean(_s24[-_n24:]))
-                                    if len(_s24) >= 3 else float('nan'))
-                _sd24 = (float(np.std(_s24[-_n24:], ddof=0))
-                         if len(_s24) >= 3 else float('nan'))
-                _prem24 = next((float(_d24['premium'])
-                                for _d24 in _MANUAL['days']
-                                if str(_d24['date']) == str(e['date'])),
-                               float('nan'))
-                _p24['entry_z'] = ((_prem24 - _p24['entry_mu']) / _sd24
-                                   if (_prem24 == _prem24 and _sd24 == _sd24
-                                       and _sd24 > 0) else float('nan'))
-                _ok24, _, _gm24, _ = _gate(_n24, str(e['date']))
-                _p24['entry_gate'] = bool(_ok24)
-                _p24['entry_hl'] = (np.log(0.5) / np.log(1.0 + max(_gm24, -0.999))
-                                    if (_gm24 == _gm24 and _gm24 < 0)
-                                    else float('nan'))
-            except Exception:
-                pass
+            _freeze_regime24(e)
+    if _MANUAL['pos'] is not None and _MANUAL['pos'].get('n_legs', 1) > 1:
+        _freeze_regime24(open_ent.iloc[0])   # [Y38] anchor on the FIRST leg
     # [U4] 3. closed trades: pair each EXIT with the ENTRY before it. This is
     # the paper-trade record — cumulative P&L, win rate, per-trade history.
     _MANUAL['closed'] = []
@@ -1596,12 +1738,10 @@ def setup_manual(reload=True):
             _rebuild()
         except Exception as e:
             print(f"[U3] ledger reload failed ({e}) — starting empty")
-    W = 78
+    W = 92                      # [Y39] wider: the rules block needs it
     def _line(s=''):
-        s = str(s)
-        if len(s) > W - 4:
-            s = s[:W - 7] + '...'
-        print('\u2502 ' + s.ljust(W - 4) + ' \u2502')
+        for _w in _wrap_box(s, W - 4, indent=4):   # [Y39] wrap, never cut
+            print('\u2502 ' + _w.ljust(W - 4) + ' \u2502')
     def _rule(l='\u251c', r='\u2524'): print(l + '\u2500' * (W - 2) + r)
     print('\u250c' + '\u2500' * (W - 2) + '\u2510')
     _line(f"PAPER DESK READY  {_G['dash']}  {c['instrument']}")
@@ -1734,6 +1874,16 @@ def _gate(n, date=None):
                                f"drift {drift:.2f} "
                                f"({'OK' if dr_ok else 'FAIL'} vs {c['drift_max']:.2f})"
                                ), gamma, sd
+def _gate_levels(gamma, gate_txt):
+    """[Y37g] (half-life, drift) for the LEDGER, derived from the gate's own
+    outputs so the logged levels can never disagree with the verdict. hl
+    from gamma directly; drift parsed from the gate text (it is printed
+    there to 2dp — the same 2dp lands in the ledger)."""
+    import re as _re
+    hl = (np.log(0.5) / np.log(1.0 + max(gamma, -0.999))
+          if (gamma == gamma and gamma < 0) else float('nan'))
+    _m = _re.search(r'drift ([0-9.]+)', str(gate_txt))
+    return hl, (float(_m.group(1)) if _m else float('nan'))
 def _fair(ordinary, fut_1330, fut_pt, fx, div_carry=0.0):
     """[X11] div_carry: the [U5] DIVIDEND-CARRY ADJUSTMENT, which the desk
     used to omit entirely. Between the TAIWAN ex-date and the (later) ADR
@@ -1781,7 +1931,12 @@ def _units(notional_usd, adr, fut, fx):
     real fills happen, so the desk is exact.)"""
     c = _MANUAL['ctx']
     _c_usd = c['contract_sh'] * float(fut) / float(fx)
-    n_con = max(1, int(round(float(notional_usd) / _c_usd)))
+    # [Y32b] YOUR notional is the CEILING, not a suggestion: contracts
+    # round DOWN (floor) so the deployed clip never exceeds what you
+    # asked for; the ADR share count then converts to the SAME hedge
+    # notional (nearest share — a share is ~$100 against ~$40-150k
+    # contracts, so the legs stay within one share of each other).
+    n_con = max(1, int(float(notional_usd) / _c_usd))          # floor
     hedge_notional = n_con * _c_usd
     shares = max(1, int(round(hedge_notional / float(adr))))
     adr_notional = shares * float(adr)
@@ -1861,15 +2016,14 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
     date = str(date)
     n, thr = c['n'], c['thresh']
     gate_ok, gate_txt, _gamma, _chgsd = _gate(n, date)   # [X10][X12]
+    _hl_led, _dr_led = _gate_levels(_gamma, gate_txt)    # [Y37g] for the ledger
     p = _MANUAL['pos']
     rows = []
     if not quiet:
-        _W = 78
+        _W = 92                 # [Y39] wider: fair formulas fit now
         def _L(s=''):
-            s = str(s)
-            if len(s) > _W - 4:
-                s = s[:_W - 7] + '...'
-            print('\u2502 ' + s.ljust(_W - 4) + ' \u2502')
+            for _w in _wrap_box(s, _W - 4, indent=4):   # [Y39] wrap, never cut
+                print('\u2502 ' + _w.ljust(_W - 4) + ' \u2502')
         def _R(l='\u251c', r='\u2524'): print(l + '\u2500' * (_W - 2) + r)
         print('\n\u250c' + '\u2500' * (_W - 2) + '\u2510')
         _L(f"{date}   {c['instrument']}" + (f"   {_G['dash']} {note}" if note else ''))
@@ -1929,7 +2083,7 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
                        f"   {_G['arrow']} {abs(dev):.0f}bps deviation vs "
                        f"{c['rt_cost_bps']:.0f}bps round trip")
                     _L(f"     enter('{side}', adr=<fill>, fut=<fill>, "
-                       f"fx={fx}, date='{date}')")
+                       f"fx={float(fx):.4f}, date='{date}')")
                 else:
                     _L(f"   {_G['dash']} no entry   ({'; '.join(why)})")
         else:
@@ -1989,7 +2143,8 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
                 _L("   \u25b6 EXIT SIGNAL   " + ", ".join(trig) if trig
                    else "   \u2014 hold   (no exit trigger yet)")
                 if trig:
-                    _L(f"     exit_pos(adr={a_px:.4f}, fut={f_px:.2f}, fx={fx}, "
+                    _L(f"     exit_pos(adr={a_px:.4f}, fut={f_px:.2f}, "
+                       f"fx={float(fx):.4f}, "
                        f"date='{date}')")
         rows.append(dict(instrument=c['instrument'], date=date, point=key,
                          side='', notional='',
@@ -1997,6 +2152,9 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
                          fut=f_px, fair=round(fair, 4), premium_bps=round(prem, 2),
                          dev_bps=(round(dev, 1) if dev == dev else ''),
                          z=(round(z, 3) if z == z else ''),
+                         gamma=(round(_gamma, 3) if _gamma == _gamma else ''),
+                         hl=(round(_hl_led, 1) if _hl_led == _hl_led else ''),
+                         drift=(round(_dr_led, 2) if _dr_led == _dr_led else ''),
                          n=n, threshold=thr, gate=('open' if gate_ok else 'shut'),
                          div_carry=div_carry, in_position=bool(p), net='',
                          note=note))
@@ -2637,6 +2795,20 @@ def help_manual():
     ], title="")
     say("Required every day: ordinary, fut_1330, fx. Any pair you leave "
         "out is simply skipped.", 'info')
+    banner("WHAT THE LEDGER COLUMNS MEAN", ch='─')
+    menu([
+        ("premium_bps", "ADR vs fair, in bps: (ADR/fair - 1) x 10,000"),
+        ("dev_bps", "premium MINUS the live rolling N-mean — the z-score's "
+                    "NUMERATOR and the object the cost floor [H2] gates. "
+                    "Sign kept: +ADR rich / -ADR cheap."),
+        ("z", "dev divided by the rolling N-sigma (both lagged one day)"),
+        ("gamma / hl / drift", "[Y37g] the gate's LEVELS that day — AR(1) "
+                               "slope, implied half-life (days), [Z4] "
+                               "mean-shift ratio. gate_history() charts the "
+                               "trend."),
+        ("gate", "'open'/'shut' — the verdict those levels produced"),
+        ("net", "realised P&L, EXIT rows only"),
+    ], title="")
     banner("FX — ONLY TWO NUMBERS MATTER  [Y29]", ch='─')
     menu([
         ("fx=", "the 13:30 TW-CLOSE fixing. Prices the fair, the premium, the "
@@ -3143,7 +3315,15 @@ def _inp(check, reading, note='', level=None):
                         (_badge(reading, level) + ' ' if level else '')
                         + ('' if level else reading), note))
     if not (HTML_OUTPUT and _in_jupyter()):
-        print(f"  {check:<34} {reading}" + (f"   {note}" if note else ''))
+        _h = f"  {check:<34} {reading}"
+        if not note:
+            print(_h)
+        elif len(_h) + 3 + len(str(note)) <= _TXT_W:      # [Y39] inline if it fits
+            print(f"{_h}   {note}")
+        else:
+            print(_h)
+            for _wl in _wrap_box(note, _TXT_W - 42, indent=0):
+                print(f"  {'':<34}   {_wl}")
  
 def _audit(msg):
     global _audit_flags
@@ -5504,7 +5684,6 @@ if MIN_TRADES_GRID_MEAN:
                   f"but NO selectable cell reaches it — keeping "
                   f"{_eff_min_trades}. The grid is top-heavy; extend "
                   f"THRESHOLD_VALUES downward.")
-banner(f"TOP 5 PARAMETER SETS (ranked by Net PnL, min {_eff_min_trades} trades)")
 _rows = []
 for _flat in np.argsort(results_pnl, axis=None)[::-1]:
     _i, _j = divmod(int(_flat), len(THRESHOLD_VALUES))
@@ -5586,6 +5765,22 @@ _pass = ((results_trades >= _eff_min_trades)
          & (results_winrate >= MIN_WIN_RATE_SELECT)
          & (np.abs(results_ddpct) <= MAX_DD_SELECT_PCT)   # [N1] % of deployed
          & (results_pnl > 0))
+# [Y35] AUTO-RELAX: if the joint constraints empty the candidate set, drop
+# ONLY the win-rate floor (the softest, most sample-noisy constraint) and
+# say so — an empty set otherwise silently degrades the whole selection to
+# the raw in-sample argmax, which is the worst of all options.
+if not _pass.any():
+    _pass = ((results_trades >= _eff_min_trades)
+             & _n_ok
+             & (results_tpy >= MIN_TRADES_PER_YEAR)
+             & (np.abs(results_ddpct) <= MAX_DD_SELECT_PCT)
+             & (results_pnl > 0))
+    if _pass.any():
+        say(f"[Y35] no cell cleared the win-rate floor "
+            f"({MIN_WIN_RATE_SELECT:.0f}%) jointly with the other limits — "
+            f"floor DROPPED for selection (drawdown/trade floors kept) so "
+            f"the risk-aware ranking still runs instead of degrading to "
+            f"the raw PnL argmax", 'warn')
 _calmar_raw = results_pnl / np.maximum(np.abs(results_maxdd), 1.0)
 _metric = (results_tstat if SELECT_RANK == 'tstat'
            else results_lb if SELECT_RANK == 'lb' else _calmar_raw)
@@ -5826,7 +6021,7 @@ def print_trade_details(trades_list, title, thresh):
     [Y4] In Jupyter a SUMMARY TABLE is rendered first — the per-trade
     re-derivation below it is unchanged, because the whole point of that
     block is that it can be checked line by line."""
-    banner(title)
+    # [Y36] no separate banner — the table itself carries the title
     if not trades_list:
         print("  (no trades)")
         return
@@ -5958,7 +6153,6 @@ if HTML_OUTPUT and _in_jupyter():
              "structurally-premium ADR the short-spread side is short the "
              "re-rating, so an asymmetry can be the sample, not the edge.")
 else:
-    banner("[J6] DIRECTION SPLIT — is the edge symmetric?")
     for _r6 in _j6:
         print(f"  {_r6['side']:<38} {_r6['trades']:3d} trades | net "
               f"${_r6['net']:>9,.0f} | win {_r6['win %']:3.0f}%")
@@ -5973,13 +6167,22 @@ else:
 # scan does not model, so treat it as a direction, not a forecast.
 _tr_all = result_base['trades']
 if _tr_all and 'mfe_bps' in _tr_all[0]:
-    banner(f"[S3] PROFIT-TAKING SCAN — N={best_n}, Z={best_thresh} "
-           f"(current PROFIT_TARGET_BPS={PROFIT_TARGET_BPS})")
     _mf = [t['mfe_bps'] for t in _tr_all]
     _act = [t['net_pnl'] / t['trade_notional'] * 1e4 for t in _tr_all]
     _base_pnl = sum(t['net_pnl'] for t in _tr_all)
     _s3 = []
-    for _tg in (50, 100, 150, 200, 300, 400):
+    # [Y34] DYNAMIC TARGET LADDER — the fixed (50..400) ladder stopped
+    # exactly where it got interesting: the MFE tail. Extend the ladder
+    # to the distribution actually observed: fixed rungs up to 400, then
+    # the MFE p90 / p95 / p99 rounded to 50s, capped at the max. A run
+    # whose trades peak at +1,000 bps now scans 500/600/800-style rungs
+    # instead of stopping at 400.
+    _tail_rungs = sorted({int(round(np.percentile(_mf, q) / 50.0) * 50)
+                          for q in (90, 95, 99)} | {500, 600})
+    _ladder = [t for t in
+               sorted(set([50, 100, 150, 200, 300, 400] + _tail_rungs))
+               if 0 < t <= max(_mf)]
+    for _tg in _ladder:
         _tot, _hit = 0.0, 0
         for _t in _tr_all:
             if _t['mfe_bps'] >= _tg:
@@ -5996,11 +6199,15 @@ if _tr_all and 'mfe_bps' in _tr_all[0]:
     if HTML_OUTPUT and _in_jupyter():
         show_html_table(
             pd.DataFrame(_s3).set_index('target bps'),
-            title=f"[S3] PROFIT-TAKING SCAN — N={best_n}, Z={best_thresh} "
-                  f"(PROFIT_TARGET_BPS={PROFIT_TARGET_BPS} now)",
+            title=(f"[S3] PROFIT-TAKING SCAN — REFERENCE ONLY "
+                   f"(N={best_n}, Z={best_thresh})"),
             fmt={'est. PnL': '${:,.0f}', 'vs actual': '${:+,.0f}',
                  'trades reaching it': '{:.0f}', 'of': '{:.0f}'},
-            note=f"MFE across {len(_tr_all)} trades: median "
+            note=f"NOTHING HERE IS ACTIVE. PROFIT_TARGET_BPS is "
+                 f"{PROFIT_TARGET_BPS}"
+                 f"{' (OFF — exits stay z-cross / gamma / time stop)' if not PROFIT_TARGET_BPS else ' (ON)'}"
+                 f"; this table only reports what each target WOULD have "
+                 f"banked. MFE across {len(_tr_all)} trades: median "
                  f"{np.median(_mf):+.0f} / p75 {np.percentile(_mf, 75):+.0f} "
                  f"/ p90 {np.percentile(_mf, 90):+.0f} / max {max(_mf):+.0f} "
                  f"bps, vs realised median {np.median(_act):+.0f} bps — that "
@@ -6057,7 +6264,6 @@ if _tr_all:
     _mfe = np.array([t['mfe_bps'] for t in _tr_all])
     _cap = np.array([t['net_pnl'] / t['trade_notional'] * 1e4 for t in _tr_all])
     _give = _mfe - _cap
-    banner("[R8] PROFIT LEFT ON THE TABLE (peak unrealised vs what was booked)")
     _r8 = [('peak unrealised (MFE)', np.median(_mfe),
             np.percentile(_mfe, 75), _mfe.max()),
            ('actually captured', np.median(_cap),
@@ -6097,8 +6303,6 @@ _hold_days = set()
 for _t in result_base['trades']:
     _hold_days.update(range(_t['entry_day'], _t.get('exit_day', _t['entry_day']) + 1))
 _first_w4 = first_tradable_row(best_n)   # [X3]
-banner(f"[W4] MISSED-ENTRY AUDIT at the selected N={best_n} Z={best_thresh} "
-       f"(15 largest |deviation| days)")
 _w4_rows = []          # [Y4] collected, rendered once below
 for _i in _sb_dev.abs().nlargest(15).index:
     _dv = float(_sb_dev.loc[_i]); _zz = float(_z_w4.loc[_i]) if _i in _z_w4.index else np.nan
@@ -6158,7 +6362,9 @@ if HTML_OUTPUT and _in_jupyter():
 else:
     print(f"  {'date':<12}{'dev':>7}{'z':>7}  verdict")
     for _d4, _dv4, _zz4, _v4 in _w4_rows:
-        print(f"  {_d4:<12}{_dv4:>+7.0f}{_zz4:>+7.2f}  {_v4}")
+        # a warm-up row has no z yet — show a dash, not '+nan'
+        _z4s = f"{_zz4:+.2f}" if _zz4 == _zz4 else '\u2014'
+        print(f"  {_d4:<12}{_dv4:>+7.0f}{_z4s:>7}  {_v4}")
 print("  A spike with a large |dev| but a small |z| means the ROLLING SIGMA was")
 print("  already wide — the move was big in bps but ordinary for that regime.")
 print("  A spike blocked by drift means the premium was RE-RATING, not")
@@ -6177,7 +6383,6 @@ def why_no_trades(start, end, n=None, thresh=None, show=10):
     _n = int(n if n is not None else best_n)
     _th = float(thresh if thresh is not None else best_thresh)
     _w = df[(df['Date'] >= str(start)) & (df['Date'] <= str(end))]
-    banner(f"[X6] ENTRY VERDICT PER ROW  {start} .. {end}  (N={_n}, Z={_th})")
     if not len(_w):
         print("  no aligned rows in that window — the hole is in the DATA, not "
               "the gates. Check the [QC] merge/stale/timestamp drops above.")
@@ -6302,7 +6507,6 @@ print_trade_details(sorted(result_base['trades'], key=lambda t: t['net_pnl'])[:5
 # Same signals, same trades; only the PnL accounting differs. The gap
 # per trade IS the realized stock-vs-hedge noise your futures hedge
 # leaves uncovered during the hold.
-banner(f"PNL MODE COMPARISON — N={best_n}, Z={best_thresh}")
 result_conv = run_backtest(df, best_n, best_thresh, pnl_mode='convergence')
 if HTML_OUTPUT and _in_jupyter():
     show_html_table(
@@ -6350,7 +6554,6 @@ if result_base['trades'] and result_conv['trades'] \
 # Quantifies the phantom PnL the v8 raw-file accounting would have
 # booked on trades that straddled a contract roll in the snapshot
 # files (the roll-safe hedge index removes it).
-banner(f"ROLL IMPACT ON THE FUTURES LEG — N={best_n}, Z={best_thresh}")
 if result_base['trades']:
     _fr = df['Fut_2130'].values
     _hg = df['Hedge Idx'].values
@@ -6390,7 +6593,6 @@ if result_base['trades']:
 # ============================================================
 # [4] COST SENSITIVITY — best parameters
 # ============================================================
-banner(f"COST SENSITIVITY — N={best_n}, Z={best_thresh}")
 cost_sens, _cs_rows = {}, []
 for m in [0.50, 0.75, 1.00, 1.25, 1.50]:
     r = run_backtest(df, best_n, best_thresh, cost_mult=m)
@@ -6414,7 +6616,6 @@ else:
 # ============================================================
 # [5] EXECUTION-LAG ROBUSTNESS — best parameters
 # ============================================================
-banner(f"EXECUTION-LAG ROBUSTNESS — N={best_n}, Z={best_thresh}")
 result_lag = run_backtest(df, best_n, best_thresh, lag_exec=True)
 result_lag_e = run_backtest(df, best_n, best_thresh, lag_exec='entry_only')  # [G4]
 # [18] Close-fill variant: DECIDE on the open-print signal, FILL both
@@ -6598,7 +6799,6 @@ lag_retention = (result_lag['net_pnl'] / result_base['net_pnl'] * 100
 # ============================================================
 # [6] PNL CONCENTRATION + [10] DST SPLIT — best parameters
 # ============================================================
-banner(f"PNL CONCENTRATION & DST SPLIT — N={best_n}, Z={best_thresh}")
 top5_share = np.nan
 winter_pnl = summer_pnl = 0.0
 n_winter = n_summer = 0
@@ -6640,7 +6840,6 @@ if result_base['trades']:
 # ============================================================
 # [15] OPTIMAL PARAMETERS — TRADE ANATOMY (human-readable)
 # ============================================================
-banner(f"TRADE ANATOMY — N={best_n}, Z={best_thresh}")
 if result_base['trades']:
     _dt = pd.DataFrame(result_base['trades'])
     _car = (_dt['funding_cost'] + _dt['borrow_cost']
@@ -6928,7 +7127,6 @@ else:
                            f'trades) to judge snapshot timing'))
 n_fail = sum(1 for s, _ in checks if s == 'FAIL')
 n_warn = sum(1 for s, _ in checks if s == 'WARN')
-banner("EXECUTIVE SUMMARY")
 print(f"""
 DATA
   Sample: {df['Date'].iloc[0]} to {df['Date'].iloc[-1]} | {len(df)} days after filters
@@ -7727,11 +7925,12 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
         date, div_cash_pct, div_carry, _MANUAL['pos'] is not None)   # [Y10]
     n, thr = c['n'], c['thresh']
     gate_ok, gate_txt, _gamma, _chgsd = _gate(n, date)
+    _hl_led, _dr_led = _gate_levels(_gamma, gate_txt)    # [Y37g] for the ledger
     p = _MANUAL['pos']
     rows, _disp, _cmds, _buf = [], [], [], []
     _mtm_detail, _health = [], []          # [Y24][Y25]
     _HT = HTML_OUTPUT and _in_jupyter() and not quiet     # [Y18] card mode
-    _W = 78
+    _W = 92                     # [Y39] wider: fair formulas fit now
     def _L(s=''):
         if quiet:
             return
@@ -7739,9 +7938,8 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
         if _HT:
             _buf.append(s)
             return
-        if len(s) > _W - 4:
-            s = s[:_W - 7] + '...'
-        print('\u2502 ' + s.ljust(_W - 4) + ' \u2502')
+        for _w in _wrap_box(s, _W - 4, indent=4):    # [Y39] wrap, never cut
+            print('\u2502 ' + _w.ljust(_W - 4) + ' \u2502')
     def _R(l='\u251c', r='\u2524'):
         if not quiet and not _HT:
             print(l + '\u2500' * (_W - 2) + r)
@@ -7853,7 +8051,8 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
                    f"{c['min_dev_bps']:.0f}bps [S1]")
                 _L(f"     size {_szm:.2f}x \u2192 ${_sugg_snap:,.0f} = "
                    f"{_ncon} SSF contracts")
-                _cmd = (f"enter('{side}', adr=<fill>, fut=<fill>, fx={fxe}, "
+                _cmd = (f"enter('{side}', adr=<fill>, fut=<fill>, "
+                        f"fx={float(fxe):.4f}, "
                         f"date='{date}', notional={_sugg_snap:.0f})")
                 _L(f"     {_cmd}")
                 _cmds.append(_cmd + ('' if key == _exec_pt
@@ -7921,7 +8120,8 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
                 _L(_gx)
             if trig:
                 _L("   \u25b6 EXIT SIGNAL   " + ", ".join(trig))
-                _cmd = (f"exit_pos(adr={a_px:.4f}, fut={f_px:.2f}, fx={fxe}, "
+                _cmd = (f"exit_pos(adr={a_px:.4f}, fut={f_px:.2f}, "
+                        f"fx={float(fxe):.4f}, "
                         f"date='{date}')")
                 _L(f"     {_cmd}")
                 _cmds.append(_cmd)
@@ -7930,6 +8130,20 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
                           f"${m['gross'] - xc:+,.0f}")
             else:
                 _L("   \u2014 hold   (no exit trigger yet)")
+                # [Y38] ADD suggestion — the [Y12] rule, desk-side: same
+                # side, |z| extended ADD_STEP_Z beyond the entry z, dev
+                # floor passed, and not already at MAX_ADDS_DESK legs.
+                _ez = p.get('entry_z')
+                _legs_now = p.get('n_legs', 1)
+                if (_ez == _ez and z == z and _ez is not None
+                        and np.sign(z) == np.sign(_ez)
+                        and abs(z) >= abs(_ez) + ADD_STEP_Z
+                        and (dev != dev or abs(dev) >= c['min_dev_bps'])
+                        and _legs_now < 1 + MAX_ADDS_DESK):
+                    _L(f"   [+] SPIKE EXTENDED  |z| {abs(z):.2f} vs entry "
+                       f"{abs(_ez):.2f} — an ADD is what [Y12] backtests:")
+                    _L(f"     add_to(adr={a_px:.4f}, fut={f_px:.2f}, "
+                       f"fx={float(fxe):.4f}, date='{date}')")
                 _act = (_badge('HOLD', 'mut')
                         + f" mark {m['bps']:+.0f}bps, exit-now net "
                           f"${m['gross'] - xc:+,.0f}")
@@ -7998,6 +8212,9 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
                          fut=f_px, fair=round(fair, 4), premium_bps=round(prem, 2),
                          dev_bps=(round(dev, 1) if dev == dev else ''),
                          z=(round(z, 3) if z == z else ''),
+                         gamma=(round(_gamma, 3) if _gamma == _gamma else ''),
+                         hl=(round(_hl_led, 1) if _hl_led == _hl_led else ''),
+                         drift=(round(_dr_led, 2) if _dr_led == _dr_led else ''),
                          n=n, threshold=thr, gate=('open' if gate_ok else 'shut'),
                          div_carry=div_carry, in_position=bool(p), net='',
                          note=note))
@@ -8783,10 +9000,360 @@ def enter(side, adr, fut, fx, date, notional=None, note=''):
             f"fx_fill('{date}', <{FX_LBL} 09:00>)", 'warn')
     return _r
  
+# ============================================================================
+# [Y38] add_to — SCALING INTO A SPIKE THAT KEEPS SPIKING.
+# ----------------------------------------------------------------------------
+# The BACKTEST has had this for a while (run_backtest_lots [Y12]); the desk
+# never did — an entry was one clip, take it or leave it. This adds the
+# desk-side version: while a position is open, add_to() books another leg
+# at today's prices. The ledger stores each leg as its own ENTRY row
+# (note='ADD'); _rebuild blends them into ONE position with share-weighted
+# average entry prices — exact for P&L, see [Y38] in _rebuild. The daily
+# card suggests an add when the signal EXTENDS (same side, |z| at least
+# ADD_STEP_Z beyond the entry z) — the same rule [Y12] backtests, so test
+# it there before trusting it here.
+# ============================================================================
+ADD_STEP_Z = 1.0        # suggest an add when |z| >= |entry z| + this
+MAX_ADDS_DESK = 2       # the card stops suggesting beyond this many adds
+def add_to(adr, fut, fx, date, notional=None, note=''):
+    """[Y38] Add a leg to the OPEN position at today's fills. Same side,
+    floor-rounded integer units [Y32b], written as its own ENTRY row."""
+    c, p = _MANUAL['ctx'], _MANUAL['pos']
+    if c is None:
+        say('run setup_manual() first', 'bad'); return None
+    if p is None:
+        say('no open position — use enter(...) for the first leg', 'bad')
+        return None
+    _nt_req = float(notional or c['notional'])
+    _u = _units(_nt_req, float(adr), float(fut), float(fx))
+    _side = 'LONG' if p['dir'] == 1 else 'SHORT'
+    row = dict(instrument=c['instrument'], date=str(date), point='ENTRY',
+               side=_side, notional=_u['adr_notional'],
+               shares=int(_u['shares']), contracts=int(_u['contracts']),
+               ordinary='', fut_1330='', fx=float(fx), adr=float(adr),
+               fut=float(fut), fair='', premium_bps='', dev_bps='', z='',
+               gamma='', hl='', drift='',
+               n=c['n'], threshold=c['thresh'], gate='', div_carry='',
+               in_position=True, net='',
+               note=('ADD ' + str(note)).strip())
+    led = _read_ledger()
+    led = led[~((led['point'] == 'ENTRY')
+                & (led['date'].astype(str) == str(date))
+                & (led['note'].astype(str).str.startswith('ADD')))]
+    _write_ledger(pd.concat([led, pd.DataFrame([row])], ignore_index=True))
+    _rebuild()
+    p = _MANUAL['pos']
+    banner(f"ADD — leg {p.get('n_legs', 1)} of the {_side} spread",
+           sub=f"{date}   +{_u['shares']:,d} sh / +{_u['contracts']} "
+               f"{HEDGE_LBL} contracts (${_u['adr_notional']:,.0f})")
+    say(f"blended position now: {p['shares']:,d} sh + {p['contracts']} "
+        f"contracts = ${p['notional']:,.0f} | avg entry ADR "
+        f"{p['entry_adr']:.4f} / {HEDGE_LBL} {p['entry_fut']:.2f}", 'info')
+    say(f"time stop still anchors on the FIRST leg ({p['date']}) — an add "
+        f"does NOT reset the clock", 'warn')
+    return p
+def gate_history(tail=15):
+    """[Y37g] The gate's LEVELS over the last `tail` typed days — the trend
+    view the verdict alone hides. gamma more negative = faster reversion;
+    hl in days; drift vs the {c[drift_max]} ceiling."""
+    c = _MANUAL['ctx']
+    if c is None:
+        say('run setup_manual() first', 'bad'); return
+    led = _read_ledger()
+    led = led[(led['instrument'] == c['instrument'])
+              & (led['point'] == c.get('exec_point', 'close'))]
+    led = led.drop_duplicates('date', keep='last').sort_values('date').tail(tail)
+    if not len(led):
+        say('no typed days yet', 'info'); return
+    _rows = [{'date': str(r['date']), 'gamma': _led_num(r, 'gamma'),
+              'half-life d': _led_num(r, 'hl'), 'drift': _led_num(r, 'drift'),
+              'gate': str(r['gate'])} for _, r in led.iterrows()]
+    show_html_table(
+        _pd.DataFrame(_rows).set_index('date'),
+        title=f'GATE LEVELS — last {len(_rows)} day(s)',
+        fmt={'gamma': '{:+.3f}', 'half-life d': '{:.1f}', 'drift': '{:.2f}'},
+        note=f"gamma is the AR(1) slope of the de-trended deviation "
+             f"(negative = mean-reverting), half-life its implied speed, "
+             f"drift the [Z4] mean-shift ratio vs the "
+             f"{c['drift_max']:.2f} ceiling. A drift GRINDING UP across "
+             f"days is a re-rating building — the single most useful trend "
+             f"to watch here.")
+# ============================================================================
+# [Y37] BLOOMBERG PULL & LIVE VIEW — stop typing what the terminal knows.
+# ----------------------------------------------------------------------------
+# pull_day('2026-07-28')          fetch that day's desk inputs from the
+#                                 terminal and PREVIEW them (nothing saved)
+# pull_day('2026-07-28', save=True)   same, then books add_day(...) with it
+# live_now()                      live premium/z card DURING US hours; says
+#                                 so and refuses outside them
+# HOW IT WORKS, and the honest limits:
+#   * intraday snapshots come from IntradayBarRequest (1-min bars) at the
+#     EXACT UTC minutes the capture files use — 05:30 UTC for the Taiwan
+#     close anchors, 13:30/14:30, 19:45/20:45 and 19:59/20:59 UTC for the
+#     US legs, DST-resolved per date with is_us_dst(). Bloomberg keeps
+#     ~140 days of bars: older dates come back empty — type those by hand.
+#   * the SSF needs its Bloomberg ticker: set FUT_TICKER_BBG_INST in the
+#     INSTRUMENTS dict (e.g. the front-month generic your terminal shows
+#     on the QR). Without it the futures fields stay blank in the preview
+#     and you type just those two numbers.
+#   * FX: the TW-close fixing ('TWD F093') is a DAILY print and pulls
+#     fine same-evening. The EXECUTION fx workflow is unchanged — the
+#     hedge still deals at TOMORROW'S open and fx_fill() amends it.
+#   * every pull is PREVIEWED with source timestamps; save=True is the
+#     only thing that writes. The real execution prints (enter/exit_pos)
+#     stay MANUAL on purpose — those are your fills, not the terminal's.
+# ============================================================================
+FUT_TICKER_BBG = globals().get('FUT_TICKER_BBG_INST', None)
+def _bbg_open():
+    """Fresh short-lived session (the main run's session is long stopped)."""
+    _so = blpapi.SessionOptions()
+    _so.setServerHost('localhost')
+    _so.setServerPort(8194)
+    _ss = blpapi.Session(_so)
+    if not _ss.start():
+        raise RuntimeError('[Y37] cannot start a Bloomberg session — is the '
+                           'terminal running on this machine?')
+    _ss.openService('//blp/refdata')
+    return _ss, _ss.getService('//blp/refdata')
+def _bbg_bar_at(ss, svc, ticker, date_str, hh, mm, tol_min=10):
+    """LAST 1-min bar CLOSE at/just before hh:mm UTC on date_str.
+    Returns (price, 'HH:MM' actually used) or (None, why).
+    TIME SEMANTICS (the part that is easy to get wrong):
+      * request start/end datetimes are UTC — the refdata service's
+        default — and sent as 'YYYY-MM-DDTHH:MM:SS' strings;
+      * a bar's `time` stamps its START: the 13:30 bar spans
+        13:30:00-13:30:59 and therefore CONTAINS the 09:30:00 ET
+        opening auction print, and the 20:00 bar contains the
+        16:00:00 ET closing auction (MOC) print. So the right bar for
+        a session boundary is the one stamped AT the target minute,
+        never the one after — the filter below is `<= target`,
+        exactly."""
+    _d = pd.Timestamp(date_str)
+    _t1 = _d + pd.Timedelta(hours=hh, minutes=mm)
+    _t0 = _t1 - pd.Timedelta(minutes=tol_min)
+    rq = svc.createRequest('IntradayBarRequest')
+    rq.set('security', ticker)
+    rq.set('eventType', 'TRADE')
+    rq.set('interval', 1)
+    rq.set('startDateTime', _t0.strftime('%Y-%m-%dT%H:%M:%S'))
+    rq.set('endDateTime', (_t1 + pd.Timedelta(minutes=2)
+                           ).strftime('%Y-%m-%dT%H:%M:%S'))
+    ss.sendRequest(rq)
+    _last = None
+    for _spin in range(120):          # [Y37] bounded: ~60s worst case, then
+                                      # give up instead of hanging the desk
+        ev = ss.nextEvent(500)
+        for msg in ev:
+            if msg.hasElement('barData'):
+                _bt = msg.getElement('barData')
+                if _bt.hasElement('barTickData'):
+                    _arr = _bt.getElement('barTickData')
+                    for _i in range(_arr.numValues()):
+                        _b = _arr.getValueAsElement(_i)
+                        _bt_time = _b.getElementAsString('time')
+                        if pd.Timestamp(_bt_time) <= _t1:   # bar START <= target
+                            _last = (_b.getElementAsFloat('close'),
+                                     str(_bt_time)[11:16])
+        if ev.eventType() == blpapi.Event.RESPONSE:
+            break
+    else:
+        return (None, 'Bloomberg did not answer within ~60s — check the '
+                      'terminal session')
+    return _last if _last else (None, f'no bars (older than ~140d, or no '
+                                      f'trades near {hh:02d}:{mm:02d}Z)')
+def _bbg_daily_last(ss, svc, ticker, field, date_str):
+    _ymd = pd.Timestamp(date_str).strftime('%Y%m%d')
+    rq = svc.createRequest('HistoricalDataRequest')
+    rq.getElement('securities').appendValue(ticker)
+    rq.getElement('fields').appendValue(field)
+    rq.set('startDate', _ymd)
+    rq.set('endDate', _ymd)
+    rq.set('periodicitySelection', 'DAILY')
+    ss.sendRequest(rq)
+    _v = None
+    for _spin in range(120):          # [Y37] bounded, same reason as above
+        ev = ss.nextEvent(500)
+        for msg in ev:
+            if msg.hasElement('securityData'):
+                _sd = msg.getElement('securityData')
+                if _sd.hasElement('fieldData'):
+                    _fa = _sd.getElement('fieldData')
+                    for _i in range(_fa.numValues()):
+                        _fd = _fa.getValueAsElement(_i)
+                        if _fd.hasElement(field):
+                            _v = _fd.getElementAsFloat(field)
+        if ev.eventType() == blpapi.Event.RESPONSE:
+            break
+    return _v
+def pull_day(date, save=False):
+    """[Y37] Fetch one day's desk inputs from the terminal. PREVIEW by
+    default; save=True books add_day(...) with exactly what you saw."""
+    c = _MANUAL['ctx']
+    if c is None:
+        say('run setup_manual() first', 'bad'); return None
+    _dst = is_us_dst(date)
+    ss, svc = _bbg_open()
+    try:
+        got, src = {}, {}
+        got['ordinary'] = _bbg_daily_last(ss, svc, c['ord_ticker'],
+                                          'PX_LAST', date)
+        src['ordinary'] = 'daily close (BDH)'
+        got['fx'] = _bbg_daily_last(ss, svc, 'TWD F093 Curncy',
+                                    'PX_LAST', date)
+        src['fx'] = "TW-close fixing 'TWD F093' (BDH)"
+        # [Y37] target minutes = the CAPTURE-FILE convention, DST-resolved.
+        # Closes aim at the SESSION-CLOSE minute (20:00/21:00): the MOC
+        # auction print is timestamped 16:00:00 ET and therefore lives in
+        # the bar STAMPED 20:00/21:00 — aiming at 19:59 would fetch the
+        # last continuous-trading price instead of the close.
+        _legs = [('adr_open', c['adr_ticker'], (13, 30) if _dst else (14, 30)),
+                 ('adr_1945', c['adr_ticker'], (19, 45) if _dst else (20, 45)),
+                 ('adr_close', c['adr_ticker'], (20, 0) if _dst else (21, 0))]
+        if FUT_TICKER_BBG:
+            _legs += [('fut_1330', FUT_TICKER_BBG, (5, 30)),
+                      ('fut_open', FUT_TICKER_BBG, (13, 30) if _dst else (14, 30)),
+                      ('fut_1945', FUT_TICKER_BBG, (19, 45) if _dst else (20, 45)),
+                      ('fut_close', FUT_TICKER_BBG, (20, 0) if _dst else (21, 0))]
+        for _k, _tk, (_h, _m) in _legs:
+            _px, _when = _bbg_bar_at(ss, svc, _tk, date, _h, _m)
+            got[_k] = _px
+            src[_k] = (f'1-min bar @ {_when}Z' if _px is not None else _when)
+    finally:
+        ss.stop()
+    _rows = [(k, (f"{v:,.4f}" if isinstance(v, float) else '—'), src.get(k, ''))
+             for k, v in got.items()]
+    kv_table(f"[Y37] PULLED FROM BLOOMBERG — {date} "
+             f"({'summer' if _dst else 'winter'} clock)",
+             _rows, col='value',
+             note='PREVIEW only — nothing saved yet. Eyeball each source '
+                  'stamp; then pull_day(date, save=True) books add_day() '
+                  'with exactly these numbers. Futures fields blank? Set '
+                  'FUT_TICKER_BBG_INST in the INSTRUMENTS dict, or type '
+                  'those two numbers by hand.')
+    if not save:
+        return got
+    _need = ('ordinary', 'fx') + (('fut_1330',) if FUT_TICKER_BBG else ())
+    _missing = [k for k in _need if got.get(k) is None]
+    if 'fut_1330' not in got or got.get('fut_1330') is None:
+        say('fut_1330 not pulled — add_day needs it: call add_day(...) '
+            'yourself with the SSF anchor typed in, reusing the numbers '
+            'above', 'warn')
+        return got
+    if _missing:
+        say(f"missing {_missing} — not saving; pull again or type the day",
+            'bad')
+        return got
+    add_day(date=str(date), ordinary=got['ordinary'],
+            fut_1330=got['fut_1330'], fx=got['fx'],
+            adr_open=got.get('adr_open'), fut_open=got.get('fut_open'),
+            adr_1945=got.get('adr_1945'), fut_1945=got.get('fut_1945'),
+            adr_close=got.get('adr_close'), fut_close=got.get('fut_close'))
+    say(f"[Y37] saved {date} from the terminal — the FX on any fill is "
+        f"still PROVISIONAL until tomorrow's fx_fill()", 'ok')
+    return got
+def live_now():
+    """[Y37] Live premium/z card — ONLY during US trading hours (that is
+    when the ADR print is live and the night SSF is quotable). Outside
+    them it refuses rather than showing stale numbers."""
+    c = _MANUAL['ctx']
+    if c is None:
+        say('run setup_manual() first', 'bad'); return None
+    _now = pd.Timestamp.now('UTC').tz_localize(None)   # [Y37] pandas-4 safe
+    _dst = is_us_dst(_now)
+    _o = _now.normalize() + (pd.Timedelta(hours=13, minutes=30) if _dst
+                             else pd.Timedelta(hours=14, minutes=30))
+    _x = _now.normalize() + (pd.Timedelta(hours=20) if _dst
+                             else pd.Timedelta(hours=21))
+    if not (_o <= _now <= _x):
+        say(f"US market is CLOSED (now {_now.strftime('%H:%M')}Z; session "
+            f"{_o.strftime('%H:%M')}–{_x.strftime('%H:%M')}Z today) — "
+            f"live_now() only works while the ADR is actually trading", 'warn')
+        return None
+    if not _MANUAL['days']:
+        say('type or pull at least one day first — the live card marks '
+            'against the latest Taiwan anchors', 'bad'); return None
+    _anchor = _MANUAL['days'][-1]
+    ss, svc = _bbg_open()
+    try:
+        _live = {}
+        for _k, _tk in [('adr', c['adr_ticker']),
+                        ('fx', 'USDTWD BGN Curncy')] \
+                + ([('fut', FUT_TICKER_BBG)] if FUT_TICKER_BBG else []):
+            rq = svc.createRequest('ReferenceDataRequest')
+            rq.getElement('securities').appendValue(_tk)
+            rq.getElement('fields').appendValue('PX_LAST')
+            ss.sendRequest(rq)
+            while True:
+                ev = ss.nextEvent(500)
+                for msg in ev:
+                    if msg.hasElement('securityData'):
+                        _sa = msg.getElement('securityData')
+                        for _i in range(_sa.numValues()):
+                            _se = _sa.getValueAsElement(_i)
+                            if _se.hasElement('fieldData'):
+                                _fd = _se.getElement('fieldData')
+                                if _fd.hasElement('PX_LAST'):
+                                    _live[_k] = _fd.getElementAsFloat('PX_LAST')
+                if ev.eventType() == blpapi.Event.RESPONSE:
+                    break
+    finally:
+        ss.stop()
+    if 'adr' not in _live:
+        say('no live ADR print came back — check the terminal', 'bad')
+        return None
+    _fut_live = _live.get('fut')
+    _fx_live = _live.get('fx', _anchor['fx'])
+    _fut_for_fair = _fut_live if _fut_live else _anchor['fut']
+    # fair_mode-aware live fair:
+    #   futures  : straight off the live SSF print
+    #   spot_gap : the anchor day's ordinary close, projected by the SSF
+    #              move since ITS 13:30 anchor. Type (or pull_day) today's
+    #              Taiwan anchors before the US open and the anchor IS
+    #              today — the normal workflow.
+    if c['fair_mode'] == 'futures':
+        fair = _fut_for_fair * c['adr_ratio'] / _fx_live
+    else:
+        _ord_anchor = _anchor.get('ordinary')
+        _f1330_anchor = _anchor.get('fut_1330')
+        if not _ord_anchor or not _f1330_anchor:
+            say('anchor day has no ordinary/fut_1330 stored — re-add it '
+                '(or pull_day it) so the spot_gap live fair has its Taiwan '
+                'anchors', 'bad')
+            return None
+        _gap = _fut_for_fair / _f1330_anchor - 1.0
+        fair = _ord_anchor * (1.0 + _gap) * c['adr_ratio'] / _fx_live
+    prem = (_live['adr'] / fair - 1.0) * 1e4
+    z, mu, sd = _zstats(prem, c['n'])
+    gate_ok, gtxt, _, _ = _gate(c['n'])
+    banner(f"LIVE — {c['instrument']} {_now.strftime('%H:%M')}Z",
+           sub=f"ADR {_live['adr']:,.4f}   {HEDGE_LBL} "
+               f"{(_fut_for_fair or float('nan')):,.2f}"
+               f"{'' if _fut_live else ' (ANCHOR — no live SSF ticker)'}   "
+               f"FX {_fx_live:,.4f}")
+    say(f"fair {fair:,.4f} -> premium {prem:+,.0f} bps | z {z:+.2f} "
+        f"(band ±{c['thresh']:.2f})",
+        'warn' if abs(z) > c['thresh'] else 'info')
+    say(f"gate {'OPEN' if gate_ok else 'SHUT'} — {gtxt}",
+        'ok' if gate_ok else 'bad')
+    if _MANUAL['pos'] is not None and _fut_live:
+        m = _mtm(_live['adr'], _fut_live, _fx_live)
+        say(f"open position mark: ${m['gross']:+,.0f} ({m['bps']:+.0f} bps)",
+            'ok' if m['gross'] >= 0 else 'warn')
+    say('reminder: a LIVE z uses the live prints against CLOSE-based '
+        'history — indicative, not the booked signal', 'info')
+    return dict(adr=_live['adr'], fut=_fut_live, fx=_fx_live,
+                fair=fair, prem_bps=prem, z=z)
 banner("v32 TW — EXTRAS LOADED", sub=f"{INSTRUMENT}: {ADR_TICKER} vs {ORD_TICKER}")
 menu([
     ("setup_manual()", "paper desk — start here each session"),
     ("form()", "the typing form: one row per evening"),
+    ("pull_day('2026-07-28')", "[Y37] fetch a day's inputs from Bloomberg "
+                               "(preview; save=True books it) — ~140d of "
+                               "intraday history"),
+    ("live_now()", "[Y37] live premium/z card, US hours only"),
+    ("add_to(adr=..., fut=..., fx=..., date=...)",
+     "[Y38] add a leg while the spike extends (the card suggests it)"),
+    ("gate_history()", "[Y37g] gamma / half-life / drift trend, from the ledger"),
     ("status()", "position, marks, live z and the exit verdict"),
     ("help_manual()", "the whole desk workflow in one screen"),
     ("why_no_trades(start, end)", "[X6] per-row entry verdict over a window"),
