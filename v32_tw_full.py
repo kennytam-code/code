@@ -1,4 +1,100 @@
 # ============================================================================
+# v32.1 (TW) — PAPER-DESK PASS. Every edit is tagged [AA..]; grep "[AA" for
+# all of them in order. Nine groups, in the order they were reported:
+#
+# [AA9]  UI. form()'s FloatText boxes were 158px wide against a 96px
+#        description, leaving ~62px of input — about four glyphs, so "29.00"
+#        was at the edge and "2,466.00" / "32.2999" were cut mid-number. Now
+#        250/92 (~140px), and the rows WRAP instead of overflowing.
+#
+# [AA1]  TIME AND CORRECTIONS. Four separate faults behind "double-clicking
+#        toggles entries" and "amending 29->28->27 fires backdating signals":
+#        * the form's date defaulted to LOCAL today(). Run from Asia, that is
+#          TOMORROW's date for the whole US session — the execution point,
+#          20:00/21:00 UTC, is 04:00/05:00 next morning in Taipei. Every row
+#          typed in that window was stamped a day forward. Now _desk_today()
+#          derives the US SESSION DATE from UTC via Eastern; weekends roll
+#          back to the Friday.
+#        * re-scoring a date EARLIER than the open entry computed held < 0,
+#          marked a position that did not exist, charged "-5cd carry", and
+#          emitted exit_pos()/add_to() commands DATED IN THE PAST. Pre-entry
+#          dates are now scored into the series and nothing else.
+#        * an amendment looked identical to a fresh day, so three corrections
+#          read as three ENTER signals. Amendments are labelled and show a
+#          before/after diff of what actually changed.
+#        * a day typed into the 15:45 boxes ALONE printed "saved 1 row(s)"
+#          and entered NOTHING — only signal-point rows become desk days. The
+#          desk now says so. 15:45 is relabelled DECISION PROMPT (per user:
+#          the day's data is the close; 15:45 is the live read).
+#
+# [AA2]  STATE MISMATCH — the actual "toggle". enter() wrote its row, called
+#        _rebuild(), then printed a full ENTRY banner WITHOUT CHECKING that a
+#        position had been created. An entry dated on/before an existing EXIT
+#        creates none, silently: the banner said "ENTRY — SHORT $461,603" and
+#        the next line said "no open position". Every state-changing call now
+#        proves its own effect (_assert_state), names the blocking row and
+#        the command that clears it, and prints a NOT OPEN banner instead of
+#        a success one. Plus: enter()'s row-replace was not instrument-scoped
+#        (a TSMC entry deleted a UMC one on the same date — [X14] fixed this
+#        for add_day and missed enter); the buttons debounce and the
+#        destructive ones need a second click; the wrapper-capture idiom is
+#        re-execution safe; desk_audit() reconciles CSV against desk state.
+#
+# [AA3]  THE PAPER RECORD COULD BE SILENTLY REWRITTEN. Exits were paired with
+#        "the last ENTRY on or before" with no segmentation and no check, so
+#        inserting an entry between an old entry and its exit RE-POINTED that
+#        closed trade — a LONG $497,708 opened 07-17 became a SHORT $495,911
+#        opened 07-20, keeping the LONG's stored P&L. Exits now segment the
+#        ledger, and a stored `net` that cannot belong to its pairing is
+#        discarded and recomputed rather than displayed.
+#
+# [AA4]  CARRY vs THE BACKTEST. carry_long_bpd used FUNDING_RATE_ANN alone
+#        while run_backtest charges SOFR + FUNDING_SPREAD_ANN — the desk
+#        under-charged every paper long by 0.33 bps/cd (23% of its own long
+#        carry) and its gamma exit fired late. One definition now. Funding
+#        and margin are also split onto their correct legs (ADR / hedge).
+#
+# [AA5]  MTM CLARITY. The [Y25] table printed FRACTIONAL unit counts beside a
+#        P&L computed from the STORED INTEGER units, and lumped both carries
+#        onto the ADR notional at one blended rate. Rebuilt line by line, with
+#        the TWD->USD conversion shown as its own step. status() opens with a
+#        DESK STATE block: position, session date, last day scored, whether
+#        the hedge FX is real yet, whether anything fails to reconcile, and
+#        the single next action.
+#
+# [AA6]  WHICH FX SETTLES THE HEDGE. Under 'spot_next_open' the TWD leg deals
+#        at the NEXT Taiwan open (09:00 Taipei = 01:00 UTC); until fx_fill()
+#        records it, every mark is provisional — and the only thing that said
+#        so was one reminder that scrolled away. Provenance is a first-class
+#        ledger column (fx_src) surfaced on the form, in status(), on the
+#        chart and in desk_audit(). fx_fill's P&L amendment also used the
+#        legacy FRACTIONAL formula on the ADR-leg notional to patch a P&L
+#        built from whole contracts; it is now exact.
+#
+# [AA7]  COSTS (user-set). ADR fee OUT 32 -> 2 bps, so the round-trip fee lump
+#        falls 46 -> 16 bps and the modelled round trip 70 -> 40 bps. Borrow
+#        becomes the SOFR-50bps REBATE convention: the short's proceeds EARN
+#        it, so short carry flips from a +0.21 bps/cd charge to a -1.21 bps/cd
+#        CREDIT. Margin becomes notional x 13.5% x 120 bps = 16.2 bps/yr. The
+#        gamma HURDLE stays floored at zero (a credit means no hurdle); the
+#        realised P&L keeps the sign — run_backtest_lots was flooring the P&L
+#        itself and would have deleted the whole credit.
+#        NOTE: MIN_ENTRY_DEV_BPS is derived from the round trip, so the entry
+#        floor moves with it (TSMC: 105 -> 62 bps). More rows now qualify.
+#
+# [AA8]  SSF CONTRACT. FUT_TICKER_BBG was a static string and was never set
+#        for any instrument, so pull_day() returned blank futures fields and
+#        live_now() had no SSF at all. Now resolved PER DATE from ROLL_RULE,
+#        decoded and validated on every pull: 29 Jul 2026 -> 2330=Q6 (AUGUST;
+#        Q=Aug, U=Sep — the codes are not alphabetical), expiry checked, and
+#        a mismatched or expired contract refuses to save.
+#
+# [AA10] CHARTS. The desk charts and the [20] backtest figure drew the same
+#        objects in different colours, markers, weights, band alphas, legend
+#        positions and — worst — on different x-axes (row index vs dates), so
+#        they could not be read side by side. Both desk charts now use the
+#        backtest's palette and conventions on a real-date axis.
+# ============================================================================
 # v31.11 — CHANGES FROM v31.10.  Every edit is tagged [X..] in the body so you
 # can grep for it. Search "[X" to see all of them in order.
 # ----------------------------------------------------------------------------
@@ -773,8 +869,16 @@ LOCAL_CCY = 'TWD'
 # in the INSTRUMENTS dict for any name whose ADR price is far from the
 # one these were measured on. The [X2] print below shows the implied
 # cents-per-share for the CURRENT name so the error is visible.
+# [AA7] USER-SET (v32.1): the ADR OUT fee drops 32 -> 2 bps. The 32 bps was
+# a DEPOSITARY CANCELLATION fee (cash per share); the user's custody
+# arrangement charges 2 bps in and 2 bps out on BOTH legs instead, so the
+# round trip for a beta=1 trade falls 2+32+2+2 = 38 bps -> 2+2+2+2 = 8 bps.
+# THIS IS THE SINGLE BIGGEST COST CHANGE IN v32.1 — the [X9] desk fee lump
+# and compute_exec_cost() both read these constants, so the desk, the exit
+# and the grid all move together. Set ADR_FEE_OUT_BPS_INST in the
+# INSTRUMENTS dict to restore a depositary fee for any name that has one.
 ADR_FEE_IN_BPS = globals().get('ADR_FEE_IN_BPS_INST', 2)
-ADR_FEE_OUT_BPS = globals().get('ADR_FEE_OUT_BPS_INST', 32)
+ADR_FEE_OUT_BPS = globals().get('ADR_FEE_OUT_BPS_INST', 2)   # [AA7] was 32
 FUT_FEE_IN_BPS = globals().get('FUT_FEE_IN_BPS_INST', 2)
 FUT_FEE_OUT_BPS = globals().get('FUT_FEE_OUT_BPS_INST', 2)
 # [C3][D1] FX (TWD NDF) — split into TWO separate things:
@@ -845,13 +949,32 @@ FX_SPOT_FIELD = 'PX_OPEN'               # 09:00-Taipei open print; if the QC
 #                number the 24 actually is.
 # Charged on the futures leg in BOTH directions (long or short — the
 # margin is posted either way), calendar days.
-FUT_MARGIN_MODE = 'flat_bps'   # 'flat_bps' | 'sofr_plus'
-FUT_MARGIN_ANN_BPS = 24
+# [AA7] USER-SET (v32.1) — a THIRD mode, now the DEFAULT:
+#   'pct_x_spread' : you post MARGIN_PCT of the futures-leg notional at
+#                    TAIFEX and are charged MARGIN_FUND_ANN_BPS on THAT
+#                    POSTED BALANCE (not on the notional):
+#                        cost_ann_bps_of_notional
+#                            = MARGIN_PCT x MARGIN_FUND_ANN_BPS
+#                            = 0.135 x 120 = 16.2 bps
+#                    i.e. the user's "notional x 13.5% x 120 bps annualised".
+#                    It is a SPREAD, not an absolute rate: the deposit earns
+#                    the benchmark and you pay the benchmark + 120, so only
+#                    the 120 is a cost. That is why this is 16.2 bps and the
+#                    'sofr_plus' arithmetic below is ~71 bps — the latter
+#                    charges the WHOLE funding rate on the collateral and
+#                    credits nothing back.
+FUT_MARGIN_MODE = 'pct_x_spread'   # 'pct_x_spread' | 'flat_bps' | 'sofr_plus'
+FUT_MARGIN_ANN_BPS = 24            # 'flat_bps' only (the pre-v32.1 default)
 MARGIN_PCT = 0.135             # TAIFEX SSF initial margin class — verify
-MARGIN_SPREAD_BPS = 24         # funding spread over FUNDING_RATE_ANN
-MARGIN_DEPOSIT_ANN = 0.0       # interest earned on the posted margin
+MARGIN_FUND_ANN_BPS = 120      # [AA7] charged on the POSTED MARGIN, ann.
+MARGIN_SPREAD_BPS = 24         # 'sofr_plus' only: spread over FUNDING_RATE_ANN
+MARGIN_DEPOSIT_ANN = 0.0       # 'sofr_plus' only: interest earned on the deposit
 def margin_ann_bps(funding_rate=None):
+    """Margin-funding cost, ANNUALISED BPS OF THE FUTURES-LEG NOTIONAL.
+    Charged in BOTH directions (margin is posted long or short)."""
     _f = FUNDING_RATE_ANN if funding_rate is None else funding_rate
+    if FUT_MARGIN_MODE == 'pct_x_spread':          # [AA7] user default
+        return float(MARGIN_PCT) * float(MARGIN_FUND_ANN_BPS)
     if FUT_MARGIN_MODE == 'sofr_plus':
         return MARGIN_PCT * (_f + MARGIN_SPREAD_BPS / 1e4
                              - MARGIN_DEPOSIT_ANN) * 1e4
@@ -910,7 +1033,38 @@ PARTICIPATION_WARN = 0.10     # warn if we'd need >10% of window volume
 # (SHORT_REBATE_ANN=0) which makes short-side costs CONSERVATIVE.
 # 50 bps borrow is realistic for a GC mega-cap ADR like TSM; smaller
 # names can be specials — confirm per name with the SBL desk.
-BORROW_ANN_BPS = 50           # borrow, flat (per user)
+BORROW_ANN_BPS = 50           # 'flat_bps' mode only (the pre-v32.1 default)
+# [AA7] USER-SET (v32.1) BORROW = SOFR MINUS 50 BPS, the stock-loan REBATE
+# convention. A short sells the ADR and the proceeds sit at the PB, which
+# pays a rebate of (benchmark - borrow spread). Quoting the borrow as
+# "SOFR - 50" IS that rebate rate, so the short-spread financing leg is a
+# NET CREDIT of (SOFR - 50bps), not a charge:
+#     short_financing_ann = -(SOFR - BORROW_SPREAD_ANN_BPS / 1e4)
+# With SOFR at 5.00% that is a 4.50%/yr credit = -12.50 bps/calendar day on
+# the ADR leg, against the pre-v32.1 +0.14 bps/day CHARGE. It is symmetric
+# with the LONG leg, which pays SOFR + FUNDING_SPREAD_ANN.
+# SIGN CONVENTION everywhere below: POSITIVE = a cost, NEGATIVE = a credit.
+# The benchmark is SOFR ITSELF (not SOFR + FUNDING_SPREAD_ANN) — the
+# funding spread is what YOU pay to borrow cash, not what the PB pays you.
+# Set BORROW_MODE='flat_bps' to reproduce every pre-v32.1 number exactly.
+BORROW_MODE = 'sofr_minus'    # 'sofr_minus' (user default) | 'flat_bps'
+BORROW_SPREAD_ANN_BPS = 50    # the "- 50 bps" in SOFR - 50
+def short_financing_ann(funding_rate=None):
+    """Annualised financing on the SHORT-spread ADR leg, as a DECIMAL.
+    Positive = cost, negative = credit. Both modes net the rebate off the
+    borrow so callers never double-count."""
+    _f = FUNDING_RATE_ANN if funding_rate is None else float(funding_rate)
+    if BORROW_MODE == 'sofr_minus':
+        return -(_f - BORROW_SPREAD_ANN_BPS / 1e4)
+    return BORROW_ANN_BPS / 1e4 - SHORT_REBATE_ANN
+def long_financing_ann(funding_rate=None):
+    """Annualised financing on the LONG-spread ADR leg, as a DECIMAL.
+    [AA4] The DESK used to read FUNDING_RATE_ANN alone here while the
+    BACKTEST read df['funding_rate'] = SOFR + FUNDING_SPREAD_ANN, so every
+    paper long under-charged carry by FUNDING_SPREAD_ANN (1.2%/yr =
+    0.33 bps/day, ~23% of the whole long carry). One definition now."""
+    _f = FUNDING_RATE_ANN if funding_rate is None else float(funding_rate)
+    return _f + FUNDING_SPREAD_ANN
 FUNDING_RATE_ANN = 0.050      # [T1] fallback ONLY (used if the SOFR pull
                               # fails) — raised from 4.7% to 5.0%. The
                               # LIVE funding is the daily SOFR series
@@ -1373,7 +1527,61 @@ def is_us_dst(d):
     nov = pd.Timestamp(y, 11, 1)
     dst_end = nov + pd.Timedelta(days=(6 - nov.dayofweek) % 7)          # 1st Sunday
     return dst_start <= ts < dst_end
- 
+# ============================================================================
+# [AA1] WHAT DATE IS IT, FROM THE DESK'S POINT OF VIEW?
+# ----------------------------------------------------------------------------
+# This is the single most dangerous piece of implicit state on the desk, and
+# it used to be `pd.Timestamp.today().date()` — the LOCAL calendar date of
+# whatever machine happens to run the notebook.
+#
+# The desk is run from Asia. Take the execution moment, the US close:
+#     summer  20:00 UTC  =  04:00 NEXT MORNING in Taipei / Hong Kong
+#     winter  21:00 UTC  =  05:00 NEXT MORNING in Taipei / Hong Kong
+# so from the moment the US opens until the US closes, `today()` on an Asian
+# box returns TOMORROW'S date for the session you are actually trading. Every
+# row typed in that window landed in the ledger stamped one day forward. The
+# consequences were all silent:
+#   * the row sorted after the real next day, so _series_before() fed the
+#     z-window a premium from the future;
+#   * correcting the row under its TRUE date created a SECOND row rather than
+#     replacing the first, so the same session appeared twice in the series;
+#   * ENTRY/EXIT rows dated a day early re-ordered against each other, which
+#     is one of the ways the ledger reached the [AA2] state where an entry
+#     can never open a position.
+# The US SESSION DATE is the trading date in New York — the only definition
+# under which "the day I am typing" is unambiguous — so it is derived from
+# UTC, never from the local clock, and weekends roll back to the Friday.
+def _desk_today(now=None):
+    """[AA1] The US session date the desk should be scoring, as 'YYYY-MM-DD'.
+    Derived from UTC via US Eastern, so it is identical on every machine."""
+    _n = (pd.Timestamp.now('UTC').tz_localize(None) if now is None
+          else pd.Timestamp(now))
+    _et = _n - pd.Timedelta(hours=4 if is_us_dst(_n) else 5)
+    _d = _et.normalize()
+    while _d.weekday() >= 5:            # Sat/Sun -> the Friday session
+        _d -= pd.Timedelta(days=1)
+    return str(_d.date())
+def _date_sanity(date):
+    """[AA1] Lines describing how `date` relates to the live US session.
+    Returns (level, [lines]) — 'ok' | 'warn' | 'bad'."""
+    _t = _desk_today()
+    _d, _msgs = str(date), []
+    if _d == _t:
+        return 'ok', []
+    _n = pd.Timestamp.now('UTC').tz_localize(None)
+    _delta = (pd.Timestamp(_d) - pd.Timestamp(_t)).days
+    if _delta > 0:
+        _msgs.append(f"the date you typed ({_d}) is {_delta} day(s) AFTER the "
+                     f"current US session date ({_t}).")
+        _msgs.append(f"now {_n.strftime('%Y-%m-%d %H:%M')}Z; your local clock "
+                     f"reads {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')}. "
+                     f"East of UTC the local date runs AHEAD of the US session "
+                     f"for the whole US day — do not type the local date.")
+        return 'bad', _msgs
+    _msgs.append(f"scoring {_d}, {-_delta} day(s) before the current US "
+                 f"session date ({_t}) — a backfill or a correction.")
+    return 'warn', _msgs
+
 # ============================================================================
 # [Y15] THE PAPER DESK IS DEFINED **BEFORE THE RUN**. In v31.11 it sat at
 #        the very end of the file, so ANY exception in the thousands of
@@ -1432,6 +1640,16 @@ _LED_COLS = ['instrument', 'date', 'point', 'side', 'notional',
              'shares', 'contracts', 'ordinary',
              'fut_1330', 'fx', 'adr', 'fut', 'fair', 'premium_bps', 'dev_bps',
              'z', 'n', 'threshold', 'gate', 'div_carry', 'in_position', 'net',
+             # [AA6] PROVENANCE OF THE HEDGE FX on ENTRY/EXIT rows:
+             #   'provisional' the 13:30 fixing standing in — the real rate is
+             #                 tomorrow's 01:00 UTC TW open and does not exist
+             #                 yet. Everything derived from it is indicative.
+             #   'next_open'   fx_fill() wrote the realised TW open. Final.
+             #   'ndf'         FX_EXEC_MODE='ndf_immediate' — hedged at trade
+             #                 time, so the recorded rate IS the dealt rate.
+             # Blank on old ledgers; treated as 'provisional' so a pre-[AA6]
+             # ledger is flagged rather than silently assumed settled.
+             'fx_src',
              'note']
 def _signal_point():
     """[X8] The execution point the SIGNAL is defined at. The desk used to
@@ -1468,6 +1686,19 @@ def _legacy_from_note(note, fallback_notional):
             except ValueError:
                 pass
     return _dir, _nt
+def _sofr_now():
+    """[AA4] The RAW SOFR the desk should price carry off: the last value of
+    the daily series run_backtest actually used, net of the funding spread
+    that series carries ([S2][T1] df['funding_rate'] = SOFR + spread). Falls
+    back to the FUNDING_RATE_ANN constant when the pull failed."""
+    try:
+        if 'df' in globals() and 'funding_rate' in df.columns:
+            _v = float(df['funding_rate'].dropna().iloc[-1]) - FUNDING_SPREAD_ANN
+            if 0.0 <= _v <= 0.25:          # a plausible overnight rate
+                return _v
+    except Exception:
+        pass
+    return float(FUNDING_RATE_ANN)
 def get_manual_context():
     """[U3] Read-only snapshot of what the desk needs from the finished run."""
     if 'df' not in globals() or 'Spread (Signal)' not in df.columns:
@@ -1510,10 +1741,30 @@ def get_manual_context():
         # [X9] and the CARRY the desk used to ignore entirely: funding when
         # long the ADR, borrow net of rebate when short, margin either way.
         # Per CALENDAR day, in bps of notional — the backtest's convention.
-        carry_long_bpd=float(FUNDING_RATE_ANN / 360 * 1e4
-                             + margin_ann_bps() / 360),
-        carry_short_bpd=float((BORROW_ANN_BPS / 1e4 - SHORT_REBATE_ANN)
-                              / 360 * 1e4 + margin_ann_bps() / 360),
+        # [AA4] BUGFIX. carry_long_bpd read FUNDING_RATE_ANN ALONE while
+        # run_backtest charges fund_arr = SOFR + FUNDING_SPREAD_ANN. The desk
+        # therefore under-charged every paper LONG by FUNDING_SPREAD_ANN
+        # (1.2%/yr = 0.333 bps/cd — 23% of the whole long carry) and the
+        # gamma-exit hurdle it derives from it fired late. Both legs now come
+        # from the single long_financing_ann/short_financing_ann definitions.
+        # [AA4] The two carries are split into their FUNDING and MARGIN parts
+        # because they sit on DIFFERENT notionals: funding/borrow on the ADR
+        # leg, margin on the futures leg (that is what run_backtest does —
+        # entry_beta x notional). With integer units the legs differ, so one
+        # blended bps/day on one notional is no longer exact.
+        # [AA4] and the RATE itself comes off the LIVE SOFR series the
+        # backtest loaded ([S2][T1] df['funding_rate'] = SOFR + spread),
+        # falling back to the FUNDING_RATE_ANN constant only when the pull
+        # failed. Reading the constant while the backtest read the series was
+        # the same class of divergence as the missing spread above.
+        carry_fund_long_bpd=float(long_financing_ann(_sofr_now()) / 360 * 1e4),
+        carry_fund_short_bpd=float(short_financing_ann(_sofr_now()) / 360 * 1e4),
+        carry_margin_bpd=float(margin_ann_bps(_sofr_now()) / 360),
+        carry_long_bpd=float(long_financing_ann(_sofr_now()) / 360 * 1e4
+                             + margin_ann_bps(_sofr_now()) / 360),
+        carry_short_bpd=float(short_financing_ann(_sofr_now()) / 360 * 1e4
+                              + margin_ann_bps(_sofr_now()) / 360),
+        sofr=float(_sofr_now()),
         # [X10] the de-trend window the BACKTEST's gate uses, so _gate can
         # test the same object instead of the raw premium level
         detrend_n=int(ADF_DETREND_N), gate_on_level=(GATE_MODE == 'adf_level'),
@@ -1584,6 +1835,8 @@ def _rebuild():
     c = _MANUAL['ctx']
     led = _read_ledger()
     led = led[led['instrument'] == c['instrument']]
+    _MANUAL['orphan_exits'] = []        # [AA3] reset the audit trail
+    _MANUAL['mixed_legs'] = []          # [AA3]
     # 1. manual days = the SIGNAL-POINT rows, in date order, de-duplicated.
     # [X8] the point follows EXEC_TIMING instead of being hardcoded 'close'.
     _pt = c.get('exec_point', 'close')
@@ -1686,16 +1939,67 @@ def _rebuild():
         _freeze_regime24(open_ent.iloc[0])   # [Y38] anchor on the FIRST leg
     # [U4] 3. closed trades: pair each EXIT with the ENTRY before it. This is
     # the paper-trade record — cumulative P&L, win rate, per-trade history.
+    #
+    # [AA3] BUGFIX — THE PAPER RECORD COULD BE SILENTLY REWRITTEN.
+    # The old rule was "pair each EXIT with the LAST ENTRY dated on or before
+    # it", with no segmentation and no cross-check. Two consequences, both
+    # reproduced from a clean ledger:
+    #   * writing a NEW entry dated between an old entry and its exit
+    #     RE-POINTED that closed trade at the new entry. A LONG $497,708
+    #     opened 07-17 and closed 07-21 silently became a SHORT $495,911
+    #     opened 07-20 and closed 07-21 — same stored `net`, different side,
+    #     different size, different entry date. The paper P&L table showed
+    #     the new trade with the old trade's money.
+    #   * `net` was trusted from the EXIT row unconditionally, so that
+    #     re-pointed record kept a P&L that belonged to a different trade.
+    # Now: exits SEGMENT the ledger. Entries strictly after the previous exit
+    # and on/before this one are the legs of THIS round trip. The EXIT row's
+    # own stored side/notional are cross-checked against the entry it got
+    # paired with, and a stored `net` that cannot belong to this pairing is
+    # DISCARDED and recomputed rather than displayed.
     _MANUAL['closed'] = []
+    _prev_x = ''
     for _, x in ext.iterrows():
-        _prev = ent[ent['date'].astype(str) <= str(x['date'])]
-        if not len(_prev):
+        _seg = ent[(ent['date'].astype(str) > _prev_x)
+                   & (ent['date'].astype(str) <= str(x['date']))]
+        _prev_x = str(x['date'])
+        if not len(_seg):
+            # an EXIT with no ENTRY of its own — a stale row, or a hand-edit.
+            # Record it so desk_audit() can name it instead of the desk
+            # quietly attaching it to somebody else's entry.
+            _MANUAL['orphan_exits'].append(str(x['date']))
             continue
-        e = _prev.iloc[-1]
+        e = _seg.iloc[0]                     # the round trip's FIRST leg
         _dir, _nt = _pos_from_entry_row(e)
+        if len(_seg) > 1:                    # [Y38] add-on legs: blend sizes
+            _same = [_r for _, _r in _seg.iterrows()
+                     if _pos_from_entry_row(_r)[0] == _dir]
+            if len(_same) != len(_seg):      # [AA3] opposite sides in one leg
+                _MANUAL['mixed_legs'].append(str(x['date']))
+                print(f"[AA3] {x['date']} EXIT closes a stretch containing "
+                      f"BOTH long and short ENTRY rows "
+                      f"({', '.join(str(_r['date']) for _, _r in _seg.iterrows())})"
+                      f" — only the legs matching the first ({'LONG' if _dir == 1 else 'SHORT'}) "
+                      f"are counted. That ledger cannot be right; run "
+                      f"desk_audit().")
+            _nt = sum(_pos_from_entry_row(_r)[1] for _r in _same)
         _held = (pd.Timestamp(str(x['date']))
                  - pd.Timestamp(str(e['date']))).days
-        _net = _led_num(x, 'net')
+        # [AA3] does the EXIT row agree with the ENTRY it was paired with?
+        _xside = str(x.get('side', '')).strip().upper()
+        _xnt = _led_num(x, 'notional')
+        _mismatch = ((_xside in ('LONG', 'SHORT')
+                      and _xside != ('LONG' if _dir == 1 else 'SHORT'))
+                     or (_xnt is not None and _nt
+                         and abs(_xnt - _nt) / max(abs(_nt), 1.0) > 0.005))
+        _net = None if _mismatch else _led_num(x, 'net')
+        if _mismatch:
+            print(f"[AA3] {x['date']} EXIT does not match the ENTRY it pairs "
+                  f"with ({e['date']}: {'LONG' if _dir == 1 else 'SHORT'} "
+                  f"${_nt:,.0f} vs the EXIT row's {_xside or '?'} "
+                  f"${(_xnt or 0):,.0f}) — the stored P&L belonged to a "
+                  f"different trade and has been RECOMPUTED from the prints. "
+                  f"Run desk_audit() for the full picture.")
         if _net is None:      # [X7] recompute from the prints, fees AND carry
             try:              # [Y32] same integer units the trade really had
                 _u = _units(_nt, float(e['adr']), float(e['fut']),
@@ -1714,7 +2018,8 @@ def _rebuild():
                 _net = _al + _fl - _trade_cost(_dir, _nt, _held)
         _MANUAL['closed'].append(dict(
             entry_date=str(e['date']), exit_date=str(x['date']), dir=_dir,
-            notional=_nt, net=float(_net), held=_held))
+            notional=_nt, net=float(_net), held=_held,
+            suspect=bool(_mismatch)))       # [AA3]
     # 4. marks = signal-point rows on/after the entry date, re-marked
     _MANUAL['marks'] = []
     p = _MANUAL['pos']
@@ -1726,6 +2031,136 @@ def _rebuild():
                     _MANUAL['marks'].append(dict(date=d['date'], gross=m['gross'],
                                                  bps=m['bps'],
                                                  premium=d['premium']))
+# ============================================================================
+# [AA2] DID THE WRITE ACTUALLY LAND? — the frontend/backend state mismatch.
+# ----------------------------------------------------------------------------
+# WHAT WENT WRONG. enter() wrote its ENTRY row, called _rebuild(), and then
+# printed a full ENTRY banner — sizing, integer units, leg mismatch, fees,
+# carry, time stop — WITHOUT EVER CHECKING that _rebuild had actually opened
+# a position. _rebuild's rule is "the open position is the last ENTRY dated
+# strictly AFTER the last EXIT". So an ENTRY dated on or before an EXIT that
+# is already in the ledger produces NO position at all, silently:
+#
+#     ENTRY — SHORT spread $461,603          <- the banner says it worked
+#     2026-07-23  ADR 95.9473  SSF 621.18
+#     · time stop 20cd -> 2026-08-12
+#     [U3] no open position                  <- the desk is FLAT
+#
+# That is the "double-clicking toggles entries" report. It is not the double
+# click: it is that the desk RENDERS THE INTENT and STORES SOMETHING ELSE, so
+# whether you see a position depends on ledger rows you are not looking at.
+# Clicking again re-runs the identical write and the identical banner, so the
+# panel appears to flip between "entered" and "flat" for no visible reason.
+# Every state-changing call now PROVES its own effect and, when the effect is
+# not there, says exactly which row blocked it and how to clear it.
+def _assert_state(kind, date):
+    """[AA2] Verify the ledger write produced the state the caller is about
+    to announce. Prints a diagnosis and returns False when it did not."""
+    c, p = _MANUAL['ctx'], _MANUAL['pos']
+    led = _read_ledger()
+    led = led[led['instrument'] == c['instrument']]
+    if kind == 'ENTRY':
+        if p is not None and str(p['date']) <= str(date):
+            return True
+        _blk = led[(led['point'] == 'EXIT')
+                   & (led['date'].astype(str) >= str(date))]
+        say(f"the ENTRY dated {date} was WRITTEN but the desk is still "
+            f"{'FLAT' if p is None else 'showing the older position from ' + str(p['date'])}"
+            f" — do NOT trade off the banner above", 'bad')
+        if len(_blk):
+            _bd = ", ".join(str(_r['date']) for _, _r in _blk.iterrows())
+            say(f"blocked by EXIT row(s) dated {_bd}, on or after your entry "
+                f"date. An entry can only open a position if it is dated "
+                f"strictly AFTER the last exit.", 'bad')
+            say(f"fix it with:  delete_day('{str(_blk.iloc[0]['date'])}', "
+                f"'EXIT')   (or re-date the entry after {_bd})", 'info')
+        else:
+            say("no blocking EXIT found — the ledger may be hand-edited; "
+                "run desk_audit()", 'warn')
+        return False
+    if kind == 'EXIT':
+        if p is None:
+            return True
+        say(f"an EXIT was written for {date} but the desk still shows a "
+            f"position opened {p['date']} — run desk_audit()", 'bad')
+        return False
+    return True
+def desk_audit(fix=False):
+    """[AA2][AA3] Reconcile the LEDGER against what the desk believes.
+    Read-only unless fix=True. Answers, in one place, the question the desk
+    never used to answer: is what I am looking at actually what is stored?"""
+    c = _MANUAL['ctx']
+    if c is None:
+        say('run setup_manual() first', 'bad'); return None
+    led = _read_ledger()
+    led = led[led['instrument'] == c['instrument']].sort_values('date')
+    ent = led[led['point'] == 'ENTRY']
+    ext = led[led['point'] == 'EXIT']
+    p = _MANUAL['pos']
+    rows, problems = [], []
+    rows.append(('ledger rows', f"{len(led)}",
+                 f"{len(ent)} ENTRY, {len(ext)} EXIT, "
+                 f"{len(led) - len(ent) - len(ext)} scored day(s)"))
+    rows.append(('desk position',
+                 'FLAT' if p is None else
+                 f"{'LONG' if p['dir'] == 1 else 'SHORT'} ${p['notional']:,.0f}",
+                 '—' if p is None else
+                 f"opened {p['date']}, {p.get('n_legs', 1)} leg(s), "
+                 f"{len(_MANUAL['marks'])} mark(s)"))
+    # 1. entries that can never open a position
+    _lastx = str(ext['date'].astype(str).max()) if len(ext) else ''
+    _dead = ent[ent['date'].astype(str) <= _lastx] if _lastx else ent.iloc[0:0]
+    _live = ent[ent['date'].astype(str) > _lastx] if _lastx else ent
+    if len(_dead) and p is None and len(_live) == 0 and len(_dead):
+        problems.append(
+            f"{len(_dead)} ENTRY row(s) sit on or before the last EXIT "
+            f"({_lastx}) so NONE of them can open a position — the desk reads "
+            f"FLAT however many times you press Record ENTRY. Latest such "
+            f"entry: {str(_dead.iloc[-1]['date'])}. Clear the stale exit with "
+            f"delete_day('{_lastx}', 'EXIT') or re-date the entry after it.")
+    # 2. orphan exits / mixed legs, collected during _rebuild
+    for _d in (_MANUAL.get('orphan_exits') or []):
+        problems.append(f"EXIT {_d} has no ENTRY of its own — it is a stale "
+                        f"row. delete_day('{_d}', 'EXIT') removes it.")
+    for _d in (_MANUAL.get('mixed_legs') or []):
+        problems.append(f"the stretch closed by EXIT {_d} contains BOTH long "
+                        f"and short ENTRY rows — that is not a position.")
+    # 3. closed trades whose stored P&L was rejected
+    for t in (_MANUAL.get('closed') or []):
+        if t.get('suspect'):
+            problems.append(
+                f"closed trade {t['entry_date']} -> {t['exit_date']}: the "
+                f"stored `net` belonged to a different entry and was "
+                f"RECOMPUTED (${t['net']:+,.0f}). Re-run exit_pos for that "
+                f"date to rewrite the row properly.")
+    # 4. provisional hedge FX [AA6]
+    _fx = _fx_status()
+    rows.append(('hedge FX',
+                 'PROVISIONAL' if _fx['provisional'] else 'settled',
+                 _fx['banner'] or _fx['mark_label']))
+    if _fx['provisional']:
+        problems.append(_fx['banner'])
+    # 5. duplicate (date, point) rows
+    _dup = led.groupby([led['date'].astype(str), led['point'].astype(str)]).size()
+    for (_d, _pt), _n in _dup[_dup > 1].items():
+        problems.append(f"{_n} duplicate rows for {_d}/{_pt} — the desk uses "
+                        f"the LAST one. delete_day('{_d}', '{_pt}') then "
+                        f"re-enter it.")
+    rows.append(('problems found', f"{len(problems)}",
+                 'the desk and the ledger agree' if not problems
+                 else 'see below'))
+    kv_table(f"DESK AUDIT — {c['instrument']}", rows, col='reading',
+             note='Reconciles the CSV on disk against the state the panel '
+                  'is showing you. [AA2]')
+    if problems:
+        note_block('LEDGER PROBLEMS — the desk is not showing what you think',
+                   [f"{i+1}. {t}" for i, t in enumerate(problems)])
+    else:
+        say('ledger and desk state reconcile', 'ok')
+    if fix and _lastx and len(_dead) and p is None and not len(_live):
+        say(f"fix=True: removing the blocking EXIT row dated {_lastx}", 'warn')
+        delete_day(_lastx, 'EXIT')
+    return problems
 def setup_manual(reload=True):
     """[U3] Cell A. Rebuilds context + restores days, open position and marks.
     [V32-FIX4] NOTE: this function is REDEFINED at [Y8] near the end of the
@@ -1776,9 +2211,26 @@ def setup_manual(reload=True):
     _line(f"         or [X12] gamma: expected daily reversion < daily carry")
     _line(f"  fair price from {c['fair_mode']};  backtest round trip "
           f"{_G['approx']}{c['rt_cost_bps']:.0f} bps")
-    _line(f"  paper P&L charges {c['rt_fee_bps']:.0f} bps fees + carry "
-          f"{c['carry_long_bpd']:.1f}/{c['carry_short_bpd']:.1f} bps per day "
-          f"(long/short)")
+    _line(f"  paper P&L charges {c['rt_fee_bps']:.0f} bps fees "
+          f"(ADR {ADR_FEE_IN_BPS}+{ADR_FEE_OUT_BPS}, {HEDGE_LBL} "
+          f"{FUT_FEE_IN_BPS}+{FUT_FEE_OUT_BPS}, FX 2x"
+          f"{(FX_SPOT_HALF_SPREAD_BPS if FX_EXEC_MODE == 'spot_next_open' else FX_NDF_HALF_SPREAD_BPS):g})"
+          f" [AA7]")
+    _line(f"    carry LONG  {c['carry_long_bpd']:+.2f} bps/cd = funding "
+          f"SOFR+{FUNDING_SPREAD_ANN*100:.1f}% on the ADR leg "
+          f"{c['carry_fund_long_bpd']:+.2f} + margin "
+          f"{c['carry_margin_bpd']:+.3f}")
+    _line(f"    carry SHORT {c['carry_short_bpd']:+.2f} bps/cd = "
+          + (f"SOFR-{BORROW_SPREAD_ANN_BPS}bps REBATE "
+             f"{c['carry_fund_short_bpd']:+.2f} (a CREDIT)"
+             if BORROW_MODE == 'sofr_minus'
+             else f"borrow {c['carry_fund_short_bpd']:+.2f}")
+          + f" + margin {c['carry_margin_bpd']:+.3f}")
+    _line(f"    margin = {MARGIN_PCT*100:.1f}% of the hedge leg x "
+          f"{MARGIN_FUND_ANN_BPS} bps ann = {margin_ann_bps():.1f} bps/yr "
+          f"of notional [AA7]")
+    _line(f"    [AA4] the LONG carry used to omit the {FUNDING_SPREAD_ANN*100:.1f}% "
+          f"funding spread the BACKTEST charges — it no longer does")
     _line(f"    [X9] spread and impact are EXCLUDED — your typed fills already")
     _line(f"    crossed them. That is the only difference from the "
           f"{c['rt_cost_bps']:.0f} bps above.")
@@ -1953,6 +2405,41 @@ def _fee_usd(adr_notional, hedge_notional):
     return ((ADR_FEE_IN_BPS + ADR_FEE_OUT_BPS) / 1e4 * adr_notional
             + (FUT_FEE_IN_BPS + FUT_FEE_OUT_BPS + 2 * _fxh) / 1e4
             * hedge_notional)
+def _trade_cost_parts(direction, notional, held_days,
+                      adr_notional=None, hedge_notional=None):
+    """[AA4] The round-trip cost of a paper trade, BROKEN OUT, in dollars.
+    Returns dict(fee, carry_fund, carry_margin, carry, total, days, bpd).
+    SIGN: positive = a cost. carry_fund is NEGATIVE on a short whenever
+    BORROW_MODE='sofr_minus' — that is the SOFR-50 rebate [AA7], a genuine
+    credit, and it must NOT be floored here (only the gamma HURDLE floors).
+
+    [AA4] The two carry components sit on DIFFERENT notionals, exactly as
+    run_backtest charges them:
+        funding / borrow -> the ADR leg
+        margin funding   -> the futures (hedge) leg
+    The desk used to charge BOTH on the ADR notional. With integer units the
+    legs differ by up to a contract-half, so that was a real (small) error;
+    with the legs equal it changes nothing, which is why it survived."""
+    c = _MANUAL['ctx']
+    if adr_notional is not None and hedge_notional is not None:
+        _fee = _fee_usd(adr_notional, hedge_notional)
+        _base_fund, _base_mgn = float(adr_notional), float(hedge_notional)
+    else:
+        _fee = c['rt_fee_bps'] / 1e4 * notional
+        _base_fund = _base_mgn = float(notional)
+    _d = max(int(held_days), 0)
+    _fbpd = (c.get('carry_fund_long_bpd') if direction == 1
+             else c.get('carry_fund_short_bpd'))
+    if _fbpd is None:      # legacy context dict (pre-[AA4]) — blended fallback
+        _fbpd = (c['carry_long_bpd'] if direction == 1
+                 else c['carry_short_bpd'])
+        _mbpd = 0.0
+    else:
+        _mbpd = c.get('carry_margin_bpd', 0.0)
+    _cf = _fbpd / 1e4 * _base_fund * _d
+    _cm = _mbpd / 1e4 * _base_mgn * _d
+    return dict(fee=_fee, carry_fund=_cf, carry_margin=_cm, carry=_cf + _cm,
+                total=_fee + _cf + _cm, days=_d, bpd=_fbpd + _mbpd)
 def _trade_cost(direction, notional, held_days,
                 adr_notional=None, hedge_notional=None):
     """[X9] FULL round-trip cost of a paper trade, in dollars: contractual
@@ -1961,17 +2448,87 @@ def _trade_cost(direction, notional, held_days,
     disagree (the card used to charge ONE fill and the exit TWO).
     [Y32] when the caller passes the integer-unit leg notionals, fees are
     charged per leg on those; the legacy single-notional path is kept for
-    old ledgers."""
+    old ledgers. [AA4] thin wrapper over _trade_cost_parts."""
+    return _trade_cost_parts(direction, notional, held_days,
+                             adr_notional, hedge_notional)['total']
+def _carry_hurdle_bpd(direction):
+    """[AA7] The carry a gamma exit must CLEAR, in bps/calendar day. Floored
+    at zero: when the net carry is a CREDIT (a short under the SOFR-50
+    rebate) there is nothing to clear, and a negative hurdle would make the
+    gamma exit unreachable rather than simply inactive. This mirrors
+    run_backtest's max(daily_carry, 0.0) — which floors the HURDLE only,
+    never the realised P&L."""
     c = _MANUAL['ctx']
-    if adr_notional is not None and hedge_notional is not None:
-        _fee = _fee_usd(adr_notional, hedge_notional)
-        _carry_base = adr_notional
-    else:
-        _fee = c['rt_fee_bps'] / 1e4 * notional
-        _carry_base = notional
-    _bpd = c['carry_long_bpd'] if direction == 1 else c['carry_short_bpd']
-    _carry = _bpd / 1e4 * _carry_base * max(int(held_days), 0)
-    return _fee + _carry
+    return max(c['carry_long_bpd'] if direction == 1
+               else c['carry_short_bpd'], 0.0)
+# ============================================================================
+# [AA6] WHICH USDTWD PRICED THE HEDGE — and whether it is REAL yet.
+# ----------------------------------------------------------------------------
+# THE PROBLEM THE DESK USED TO HIDE. Under FX_EXEC_MODE='spot_next_open' the
+# TWD leg of a US-hours fill does NOT convert that night — onshore TWD spot is
+# shut. It converts at the NEXT Taiwan morning open, 09:00 Taipei = 01:00 UTC.
+# That print does not exist when you record the fill, so enter()/exit_pos()
+# store the 13:30 fixing as a PLACEHOLDER and fx_fill() replaces it the next
+# morning. Until then every mark, every "EXIT NOW would net", and every
+# realised P&L on that trade is PROVISIONAL — but the only thing that ever
+# said so was a one-line reminder printed once, at the moment of the fill,
+# which scrolled away. status() and the daily card showed the numbers as
+# though they were final.
+#
+# THREE DISTINCT RATES, never to be confused (this is [D2]/[Y29] restated
+# with the third one made explicit, because the third is the one that pays):
+#   1. SIGNAL   13:30 Taipei TW-close fixing ('TWD F093'). Prices the fair,
+#               the premium, the z. Never anything else. Every historical
+#               premium in the z-window was built with it.
+#   2. MARK     the same fixing by default (FX_MARK_MODE='fixing', the only
+#               setting where desk and backtest agree), or the snapshot FX
+#               under 'snapshot'. An accounting rate — it moves the mark, it
+#               never moves cash.
+#   3. HEDGE    USDTWD at the NEXT TW open, 01:00 UTC (FX_SPOT_TICKER /
+#               FX_SPOT_FIELD). THE ONE THAT SETTLES. Recorded after the
+#               fact by fx_fill(); until then rate 1 stands in for it.
+# The window between the US print and 01:00 UTC (~5h in close mode, ~11.5h in
+# open mode) is UNHEDGED TWD — mean-zero, but not zero-variance, and that is
+# the risk this block makes visible instead of silently assuming away.
+FX_HEDGE_OPEN_UTC = '01:00'      # 09:00 Taipei — the print the hedge deals at
+def _fx_rows_pending():
+    """[AA6] ENTRY/EXIT ledger rows whose hedge FX is still the placeholder.
+    Returns [(date, point, fx), ...] oldest first."""
+    c = _MANUAL['ctx']
+    if c is None or FX_EXEC_MODE != 'spot_next_open':
+        return []
+    try:
+        led = _read_ledger()
+    except Exception:
+        return []
+    led = led[(led['instrument'] == c['instrument'])
+              & (led['point'].isin(['ENTRY', 'EXIT']))]
+    out = []
+    for _, r in led.sort_values('date').iterrows():
+        if str(r.get('fx_src', '')).strip() not in ('next_open', 'ndf'):
+            out.append((str(r['date']), str(r['point']),
+                        _led_num(r, 'fx')))
+    return out
+def _fx_status():
+    """[AA6] One dict every printer can ask: is the hedge FX real yet?"""
+    _pend = _fx_rows_pending()
+    if FX_EXEC_MODE != 'spot_next_open':
+        return dict(provisional=False, pending=[], mark_label='NDF at trade time',
+                    banner='')
+    _lbl = ("13:30 fixing standing in for the hedge rate — PROVISIONAL"
+            if _pend else f"{LOCAL_LBL} open {FX_HEDGE_OPEN_UTC}Z (realised)")
+    _bn = ''
+    if _pend:
+        _bn = (f"{len(_pend)} fill(s) still on a PROVISIONAL hedge FX: "
+               + ", ".join(f"{d} {pt}" for d, pt, _ in _pend[:4])
+               + (" ..." if len(_pend) > 4 else "")
+               + f" — the hedge deals at the next {LOCAL_LBL} open "
+                 f"({FX_HEDGE_OPEN_UTC} UTC). Run "
+               + "; ".join(f"fx_fill('{d}', <{FX_LBL} 09:00>)"
+                           for d, _, _ in _pend[:2])
+               + (" ..." if len(_pend) > 2 else ""))
+    return dict(provisional=bool(_pend), pending=_pend, mark_label=_lbl,
+                banner=_bn)
 def _mtm(adr_now, fut_now, fx_now, div_cash_pct=0.0):
     """[Y32] Marks off the INTEGER units the position actually holds:
     whole shares on the ADR leg, whole contracts x contract_sh x the TWD
@@ -2214,15 +2771,34 @@ def enter(side, adr, fut, fx, date, notional=None, note=''):
                ordinary='', fut_1330='', fx=float(fx), adr=float(adr),
                fut=float(fut), fair='', premium_bps='', dev_bps='', z='',
                n=c['n'], threshold=c['thresh'], gate='', div_carry='',
-               in_position=True, net='', note=str(note).strip())
+               in_position=True, net='',
+               fx_src=('provisional' if FX_EXEC_MODE == 'spot_next_open'
+                       else 'ndf'),                            # [AA6]
+               note=str(note).strip())
     led = _read_ledger()
-    led = led[~((led['point'] == 'ENTRY') & (led['date'].astype(str) == str(date)))]
+    # [AA2] BUGFIX: this row-replace was NOT scoped to the instrument, so
+    # recording a TSMC entry silently deleted a UMC entry on the same date.
+    # [X14] fixed exactly this for add_day and missed enter().
+    led = led[~((led['instrument'] == c['instrument'])
+                & (led['point'] == 'ENTRY')
+                & (led['date'].astype(str) == str(date)))]
     _write_ledger(pd.concat([led, pd.DataFrame([row])], ignore_index=True))
     _rebuild()
     p = _MANUAL['pos']
+    # [AA2] the success banner is the thing the eye trusts, so it is only
+    # printed when the ledger actually produced a position. When it did not,
+    # the banner SAYS SO instead of announcing a trade that does not exist.
+    if not _assert_state('ENTRY', str(date)):
+        banner(f"NOT OPEN — the {('LONG' if d == 1 else 'SHORT')} row was "
+               f"stored but no position exists",
+               sub=f"{date}   see the reason above, then desk_audit()")
+        return p
     banner(f"ENTRY — {'LONG' if d == 1 else 'SHORT'} spread ${nt:,.0f}",
            sub=f"{date}   ADR {float(adr):,.4f}   {HEDGE_LBL} "
                f"{float(fut):,.2f}   FX {float(fx):,.4f}")
+    _dl, _dm = _date_sanity(date)                      # [AA1]
+    for _mm in _dm:
+        say(_mm, 'bad' if _dl == 'bad' else 'info')
     say(f"requested ${_nt_req:,.0f} -> REAL units: {_u['shares']:,d} ADR "
         f"shares (${_u['adr_notional']:,.0f}) vs {_u['contracts']} "
         f"{HEDGE_LBL} contracts (${_u['hedge_notional']:,.0f}, "
@@ -2233,11 +2809,22 @@ def enter(side, adr, fut, fx, date, notional=None, note=''):
         f"rounding residue integer fills cannot avoid; it rides UNHEDGED",
         'info' if _mm_bps < 25 else 'warn')
     _fee0 = _fee_usd(_u['adr_notional'], _u['hedge_notional'])
+    _bpd0 = c['carry_long_bpd'] if d == 1 else c['carry_short_bpd']
     say(f"round-trip fees ${_fee0:,.0f} "
-        f"({_fee0 / nt * 1e4:.0f} bps, per leg on its own size) + carry "
-        f"{(c['carry_long_bpd'] if d == 1 else c['carry_short_bpd']):.1f} bps/day "
-        f"({'funding+margin, you are LONG the ADR' if d == 1 else 'borrow+margin, you are SHORT the ADR'})",
-        'info')
+        f"({_fee0 / nt * 1e4:.0f} bps, per leg on its own size)", 'info')
+    # [AA7] the carry can now be a CREDIT (short, SOFR-50 rebate). Saying
+    # "carry -1.2 bps/day" and leaving the reader to work out the sign is
+    # exactly the kind of ambiguity this pass exists to remove.
+    say(f"carry {abs(_bpd0):.2f} bps/day "
+        + ("CHARGED" if _bpd0 >= 0 else "EARNED (a CREDIT)")
+        + " — "
+        + (f"funding SOFR+{FUNDING_SPREAD_ANN*100:.1f}% on the ADR leg"
+           if d == 1 else
+           (f"SOFR-{BORROW_SPREAD_ANN_BPS}bps rebate on the short proceeds"
+            if BORROW_MODE == 'sofr_minus'
+            else f"{BORROW_ANN_BPS}bps borrow"))
+        + f" + {c['carry_margin_bpd']:.3f} bps/day margin on the hedge leg",
+        'info' if _bpd0 >= 0 else 'ok')
     _ts_date = (pd.Timestamp(date) + pd.Timedelta(days=c['time_stop'])).date()
     say(f"time stop {c['time_stop']}cd -> {_ts_date}", 'info')
     if _MANUAL['marks']:
@@ -2271,7 +2858,12 @@ def delete_day(date, point=None):
     print(f"[U3] deleted {nrm} row(s) for {date}"
           f"{'/' + point if point else ''} — {len(_MANUAL['days'])} manual day(s) left")
 def exit_pos(adr, fut, fx, date, div_cash_pct=0.0, note=''):
-    """[U3] Record the exit fill and print realised P&L vs the mark path."""
+    """[U3] Record the exit fill and print realised P&L vs the mark path.
+    [AA2] SHADOWED — [Y11] REDEFINES exit_pos near the end of the file and the
+    LATE definition is the one that runs. This copy is kept only so the [U3]
+    section reads as a whole; the [AA2] state assertion, the [AA6] fx_src
+    stamp and the pre-rebuild mark snapshot live in the [Y11] copy. Same
+    warning as [V32-FIX4] on setup_manual: an edit here alone does nothing."""
     c, p = _MANUAL['ctx'], _MANUAL['pos']
     if p is None:
         print('[U3] no open position'); return None
@@ -2334,6 +2926,69 @@ def status():
            sub=("FLAT" if p is None else
                 f"{'LONG' if p['dir'] == 1 else 'SHORT'} spread since "
                 f"{p['date']}, ${p['notional']:,.0f}"))
+    # ---- 0. [AA5] WHERE THE DESK STANDS, IN ONE BLOCK -----------------
+    # The old status() opened straight into the mark path, so the three
+    # questions that decide whether any of it can be believed — is the state
+    # I am looking at the state that is stored, is the hedge FX real yet, and
+    # what is the desk waiting for me to do — were answered nowhere, or
+    # scattered across prints that had already scrolled away.
+    _fx = _fx_status()
+    _prob = []
+    _lastx0 = ''
+    try:
+        _l0 = _read_ledger()
+        _l0 = _l0[_l0['instrument'] == c['instrument']]
+        _x0 = _l0[_l0['point'] == 'EXIT']
+        _e0 = _l0[_l0['point'] == 'ENTRY']
+        _lastx0 = str(_x0['date'].astype(str).max()) if len(_x0) else ''
+        if (p is None and len(_e0) and _lastx0
+                and str(_e0['date'].astype(str).max()) <= _lastx0):
+            _prob.append(f"the newest ENTRY ({str(_e0['date'].astype(str).max())}) "
+                         f"is dated on/before the newest EXIT ({_lastx0}), so "
+                         f"it can never open a position — desk_audit()")
+    except Exception:
+        pass
+    _prob += [f"closed trade {t['entry_date']}→{t['exit_date']} had a stored "
+              f"P&L from a different entry; recomputed"
+              for t in (_MANUAL.get('closed') or []) if t.get('suspect')]
+    _prob += [f"EXIT {d} has no ENTRY of its own"
+              for d in (_MANUAL.get('orphan_exits') or [])]
+    _next = ('type or pull today\'s prints — add_day(...) / pull_day(...)'
+             if not _MANUAL['days'] or
+             str(_MANUAL['days'][-1]['date']) < _desk_today()
+             else ('record the fill — enter(...)' if p is None
+                   else 'mark it daily; exit on the triggers below'))
+    if _fx['provisional']:
+        _next = (f"fx_fill(...) the realised {LOCAL_LBL} open "
+                 f"({FX_HEDGE_OPEN_UTC} UTC) — then " + _next)
+    kv_table(
+        f"DESK STATE — {c['instrument']}",
+        [('position',
+          'FLAT' if p is None else
+          f"{'LONG' if p['dir'] == 1 else 'SHORT'} ${p['notional']:,.0f}",
+          '—' if p is None else
+          f"opened {p['date']} · {p.get('shares', 0):,.0f} sh + "
+          f"{p.get('contracts', 0)} {HEDGE_LBL} · {p.get('n_legs', 1)} leg(s)"),
+         ('US session date', _desk_today(),
+          f"derived from UTC [AA1]; your local clock reads "
+          f"{pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')}"),
+         ('last day scored',
+          str(_MANUAL['days'][-1]['date']) if _MANUAL['days'] else 'none',
+          f"{len(_MANUAL['days'])} day(s) at the {c.get('exec_point','close').upper()} "
+          f"signal point"),
+         ('hedge FX', 'PROVISIONAL' if _fx['provisional'] else 'settled',
+          _fx['banner'] or _fx['mark_label']),
+         ('marks / P&L',
+          'reliable' if not _prob else f"{len(_prob)} PROBLEM(S)",
+          'ledger and desk state reconcile' if not _prob
+          else '; '.join(_prob[:2])),
+         ('next action', _next, '')],
+        col='reading',
+        note='[AA5] Read this block first: it says whether the numbers below '
+             'can be trusted and what the desk is waiting for.')
+    if _prob:
+        say('run desk_audit() — the panel is not showing what the ledger '
+            'holds', 'bad')
     # ---- 1. AM I IN, AND WHAT WOULD CLOSE IT? -------------------------
     if p is None:
         gate_ok, gtxt, _, _ = _gate(c['n'])   # [X10]
@@ -2463,13 +3118,31 @@ def form():
     c = _MANUAL['ctx']
     if c is None:
         print('[U3] run setup_manual() first'); return
-    L, S = W.Layout(width='158px'), {'description_width': '96px'}
+    # ------------------------------------------------------------------ [AA9]
+    # BOX SIZING. An ipywidgets FloatText splits its layout width between the
+    # DESCRIPTION LABEL and the input field, and the field is what loses:
+    #     old:  width 158px, description_width 96px  ->  ~62px of input
+    # 62px holds about four glyphs at the default font, so "29.00" was already
+    # at the edge and a real TWD print ("2,466.00") or a 4-dp USDTWD
+    # ("32.2999") was cut off mid-number — you could not read back what you
+    # had typed, which is a dangerous thing not to be able to do on a fill
+    # panel. The label also has a spinner control eating ~18px on the right.
+    #   new:  width 250px, description_width 92px    ->  ~140px of input
+    # which fits 9 characters plus the spinner with room to spare. The rows
+    # also WRAP now (flex_flow='row wrap') instead of overflowing the cell,
+    # so widening the fields cannot push a box off the edge of a narrow
+    # window and hide it entirely.
+    FIELD_W, DESC_W = '250px', '92px'
+    L, S = W.Layout(width=FIELD_W), {'description_width': DESC_W}
+    ROW = W.Layout(flex_flow='row wrap', width='100%')
     def F(d, v=None):
         return W.FloatText(value=v, description=d, layout=L, style=S)
-    w = dict(date=W.Text(value=str(pd.Timestamp.today().date()),
-                         description='Date', layout=W.Layout(width='215px'), style=S),
+    w = dict(date=W.Text(value=_desk_today(),      # [AA1] UTC-derived, not
+                                                   # the local calendar date
+                         description='Date', layout=W.Layout(width='250px'),
+                         style=S),
              note=W.Text(value='', description='Note',
-                         layout=W.Layout(width='420px'), style=S),
+                         layout=W.Layout(width='520px'), style=S),
              ordv=F('Ordinary'), f1330=F('SSF 13:30'), fx=F('FX 13:30'),
              ao=F('ADR'), fo=F('SSF'), fxo=F('FX (opt)'),    # [Y17][Y29]
              a19=F('ADR'), f19=F('SSF'), fx19=F('FX (opt)'),
@@ -2487,15 +3160,47 @@ def form():
              # roughly the whole dividend and the z-score detonates.
              dcar=F('Div carry %', 0.0),
              side=W.Dropdown(options=['(none)', 'LONG', 'SHORT'], value='(none)',
-                             description='Side', layout=W.Layout(width='190px'),
+                             description='Side', layout=W.Layout(width='250px'),
                              style=S),
              fadr=F('Fill ADR'), ffut=F('Fill SSF'), nt=F('Notional $', c['notional']))
     out = W.Output()
     def v(k):
         x = w[k].value
         return None if x in (None, 0) else float(x)
-    def run(fn):
-        def _cb(_):
+    # ------------------------------------------------------------------ [AA2]
+    # DOUBLE-CLICK GUARD. Every button used to fire its handler once per
+    # click with no memory, so a double click ran the whole write path twice.
+    # For add_day/enter that is idempotent (the row is replaced), but the
+    # SECOND run re-rendered the panel from a state the FIRST run had already
+    # changed, which is how "press it twice and the entry toggles" was
+    # produced: click 1 books, click 2 re-books and re-reads, and if anything
+    # in the ledger blocks the position (see [AA2] in _assert_state) the two
+    # renders disagree. Clicks closer together than this are collapsed, and
+    # the destructive buttons (EXIT / Cancel / Delete) additionally require
+    # the SAME button twice within the confirm window before they act.
+    CLICK_DEBOUNCE_S = 1.2
+    CONFIRM_WINDOW_S = 6.0
+    _click = {'last': None, 'at': 0.0, 'armed': None}
+    def run(fn, confirm=False, name=''):
+        def _cb(_b):
+            _now = time.monotonic()
+            if (_click['last'] == name
+                    and _now - _click['at'] < CLICK_DEBOUNCE_S):
+                with out:
+                    print(f"[AA2] ignored a repeat click on '{name}' "
+                          f"({_now - _click['at']:.1f}s apart) — the first one "
+                          f"is still what you are looking at.")
+                return
+            _click['last'], _click['at'] = name, _now
+            if confirm and _click['armed'] != name:
+                _click['armed'] = name
+                with out:
+                    clear_output()
+                    print(f"[AA2] '{name}' CHANGES OR DESTROYS RECORDED STATE. "
+                          f"Press it again within {CONFIRM_WINDOW_S:.0f}s to "
+                          f"confirm.")
+                return
+            _click['armed'] = None
             with out:
                 clear_output()
                 try:
@@ -2530,17 +3235,42 @@ def form():
               f"again with the same date — add_day OVERWRITES that date's "
               f"rows in the ledger, then _rebuild() re-derives everything "
               f"from it. Nothing else to clean up.")
-    btns = W.HBox([B('Score day', 'primary', run(_score)),
-                   B('Record ENTRY', 'success', run(_enter)),
-                   B('Record EXIT', 'warning', run(_exit)),
-                   B('Status', '', run(status), '96px'),
-                   B('Cancel entry', 'danger', run(cancel_entry), '118px')])
-    btns2 = W.HBox([B('How to edit a day', 'info', run(_resc), '140px'),
-                    B('Delete this date', 'danger', run(_del_day), '132px'),
-                    B('Ledger', '', run(show_ledger), '96px'),
-                    B('Chart z', '', run(zchart), '96px')])   # [Y20]
+    # [AA2] confirm=True on everything that closes a position or deletes a
+    # row; the two destructive buttons also sit in their own row, away from
+    # 'Score day', so a fat-finger on the primary action cannot reach them.
+    btns = W.HBox([B('Score day', 'primary', run(_score, name='Score day')),
+                   B('Record ENTRY', 'success',
+                     run(_enter, name='Record ENTRY')),
+                   B('Record EXIT', 'warning',
+                     run(_exit, confirm=True, name='Record EXIT')),
+                   B('Status', '', run(status, name='Status'), '96px'),
+                   B('Audit', 'info', run(desk_audit, name='Audit'), '96px')],
+                  layout=ROW)
+    btns2 = W.HBox([B('How to edit a day', 'info', run(_resc, name='help'),
+                      '140px'),
+                    B('Ledger', '', run(show_ledger, name='Ledger'), '96px'),
+                    B('Chart z', '', run(zchart, name='Chart z'), '96px'),
+                    B('Cancel entry', 'danger',
+                      run(cancel_entry, confirm=True, name='Cancel entry'),
+                      '118px'),
+                    B('Delete this date', 'danger',
+                      run(_del_day, confirm=True, name='Delete this date'),
+                      '132px')], layout=ROW)   # [Y20]
     H = lambda t: W.HTML(f"<b style='color:#666;font-size:11px'>{t}</b>")
     p = _MANUAL['pos']
+    # [AA1] the date the desk believes it is, stated on the panel. The box is
+    # pre-filled from UTC, but a user who overtypes it must see what they are
+    # departing from — the whole class of "wrong day" bugs starts here.
+    _fxst = _fx_status()
+    _bar = (f"<div style=\"font:11.5px 'Segoe UI';padding:4px 6px;margin:2px 0;"
+            f"border-left:3px solid {'#c62828' if _fxst['provisional'] else '#2e7d32'};"
+            f"background:#fafafa;color:#444\">"
+            f"US session date <b>{_desk_today()}</b> (from UTC; your local "
+            f"clock reads {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')}) "
+            f"&middot; signal point <b>{c.get('exec_point', 'close').upper()}</b>"
+            + (f"<br><b style='color:#c62828'>{_fxst['banner']}</b>"
+               if _fxst['provisional'] else '')
+            + "</div>")
     display(W.VBox([
         W.HTML(f"<h4 style='margin:2px 0'>{c['instrument']} paper desk"
                f"<span style='font-weight:400;color:#888;font-size:12px'> &nbsp;"
@@ -2548,183 +3278,337 @@ def form():
                f"Z=±{c['thresh']} &middot; fair={c['fair_mode']} &middot; "
                f"{'POSITION OPEN since ' + p['date'] if p else 'flat'}"
                f"</span></h4>"),
-        W.HBox([w['date'], w['note']]),
+        W.HTML(_bar),
+        W.HBox([w['date'], w['note']], layout=ROW),
         H('DAILY ANCHORS &nbsp;(FX 13:30 = the TW fixing the SIGNAL uses [D2])'),
-        W.HBox([w['ordv'], w['f1330'], w['fx'], w['dcar']]),
+        W.HBox([w['ordv'], w['f1330'], w['fx'], w['dcar']], layout=ROW),
         H('US OPEN &mdash; 1330/1430 UTC &nbsp;(FX now is OPTIONAL and only '
           'affects MARKS when FX_MARK_MODE=\'snapshot\' [Y29] &mdash; leave '
           'it blank and everything uses the 13:30 fixing, exactly like the '
           'backtest)'),
-        W.HBox([w['ao'], w['fo'], w['fxo']]),
-        H('15:45 ET &mdash; 1945/2045 UTC &nbsp;(your signal / execution moment)'),
-        W.HBox([w['a19'], w['f19'], w['fx19']]),
-        H('US CLOSE &mdash; 2000/2100 UTC'),
-        W.HBox([w['ac'], w['fc'], w['fxc']]),
+        W.HBox([w['ao'], w['fo'], w['fxo']], layout=ROW),
+        # [AA1] relabelled: per the desk's own workflow the 15:45 print is the
+        # DECISION moment — you read it live and decide — while the day's
+        # recorded DATA is the close. Calling it "your execution moment" while
+        # the engine only ever books CLOSE rows is what made a 15:45-only day
+        # look booked when it was not (see the [AA1] notice add_day now
+        # prints).
+        H('15:45 ET &mdash; 1945/2045 UTC &nbsp;(DECISION PROMPT: read it live '
+          'and decide. It does NOT book the day &mdash; the CLOSE boxes below '
+          'are what enters the z-series and the mark path)'),
+        W.HBox([w['a19'], w['f19'], w['fx19']], layout=ROW),
+        H('US CLOSE &mdash; 2000/2100 UTC &nbsp;(THE DAY\'S DATA &mdash; '
+          'required for the day to count)'),
+        W.HBox([w['ac'], w['fc'], w['fxc']], layout=ROW),
         W.HBox([w['div'], W.HTML("<span style='color:#999;font-size:11px'>"
                 "&larr; leave at 0 unless the Taiwan ordinary went ex-dividend "
                 "today AND you are holding through it (TSM quarter &asymp;0.45, "
-                "UMC year &asymp;6.8)</span>")]),
+                "UMC year &asymp;6.8)</span>")], layout=ROW),
         H('YOUR ACTUAL FILL (optional)'),
-        W.HBox([w['side'], w['fadr'], w['ffut'], w['nt']]),
+        W.HBox([w['side'], w['fadr'], w['ffut'], w['nt']], layout=ROW),
         btns, btns2, out]))
+# ============================================================================
+# [AA10] PAPER-DESK CHARTS — SAME VISUAL LANGUAGE AS THE BACKTEST FIGURE
+# ----------------------------------------------------------------------------
+# The desk charts and the [20] backtest figure were drawing the same objects
+# in different dialects, which made them impossible to read side by side:
+#
+#   object              backtest figure        old desk chart
+#   spread / premium    gray, lw 0.6           #546e7a lw 1.1 / #999 lw 0.8
+#   entry LONG          green  '^' s=45        orange '^' s=130 (chart)
+#   entry SHORT         red    'v' s=45        orange 'v' s=130 (chart)
+#   exit                blue   'x' s=35        red dotted vline (zchart)
+#   no-trade band       green  alpha 0.06      orange alpha 0.10 (zchart)
+#                                              green  alpha 0.06 (chart)
+#   cost band           red '--' at +/-RT      absent from both
+#   z panel line        '#444' lw 0.7          '#37474f' lw 1.1
+#   equity              navy lw 1.0            green lw 1.6 + fill
+#   drawdown            red fill alpha 0.25    absent
+#   per-trade P&L       bars, width 6          bars, categorical x
+#   x axis              real dates             row INDEX (zchart) — so the
+#                                              entry markers on the two
+#                                              figures could not be lined up
+#   grid                grid(alpha=0.3)        mixed / absent
+#   legend              loc='upper left'       loc='best'
+#
+# Everything below is drawn with the backtest's palette, markers, line
+# weights, band alphas, grid and legend placement, on a REAL DATE x-axis, so
+# a desk panel can be read directly against the corresponding backtest panel.
+# The four shared conventions are pulled out as constants rather than repeated
+# per call, so the next chart added cannot drift again.
+_CH = dict(hist='gray', hist_lw=0.6, live='#1f77b4', live_lw=1.4,
+           mean='black', mean_lw=0.7, band='green', band_a=0.06,
+           cost='red', z='#444', z_lw=0.7, zero='black',
+           eq='navy', dd='red', dd_a=0.25,
+           long='green', short='red', exit='blue',
+           s_entry=45, s_exit=35)
+def _ch_axes(ax, title, ylabel=None, legend=True, ncol=1):
+    """[AA10] the backtest figure's per-panel furniture, in one place."""
+    ax.set_title(title)
+    if ylabel:
+        ax.set_ylabel(ylabel)
+    ax.grid(alpha=0.3)
+    if legend and ax.get_legend_handles_labels()[0]:
+        ax.legend(loc='upper left', fontsize=8, ncol=ncol)
+def _ch_datefmt(ax):
+    """[AA10] Distinct day ticks. A fixed DateFormatter('%b %d') on a 2-day
+    mark path printed 'Jul 20, Jul 20, Jul 20, Jul 21, Jul 21' — matplotlib
+    was placing sub-daily ticks and the format collapsed them all to the same
+    string, which reads as a broken axis. An AutoDateLocator with an interval
+    floor of one day cannot produce a duplicate label."""
+    import matplotlib.dates as _md
+    _loc = _md.AutoDateLocator(minticks=3, maxticks=9, interval_multiples=True)
+    _loc.intervald[_md.MINUTELY] = [24 * 60]      # never finer than a day
+    _loc.intervald[_md.HOURLY] = [24]
+    ax.xaxis.set_major_locator(_loc)
+    ax.xaxis.set_major_formatter(_md.DateFormatter('%b %d'))
+def _ch_dates(n_hist, man_dates):
+    """[AA10] a real-date x-axis for history + typed days. The historical tail
+    has no dates on the desk (only the premium values are copied out), so it
+    is laid on business days running back from the first typed day — the same
+    approximation chart() always made, but now applied to BOTH panels so the
+    two share one axis and markers line up vertically, exactly as [W5] made
+    the backtest's spread and z panels line up."""
+    if not man_dates:
+        return list(pd.bdate_range(end=pd.Timestamp(_desk_today()),
+                                   periods=n_hist)), []
+    _m = [pd.Timestamp(d) for d in man_dates]
+    _h = list(pd.bdate_range(end=_m[0] - pd.Timedelta(days=1), periods=n_hist))
+    return _h, _m
+def _ch_marks(ax, y_at, entries, exits):
+    """[AA10] entry/exit markers in the backtest's shapes and colours.
+    entries: [(date, dir)], exits: [date]. y_at maps a date to a y value."""
+    _le = [(d, v) for d, s in entries for v in [y_at(d)]
+           if v is not None and s == 1]
+    _se = [(d, v) for d, s in entries for v in [y_at(d)]
+           if v is not None and s == -1]
+    _xe = [(d, v) for d in exits for v in [y_at(d)] if v is not None]
+    if _le:
+        ax.scatter([d for d, _ in _le], [v for _, v in _le], marker='^',
+                   color=_CH['long'], s=_CH['s_entry'], zorder=5,
+                   label='Entry long spread')
+    if _se:
+        ax.scatter([d for d, _ in _se], [v for _, v in _se], marker='v',
+                   color=_CH['short'], s=_CH['s_entry'], zorder=5,
+                   label='Entry short spread')
+    if _xe:
+        ax.scatter([d for d, _ in _xe], [v for _, v in _xe], marker='x',
+                   color=_CH['exit'], s=_CH['s_exit'], zorder=5, label='Exit')
+    return len(_le), len(_se), len(_xe)
+def _ch_ledger_events():
+    """[AA10] (entries, exits) from the ledger: [(date, dir)], [date]."""
+    _ent, _ext = [], []
+    for t in (_MANUAL.get('closed') or []):
+        _ent.append((pd.Timestamp(t['entry_date']), t['dir']))
+        _ext.append(pd.Timestamp(t['exit_date']))
+    p = _MANUAL['pos']
+    if p is not None:
+        _ent.append((pd.Timestamp(p['date']), p['dir']))
+    return _ent, _ext
 def zchart(tail=90, save=None):
-    """[Y20] TWO-PANEL VIEW OF THE LIVE SERIES, manual days included.
-    Top: the premium — historical tail plus YOUR typed days — with the
-         rolling N-mean and the \u00b1Z\u00b7sigma entry band, both computed
-         with the BACKTEST convention (window ends the PREVIOUS day, ddof=0),
-         so the band on each date is exactly what add_day scored against.
-    Bottom: the rolling z itself, with the \u00b1threshold band and zero
-         line; your entries/exits from the ledger are marked on both."""
+    """[Y20][AA10] Premium + rolling z, drawn in the backtest figure's style.
+    Top:    the premium — historical tail plus YOUR typed days — with the
+            rolling N-mean and the ±Z·sigma entry band, both on the BACKTEST
+            convention (window ends the PREVIOUS day, ddof=0), so the band on
+            each date is exactly what add_day scored against. The ±round-trip
+            cost band is drawn too: a dislocation inside it cannot pay.
+    Bottom: the rolling z with the ±threshold band and zero line, sharing the
+            top panel's x-axis so an entry marker sits directly under the z
+            that produced it (the [W5] arrangement)."""
     c = _MANUAL['ctx']
     if c is None:
-        print('[U3] run setup_manual() first'); return
+        say('run setup_manual() first', 'bad'); return
     n, thr = c['n'], c['thresh']
     hist = list(c['hist_premium'])
     man = _MANUAL['days']
     ser = pd.Series(hist + [d['premium'] for d in man], dtype=float)
     mu = ser.rolling(n).mean().shift(1)
     sd = ser.rolling(n).std(ddof=0).shift(1)
-    zz = (ser - mu) / sd
+    zz = (ser - mu) / sd.replace(0, _np.nan)
     lo = max(0, len(ser) - int(tail) - len(man))
-    x = _np.arange(len(ser))
+    _hx, _mx = _ch_dates(len(hist), [d['date'] for d in man])
+    x = _hx + _mx
     import matplotlib.pyplot as _plt
-    fig, (ax1, ax2) = _plt.subplots(2, 1, figsize=(11, 6.4), sharex=True,
-                                    gridspec_kw={'height_ratios': [3, 2]})
-    ax1.plot(x[lo:len(hist)], ser.iloc[lo:len(hist)], lw=1.1, color='#546e7a',
-             label='history (backtest closes)')
+    import matplotlib.dates as _mdates
+    fig, axes = _plt.subplots(2, 1, figsize=(14, 9), sharex=True,
+                              gridspec_kw={'height_ratios': [1.35, 0.85]})
+    # ---- panel 1: premium, band, cost band, markers -----------------------
+    ax = axes[0]
+    ax.plot(x[lo:len(hist)], ser.iloc[lo:len(hist)], lw=_CH['hist_lw'],
+            color=_CH['hist'], label='Premium — backtest history (bps)')
     if man:
-        xm = x[len(hist):]
-        ax1.plot(xm, ser.iloc[len(hist):], 'o-', ms=5, lw=1.4,
-                 color='#1565c0', label='your typed days')
-        for _xi, _d in zip(xm, man):
-            ax1.annotate(str(_d['date'])[5:], (_xi, _d['premium']),
-                         textcoords='offset points', xytext=(0, 7),
-                         fontsize=7, ha='center', color='#1565c0')
-    ax1.plot(x[lo:], mu.iloc[lo:], lw=1.0, color='#ef6c00',
-             label=f'rolling mean (N={n}, to prev day)')
-    ax1.fill_between(x[lo:], (mu + thr * sd).iloc[lo:],
-                     (mu - thr * sd).iloc[lo:], color='#ef6c00', alpha=0.10,
-                     label=f'\u00b1{thr:g}\u03c3 entry band')
-    ax1.set_ylabel('premium (bps)')
-    ax1.legend(loc='best', fontsize=8)
-    ax2.plot(x[lo:], zz.iloc[lo:], lw=1.1, color='#37474f')
+        ax.plot(_mx, ser.iloc[len(hist):], lw=_CH['live_lw'],
+                color=_CH['live'], marker='o', ms=4,
+                label=f'Premium — your {len(man)} typed day(s)')
+    ax.plot(x[lo:], mu.iloc[lo:], lw=_CH['mean_lw'], color=_CH['mean'],
+            label=f'Rolling mean (N={n}, to prev day)')
+    ax.fill_between(x[lo:], (mu - thr * sd).iloc[lo:],
+                    (mu + thr * sd).iloc[lo:], color=_CH['band'],
+                    alpha=_CH['band_a'], label=f'No-trade band ±{thr:g}σ')
+    ax.axhline(0, color=_CH['zero'], lw=0.6)
+    _rt = float(c['rt_cost_bps'])
+    ax.axhline(_rt, color=_CH['cost'], ls='--', lw=0.8,
+               label=f'RT cost {_rt:.0f}bps')
+    ax.axhline(-_rt, color=_CH['cost'], ls='--', lw=0.8)
+    _ent, _ext = _ch_ledger_events()
+    _d2p = {pd.Timestamp(d['date']): d['premium'] for d in man}
+    _ne = _ch_marks(ax, lambda d: _d2p.get(pd.Timestamp(d)), _ent, _ext)
+    _ch_axes(ax, f"{c['instrument']} premium (bps) with entries/exits — a "
+                 f"tradeable edge must clear the red cost band "
+                 f"({_rt:.0f} bps RT)", 'premium, bps', ncol=3)
+    # ---- panel 2: rolling z ----------------------------------------------
+    ax = axes[1]
+    ax.plot(x[lo:], zz.iloc[lo:], lw=_CH['z_lw'], color=_CH['z'])
     if man:
-        ax2.plot(x[len(hist):], zz.iloc[len(hist):], 'o', ms=5,
-                 color='#1565c0')
-    ax2.axhline(0, lw=0.8, color='#90a4ae')
-    ax2.axhline(thr, lw=0.9, ls='--', color='#c62828')
-    ax2.axhline(-thr, lw=0.9, ls='--', color='#c62828')
-    ax2.set_ylabel('rolling z')
-    ax2.set_xlabel(f'row (last {len(man)} = your inputs)')
-    # entries / exits from the ledger, matched to manual dates
-    _dt2x = {str(d['date']): x[len(hist) + i] for i, d in enumerate(man)}
-    for t in (_MANUAL.get('closed') or []):
-        for _dd, _mk, _cl in ((t.get('entry_date'), '^', '#2e7d32'),
-                              (t.get('exit_date'), 'v', '#c62828')):
-            if _dd and str(_dd) in _dt2x:
-                ax1.axvline(_dt2x[str(_dd)], lw=0.7, ls=':', color=_cl,
-                            alpha=0.6)
-                ax2.plot(_dt2x[str(_dd)], 0, _mk, ms=8, color=_cl)
-    if _MANUAL['pos'] and str(_MANUAL['pos']['date']) in _dt2x:
-        ax1.axvline(_dt2x[str(_MANUAL['pos']['date'])], lw=1.0, ls=':',
-                    color='#2e7d32')
-    fig.suptitle(f"{c['instrument']} — premium & rolling z "
-                 f"(N={n}, band \u00b1{thr:g})", fontsize=11)
+        ax.plot(_mx, zz.iloc[len(hist):], 'o', ms=4, color=_CH['live'])
+    for _t in (thr, -thr):
+        ax.axhline(_t, color=_CH['cost'], ls='--', lw=0.9)
+    ax.axhline(0, color=_CH['zero'], lw=0.7)
+    ax.fill_between(x[lo:], -thr, thr, color=_CH['band'], alpha=_CH['band_a'],
+                    label=f'no-trade band +/-{thr:g}')
+    _d2z = {pd.Timestamp(d['date']): float(zz.iloc[len(hist) + i])
+            for i, d in enumerate(man)}
+    _ch_marks(ax, lambda d: _d2z.get(pd.Timestamp(d)), _ent, _ext)
+    _ch_axes(ax, f'Rolling z-score (N={n}) with the +/-{thr:g} entry band — '
+                 f'same x-axis as the panel above', 'z', ncol=3)
+    _ch_datefmt(ax)
+    # [U7] the same marker-integrity note the backtest figure carries
+    axes[0].text(0.005, 0.02,
+                 f"{_ne[0]} long / {_ne[1]} short entries, {_ne[2]} exits "
+                 f"drawn (only dates you have typed can be marked)",
+                 transform=axes[0].transAxes, fontsize=8, color='#333',
+                 bbox=dict(fc='white', ec='#bbb', alpha=0.85, pad=2))
     fig.tight_layout()
     if save:
-        fig.savefig(save, dpi=130, bbox_inches='tight')
-        print(f'saved {save}')
+        fig.savefig(save, dpi=150, bbox_inches='tight')
+        print(f'[AA10] saved {save}')
     _plt.show()
- 
+    return fig
 def chart(save=None):
-    """[U3] Paper-desk chart: the premium with your manual days appended to the
-    historical tail, the entry band, your fill, and the mark path. Purely a
-    view — it reads the same read-only history plus your ledger."""
+    """[U3][AA10] The desk's P&L view, in the backtest figure's style:
+      1  premium + band + cost band + your fills   (mirrors backtest panel 2)
+      2  open-position mark to market with the break-even line and the
+         drawdown-from-peak shaded underneath  (mirrors panel 4's equity +
+         drawdown pair)
+      3  per-trade net P&L bars + cumulative paper equity  (mirrors panel 6)
+    Purely a view — it reads the read-only history plus your ledger."""
     c = _MANUAL['ctx']
     if c is None:
-        print('[U3] run setup_manual() first'); return
+        say('run setup_manual() first', 'bad'); return
     if not _MANUAL['days']:
-        print('[U3] no manual days yet — add_day(...) first'); return
+        say('no manual days yet — add_day(...) first', 'bad'); return
     import matplotlib.pyplot as plt
     import matplotlib.dates as mdates
     _tail = 60
     hist = c['hist_premium'][-_tail:]
     man = _MANUAL['days']
-    man_x = [pd.Timestamp(d['date']) for d in man]
+    _hx, _mx = _ch_dates(len(hist), [d['date'] for d in man])
     man_y = [d['premium'] for d in man]
-    # a synthetic x-axis for the historical tail: business days back from the
-    # first manual date (exact dates are not needed for a shape view)
-    h_x = list(pd.bdate_range(end=man_x[0] - pd.Timedelta(days=1),
-                              periods=len(hist)))
     p = _MANUAL['pos']
-    n_ax = 2 if (p or _MANUAL.get('closed')) else 1
-    fig, axes = plt.subplots(n_ax, 1, figsize=(13, 4.2 * n_ax), sharex=False)
-    axes = [axes] if n_ax == 1 else list(axes)
-    ax = axes[0]
-    ax.plot(h_x, hist, lw=0.8, color='#999', label=f'history (last {len(hist)})')
-    ax.plot(man_x, man_y, lw=1.6, color='#1f77b4', marker='o', ms=4,
-            label=f'your {len(man)} manual close(s)')
-    _mu = float(np.mean(c['hist_premium'][-c['n']:]))
-    _sd = float(np.std(c['hist_premium'][-c['n']:]))
-    ax.axhline(_mu, color='black', lw=0.7, ls='-', label=f'rolling mean {_mu:+.0f}')
-    for _k, _st in ((c['thresh'], '--'), (-c['thresh'], '--')):
-        ax.axhline(_mu + _k * _sd, color='red', lw=0.8, ls=_st)
-    ax.fill_between([h_x[0], man_x[-1]], _mu - c['thresh'] * _sd,
-                    _mu + c['thresh'] * _sd, color='green', alpha=0.06,
-                    label='no-trade band (' + _G['pm']
-                          + f'{c["thresh"]:.2f}' + _G['sigma'] + ')')
-    if p:
-        ax.axvline(pd.Timestamp(p['date']), color='#c60', lw=1.4, ls=':')
-        _ep = next((d['premium'] for d in man if d['date'] == p['date']), None)
-        if _ep is not None:
-            ax.scatter([pd.Timestamp(p['date'])], [_ep], s=130, zorder=6,
-                       marker='v' if p['dir'] == -1 else '^',
-                       color='#c60', edgecolor='k',
-                       label=f"your entry ({'SHORT' if p['dir'] == -1 else 'LONG'})")
-    ax.set_title(f"{c['instrument']} premium (bps) {_G['dash']} history to "
-                 f"{c['hist_last_date']} + your manual days")
-    ax.set_ylabel('premium, bps'); ax.grid(alpha=0.3); ax.legend(fontsize=8, loc='best')
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %d'))
-    if n_ax == 2:
-        ax = axes[1]
-        mk = _MANUAL['marks']
-        if mk:
-            mx = [pd.Timestamp(m['date']) for m in mk]
-            my = [m['gross'] for m in mk]
-            ax.plot(mx, my, lw=1.6, marker='o', ms=4, color='#2ca02c')
-            ax.fill_between(mx, 0, my, alpha=0.15, color='#2ca02c')
-            ax.axhline(0, color='black', lw=0.8)
-            _held_ch = (pd.Timestamp(mk[-1]['date'])
-                        - pd.Timestamp(p['date'])).days
-            _xc = _trade_cost(p['dir'], p['notional'], _held_ch,
-                              adr_notional=p.get('adr_notional'),
-                              hedge_notional=p.get('hedge_notional'))   # [X9]
-            ax.axhline(_xc, color='red', ls='--', lw=0.8,
-                       label=f'break-even (fees+carry) ${_xc:,.0f}')
-            _pk = max(my); _dd = min(v - max(my[:i + 1]) for i, v in enumerate(my))
-            ax.set_title(f"open position mark-to-market {_G['dash']} last "
-                         f"${my[-1]:+,.0f} ({mk[-1]['bps']:+.0f}bps), peak "
-                         f"${_pk:+,.0f}, drawdown ${_dd:+,.0f}")
-            ax.legend(fontsize=8)
-        cl = _MANUAL.get('closed') or []
-        if cl and not mk:
-            _run, _c = [], 0.0
-            for t in cl:
-                _c += t['net']; _run.append(_c)
-            ax.bar(range(len(cl)), [t['net'] for t in cl],
-                   color=['#2ca02c' if t['net'] > 0 else '#d62728' for t in cl])
-            ax.plot(range(len(cl)), _run, color='k', lw=1.4, marker='o', ms=4,
-                    label='cumulative')
-            ax.axhline(0, color='black', lw=0.8)
-            ax.set_title(f"closed paper trades {_G['dash']} {len(cl)} trade(s), total "
-                         f"${_c:+,.0f}")
-            ax.set_xticks(range(len(cl)))
-            ax.set_xticklabels([t['exit_date'][5:] for t in cl], fontsize=7)
-            ax.legend(fontsize=8)
-        ax.set_ylabel('USD'); ax.grid(alpha=0.3)
+    mk = _MANUAL['marks']
+    cl = _MANUAL.get('closed') or []
+    _panels = 1 + int(bool(p and mk)) + int(bool(cl))
+    fig, axes = plt.subplots(_panels, 1, figsize=(14, 4.6 * _panels))
+    axes = [axes] if _panels == 1 else list(axes)
+    _i = 0
+    # ---- panel 1: premium, band, cost band, fills -------------------------
+    ax = axes[_i]; _i += 1
+    ax.plot(_hx, hist, lw=_CH['hist_lw'], color=_CH['hist'],
+            label=f'Premium — backtest history (last {len(hist)})')
+    ax.plot(_mx, man_y, lw=_CH['live_lw'], color=_CH['live'], marker='o', ms=4,
+            label=f'Premium — your {len(man)} typed day(s)')
+    _mu = float(_np.mean(c['hist_premium'][-c['n']:]))
+    _sd = float(_np.std(c['hist_premium'][-c['n']:]))
+    ax.axhline(_mu, color=_CH['mean'], lw=_CH['mean_lw'],
+               label=f'Rolling mean {_mu:+.0f}')
+    ax.fill_between([_hx[0], _mx[-1]], _mu - c['thresh'] * _sd,
+                    _mu + c['thresh'] * _sd, color=_CH['band'],
+                    alpha=_CH['band_a'],
+                    label=f"No-trade band ±{c['thresh']:.2f}σ")
+    _rt = float(c['rt_cost_bps'])
+    ax.axhline(_mu + _rt, color=_CH['cost'], ls='--', lw=0.8,
+               label=f'RT cost {_rt:.0f}bps')
+    ax.axhline(_mu - _rt, color=_CH['cost'], ls='--', lw=0.8)
+    _ent, _ext = _ch_ledger_events()
+    _d2p = {pd.Timestamp(d['date']): d['premium'] for d in man}
+    _ch_marks(ax, lambda d: _d2p.get(pd.Timestamp(d)), _ent, _ext)
+    _ch_axes(ax, f"{c['instrument']} premium (bps) — history to "
+                 f"{c['hist_last_date']} + your typed days", 'premium, bps',
+             ncol=3)
+    _ch_datefmt(ax)
+    # ---- panel 2: open-position MTM + drawdown ----------------------------
+    if p and mk:
+        ax = axes[_i]; _i += 1
+        mx = [pd.Timestamp(m['date']) for m in mk]
+        my = [m['gross'] for m in mk]
+        ax.plot(mx, my, color=_CH['eq'], lw=1.0, marker='o', ms=4,
+                label='Mark to market ($)')
+        _held_ch = (pd.Timestamp(mk[-1]['date'])
+                    - pd.Timestamp(p['date'])).days
+        _xc = _trade_cost(p['dir'], p['notional'], _held_ch,
+                          adr_notional=p.get('adr_notional'),
+                          hedge_notional=p.get('hedge_notional'))   # [X9]
+        ax.axhline(_xc, color=_CH['cost'], ls='--', lw=0.8,
+                   label=f'Break-even (fees+carry) ${_xc:,.0f}')
+        ax.axhline(0, color=_CH['zero'], lw=0.6)
+        # drawdown from the running peak, on a twin axis — the backtest's
+        # equity panel does exactly this
+        _pk = _np.maximum.accumulate(_np.array(my, dtype=float))
+        _dd = _np.array(my, dtype=float) - _pk
+        ax2 = ax.twinx()
+        ax2.fill_between(mx, _dd, 0, color=_CH['dd'], alpha=_CH['dd_a'],
+                         label='Drawdown from peak ($)')
+        ax2.legend(loc='lower left', fontsize=8)
+        _fx = _fx_status()
+        _ch_axes(ax, f"Open {'LONG' if p['dir'] == 1 else 'SHORT'} spread "
+                     f"mark to market — last ${my[-1]:+,.0f} "
+                     f"({mk[-1]['bps']:+.0f}bps), peak ${max(my):+,.0f}, "
+                     f"drawdown ${_dd.min():+,.0f}"
+                     + ('   [hedge FX PROVISIONAL]' if _fx['provisional']
+                        else ''),
+                 'USD')
+        _ch_datefmt(ax)
+    # ---- panel 3: per-trade net P&L + cumulative --------------------------
+    if cl:
+        ax = axes[_i]; _i += 1
+        _xd = [pd.Timestamp(t['exit_date']) for t in cl]
+        _nets = [t['net'] for t in cl]
+        # backtest panel 6 colours the bar by the ENTRY's clock; the desk's
+        # analogue is the DIRECTION, which is what a paper reader wants here
+        _cols = [_CH['long'] if t['dir'] == 1 else _CH['short'] for t in cl]
+        # [AA10] the backtest's per-trade panel uses width=6 (days) because it
+        # spans YEARS and hundreds of trades. On a desk with a handful of
+        # trades over a fortnight a 6-day bar is wider than the gap between
+        # trades and fills the panel — so the width scales to the actual span,
+        # capped at the backtest's 6 and floored so a single trade is still a
+        # bar rather than a hairline.
+        _span = max((max(_xd) - min(_xd)).days, 1) if len(_xd) > 1 else 4
+        _bw = max(0.4, min(6.0, _span / max(len(cl) * 1.6, 3.0)))
+        ax.bar(_xd, _nets, width=_bw, color=_cols)
+        ax.axhline(0, color=_CH['zero'], lw=0.6)
+        # explicit limits: with one trade the auto-range collapses onto the
+        # single x value and even a 1-day bar fills the whole panel.
+        _pad = pd.Timedelta(days=max(_span * 0.20, _bw * 1.5, 1.0))
+        ax.set_xlim(min(_xd) - _pad, max(_xd) + _pad)
+        _run, _cum = [], 0.0
+        for t in cl:
+            _cum += t['net']; _run.append(_cum)
+        ax2 = ax.twinx()
+        ax2.plot(_xd, _run, color=_CH['eq'], lw=1.0, marker='o', ms=4,
+                 label='Cumulative paper P&L ($)')
+        ax2.axhline(0, color=_CH['zero'], lw=0.4)
+        ax2.legend(loc='lower left', fontsize=8)
+        _sus = sum(1 for t in cl if t.get('suspect'))
+        _ch_axes(ax, f"Per-trade net P&L (green = long spread, red = short) — "
+                     f"{len(cl)} trade(s), total ${_cum:+,.0f}"
+                     + (f"   [{_sus} RECOMPUTED — run desk_audit()]"
+                        if _sus else ''),
+                 'USD per trade')
+        _ch_datefmt(ax)
     plt.tight_layout()
     if save:
-        plt.savefig(save, dpi=140, bbox_inches='tight'); print(f'[U3] saved {save}')
+        plt.savefig(save, dpi=150, bbox_inches='tight')
+        print(f'[AA10] saved {save}')
     plt.show()
     return fig
 def replay(last=None):
@@ -5081,14 +5965,17 @@ def run_backtest(df, n_zscore, threshold, track_adf=False,
                 exit_signal = True
                 exit_reason = 'ADF OFF'
             # Position-correct daily carry ([C3] FX spread moved to exec_cost)
+            # [AA7] fund_arr already carries SOFR + FUNDING_SPREAD_ANN, so the
+            # long leg uses it directly; the short leg is the SOFR-50 rebate
+            # off the RAW SOFR, i.e. fund_arr minus the funding spread.
             if position == 1:
                 daily_carry = trade_notional * (fund_arr[t] / 360)   # [S2]
             else:
-                daily_carry = trade_notional * ((BORROW_ANN_BPS / 10000
-                                                 - SHORT_REBATE_ANN) / 360)  # [R6]
+                daily_carry = trade_notional * (
+                    short_financing_ann(fund_arr[t] - FUNDING_SPREAD_ANN) / 360)
             # [O2][S2] margin funding, both directions, at row t's SOFR
             daily_carry += (entry_beta * trade_notional
-                            * (margin_ann_bps() / 10000) / 360)   # [T4] flat 24bps
+                            * (margin_ann_bps(fund_arr[t]) / 10000) / 360)
             # [C3][D1][O1] NDF carry is SIGNED and flips with direction
             # — but ONLY in ndf_immediate mode; spot conversion at the
             # next TW open has no forward points. Floor the hurdle at
@@ -5230,13 +6117,17 @@ def run_backtest(df, n_zscore, threshold, track_adf=False,
                 if position == 1:
                     funding_cost = trade_notional * (_favg / 360) * calendar_days
                 else:
+                    # [AA7] SOFR-50 rebate: NEGATIVE = a credit. NOT floored —
+                    # the max(daily_carry, 0) above floors only the gamma
+                    # HURDLE (a credit means there is no hurdle to clear);
+                    # the realised P&L must keep the credit.
                     borrow_cost = (trade_notional
-                                   * (BORROW_ANN_BPS / 10000 - SHORT_REBATE_ANN)
-                                   / 360 * calendar_days)   # [R6] net of rebate
+                                   * short_financing_ann(_favg - FUNDING_SPREAD_ANN)
+                                   / 360 * calendar_days)
                 # [O2][S2] margin funding over the hold at the average SOFR
                 margin_cost = (entry_beta * trade_notional
-                               * (margin_ann_bps() / 10000 / 360)
-                               * calendar_days)   # [T4] flat 24bps, not SOFR-linked
+                               * (margin_ann_bps(_favg) / 10000 / 360)
+                               * calendar_days)   # [AA7] 13.5% x 120bps = 16.2bps
                 # [C3][D1][O1] SIGNED NDF carry (ndf_immediate mode
                 # only): positive = COST, negative = CREDIT. In
                 # spot_next_open mode there are no forward points —
@@ -5445,8 +6336,17 @@ if HTML_OUTPUT and _in_jupyter():          # [Y23] one settings table
          'value': f"{bps_normal - _fee_sum:.1f} bps"},
         {'setting': 'Funding (long ADR)',
          'value': f"SOFR + {FUNDING_SPREAD_ANN*100:.1f}% (daily series)"},
-        {'setting': 'Borrow (short ADR)', 'value': f"{BORROW_ANN_BPS} bps flat"},
-        {'setting': 'SSF margin drag', 'value': f"{FUT_MARGIN_ANN_BPS} bps flat"},
+        {'setting': 'Borrow (short ADR)',                       # [AA7]
+         'value': (f"SOFR &minus; {BORROW_SPREAD_ANN_BPS} bps rebate &rarr; "
+                   f"{short_financing_ann()*1e4:+.0f} bps/yr "
+                   f"({'CREDIT' if short_financing_ann() < 0 else 'cost'})"
+                   if BORROW_MODE == 'sofr_minus'
+                   else f"{BORROW_ANN_BPS} bps flat")},
+        {'setting': 'SSF margin drag',                          # [AA7]
+         'value': (f"{MARGIN_PCT*100:.1f}% margin x {MARGIN_FUND_ANN_BPS} bps "
+                   f"= {margin_ann_bps():.1f} bps/yr of notional"
+                   if FUT_MARGIN_MODE == 'pct_x_spread'
+                   else f"{margin_ann_bps():.1f} bps ({FUT_MARGIN_MODE})")},
         ]).set_index('setting'),
         title=f"GRID SEARCH — {NAME_LBL}: {ADR_LBL} vs {ORD_LBL} "
                     f"({HEDGE_LBL} hedge)", fmt='{}')
@@ -5455,8 +6355,15 @@ else:
           f"{'print' if EXEC_TIMING == 'open' else '(MOC-executable)'} | "
           f"Typical RT cost={bps_normal:.0f}bps | Stress={bps_stress:.0f}bps | "
           f"Funding=SOFR+{FUNDING_SPREAD_ANN*100:.1f}% (daily series) "
-          f"| Borrow={BORROW_ANN_BPS}bps flat "
-          f"| Margin={FUT_MARGIN_ANN_BPS}bps flat")
+          + (f"| Borrow=SOFR-{BORROW_SPREAD_ANN_BPS}bps rebate "
+             f"({short_financing_ann()*1e4:+.0f}bps/yr "
+             f"{'CREDIT' if short_financing_ann() < 0 else 'cost'}) "
+             if BORROW_MODE == 'sofr_minus'
+             else f"| Borrow={BORROW_ANN_BPS}bps flat ")
+          + (f"| Margin={MARGIN_PCT*100:.1f}%x{MARGIN_FUND_ANN_BPS}bps"
+             f"={margin_ann_bps():.1f}bps/yr"
+             if FUT_MARGIN_MODE == 'pct_x_spread'
+             else f"| Margin={margin_ann_bps():.1f}bps"))   # [AA7]
 if not (HTML_OUTPUT and _in_jupyter()):
     print(f"Cost anatomy [C1][C3][C5] (RT, bps of notional, beta=1): "
           f"fees ADR {ADR_FEE_IN_BPS}+{ADR_FEE_OUT_BPS} | SSF {FUT_FEE_IN_BPS}+{FUT_FEE_OUT_BPS} | "
@@ -6294,7 +7201,19 @@ if _tr_all:
 # showing an obvious spike with no marker on it is either a correct refusal
 # or a bug, and this is how you tell which.
 # ============================================================
-_stats_w4 = get_signal_stats(df['Spread (Signal)'].values)
+# [X16] BUGFIX: get_signal_stats returns the (adf_p, gamma) TUPLE, and the
+# old `_stats_w4['gamma'][_i]` raised TypeError the first time a row got as
+# far as the gamma verdict — so [W4] could only ever finish on samples whose
+# top-15 all failed an EARLIER gate. Unpack the tuple. And run it on the
+# SAME series the engine gates on ([Z1]: de-trended unless
+# GATE_MODE='adf_level') — the raw level here was [X10] all over again.
+if GATE_MODE == 'adf_level':
+    _test_w4 = df['Spread (Signal)'].values
+else:
+    _lvl_w4 = df['Spread (Signal)']
+    _test_w4 = (_lvl_w4 - _lvl_w4.rolling(ADF_DETREND_N).mean().shift(1)
+                ).fillna(0.0).values
+_adf_w4, _gamma_w4 = get_signal_stats(_test_w4)
 _zmu_w4 = df['Spread (Signal)'].rolling(best_n).mean().shift(1)
 _zsd_w4 = df['Spread (Signal)'].rolling(best_n).std(ddof=0).shift(1)
 _z_w4 = (df['Spread (Signal)'] - _zmu_w4) / _zsd_w4.replace(0, np.nan)
@@ -6319,7 +7238,7 @@ for _i in _sb_dev.abs().nlargest(15).index:
     elif bool(df['gap_suspect'].iloc[_i]) if 'gap_suspect' in df.columns else False:
         _v = "suspect overnight gap [J5]"
     else:
-        _gam = _stats_w4['gamma'][_i]
+        _gam = _gamma_w4[_i]   # [X16] tuple, not dict
         _hl = (np.log(0.5) / np.log(1 + max(_gam, -0.999))
                if np.isfinite(_gam) and _gam < 0 else np.inf)
         if not np.isfinite(_gam):
@@ -7758,7 +8677,9 @@ def select_composite(weights=None, show=8, rerun=False):
 # ============================================================================
 # [Y8] setup_manual — HTML card (text fallback preserved)
 # ============================================================================
-_setup_manual_v31_11 = setup_manual
+# [AA2] same re-execution guard as enter() — see the note there.
+_setup_manual_v31_11 = globals().setdefault('_setup_manual_core_AA2',
+                                            setup_manual)
  
 def setup_manual(reload=True):
     """[Y8] Same initialisation as v31.11 (context + ledger restore), but the
@@ -7803,12 +8724,23 @@ def setup_manual(reload=True):
                       f"[X12] gamma: expected reversion &lt; carry"),
         ('Fair / cost', f"fair from {c['fair_mode']}; backtest round trip "
                         f"≈{c['rt_cost_bps']:.0f} bps"),
-        ('Paper P&amp;L charges', f"{c['rt_fee_bps']:.0f} bps fees + carry "
-                        f"{c['carry_long_bpd']:.1f}/{c['carry_short_bpd']:.1f} "
-                        f"bps/day (long/short). [X9] spread &amp; impact "
-                        f"EXCLUDED — your typed fills already crossed them; "
-                        f"that is the only difference vs "
-                        f"{c['rt_cost_bps']:.0f} bps"),
+        ('Paper P&amp;L charges', f"{c['rt_fee_bps']:.0f} bps fees "
+                        f"(ADR {ADR_FEE_IN_BPS}+{ADR_FEE_OUT_BPS}) + carry "
+                        f"{c['carry_long_bpd']:+.2f} long / "
+                        f"{c['carry_short_bpd']:+.2f} short bps/day"
+                        + (" — the SHORT carry is a CREDIT (SOFR&minus;"
+                           f"{BORROW_SPREAD_ANN_BPS}bps rebate [AA7])"
+                           if c['carry_short_bpd'] < 0 else "")
+                        + f". Margin {MARGIN_PCT*100:.1f}%&times;"
+                          f"{MARGIN_FUND_ANN_BPS}bps = {margin_ann_bps():.1f} "
+                          f"bps/yr. [X9] spread &amp; impact EXCLUDED — your "
+                          f"typed fills already crossed them; that is the only "
+                          f"difference vs {c['rt_cost_bps']:.0f} bps"),
+        ('Hedge FX [AA6]',
+         (f"PROVISIONAL — {_fx_status()['banner']}"
+          if _fx_status()['provisional'] else
+          f"signal &amp; marks: 13:30 TW fixing; hedge settles at the next "
+          f"{LOCAL_LBL} open ({FX_HEDGE_OPEN_UTC} UTC), recorded via fx_fill()")),
         ('Next', "form() — fill today's prints &nbsp;·&nbsp; help_manual()"),
         ('Ledger', c['ledger']),
         ]) + "</table>")
@@ -7927,6 +8859,55 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
     gate_ok, gate_txt, _gamma, _chgsd = _gate(n, date)
     _hl_led, _dr_led = _gate_levels(_gamma, gate_txt)    # [Y37g] for the ledger
     p = _MANUAL['pos']
+    # ------------------------------------------------------------------ [AA1]
+    # IS THIS A NEW DAY, AN AMENDMENT, OR A BACKDATED CORRECTION?
+    # The desk used to treat all three identically, which is what produced
+    # "amending 29 -> 28 -> 27 fires exit prompts and backdating signals":
+    #   * AMEND — re-typing a price for a date already in the ledger is a
+    #     CORRECTION. It must re-score (the z genuinely changes) but it is not
+    #     a new trading opportunity, and the card said nothing to distinguish
+    #     the two, so three corrections looked like three fresh ENTER signals.
+    #   * BACKDATE — re-scoring a date EARLIER than the open position's entry
+    #     was catastrophic: held = (date - entry).days went NEGATIVE, so the
+    #     card marked a position that did not exist yet against today's entry
+    #     prices, charged "-5cd carry", printed EXIT/ADD commands DATED IN THE
+    #     PAST, and ran a position-health panel reporting "25cd left of a 20cd
+    #     stop". Nothing downstream rejected any of it.
+    # The verdict engine below is untouched; what changes is that a correction
+    # is LABELLED as one, and a pre-entry date cannot emit position commands.
+    _prior = {}
+    try:
+        _pl = _read_ledger()
+        _pl = _pl[(_pl['instrument'] == c['instrument'])
+                  & (_pl['date'].astype(str) == date)]
+        for _, _pr in _pl.iterrows():
+            if str(_pr['point']) in ('open', '1945', 'close'):
+                _prior[str(_pr['point'])] = dict(
+                    adr=_led_num(_pr, 'adr'), fut=_led_num(_pr, 'fut'),
+                    fx=_led_num(_pr, 'fx'), prem=_led_num(_pr, 'premium_bps'),
+                    z=_led_num(_pr, 'z'))
+    except Exception:
+        _prior = {}
+    _is_amend = bool(_prior)
+    # a date BEFORE the open position's entry: marks and exit triggers are
+    # meaningless there, so they are suppressed rather than computed wrongly.
+    _pre_entry = bool(p is not None and date < str(p['date']))
+    _dlvl, _dmsg = _date_sanity(date)                   # [AA1] typo guard
+    _hdr_notes = []
+    if _is_amend:
+        _hdr_notes.append(
+            f"AMENDING an already-scored day — this is a CORRECTION, not a "
+            f"new signal. add_day replaces {date}'s row(s) and re-derives "
+            f"everything from the ledger; nothing is double-counted.")
+    if _dmsg:
+        _hdr_notes.extend(_dmsg)
+    if _pre_entry:
+        _hdr_notes.append(
+            f"{date} is BEFORE the open position's entry ({p['date']}): "
+            f"marks, exit triggers, ADD suggestions and position health are "
+            f"SUPPRESSED [AA1]. A day the position did not exist on cannot "
+            f"generate a signal for it. The premium/z are still scored and "
+            f"still stored — the series is what a backfill is for.")
     rows, _disp, _cmds, _buf = [], [], [], []
     _mtm_detail, _health = [], []          # [Y24][Y25]
     _HT = HTML_OUTPUT and _in_jupyter() and not quiet     # [Y18] card mode
@@ -7945,9 +8926,15 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
             print(l + '\u2500' * (_W - 2) + r)
     if not quiet and not _HT:
         print('\n\u250c' + '\u2500' * (_W - 2) + '\u2510')
-        _L(f"{date}   {c['instrument']}" + (f"   \u2014 {note}" if note else ''))
+        _L(f"{date}   {c['instrument']}"
+           + ("   \u2014 AMENDMENT" if _is_amend else '')
+           + (f"   \u2014 {note}" if note else ''))
         for _m in _dmsgs:
             _L(_m)
+        if _hdr_notes:                                   # [AA1]
+            _R()
+            for _m in _hdr_notes:
+                _L(('! ' if _dlvl == 'bad' else '\u2022 ') + _m)
         _R()
         _L(f"ANCHORS    ordinary {ordinary:>10,.2f}   SSF 13:30 {fut_1330:>9,.2f}"
            f"   FX {fx:>7.4f}")
@@ -7959,7 +8946,8 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
             _R()
             _L(f"POSITION   {'LONG' if p['dir'] == 1 else 'SHORT'} spread   "
                f"${p['notional']:,.0f}   opened {p['date']}   "
-               f"held {_held0}cd / {c['time_stop']}cd")
+               + (f"NOT YET OPEN on this date" if _held0 < 0     # [AA1]
+                  else f"held {_held0}cd / {c['time_stop']}cd"))
             _L(f"           entry ADR {p['entry_adr']:.4f}   SSF "
                f"{p['entry_fut']:.2f}   FX {p['entry_fx']:.4f}")
         _R()
@@ -8013,9 +9001,36 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
         prem = (a_px / fair - 1.0) * 1e4
         z, mu, sd = _zstats(prem, n, date)
         dev = prem - mu if mu == mu else float('nan')
-        _tag = '' if key == _exec_pt else '   [indicative — grid fit on ' + _exec_pt.upper() + ' fills]'
+        # [AA1] the 15:45 ET row is not "indicative" noise — it is the
+        # DECISION PROMPT the desk is run for: you read it live and decide,
+        # then the CLOSE row is the one that books. Label it as what it is.
+        # (Per user: the day's DATA is the close; 15:45 exists to tell you,
+        # on the day, whether to act.)
+        if key == _exec_pt:
+            _tag = ''
+        elif key == '1945':
+            _tag = ('   [DECISION PROMPT — you act on this; the '
+                    + _exec_pt.upper() + ' row is what books]')
+        else:
+            _tag = ('   [indicative — grid fit on ' + _exec_pt.upper()
+                    + ' fills]')
         _act = ''
-        if p is None:
+        if _pre_entry:
+            # [AA1] a date the open position did not exist on. Score it — the
+            # series legitimately wants the row — but emit nothing that looks
+            # like an instruction, and never mark against it.
+            _L(f"{label}{_tag}")
+            _L(f"   ADR {a_px:>10.4f}   fair {fair:>10.4f}   premium "
+               f"{prem:>+7.0f}bps{_fx_note}")
+            if SHOW_PNL_MATH:
+                _L(f"   {_fair_decomposition(c, ordinary, fut_1330, f_px, fx, div_carry)}")
+            _L(f"   deviation {dev:>+6.0f}bps      z {z:>+6.2f}   "
+               f"(band ±{thr:.2f})")
+            _L(f"   — BACKFILL ONLY: the {'LONG' if p['dir'] == 1 else 'SHORT'} "
+               f"position opened {p['date']}, after this date. Stored to the "
+               f"series; no mark, no exit trigger, no command.")
+            _act = _badge('backfill', 'mut') + ' pre-dates the open position'
+        elif p is None:
             past = (z == z) and abs(z) > thr          # [Y9d] strict, like run_backtest
             dev_ok = (dev == dev) and abs(dev) >= c['min_dev_bps']
             can = past and dev_ok and gate_ok
@@ -8055,8 +9070,12 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
                         f"fx={float(fxe):.4f}, "
                         f"date='{date}', notional={_sugg_snap:.0f})")
                 _L(f"     {_cmd}")
-                _cmds.append(_cmd + ('' if key == _exec_pt
-                                     else '   # INDICATIVE'))
+                if _dlvl == 'bad':          # [AA1] never hand out a command
+                    _L(f"     ^ NOT offered: {date} is ahead of the live US "
+                       f"session ({_desk_today()}). Fix the date first.")
+                else:
+                    _cmds.append(_cmd + ('' if key == _exec_pt
+                                         else '   # INDICATIVE'))
                 _act = (_badge(f'ENTER {side}', 'ok')
                         + (' ' + _badge('indicative', 'warn')
                            if key != _exec_pt else '')
@@ -8086,17 +9105,21 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
             if (_gamma == _gamma and _gamma < 0 and z == z and sd == sd
                     and sd > 0):
                 _exp_bps = abs(max(_gamma, -1.0)) * abs(z) * sd
-                _bpd = (c['carry_long_bpd'] if p['dir'] == 1
-                        else c['carry_short_bpd'])
+                _bpd = _carry_hurdle_bpd(p['dir'])       # [AA7] floored at 0
                 _dtn = 3 if pd.Timestamp(date).weekday() == 4 else 1
                 _hurdle = _bpd * _dtn
                 if _exp_bps < _hurdle:
                     trig.append(f'gamma exit ({_exp_bps:.0f} < '
                                 f'{_hurdle:.1f}bps carry)')
                 else:
+                    _sgn = (c['carry_long_bpd'] if p['dir'] == 1
+                            else c['carry_short_bpd'])
                     _gx = (f"   gamma {_gamma:+.3f}: expect {_exp_bps:.0f}"
-                           f"bps/day vs carry {_hurdle:.1f}bps"
-                           + (f" over {_dtn}cd" if _dtn > 1 else ""))
+                           f"bps/day vs carry hurdle {_hurdle:.2f}bps"
+                           + (f" over {_dtn}cd" if _dtn > 1 else "")
+                           + (f"  (carry is a CREDIT of {abs(_sgn):.2f}bps/cd "
+                              f"— no hurdle to clear [AA7])" if _sgn < 0
+                              else ""))
             _L(f"{label}{_tag}")
             _L(f"   ADR {a_px:>10.4f}   premium {prem:>+7.0f}bps   "
                f"z {z:>+6.2f}{_fx_note}")
@@ -8124,7 +9147,11 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
                         f"fx={float(fxe):.4f}, "
                         f"date='{date}')")
                 _L(f"     {_cmd}")
-                _cmds.append(_cmd)
+                if _dlvl == 'bad':          # [AA1] see the ENTER guard above
+                    _L(f"     ^ NOT offered: {date} is ahead of the live US "
+                       f"session ({_desk_today()}). Fix the date first.")
+                else:
+                    _cmds.append(_cmd)
                 _act = (_badge('EXIT', 'bad') + ' ' + ', '.join(trig)
                         + f" \u00b7 mark {m['bps']:+.0f}bps, net now "
                           f"${m['gross'] - xc:+,.0f}")
@@ -8148,48 +9175,88 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
                         + f" mark {m['bps']:+.0f}bps, exit-now net "
                           f"${m['gross'] - xc:+,.0f}")
             if key == _exec_pt or not _mtm_detail:     # [Y25] full arithmetic
+                # [AA5] REBUILT. The old table mixed conventions: it printed
+                # FRACTIONAL share/contract counts derived from the notional
+                # while the P&L above it used the STORED INTEGER units, and it
+                # charged both carry legs on the ADR notional at one blended
+                # bps/day. Every line below is now the arithmetic that
+                # actually produced the number beside it.
                 _mtm_detail.clear()
-                _bpd25 = (c['carry_long_bpd'] if p['dir'] == 1
-                          else c['carry_short_bpd'])
-                _fee25 = c['rt_fee_bps'] / 1e4 * p['notional']
-                _car25 = xc - _fee25
+                _cp = _trade_cost_parts(p['dir'], p['notional'], held,
+                                        adr_notional=p.get('adr_notional'),
+                                        hedge_notional=p.get('hedge_notional'))
+                _an25 = p.get('adr_notional') or p['notional']
+                _hn25 = p.get('hedge_notional') or p['notional']
+                _dr25 = '+1' if p['dir'] == 1 else '-1'
+                _nd25 = '-1' if p['dir'] == 1 else '+1'
+                _fx25 = _fx_status()                      # [AA6] provisional?
                 _mtm_detail.extend([
-                    ('shares held',
-                     f"${p['notional']:,.0f} / entry ADR {p['entry_adr']:.4f}",
-                     f"{m['shares']:,.1f} ADR shares"),
-                    ('SSF contracts',
-                     f"${p['notional']:,.0f} / ({c['contract_sh']:.0f} x "
-                     f"{p['entry_fut']:.2f} / {p['entry_fx']:.4f})",
-                     f"{p['notional']/(c['contract_sh']*p['entry_fut']/p['entry_fx']):,.2f}"),
-                    ('ADR leg',
-                     f"{'+1' if p['dir'] == 1 else '-1'} x {m['shares']:,.1f}sh"
-                     f" x ({a_px:.4f} - {p['entry_adr']:.4f})",
+                    ('units held',
+                     (f"{m['contracts']} contracts x {c['contract_sh']:,.0f} sh "
+                      f"(stored on the ENTRY row — never re-derived)"
+                      if m.get('contracts') else
+                      f"${p['notional']:,.0f} / entry ADR {p['entry_adr']:.4f} "
+                      f"(LEGACY row: no stored units)"),
+                     (f"{m['shares']:,d} {ADR_LBL} sh + {m['contracts']} "
+                      f"{HEDGE_LBL}" if m.get('contracts')
+                      else f"{m['shares']:,.1f} {ADR_LBL} sh")),
+                    ('leg notionals',
+                     f"ADR {m['shares']:,.0f} x {p['entry_adr']:.4f} | hedge "
+                     f"{m.get('contracts') or 0} x {c['contract_sh']:,.0f} x "
+                     f"{p['entry_fut']:.2f} / {p['entry_fx']:.4f}",
+                     f"${_an25:,.0f} vs ${_hn25:,.0f} "
+                     f"({_an25 - _hn25:+,.0f} unhedged)"),
+                    (f'{ADR_LBL} leg (USD)',
+                     f"{_dr25} x {m['shares']:,.0f} sh x ({a_px:.4f} - "
+                     f"{p['entry_adr']:.4f})   [no FX: the ADR prices in USD]",
                      f"${m['adr_leg']:+,.2f}"),
-                    ('SSF leg',
-                     f"{'-1' if p['dir'] == 1 else '+1'} x ${p['notional']:,.0f}"
-                     f" x ({f_px:.2f}/{p['entry_fut']:.2f} - 1) x "
-                     f"({p['entry_fx']:.4f}/{fxe:.4f})",
+                    (f'{HEDGE_LBL} leg ({LOCAL_CCY})',
+                     f"{_nd25} x {m.get('contracts') or 0} x "
+                     f"{c['contract_sh']:,.0f} sh x ({f_px:.2f} - "
+                     f"{p['entry_fut']:.2f})"
+                     if m.get('contracts') else
+                     f"{_nd25} x ${p['notional']:,.0f} x ({f_px:.2f}/"
+                     f"{p['entry_fut']:.2f} - 1) x {p['entry_fx']:.4f}",
+                     f"{LOCAL_CCY} {m['fut_leg'] * fxe:+,.0f}"),
+                    (f'{HEDGE_LBL} leg -> USD',
+                     f"{LOCAL_CCY} {m['fut_leg'] * fxe:+,.0f} / {fxe:.4f}"
+                     f"   [{_fx25['mark_label']}]",
                      f"${m['fut_leg']:+,.2f}"),
-                    ('TAIFEX dividend',
-                     (f"{'-1' if p['dir'] == 1 else '+1'} x "
-                      f"${p['notional']:,.0f} x {div_cash_pct*100:.2f}%"
+                    (f'{EXCH_LBL} dividend',
+                     (f"{_nd25} x ${_hn25:,.0f} (hedge leg) x "
+                      f"{div_cash_pct*100:.2f}%"
                       if m['div_leg'] else 'no ex-date today'),
                      f"${m['div_leg']:+,.2f}"),
                     ('GROSS mark',
-                     "ADR leg + SSF leg" + (" + dividend" if m['div_leg']
-                                            else ""),
+                     f"{ADR_LBL} leg + {HEDGE_LBL} leg"
+                     + (" + dividend" if m['div_leg'] else ""),
                      f"${m['gross']:+,.2f}   ({m['bps']:+.0f} bps)"),
                     ('fees if closed now',
-                     f"{c['rt_fee_bps']:.0f}bps x ${p['notional']:,.0f} "
-                     f"(round trip; spread/impact excluded [X9])",
-                     f"-${_fee25:,.2f}"),
-                    ('carry accrued',
-                     f"{_bpd25:.2f}bps/cd x {held}cd x ${p['notional']:,.0f} "
-                     + ("(funding + margin, long ADR)" if p['dir'] == 1
-                        else "(borrow - rebate + margin, short ADR)"),
-                     f"-${_car25:,.2f}"),
+                     f"ADR {ADR_FEE_IN_BPS}+{ADR_FEE_OUT_BPS}bps on "
+                     f"${_an25:,.0f} + ({FUT_FEE_IN_BPS}+{FUT_FEE_OUT_BPS}"
+                     f"+2x{(FX_SPOT_HALF_SPREAD_BPS if FX_EXEC_MODE == 'spot_next_open' else FX_NDF_HALF_SPREAD_BPS):g}"
+                     f")bps on ${_hn25:,.0f}   (spread/impact excluded [X9])",
+                     f"-${_cp['fee']:,.2f}"),
+                    ('funding / borrow',
+                     f"{(c['carry_fund_long_bpd'] if p['dir'] == 1 else c['carry_fund_short_bpd']):+.3f}"
+                     f"bps/cd x {held}cd x ${_an25:,.0f} (ADR leg) — "
+                     + (f"SOFR+{FUNDING_SPREAD_ANN*100:.1f}%, you are LONG the ADR"
+                        if p['dir'] == 1 else
+                        (f"SOFR-{BORROW_SPREAD_ANN_BPS}bps REBATE on the short "
+                         f"proceeds [AA7]" if BORROW_MODE == 'sofr_minus'
+                         else f"{BORROW_ANN_BPS}bps borrow, flat")),
+                     f"{-_cp['carry_fund']:+,.2f}".replace('+', '+$')
+                     .replace('-', '-$')),
+                    (f'{EXCH_LBL} margin funding',
+                     f"{c['carry_margin_bpd']:.3f}bps/cd x {held}cd x "
+                     f"${_hn25:,.0f} (hedge leg) — "
+                     + (f"{MARGIN_PCT*100:.1f}% margin x {MARGIN_FUND_ANN_BPS}"
+                        f"bps ann [AA7]" if FUT_MARGIN_MODE == 'pct_x_spread'
+                        else f"{margin_ann_bps():.1f}bps ann"),
+                     f"-${_cp['carry_margin']:,.2f}"),
                     ('NET if closed now',
-                     f"${m['gross']:+,.2f} - ${_fee25:,.2f} - ${_car25:,.2f}",
+                     f"${m['gross']:+,.2f} - fees ${_cp['fee']:,.2f} - carry "
+                     f"${_cp['carry']:,.2f}",
                      f"${m['gross'] - xc:+,.2f}   "
                      f"({(m['gross'] - xc) / p['notional'] * 1e4:+.0f} bps)")])
                 _hl_lvl, _hl_head, _hl_lines = _position_health(
@@ -8201,6 +9268,29 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
                     _L(f"   POSITION HEALTH [Y24]   {_hl_head}")
                     for _hx in _hl_lines:
                         _L(f"     {_hx}")
+        # [AA1] AMENDMENT DIFF — a correction must show what it corrected.
+        # Re-typing 29 -> 28 -> 27 used to print three identical-looking day
+        # cards, each ending in an ENTER command, so three corrections read
+        # as three fresh signals. The row it replaced is now shown beside it.
+        if key in _prior:
+            _pv = _prior[key]
+            _chg = []
+            for _nm, _new, _oldv, _f in (
+                    ('ADR', a_px, _pv['adr'], '{:,.4f}'),
+                    (HEDGE_LBL, f_px, _pv['fut'], '{:,.2f}'),
+                    ('FX', fxe, _pv['fx'], '{:.4f}'),
+                    ('premium bps', prem, _pv['prem'], '{:+,.0f}'),
+                    ('z', z, _pv['z'], '{:+.2f}')):
+                if _oldv is None or _new != _new:
+                    continue
+                # compare AS DISPLAYED: the ledger stores premium/z rounded,
+                # so a raw float compare reports "+186 -> +186" as a change.
+                _os, _ns = _f.format(float(_oldv)), _f.format(float(_new))
+                if _os != _ns:
+                    _chg.append(f"{_nm} {_os} → {_ns}")
+            _L(f"   AMENDED {key}: "
+               + ("; ".join(_chg) if _chg else "no change at display precision")
+               + "   (previous row replaced, not added)")
         _disp.append({'point': label + ('' if key == _exec_pt else ' *'),
                       'ADR': a_px, 'SSF': f_px, 'FX': fxe, 'fair': fair,
                       'prem bps': prem, 'dev bps': dev, 'z': z,
@@ -8295,6 +9385,24 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
             print(f"  saved {len(rows)} row(s); "
                   f"{len(_MANUAL['days'])} manual day(s) in context — "
                   f"re-running add_day for the same date OVERWRITES it")
+            # [AA1] THE SILENT DROP. Only rows at the SIGNAL point become desk
+            # days: they alone feed the z-series, the mark path and the open
+            # position. A day typed into the 15:45 boxes ALONE therefore
+            # scored on screen, wrote a ledger row, printed "saved 1 row(s)"
+            # — and entered nothing. days stayed 0, marks stayed 0, and the
+            # premium never joined the series it was being scored against.
+            # Nothing said so. Now it does.
+            _pts_saved = {r['point'] for r in rows}
+            if _exec_pt not in _pts_saved:
+                say(f"NOT BOOKED AS A DESK DAY: you typed "
+                    f"{'/'.join(sorted(_pts_saved))} but the signal point is "
+                    f"{_exec_pt.upper()}"
+                    + (" (US close, 2000/2100z)" if _exec_pt == 'close'
+                       else " (US open, 1330/1430z)")
+                    + f". {date} did NOT enter the z-series, did NOT mark the "
+                      f"position and does NOT count as a day — the desk still "
+                      f"holds {len(_MANUAL['days'])} day(s). Type the "
+                      f"{_exec_pt.upper()} boxes for this date too.", 'bad')
     elif not quiet and not rows:
         _R('\u2514', '\u2518')
         print("  nothing scored (no valid snapshot pairs) — nothing saved")
@@ -8329,12 +9437,22 @@ def exit_pos(adr, fut, fx, date, div_cash_pct=0.0, note=''):
                fut=float(fut), fair='', premium_bps='',
                dev_bps='', z='', n=c['n'], threshold=c['thresh'], gate='',
                div_carry='', in_position=False, net=round(net, 2),
+               # [Y32] the units this exit actually closed, so a later
+               # fx_fill() re-prices the SAME ticket instead of re-deriving a
+               # fractional one from the notional [AA6].
+               shares=(int(p['shares']) if p.get('shares') else ''),
+               contracts=(int(p['contracts']) if p.get('contracts') else ''),
+               fx_src=('provisional' if FX_EXEC_MODE == 'spot_next_open'
+                       else 'ndf'),                            # [AA6]
                note=f"held {held}cd {note}".strip())
     led = _read_ledger()
     led = led[~((led['instrument'] == c['instrument'])
                 & (led['point'] == 'EXIT')
                 & (led['date'].astype(str) == str(date)))]
     _write_ledger(pd.concat([led, pd.DataFrame([row])], ignore_index=True))
+    _marks_before = list(_MANUAL['marks'] or [])      # [AA2] path, pre-close
+    _rebuild()                              # [AA2] before we announce it
+    _assert_state('EXIT', str(date))
     _d = '+1' if p['dir'] == 1 else '-1'
     _side = 'LONG' if p['dir'] == 1 else 'SHORT'
     _bps_net = net / p['notional'] * 1e4
@@ -8413,8 +9531,12 @@ def exit_pos(adr, fut, fx, date, div_cash_pct=0.0, note=''):
             f"    fx_fill('{date}', <{FX_LBL} 09:00>)",
         ]
     note_block('WHAT THIS P&L DOES AND DOES NOT CHARGE', _note_lines)
-    if _MANUAL['marks']:
-        b = [x['bps'] for x in _MANUAL['marks']]
+    # [AA2] the mark path was read AFTER _rebuild() used to run, i.e. after
+    # the position was closed and _MANUAL['marks'] emptied — so this line
+    # only ever printed by accident of ordering. Snapshotted before the
+    # rebuild now.
+    if _marks_before:
+        b = [x['bps'] for x in _marks_before]
         _gave = max(b) - _bps_net
         say(f"Path: best mark {max(b):+.0f} bps | worst {min(b):+.0f} bps | "
             f"banked {_bps_net:+.0f} bps",
@@ -8557,12 +9679,16 @@ def run_backtest_lots(df, n_zscore, threshold, max_adds=2, add_step_z=1.0,
  
     def _lot_carry(lot, t):
         cd = (pd.Timestamp(dates_dt[t]) - pd.Timestamp(dates_dt[lot['day']])).days
+        _favg = float(_np.mean(fund_arr[lot['day']:t + 1]))
         if lot['dir'] == 1:
-            _r = float(_np.mean(fund_arr[lot['day']:t + 1])) / 360
+            _r = _favg / 360
         else:
-            _r = (BORROW_ANN_BPS / 1e4 - SHORT_REBATE_ANN) / 360
-        return lot['notional'] * max(_r, 0.0) * cd \
-            + lot['beta'] * lot['notional'] * (margin_ann_bps() / 1e4) / 360 * cd
+            # [AA7] SOFR-50 rebate — SIGNED. The old max(_r, 0.0) floor was a
+            # P&L floor here (not a hurdle floor as in run_backtest), so it
+            # would have silently deleted the whole short-side credit.
+            _r = short_financing_ann(_favg - FUNDING_SPREAD_ANN) / 360
+        return lot['notional'] * _r * cd \
+            + lot['beta'] * lot['notional'] * (margin_ann_bps(_favg) / 1e4) / 360 * cd
  
     def _close_lot(lot, t, reason):
         adr_leg, fut_leg = _lot_pnl(lot, t)
@@ -8696,9 +9822,10 @@ def run_backtest_lots(df, n_zscore, threshold, max_adds=2, add_step_z=1.0,
             if position == 1:
                 dcar = tot_nt * fund_arr[t] / 360
             else:
-                dcar = tot_nt * (BORROW_ANN_BPS / 1e4 - SHORT_REBATE_ANN) / 360
-            dcar += tot_nt * (margin_ann_bps() / 1e4) / 360
-            dcar = max(dcar, 0.0)
+                dcar = tot_nt * short_financing_ann(
+                    fund_arr[t] - FUNDING_SPREAD_ANN) / 360      # [AA7]
+            dcar += tot_nt * (margin_ann_bps(fund_arr[t]) / 1e4) / 360
+            dcar = max(dcar, 0.0)     # HURDLE floor only — see [AA7]
             _dtn = max(int(gap_next[t]) if gap_next[t] < 999 else 1, 1)
             if exp_prof < dcar * _dtn:
                 exit_all, reason = True, 'Gamma exit'
@@ -8901,16 +10028,28 @@ def _position_health(z, sd, gamma, gate_ok, date, mark_bps=None):
         _exp = abs(max(gamma, -1.0)) * abs(z) * sd
         _tot = abs(z) * sd
         _carry_left = _bpd * left
-        L.append(f"carry     expect {_exp:.0f}bps/day of reversion vs "
-                 f"{_bpd:.1f}bps/day carry; {_tot:.0f}bps of dislocation "
-                 f"left to collect vs {_carry_left:.0f}bps of carry still to "
-                 f"run to the {c['time_stop']}cd stop ({left}cd)")
-        if _tot < _carry_left:
-            score += 2
-            flags.append('carry to the stop exceeds the edge left')
-            L.append(f"          \u2192 the carry still to run EXCEEDS the "
-                     f"whole dislocation left. Holding to the time stop is "
-                     f"negative EV even if z goes to 0 perfectly.")
+        # [AA7] the carry can be a CREDIT now (short leg, SOFR-50 rebate), so
+        # "vs -1.2bps/day carry ... vs -23bps of carry still to run" has to be
+        # said in words or it reads as a cost with a typo.
+        if _bpd >= 0:
+            L.append(f"carry     expect {_exp:.0f}bps/day of reversion vs "
+                     f"{_bpd:.2f}bps/day of carry COST; {_tot:.0f}bps of "
+                     f"dislocation left to collect vs {_carry_left:.0f}bps of "
+                     f"carry still to burn to the {c['time_stop']}cd stop "
+                     f"({left}cd)")
+            if _tot < _carry_left:
+                score += 2
+                flags.append('carry to the stop exceeds the edge left')
+                L.append(f"          \u2192 the carry still to run EXCEEDS "
+                         f"the whole dislocation left. Holding to the time "
+                         f"stop is negative EV even if z goes to 0 perfectly.")
+        else:
+            L.append(f"carry     expect {_exp:.0f}bps/day of reversion, and "
+                     f"the position EARNS {abs(_bpd):.2f}bps/day of carry "
+                     f"({abs(_carry_left):.0f}bps more if held to the "
+                     f"{c['time_stop']}cd stop) \u2014 time is on your side here, "
+                     f"so there is no carry hurdle to clear [AA7]. "
+                     f"{_tot:.0f}bps of dislocation left to collect.")
     # 6. drawdown context
     if mark_bps is not None and c['hard_stop_bps'] > 0:
         _room = c['hard_stop_bps'] + mark_bps
@@ -8969,35 +10108,70 @@ def fx_fill(date, fx, point=None):
         _r = led.loc[_ix]
         _old = float(_r['fx'])
         led.loc[_ix, 'fx'] = fx
-        print(f"[Y21] {_r['point']} {date}: FX {_old:.4f} -> {fx:.4f}")
+        led.loc[_ix, 'fx_src'] = 'next_open'          # [AA6] this one is real
+        print(f"[Y21] {_r['point']} {date}: FX {_old:.4f} -> {fx:.4f} "
+              f"({LOCAL_LBL} open {FX_HEDGE_OPEN_UTC}Z — no longer provisional)")
         if _r['point'] == 'EXIT' and str(_r['net']) not in ('', 'nan'):
-            # exact SSF-leg delta: only the conversion of the futures leg
-            # depends on the exit FX
+            # [AA6] BUGFIX — the SSF-leg delta was computed with the LEGACY
+            # FRACTIONAL formula:
+            #     -dir x notional x (fut_x/fut_e - 1) x fx_entry x (1/new - 1/old)
+            # while the P&L it was patching came from the INTEGER-unit form
+            #     -dir x contracts x contract_sh x (fut_x - fut_e) / fx.
+            # Two errors compounded: (a) the fractional hedge differs from the
+            # whole-contract one by the rounding residue, and (b) `notional`
+            # on an ENTRY row is the ADR-LEG notional [Y32], not the hedge
+            # leg, so the delta was scaled off the wrong base entirely. The
+            # exit FX is a pure re-conversion of a TWD number, so it is
+            # computed exactly, from the stored contract count.
             _ent = led[(led['instrument'] == c['instrument'])
                        & (led['point'] == 'ENTRY')
                        & (led['date'].astype(str) < str(date))]
             if len(_ent):
                 _e = _ent.sort_values('date').iloc[-1]
                 _dir = 1 if str(_e['side']).upper() == 'LONG' else -1
-                _nt = float(_e['notional'])
-                _fr = float(_r['fut']) / float(_e['fut'])
-                _dlt = (-_dir * _nt * (_fr - 1.0) * float(_e['fx'])
-                        * (1.0 / fx - 1.0 / _old))
+                _cn = (_led_num(_r, 'contracts')
+                       or _led_num(_e, 'contracts'))
+                if _cn:
+                    _twd = (-_dir * float(_cn) * float(c['contract_sh'])
+                            * (float(_r['fut']) - float(_e['fut'])))
+                    _dlt = _twd * (1.0 / fx - 1.0 / _old)
+                    _how = (f"{LOCAL_CCY} {_twd:+,.0f} reconverted "
+                            f"1/{fx:.4f} - 1/{_old:.4f}")
+                else:      # pre-[Y32] ledger with no stored units
+                    _nt = float(_e['notional'])
+                    _fr = float(_r['fut']) / float(_e['fut'])
+                    _dlt = (-_dir * _nt * (_fr - 1.0) * float(_e['fx'])
+                            * (1.0 / fx - 1.0 / _old))
+                    _how = 'legacy fractional form (no stored units)'
                 led.loc[_ix, 'net'] = round(float(_r['net']) + _dlt, 2)
-                print(f"       SSF-leg P&L delta {_dlt:+,.2f} "
-                      f"-> net ${float(led.loc[_ix, 'net']):+,.2f}")
+                print(f"       {HEDGE_LBL}-leg P&L delta {_dlt:+,.2f} "
+                      f"({_how}) -> net ${float(led.loc[_ix, 'net']):+,.2f}")
     _write_ledger(led)
     _rebuild()
+    _fx = _fx_status()                                    # [AA6]
+    if _fx['provisional']:
+        say(_fx['banner'], 'warn')
+    else:
+        say(f"every fill now carries its realised {LOCAL_LBL}-open hedge FX "
+            f"— no provisional marks left", 'ok')
     print(f"[Y21] ledger rebuilt — status() to see the updated position")
  
-_enter_v31_11 = enter
+# [AA2] RE-EXECUTION GUARD. `_enter_v31_11 = enter` captures whatever `enter`
+# currently is — so running this file a second time in one kernel (routine in
+# Jupyter) captured the ALREADY-WRAPPED enter and wrapped it again. The core
+# still ran once, but every wrapper in the stack re-printed its own reminder,
+# so the third run showed three FX warnings for one fill and the panel looked
+# like it had fired repeatedly. setdefault pins the ORIGINAL exactly once.
+_enter_v31_11 = globals().setdefault('_enter_core_AA2', enter)
 def enter(side, adr, fut, fx, date, notional=None, note=''):
     """[Y21] same as v31.11 enter(), plus the next-open FX reminder."""
     _r = _enter_v31_11(side, adr, fut, fx, date, notional=notional, note=note)
-    if FX_EXEC_MODE == 'spot_next_open':
+    # [AA2] only remind when the write actually produced a position, and only
+    # for the rows that are genuinely still provisional [AA6].
+    if FX_EXEC_MODE == 'spot_next_open' and _MANUAL['pos'] is not None:
         say(f"[Y21] FX {float(fx):,.4f} is PROVISIONAL — the hedge deals at "
-            f"TOMORROW'S {LOCAL_LBL} open. Then: "
-            f"fx_fill('{date}', <{FX_LBL} 09:00>)", 'warn')
+            f"the NEXT {LOCAL_LBL} open ({FX_HEDGE_OPEN_UTC} UTC = 09:00 "
+            f"Taipei). Tomorrow: fx_fill('{date}', <{FX_LBL} 09:00>)", 'warn')
     return _r
  
 # ============================================================================
@@ -9035,13 +10209,18 @@ def add_to(adr, fut, fx, date, notional=None, note=''):
                gamma='', hl='', drift='',
                n=c['n'], threshold=c['thresh'], gate='', div_carry='',
                in_position=True, net='',
+               fx_src=('provisional' if FX_EXEC_MODE == 'spot_next_open'
+                       else 'ndf'),                            # [AA6]
                note=('ADD ' + str(note)).strip())
     led = _read_ledger()
-    led = led[~((led['point'] == 'ENTRY')
+    led = led[~((led['instrument'] == c['instrument'])      # [AA2] scope it
+                & (led['point'] == 'ENTRY')
                 & (led['date'].astype(str) == str(date))
                 & (led['note'].astype(str).str.startswith('ADD')))]
     _write_ledger(pd.concat([led, pd.DataFrame([row])], ignore_index=True))
     _rebuild()
+    if not _assert_state('ENTRY', str(date)):              # [AA2]
+        return _MANUAL['pos']
     p = _MANUAL['pos']
     banner(f"ADD — leg {p.get('n_legs', 1)} of the {_side} spread",
            sub=f"{date}   +{_u['shares']:,d} sh / +{_u['contracts']} "
@@ -9103,7 +10282,123 @@ def gate_history(tail=15):
 #     only thing that writes. The real execution prints (enter/exit_pos)
 #     stay MANUAL on purpose — those are your fills, not the terminal's.
 # ============================================================================
-FUT_TICKER_BBG = globals().get('FUT_TICKER_BBG_INST', None)
+# ============================================================================
+# [AA8] WHICH SSF CONTRACT AM I ACTUALLY PULLING?
+# ----------------------------------------------------------------------------
+# Until now FUT_TICKER_BBG was a STATIC string (and, in this file, was never
+# set at all for any instrument — so pull_day() quietly returned blank futures
+# fields and live_now() had no SSF at all). A static string is worse than none
+# once a month: a TAIFEX single-stock future expires the THIRD WEDNESDAY, so
+# a ticker typed in June keeps resolving to the June contract in July, and the
+# pull silently returns a dead or illiquid series. The reported symptom — "on
+# 29 July it fetched September, not August" — is the same failure with the
+# sign flipped: an unmanaged code drifts off the contract you mean.
+#
+# BLOOMBERG SSF SYNTAX (TAIFEX):  <ord>=<M><Y> TT Equity
+#   2330=Q6 TT Equity   2330 TT, August 2026
+#   2303=Q6 TT Equity   2303 TT, August 2026   <- the user's example
+# The MONTH CODE is the standard futures alphabet, and it is the piece that
+# is easy to get wrong by eye because it is NOT alphabetical by month:
+#   F Jan  G Feb  H Mar  J Apr  K May  M Jun
+#   N Jul  Q Aug  U Sep  V Oct  X Nov  Z Dec
+# so Q = AUGUST (not September, which is U), and the trailing digit is the
+# year's last digit: Q6 = August 2026. That is exactly the check requested.
+#
+# WHICH MONTH IS "FRONT" depends on ROLL_RULE, and the two rules DISAGREE for
+# the first half of every month, so the choice is made explicitly:
+#   'month_start'   the CONFIRMED convention of the capture files [I3][J1]:
+#                   in month M the files quote the M+1 contract. On 29 Jul
+#                   that is AUGUST. On 5 Jul it is also August.
+#   'expiry_3rd_wed' true front month: the nearest contract that has not yet
+#                   passed its third Wednesday. On 29 Jul that is AUGUST too
+#                   (July expired on the 15th); on 5 Jul it would be JULY.
+# Both give AUGUST for the 29 July example, which is the answer being checked.
+_BBG_MONTH_CODE = 'FGHJKMNQUVXZ'          # index 0 = January
+_BBG_MONTH_NAME = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+def ssf_contract_month(date=None, rule=None):
+    """[AA8] (year, month) of the SSF contract to quote on `date`."""
+    _d = pd.Timestamp(_desk_today() if date is None else date)
+    _rule = ROLL_RULE if rule is None else rule
+    if _rule == 'expiry_3rd_wed':
+        # nearest contract whose third Wednesday has not passed
+        if _d.day <= third_wednesday_day(_d.year, _d.month):
+            return _d.year, _d.month
+        _n = _d + pd.offsets.MonthBegin(1)
+        return _n.year, _n.month
+    _n = pd.Timestamp(_d.year, _d.month, 1) + pd.offsets.MonthBegin(1)
+    return _n.year, _n.month                     # 'month_start': M+1
+def ssf_bbg_ticker(date=None, ord_ticker=None, rule=None):
+    """[AA8] The Bloomberg SSF ticker for `date`, e.g. '2303=Q6 TT Equity'."""
+    _ot = str(ord_ticker or ORD_TICKER)
+    _root = _ot.split()[0]                       # '2330 TT Equity' -> '2330'
+    _y, _m = ssf_contract_month(date, rule)
+    return f"{_root}={_BBG_MONTH_CODE[_m - 1]}{_y % 10} TT Equity"
+def decode_ssf_ticker(ticker):
+    """[AA8] '2303=Q6 TT Equity' -> dict(root, code, month, year, expiry).
+    Returns None when the string is not a dated SSF ticker."""
+    _m = re.search(r'^(\S+)=([FGHJKMNQUVXZ])(\d)\b', str(ticker).strip())
+    if not _m:
+        return None
+    _root, _code, _yd = _m.group(1), _m.group(2), int(_m.group(3))
+    _mon = _BBG_MONTH_CODE.index(_code) + 1
+    _base = pd.Timestamp(_desk_today()).year
+    # resolve the single-digit year to the nearest year with that last digit
+    _yr = min((_base - 5 + _i for _i in range(11)),
+              key=lambda _y: (abs(_y - _base) if _y % 10 == _yd else 999))
+    return dict(root=_root, code=_code, month=_mon, year=_yr,
+                name=_BBG_MONTH_NAME[_mon - 1],
+                expiry=pd.Timestamp(_yr, _mon,
+                                    third_wednesday_day(_yr, _mon)))
+def check_ssf_ticker(ticker=None, date=None, verbose=True):
+    """[AA8] Decode the SSF ticker that WILL be used, against the date it
+    will be used on, and say plainly whether it is the contract you mean.
+    Returns (ok, resolved_ticker, [lines])."""
+    _d = _desk_today() if date is None else str(date)
+    _want = ssf_bbg_ticker(_d)
+    _use = str(ticker) if ticker else _want
+    _di = decode_ssf_ticker(_use)
+    _wi = decode_ssf_ticker(_want)
+    _lines, _ok = [], True
+    _lines.append(f"as of {_d} the {ROLL_RULE} rule wants {_want}"
+                  f"  ({_wi['name']} {_wi['year']}, expires "
+                  f"{_wi['expiry'].date()})")
+    if _di is None:
+        _ok = False
+        _lines.append(f"the configured ticker {_use!r} carries no =<M><Y> "
+                      f"contract code, so nothing can be validated — it may "
+                      f"be a generic/continuation series. Set "
+                      f"FUT_TICKER_BBG_INST=None to let the desk resolve the "
+                      f"dated contract itself.")
+    else:
+        _lines.append(f"configured: {_use}  ({_di['name']} {_di['year']}, "
+                      f"expires {_di['expiry'].date()})")
+        if (_di['year'], _di['month']) != (_wi['year'], _wi['month']):
+            _ok = False
+            _lines.append(f"MISMATCH — you are pointing at "
+                          f"{_di['name']} {_di['year']} while {_d} calls for "
+                          f"{_wi['name']} {_wi['year']}. Remember Q=August, "
+                          f"U=September: the codes are not alphabetical.")
+        _dte = (_di['expiry'] - pd.Timestamp(_d)).days
+        if _dte < 0:
+            _ok = False
+            _lines.append(f"EXPIRED {-_dte} days ago — this contract no "
+                          f"longer trades.")
+        elif _dte <= 5:
+            _lines.append(f"expires in {_dte} day(s): liquidity is rolling "
+                          f"out of it. Check the next contract "
+                          f"({ssf_bbg_ticker(pd.Timestamp(_d) + pd.Timedelta(days=7))}).")
+    if verbose:
+        say(f"[AA8] SSF contract check — {'OK' if _ok else 'PROBLEM'}",
+            'ok' if _ok else 'bad')
+        for _l in _lines:
+            say(f"  {_l}", 'info')
+    return _ok, (_use if _di else _want), _lines
+# FUT_TICKER_BBG_INST in the INSTRUMENTS dict PINS the ticker (validated
+# above); left unset, the desk resolves the dated contract per call, so it
+# can never be stale.
+FUT_TICKER_BBG_PIN = globals().get('FUT_TICKER_BBG_INST', None)
+FUT_TICKER_BBG = FUT_TICKER_BBG_PIN or ssf_bbg_ticker()
 def _bbg_open():
     """Fresh short-lived session (the main run's session is long stopped)."""
     _so = blpapi.SessionOptions()
@@ -9192,6 +10487,12 @@ def pull_day(date, save=False):
     if c is None:
         say('run setup_manual() first', 'bad'); return None
     _dst = is_us_dst(date)
+    # [AA8] resolve the SSF contract FOR THE DATE BEING PULLED, not for the
+    # date the file was imported on. A pinned FUT_TICKER_BBG_INST still wins,
+    # but it is validated against this date and says so when it is wrong.
+    _ssf_tk = FUT_TICKER_BBG_PIN or ssf_bbg_ticker(date)
+    _ssf_ok, _ssf_tk, _ssf_lines = check_ssf_ticker(_ssf_tk, date,
+                                                    verbose=False)
     ss, svc = _bbg_open()
     try:
         got, src = {}, {}
@@ -9209,15 +10510,16 @@ def pull_day(date, save=False):
         _legs = [('adr_open', c['adr_ticker'], (13, 30) if _dst else (14, 30)),
                  ('adr_1945', c['adr_ticker'], (19, 45) if _dst else (20, 45)),
                  ('adr_close', c['adr_ticker'], (20, 0) if _dst else (21, 0))]
-        if FUT_TICKER_BBG:
-            _legs += [('fut_1330', FUT_TICKER_BBG, (5, 30)),
-                      ('fut_open', FUT_TICKER_BBG, (13, 30) if _dst else (14, 30)),
-                      ('fut_1945', FUT_TICKER_BBG, (19, 45) if _dst else (20, 45)),
-                      ('fut_close', FUT_TICKER_BBG, (20, 0) if _dst else (21, 0))]
+        if _ssf_tk:
+            _legs += [('fut_1330', _ssf_tk, (5, 30)),
+                      ('fut_open', _ssf_tk, (13, 30) if _dst else (14, 30)),
+                      ('fut_1945', _ssf_tk, (19, 45) if _dst else (20, 45)),
+                      ('fut_close', _ssf_tk, (20, 0) if _dst else (21, 0))]
         for _k, _tk, (_h, _m) in _legs:
             _px, _when = _bbg_bar_at(ss, svc, _tk, date, _h, _m)
             got[_k] = _px
-            src[_k] = (f'1-min bar @ {_when}Z' if _px is not None else _when)
+            src[_k] = (f'{_tk} 1-min bar @ {_when}Z' if _px is not None
+                       else f'{_tk}: {_when}')
     finally:
         ss.stop()
     _rows = [(k, (f"{v:,.4f}" if isinstance(v, float) else '—'), src.get(k, ''))
@@ -9227,12 +10529,21 @@ def pull_day(date, save=False):
              _rows, col='value',
              note='PREVIEW only — nothing saved yet. Eyeball each source '
                   'stamp; then pull_day(date, save=True) books add_day() '
-                  'with exactly these numbers. Futures fields blank? Set '
-                  'FUT_TICKER_BBG_INST in the INSTRUMENTS dict, or type '
-                  'those two numbers by hand.')
+                  'with exactly these numbers.')
+    # [AA8] the contract check is printed EVERY pull, next to the prices it
+    # produced, because a wrong-month SSF is invisible in the numbers: it is
+    # a real price on a real contract, just not the one you are hedging with.
+    note_block(f"SSF CONTRACT — {_ssf_tk}"
+               + ('  [OK]' if _ssf_ok else '  [CHECK THIS]'), _ssf_lines)
+    if not _ssf_ok:
+        say('the futures prices above came from a contract that does not '
+            'match this date — do not book them', 'bad')
     if not save:
         return got
-    _need = ('ordinary', 'fx') + (('fut_1330',) if FUT_TICKER_BBG else ())
+    if not _ssf_ok:
+        say('not saving while the SSF contract is unresolved', 'bad')
+        return got
+    _need = ('ordinary', 'fx') + (('fut_1330',) if _ssf_tk else ())
     _missing = [k for k in _need if got.get(k) is None]
     if 'fut_1330' not in got or got.get('fut_1330') is None:
         say('fut_1330 not pulled — add_day needs it: call add_day(...) '
@@ -9273,12 +10584,19 @@ def live_now():
         say('type or pull at least one day first — the live card marks '
             'against the latest Taiwan anchors', 'bad'); return None
     _anchor = _MANUAL['days'][-1]
+    # [AA8] same per-call contract resolution as pull_day
+    _ssf_tk = FUT_TICKER_BBG_PIN or ssf_bbg_ticker(_now)
+    _ssf_ok, _ssf_tk, _ssf_lines = check_ssf_ticker(_ssf_tk, str(_now.date()),
+                                                    verbose=False)
+    if not _ssf_ok:
+        for _l in _ssf_lines:
+            say(f"[AA8] {_l}", 'bad')
     ss, svc = _bbg_open()
     try:
         _live = {}
         for _k, _tk in [('adr', c['adr_ticker']),
                         ('fx', 'USDTWD BGN Curncy')] \
-                + ([('fut', FUT_TICKER_BBG)] if FUT_TICKER_BBG else []):
+                + ([('fut', _ssf_tk)] if (_ssf_tk and _ssf_ok) else []):
             rq = svc.createRequest('ReferenceDataRequest')
             rq.getElement('securities').appendValue(_tk)
             rq.getElement('fields').appendValue('PX_LAST')
@@ -9328,8 +10646,9 @@ def live_now():
     banner(f"LIVE — {c['instrument']} {_now.strftime('%H:%M')}Z",
            sub=f"ADR {_live['adr']:,.4f}   {HEDGE_LBL} "
                f"{(_fut_for_fair or float('nan')):,.2f}"
-               f"{'' if _fut_live else ' (ANCHOR — no live SSF ticker)'}   "
-               f"FX {_fx_live:,.4f}")
+               + (f" [{_ssf_tk}]" if _fut_live
+                  else ' (ANCHOR — no live SSF print)')
+               + f"   FX {_fx_live:,.4f}")
     say(f"fair {fair:,.4f} -> premium {prem:+,.0f} bps | z {z:+.2f} "
         f"(band ±{c['thresh']:.2f})",
         'warn' if abs(z) > c['thresh'] else 'info')
@@ -9354,7 +10673,12 @@ menu([
     ("add_to(adr=..., fut=..., fx=..., date=...)",
      "[Y38] add a leg while the spike extends (the card suggests it)"),
     ("gate_history()", "[Y37g] gamma / half-life / drift trend, from the ledger"),
-    ("status()", "position, marks, live z and the exit verdict"),
+    ("status()", "[AA5] DESK STATE first — is the panel showing what is "
+                 "stored? — then position, marks, live z and the exit verdict"),
+    ("desk_audit()", "[AA2] reconcile the ledger CSV against the desk's "
+                     "state; names any row that is blocking or corrupting it"),
+    ("check_ssf_ticker()", "[AA8] which SSF contract the Bloomberg pulls will "
+                           "use, decoded (Q=Aug, U=Sep) and checked for expiry"),
     ("help_manual()", "the whole desk workflow in one screen"),
     ("why_no_trades(start, end)", "[X6] per-row entry verdict over a window"),
     ("show_grid_html()", "the grid matrices as heat maps"),
