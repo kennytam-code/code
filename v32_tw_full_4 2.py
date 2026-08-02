@@ -1,4 +1,136 @@
 # ============================================================================
+# v32.2 (TW) — DIAGNOSTICS, GATE AND DESK PASS. Every edit is tagged [AC..];
+# grep "[AC" for all of them in order. Nine groups, in the order asked:
+#
+# [AC1]  [R5] EX-DATE READING. "futures HELD (+0.04%) while spot fell
+#        (+0.05%)" — a sentence that contradicts itself and quotes a rising
+#        spot as a fall. Four separate faults, all in the CODE, none touching
+#        P&L: (1) _ft/_sp printed as decimals with a % sign while the table
+#        columns beside them multiplied by 100, so the sentence was off by
+#        100x; (2) "spot fell" was hardcoded into a branch that only ever
+#        tested the futures; (3) `abs(basis) < 0.5*div` is two-sided but its
+#        negation was reported as "pre-discounted", so a basis of +0.96% —
+#        futures ABOVE spot, the opposite of a discount — was labelled a
+#        "dividend-SPANNING contract" that would double-count. It is not one
+#        and nothing was double-counted; (4) "did the futures follow the spot
+#        down" compared the futures against ZERO, so on any big market day it
+#        read market direction, not dividend mechanics. Rebuilt on the BASIS
+#        CHANGE across the ex-date, which cancels the market move exactly, and
+#        scored against the sample's own basis noise so it can say when it
+#        CANNOT tell.
+#
+# [AC2]  [X4] "ROLL STEP CONFIRMED — splice the fair". Fired on |t|>2.5 alone,
+#        two lines above the same block's own warning that under ~0.3 sigma a
+#        step is not worth engineering around — and the readings that fired it
+#        were 0.20 and 0.25 sigma. The verdict now needs BOTH significance and
+#        effect size, and it reads the control that was already being printed
+#        and ignored: spot_gap is roll-immune by construction, so the
+#        splice-attributable part is the DIFFERENCE between the two fair
+#        modes, not either one alone. A real splice (ROLL_SPLICE_FAIR) is
+#        built and available for when the evidence does clear the bar.
+#
+# [AC3]  MATPLOTLIB 'agg' WARNING. Not a bug and nothing is lost: plt.show()
+#        cannot work under a headless backend, and recent ipykernel no longer
+#        runs %matplotlib inline for you. Every figure now routes through
+#        _fig_show(), which displays through IPython when a rich front-end
+#        exists and saves to a file when nothing can render.
+#
+# [AC4]  THE DRIFT GATE IS NOT FORWARD-LOOKING. Correct — and the reason is
+#        arithmetic, not philosophy: a trend that started k<5 rows ago
+#        contributes only k rows DIVIDED BY n, so at n=20 a 3-day-old
+#        re-rating reads ~6% of its eventual value, which is exactly when the
+#        z-score is most extreme and the entry fires. Added: a slope NOWCAST
+#        with no 1/n dilution (and its own ceiling — the two estimators have
+#        ~10x different noise, so one threshold cannot govern both), an opt-in
+#        DIRECTIONAL test so a mean drifting toward your side stops being
+#        treated as a hazard, both readings plotted on the backtest figure and
+#        on zchart, both logged to the ledger and shown in gate_history(), and
+#        two calibration tables that answer "is 0.50 right for TSM" from the
+#        data rather than from opinion — where 0.50 sits in its own
+#        distribution, and whether the trades it would refuse are losers.
+#
+# [AC5]  ROLL COST. The backtest may assume no roll: holds are capped at
+#        TIME_STOP and the contract held is M+1, weeks from expiry. A paper
+#        position held longer may not. roll_cost_bps() derives the cost from
+#        the SSF book already calibrated here (2 x half-spread + both fees),
+#        rolls are counted on the HELD CONTRACT'S EXPIRY rather than on the
+#        capture files' month-start, and the desk charges them automatically.
+#        The backtest still does not (ROLL_COST_IN_BACKTEST=False) but now
+#        PRICES the assumption instead of only stating it.
+#
+# [AC6]  PACKED WORDS. Position health printed 47-word sentences carrying four
+#        separate facts with the numbers buried mid-clause; several table
+#        notes were five facts in one paragraph. Everything is now one fact
+#        per row, with the number in its own column and the prose to the right
+#        of it where it can be ignored. Also: _wrap_box no longer truncates an
+#        unbreakable token, which had been silently cutting file paths.
+#
+# [AC7]  MTM CLARITY, ROUND TWO. Costs were charged but had no total and no
+#        running subtraction, so you could not see them land; every row now
+#        carries a bps column beside its dollars on one stated denominator, so
+#        trades of different size compare; the sign convention is in the
+#        column header (+ in / - out), which is the answer to "why is funding
+#        positive" — on a short it is the SOFR-50 rebate, a credit; the
+#        annual-to-daily step is shown rather than asserted; and funding now
+#        accrues at the MEAN OF THE DAILY SOFR SERIES over the hold instead of
+#        today's last print applied retroactively to every past day.
+#
+# [AC8]  ENTERING TWICE. add_to() has existed since [Y38] but only from the
+#        console, and a second enter() silently became an extra leg while the
+#        banner announced it as a whole new position. enter() now names what
+#        it is doing before it writes, REFUSES a wrong-side second leg, the
+#        panel has an 'Add to position' button, and status() lists the legs.
+#
+# [AC9]  LIVE NOW ON THE PANEL. A button beside 'Fetch Bloomberg' — fetch
+#        loads a FINISHED day's snapshots, live quotes the market as it
+#        stands. It fills the fill boxes with what it found and saves nothing.
+#        Out of hours it now says when the session opens and why both legs
+#        have to be live, instead of only refusing.
+# ============================================================================
+# v32.3 (TW) — PARTIAL UNWIND AND THE TRADE RECORD. Tagged [AD..].
+#
+# [AD1]  POSITION STATE IS AN EVENT WALK. The old derivation had two rules —
+#        "open position = every ENTRY after the last EXIT, blended" and
+#        "closed trade = pair each EXIT with the entries in its segment" —
+#        and BOTH treat an exit as total. There was nowhere to say "take half
+#        off": such a row would read either as closing everything (EXIT) or as
+#        opening more (ENTRY). Partial unwind was not a missing button, it was
+#        a missing concept. The ledger is now walked in order with a running
+#        position, so ENTRY / REDUCE / EXIT are one mechanism. Carry on a
+#        realised slice is charged from the SHARE-WEIGHTED entry date, so a leg
+#        added on day 5 is no longer billed for days 1-4 (identical to the old
+#        behaviour for any single-leg position).
+#
+# [AD2]  reduce_pos() — the mirror of add_to(). Size it by frac=, contracts=,
+#        shares= or notional=; contracts are the master and the ADR shares
+#        follow, so the REMAINING hedge ratio is the one you entered with.
+#        Realises at AVERAGE cost (the only convention consistent with how
+#        add_to blends legs in), leaves the average basis and the time stop
+#        untouched, and refuses a trim that rounds up to the whole position —
+#        a close is exit_pos(), and a trim must not become one by accident.
+#        Also made trim-aware, because each of these would otherwise have been
+#        silently wrong on a partial: the provisional-FX scan, fx_fill(), and
+#        desk_audit()'s row tally.
+#
+#        fx_fill() no longer PATCHES a stored P&L by an arithmetic delta. That
+#        was exact for one leg closed in one go and wrong otherwise: it read
+#        the basis off the newest ENTRY row rather than the blended average,
+#        and an FX correction on an entry never reached the realisations after
+#        it. It now clears the affected realisations and lets the walk redo
+#        them — verified to propagate an entry-date FX fix into a later trim.
+#
+# [AD3]  blotter() — every DEAL in order, never a scoring row: units, prices,
+#        what it realised, the position it left behind, and running realised
+#        cash. show_ledger() prints the raw CSV and status() prints only closed
+#        round trips; neither answered "what have I done on this name".
+#
+# [AD4]  THE PERFORMANCE TRACK. Charts now mark each action with its own shape
+#        (open / add / trim / close) instead of collapsing a position built in
+#        pieces into one marker, and chart() gains a panel stacking realised
+#        cash under the mark on what is still open — so the top line is what
+#        the name has actually made you, which is the thing you wanted to
+#        track and the one number no panel showed.
+# ============================================================================
 # v32.1 (TW) — PAPER-DESK PASS. Every edit is tagged [AA..]; grep "[AA" for
 # all of them in order. Nine groups, in the order they were reported:
 #
@@ -475,7 +607,13 @@ def _wrap_box(s, inner, indent=0):
     _pad = ' ' * indent
     _out = _tw.wrap(s, width=inner, subsequent_indent=_pad,
                     break_long_words=False, break_on_hyphens=False)
-    return [l[:inner] for l in _out] or ['']
+    # [AC6] the old code ended `[l[:inner] for l in _out]`, which re-truncated
+    # what textwrap had already wrapped. textwrap only exceeds `inner` on a
+    # single UNBREAKABLE token — a file path, a URL, a ticker — and those are
+    # exactly the strings where cutting the tail destroys the content. A
+    # figure path printed as "…/9b47ad92-769c-479e-8cde-54a77547925" cannot be
+    # opened. Overrun the box rather than lose the value.
+    return _out or ['']
 _SAY_ICON = {'ok': '✓', 'info': '·', 'warn': '!', 'bad': '✗'}
 _SAY_CSS = {'ok': '#1e7e34', 'info': '#5f6b76', 'warn': '#b26a00', 'bad': '#c62828'}
 def _hr(ch='─'):
@@ -559,6 +697,128 @@ def note_block(title, lines):
         for _w in _wrap_box(_l, _inner - 2, indent=2):     # [Y39] wrap
             print('  │ ' + _w.ljust(_inner - 1) + '│')
     print('  └' + '─' * _inner + '┘')
+# ============================================================================
+# [AC6] ONE FACT PER LINE — the fix for "a lot of packed words".
+# ----------------------------------------------------------------------------
+# The complaint, restated precisely: blocks like POSITION HEALTH and the [Y25]
+# note printed a PARAGRAPH per item —
+#     "carry expect 58bps/day of reversion, and the position EARNS 0.83bps/day
+#      of carry (15bps more if held to the 20cd stop) — time is on your side
+#      here, so there is no carry hurdle to clear [AA7]. 135bps of dislocation
+#      left to collect."
+# — which is four separate facts (reversion rate, carry rate, carry to the
+# stop, edge remaining) welded into one sentence with the numbers buried mid-
+# clause. There is no way to scan that, and no way to compare it with
+# yesterday's.
+#
+# fact_table() takes (label, value, why) triples and renders LABEL | VALUE |
+# WHY, so the number is always in the same column and the prose is always to
+# the right of it, where it can be ignored. The rule adopted from here on:
+#   * a NUMBER goes in the value column, never inside a sentence
+#   * the why column is ONE clause, not a paragraph
+#   * anything longer than a clause becomes its own row
+# ============================================================================
+def _money(v, dp=2):
+    """[AC7] Signed money, ONE convention everywhere: + is cash in, - is cash
+    out, and the sign sits outside the currency symbol. Hand-built strings
+    like f"-${x:,.2f}" produce "-$-1,246.92" the moment x is a credit — which
+    is how a rebate ends up looking like a typo."""
+    v = float(v)
+    return f"{'-' if v < 0 else '+'}${abs(v):,.{dp}f}"
+def _bullets(items):
+    """[AC6] A note that is really a LIST should look like one. In a notebook
+    each item gets its own line; in a terminal they are joined with a
+    separator that still reads as breaks rather than as sentences running on."""
+    if HTML_OUTPUT and _in_jupyter():
+        return "<br>".join("· " + str(x) for x in items)
+    return "  |  ".join(str(x) for x in items)
+def fact_table(title, rows, note='', headers=('reading', 'why it matters')):
+    """[AC6] (label, value, why) triples as a scannable 3-column block.
+    `why` may be '' — the column collapses when nothing uses it."""
+    _rows = [tuple(r) + ('',) * (3 - len(r)) for r in rows]
+    if HTML_OUTPUT and _in_jupyter():
+        _df = _pd.DataFrame(_rows, columns=['', headers[0], headers[1]]
+                            ).set_index('')
+        if not any(r[2] for r in _rows):
+            _df = _df.drop(columns=[headers[1]])
+        show_html_table(_df, title=title, fmt='{}', note=note)
+        return
+    kv_table(title, _rows, note=note, col=headers[0])
+# ============================================================================
+# [AC3] "Matplotlib is currently using agg, which is a non-GUI backend, so
+#       cannot show the figure" — WHAT IT IS AND WHY IT APPEARS.
+# ----------------------------------------------------------------------------
+# It is not a bug in this file and nothing is lost when it fires: it means
+# plt.show() was called while the ACTIVE BACKEND is 'agg', matplotlib's
+# headless renderer. agg draws perfectly well into a PNG; it simply has no
+# window and no notebook channel to push the figure through, so show() has
+# nowhere to put it and says so.
+#
+# Why a Jupyter kernel ends up on agg at all: the inline backend is installed
+# by the `%matplotlib inline` magic, NOT by importing pyplot. Recent ipykernel
+# releases no longer run that magic for you, so a kernel where nobody typed it
+# resolves to the library default — agg — and every plt.show() in the run
+# warns once. The figures are still built; they are just never displayed.
+#
+# The fix is not to silence the warning, it is to stop calling a function that
+# cannot work here. _fig_show() asks the backend what it can do:
+#     interactive backend  -> plt.show()          (unchanged)
+#     rich front-end, agg  -> display(fig)        (IPython renders the PNG
+#                                                  directly; no magic needed)
+#     headless script      -> savefig + say where it went
+# Every plt.show() in this file routes through it.
+# ============================================================================
+FIG_FALLBACK_DIR = ''        # '' = alongside the script; used only when
+                             # neither a window nor a rich front-end exists
+_FIG_SEQ = [0]
+_FIG_BACKEND_SAID = [False]
+def _fig_show(fig=None, name='figure', close=True):
+    """[AC3] Render `fig` whatever the backend is. Returns the path if it had
+    to fall back to a file, else ''."""
+    import matplotlib as _mpl
+    import matplotlib.pyplot as _plt
+    fig = fig if fig is not None else _plt.gcf()
+    _bk = _mpl.get_backend().lower()
+    # 'inline' pushes PNGs down the notebook channel and is always fine.
+    # Otherwise ask matplotlib's own registry whether show() can work — a
+    # name-substring test would misjudge every third-party backend. The
+    # registry only exists on 3.9+, hence the explicit fallback.
+    if 'inline' in _bk or 'nbagg' in _bk or 'ipympl' in _bk or 'widget' in _bk:
+        _can_show = True
+    else:
+        try:
+            _can_show = bool(
+                _mpl.backends.backend_registry.resolve_backend(_bk)[1])
+        except Exception:
+            _can_show = not _bk.endswith('agg')
+    if _can_show:
+        _plt.show()
+        return ''
+    if _in_jupyter():
+        from IPython.display import display
+        if not _FIG_BACKEND_SAID[0]:
+            _FIG_BACKEND_SAID[0] = True
+            say(f"matplotlib backend is '{_mpl.get_backend()}' (headless), so "
+                f"figures are being displayed directly instead of through "
+                f"plt.show() — run %matplotlib inline once to restore the "
+                f"normal path [AC3]", 'info')
+        display(fig)
+        if close:
+            _plt.close(fig)
+        return ''
+    _FIG_SEQ[0] += 1
+    _p = os.path.join(FIG_FALLBACK_DIR or '.',
+                      f"{name}_{_FIG_SEQ[0]:02d}.png")
+    try:
+        fig.savefig(_p, dpi=150, bbox_inches='tight')
+        say(f"no display available — figure written to "
+            f"{os.path.abspath(_p)} [AC3]", 'info')
+    except Exception as _e:
+        say(f"could not render or save the figure: {_e}", 'warn')
+        return ''
+    if close:
+        _plt.close(fig)
+    return _p
 # ============================================================================
 # [Y5] GRID MATRICES AS HEAT MAPS — call show_grid_html() after the run
 # ============================================================================
@@ -979,6 +1239,106 @@ def margin_ann_bps(funding_rate=None):
         return MARGIN_PCT * (_f + MARGIN_SPREAD_BPS / 1e4
                              - MARGIN_DEPOSIT_ANN) * 1e4
     return float(FUT_MARGIN_ANN_BPS)
+# ============================================================================
+# [AC5] ROLL COST — the cost the backtest is allowed to assume away and the
+#       paper desk is not.
+# ----------------------------------------------------------------------------
+# The backtest holds at most TIME_STOP calendar days and never rolls, which is
+# a legitimate modelling choice and is why the [24] roll-safe hedge index is
+# built on same-contract ratios: it deliberately drops "the calendar-spread
+# crossing cost of an actual roll" because in that world there is no roll.
+# A real position does not have that guarantee. Hold past a contract change
+# and the SSF leg has to be closed in the expiring month and reopened in the
+# next one, which is TWO extra futures fills — and the desk was charging zero
+# for them.
+#
+# WHAT ONE ROLL COSTS. Two crossings of the SSF book plus two exchange fees,
+# all on the HEDGE leg only (the ADR leg does not move):
+#       roll_bps = 2 x FUT half-spread + FUT_FEE_IN + FUT_FEE_OUT
+# For TSMC at the close book that is 2x8 + 2 + 2 = 22 bps of the hedge leg per
+# roll. Everything is derived from constants already calibrated elsewhere in
+# this file, so it cannot drift away from the execution model — but a desk
+# quote overrides it if you have one (ROLL_COST_MODE='flat').
+#
+# WHERE IT IS CHARGED.
+#   ROLL_COST_ON_DESK    True  — the paper desk marks a real position and a
+#                        real position rolls. The daily card counts the rolls
+#                        an open trade has already crossed and charges them.
+#   ROLL_COST_IN_BACKTEST False — the grid keeps the stated no-roll, 20cd
+#                        assumption so every existing number reproduces. The
+#                        run prints what the assumption is WORTH (how many
+#                        trades spanned a contract change and what charging
+#                        them would have cost) so it is quantified rather
+#                        than merely assumed. Set True to charge it there too.
+ROLL_COST_MODE = 'derived'     # 'derived' | 'flat' | 'off'
+ROLL_COST_FLAT_BPS = 22.0      # used when ROLL_COST_MODE='flat'
+ROLL_COST_ON_DESK = True
+ROLL_COST_IN_BACKTEST = False
+def roll_cost_bps(point=None):
+    """[AC5] Cost of ONE roll, in bps of the HEDGE-leg notional."""
+    if str(ROLL_COST_MODE).lower() == 'off':
+        return 0.0
+    if str(ROLL_COST_MODE).lower() == 'flat':
+        return float(ROLL_COST_FLAT_BPS)
+    _pt = point or globals().get('EXEC_TIMING', 'close')
+    _half = float(globals().get(
+        'FUT_HALF_SPREAD_CLOSE_BPS' if _pt == 'close'
+        else 'FUT_HALF_SPREAD_OPEN_BPS', 8.0))
+    return 2.0 * _half + float(FUT_FEE_IN_BPS) + float(FUT_FEE_OUT_BPS)
+def held_contract_expiry(d):
+    """[AC5] The EXPIRY of the contract a position opened on `d` is holding.
+    This is NOT the same thing as the date the capture FILES roll, and the
+    difference is why the backtest is entitled to charge zero:
+      * the FILES roll at each month start ([I3][J1] month_start convention),
+      * but the contract they roll INTO is M+1, whose third Wednesday is six
+        to eight weeks away. A hold that spans a file roll therefore does NOT
+        force the position to do anything.
+    A position only has to roll when the contract IT HOLDS reaches expiry —
+    which a 20-calendar-day backtest hold essentially never does, and a paper
+    position held 'longer than the stop' certainly can.
+
+    The (year, month) resolution is inlined rather than delegated to
+    ssf_contract_month(): that lives in the [AA8] block at the very end of the
+    file, which has not executed yet when the backtest section calls this."""
+    _d = pd.Timestamp(str(d))
+    if ROLL_RULE == 'expiry_3rd_wed':
+        # the nearest contract whose third Wednesday has not passed
+        if _d.day <= third_wednesday_day(_d.year, _d.month):
+            _y, _m = _d.year, _d.month
+        else:
+            _n = _d + pd.offsets.MonthBegin(1)
+            _y, _m = _n.year, _n.month
+    else:                                   # 'month_start': you hold M+1
+        _n = pd.Timestamp(_d.year, _d.month, 1) + pd.offsets.MonthBegin(1)
+        _y, _m = _n.year, _n.month
+    return pd.Timestamp(_y, _m, third_wednesday_day(_y, _m))
+def rolls_between(d0, d1):
+    """[AC5] How many times a position opened on d0 and still held on d1 has
+    had to roll — counted on the HELD CONTRACT'S EXPIRY, per the note above,
+    not on the file's month-start. Returns 0 for every hold that finishes
+    before its contract expires, which is the normal case."""
+    try:
+        _a, _b = pd.Timestamp(str(d0)), pd.Timestamp(str(d1))
+    except Exception:
+        return 0
+    if _b <= _a:
+        return 0
+    _n, _cur = 0, _a
+    while _n < 24:                       # backstop; 24 rolls = two years
+        _x = held_contract_expiry(_cur)
+        if _x >= _b:
+            break
+        _n += 1
+        _cur = _x + pd.Timedelta(days=1)
+    return _n
+def next_roll_date(d):
+    """[AC5] When a position opened on `d` must roll — the expiry of the
+    contract it is holding. Shown on the desk so an open trade knows its own
+    deadline instead of discovering it."""
+    try:
+        return held_contract_expiry(d).date()
+    except Exception:
+        return None
 # [R6] SHORT-PROCEEDS REBATE — short spread sells the ADR; the cash
 # proceeds normally EARN (funding minus the borrow fee) at the PB.
 # Ignoring it (0.0) is conservative; set the annualised rate the desk
@@ -1185,6 +1545,111 @@ _DRIFT_DOC = """[Z4] 5-row mean shift vs sqrt(5) x daily-
                             #   0.50 -> calm  99% / repricing 15%  (aggressive)
                             # Calibrate on REAL data with the [Z4]
                             # drift-ratio diagnostic printed below."""
+# ============================================================================
+# [AC4] "THE DRIFT GATE IS NOT FORWARD-LOOKING SO IT DOES NOT STOP THE ENTRY"
+# ----------------------------------------------------------------------------
+# Correct, and here is the arithmetic behind the feeling. The test is
+#       drift(t) = |mean_n(t) - mean_n(t-5)| / (sigma_chg x sqrt5)
+# For a re-rating that has been running a LONG time at d bps/day the numerator
+# converges to 5d, so the statistic reads d x sqrt5 / sigma_chg and the gate
+# behaves as designed. But for a YOUNG one it does not. mean_n(t) covers rows
+# t-n..t-1 and mean_n(t-5) covers t-n-5..t-6, so a trend that started k rows
+# ago (k < 5) contributes only its own k rows, DIVIDED BY n:
+#       shift ~= d x k(k+1) / (2n)      instead of      5d
+# With n=20 and d=40bps: after 3 days the statistic reads 12bps of an eventual
+# 200bps — SIX PERCENT of its final value. The gate is not merely lagged, it
+# is ATTENUATED BY 1/n while the move is young, which is exactly the window in
+# which the z-score is at its most extreme and the entry fires.
+#
+# Two further reasons it under-fires on the days that matter:
+#   * DENOMINATOR FEEDBACK. sigma_chg is the std of daily changes over the
+#     same n rows. A real re-rating is not a smooth ramp — it arrives as a run
+#     of large daily moves, which inflates sigma_chg and pushes the ratio DOWN.
+#     The comment at [Z4] is right that a PERFECTLY smooth trend leaves the
+#     std alone; real ones do not oblige.
+#   * IT IS TWO-SIDED. abs() blocks a mean drifting TOWARD your side just as
+#     hard as one drifting away, so half of what it refuses was help.
+#
+# NOTHING can make this forward-looking — no statistic knows tomorrow. What is
+# achievable is to stop throwing away information you already have:
+#
+#   DRIFT_MODE='lagged'   the shipped test, unchanged. DEFAULT, so every
+#                         existing number reproduces exactly.
+#           ='nowcast'    OLS slope of the last DRIFT_NOWCAST_N rows, in the
+#                         same FORM (|slope| x sqrt5 / sigma_chg). It uses only
+#                         the rows the trend is actually in, so it reaches full
+#                         value in DRIFT_NOWCAST_N rows instead of n, with no
+#                         1/n dilution.
+#           ='both'       block if EITHER fires. Strictly more conservative.
+#   DRIFT_DIRECTIONAL     when True, a drift only blocks the side it hurts: a
+#                         mean rising blocks SHORT-spread entries and leaves
+#                         LONG ones alone. Applies at ENTRY only — the
+#                         force_exit policy keeps the two-sided test.
+#
+# THE TWO CEILINGS ARE NOT THE SAME NUMBER, and assuming they were would have
+# been a real bug. Both statistics estimate the same thing (drift per day, in
+# units of sigma_chg/sqrt5) so they agree on a PURE TREND — but they have very
+# different ESTIMATOR VARIANCE, because one averages over n rows and the other
+# over DRIFT_NOWCAST_N. Measured on simulated series:
+#       white noise   lagged p50 0.035   nowcast p50 0.348   (10x)
+#       random walk   lagged p50 0.338   nowcast p50 0.813   (2.4x)
+# so feeding the nowcast a 0.50 ceiling would fire on a third of all days
+# purely on estimator noise. That is the price of the shorter lag — a real
+# bias/variance trade, not something to be argued away — so the nowcast gets
+# its OWN ceiling, defaulted to the quantile that reproduces the lagged test's
+# own stand-aside rate on THIS series (DRIFT_NOWCAST_MAX_SIGMA='match').
+#
+# Whether 0.50 is the right ceiling for TSM is not a matter of opinion:
+#   * the [AC4] COST table before the grid says how OFTEN each candidate
+#     ceiling stands aside, and how many sigma of its own null it sits at — a
+#     ceiling at 10 sigma of its null is not a filter, it is an ornament;
+#   * the [AC4] OUTCOMES table after the grid says whether the days it refuses
+#     were worth refusing, by splitting the refused trades into winners and
+#     losers.
+# A threshold that refuses winners and losers at the same rate has no
+# discriminating power at ANY level, and the honest response is to run it as
+# REFERENCE ONLY — leave it where it is, watch it on the chart, and stop
+# expecting it to save you — rather than keep tuning a number that is not
+# connected to the outcome.
+# ============================================================================
+DRIFT_MODE = globals().get('DRIFT_MODE', 'lagged')   # 'lagged'|'nowcast'|'both'
+DRIFT_NOWCAST_N = 5         # rows in the slope regression
+DRIFT_DIRECTIONAL = globals().get('DRIFT_DIRECTIONAL', False)
+DRIFT_CAL_LEVELS = [0.30, 0.40, 0.50, 0.60, 0.75, 1.00]   # [AC4] calibration
+# 'match' = calibrate from the data so the nowcast stands aside as often as
+# the lagged test does (set in the [Z4] block below); or give it a number.
+DRIFT_NOWCAST_MAX_SIGMA = globals().get('DRIFT_NOWCAST_MAX_SIGMA', 'match')
+_DRIFT_NOW_CAP = [None]     # filled by the [Z4] calibration; None = not yet
+def drift_nowcast_max():
+    """[AC4] The ceiling the NOWCAST is judged against. Never DRIFT_MAX_SIGMA
+    itself unless you say so explicitly — see the variance note above."""
+    if isinstance(DRIFT_NOWCAST_MAX_SIGMA, (int, float)):
+        return float(DRIFT_NOWCAST_MAX_SIGMA)
+    if _DRIFT_NOW_CAP[0] is not None:
+        return float(_DRIFT_NOW_CAP[0])
+    # not calibrated yet (desk-only session, or no series): fall back to the
+    # analytic variance ratio (n/k)^1.5, which matched the simulation to
+    # within ~25% on both noise models.
+    return float(DRIFT_MAX_SIGMA) * (20.0 / max(DRIFT_NOWCAST_N, 1)) ** 1.5
+def _drift_nowcast_arr(sig, n_win, k=None):
+    """[AC4] |OLS slope over the last k rows| x sqrt5 / sigma_chg, per row,
+    shifted so row t only ever sees rows strictly before t — the same
+    no-look-ahead convention as the rolling mean/std the gate already uses.
+    Returned in the SAME units as the lagged drift ratio, so one threshold
+    governs both. Also returns the SIGNED slope for the directional test."""
+    k = int(k or DRIFT_NOWCAST_N)
+    _s = _pd.Series(sig, dtype=float)
+    # OLS slope of y on 0..k-1 is cov(y, x)/var(x); with fixed integer x the
+    # denominator is a constant, so this is a plain rolling weighted sum.
+    _x = _np.arange(k, dtype=float)
+    _xc = _x - _x.mean()
+    _den = float((_xc ** 2).sum())
+    _slope = (_s.rolling(k).apply(
+        lambda y: float(_np.dot(y - y.mean(), _xc) / _den), raw=True).shift(1))
+    _chgsd = _s.diff().rolling(int(n_win)).std(ddof=0).shift(1)
+    _ratio = (_slope.abs() * _np.sqrt(5.0) / _chgsd).replace(
+        [_np.inf, -_np.inf], _np.nan)
+    return _ratio.values, _slope.values
 # (NOTIONAL: from the INSTRUMENTS dict [U0])
 # [J5] SUSPECT OVERNIGHT-GAP GUARD. fut_gap_ret = Fut_2130/Fut_1330-1
 # assumes BOTH files quote the SAME contract. In close mode the 2130
@@ -1628,18 +2093,28 @@ _MANUAL = dict(ctx=None, days=[], pos=None, marks=[], closed=[])
 # and note='no shortfall here' silently flipped a LONG to a SHORT. The
 # note-scanning code is kept ONLY as a fallback so ledgers written by v31.10
 # and earlier still load; anything written from now on uses the columns.
+# [AC8] set by enter() when it REFUSES a wrong-side fill, so the [Y21]
+# wrapper does not print an FX reminder for a row that was never written.
+_ENTER_REFUSED = [False]
 _LED_COLS = ['instrument', 'date', 'point', 'side', 'notional',
              # [Y37g] the gate's LEVELS, not just its verdict — gamma is
              # the AR(1) slope of the de-trended deviation, hl the implied
              # half-life in days, drift the [Z4] mean-shift ratio. Logged
              # every day so a TREND in the gate is visible in the ledger.
-             'gamma', 'hl', 'drift',
+             # [AC4] drift_now is the SLOPE nowcast in the same units as
+             # drift — logged beside it so the ledger records how far apart
+             # the two readings were on the day you actually traded.
+             'gamma', 'hl', 'drift', 'drift_now',
              # [Y32] the integer units of the real ticket — first-class
              # columns so a rebuild reads the fill, never re-derives it
              # (an fx_fill amendment must not flip a rounding boundary)
              'shares', 'contracts', 'ordinary',
              'fut_1330', 'fx', 'adr', 'fut', 'fair', 'premium_bps', 'dev_bps',
              'z', 'n', 'threshold', 'gate', 'div_carry', 'in_position', 'net',
+             # [AD1] the TAIFEX cash dividend applied on an EXIT/REDUCE day,
+             # as a DECIMAL. It used to live only inside the stored `net`, so
+             # a recompute silently dropped it.
+             'div_pct',
              # [AA6] PROVENANCE OF THE HEDGE FX on ENTRY/EXIT rows:
              #   'provisional' the 13:30 fixing standing in — the real rate is
              #                 tomorrow's 01:00 UTC TW open and does not exist
@@ -1699,6 +2174,59 @@ def _sofr_now():
     except Exception:
         pass
     return float(FUNDING_RATE_ANN)
+# ----------------------------------------------------------------------------
+# [AC7] "IT SHOULD BE A DAILY SERIES SOFR AS WELL" — yes, and it was not.
+# ----------------------------------------------------------------------------
+# _sofr_now() takes the LAST value of the series and _trade_cost_parts then
+# multiplied it by the whole holding period. That is a flat-rate approximation
+# of an accrual: correct on the day you look, wrong for every prior day of the
+# hold, and increasingly wrong the longer you hold or the more SOFR moves.
+# It also silently used TODAY's rate to re-price carry that already accrued —
+# so a rate move re-wrote history.
+#
+# _sofr_avg(d0, d1) returns the MEAN of the actual daily SOFR series over the
+# calendar days [d0, d1), which is the exact right multiplier for a simple
+# daily accrual: sum(rate_i)/360 x notional == mean(rate) x days/360 x
+# notional. Weekends and holidays are forward-filled, which is how overnight
+# funding really accrues over a weekend (Friday's rate carries three days).
+# ----------------------------------------------------------------------------
+def _sofr_series():
+    """[AC7] The daily SOFR series (decimal, net of the funding spread the
+    stored series carries), indexed by date. Empty when the pull failed."""
+    try:
+        if 'df' in globals() and 'funding_rate' in df.columns:
+            _s = pd.Series(df['funding_rate'].values - FUNDING_SPREAD_ANN,
+                           index=pd.to_datetime(df['Date'].astype(str)))
+            _s = _s[(_s >= 0.0) & (_s <= 0.25)].dropna()
+            return _s[~_s.index.duplicated(keep='last')].sort_index()
+    except Exception:
+        pass
+    return pd.Series(dtype=float)
+def _sofr_avg(d0, d1=None):
+    """[AC7] Mean daily SOFR over the calendar days [d0, d1). Returns
+    (rate, n_days_covered, source). Falls back to _sofr_now() with source
+    'last value' when the window has no data — and SAYS so, rather than
+    quietly pretending the accrual was measured."""
+    _s = _sofr_series()
+    try:
+        _a = pd.Timestamp(str(d0)).normalize()
+        _b = (pd.Timestamp(str(d1)).normalize() if d1 is not None
+              else pd.Timestamp(_desk_today()).normalize())
+    except Exception:
+        return _sofr_now(), 0, 'last value (unparseable dates)'
+    if not len(_s) or _b <= _a:
+        return _sofr_now(), 0, 'last value'
+    _cal = pd.date_range(_a, _b - pd.Timedelta(days=1), freq='D')
+    _r = _s.reindex(_s.index.union(_cal)).ffill().reindex(_cal)
+    # a hold that starts before the series does leaves leading NaNs; back-fill
+    # those from the first observation rather than dropping the days, so the
+    # day count still matches the carry the position actually ran.
+    _r = _r.bfill()
+    if not _r.notna().any():
+        return _sofr_now(), 0, 'last value (window outside the series)'
+    return (float(_r.mean()), int(_r.notna().sum()),
+            f"daily SOFR series, {int(_r.notna().sum())} day(s) "
+            f"{_a.date()}..{(_b - pd.Timedelta(days=1)).date()}")
 def get_manual_context():
     """[U3] Read-only snapshot of what the desk needs from the finished run."""
     if 'df' not in globals() or 'Spread (Signal)' not in df.columns:
@@ -1783,7 +2311,10 @@ def _read_ledger():
 def _write_ledger(led):
     led = led.copy()
     led['_d'] = led['date'].astype(str)
-    _order = {'open': 0, '1945': 1, 'close': 2, 'ENTRY': 3, 'EXIT': 4}
+    # [AD1] REDUCE sits between ENTRY and EXIT: on a single date you can add,
+    # then trim, then close, and the walk must see them in that order.
+    _order = {'open': 0, '1945': 1, 'close': 2,
+              'ENTRY': 3, 'REDUCE': 4, 'EXIT': 5}
     led['_p'] = led['point'].map(lambda p: _order.get(str(p), 9))
     led = led.sort_values(['_d', '_p']).drop(columns=['_d', '_p'])
     led.to_csv(_MANUAL['ctx']['ledger'], index=False)
@@ -1829,14 +2360,235 @@ def _freeze_regime24(e):
                             else float('nan'))
     except Exception:
         pass
-def _rebuild():
-    """[U3] Derive days / open position / mark path FROM THE LEDGER. Called
-    after every write, so memory and file can never disagree."""
+# ============================================================================
+# [AD1] POSITION STATE IS NOW AN EVENT WALK — which is what makes a PARTIAL
+#       UNWIND expressible at all.
+# ----------------------------------------------------------------------------
+# The old derivation had two independent rules bolted together:
+#     open position = every ENTRY row dated after the LAST EXIT, blended
+#     closed trades = pair each EXIT with the entries in its segment
+# Both rules are about ENTRY and EXIT only, and both treat an EXIT as
+# TOTAL. There was nowhere to say "take half off": a row that closed part of
+# the position would either be read as closing all of it (EXIT) or as opening
+# more of it (ENTRY). Partial unwind was not a missing button, it was a
+# missing concept.
+#
+# So the ledger is now walked in order and the position is a running state:
+#
+#     ENTRY   open, or blend into the existing position (share/contract
+#             weighted average prices — exact for P&L because
+#                 sum_i sh_i x (now - adr_i) == (sum sh_i) x (now - avg_adr))
+#     REDUCE  realise P&L on the units named, decrement the position, LEAVE
+#             THE REST OPEN. Average entry prices are unchanged: the slice
+#             is realised at AVERAGE COST, not FIFO, which is the only
+#             convention consistent with the blending above.
+#     EXIT    realise whatever remains and go flat.
+#
+# Every realisation — partial or total — becomes one record in
+# _MANUAL['closed'], so the paper P&L, the win rate and the per-trade chart
+# count a trim exactly as they count a close. And _MANUAL['events'] keeps the
+# whole chronology, which is what blotter() and the equity chart read.
+#
+# CARRY ON A SLICE is charged from the SHARE-WEIGHTED AVERAGE entry date, not
+# from the first leg's date. For a single-leg position the two are identical,
+# so nothing about existing trades changes; for a position built over several
+# days it stops charging the later legs for days they were not on. The TIME
+# STOP still anchors on the first leg (conservative, unchanged).
+# ============================================================================
+def _blend(st, dirn, sh, cn, adr, fut, fx, date, c):
+    """[AD1] Fold one ENTRY leg into the running state. Returns the new state."""
+    _cu = c['contract_sh'] * float(fut) / float(fx)
+    _hn = cn * _cu
+    _an = sh * float(adr)
+    if st is None:
+        return dict(dir=dirn, shares=int(sh), contracts=int(cn),
+                    adr=float(adr), fut=float(fut), fx=float(fx),
+                    date=str(date), wdate=float(pd.Timestamp(str(date)).value),
+                    an=_an, hn=_hn, n_legs=1, legs=[str(date)])
+    _tsh, _tcn = st['shares'] + int(sh), st['contracts'] + int(cn)
+    _tan, _thn = st['an'] + _an, st['hn'] + _hn
+    return dict(
+        dir=st['dir'], shares=_tsh, contracts=_tcn,
+        adr=(st['adr'] * st['shares'] + float(adr) * sh) / max(_tsh, 1),
+        fut=(st['fut'] * st['contracts'] + float(fut) * cn) / max(_tcn, 1),
+        fx=(st['fx'] * st['hn'] + float(fx) * _hn) / max(_thn, 1e-9),
+        date=st['date'],            # time stop stays on the FIRST leg
+        wdate=(st['wdate'] * st['an']
+               + float(pd.Timestamp(str(date)).value) * _an) / max(_tan, 1e-9),
+        an=_tan, hn=_thn, n_legs=st['n_legs'] + 1,
+        legs=st['legs'] + [str(date)])
+def _state_pos(st, c):
+    """[AD1] Present the running state in the shape the rest of the desk
+    already expects from _MANUAL['pos'] — no consumer has to know about the
+    walk."""
+    if st is None or st['shares'] <= 0 or st['contracts'] <= 0:
+        return None
+    _cu = c['contract_sh'] * st['fut'] / st['fx']
+    _an, _hn = st['shares'] * st['adr'], st['contracts'] * _cu
+    return dict(date=st['date'], dir=st['dir'], notional=_an,
+                entry_adr=st['adr'], entry_fut=st['fut'], entry_fx=st['fx'],
+                shares=int(st['shares']), contracts=int(st['contracts']),
+                c_usd=_cu, adr_notional=_an, hedge_notional=_hn,
+                mismatch=_an - _hn, n_legs=st['n_legs'],
+                wdate=str(pd.Timestamp(int(st['wdate'])).date()),
+                note=(f"{st['n_legs']} legs (base + {st['n_legs'] - 1} add)"
+                      if st['n_legs'] > 1 else ''))
+def _realise(st, sh_out, cn_out, adr, fut, fx, date, c, div_cash_pct=0.0):
+    """[AD1] Close `sh_out` shares / `cn_out` contracts out of the running
+    state at average cost. Returns (gross, cost_parts, net, an_slice)."""
+    _cu_in = c['contract_sh'] * st['fut'] / st['fx']
+    _an = sh_out * st['adr']                     # the slice, at ENTRY cost
+    _hn = cn_out * _cu_in
+    _al = st['dir'] * (float(adr) - st['adr']) * sh_out
+    _fl = (-st['dir'] * cn_out * c['contract_sh']
+           * (float(fut) - st['fut']) / float(fx))
+    _dv = -st['dir'] * _hn * float(div_cash_pct or 0.0)
+    _wd = str(pd.Timestamp(int(st['wdate'])).date())
+    _held = max((pd.Timestamp(str(date)) - pd.Timestamp(_wd)).days, 0)
+    _cp = _trade_cost_parts(st['dir'], _an, _held,
+                            adr_notional=_an, hedge_notional=_hn,
+                            entry_date=_wd, asof_date=str(date))
+    _gross = _al + _fl + _dv
+    return _gross, _cp, _gross - _cp['total'], _an, _al, _fl, _dv, _held
+def _walk_events():
+    """[AD1] Walk ENTRY / REDUCE / EXIT in order and return
+    (events, open_state, closed, orphans, mixed). This is the single place
+    position state is derived; _rebuild() only stores what it returns."""
     c = _MANUAL['ctx']
     led = _read_ledger()
     led = led[led['instrument'] == c['instrument']]
-    _MANUAL['orphan_exits'] = []        # [AA3] reset the audit trail
-    _MANUAL['mixed_legs'] = []          # [AA3]
+    led = led[led['point'].isin(['ENTRY', 'REDUCE', 'EXIT'])]
+    if not len(led):
+        return [], None, [], [], []
+    _rank = {'ENTRY': 0, 'REDUCE': 1, 'EXIT': 2}
+    led = led.assign(_d=led['date'].astype(str),
+                     _r=led['point'].map(_rank)).sort_values(['_d', '_r'])
+    st, events, closed, orphans, mixed = None, [], [], [], []
+    for _, r in led.iterrows():
+        _pt, _dt = str(r['point']), str(r['date'])
+        _adr, _fut, _fx = (_led_num(r, 'adr'), _led_num(r, 'fut'),
+                           _led_num(r, 'fx'))
+        if _pt == 'ENTRY':
+            _dir, _nt = _pos_from_entry_row(r)
+            _sh = _led_num(r, 'shares')
+            _cn = _led_num(r, 'contracts')
+            if not (_sh and _cn):        # legacy row: derive the ticket
+                _u = _units(_nt, _adr, _fut, _fx)
+                _sh, _cn = _u['shares'], _u['contracts']
+            if st is not None and _dir != st['dir']:
+                # [AA3] a hand-edited ledger can still contain this; enter()
+                # refuses it at the keyboard [AC8]. Name it, do not fold it in.
+                mixed.append(_dt)
+                print(f"[AA3] {_dt} ENTRY is "
+                      f"{'LONG' if _dir == 1 else 'SHORT'} but the open "
+                      f"position is {'LONG' if st['dir'] == 1 else 'SHORT'} — "
+                      f"the row is IGNORED. That ledger cannot be right; run "
+                      f"desk_audit().")
+                continue
+            st = _blend(st, _dir, int(_sh), int(_cn), _adr, _fut, _fx, _dt, c)
+            events.append(dict(date=_dt, kind=('ENTRY' if st['n_legs'] == 1
+                                               else 'ADD'),
+                               dir=st['dir'], shares=int(_sh),
+                               contracts=int(_cn), adr=_adr, fut=_fut, fx=_fx,
+                               net=None, held=None,
+                               pos_shares=st['shares'],
+                               pos_contracts=st['contracts'],
+                               avg_adr=st['adr'], avg_fut=st['fut'],
+                               notional=int(_sh) * _adr,
+                               note=_txt(r.get('note', ''))))
+            continue
+        # ---- REDUCE / EXIT: both realise, they differ only in how much -----
+        if st is None:
+            orphans.append((_dt, _pt))
+            continue
+        try:
+            _div = float(_led_num(r, 'div_pct') or 0.0)
+        except Exception:
+            _div = 0.0
+        if _pt == 'EXIT':
+            _sh_out, _cn_out = st['shares'], st['contracts']
+        else:
+            _sh_out = int(_led_num(r, 'shares') or 0)
+            _cn_out = int(_led_num(r, 'contracts') or 0)
+            _sh_out = max(min(_sh_out, st['shares']), 0)
+            _cn_out = max(min(_cn_out, st['contracts']), 0)
+            if _sh_out <= 0 or _cn_out <= 0:
+                orphans.append((_dt, 'REDUCE (no units)'))
+                continue
+        _g, _cp, _net, _an_sl, _al, _fl, _dvl, _held = _realise(
+            st, _sh_out, _cn_out, _adr, _fut, _fx, _dt, c, _div)
+        # [AA3] honour a STORED net only when the row reconciles with the
+        # state it is closing; otherwise recompute and say so.
+        _suspect = False
+        _xside = str(r.get('side', '')).strip().upper()
+        if _xside in ('LONG', 'SHORT') and _xside != ('LONG' if st['dir'] == 1
+                                                      else 'SHORT'):
+            _suspect = True
+        _stored = _led_num(r, 'net')
+        if _stored is not None and not _suspect:
+            _net = float(_stored)
+        elif _suspect:
+            print(f"[AA3] {_dt} {_pt} says {_xside or '?'} but the open "
+                  f"position is {'LONG' if st['dir'] == 1 else 'SHORT'} — the "
+                  f"stored P&L cannot belong to it and has been RECOMPUTED "
+                  f"from the prints. Run desk_audit().")
+        _frac = (_sh_out / st['shares']) if st['shares'] else 1.0
+        closed.append(dict(
+            entry_date=st['date'], exit_date=_dt, dir=st['dir'],
+            notional=_an_sl, net=float(_net), held=_held,
+            suspect=_suspect, kind=('full' if _pt == 'EXIT' else 'partial'),
+            frac=_frac, shares=_sh_out, contracts=_cn_out,
+            gross=_g, fee=_cp['fee'], carry=_cp['carry'], roll=_cp['roll'],
+            entry_adr=st['adr'], entry_fut=st['fut'], exit_adr=_adr,
+            exit_fut=_fut))
+        # decrement (average cost: the remaining units keep the same basis)
+        _cu_in = c['contract_sh'] * st['fut'] / st['fx']
+        st = dict(st, shares=st['shares'] - _sh_out,
+                  contracts=st['contracts'] - _cn_out,
+                  an=st['an'] - _an_sl, hn=st['hn'] - _cn_out * _cu_in)
+        _flat = st['shares'] <= 0 or st['contracts'] <= 0
+        events.append(dict(date=_dt, kind=('EXIT' if _pt == 'EXIT' else
+                                           'CLOSE' if _flat else 'REDUCE'),
+                           dir=st['dir'], shares=_sh_out, contracts=_cn_out,
+                           adr=_adr, fut=_fut, fx=_fx, net=float(_net),
+                           held=_held, pos_shares=max(st['shares'], 0),
+                           pos_contracts=max(st['contracts'], 0),
+                           avg_adr=st['adr'], avg_fut=st['fut'],
+                           notional=_an_sl, frac=_frac,
+                           note=_txt(r.get('note', ''))))
+        if _flat:
+            st = None
+    return events, st, closed, orphans, mixed
+def _state_as_of(events, date, c):
+    """[AD1] The position as it stood at the END of `date` — what the mark
+    path has to use once the size can change mid-trade."""
+    st = None
+    for e in events:
+        if str(e['date']) > str(date):
+            break
+        if e['kind'] in ('ENTRY', 'ADD'):
+            st = _blend(st, e['dir'], e['shares'], e['contracts'],
+                        e['adr'], e['fut'], e['fx'], e['date'], c)
+        else:
+            if st is None:
+                continue
+            _cu = c['contract_sh'] * st['fut'] / st['fx']
+            st = dict(st, shares=st['shares'] - e['shares'],
+                      contracts=st['contracts'] - e['contracts'],
+                      an=st['an'] - e['shares'] * st['adr'],
+                      hn=st['hn'] - e['contracts'] * _cu)
+            if st['shares'] <= 0 or st['contracts'] <= 0:
+                st = None
+    return st
+def _rebuild():
+    """[U3] Derive days / open position / mark path FROM THE LEDGER. Called
+    after every write, so memory and file can never disagree.
+    [AD1] the position half is now one chronological walk (_walk_events), so
+    ENTRY, REDUCE and EXIT are handled by the same code and a partial unwind
+    is a first-class event rather than an impossible one."""
+    c = _MANUAL['ctx']
+    led = _read_ledger()
+    led = led[led['instrument'] == c['instrument']]
     # 1. manual days = the SIGNAL-POINT rows, in date order, de-duplicated.
     # [X8] the point follows EXEC_TIMING instead of being hardcoded 'close'.
     _pt = c.get('exec_point', 'close')
@@ -1850,187 +2602,43 @@ def _rebuild():
                             fut_1330=_led_num(r, 'fut_1330'))
                        for _, r in cl.iterrows()
                        if str(r['premium_bps']) not in ('', 'nan')]
-    # 2. open position = the last ENTRY with no EXIT dated on/after it
-    ent = led[led['point'] == 'ENTRY'].sort_values('date')
-    ext = led[led['point'] == 'EXIT'].sort_values('date')
-    _MANUAL['pos'] = None
-    # [Y38] ADD-ON SUPPORT: every ENTRY row dated after the last EXIT is an
-    # open LEG (the first is the base clip, later ones are add_to() adds).
-    # They blend into ONE position with share-weighted / contract-weighted
-    # average entry prices — algebraically EXACT for P&L, because
-    #   sum_i sh_i x (now - adr_i)  ==  (sum sh_i) x (now - avg_adr).
-    # The time stop anchors on the FIRST leg's date (conservative).
-    _last_x = str(ext['date'].astype(str).max()) if len(ext) else ''
-    open_ent = ent[ent['date'].astype(str) > _last_x] if len(ent) else ent
-    if len(open_ent) > 1:
-        _legs = []
-        for _, _er in open_ent.iterrows():
-            _d_i, _nt_i = _pos_from_entry_row(_er)
-            try:
-                _sh_i = _led_num(_er, 'shares') if 'shares' in _er.index else None
-                _cn_i = (_led_num(_er, 'contracts')
-                         if 'contracts' in _er.index else None)
-                if _sh_i and _cn_i:
-                    _cu = c['contract_sh'] * float(_er['fut']) / float(_er['fx'])
-                    _u_i = dict(shares=int(_sh_i), contracts=int(_cn_i),
-                                c_usd=_cu,
-                                adr_notional=int(_sh_i) * float(_er['adr']),
-                                hedge_notional=int(_cn_i) * _cu)
-                else:
-                    _u_i = _units(_nt_i, float(_er['adr']), float(_er['fut']),
-                                  float(_er['fx']))
-            except Exception:
-                _u_i = _units(_nt_i, float(_er['adr']), float(_er['fut']),
-                              float(_er['fx']))
-            _legs.append(dict(dir=_d_i, adr=float(_er['adr']),
-                              fut=float(_er['fut']), fx=float(_er['fx']),
-                              date=str(_er['date']), **_u_i))
-        if len({_l['dir'] for _l in _legs}) > 1:
-            print("[Y38] WARNING: mixed LONG/SHORT entry legs in the open "
-                  "stretch — keeping only legs matching the FIRST one")
-            _legs = [_l for _l in _legs if _l['dir'] == _legs[0]['dir']]
-        _tsh = sum(_l['shares'] for _l in _legs)
-        _tcn = sum(_l['contracts'] for _l in _legs)
-        _an = sum(_l['adr_notional'] for _l in _legs)
-        _hn = sum(_l['hedge_notional'] for _l in _legs)
-        _MANUAL['pos'] = dict(
-            date=_legs[0]['date'], dir=_legs[0]['dir'], notional=_an,
-            entry_adr=sum(_l['shares'] * _l['adr'] for _l in _legs) / _tsh,
-            entry_fut=sum(_l['contracts'] * _l['fut'] for _l in _legs) / _tcn,
-            entry_fx=sum(_l['hedge_notional'] * _l['fx'] for _l in _legs) / _hn,
-            note=f"{len(_legs)} legs (base + {len(_legs) - 1} add)",
-            shares=_tsh, contracts=_tcn, adr_notional=_an, hedge_notional=_hn,
-            mismatch=_an - _hn, n_legs=len(_legs),
-            c_usd=_hn / _tcn if _tcn else float('nan'))
-        e = open_ent.iloc[0]   # [Y24] freeze anchors on the FIRST leg below
-    if len(open_ent) == 1:
-        e = open_ent.iloc[-1]
-        later = ext[ext['date'].astype(str) >= str(e['date'])]
-        if not len(later):
-            _dir, _nt = _pos_from_entry_row(e)
-            _MANUAL['pos'] = dict(date=str(e['date']), dir=_dir, notional=_nt,
-                                  entry_adr=float(e['adr']),
-                                  entry_fut=float(e['fut']),
-                                  entry_fx=float(e['fx']),
-                                  note=_txt(e['note']))
-            try:   # [Y32] integer units: read the STORED columns when the
-                   # row has them (the real ticket); derive from the entry
-                   # prices only for legacy ledgers that predate [Y32].
-                _sh_led = _led_num(e, 'shares') if 'shares' in e.index else None
-                _cn_led = (_led_num(e, 'contracts')
-                           if 'contracts' in e.index else None)
-                if _sh_led and _cn_led:
-                    _c_usd = (c['contract_sh'] * float(e['fut'])
-                              / float(e['fx']))
-                    _an = int(_sh_led) * float(e['adr'])
-                    _hn = int(_cn_led) * _c_usd
-                    _MANUAL['pos'].update(dict(
-                        shares=int(_sh_led), contracts=int(_cn_led),
-                        c_usd=_c_usd, adr_notional=_an, hedge_notional=_hn,
-                        mismatch=_an - _hn))
-                else:
-                    _MANUAL['pos'].update(_units(_nt, float(e['adr']),
-                                                 float(e['fut']),
-                                                 float(e['fx'])))
-            except Exception:
-                pass
-            _freeze_regime24(e)
-    if _MANUAL['pos'] is not None and _MANUAL['pos'].get('n_legs', 1) > 1:
-        _freeze_regime24(open_ent.iloc[0])   # [Y38] anchor on the FIRST leg
-    # [U4] 3. closed trades: pair each EXIT with the ENTRY before it. This is
-    # the paper-trade record — cumulative P&L, win rate, per-trade history.
-    #
-    # [AA3] BUGFIX — THE PAPER RECORD COULD BE SILENTLY REWRITTEN.
-    # The old rule was "pair each EXIT with the LAST ENTRY dated on or before
-    # it", with no segmentation and no cross-check. Two consequences, both
-    # reproduced from a clean ledger:
-    #   * writing a NEW entry dated between an old entry and its exit
-    #     RE-POINTED that closed trade at the new entry. A LONG $497,708
-    #     opened 07-17 and closed 07-21 silently became a SHORT $495,911
-    #     opened 07-20 and closed 07-21 — same stored `net`, different side,
-    #     different size, different entry date. The paper P&L table showed
-    #     the new trade with the old trade's money.
-    #   * `net` was trusted from the EXIT row unconditionally, so that
-    #     re-pointed record kept a P&L that belonged to a different trade.
-    # Now: exits SEGMENT the ledger. Entries strictly after the previous exit
-    # and on/before this one are the legs of THIS round trip. The EXIT row's
-    # own stored side/notional are cross-checked against the entry it got
-    # paired with, and a stored `net` that cannot belong to this pairing is
-    # DISCARDED and recomputed rather than displayed.
-    _MANUAL['closed'] = []
-    _prev_x = ''
-    for _, x in ext.iterrows():
-        _seg = ent[(ent['date'].astype(str) > _prev_x)
-                   & (ent['date'].astype(str) <= str(x['date']))]
-        _prev_x = str(x['date'])
-        if not len(_seg):
-            # an EXIT with no ENTRY of its own — a stale row, or a hand-edit.
-            # Record it so desk_audit() can name it instead of the desk
-            # quietly attaching it to somebody else's entry.
-            _MANUAL['orphan_exits'].append(str(x['date']))
-            continue
-        e = _seg.iloc[0]                     # the round trip's FIRST leg
-        _dir, _nt = _pos_from_entry_row(e)
-        if len(_seg) > 1:                    # [Y38] add-on legs: blend sizes
-            _same = [_r for _, _r in _seg.iterrows()
-                     if _pos_from_entry_row(_r)[0] == _dir]
-            if len(_same) != len(_seg):      # [AA3] opposite sides in one leg
-                _MANUAL['mixed_legs'].append(str(x['date']))
-                print(f"[AA3] {x['date']} EXIT closes a stretch containing "
-                      f"BOTH long and short ENTRY rows "
-                      f"({', '.join(str(_r['date']) for _, _r in _seg.iterrows())})"
-                      f" — only the legs matching the first ({'LONG' if _dir == 1 else 'SHORT'}) "
-                      f"are counted. That ledger cannot be right; run "
-                      f"desk_audit().")
-            _nt = sum(_pos_from_entry_row(_r)[1] for _r in _same)
-        _held = (pd.Timestamp(str(x['date']))
-                 - pd.Timestamp(str(e['date']))).days
-        # [AA3] does the EXIT row agree with the ENTRY it was paired with?
-        _xside = str(x.get('side', '')).strip().upper()
-        _xnt = _led_num(x, 'notional')
-        _mismatch = ((_xside in ('LONG', 'SHORT')
-                      and _xside != ('LONG' if _dir == 1 else 'SHORT'))
-                     or (_xnt is not None and _nt
-                         and abs(_xnt - _nt) / max(abs(_nt), 1.0) > 0.005))
-        _net = None if _mismatch else _led_num(x, 'net')
-        if _mismatch:
-            print(f"[AA3] {x['date']} EXIT does not match the ENTRY it pairs "
-                  f"with ({e['date']}: {'LONG' if _dir == 1 else 'SHORT'} "
-                  f"${_nt:,.0f} vs the EXIT row's {_xside or '?'} "
-                  f"${(_xnt or 0):,.0f}) — the stored P&L belonged to a "
-                  f"different trade and has been RECOMPUTED from the prints. "
-                  f"Run desk_audit() for the full picture.")
-        if _net is None:      # [X7] recompute from the prints, fees AND carry
-            try:              # [Y32] same integer units the trade really had
-                _u = _units(_nt, float(e['adr']), float(e['fut']),
-                            float(e['fx']))
-                _al = _dir * (float(x['adr']) - float(e['adr'])) * _u['shares']
-                _fl = (-_dir * _u['contracts'] * c['contract_sh']
-                       * (float(x['fut']) - float(e['fut'])) / float(x['fx']))
-                _net = _al + _fl - _trade_cost(
-                    _dir, _nt, _held, adr_notional=_u['adr_notional'],
-                    hedge_notional=_u['hedge_notional'])
-            except Exception:  # legacy fallback, fractional
-                _sh = _nt / float(e['adr'])
-                _al = _dir * (float(x['adr']) - float(e['adr'])) * _sh
-                _fl = (-_dir * _nt * (float(x['fut']) / float(e['fut']) - 1.0)
-                       * (float(e['fx']) / float(x['fx'])))
-                _net = _al + _fl - _trade_cost(_dir, _nt, _held)
-        _MANUAL['closed'].append(dict(
-            entry_date=str(e['date']), exit_date=str(x['date']), dir=_dir,
-            notional=_nt, net=float(_net), held=_held,
-            suspect=bool(_mismatch)))       # [AA3]
-    # 4. marks = signal-point rows on/after the entry date, re-marked
+    # 2-3. [AD1] position, realisations and the chronology, in one pass
+    _ev, _st, _closed, _orph, _mixed = _walk_events()
+    _MANUAL['events'] = _ev
+    _MANUAL['closed'] = _closed
+    _MANUAL['orphan_exits'] = _orph
+    _MANUAL['mixed_legs'] = _mixed
+    _MANUAL['pos'] = _state_pos(_st, c)
+    if _MANUAL['pos'] is not None:
+        # [Y24] the regime is frozen as it was on the FIRST leg's date
+        _freeze_regime24({'date': _MANUAL['pos']['date']})
+    # 4. marks = signal-point rows on/after the entry date, re-marked against
+    # the units held ON THAT DATE — which is the whole point of [AD1]: after a
+    # trim the position is smaller, and marking the original size would show a
+    # mark the desk no longer owns.
     _MANUAL['marks'] = []
+    _MANUAL['equity'] = []
     p = _MANUAL['pos']
-    if p is not None:
-        for d in _MANUAL['days']:
-            if d['date'] >= p['date']:
-                m = _mtm(d['adr'], d['fut'], d['fx'])
-                if m:
-                    _MANUAL['marks'].append(dict(date=d['date'], gross=m['gross'],
-                                                 bps=m['bps'],
-                                                 premium=d['premium']))
+    _real_by_date = {}
+    for t in _closed:
+        _real_by_date[str(t['exit_date'])] = (
+            _real_by_date.get(str(t['exit_date']), 0.0) + float(t['net']))
+    _cum = 0.0
+    for d in _MANUAL['days']:
+        _cum += _real_by_date.get(str(d['date']), 0.0)
+        _sd = _state_as_of(_ev, d['date'], c)
+        _pd_ = _state_pos(_sd, c)
+        _un = 0.0
+        if _pd_ is not None:
+            _m = _mtm_of(_pd_, d['adr'], d['fut'], d['fx'])
+            _un = _m['gross'] if _m else 0.0
+            if p is not None and str(d['date']) >= str(p['date']):
+                _MANUAL['marks'].append(dict(date=d['date'], gross=_m['gross'],
+                                             bps=_m['bps'],
+                                             premium=d['premium']))
+        _MANUAL['equity'].append(dict(date=d['date'], realised=_cum,
+                                      unrealised=_un, equity=_cum + _un,
+                                      shares=(_pd_ or {}).get('shares', 0)))
 # ============================================================================
 # [AA2] DID THE WRITE ACTUALLY LAND? — the frontend/backend state mismatch.
 # ----------------------------------------------------------------------------
@@ -2084,6 +2692,22 @@ def _assert_state(kind, date):
         say(f"an EXIT was written for {date} but the desk still shows a "
             f"position opened {p['date']} — run desk_audit()", 'bad')
         return False
+    if kind == 'REDUCE':
+        # [AD1] a trim must leave a SMALLER position, not none and not the
+        # same one. Both failure modes are silent without this.
+        if p is None:
+            say(f"the REDUCE dated {date} closed the WHOLE position — the "
+                f"desk is now flat. If that was not the intent, "
+                f"delete_day('{date}', 'REDUCE') and re-run with fewer "
+                f"contracts", 'warn')
+            return True
+        _rd = led[(led['point'] == 'REDUCE')
+                  & (led['date'].astype(str) == str(date))]
+        if not len(_rd):
+            say(f"the REDUCE dated {date} did not land in the ledger — run "
+                f"desk_audit()", 'bad')
+            return False
+        return True
     return True
 def desk_audit(fix=False):
     """[AA2][AA3] Reconcile the LEDGER against what the desk believes.
@@ -2096,11 +2720,12 @@ def desk_audit(fix=False):
     led = led[led['instrument'] == c['instrument']].sort_values('date')
     ent = led[led['point'] == 'ENTRY']
     ext = led[led['point'] == 'EXIT']
+    red = led[led['point'] == 'REDUCE']              # [AD2]
     p = _MANUAL['pos']
     rows, problems = [], []
     rows.append(('ledger rows', f"{len(led)}",
-                 f"{len(ent)} ENTRY, {len(ext)} EXIT, "
-                 f"{len(led) - len(ent) - len(ext)} scored day(s)"))
+                 f"{len(ent)} ENTRY, {len(red)} REDUCE, {len(ext)} EXIT, "
+                 f"{len(led) - len(ent) - len(ext) - len(red)} scored day(s)"))
     rows.append(('desk position',
                  'FLAT' if p is None else
                  f"{'LONG' if p['dir'] == 1 else 'SHORT'} ${p['notional']:,.0f}",
@@ -2119,12 +2744,20 @@ def desk_audit(fix=False):
             f"entry: {str(_dead.iloc[-1]['date'])}. Clear the stale exit with "
             f"delete_day('{_lastx}', 'EXIT') or re-date the entry after it.")
     # 2. orphan exits / mixed legs, collected during _rebuild
-    for _d in (_MANUAL.get('orphan_exits') or []):
-        problems.append(f"EXIT {_d} has no ENTRY of its own — it is a stale "
-                        f"row. delete_day('{_d}', 'EXIT') removes it.")
+    # [AD2] these are (date, point) pairs now — a REDUCE can be orphaned too.
+    # Formatting them as "EXIT {d}" produced 'EXIT 2026-07-20 REDUCE has no
+    # ENTRY' and, worse, a delete_day() command with the point glued into the
+    # date, which silently removes nothing.
+    for _o in (_MANUAL.get('orphan_exits') or []):
+        _d, _pt2 = (_o if isinstance(_o, (tuple, list)) else (_o, 'EXIT'))
+        _pt2 = str(_pt2).split()[0]
+        problems.append(f"{_pt2} {_d} has nothing open to close — it is a "
+                        f"stale row. delete_day('{_d}', '{_pt2}') removes it.")
     for _d in (_MANUAL.get('mixed_legs') or []):
-        problems.append(f"the stretch closed by EXIT {_d} contains BOTH long "
-                        f"and short ENTRY rows — that is not a position.")
+        problems.append(f"the ENTRY dated {_d} is the opposite side to the "
+                        f"position that was already open, so it was IGNORED. "
+                        f"That is not a position — exit first, or "
+                        f"delete_day('{_d}', 'ENTRY').")
     # 3. closed trades whose stored P&L was rejected
     for t in (_MANUAL.get('closed') or []):
         if t.get('suspect'):
@@ -2198,8 +2831,10 @@ def setup_manual(reload=True):
           if p else "flat"))
     _cl = _MANUAL.get('closed') or []
     if _cl:
-        _line(f"CLOSED     {len(_cl)} trade(s), paper P&L "
-              f"${sum(t['net'] for t in _cl):+,.0f}")
+        _np5 = sum(1 for t in _cl if t.get('kind') == 'partial')   # [AD5]
+        _line(f"REALISED   {len(_cl)} deal(s)"
+              + (f" ({_np5} partial)" if _np5 else '')
+              + f", paper P&L ${sum(t['net'] for t in _cl):+,.0f}")
     _rule()
     _line("RULES IN FORCE")
     _line(f"  ENTER  |z| {_G['ge']} {c['thresh']:.2f}   (z from an N={c['n']} lookback)")
@@ -2318,16 +2953,49 @@ def _gate(n, date=None):
     hl_ok = hl <= c['hl_max']
     if sd > 0 and len(f) >= n + 5:
         drift = abs(f[-n:].mean() - f[-n - 5:-5].mean()) / (sd * np.sqrt(5.0))
-        dr_ok = drift <= c['drift_max']
+        lag_ok = drift <= c['drift_max']
     else:
-        drift, dr_ok = _nan, True
+        drift, lag_ok = _nan, True
+    # [AC4] the NOWCAST, on the same series and in the same units. Computed
+    # whatever DRIFT_MODE says, so gate_history() and the charts can show the
+    # detection lag even while the decision still uses the shipped test.
+    d_now, d_slope = _drift_nowcast(f, n)
+    _ncap = drift_nowcast_max()                     # [AC4] its OWN ceiling
+    now_ok = (not np.isfinite(d_now)) or d_now <= _ncap
+    dr_ok = (lag_ok if DRIFT_MODE == 'lagged'
+             else now_ok if DRIFT_MODE == 'nowcast' else (lag_ok and now_ok))
     return (hl_ok and dr_ok), (f"gamma {gamma:+.3f}, half-life {hl:.1f}d "
                                f"({'OK' if hl_ok else 'FAIL'} vs {c['hl_max']:.0f}), "
                                f"drift {drift:.2f} "
-                               f"({'OK' if dr_ok else 'FAIL'} vs {c['drift_max']:.2f})"
+                               f"({'OK' if lag_ok else 'FAIL'} vs {c['drift_max']:.2f})"
+                               + (f", nowcast {d_now:.2f} "
+                                  f"({'OK' if now_ok else 'FAIL'} vs "
+                                  f"{_ncap:.2f})"
+                                  if np.isfinite(d_now) else '')
+                               + f"  [DRIFT_MODE={DRIFT_MODE}]"
                                + ('' if (hl_ok and dr_ok) else
                                   '  ->  why_gate() shows the arithmetic')
                                ), gamma, sd
+def _drift_nowcast(series, n, k=None):
+    """[AC4] Desk-side twin of _drift_nowcast_arr, for a single point: the OLS
+    slope of the last k premiums, scaled to the SAME units as the lagged drift
+    ratio (|slope| x sqrt5 / sigma of daily changes over n rows) so one
+    threshold governs both. Returns (ratio, signed slope in bps/day)."""
+    k = int(k or DRIFT_NOWCAST_N)
+    a = np.asarray(series, float)
+    if len(a) < max(k, n + 2):
+        return float('nan'), float('nan')
+    y = a[-k:]
+    x = np.arange(k, dtype=float)
+    xc = x - x.mean()
+    den = float(np.dot(xc, xc))
+    if den <= 0:
+        return float('nan'), float('nan')
+    slope = float(np.dot(y - y.mean(), xc) / den)
+    sd_chg = float(np.diff(a[-n - 1:]).std(ddof=0))
+    if not (sd_chg > 0):
+        return float('nan'), slope
+    return abs(slope) * np.sqrt(5.0) / sd_chg, slope
 def why_gate(date=None, show=True):
     """[AB6] THE GATE VERDICT, WITH THE WORKING SHOWN.
     _gate() returns a one-line answer — 'drift 0.67 (FAIL vs 0.50)' — which
@@ -2374,13 +3042,20 @@ def why_gate(date=None, show=True):
     allow = c['drift_max'] * scale                  # the shift the gate permits
     g_ok = gamma < 0
     hl_ok = g_ok and hl <= c['hl_max']
-    dr_ok = (not np.isfinite(drift)) or drift <= c['drift_max']
+    lag_ok = (not np.isfinite(drift)) or drift <= c['drift_max']
+    # [AC4] the nowcast, alongside — this is where the lag becomes visible.
+    d_now, d_slope = _drift_nowcast(f, n)
+    _ncap = drift_nowcast_max()                     # [AC4] its OWN ceiling
+    now_ok = (not np.isfinite(d_now)) or d_now <= _ncap
+    dr_ok = (lag_ok if DRIFT_MODE == 'lagged'
+             else now_ok if DRIFT_MODE == 'nowcast' else (lag_ok and now_ok))
     ok = hl_ok and dr_ok
     _fail = ('gamma >= 0' if not g_ok else 'half-life' if not hl_ok
              else 'drift' if not dr_ok else None)
     if not show:
         return dict(ok=ok, gamma=gamma, hl=hl, drift=drift, shift=shift,
-                    sd=sd, allow=allow, fail=_fail)
+                    sd=sd, allow=allow, fail=_fail,
+                    drift_now=d_now, slope=d_slope)
     _drift_txt = ('n/a' if _degenerate else f"{drift:.2f}")
     kv_table(
         f"[AB6] WHY THE GATE IS {'OPEN' if ok else 'SHUT'}"
@@ -2398,7 +3073,7 @@ def why_gate(date=None, show=True):
            if _degenerate else
            f"|{mu_now:+,.0f} - {mu_prev:+,.0f}| / ({sd:,.0f} x sqrt5) = "
            f"{abs(shift):,.0f} / {scale:,.0f}  vs ceiling {c['drift_max']:.2f}. "
-           f"{'PASS' if dr_ok else 'FAIL'}")),
+           f"{'PASS' if lag_ok else 'FAIL'}")),
          ('   the mean MOVED', f"{shift:+,.0f} bps",
           f"the {n}-day mean premium went {mu_prev:+,.0f} -> {mu_now:+,.0f} "
           f"over 5 rows. The gate allows {allow:,.0f} bps of movement "
@@ -2406,14 +3081,46 @@ def why_gate(date=None, show=True):
          ('   daily noise', f"{sd:,.0f} bps",
           f"std of DAILY CHANGES over {n} rows — the yardstick. A quiet "
           f"series makes the SAME move look like a bigger re-rating"),
+         # [AC4] the answer to "this gate is not forward-looking": it cannot
+         # be, but it does not have to be this SLOW either. Both readings sit
+         # side by side so the lag is a number on the screen.
+         ('4. drift NOWCAST [AC4]',
+          f"{d_now:.2f}" if np.isfinite(d_now) else 'n/a',
+          (f"|slope of the last {DRIFT_NOWCAST_N} rows| x sqrt5 / {sd:,.0f} = "
+           f"|{d_slope:+,.0f}| x 2.24 / {sd:,.0f}  vs its OWN "
+           f"{_ncap:.2f} ceiling (NOT {c['drift_max']:.2f} — this estimator "
+           f"is noisier by construction [AC4]). "
+           f"{'PASS' if now_ok else 'FAIL'}. "
+           f"Test 3 divides a young move by the {n}-row window and reads a "
+           f"fraction of its true size; this one does not"
+           if np.isfinite(d_now) else 'not enough history yet')),
+         ('   which one decides',
+          f"DRIFT_MODE = '{DRIFT_MODE}'",
+          {'lagged': 'test 3 only (the shipped behaviour, so every backtest '
+                     'number reproduces)',
+           'nowcast': 'test 4 only — faster, and untested against the grid '
+                      'unless you re-ran it',
+           'both': 'either one can shut the gate'}.get(DRIFT_MODE, '')),
+         ('   direction',
+          'blocks BOTH sides' if not DRIFT_DIRECTIONAL else
+          f"blocks the {'SHORT' if d_slope > 0 else 'LONG'} side only",
+          (f"the mean is moving {'UP' if d_slope > 0 else 'DOWN'} at "
+           f"{abs(d_slope):,.0f} bps/day, which HURTS a "
+           f"{'SHORT' if d_slope > 0 else 'LONG'} spread and HELPS a "
+           f"{'LONG' if d_slope > 0 else 'SHORT'} one. "
+           + ('Set DRIFT_DIRECTIONAL=True to stop refusing the side it helps'
+              if not DRIFT_DIRECTIONAL else 'DRIFT_DIRECTIONAL is on')
+           ) if np.isfinite(d_slope) else ''),
          ('VERDICT', 'OPEN' if ok else 'SHUT',
-          'all three pass — entries allowed' if ok else
+          'all tests pass — entries allowed' if ok else
           f"{_fail} is the ONLY blocker; the other tests pass"
           if _fail else '')],
         col='value',
         note="The gate refuses to trade a mean that is MOVING: z-scores "
              "measure distance from a mean, so a mean that re-rates makes "
-             "every z meaningless. It is not a view on direction.")
+             "every z meaningless. It is not a view on direction (unless "
+             "DRIFT_DIRECTIONAL is on). No version of it is forward-looking "
+             "— see [AC4] for what is and is not achievable.")
     if _degenerate:
         # not conditional on WHICH test failed: a series that barely moves
         # day to day invalidates gamma, the half-life and the drift alike,
@@ -2489,15 +3196,19 @@ def why_gate(date=None, show=True):
     return dict(ok=ok, gamma=gamma, hl=hl, drift=drift, shift=shift,
                 sd=sd, allow=allow, fail=_fail)
 def _gate_levels(gamma, gate_txt):
-    """[Y37g] (half-life, drift) for the LEDGER, derived from the gate's own
-    outputs so the logged levels can never disagree with the verdict. hl
-    from gamma directly; drift parsed from the gate text (it is printed
-    there to 2dp — the same 2dp lands in the ledger)."""
+    """[Y37g] (half-life, drift, drift_now) for the LEDGER, derived from the
+    gate's own outputs so the logged levels can never disagree with the
+    verdict. hl from gamma directly; the two drift readings parsed from the
+    gate text (printed there to 2dp — the same 2dp lands in the ledger).
+    [AC4] returns a THIRD value now; callers that unpack two will raise, which
+    is what you want — a silently dropped column is how a ledger goes stale."""
     import re as _re
     hl = (np.log(0.5) / np.log(1.0 + max(gamma, -0.999))
           if (gamma == gamma and gamma < 0) else float('nan'))
     _m = _re.search(r'drift ([0-9.]+)', str(gate_txt))
-    return hl, (float(_m.group(1)) if _m else float('nan'))
+    _mn = _re.search(r'nowcast ([0-9.]+)', str(gate_txt))
+    return (hl, (float(_m.group(1)) if _m else float('nan')),
+            (float(_mn.group(1)) if _mn else float('nan')))
 def _fair(ordinary, fut_1330, fut_pt, fx, div_carry=0.0):
     """[X11] div_carry: the [U5] DIVIDEND-CARRY ADJUSTMENT, which the desk
     used to omit entirely. Between the TAIWAN ex-date and the (later) ADR
@@ -2568,9 +3279,11 @@ def _fee_usd(adr_notional, hedge_notional):
             + (FUT_FEE_IN_BPS + FUT_FEE_OUT_BPS + 2 * _fxh) / 1e4
             * hedge_notional)
 def _trade_cost_parts(direction, notional, held_days,
-                      adr_notional=None, hedge_notional=None):
+                      adr_notional=None, hedge_notional=None,
+                      entry_date=None, asof_date=None):
     """[AA4] The round-trip cost of a paper trade, BROKEN OUT, in dollars.
-    Returns dict(fee, carry_fund, carry_margin, carry, total, days, bpd).
+    Returns dict(fee, carry_fund, carry_margin, roll, carry, total, days, bpd,
+    sofr, sofr_src, n_rolls, roll_bps).
     SIGN: positive = a cost. carry_fund is NEGATIVE on a short whenever
     BORROW_MODE='sofr_minus' — that is the SOFR-50 rebate [AA7], a genuine
     credit, and it must NOT be floored here (only the gamma HURDLE floors).
@@ -2581,7 +3294,15 @@ def _trade_cost_parts(direction, notional, held_days,
         margin funding   -> the futures (hedge) leg
     The desk used to charge BOTH on the ADR notional. With integer units the
     legs differ by up to a contract-half, so that was a real (small) error;
-    with the legs equal it changes nothing, which is why it survived."""
+    with the legs equal it changes nothing, which is why it survived.
+
+    [AC7] entry_date/asof_date: when both are given, funding accrues at the
+    MEAN OF THE DAILY SOFR SERIES over the hold instead of at today's last
+    print applied to every past day. Without them the old flat-rate path is
+    used and `sofr_src` says so.
+    [AC5] and the same window decides how many contract ROLLS the hold has
+    crossed, which is the futures-leg cost the backtest is allowed to assume
+    away and a real position is not."""
     c = _MANUAL['ctx']
     if adr_notional is not None and hedge_notional is not None:
         _fee = _fee_usd(adr_notional, hedge_notional)
@@ -2590,20 +3311,33 @@ def _trade_cost_parts(direction, notional, held_days,
         _fee = c['rt_fee_bps'] / 1e4 * notional
         _base_fund = _base_mgn = float(notional)
     _d = max(int(held_days), 0)
-    _fbpd = (c.get('carry_fund_long_bpd') if direction == 1
-             else c.get('carry_fund_short_bpd'))
-    if _fbpd is None:      # legacy context dict (pre-[AA4]) — blended fallback
+    # [AC7] the rate the carry actually accrued at over THIS hold
+    _sofr, _nday, _src = (c.get('sofr', _sofr_now()), 0, 'last value')
+    if entry_date is not None:
+        _sofr, _nday, _src = _sofr_avg(entry_date, asof_date)
+    _fann = (long_financing_ann(_sofr) if direction == 1
+             else short_financing_ann(_sofr))
+    _fbpd = _fann / 360.0 * 1e4
+    _mbpd = margin_ann_bps(_sofr) / 360.0
+    if c.get('carry_fund_long_bpd') is None:   # legacy ctx (pre-[AA4])
         _fbpd = (c['carry_long_bpd'] if direction == 1
                  else c['carry_short_bpd'])
         _mbpd = 0.0
-    else:
-        _mbpd = c.get('carry_margin_bpd', 0.0)
     _cf = _fbpd / 1e4 * _base_fund * _d
     _cm = _mbpd / 1e4 * _base_mgn * _d
-    return dict(fee=_fee, carry_fund=_cf, carry_margin=_cm, carry=_cf + _cm,
-                total=_fee + _cf + _cm, days=_d, bpd=_fbpd + _mbpd)
+    # [AC5] roll cost — hedge leg only, charged per contract change crossed
+    _nroll, _rbps, _roll = 0, roll_cost_bps(c.get('exec_point')), 0.0
+    if ROLL_COST_ON_DESK and entry_date is not None:
+        _nroll = rolls_between(entry_date, asof_date or _desk_today())
+        _roll = _nroll * _rbps / 1e4 * _base_mgn
+    return dict(fee=_fee, carry_fund=_cf, carry_margin=_cm, roll=_roll,
+                carry=_cf + _cm, total=_fee + _cf + _cm + _roll, days=_d,
+                bpd=_fbpd + _mbpd, fund_bpd=_fbpd, margin_bpd=_mbpd,
+                sofr=_sofr, sofr_days=_nday, sofr_src=_src,
+                n_rolls=_nroll, roll_bps=_rbps)
 def _trade_cost(direction, notional, held_days,
-                adr_notional=None, hedge_notional=None):
+                adr_notional=None, hedge_notional=None,
+                entry_date=None, asof_date=None):
     """[X9] FULL round-trip cost of a paper trade, in dollars: contractual
     fees plus the carry the desk used to ignore. Both the daily 'exit now'
     card and the realised exit_pos number call this, so they can no longer
@@ -2612,7 +3346,8 @@ def _trade_cost(direction, notional, held_days,
     charged per leg on those; the legacy single-notional path is kept for
     old ledgers. [AA4] thin wrapper over _trade_cost_parts."""
     return _trade_cost_parts(direction, notional, held_days,
-                             adr_notional, hedge_notional)['total']
+                             adr_notional, hedge_notional,
+                             entry_date, asof_date)['total']
 def _carry_hurdle_bpd(direction):
     """[AA7] The carry a gamma exit must CLEAR, in bps/calendar day. Floored
     at zero: when the net carry is a CREDIT (a short under the SOFR-50
@@ -2663,8 +3398,11 @@ def _fx_rows_pending():
         led = _read_ledger()
     except Exception:
         return []
+    # [AD2] a TRIM deals the TWD leg exactly like an entry or an exit, so its
+    # hedge FX is provisional until the next TW open too. Leaving REDUCE out
+    # here would have marked a trim as settled the moment it was written.
     led = led[(led['instrument'] == c['instrument'])
-              & (led['point'].isin(['ENTRY', 'EXIT']))]
+              & (led['point'].isin(['ENTRY', 'REDUCE', 'EXIT']))]
     out = []
     for _, r in led.sort_values('date').iterrows():
         if str(r.get('fx_src', '')).strip() not in ('next_open', 'ndf'):
@@ -2692,12 +3430,17 @@ def _fx_status():
     return dict(provisional=bool(_pend), pending=_pend, mark_label=_lbl,
                 banner=_bn)
 def _mtm(adr_now, fut_now, fx_now, div_cash_pct=0.0):
+    """[Y32] Mark the CURRENTLY OPEN position. Thin wrapper over _mtm_of."""
+    return _mtm_of(_MANUAL['pos'], adr_now, fut_now, fx_now, div_cash_pct)
+def _mtm_of(p, adr_now, fut_now, fx_now, div_cash_pct=0.0):
     """[Y32] Marks off the INTEGER units the position actually holds:
     whole shares on the ADR leg, whole contracts x contract_sh x the TWD
     price move on the futures leg (identical algebra to the old
     notional-ratio form when the notionals line up, exact when they do
-    not). Legacy ledgers without units fall back to the old formulas."""
-    p = _MANUAL['pos']
+    not). Legacy ledgers without units fall back to the old formulas.
+    [AD1] takes the position EXPLICITLY, because the mark path now has to
+    mark the units held on each PAST date — which after a partial unwind is
+    not the same as the units held today."""
     if p is None:
         return None
     c = _MANUAL['ctx']
@@ -2735,7 +3478,7 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
     date = str(date)
     n, thr = c['n'], c['thresh']
     gate_ok, gate_txt, _gamma, _chgsd = _gate(n, date)   # [X10][X12]
-    _hl_led, _dr_led = _gate_levels(_gamma, gate_txt)    # [Y37g] for the ledger
+    _hl_led, _dr_led, _dn_led = _gate_levels(_gamma, gate_txt)  # [Y37g][AC4]
     p = _MANUAL['pos']
     rows = []
     if not quiet:
@@ -2815,7 +3558,8 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
             # rosier than the exit that followed it.
             xc = _trade_cost(p['dir'], p['notional'], held,
                              adr_notional=p.get('adr_notional'),
-                             hedge_notional=p.get('hedge_notional'))
+                             hedge_notional=p.get('hedge_notional'),
+                             entry_date=p['date'], asof_date=date)  # [AC5][AC7]
             trig = []
             if (p['dir'] == -1 and z <= 0) or (p['dir'] == 1 and z >= 0):
                 trig.append('Z crossed 0')
@@ -2874,6 +3618,8 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
                          gamma=(round(_gamma, 3) if _gamma == _gamma else ''),
                          hl=(round(_hl_led, 1) if _hl_led == _hl_led else ''),
                          drift=(round(_dr_led, 2) if _dr_led == _dr_led else ''),
+                         drift_now=(round(_dn_led, 2)          # [AC4]
+                                    if _dn_led == _dn_led else ''),
                          n=n, threshold=thr, gate=('open' if gate_ok else 'shut'),
                          div_carry=div_carry, in_position=bool(p), net='',
                          note=note))
@@ -2910,10 +3656,44 @@ def add_days(rows_list, save=True):
     return None
 def enter(side, adr, fut, fx, date, notional=None, note=''):
     """[U3] Record a real entry fill. Re-run to CORRECT it (the previous
-    ENTRY on that date is replaced). side='LONG' or 'SHORT'."""
+    ENTRY on that date is replaced). side='LONG' or 'SHORT'.
+
+    [AC8] SECOND ENTRY WHILE ONE IS OPEN. This has always WORKED — _rebuild
+    treats every ENTRY row after the last EXIT as an open leg and blends them
+    — but it happened silently, so "I entered yesterday and I want to add
+    today" looked identical on screen to "I am opening a fresh position", and
+    the ENTRY banner said `ENTRY — SHORT $495,911` as though that were the
+    whole position. It now says which it is, before it writes."""
     c = _MANUAL['ctx']
     d = 1 if str(side).upper().startswith('L') else -1
     _nt_req = float(notional or c['notional'])
+    # [AC8] name the situation before doing anything to the ledger
+    _p0 = _MANUAL['pos']
+    if _p0 is not None and str(_p0['date']) != str(date):
+        _same = (_p0['dir'] == d)
+        if _same:
+            say(f"you are already {'LONG' if d == 1 else 'SHORT'} since "
+                f"{_p0['date']} (${_p0['notional']:,.0f}, "
+                f"{_p0.get('n_legs', 1)} leg(s)) — this fill is being recorded "
+                f"as an ADDITIONAL LEG, not a new position. The two blend into "
+                f"one trade with share-weighted entry prices and the time stop "
+                f"stays on {_p0['date']} [Y38]", 'warn')
+            say(f"add_to(adr={float(adr):.4f}, fut={float(fut):.2f}, "
+                f"fx={float(fx):.4f}, date='{date}') does exactly this and "
+                f"labels the row 'ADD' — use it so the ledger reads back "
+                f"clearly", 'info')
+        else:
+            say(f"REFUSED — you are {'LONG' if _p0['dir'] == 1 else 'SHORT'} "
+                f"since {_p0['date']} and this is a "
+                f"{'LONG' if d == 1 else 'SHORT'}. Mixed legs cannot be one "
+                f"position: exit_pos(...) first, or cancel_entry() if the open "
+                f"row is the mistake.", 'bad')
+            # [AC8] tell the [Y21] wrapper nothing was written, or it prints an
+            # FX reminder for a fill that does not exist — which is the same
+            # class of lie [AA2] removed from the ENTRY banner.
+            _ENTER_REFUSED[0] = True
+            return _p0
+    _ENTER_REFUSED[0] = False
     # [Y32] snap the request to REAL units before anything is written: whole
     # SSF contracts, whole ADR shares. The ledger stores the SNAPPED ADR-leg
     # notional so every rebuild reproduces the same integer position.
@@ -2932,6 +3712,7 @@ def enter(side, adr, fut, fx, date, notional=None, note=''):
                shares=int(_u['shares']), contracts=int(_u['contracts']),
                ordinary='', fut_1330='', fx=float(fx), adr=float(adr),
                fut=float(fut), fair='', premium_bps='', dev_bps='', z='',
+               gamma='', hl='', drift='', drift_now='',
                n=c['n'], threshold=c['thresh'], gate='', div_carry='',
                in_position=True, net='',
                fx_src=('provisional' if FX_EXEC_MODE == 'spot_next_open'
@@ -2955,9 +3736,18 @@ def enter(side, adr, fut, fx, date, notional=None, note=''):
                f"stored but no position exists",
                sub=f"{date}   see the reason above, then desk_audit()")
         return p
-    banner(f"ENTRY — {'LONG' if d == 1 else 'SHORT'} spread ${nt:,.0f}",
-           sub=f"{date}   ADR {float(adr):,.4f}   {HEDGE_LBL} "
-               f"{float(fut):,.2f}   FX {float(fx):,.4f}")
+    # [AC8] when this fill joined an existing position the banner says so and
+    # quotes the BLENDED size, not just the clip that was typed.
+    _nl = (p or {}).get('n_legs', 1)
+    banner((f"ENTRY — {'LONG' if d == 1 else 'SHORT'} spread ${nt:,.0f}"
+            if _nl <= 1 else
+            f"ADD — leg {_nl} of the {'LONG' if d == 1 else 'SHORT'} spread, "
+            f"+${nt:,.0f}"),
+           sub=(f"{date}   ADR {float(adr):,.4f}   {HEDGE_LBL} "
+                f"{float(fut):,.2f}   FX {float(fx):,.4f}")
+               + ('' if _nl <= 1 else
+                  f"   ->  position now ${p['notional']:,.0f} at avg ADR "
+                  f"{p['entry_adr']:.4f}, opened {p['date']}"))
     _dl, _dm = _date_sanity(date)                      # [AA1]
     for _mm in _dm:
         say(_mm, 'bad' if _dl == 'bad' else 'info')
@@ -3000,6 +3790,22 @@ def cancel_entry():
     if p is None:
         print('[U3] no open position to cancel'); return
     led = _read_ledger()
+    # [AD2] a TRIM realised against this position cannot survive its entry
+    # being deleted: the walk would find a REDUCE with nothing open and book
+    # it as an orphan, so the ledger would carry a realised P&L belonging to
+    # a trade that no longer exists. Say so BEFORE destroying anything.
+    _rd = led[(led['instrument'] == c['instrument'])
+              & (led['point'].isin(['REDUCE', 'EXIT']))
+              & (led['date'].astype(str) >= str(p['date']))]
+    if len(_rd):
+        say(f"REFUSED — {len(_rd)} realisation(s) "
+            f"({', '.join(f"{r['date']} {r['point']}" for _, r in _rd.iterrows())}) "
+            f"were booked against the position opened {p['date']}. Deleting "
+            f"its ENTRY would leave them closing nothing. Remove them first, "
+            f"newest last:", 'bad')
+        for _, _r in _rd.sort_values('date', ascending=False).iterrows():
+            say(f"delete_day('{_r['date']}', '{_r['point']}')", 'info')
+        return
     led = led[~((led['point'] == 'ENTRY') & (led['date'].astype(str) == p['date'])
                 & (led['instrument'] == c['instrument']))]
     _write_ledger(led)
@@ -3033,12 +3839,17 @@ def exit_pos(adr, fut, fx, date, div_cash_pct=0.0, note=''):
     held = (pd.Timestamp(date) - pd.Timestamp(p['date'])).days
     # [X9] identical call to the one the daily card makes, so the mark you
     # acted on and the trade you booked cannot disagree.
-    cost = _trade_cost(p['dir'], p['notional'], held,
-                       adr_notional=p.get('adr_notional'),
-                       hedge_notional=p.get('hedge_notional'))
-    _fee = (_fee_usd(p['adr_notional'], p['hedge_notional'])
-            if p.get('adr_notional') and p.get('hedge_notional')
-            else c['rt_fee_bps'] / 1e4 * p['notional'])   # [Y32]
+    # [AC5] take the PARTS, not just the total. The waterfall below prints a
+    # "less carry" line as `cost - fee`, which was exact while those were the
+    # only two components — but the roll cost lands in `cost` too, so that
+    # line would silently absorb it and state a carry formula that no longer
+    # reproduces its own number.
+    _cp0 = _trade_cost_parts(p['dir'], p['notional'], held,
+                             adr_notional=p.get('adr_notional'),
+                             hedge_notional=p.get('hedge_notional'),
+                             entry_date=p['date'], asof_date=str(date))
+    cost = _cp0['total']
+    _fee = _cp0['fee']
     net = m['gross'] - cost
     # [X7] realised P&L goes in its own `net` column; premium_bps is left for
     # actual premiums. It used to store the P&L in bps under a column named
@@ -3049,7 +3860,8 @@ def exit_pos(adr, fut, fx, date, div_cash_pct=0.0, note=''):
                ordinary='', fut_1330='', fx=float(fx), adr=float(adr),
                fut=float(fut), fair='', premium_bps='',
                dev_bps='', z='', n=c['n'], threshold=c['thresh'], gate='',
-               div_carry='', in_position=False, net=round(net, 2),
+               div_carry='', div_pct=float(div_cash_pct or 0.0),  # [AD1]
+               in_position=False, net=round(net, 2),
                note=f"held {held}cd {note}".strip())
     led = _read_ledger()
     led = led[~((led['instrument'] == c['instrument'])
@@ -3062,8 +3874,10 @@ def exit_pos(adr, fut, fx, date, div_cash_pct=0.0, note=''):
     print(f"     ADR leg ${m['adr_leg']:+,.0f} | SSF leg ${m['fut_leg']:+,.0f}"
           + (f" | TAIFEX div ${m['div_leg']:+,.0f}" if m['div_leg'] else ''))
     print(f"     GROSS ${m['gross']:+,.0f} - fees ${_fee:,.0f} "
-          f"({c['rt_fee_bps']:.0f}bps) - carry ${cost - _fee:,.0f} ({held}cd) = "
-          f"NET ${net:+,.0f} ({net / p['notional'] * 1e4:+.0f}bps)")
+          f"({c['rt_fee_bps']:.0f}bps) - carry ${_cp0['carry']:,.0f} ({held}cd)"
+          + (f" - roll ${_cp0['roll']:,.0f} ({_cp0['n_rolls']} x "
+             f"{_cp0['roll_bps']:.0f}bps)" if _cp0['roll'] else '')
+          + f" = NET ${net:+,.0f} ({net / p['notional'] * 1e4:+.0f}bps)")
     print(f"     reminder: this EXCLUDES bid/ask and impact, on the assumption "
           f"your typed fills already crossed them. The backtest's full round "
           f"trip is {c['rt_cost_bps']:.0f}bps.")
@@ -3113,8 +3927,10 @@ def status():
     _prob += [f"closed trade {t['entry_date']}→{t['exit_date']} had a stored "
               f"P&L from a different entry; recomputed"
               for t in (_MANUAL.get('closed') or []) if t.get('suspect')]
-    _prob += [f"EXIT {d} has no ENTRY of its own"
-              for d in (_MANUAL.get('orphan_exits') or [])]
+    _prob += [f"{str(_o[1]).split()[0] if isinstance(_o, (tuple, list)) else 'EXIT'} "
+              f"{_o[0] if isinstance(_o, (tuple, list)) else _o} has nothing "
+              f"open to close"                                    # [AD2]
+              for _o in (_MANUAL.get('orphan_exits') or [])]
     _next = ('type or pull today\'s prints — add_day(...) / pull_day(...)'
              if not _MANUAL['days'] or
              str(_MANUAL['days'][-1]['date']) < _desk_today()
@@ -3188,15 +4004,74 @@ def status():
             title=f"POSITION STRUCTURE — {'LONG' if p['dir'] == 1 else 'SHORT'} "
                   f"spread, {p.get('n_legs', 1)} leg(s), opened {p['date']}",
             fmt={'notional USD': '{:,.0f}'},
-            note=f"1 {HEDGE_LBL} contract = {_cs:,.0f} sh x TWD "
-                 f"{p['entry_fut']:,.2f} / {p['entry_fx']:,.4f} = "
-                 f"${_cusd5:,.0f}, so the clip can only move in ${_cusd5:,.0f} "
-                 f"steps — that is where the residue comes from. Residue "
-                 f"{abs(_an5 - _hn5) / _an5 * 1e4:,.0f} bps of the ADR leg. "
-                 f"Entry FX {p['entry_fx']:,.4f} "
-                 f"({'PROVISIONAL — fx_fill() has not run' if _fx['provisional'] else 'settled'})"
-                 f" converts the {HEDGE_LBL} leg; it is NOT a third position. "
-                 f"Both legs close together — exit_pos() does both.")
+            # [AC6] this note was five facts in one paragraph. One per line.
+            note=_bullets([
+                f"CONTRACT SIZE — 1 {HEDGE_LBL} = {_cs:,.0f} sh x TWD "
+                f"{p['entry_fut']:,.2f} / {p['entry_fx']:,.4f} = ${_cusd5:,.0f}",
+                f"GRANULARITY — the clip can only move in ${_cusd5:,.0f} "
+                f"steps, which is where the residue comes from",
+                f"RESIDUE — {abs(_an5 - _hn5) / _an5 * 1e4:,.0f} bps of the "
+                f"ADR leg, riding unhedged",
+                f"ENTRY FX — {p['entry_fx']:,.4f}, "
+                + ('PROVISIONAL, fx_fill() has not run yet'
+                   if _fx['provisional'] else 'settled')
+                + f". It converts the {HEDGE_LBL} leg; it is NOT a third "
+                  f"position",
+                "CLOSING — both legs go together, exit_pos() does both"]))
+        # ------------------------------------------------------------- [AC8]
+        # THE LEGS, ONE ROW EACH. "3 leg(s)" in the title told you a second
+        # and third entry existed and nothing about them — not their dates,
+        # not their sizes, not their prices. On a position built over three
+        # days that is most of what you need to know, and it was only
+        # recoverable by reading the raw CSV.
+        # [AD2] ...and every deal that BUILT it. The [AC8] version listed
+        # ENTRY rows only, so after a trim it showed leg sizes the position no
+        # longer held — "base 5,161 + add 5,179" against a position of 3,978.
+        # It now reads the event walk, so adds and trims both appear and the
+        # running size on the right always ends at what is actually on.
+        _open_ev = [e for e in (_MANUAL.get('events') or [])
+                    if str(e['date']) >= str(p['date'])]
+        if len(_open_ev) > 1:
+            try:
+                _lrows, _n_add = [], 0
+                for _i2, _e2 in enumerate(_open_ev):
+                    if _e2['kind'] in ('ENTRY', 'ADD'):
+                        _n_add += (_i2 > 0)
+                        _lbl2 = ('base clip' if _i2 == 0 else f"add {_n_add}")
+                    else:
+                        _lbl2 = 'TRIM'
+                    _sgn2 = '+' if _e2['kind'] in ('ENTRY', 'ADD') else '-'
+                    _lrows.append({
+                        'deal': _lbl2, 'date': _e2['date'],
+                        'shares': f"{_sgn2}{_e2['shares']:,d}",
+                        'contracts': f"{_sgn2}{_e2['contracts']}",
+                        'ADR': _e2['adr'], HEDGE_LBL: _e2['fut'],
+                        'FX': _e2['fx'],
+                        'realised $': (_e2.get('net') if _e2.get('net') is not None
+                                       else None),
+                        'position after': f"{_e2['pos_shares']:,d} sh / "
+                                          f"{_e2['pos_contracts']} {HEDGE_LBL}"})
+                show_html_table(
+                    _pd.DataFrame(_lrows).set_index('deal'),
+                    title=f"HOW THIS POSITION WAS BUILT — {len(_open_ev)} deal(s)",
+                    fmt={'ADR': '{:,.4f}', HEDGE_LBL: '{:,.2f}', 'FX': '{:.4f}',
+                         'realised $': '{:+,.0f}'},
+                    note=_bullets([
+                        f"BLENDED ENTRY — ADR {p['entry_adr']:.4f}, "
+                        f"{HEDGE_LBL} {p['entry_fut']:.2f}, FX "
+                        f"{p['entry_fx']:.4f}, share/contract weighted",
+                        "EXACT FOR P&L — sum_i sh_i x (now - adr_i) equals "
+                        "(sum sh_i) x (now - avg_adr), so blending loses "
+                        "nothing",
+                        "A TRIM realises at that average and leaves the "
+                        "average unchanged, so the units still on carry the "
+                        "same basis they always had [AD2]",
+                        f"TIME STOP — anchored on the FIRST leg "
+                        f"({p['date']}); neither an add nor a trim moves it",
+                        "exit_pos() closes whatever is left; reduce_pos() "
+                        "takes another slice off"]))
+            except Exception as _e8:
+                say(f"[AD2] deal history skipped: {_e8}", 'warn')
     elif _MANUAL['days']:
         # FLAT: show the ticket the CURRENT clip would actually produce, so
         # the contract granularity is visible BEFORE the fill, not after.
@@ -3277,25 +4152,33 @@ def status():
         _run, _peak, _dd = 0.0, 0.0, 0.0
         for t in cl:
             _run += t['net']; _peak = max(_peak, _run); _dd = min(_dd, _run - _peak)
+        _npar = sum(1 for t in cl if t.get('kind') == 'partial')   # [AD5]
         kv_table(
-            f"PAPER P&L — {len(cl)} CLOSED TRADE(S)",
+            f"PAPER P&L — {len(cl)} REALISATION(S)"
+            + (f", {_npar} of them partial unwinds" if _npar else ''),
             [('total', f"${tot:+,.0f}",
-              f"{tot / _avg_nt * 1e4:+.0f} bps of the average clip"),
+              f"{tot / _avg_nt * 1e4:+.0f} bps of the average slice"),
              ('win rate', f"{wins / len(cl) * 100:.0f}%",
-              f"avg ${tot / len(cl):+,.0f} per trade"),
+              f"avg ${tot / len(cl):+,.0f} per realisation"
+              + (' — a TRIM counts as one, so this is wins per DECISION to '
+                 'take money off, not per round trip [AD5]' if _npar else '')),
              ('best / worst', f"${max(t['net'] for t in cl):+,.0f} / "
                               f"${min(t['net'] for t in cl):+,.0f}",
               f"avg hold {sum(t['held'] for t in cl) / len(cl):.0f}cd"),
              ('equity peak', f"${_peak:+,.0f}",
               f"max drawdown ${_dd:+,.0f}")])
+        # [AD5] a trim and the close that follows it carry the SAME entry
+        # date, so without the deal column two rows look like a duplicate.
         show_html_table(
             _pd.DataFrame([{'entry': t['entry_date'], 'exit': t['exit_date'],
+                            'deal': ('TRIM' if t.get('kind') == 'partial'
+                                     else 'CLOSE'),
                             'side': 'LONG' if t['dir'] == 1 else 'SHORT',
                             'notional': t['notional'], 'net $': t['net'],
                             'bps': t['net'] / t['notional'] * 1e4,
                             'cd': t['held']}
                            for t in cl[-6:]]).set_index('entry'),
-            title='LAST TRADES',
+            title='LAST REALISATIONS',
             fmt={'notional': '{:,.0f}', 'net $': '{:+,.0f}', 'bps': '{:+.0f}',
                  'cd': '{:.0f}'})
     # ---- 4. [Y24] IS THE REGIME STILL THE ONE YOU ENTERED IN? ---------
@@ -3308,7 +4191,10 @@ def status():
             _lv_, _hd_, _ln_ = _position_health(_z_, _sd_, _gm_, _ok_,
                                                 _d_['date'], _mk_)
             if _lv_:
-                note_block(f"POSITION HEALTH [Y24] — {_hd_}", _ln_)
+                # [AC6] a table, not a bordered paragraph: the reading of every
+                # check lands in one column so the block can be scanned.
+                fact_table(f"POSITION HEALTH [Y24] — {_hd_}", _ln_,
+                           headers=('reading', 'why'))
     except Exception as _e:
         say(f"[Y24] health check skipped: {_e}", 'warn')
 
@@ -3404,6 +4290,9 @@ def form():
                              description='Side', layout=W.Layout(width='250px'),
                              style=S),
              fadr=F('Fill ADR'), ffut=F('Fill SSF'), nt=F('Notional $', c['notional']),
+             # [AD2] how much to take OFF. <=1 reads as a fraction, >1 as a
+             # contract count.
+             trim=F('Trim (0.5 / 6)', 0.0),
              # ------------------------------------------------------- [AB4]
              # THE SSF TICKER, ON THE PANEL. It used to be reachable only by
              # editing FUT_TICKER_BBG_INST in the file and re-running the
@@ -3478,6 +4367,60 @@ def form():
             print('[U3] choose LONG or SHORT first'); return
         enter(side=w['side'].value, adr=v('fadr'), fut=v('ffut'), fx=v('fx'),
               date=w['date'].value, notional=v('nt'), note=w['note'].value)
+    def _add():
+        # [AC8] "yesterday I entered and today I want to add on" — the desk has
+        # had add_to() since [Y38] but only from the console, so the panel
+        # workflow had no way to express it and a second 'Record ENTRY' looked
+        # like a fresh trade. This is that button.
+        p_ = _MANUAL['pos']
+        if p_ is None:
+            print('[AC8] nothing is open — Record ENTRY opens the first leg.')
+            return
+        if 'add_to' not in globals():
+            print('[AC8] the [Y38] add-on block did not load in this session.')
+            return
+        add_to(adr=v('fadr'), fut=v('ffut'), fx=v('fx'),
+               date=w['date'].value, notional=v('nt'), note=w['note'].value)
+    def _live():
+        # [AC9] the live card, on the panel. It needs no boxes filled: it
+        # quotes the terminal directly and marks against the latest Taiwan
+        # anchors, so it is the one action here that works mid-session.
+        if 'live_now' not in globals():
+            print('[AC9] the [Y37] Bloomberg block did not load — this panel '
+                  'is typing-only in this session.')
+            return
+        _r = live_now()
+        if _r is None:
+            return
+        # [AC9] drop the live prints into the FILL boxes so the card can be
+        # acted on without retyping what was just fetched. They are only
+        # SUGGESTED values — nothing is written until you press a button.
+        if _r.get('adr'):
+            w['fadr'].value = float(_r['adr'])
+        if _r.get('fut'):
+            w['ffut'].value = float(_r['fut'])
+        say('the ADR / SSF fill boxes have been filled with the live prints — '
+            'edit them to your actual fill, then Record ENTRY or Add to '
+            'position. Nothing has been saved', 'info')
+        _click['at'] = time.monotonic()          # [AB4] same debounce stamp
+    def _trim():
+        # [AD2] partial unwind. Sized off the TRIM box: a number <= 1 is read
+        # as a FRACTION of the position, anything larger as a contract count —
+        # because "0.5" and "6" are both natural ways to say it and guessing
+        # wrong either way would deal the wrong size.
+        p_ = _MANUAL['pos']
+        if p_ is None:
+            print('[AD2] nothing is open to trim.'); return
+        _q = w['trim'].value or 0
+        if _q <= 0:
+            print('[AD2] put the size in the Trim box first: 0.5 = half the '
+                  'position, 6 = six contracts.'); return
+        _kw = (dict(frac=float(_q)) if _q <= 1
+               else dict(contracts=int(round(float(_q)))))
+        reduce_pos(adr=v('fadr'), fut=v('ffut'), fx=v('fx'),
+                   date=w['date'].value,
+                   div_cash_pct=(w['div'].value or 0) / 100.0,
+                   note=w['note'].value, **_kw)
     def _exit():
         exit_pos(adr=v('fadr'), fut=v('ffut'), fx=v('fx'), date=w['date'].value,
                  div_cash_pct=(w['div'].value or 0) / 100.0, note=w['note'].value)
@@ -3603,6 +4546,14 @@ def form():
     btns = W.HBox([B('Score day', 'primary', run(_score, name='Score day')),
                    B('Record ENTRY', 'success',
                      run(_enter, name='Record ENTRY')),
+                   # [AC8] second entry on an open position is an ADD, and it
+                   # gets its own button so it can never be confused with
+                   # opening a new trade.
+                   B('Add to position', 'success',
+                     run(_add, name='Add to position'), '140px'),
+                   # [AD2] the mirror of Add. Confirmed, because it deals.
+                   B('Trim', 'warning',
+                     run(_trim, confirm=True, name='Trim'), '92px'),
                    B('Record EXIT', 'warning',
                      run(_exit, confirm=True, name='Record EXIT')),
                    B('Status', '', run(status, name='Status'), '96px'),
@@ -3614,16 +4565,32 @@ def form():
     btns0 = W.HBox([w['ssf'],
                     B('Fetch Bloomberg', 'primary',
                       run(_fetch, name='Fetch Bloomberg'), '150px'),
+                    # [AC9] LIVE NOW. 'Fetch Bloomberg' pulls a FINISHED day's
+                    # snapshots; this quotes the market as it stands right now
+                    # and prices the premium/z off it. Two different questions,
+                    # so two buttons.
+                    B('Live now', 'warning',
+                      run(_live, name='Live now'), '110px'),
                     B('Check contract', 'info',
                       run(_check_ssf, name='Check contract'), '132px'),
                     W.HTML("<span style='color:#999;font-size:11px'>"
-                           "&larr; fills the boxes below from the terminal. "
-                           "The panel FREEZES for a few seconds while it "
-                           "pulls (9 legs, one request each) &mdash; one "
-                           "click is enough. Anything it cannot get keeps "
-                           "what you typed.</span>")], layout=ROW)
+                           "<b>Fetch</b> &larr; fills the boxes below with the "
+                           "date above's finished snapshots. The panel FREEZES "
+                           "for a few seconds (9 legs, one request each) "
+                           "&mdash; one click is enough; anything it cannot "
+                           "get keeps what you typed.<br>"
+                           "<b>Live now</b> &larr; quotes ADR + SSF + FX as "
+                           "they stand this second and prints the live "
+                           "premium / z. US TRADING HOURS ONLY &mdash; that is "
+                           "the only window in which the ADR is printing and "
+                           "the SSF night session is quotable, so outside it "
+                           "the card refuses rather than showing you stale "
+                           "prices dressed as live ones.</span>")], layout=ROW)
     btns2 = W.HBox([B('How to edit a day', 'info', run(_resc, name='help'),
                       '140px'),
+                    # [AD3] the deal record, not the raw CSV
+                    B('Blotter', 'info', run(blotter, name='Blotter'), '96px'),
+                    B('Chart P&L', '', run(chart, name='Chart P&L'), '104px'),
                     B('Ledger', '', run(show_ledger, name='Ledger'), '96px'),
                     B('Chart z', '', run(zchart, name='Chart z'), '96px'),
                     B('Cancel entry', 'danger',
@@ -3683,8 +4650,11 @@ def form():
                 "&larr; leave at 0 unless the Taiwan ordinary went ex-dividend "
                 "today AND you are holding through it (TSM quarter &asymp;0.45, "
                 "UMC year &asymp;6.8)</span>")], layout=ROW),
-        H('YOUR ACTUAL FILL (optional)'),
-        W.HBox([w['side'], w['fadr'], w['ffut'], w['nt']], layout=ROW),
+        H('YOUR ACTUAL FILL (optional) &nbsp;&mdash; Notional sizes an ENTRY '
+          'or an ADD; Trim sizes a PARTIAL UNWIND (0.5 = half the position, '
+          '6 = six contracts) [AD2]'),
+        W.HBox([w['side'], w['fadr'], w['ffut'], w['nt'], w['trim']],
+               layout=ROW),
         btns, btns2, out]))
 # ============================================================================
 # [AA10] PAPER-DESK CHARTS — SAME VISUAL LANGUAGE AS THE BACKTEST FIGURE
@@ -3775,7 +4745,20 @@ def _ch_marks(ax, y_at, entries, exits):
                    color=_CH['exit'], s=_CH['s_exit'], zorder=5, label='Exit')
     return len(_le), len(_se), len(_xe)
 def _ch_ledger_events():
-    """[AA10] (entries, exits) from the ledger: [(date, dir)], [date]."""
+    """[AA10] (entries, exits) from the ledger: [(date, dir)], [date].
+    [AD4] both are now read from the EVENT WALK rather than reconstructed from
+    the closed-trade list. The old version derived entry dates from
+    _MANUAL['closed'], so an ADD never appeared (it is not a round trip) and a
+    position still open contributed exactly one marker whatever it was built
+    from — the chart showed a trade you did not put on in one go as though
+    you had."""
+    _ev = _MANUAL.get('events') or []
+    if _ev:
+        _ent = [(pd.Timestamp(e['date']), e['dir'])
+                for e in _ev if e['kind'] in ('ENTRY', 'ADD')]
+        _ext = [pd.Timestamp(e['date'])
+                for e in _ev if e['kind'] in ('EXIT', 'CLOSE')]
+        return _ent, _ext
     _ent, _ext = [], []
     for t in (_MANUAL.get('closed') or []):
         _ent.append((pd.Timestamp(t['entry_date']), t['dir']))
@@ -3784,6 +4767,42 @@ def _ch_ledger_events():
     if p is not None:
         _ent.append((pd.Timestamp(p['date']), p['dir']))
     return _ent, _ext
+def _ch_deal_marks(ax, y_at):
+    """[AD4] EVERY deal on the price axis, each action with its own shape, so
+    a trade built and unwound in pieces reads as the sequence it was:
+        ^ / v   open      (green up = long spread, red down = short)
+        + / _   add       (same colour, plus sign)
+        o       trim      (hollow — units came OFF but the trade is alive)
+        x       close
+    Returns a one-line legend summary for the panel caption."""
+    _ev = _MANUAL.get('events') or []
+    _spec = [
+        ('ENTRY', 1, '^', _CH['long'], 55, 'Open long spread'),
+        ('ENTRY', -1, 'v', _CH['short'], 55, 'Open short spread'),
+        ('ADD', 1, 'P', _CH['long'], 48, 'Add'),
+        ('ADD', -1, 'P', _CH['short'], 48, 'Add'),
+        ('REDUCE', 0, 'o', '#b26a00', 46, 'Trim (partial unwind)'),
+        ('EXIT', 0, 'x', _CH['exit'], 42, 'Close'),
+        ('CLOSE', 0, 'x', _CH['exit'], 42, 'Close'),
+    ]
+    _seen, _n = set(), {}
+    for _k, _d, _mk, _col, _s, _lbl in _spec:
+        _pts = [(pd.Timestamp(e['date']), y_at(pd.Timestamp(e['date'])))
+                for e in _ev
+                if e['kind'] == _k and (_d == 0 or e['dir'] == _d)]
+        _pts = [(x, y) for x, y in _pts if y is not None]
+        _n[_k] = _n.get(_k, 0) + len(_pts)
+        if not _pts:
+            continue
+        ax.scatter([x for x, _ in _pts], [y for _, y in _pts], marker=_mk,
+                   s=_s, zorder=6,
+                   facecolors=('none' if _mk == 'o' else _col),
+                   edgecolors=_col, linewidths=1.4,
+                   label=(_lbl if _lbl not in _seen else None))
+        _seen.add(_lbl)
+    return (f"{_n.get('ENTRY', 0)} open · {_n.get('ADD', 0)} add · "
+            f"{_n.get('REDUCE', 0)} trim · "
+            f"{_n.get('EXIT', 0) + _n.get('CLOSE', 0)} close")
 def zchart(tail=90, save=None):
     """[Y20][AA10] Premium + rolling z, drawn in the backtest figure's style.
     Top:    the premium — historical tail plus YOUR typed days — with the
@@ -3809,8 +4828,11 @@ def zchart(tail=90, save=None):
     x = _hx + _mx
     import matplotlib.pyplot as _plt
     import matplotlib.dates as _mdates
-    fig, axes = _plt.subplots(2, 1, figsize=(14, 9), sharex=True,
-                              gridspec_kw={'height_ratios': [1.35, 0.85]})
+    # [AC4] three panels now: premium, z, and the DRIFT GATE. The gate decides
+    # every entry and was the only object on this desk with no picture — you
+    # could read today's verdict but never the path into it.
+    fig, axes = _plt.subplots(3, 1, figsize=(14, 12), sharex=True,
+                              gridspec_kw={'height_ratios': [1.35, 0.85, 0.7]})
     # ---- panel 1: premium, band, cost band, markers -----------------------
     ax = axes[0]
     ax.plot(x[lo:len(hist)], ser.iloc[lo:len(hist)], lw=_CH['hist_lw'],
@@ -3831,8 +4853,8 @@ def zchart(tail=90, save=None):
     ax.axhline(-_rt, color=_CH['cost'], ls='--', lw=0.8)
     _ent, _ext = _ch_ledger_events()
     _d2p = {pd.Timestamp(d['date']): d['premium'] for d in man}
-    _ne = _ch_marks(ax, lambda d: _d2p.get(pd.Timestamp(d)), _ent, _ext)
-    _ch_axes(ax, f"{c['instrument']} premium (bps) with entries/exits — a "
+    _ne = _ch_deal_marks(ax, lambda d: _d2p.get(pd.Timestamp(d)))   # [AD4]
+    _ch_axes(ax, f"{c['instrument']} premium (bps) with every deal — a "
                  f"tradeable edge must clear the red cost band "
                  f"({_rt:.0f} bps RT)", 'premium, bps', ncol=3)
     # ---- panel 2: rolling z ----------------------------------------------
@@ -3847,21 +4869,52 @@ def zchart(tail=90, save=None):
                     label=f'no-trade band +/-{thr:g}')
     _d2z = {pd.Timestamp(d['date']): float(zz.iloc[len(hist) + i])
             for i, d in enumerate(man)}
-    _ch_marks(ax, lambda d: _d2z.get(pd.Timestamp(d)), _ent, _ext)
+    _ch_deal_marks(ax, lambda d: _d2z.get(pd.Timestamp(d)))          # [AD4]
     _ch_axes(ax, f'Rolling z-score (N={n}) with the +/-{thr:g} entry band — '
                  f'same x-axis as the panel above', 'z', ncol=3)
+    # ---- panel 3: [AC4] the drift gate ------------------------------------
+    ax = axes[2]
+    _cap = float(c['drift_max'])
+    _chg = ser.diff().rolling(n).std(ddof=0).shift(1)
+    _dlag = ((mu - mu.shift(5)).abs() / (_chg * _np.sqrt(5.0))
+             ).replace([_np.inf, -_np.inf], _np.nan)
+    _k = int(DRIFT_NOWCAST_N)
+    _xk = _np.arange(_k, dtype=float)
+    _xc = _xk - _xk.mean()
+    _den = float((_xc ** 2).sum())
+    _slope = ser.rolling(_k).apply(
+        lambda y: float(_np.dot(y - y.mean(), _xc) / _den), raw=True).shift(1)
+    _dnow = ((_slope.abs() * _np.sqrt(5.0)) / _chg
+             ).replace([_np.inf, -_np.inf], _np.nan)
+    ax.plot(x[lo:], _dlag.iloc[lo:], lw=0.8, color=_CH['z'],
+            label='drift — lagged 5-row mean shift (decides today)'
+                  if DRIFT_MODE != 'nowcast' else 'drift — lagged 5-row shift')
+    ax.plot(x[lo:], _dnow.iloc[lo:], lw=0.9, color=_CH['live'], alpha=0.85,
+            label=f'drift — {_k}-row slope nowcast [AC4]')
+    ax.axhline(_cap, color=_CH['cost'], ls='--', lw=0.9,
+               label=f'ceiling {_cap:.2f}')
+    ax.fill_between(x[lo:], 0, _cap, color=_CH['band'], alpha=_CH['band_a'])
+    _d2d = {pd.Timestamp(d['date']): float(_dlag.iloc[len(hist) + i])
+            for i, d in enumerate(man)}
+    _ch_deal_marks(ax, lambda d: _d2d.get(pd.Timestamp(d)))          # [AD4]
+    _fin = _dlag.iloc[lo:].dropna()
+    ax.set_ylim(0, max(_cap * 1.6,
+                       float(_fin.quantile(0.99)) if len(_fin) else _cap) * 1.1)
+    _ch_axes(ax, f"Repricing filter — entries only fire inside the green "
+                 f"band. The gap between the two lines is the DETECTION LAG: "
+                 f"the shipped test divides a young re-rating by the {n}-row "
+                 f"window, the nowcast does not [AC4]", 'drift ratio', ncol=3)
     _ch_datefmt(ax)
     # [U7] the same marker-integrity note the backtest figure carries
     axes[0].text(0.005, 0.02,
-                 f"{_ne[0]} long / {_ne[1]} short entries, {_ne[2]} exits "
-                 f"drawn (only dates you have typed can be marked)",
+                 f"{_ne}  (only dates you have typed can be marked)",
                  transform=axes[0].transAxes, fontsize=8, color='#333',
                  bbox=dict(fc='white', ec='#bbb', alpha=0.85, pad=2))
     fig.tight_layout()
     if save:
         fig.savefig(save, dpi=150, bbox_inches='tight')
         print(f'[AA10] saved {save}')
-    _plt.show()
+    _fig_show(fig, name=f"{c['instrument']}_zchart")       # [AC3]
     return fig
 def chart(save=None):
     """[U3][AA10] The desk's P&L view, in the backtest figure's style:
@@ -3869,7 +4922,11 @@ def chart(save=None):
       2  open-position mark to market with the break-even line and the
          drawdown-from-peak shaded underneath  (mirrors panel 4's equity +
          drawdown pair)
-      3  per-trade net P&L bars + cumulative paper equity  (mirrors panel 6)
+      3  [AD4] the PERFORMANCE TRACK — realised cash booked from every trim
+         and close, plus the mark on whatever is still open, stacked so the
+         top line is what the name has actually made you to date
+      4  per-trade net P&L bars, one bar per REALISATION (a trim is a bar
+         like any other)  (mirrors panel 6)
     Purely a view — it reads the read-only history plus your ledger."""
     c = _MANUAL['ctx']
     if c is None:
@@ -3886,7 +4943,9 @@ def chart(save=None):
     p = _MANUAL['pos']
     mk = _MANUAL['marks']
     cl = _MANUAL.get('closed') or []
-    _panels = 1 + int(bool(p and mk)) + int(bool(cl))
+    eq = _MANUAL.get('equity') or []
+    _has_eq = bool(eq) and any(x['realised'] or x['unrealised'] for x in eq)
+    _panels = 1 + int(bool(p and mk)) + int(_has_eq) + int(bool(cl))
     fig, axes = plt.subplots(_panels, 1, figsize=(14, 4.6 * _panels))
     axes = [axes] if _panels == 1 else list(axes)
     _i = 0
@@ -3910,8 +4969,8 @@ def chart(save=None):
     ax.axhline(_mu - _rt, color=_CH['cost'], ls='--', lw=0.8)
     _ent, _ext = _ch_ledger_events()
     _d2p = {pd.Timestamp(d['date']): d['premium'] for d in man}
-    _ch_marks(ax, lambda d: _d2p.get(pd.Timestamp(d)), _ent, _ext)
-    _ch_axes(ax, f"{c['instrument']} premium (bps) — history to "
+    _nd = _ch_deal_marks(ax, lambda d: _d2p.get(pd.Timestamp(d)))    # [AD4]
+    _ch_axes(ax, f"{c['instrument']} premium (bps) [{_nd}] — history to "
                  f"{c['hist_last_date']} + your typed days", 'premium, bps',
              ncol=3)
     _ch_datefmt(ax)
@@ -3926,9 +4985,11 @@ def chart(save=None):
                     - pd.Timestamp(p['date'])).days
         _xc = _trade_cost(p['dir'], p['notional'], _held_ch,
                           adr_notional=p.get('adr_notional'),
-                          hedge_notional=p.get('hedge_notional'))   # [X9]
+                          hedge_notional=p.get('hedge_notional'),
+                          entry_date=p['date'],                # [AC5][AC7]
+                          asof_date=str(mk[-1]['date']))   # [X9]
         ax.axhline(_xc, color=_CH['cost'], ls='--', lw=0.8,
-                   label=f'Break-even (fees+carry) ${_xc:,.0f}')
+                   label=f'Break-even (fees + carry + roll) ${_xc:,.0f}')
         ax.axhline(0, color=_CH['zero'], lw=0.6)
         # drawdown from the running peak, on a twin axis — the backtest's
         # equity panel does exactly this
@@ -3947,7 +5008,47 @@ def chart(save=None):
                         else ''),
                  'USD')
         _ch_datefmt(ax)
-    # ---- panel 3: per-trade net P&L + cumulative --------------------------
+    # ---- panel 3: [AD4] THE PERFORMANCE TRACK -----------------------------
+    # The old chart could only show the OPEN trade's mark and a bar per closed
+    # round trip. Neither is "how am I doing on this name": the first forgets
+    # everything already banked, the second ignores everything still on. This
+    # stacks them — realised cash as a filled area, the open mark on top of
+    # it, and the sum as the line you actually read.
+    if _has_eq:
+        ax = axes[_i]; _i += 1
+        _ex = [pd.Timestamp(x['date']) for x in eq]
+        _er = _np.array([x['realised'] for x in eq], dtype=float)
+        _eu = _np.array([x['unrealised'] for x in eq], dtype=float)
+        _et = _er + _eu
+        ax.fill_between(_ex, 0, _er, color=_CH['long'], alpha=0.18,
+                        label='Realised — cash booked')
+        ax.fill_between(_ex, _er, _et, color=_CH['live'], alpha=0.18,
+                        label='Unrealised — mark on what is still open')
+        _epk = _np.maximum.accumulate(_et)
+        _edd = _et - _epk
+        # DRAWDOWN ON THE SAME AXIS, as the gap between the total line and its
+        # own running peak. The other panels put drawdown on a twinx because
+        # there the two series happen to share a scale; here they do not — a
+        # -$17k drawdown against a -$11k..+$20k equity range auto-scaled the
+        # second axis so the red fill washed across the entire panel and hid
+        # the thing it was annotating. Shading peak-to-line needs no second
+        # axis and is the more direct reading anyway: the height of the red
+        # IS how far below the high-water mark you are.
+        ax.fill_between(_ex, _et, _epk, color=_CH['dd'], alpha=_CH['dd_a'],
+                        label='Drawdown from peak')
+        ax.plot(_ex, _epk, color=_CH['dd'], lw=0.7, ls=':', alpha=0.8,
+                label='High-water mark')
+        ax.plot(_ex, _et, color=_CH['eq'], lw=1.6, label='Total P&L ($)',
+                zorder=4)
+        ax.plot(_ex, _er, color=_CH['long'], lw=0.9, ls='--', zorder=4)
+        ax.axhline(0, color=_CH['zero'], lw=0.6)
+        _ch_deal_marks(ax, lambda d: (dict(zip(_ex, _et)).get(pd.Timestamp(d))))
+        _ch_axes(ax, f"Performance on {c['instrument']} — total "
+                     f"${_et[-1]:+,.0f} = realised ${_er[-1]:+,.0f} + open "
+                     f"mark ${_eu[-1]:+,.0f}   ·   peak ${_epk[-1]:+,.0f}, "
+                     f"worst drawdown ${_edd.min():+,.0f}", 'USD', ncol=3)
+        _ch_datefmt(ax)
+    # ---- panel 4: per-trade net P&L + cumulative --------------------------
     if cl:
         ax = axes[_i]; _i += 1
         _xd = [pd.Timestamp(t['exit_date']) for t in cl]
@@ -3978,17 +5079,26 @@ def chart(save=None):
         ax2.axhline(0, color=_CH['zero'], lw=0.4)
         ax2.legend(loc='lower left', fontsize=8)
         _sus = sum(1 for t in cl if t.get('suspect'))
-        _ch_axes(ax, f"Per-trade net P&L (green = long spread, red = short) — "
-                     f"{len(cl)} trade(s), total ${_cum:+,.0f}"
+        _npart = sum(1 for t in cl if t.get('kind') == 'partial')
+        # [AD4] a TRIM is a realisation like any other and gets its own bar;
+        # hatching it keeps it distinguishable from a full close without
+        # implying it is worth less.
+        for _b_, _t_ in zip(ax.patches, cl):
+            if _t_.get('kind') == 'partial':
+                _b_.set_hatch('//'); _b_.set_alpha(0.75)
+        _ch_axes(ax, f"Realised P&L per deal (green = long spread, red = "
+                     f"short; hatched = partial unwind) — {len(cl)} "
+                     f"realisation(s) of which {_npart} trim(s), total "
+                     f"${_cum:+,.0f}"
                      + (f"   [{_sus} RECOMPUTED — run desk_audit()]"
                         if _sus else ''),
-                 'USD per trade')
+                 'USD per deal')
         _ch_datefmt(ax)
     plt.tight_layout()
     if save:
         plt.savefig(save, dpi=150, bbox_inches='tight')
         print(f'[AA10] saved {save}')
-    plt.show()
+    _fig_show(fig, name=f"{c['instrument']}_desk")         # [AC3]
     return fig
 def replay(last=None):
     """[U3] Re-show stored days in order. Nothing is cached, so this always
@@ -5020,6 +6130,45 @@ if _regn_ready and 'TWD_regn_open' in df.columns:   # [R3] belt & braces
 df['Fair (spot_gap)'] = (df['2330 TT (Close)'] * (1.0 + df['beta'] * df['fut_gap_ret'])
                          * ADR_RATIO / df['FX for Fair'])
 df['Fair (futures)'] = df['Fut_2130'] * ADR_RATIO / df['FX for Fair']   # [M1]
+# ----------------------------------------------------------------------------
+# [AC2] THE ROLL SPLICE — the fix [X4] keeps recommending, built and available.
+# ----------------------------------------------------------------------------
+# FAIR_MODE='futures' takes the futures LEVEL, so on the first row of a new
+# contract the level jumps by one calendar spread and the premium jumps with
+# it. (FAIR_MODE='spot_gap' cannot: it uses fut_gap_ret = Fut_2130/Fut_1330, a
+# same-day ratio of ONE contract, so the contract cancels. That asymmetry is
+# the control [X4] uses below.)
+#
+# The step is measurable without a second contract series, because the SPOT
+# does not roll. On any day
+#       d_basis = (Fut_t/Fut_t-1) / (Spot_t/Spot_t-1) - 1
+# is small noise; on a roll row it additionally contains the calendar spread.
+# Dividing the futures level by the cumulative product of the roll rows'
+# d_basis therefore rebases every contract onto the first one and produces a
+# continuous front-equivalent level.
+#
+# DEFAULT OFF, deliberately. On this sample the step is worth ~0.2 sigma of
+# the traded deviation, i.e. under the 0.3 sigma materiality floor [X4] states
+# for itself — and splicing also removes GENUINE basis moves that happen to
+# land on a month-start. Turning it on is only right if [X4] reports an excess
+# that clears the floor. The run prints what it would do either way.
+ROLL_SPLICE_FAIR = globals().get('ROLL_SPLICE_FAIR', 'off')   # 'off' | 'on'
+_roll_row = (df['contract_id'] != df['contract_id'].shift(1)).fillna(False)
+_dbas_roll = ((df['Fut_1330'] / df['Fut_1330'].shift(1))
+              / (df['2330 TT (Close)'] / df['2330 TT (Close)'].shift(1)) - 1.0)
+_splice_step = _dbas_roll.where(_roll_row, 0.0).fillna(0.0)
+# guard: a >8% "step" is a broken print, not a calendar spread — splicing on
+# it would inject the error into every later row rather than remove it.
+_splice_step = _splice_step.clip(-0.08, 0.08)
+df['roll_splice_factor'] = (1.0 + _splice_step).cumprod()
+df['Fair (futures, spliced)'] = (df['Fair (futures)']
+                                 / df['roll_splice_factor'])
+if str(ROLL_SPLICE_FAIR).lower() == 'on' and FAIR_MODE == 'futures':
+    df['Fair (futures)'] = df['Fair (futures, spliced)']
+    say(f"[AC2] ROLL SPLICE APPLIED to the futures fair — "
+        f"{int(_roll_row.sum())} roll row(s) rebased onto the first contract. "
+        f"Cumulative rebasing {(df['roll_splice_factor'].iloc[-1] - 1) * 100:+.2f}% "
+        f"over the sample.", 'warn')
 df['Fair Price'] = (df['Fair (futures)'] if FAIR_MODE == 'futures'
                     else df['Fair (spot_gap)'])
 _inp('fair mode [M1]', f"'{FAIR_MODE}'",
@@ -5426,49 +6575,141 @@ else:
 # WHILE the short-ADR leg is separately charged the same dividend —
 # one cash flow counted twice. Measure it, do not assume it.
 # ============================================================
+# ----------------------------------------------------------------------------
+# [AC1] REWRITTEN. THE OLD BLOCK GAVE A READING THAT CONTRADICTED ITSELF —
+#       "futures HELD (+0.04%) while spot fell (+0.05%)" — and the answer to
+#       "is it the code or my data cleaning?" is: it was the CODE, in four
+#       separate places. None of them touched P&L (HEDGE_DIV_ADJ is hard-wired
+#       False at [T1]; FUT_DIV_CASH books the dividend), so nothing you traded
+#       was wrong — but every verdict this block printed was unreliable.
+#
+#   1. UNITS. _bas was multiplied by 100 for display; _ft and _sp were NOT,
+#      yet all three were printed with a '%' sign. So "+0.04%" was the decimal
+#      0.04, i.e. a FOUR PERCENT move, and "+0.05%" was five percent. The two
+#      numbers in the sentence were off by 100x while the table columns beside
+#      them (which did multiply) were right — that is why the sentence and the
+#      table disagreed.
+#   2. THE VERB WAS HARDCODED. That branch fires on (near-parity basis) AND
+#      (futures did not fall). It says nothing whatever about the spot, yet the
+#      text asserted "while spot fell". On the row you quoted the spot ROSE.
+#      A sentence that states a fact the branch never tested is a bug even when
+#      the conclusion it reaches happens to be right.
+#   3. SIGN. `_par = abs(_bas) < 0.5*div` is TWO-SIDED, but its negation was
+#      reported as "pre-discounted {basis}%" regardless of sign. A pre-discount
+#      is a NEGATIVE basis of about one dividend. Your two rows read +0.96% and
+#      +0.31% — futures ABOVE spot, the exact opposite of a discount — and were
+#      still labelled "dividend-SPANNING contract; FUT_DIV_CASH would double-
+#      count". They are not spanning contracts and nothing is double-counted.
+#      The parity band was also mis-scaled: 0.5 x a 0.38% dividend is 0.19%,
+#      tighter than the ordinary cost-of-carry and borrow basis an SSF carries
+#      every day of its life, so "not at parity" fired on almost every row.
+#   4. MARKET BETA. `_fol = fut_1d < -0.5*div` compares the futures against
+#      ZERO. On a day the whole market falls 3% that is true whatever the
+#      dividend did, and on a day it rallies it is false — so the 'auto' vote
+#      was reading market direction, not dividend mechanics.
+#
+# WHAT IT MEASURES NOW. The dividend question is entirely contained in the
+# BASIS CHANGE across the ex-date, which cancels the market move exactly:
+#       d_basis  =  basis_after - basis_before  ~=  fut_1d - spot_1d
+# and the three hypotheses make three separate, falsifiable predictions:
+#       d_basis ~= 0      the future fell WITH the spot -> dividend settled in
+#                         CASH through margin. TAIFEX mechanism. FUT_DIV_CASH
+#                         is right and there is nothing to adjust.
+#       d_basis ~= +div   the future held while the spot dropped -> it had
+#                         PRE-DISCOUNTED the dividend (a spanning contract),
+#                         and FUT_DIV_CASH would then credit it a second time.
+#       d_basis ~= -div   the future fell by TWICE the spot's drop -> the
+#                         dividend is in the price path twice.
+# The yardstick is the sample's own noise: sigma of d_basis over ordinary
+# rows. That makes the test self-calibrating per name and, crucially, makes it
+# say WHEN IT CANNOT TELL — if the dividend is small against that sigma the
+# three predictions overlap and no amount of confident prose fixes it.
+# ----------------------------------------------------------------------------
 _exd = [i for i in df.index[df['div_ret_hedge'] > 0.0005] if i > 0]
 if _exd:
     print(f"[R5] futures behaviour on {len(_exd)} detected ex-date(s):")
     _n_follow = 0
     _R5_ROWS = []                      # [Y27] one table instead of 3 lines/date
+    # [AC1] the null distribution: how much the basis moves on an ORDINARY
+    # day. Ex-dates and contract breaks are excluded — they are the signal
+    # and the known artefact respectively, and leaving either in inflates the
+    # yardstick until nothing can ever be significant.
+    _basis_all = (df['Fut_1330'] / df['2330 TT (Close)'] - 1.0)
+    _dbasis_all = _basis_all.diff()
+    _norm = ((df['div_ret_hedge'] <= 0.0005)
+             & (~df.get('contract_break', pd.Series(False, index=df.index))
+                .fillna(False)))
+    _sig_db = float(_dbasis_all[_norm].std())
+    _sig_db = _sig_db if (_sig_db == _sig_db and _sig_db > 1e-6) else float('nan')
     for _i in _exd:
         _dv = df['div_ret_hedge'].iloc[_i]
         _sp = df['2330 TT (Close)'].iloc[_i] / df['2330 TT (Close)'].iloc[_i-1] - 1
         _ft = df['Fut_1330'].iloc[_i] / df['Fut_1330'].iloc[_i-1] - 1
-        _fol = _ft < -0.5 * _dv
         # [S2] if [R7] flagged a contract break on/next to this ex-date,
         # the drop is a SPLICE and is already handled by the spine
         # bridge — it must not ALSO vote for the dividend adjustment,
         # or the same step would be corrected twice.
         _brk = bool(df['contract_break'].iloc[max(_i-1, 0):_i+2].any()) \
             if 'contract_break' in df.columns else False
-        _n_follow += int(_fol and not _brk)
-        # [R7] the decisive reading: does the contract price the dividend?
+        # [AC1] basis BEFORE and AFTER, and the change — the beta-free
+        # statistic. _bas keeps its old meaning (the prior basis) so the
+        # corroboration test below reads naturally.
         _bas = (df['Fut_1330'].iloc[_i-1] / df['2330 TT (Close)'].iloc[_i-1] - 1)
-        _spans = _bas < -0.5 * _dv
- 
-        # [T1] EXPECTED under the confirmed TAIFEX mechanism: basis near
-        # parity before the ex-date (no discount is needed, the dividend
-        # is paid in cash), and the quoted futures DOES fall with the
-        # spot on the ex-date. FUT_DIV_CASH then books the margin credit.
-        _par = abs(_bas) < 0.5 * _dv          # no pre-discount = as expected
-        # [AB8] each reading now STATES WHAT WAS SEEN, with the two numbers
-        # that decide it, instead of ending in an instruction to go and look.
-        # 'check the print' / 'verify it is a TAIFEX stock future' told the
-        # reader to do the diagnosis the row had already done.
-        _vrd, _lvl5 = (
-            ('as expected — no pre-discount, futures fell with spot '
-             '(cash mechanism)', 'ok') if (_par and _fol) else
-            (f'futures HELD ({_ft:+.2f}%) while spot fell ({_sp:+.2f}%) — '
-             f'stale or rolled print on this row, not a dividend effect',
-             'warn')
-            if (_par and not _fol) else
-            (f'pre-discounted {_bas * 100:+.2f}% AND fell {_ft:+.2f}% — the '
-             f'dividend is priced TWICE on this row', 'warn')
-            if (not _par and _fol) else
-            (f'pre-discounted {_bas * 100:+.2f}% and did NOT fall — a '
-             f'dividend-SPANNING contract; FUT_DIV_CASH would double-count',
-             'bad'))
+        _bas_a = (df['Fut_1330'].iloc[_i] / df['2330 TT (Close)'].iloc[_i] - 1)
+        _dbas = _bas_a - _bas
+        # [AC1] 'did the futures follow the spot down' now means 'the basis
+        # did NOT jump by a dividend', which is what the phrase always meant
+        # economically and is what the vote below needs.
+        _cands = (('cash', 0.0), ('spans', +float(_dv)), ('twice', -float(_dv)))
+        if _sig_db == _sig_db:
+            _zs = {_k: (_dbas - _t) / _sig_db for _k, _t in _cands}
+            _best = min(_zs, key=lambda k: abs(_zs[k]))
+            _sep = float(_dv) / _sig_db          # can we tell them apart?
+            _decisive = (abs(_zs[_best]) <= 2.0) and (_sep >= 2.0)
+        else:
+            _zs, _best, _sep, _decisive = {}, None, float('nan'), False
+        _fol = (_best == 'cash') and _decisive
+        _n_follow += int(_fol and not _brk)
+        # [AC1] every verdict now quotes ONLY numbers its own branch tested,
+        # in the units it claims. The corroborating sign check is stated
+        # explicitly: a contract cannot pre-discount a dividend it is not
+        # carrying, so basis_before must be NEGATIVE by about one dividend.
+        _pre = _bas <= -0.5 * _dv                # a real pre-discount
+        if not _decisive:
+            _vrd, _lvl5 = (
+                (f"NOT DECIDABLE — basis moved {_dbas*100:+.2f}% against "
+                 f"{_sig_db*100:.2f}% of ordinary daily noise and a "
+                 f"{_dv*100:.2f}% dividend; the three explanations are not "
+                 f"separable on this row"
+                 if _sig_db == _sig_db else
+                 "NOT DECIDABLE — no usable basis series to calibrate against"),
+                'warn')
+        elif _best == 'cash':
+            _vrd, _lvl5 = (
+                f"as expected — basis unchanged ({_dbas*100:+.2f}%, "
+                f"{_zs['cash']:+.1f} sigma), so the future tracked the spot "
+                f"and the dividend settled in CASH", 'ok')
+        elif _best == 'spans':
+            _vrd, _lvl5 = (
+                (f"basis JUMPED {_dbas*100:+.2f}% = +1 dividend "
+                 f"({_zs['spans']:+.1f} sigma from that prediction): the "
+                 f"future held while the spot dropped"
+                 + (f", and it was pre-discounted {_bas*100:+.2f}% going in — "
+                    f"a dividend-SPANNING contract, FUT_DIV_CASH double-counts"
+                    if _pre else
+                    f", BUT the prior basis was {_bas*100:+.2f}% (not the "
+                    f"{-_dv*100:.2f}% a spanning contract must carry), so this "
+                    f"is a stale or rolled print, not a pre-discount")),
+                'bad' if _pre else 'warn')
+        else:
+            _vrd, _lvl5 = (
+                f"basis FELL {_dbas*100:+.2f}% = -1 dividend "
+                f"({_zs['twice']:+.1f} sigma): the future dropped about twice "
+                f"the spot, so the dividend is in the price path twice",
+                'warn')
+        if _brk:
+            _vrd += "  ·  a [R7] contract break sits on/next to this row, so " \
+                    "the step is a splice the spine already bridges"
         # [R5] TW vs ADR ex-date alignment — the only thing left to watch
         _adr_ex = list(df.index[df['div_ret_adr'] > 0.0005])
         _near = [j for j in _adr_ex if abs(j - _i) <= 10]
@@ -5480,36 +6721,64 @@ if _exd:
             _adr_txt = _badge('none within 10 rows', 'warn')
         _R5_ROWS.append({
             'TW ex-date': df['Date'].iloc[_i], 'div %': _dv * 100,
-            'basis prior %': _bas * 100, 'needs %': -_dv * 100,
+            'basis before %': _bas * 100, 'basis after %': _bas_a * 100,
+            'd basis %': _dbas * 100,
+            'd basis / sigma': (_zs['cash'] if _zs else float('nan')),
             'spot 1d %': _sp * 100, 'fut 1d %': _ft * 100,
             'ADR ex-date': _adr_txt, 'reading': _badge(_vrd, _lvl5)})
     if _R5_ROWS:
         show_html_table(
             _pd.DataFrame(_R5_ROWS).set_index('TW ex-date'),
             title='[R5] FUTURES BEHAVIOUR ON EX-DATES',
-            fmt={'div %': '{:+.2f}', 'basis prior %': '{:+.2f}',
-                 'needs %': '{:.2f}', 'spot 1d %': '{:+.2f}',
-                 'fut 1d %': '{:+.2f}'},
-            note='TAIFEX settles the dividend in CASH through the margin '
-                 'account, so the correct signature is NO pre-discount in the '
-                 'basis and the quoted future falling with the spot. '
-                 "'needs %' is the discount a dividend-SPANNING contract "
-                 'would have to carry instead. Where the TW and ADR ex-dates '
-                 'differ, the premium carries a spurious step over that '
-                 'window: the two-leg P&L nets it out, the SIGNAL does not '
-                 '(that is what div_carry corrects [U5][X11]).')
+            fmt={'div %': '{:+.2f}', 'basis before %': '{:+.2f}',
+                 'basis after %': '{:+.2f}', 'd basis %': '{:+.2f}',
+                 'd basis / sigma': '{:+.1f}',
+                 'spot 1d %': '{:+.2f}', 'fut 1d %': '{:+.2f}'},
+            note='[AC1] Read the "d basis" column, not the two 1-day columns. '
+                 'Spot and futures both carry the market move; the DIFFERENCE '
+                 'between them does not, so it is the only number here that '
+                 'isolates the dividend. Its yardstick is '
+                 + (f"{_sig_db*100:.2f}% — one sigma of ordinary daily basis "
+                    f"movement in this sample." if _sig_db == _sig_db
+                    else 'unavailable in this sample.')
+                 + ' Expected under TAIFEX (cash settlement through margin): '
+                   'd basis ~ 0. A jump of +1 dividend means the contract had '
+                   'pre-discounted it and FUT_DIV_CASH would pay it twice. '
+                   'Where the TW and ADR ex-dates differ, the premium carries '
+                   'a spurious step over that window: the two-leg P&L nets it '
+                   'out, the SIGNAL does not (div_carry corrects it [U5][X11]).')
     _majority = _n_follow > len(_exd) / 2
+    # [AC1] one summary line, so the reader does not have to tally the table.
+    # It also states the LIMIT of the evidence, which the old block never did.
+    _n_dec = sum(1 for _r in _R5_ROWS if 'NOT DECIDABLE' not in str(_r['reading']))
+    fact_table(
+        f"[R5] VERDICT — {len(_exd)} ex-date(s) tested",
+        [('decidable rows', f"{_n_dec} of {len(_exd)}",
+          'a row is decidable only when the dividend is at least 2 sigma of '
+          'ordinary basis noise'),
+         ('cash-settlement signature', f"{_n_follow} of {len(_exd)}",
+          'basis unchanged across the ex-date — the TAIFEX mechanism this '
+          'model assumes'),
+         ('dividend booked by', 'FUT_DIV_CASH' if FUT_DIV_CASH else 'price path',
+          'the margin credit/debit on the SSF leg [T1]'),
+         ('HEDGE_DIV_ADJ', str(HEDGE_DIV_ADJ),
+          'the older price-path fudge. False is correct while FUT_DIV_CASH is '
+          'on — running both would credit the dividend twice [V2]')],
+        note='This block is a DIAGNOSTIC on the input data. It does not move '
+             'P&L: with HEDGE_DIV_ADJ hard-set False at [T1], nothing here '
+             'feeds the backtest.')
     if HEDGE_DIV_ADJ == 'auto':
         HEDGE_DIV_ADJ_ON = bool(_majority)
         print(f"[R5] 'auto': {_n_follow} of {len(_exd)} ex-date(s) show the "
-              f"futures dropping with the spot -> adjustment "
-              f"{'ON' if HEDGE_DIV_ADJ_ON else 'OFF'}. "
-              + ("The data contradicts the no-drop theory, so the raw path "
-                 "would double-count the dividend against the ADR leg."
+              f"basis holding across the ex-date (futures tracked the spot "
+              f"down) -> adjustment {'ON' if HEDGE_DIV_ADJ_ON else 'OFF'}. "
+              + ("The futures does NOT hold its value through the ex-date, so "
+                 "the raw price path would book the dividend as a hedge loss "
+                 "on top of the ADR leg's own dividend."
                  if HEDGE_DIV_ADJ_ON else
-                 "The futures held through the ex-date exactly as theory "
-                 "predicts, so the raw path is already dividend-neutral and "
-                 "no adjustment is applied."))
+                 "The futures held through the ex-date exactly as the "
+                 "pre-discount theory predicts, so the raw path is already "
+                 "dividend-neutral and no adjustment is applied."))
     else:
         HEDGE_DIV_ADJ_ON = bool(HEDGE_DIV_ADJ)
         print(f"[R5] HEDGE_DIV_ADJ forced to {HEDGE_DIV_ADJ_ON}")
@@ -5578,14 +6847,46 @@ df['Spread (Exec)'] = df['Spread (Signal)']   # decision and fill both at the op
 # deviation sigma — that, not the raw roll-row mean, is what the z-score
 # actually feels.
 # ============================================================
+# ------------------------------------------------------------
+# [AC2] THE VERDICT LINE WAS WRONG, AND IT CONTRADICTED THE NEXT LINE.
+# 'ROLL STEP CONFIRMED — splice the fair at each contract_id change' fired on
+# |t| > 2.5 ALONE. Two rows below, this same block prints "low power: read the
+# excess-sigma column, not the t verdict. Under ~0.3 sigma the step is not
+# worth engineering around either way" — and the readings that triggered it
+# were 0.20 and 0.25 sigma, i.e. BELOW that floor. So the run told you to
+# splice and then told you not to bother, in consecutive lines.
+#
+# t and effect size answer different questions and the verdict needs both:
+#   t          = am I sure the difference is not zero. With ~12 roll rows a
+#                year, t is also the number this test is worst at.
+#   excess/sig = do I CARE. It is the step measured in units of the deviation
+#                the z-score actually trades.
+# Both must clear their bar before the word CONFIRMED is used.
+#
+# AND THE CONTROL NOBODY WAS READING. spot_gap is roll-immune BY CONSTRUCTION
+# (its fut_gap_ret is a same-day ratio of one contract — the contract cancels
+# algebraically). So whatever step it shows CANNOT be a splice; it is whatever
+# else month-starts do to this premium. The splice-attributable part is the
+# DIFFERENCE between the two modes, not either one on its own. On this sample
+# spot_gap's step is the LARGER of the two, which is the signature of a
+# month-start effect in the data rather than a contract artefact — and
+# splicing the fair would then be removing real information.
+# ------------------------------------------------------------
+ROLL_STEP_MIN_SIGMA = 0.30      # the materiality floor this block already
+                                # stated in prose; now it is enforced
+ROLL_STEP_MIN_T = 2.5
 _x4_roll = df['contract_id'] != df['contract_id'].shift(1)
 _x4_dsig = float((df['Spread (Signal)']
                   - df['Spread (Signal)'].rolling(30, min_periods=10)
                   .mean().shift(1)).std())
 print(f"\n[X4] month-start roll-step test ({int(_x4_roll.sum())} roll rows of "
       f"{len(df)}); deviation sigma = {_x4_dsig:.0f} bps")
-for _x4_lbl, _x4_fair in (('futures ', df['Fair (futures)']),
-                          ('spot_gap', df['Fair (spot_gap)'])):
+_X4 = {}
+_x4_modes = [('futures ', df['Fair (futures)']),
+             ('spot_gap', df['Fair (spot_gap)'])]
+if 'Fair (futures, spliced)' in df.columns:
+    _x4_modes.append(('spliced ', df['Fair (futures, spliced)']))
+for _x4_lbl, _x4_fair in _x4_modes:
     _x4_p = (df['ADR Ref Px'] / _x4_fair - 1.0) * 1e4
     _x4_d = _x4_p.diff().abs()
     _x4_a, _x4_b = _x4_d[_x4_roll].dropna(), _x4_d[~_x4_roll].dropna()
@@ -5593,18 +6894,55 @@ for _x4_lbl, _x4_fair in (('futures ', df['Fair (futures)']),
         _x4_t = ((_x4_a.mean() - _x4_b.mean())
                  / (_x4_b.std() / np.sqrt(len(_x4_a))))
         _x4_ex = (_x4_a.mean() - _x4_b.mean()) / _x4_dsig if _x4_dsig > 0 else np.nan
-        _x4_v = ('ROLL STEP CONFIRMED — splice the fair at each contract_id '
-                 'change' if abs(_x4_t) > 2.5 else 'no significant step')
+        _X4[_x4_lbl.strip()] = dict(t=_x4_t, ex=_x4_ex, roll=_x4_a.mean(),
+                                    other=_x4_b.mean(), n=len(_x4_a))
+        _big = abs(_x4_ex) >= ROLL_STEP_MIN_SIGMA
+        _sig = abs(_x4_t) > ROLL_STEP_MIN_T
+        _x4_v = ('ROLL STEP CONFIRMED and MATERIAL — splice the fair at each '
+                 'contract_id change (ROLL_SPLICE_FAIR=\'on\')' if (_sig and _big)
+                 else f"detectable but IMMATERIAL — {abs(_x4_ex):.2f} sigma is "
+                      f"under the {ROLL_STEP_MIN_SIGMA:.2f} floor; splicing "
+                      f"would cost more information than it removes"
+                 if _sig else
+                 f"no step ({abs(_x4_ex):.2f} sigma, t={_x4_t:+.1f})")
         _inp(f"roll step [X4], FAIR_MODE='{_x4_lbl.strip()}'",
              f"{_x4_a.mean():.0f}bps on roll rows vs {_x4_b.mean():.0f} "
              f"elsewhere, excess {_x4_ex:+.2f} sigma (t={_x4_t:+.1f})",
-             _x4_v, level=('warn' if abs(_x4_t) > 2.5 else 'ok'))
+             _x4_v, level=('warn' if (_sig and _big) else 'ok'))
         if _x4_lbl.strip() == FAIR_MODE:
-            sc('FAIL' if abs(_x4_t) > 2.5 else 'PASS', 'roll step in the signal',
+            sc('FAIL' if (_sig and _big) else 'PASS', 'roll step in the signal',
                f"excess {_x4_ex:+.2f} sigma, t={_x4_t:+.1f}")
+# [AC2] the difference-in-differences: futures minus the roll-immune control.
+if 'futures' in _X4 and 'spot_gap' in _X4:
+    _x4_dd = _X4['futures']['ex'] - _X4['spot_gap']['ex']
+    fact_table(
+        '[X4] IS THE MONTH-START STEP ACTUALLY THE ROLL?',
+        [("futures fair (can roll)", f"{_X4['futures']['ex']:+.2f} sigma",
+          'the futures LEVEL changes contract at month start'),
+         ("spot_gap fair (cannot roll)", f"{_X4['spot_gap']['ex']:+.2f} sigma",
+          'uses a same-day futures RATIO, so the contract cancels — this step '
+          'is definitionally NOT a splice'),
+         ('difference = splice-attributable', f"{_x4_dd:+.2f} sigma",
+          'the only part a splice could remove'),
+         ('materiality floor', f"{ROLL_STEP_MIN_SIGMA:.2f} sigma", ''),
+         ('VERDICT',
+          'SPLICE' if _x4_dd >= ROLL_STEP_MIN_SIGMA else
+          ('DO NOT SPLICE — the step is not the roll'
+           if _x4_dd <= 0 else 'DO NOT SPLICE — too small to matter'),
+          ('set ROLL_SPLICE_FAIR=\'on\' at the fair-price block'
+           if _x4_dd >= ROLL_STEP_MIN_SIGMA else
+           'both fair modes step by a similar amount, so what month-starts do '
+           'to this premium is a property of the DATA (month-end flow, '
+           'rebalance, the ADR side), not of which contract the futures file '
+           'is quoting'))],
+        note=f"Currently ROLL_SPLICE_FAIR='{ROLL_SPLICE_FAIR}'"
+             + (f", and the spliced fair scores "
+                f"{_X4['spliced']['ex']:+.2f} sigma — that is what turning it "
+                f"on would buy you." if 'spliced' in _X4 else '.'))
 _inp('roll-step power [X4]', f"~12 roll rows/year",
      'low power: read the excess-sigma column, not the t verdict. Under '
-     '~0.3 sigma the step is not worth engineering around either way')
+     f'~{ROLL_STEP_MIN_SIGMA:.1f} sigma the step is not worth engineering '
+     'around either way — the verdict above enforces that [AC2]')
 # [Z4] drift-ratio diagnostic (representative N=20): how often would
 # the repricing filter fire at various thresholds — calibrate
 # DRIFT_MAX_SIGMA from THIS, not from the synthetic table above.
@@ -5612,6 +6950,15 @@ _zs = df['Spread (Signal)']
 _m20 = _zs.rolling(20).mean().shift(1)
 _c20 = _zs.diff().rolling(20).std(ddof=0).shift(1)
 _dr = ((_m20 - _m20.shift(5)).abs() / (_c20 * np.sqrt(5.0))).replace([np.inf, -np.inf], np.nan).dropna()
+# [AC4] the nowcast on the same representative N=20, so the two are directly
+# comparable before a single trade is simulated.
+_dr_now_s, _dr_slope_s = _drift_nowcast_arr(df['Spread (Signal)'].values, 20)
+_dr_now = pd.Series(_dr_now_s, index=df.index).replace(
+    [np.inf, -np.inf], np.nan).dropna()
+_dr_pair = pd.DataFrame({'lag': ((_m20 - _m20.shift(5)).abs()
+                                 / (_c20 * np.sqrt(5.0))),
+                         'now': pd.Series(_dr_now_s, index=df.index)}
+                        ).replace([np.inf, -np.inf], np.nan).dropna()
 if len(_dr):
     _inp('drift ratio [Z4], N=20',
          f"p50 {_dr.quantile(0.5):.2f} / p90 {_dr.quantile(0.9):.2f} / "
@@ -5619,6 +6966,82 @@ if len(_dr):
          f"the repricing filter stands aside on "
          f"{(_dr > DRIFT_MAX_SIGMA).mean()*100:.0f}% of days at "
          f"DRIFT_MAX_SIGMA={DRIFT_MAX_SIGMA}")
+    # [AC4] CALIBRATE THE NOWCAST'S OWN CEILING. The two statistics measure
+    # the same drift but with very different estimator variance, so one number
+    # cannot govern both. Pick the nowcast quantile that reproduces the lagged
+    # test's own stand-aside rate on this series — same false-alarm budget,
+    # shorter lag, which is the whole point of having it.
+    _stand_aside = float((_dr > DRIFT_MAX_SIGMA).mean())
+    if str(DRIFT_NOWCAST_MAX_SIGMA) == 'match' and len(_dr_now):
+        _DRIFT_NOW_CAP[0] = float(_dr_now.quantile(max(1.0 - _stand_aside,
+                                                       0.50)))
+    _ncap0 = drift_nowcast_max()
+    # [AC4] HOW EXTREME IS THE LIVE CEILING AGAINST ITS OWN NOISE? This is the
+    # sharpest single reading in the block. A ceiling sitting at 10x the
+    # median of its own distribution is not filtering anything — it is an
+    # ornament, and no amount of tuning between 0.4 and 0.6 will change that.
+    _lag_p50 = float(_dr.quantile(0.5))
+    _now_p50 = float(_dr_now.quantile(0.5)) if len(_dr_now) else float('nan')
+    show_html_table(
+        pd.DataFrame([{
+            'ceiling': _lv,
+            'lagged stands aside %': (_dr > _lv).mean() * 100,
+            'x its own median': (_lv / _lag_p50 if _lag_p50 > 0 else float('nan')),
+            'nowcast stands aside %': ((_dr_now > _lv).mean() * 100
+                                       if len(_dr_now) else float('nan')),
+            'either fires %': (((_dr_pair['lag'] > _lv)
+                                | (_dr_pair['now'] > _lv)).mean() * 100
+                               if len(_dr_pair) else float('nan')),
+            'live': '<-- current' if abs(_lv - DRIFT_MAX_SIGMA) < 1e-9 else ''}
+            for _lv in DRIFT_CAL_LEVELS]).set_index('ceiling'),
+        title=f'[AC4] WHAT EACH DRIFT CEILING WOULD COST — {NAME_LBL}, N=20',
+        fmt={'lagged stands aside %': '{:.0f}', 'x its own median': '{:.1f}',
+             'nowcast stands aside %': '{:.0f}', 'either fires %': '{:.0f}'},
+        note='Cost only — the fraction of days each ceiling refuses to trade. '
+             'It says NOTHING about whether those were days worth refusing; '
+             'the [AC4] DRIFT CEILING vs OUTCOMES table after the grid answers '
+             'that from the trades themselves. Read the two columns for the '
+             'two statistics separately: they are NOT on the same scale, '
+             'because the nowcast estimates the same drift from far fewer '
+             'rows and is correspondingly noisier.')
+    fact_table(
+        f"[AC4] IS DRIFT_MAX_SIGMA = {DRIFT_MAX_SIGMA:.2f} DOING ANYTHING?",
+        [('lagged reading, typical', f"{_lag_p50:.3f}",
+          'median of the shipped 5-row mean-shift ratio on this series'),
+         ('your ceiling', f"{DRIFT_MAX_SIGMA:.2f}",
+          f"= {DRIFT_MAX_SIGMA / _lag_p50:.0f}x that median"
+          if _lag_p50 > 0 else ''),
+         ('days it refuses', f"{_stand_aside * 100:.0f}%",
+          ('IT NEVER FIRES on this sample — as a gate it is inert. Either '
+           'lower it to something the series actually reaches, or accept it '
+           'as a REFERENCE reading and stop expecting it to block anything'
+           if _stand_aside < 0.005 else
+           'it does refuse some days; the OUTCOMES table after the grid says '
+           'whether those were the right days')),
+         ('nowcast reading, typical',
+          f"{_now_p50:.3f}" if _now_p50 == _now_p50 else 'n/a',
+          f"the {DRIFT_NOWCAST_N}-row slope statistic — "
+          f"{_now_p50 / _lag_p50:.0f}x the lagged one purely from estimator "
+          f"variance, which is why it needs its own ceiling"
+          if (_lag_p50 > 0 and _now_p50 == _now_p50) else ''),
+         ('nowcast ceiling', f"{_ncap0:.2f}",
+          ("calibrated to the same stand-aside rate as the lagged test "
+           "(DRIFT_NOWCAST_MAX_SIGMA='match')"
+           if str(DRIFT_NOWCAST_MAX_SIGMA) == 'match'
+           else 'set explicitly')),
+         ('deciding today', f"DRIFT_MODE = '{DRIFT_MODE}'",
+          'switch to nowcast only after re-running the grid — it is a '
+          'different gate and its results are not the ones above')],
+        note='This answers the "is 0.50 good" question in the only way it can '
+             'be answered before looking at trades: by saying where 0.50 sits '
+             'in the distribution of the thing it is thresholding.')
+    _inp('drift nowcast [AC4], N=20',
+         (f"p50 {_dr_now.quantile(0.5):.2f} / p90 {_dr_now.quantile(0.9):.2f} "
+          f"/ p99 {_dr_now.quantile(0.99):.2f}" if len(_dr_now) else 'n/a'),
+         f"the {DRIFT_NOWCAST_N}-row slope statistic. It runs HIGHER for two "
+         f"reasons that must not be confused: it is not diluted by the 20-row "
+         f"window (the detection lag, which is the point) AND it is a noisier "
+         f"estimator (the price, which is why it has its own ceiling)")
 # [Y27] ONE INPUT-DIAGNOSTICS TABLE for everything collected above
 if HTML_OUTPUT and _in_jupyter() and _INPUT_ROWS:
     show_html_table(
@@ -6177,8 +7600,14 @@ def run_backtest(df, n_zscore, threshold, track_adf=False,
     # we are trying to detect (zsd does, which made the v-Z3 drift
     # ratio self-defeating).
     chgsd_arr = _sig.diff().rolling(n_zscore).std(ddof=0).shift(1).values
+    # [AC4] the nowcast slope, always computed so it can be logged, charted
+    # and calibrated even when DRIFT_MODE leaves it out of the decision.
+    dnow_arr, dslope_arr = _drift_nowcast_arr(spreads_signal, n_zscore)
+    _dnow_cap = drift_nowcast_max()      # [AC4] NOT DRIFT_MAX_SIGMA
+    drift_lag_arr = np.full(n_days, np.nan)
     for t in range(first_day, n_days):
         adf_pval = adf_p_arr[t]
+        _drift_sign = 0.0                                          # [AC4]
         if ADF_EXIT_POLICY == 'ignore' or GATE_MODE == 'off':
             system_on = True
         elif GATE_MODE == 'halflife_drift':                       # [Z3]
@@ -6187,14 +7616,25 @@ def run_backtest(df, n_zscore, threshold, track_adf=False,
                       and np.log(0.5) / np.log(1.0 + max(_g, -0.999))
                       <= HL_MAX_DAYS)
             _drift_ok = True
+            _lag_ok = _now_ok = True
             if (t >= 5 and np.isfinite(zmu_arr[t]) and np.isfinite(zmu_arr[t - 5])
                     and np.isfinite(chgsd_arr[t]) and chgsd_arr[t] > 0):
                 # [Z4] 5-row mean shift vs the sqrt(5)-scaled daily-change
                 # sigma: >DRIFT_MAX_SIGMA means the mean itself is moving
                 # faster than noise explains -> a repricing, stand aside
-                _drift_ok = (abs(zmu_arr[t] - zmu_arr[t - 5])
-                             / (chgsd_arr[t] * np.sqrt(5.0))
-                             <= DRIFT_MAX_SIGMA)
+                drift_lag_arr[t] = (abs(zmu_arr[t] - zmu_arr[t - 5])
+                                    / (chgsd_arr[t] * np.sqrt(5.0)))
+                _lag_ok = drift_lag_arr[t] <= DRIFT_MAX_SIGMA
+                # [AC4] the lagged test's own sign, for the directional gate
+                _drift_sign = np.sign(zmu_arr[t] - zmu_arr[t - 5])
+            # [AC4] nowcast: same units, same threshold, no 1/n dilution
+            if np.isfinite(dnow_arr[t]):
+                _now_ok = dnow_arr[t] <= _dnow_cap        # [AC4] own ceiling
+                if DRIFT_MODE in ('nowcast', 'both'):
+                    _drift_sign = np.sign(dslope_arr[t])
+            _drift_ok = (_lag_ok if DRIFT_MODE == 'lagged'
+                         else _now_ok if DRIFT_MODE == 'nowcast'
+                         else (_lag_ok and _now_ok))
             system_on = _hl_ok and _drift_ok
         else:                                                      # adf_* modes
             system_on = (adf_pval < ADF_PVALUE)
@@ -6216,7 +7656,18 @@ def run_backtest(df, n_zscore, threshold, track_adf=False,
                 if SIGNAL_MODE != 'premium':                    # dollar -> convert to bps
                     _dev_now = _dev_now / exec_px_arr[t] * 10000
                 _dev_bps_ok = _dev_now >= MIN_ENTRY_DEV_BPS
-            if (system_on and abs(z_today) > threshold and _dev_bps_ok
+            # [AC4] DIRECTIONAL DRIFT (opt-in). A mean moving TOWARD the side
+            # you would take is help, not a hazard, but abs() in the drift test
+            # refuses both. Re-opens the gate only when drift is the sole
+            # blocker (half-life still has to pass) and only for the side the
+            # drift favours. system_on itself is untouched, so the force_exit
+            # policy at the bottom of the loop keeps the two-sided test.
+            _entry_gate = system_on
+            if (not system_on and DRIFT_DIRECTIONAL
+                    and GATE_MODE == 'halflife_drift'
+                    and _hl_ok and _drift_sign != 0):
+                _entry_gate = (_drift_sign * (-1 if z_today > 0 else 1)) > 0
+            if (_entry_gate and abs(z_today) > threshold and _dev_bps_ok
                     and not suspect_arr[t]              # [J5] no entry on a
                                                         # contract-mismatch row
                     and not preex_arr[t]                # [S5] not into an ex-date
@@ -6548,8 +7999,17 @@ def run_backtest(df, n_zscore, threshold, track_adf=False,
                 # month-start / next-month convention the real position
                 # never rolls within a hold (the held M+1 contract is
                 # weeks from expiry), so n_rolls = 0 and no cost.
+                # [AC5] ROLL_COST_IN_BACKTEST switches this to the desk's
+                # expiry-based count (rolls_between), which is the same rule
+                # the paper desk charges — so turning it on makes the two
+                # engines agree rather than introducing a third convention.
+                # Default False: the stated no-roll / TIME_STOP assumption
+                # stands and every existing grid number reproduces.
                 n_rolls = (int(max(ym_arr[fill_t] - ym_arr[entry_day], 0))
                            if ROLL_RULE == 'expiry_3rd_wed' else 0)
+                if ROLL_COST_IN_BACKTEST:
+                    n_rolls = rolls_between(df['Date'].iloc[entry_day],
+                                            df['Date'].iloc[fill_t])
                 _f_hs = (FUT_HALF_SPREAD_OPEN_BPS if EXEC_TIMING == 'open'
                          else FUT_HALF_SPREAD_CLOSE_BPS)
                 roll_cost = n_rolls * entry_beta * trade_notional * (
@@ -6614,8 +8074,15 @@ def run_backtest(df, n_zscore, threshold, track_adf=False,
                                         / exec_px_arr[fill_t] * 1e4),   # [T3][Y3]
                     'shares': shares,
                     'mae_bps': mae_bps,   # [H5]
-                    'mfe_bps': mfe_bps,   # [R8]
-                    'mfe_bps': mfe_bps,   # [S2]
+                    'mfe_bps': mfe_bps,   # [R8][S2] (was assigned twice [X5])
+                    # [AC4] the two drift readings AT ENTRY, so the calibration
+                    # table can ask what a different ceiling would have refused
+                    # — the only honest way to choose DRIFT_MAX_SIGMA.
+                    'drift_lag': drift_lag_arr[entry_day],
+                    'drift_now': dnow_arr[entry_day],
+                    'drift_against': float(
+                        np.sign(dslope_arr[entry_day]) * -position
+                        if np.isfinite(dslope_arr[entry_day]) else np.nan),
                 })
                 position = 0
     var_metrics = compute_var_metrics(daily_equity, first_day)
@@ -7437,6 +8904,139 @@ print_trade_details(sorted(result_base['trades'], key=lambda t: t['net_pnl'],
                     f"[Q2] TOP 5 TRADES BY NET PnL — N={best_n}, Z={best_thresh}",
                     best_thresh)
 # ============================================================
+# [AC4] IS DRIFT_MAX_SIGMA = 0.50 THE RIGHT NUMBER FOR THIS NAME?
+# ------------------------------------------------------------
+# Not answerable from the drift distribution alone. "It stands aside on 6% of
+# days" tells you the COST of the filter and nothing about its BENEFIT — a
+# filter that refuses 6% of days at random also refuses 6% of days.
+#
+# The question the ceiling has to answer is: does a high drift reading at
+# entry actually predict a bad trade? So take the trades this parameter set
+# produced, look at each one's drift AT ENTRY, and ask what a tighter ceiling
+# would have thrown away. If it refuses losers faster than winners it has
+# discriminating power and the ceiling is worth tuning. If it refuses both at
+# the same rate it has none, and no value of DRIFT_MAX_SIGMA will help — at
+# which point the honest thing is to run it as a REFERENCE READING (leave the
+# number where it is, watch it on the chart, stop expecting it to save you)
+# rather than to keep turning a knob that is not connected to anything.
+#
+# NOTE ON WHAT THIS CAN AND CANNOT SEE. These are the trades that PASSED the
+# live ceiling, so the sample is already truncated at DRIFT_MAX_SIGMA: rows
+# above it were never entered and cannot appear. The table is therefore
+# informative about TIGHTENING and blind to LOOSENING. To see what loosening
+# would do, re-run with a higher DRIFT_MAX_SIGMA (or GATE_MODE='off') and read
+# this table again.
+# ============================================================
+_ac4_tr = [t for t in result_base['trades']
+           if np.isfinite(t.get('drift_lag', np.nan))]
+if len(_ac4_tr) >= 6:
+    _ac4_w = [t for t in _ac4_tr if t['net_pnl'] > 0]
+    _ac4_l = [t for t in _ac4_tr if t['net_pnl'] <= 0]
+    _ac4_rows, _ac4_sep = [], []
+    for _lv in DRIFT_CAL_LEVELS:
+        _kept = [t for t in _ac4_tr if t['drift_lag'] <= _lv]
+        _cut = [t for t in _ac4_tr if t['drift_lag'] > _lv]
+        if not _cut:
+            continue
+        _cw = sum(1 for t in _cut if t['net_pnl'] > 0)
+        _ac4_rows.append({
+            'ceiling': _lv,
+            'trades kept': len(_kept),
+            'refused': len(_cut),
+            'of which losers': len(_cut) - _cw,
+            'of which winners': _cw,
+            'PnL refused': sum(t['net_pnl'] for t in _cut),
+            'win % kept': (sum(1 for t in _kept if t['net_pnl'] > 0)
+                           / len(_kept) * 100 if _kept else float('nan')),
+            'PnL kept': sum(t['net_pnl'] for t in _kept)})
+        # discrimination: share of LOSERS refused minus share of WINNERS
+        # refused. Zero means the filter is indistinguishable from a coin.
+        _ac4_sep.append(
+            ((len(_cut) - _cw) / max(len(_ac4_l), 1))
+            - (_cw / max(len(_ac4_w), 1)))
+    if _ac4_rows:
+        show_html_table(
+            pd.DataFrame(_ac4_rows).set_index('ceiling'),
+            title=f"[AC4] DRIFT CEILING vs OUTCOMES — {len(_ac4_tr)} trade(s) "
+                  f"at N={best_n}, Z={best_thresh} (live ceiling "
+                  f"{DRIFT_MAX_SIGMA:.2f})",
+            fmt={'trades kept': '{:.0f}', 'refused': '{:.0f}',
+                 'of which losers': '{:.0f}', 'of which winners': '{:.0f}',
+                 'PnL refused': '{:+,.0f}', 'win % kept': '{:.0f}',
+                 'PnL kept': '{:+,.0f}'},
+            note='Every row is a HYPOTHETICAL tighter ceiling applied to the '
+                 'trades this run actually took. "PnL refused" is the money '
+                 'that ceiling would have given up: NEGATIVE is good — it '
+                 'means the refused trades were net losers.')
+    else:
+        # [AC4] DO NOT DISAPPEAR. An empty candidate set is a RESULT — none of
+        # the tested ceilings would have changed a single trade — and it is
+        # the most decisive result this block can produce. The old shape would
+        # have printed nothing at all and left you to wonder whether the
+        # section had failed.
+        say(f"no candidate ceiling in {DRIFT_CAL_LEVELS} refuses ANY of the "
+            f"{len(_ac4_tr)} trades — the drift reading at entry never gets "
+            f"near these levels on this sample, so tightening within this "
+            f"range is a no-op [AC4]", 'warn')
+    # the verdict is printed WHATEVER the table above did — it is computed
+    # from the trades' own drift readings, not from the refusal counts.
+    _best_sep = max(_ac4_sep) if _ac4_sep else 0.0
+    _lvl_at = (DRIFT_CAL_LEVELS[_ac4_sep.index(_best_sep)]
+               if _ac4_sep else float('nan'))
+    _mean_w = (np.mean([t['drift_lag'] for t in _ac4_w]) if _ac4_w else np.nan)
+    _mean_l = (np.mean([t['drift_lag'] for t in _ac4_l]) if _ac4_l else np.nan)
+    _now_w = (np.nanmean([t.get('drift_now', np.nan) for t in _ac4_w])
+              if _ac4_w else np.nan)
+    _now_l = (np.nanmean([t.get('drift_now', np.nan) for t in _ac4_l])
+              if _ac4_l else np.nan)
+    _verdict = ('NO EVIDENCE EITHER WAY — no losing trades in this sample to '
+                'compare against' if not _ac4_l else
+                'TUNE IT — high drift at entry does predict a worse trade'
+                if _best_sep >= 0.15 else
+                'REFERENCE ONLY — drift at entry does not separate winners '
+                'from losers here, so no ceiling in this range will help')
+    fact_table(
+        f"[AC4] DOES THE DRIFT READING PREDICT ANYTHING? — {_verdict}",
+        [('mean drift, winners',
+          f"{_mean_w:.3f}" if _mean_w == _mean_w else 'n/a',
+          f"{len(_ac4_w)} winning trade(s)"),
+         ('mean drift, losers',
+          f"{_mean_l:.3f}" if _mean_l == _mean_l else 'n/a',
+          f"{len(_ac4_l)} losing trade(s)."
+          + (' A useful filter needs this MATERIALLY above the winners\' '
+             'number' if _ac4_l else
+             ' With none, the question cannot be answered from this run — '
+             'widen the sample or loosen the gate and re-run')),
+         ('separation',
+          f"{_mean_l - _mean_w:+.3f}" if (_mean_l == _mean_l
+                                          and _mean_w == _mean_w) else 'n/a',
+          "losers minus winners, in the gate's own units"),
+         ('best discrimination', f"{_best_sep:+.0%}",
+          (f"at ceiling {_lvl_at:.2f} — share of LOSERS refused minus share "
+           f"of WINNERS refused. Under ~15% the filter is a coin flip"
+           if _ac4_sep else
+           'no ceiling refuses anything, so there is nothing to discriminate '
+           'with')),
+         ('nowcast, winners vs losers',
+          (f"{_now_w:.2f} vs {_now_l:.2f}"
+           if _now_w == _now_w and _now_l == _now_l else 'n/a'),
+          f"the [AC4] slope statistic on the same trades — currently "
+          f"DRIFT_MODE='{DRIFT_MODE}'. If it separates better than the "
+          f"lagged one, switch to 'nowcast' AND re-run the grid"),
+         ('live setting', f"DRIFT_MAX_SIGMA = {DRIFT_MAX_SIGMA:.2f}",
+          "set per-name as DRIFT_MAX_SIGMA_INST in the INSTRUMENTS dict")],
+        note='SURVIVORSHIP: these trades all cleared the LIVE ceiling '
+             'already, so this table can only tell you about TIGHTENING. To '
+             'see what the gate is currently refusing, re-run with '
+             'GATE_MODE=\'off\' and read it again.')
+    sc('PASS' if _best_sep >= 0.15 else 'WARN', 'drift gate discrimination',
+       f"{_best_sep:+.0%} losers-minus-winners refused at best ceiling"
+       if _ac4_sep else 'no tested ceiling refuses any trade')
+else:
+    say(f"[AC4] drift-ceiling calibration skipped — only "
+        f"{len(_ac4_tr)} trade(s) carry a drift reading at entry "
+        f"(need 6). It needs GATE_MODE='halflife_drift'.", 'info')
+# ============================================================
 # [H5] MAX ADVERSE EXCURSION — how to set HARD_STOP_BPS from data
 # ============================================================
 # [J6] direction asymmetry — the single most actionable diagnostic
@@ -7948,6 +9548,60 @@ if result_base['trades']:
                   'TR spine across the file roll. For same-contract trades '
                   'booked == raw by construction, so any difference there '
                   'would flag a bug [27][I3][J1].')
+    # ------------------------------------------------------------------ [AC5]
+    # WHAT THE NO-ROLL ASSUMPTION IS WORTH. The line above says the roll cost
+    # charged is "0 by design". That is honest about the MODEL and silent
+    # about the EXPOSURE: some of these trades did straddle a contract change,
+    # and on the paper desk — where the position is real and the hold can run
+    # past TIME_STOP — those crossings cost money. Price it, so the assumption
+    # is a measured number rather than a sentence.
+    _rb = roll_cost_bps()
+    _roll_hyp, _roll_n, _file_n = 0.0, 0, 0
+    for _t in result_base['trades']:
+        if (int(df['contract_id'].iloc[_t['exit_day']])
+                != int(df['contract_id'].iloc[_t['entry_day']])):
+            _file_n += 1                      # spanned a FILE roll
+        _nr = rolls_between(df['Date'].iloc[_t['entry_day']],
+                            df['Date'].iloc[_t['exit_day']])
+        if _nr:
+            _roll_n += 1
+            _roll_hyp += _nr * _rb / 1e4 * abs(_t.get('entry_beta', 1.0)) * NOTIONAL
+    _net_now = sum(t['net_pnl'] for t in result_base['trades'])
+    fact_table(
+        '[AC5] IF THE POSITION HAD ACTUALLY ROLLED',
+        [('cost of one roll', f"{_rb:.0f} bps of the hedge leg",
+          (f"2 x {globals().get('FUT_HALF_SPREAD_CLOSE_BPS', 8):g}bps SSF "
+           f"half-spread + {FUT_FEE_IN_BPS}+{FUT_FEE_OUT_BPS}bps fees — two "
+           f"extra futures fills, the ADR leg is untouched"
+           if ROLL_COST_MODE == 'derived' else
+           f"ROLL_COST_MODE='{ROLL_COST_MODE}'")),
+         ('trades spanning a FILE roll',
+          f"{_file_n} of {len(result_base['trades'])}",
+          'the capture files change contract each month start — this costs '
+          'NOTHING, the position is holding M+1 and is weeks from expiry'),
+         ('trades forced to actually roll',
+          f"{_roll_n} of {len(result_base['trades'])}",
+          f"counted on the HELD contract's third-Wednesday expiry. A "
+          f"{TIME_STOP}cd stop against a 6-8 week contract life is why this "
+          f"is {'zero' if _roll_n == 0 else 'small'}"),
+         ('cost if charged', f"${_roll_hyp:,.0f}",
+          (f"{_roll_hyp / abs(_net_now) * 100:.1f}% of the ${_net_now:,.0f} "
+           f"net P&L" if (_net_now and _roll_hyp) else
+           'nothing to charge at this holding period')),
+         ('charged in this run', 'NO' if not ROLL_COST_IN_BACKTEST else 'YES',
+          f"ROLL_COST_IN_BACKTEST=False keeps your stated no-roll assumption "
+          f"so every grid number reproduces. The DESK charges it either way "
+          f"(ROLL_COST_ON_DESK={ROLL_COST_ON_DESK})"),
+         ('when it starts to bite',
+          f"holds past ~{TIME_STOP}cd",
+          'roll_cost_bps() is charged per crossing on the desk, so a paper '
+          'position held past its contract expiry sees it in the daily card '
+          'and in the exit P&L automatically')],
+        note='The BACKTEST may assume no roll: holds are capped at TIME_STOP '
+             'and the contract held has weeks of life left. The PAPER DESK '
+             'may not — it marks a position that exists and can be held as '
+             'long as you like. That is why the two differ here by design and '
+             'agree everywhere else.')
 # ============================================================
 # [4] COST SENSITIVITY — best parameters
 # ============================================================
@@ -8576,8 +10230,9 @@ _tr = pd.DataFrame(result_base['trades']) if result_base['trades'] else pd.DataF
 # [W5] the z-score sits directly BELOW the spread panel and shares its
 # x-axis, so an entry marker on the spread lines up vertically with the
 # z-score that produced it — no flipping between two figures.
-fig, axes = plt.subplots(6, 1, figsize=(14, 26),
-                         gridspec_kw={'height_ratios': [1, 1.35, 0.85, 1, 0.6, 1]})
+fig, axes = plt.subplots(7, 1, figsize=(14, 29),
+                         gridspec_kw={'height_ratios': [1, 1.35, 0.85, 0.75,
+                                                        1, 0.6, 1]})
 # Panel 1: ADR open vs futures-implied fair price
 ax = axes[0]
 ax.plot(df['Date_dt'], df['ADR Ref Px'], label=f'ADR {EXEC_TIMING} price', lw=0.8)
@@ -8647,8 +10302,44 @@ ax.set_title(f'Rolling z-score (N={best_n}) with the +/-{best_thresh} entry band
              f' — same x-axis as the panel above')
 ax.set_ylabel('z'); ax.grid(alpha=0.3); ax.legend(fontsize=8, loc='upper left')
 ax.set_xlim(axes[1].get_xlim())
-# Panel 4: equity curve and drawdown at optimal parameters
+# ---------------------------------------------------------------------------
+# [AC4] Panel 4: THE DRIFT GATE, PLOTTED. It decides entries and until now was
+# invisible — you could read the verdict but never the path, so there was no
+# way to see a re-rating BUILDING toward the ceiling rather than arriving at
+# it. Directly under the z panel and on the same x-axis, so the reading that
+# refused (or allowed) a given z is vertically beneath it.
+# Both statistics are drawn: the shipped lagged one and the [AC4] nowcast, so
+# the lag between them is a visible distance on the page rather than an
+# argument.
+# ---------------------------------------------------------------------------
 ax = axes[3]
+_dr_lag_ch = ((_zmuz - _zmuz.shift(5)).abs()
+              / (_sigz.diff().rolling(best_n).std(ddof=0).shift(1) * np.sqrt(5.0))
+              ).replace([np.inf, -np.inf], np.nan)
+_dr_now_ch, _dr_slope_ch = _drift_nowcast_arr(df['Spread (Signal)'].values, best_n)
+ax.plot(df['Date_dt'], _dr_lag_ch, lw=0.8, color='#444',
+        label=f'drift, lagged 5-row mean shift (the shipped test)')
+ax.plot(df['Date_dt'], _dr_now_ch, lw=0.9, color='#1f77b4', alpha=0.85,
+        label=f'drift, {DRIFT_NOWCAST_N}-row slope nowcast [AC4]')
+ax.axhline(DRIFT_MAX_SIGMA, color='red', ls='--', lw=0.9,
+           label=f'DRIFT_MAX_SIGMA = {DRIFT_MAX_SIGMA:.2f}')
+ax.fill_between(df['Date_dt'], 0, DRIFT_MAX_SIGMA, color='green', alpha=0.06)
+if not _tr.empty:
+    _ded = df['Date_dt'].iloc[_tr['entry_day']].values
+    _deb = _dr_lag_ch.iloc[_tr['entry_day']].values
+    _dlong = (_tr['direction'] == 1).values
+    ax.scatter(_ded[_dlong], _deb[_dlong], marker='^', color='green', s=42, zorder=5)
+    ax.scatter(_ded[~_dlong], _deb[~_dlong], marker='v', color='red', s=42, zorder=5)
+ax.set_ylim(0, max(1.5, float(np.nanpercentile(_dr_lag_ch.dropna(), 99))
+                   if _dr_lag_ch.notna().any() else 1.5) * 1.1)
+ax.set_title('Repricing filter — mean drift in units of daily-change sigma. '
+             'Entries can only fire in the green band; the gap between the '
+             'two lines IS the detection lag [AC4]')
+ax.set_ylabel('drift ratio'); ax.grid(alpha=0.3)
+ax.legend(fontsize=8, loc='upper left', ncol=3)
+ax.set_xlim(axes[1].get_xlim())
+# Panel 5: equity curve and drawdown at optimal parameters
+ax = axes[4]
 _eq = result_base['daily_equity']
 ax.plot(df['Date_dt'], _eq, color='navy', lw=1.0, label='Equity ($)')
 _dd = _eq - np.maximum.accumulate(_eq)
@@ -8658,8 +10349,8 @@ ax.set_title(f'Equity curve & drawdown — N={best_n}, Z={best_thresh}')
 ax.legend(loc='upper left')
 ax2.legend(loc='lower left')
 ax.grid(alpha=0.3)
-# Panel 5: [23] ADF gate — when was the system ON/OFF over the period
-ax = axes[4]
+# Panel 6: [23] ADF gate — when was the system ON/OFF over the period
+ax = axes[5]
 if result_best['adf_log']:
     _al = pd.DataFrame(result_best['adf_log'])
     _ad = df['Date_dt'].iloc[_al['day']].values
@@ -8697,8 +10388,8 @@ if result_best['adf_log']:
         _off_runs.append((_start, _ad[-1]))
     for _s, _e in _off_runs:
         axes[1].axvspan(_s, _e, color='red', alpha=0.10)
-# Panel 6: per-trade net PnL, winter entries highlighted
-ax = axes[5]
+# Panel 7: per-trade net PnL, winter entries highlighted
+ax = axes[6]
 if len(_tr):
     _tr['dst'] = _tr['entry_date'].map(is_us_dst)
     _cols = np.where(_tr['dst'], 'steelblue', 'darkorange')
@@ -8712,7 +10403,7 @@ try:
     print(f"\n[CHART] Saved 4-panel chart to {CHART_PATH}")
 except Exception as e:
     print(f"\n[CHART] Could not save chart ({e}); showing only.")
-plt.show()
+_fig_show(fig, name=f'{INSTRUMENT}_backtest')                    # [AC3]
 # [W5] the standalone z-score figure was merged into panel 3 above so it
 # lines up with the entry markers; nothing is plotted twice.
 # ============================================================
@@ -9154,8 +10845,8 @@ def setup_manual(reload=True):
         ('History', f"to {c['hist_last_date']} ({len(c['hist_premium'])} closes, read-only)"),
         ('Your book', _book_txt),
         ('Position', _pos_txt),
-        ('Closed', f"{len(_cl)} trade(s), paper P&amp;L "
-                   f"${sum(t['net'] for t in _cl):+,.0f}" if _cl else '—'),
+        ('Realised', f"{len(_cl)} deal(s), paper P&amp;L "      # [AD5]
+                     f"${sum(t['net'] for t in _cl):+,.0f}" if _cl else '—'),
         ('ENTER when', f"|z| &gt; {c['thresh']:.2f} (N={c['n']}) AND "
                        f"|dev| ≥ {c['min_dev_bps']:.0f} bps (live rolling mean "
                        f"[X13]) AND the {c['gate_mode']} gate is open"),
@@ -9296,7 +10987,7 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
         date, div_cash_pct, div_carry, _MANUAL['pos'] is not None)   # [Y10]
     n, thr = c['n'], c['thresh']
     gate_ok, gate_txt, _gamma, _chgsd = _gate(n, date)
-    _hl_led, _dr_led = _gate_levels(_gamma, gate_txt)    # [Y37g] for the ledger
+    _hl_led, _dr_led, _dn_led = _gate_levels(_gamma, gate_txt)  # [Y37g][AC4]
     p = _MANUAL['pos']
     # ------------------------------------------------------------------ [AA1]
     # IS THIS A NEW DAY, AN AMENDMENT, OR A BACKDATED CORRECTION?
@@ -9528,7 +11219,8 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
             held = (pd.Timestamp(date) - pd.Timestamp(p['date'])).days
             xc = _trade_cost(p['dir'], p['notional'], held,
                              adr_notional=p.get('adr_notional'),
-                             hedge_notional=p.get('hedge_notional'))
+                             hedge_notional=p.get('hedge_notional'),
+                             entry_date=p['date'], asof_date=date)  # [AC5][AC7]
             trig = []
             if (p['dir'] == -1 and z <= 0) or (p['dir'] == 1 and z >= 0):
                 trig.append('Z crossed 0')
@@ -9575,9 +11267,12 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
                        f" x {div_cash_pct*100:.2f}% = ${m['div_leg']:+,.0f}")
             _L(f"   MARK   unrealised ${m['gross']:>+10,.0f}  "
                f"({m['bps']:+.0f}bps of ${p['notional']:,.0f})")
-            _L(f"   EXIT NOW would net ${m['gross'] - xc:>+10,.0f}   "
-               f"(after ${xc:,.0f} = {c['rt_fee_bps']:.0f}bps fees + "
-               f"{held}cd carry)")
+            # [AC7] state the cost as bps too — the dollar figure alone is not
+            # comparable across trades because the clip changes every time.
+            _L(f"   EXIT NOW would net ${m['gross'] - xc:>+10,.0f}  "
+               f"({(m['gross'] - xc) / p['notional'] * 1e4:+.0f}bps)   "
+               f"after ${xc:,.0f} ({xc / p['notional'] * 1e4:.0f}bps) of "
+               f"fees + {held}cd carry + roll")
             if _gx:
                 _L(_gx)
             if trig:
@@ -9623,12 +11318,43 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
                 _mtm_detail.clear()
                 _cp = _trade_cost_parts(p['dir'], p['notional'], held,
                                         adr_notional=p.get('adr_notional'),
-                                        hedge_notional=p.get('hedge_notional'))
+                                        hedge_notional=p.get('hedge_notional'),
+                                        entry_date=p['date'],   # [AC5][AC7]
+                                        asof_date=date)
                 _an25 = p.get('adr_notional') or p['notional']
                 _hn25 = p.get('hedge_notional') or p['notional']
                 _dr25 = '+1' if p['dir'] == 1 else '-1'
                 _nd25 = '-1' if p['dir'] == 1 else '+1'
                 _fx25 = _fx_status()                      # [AA6] provisional?
+                # ------------------------------------------------- [AC7]
+                # REBUILT AGAIN, against four specific complaints:
+                #  "has it factored in the cost?"  — it always had, but the
+                #     costs sat below GROSS with no total and no running
+                #     subtraction, so you could not see them land. There is
+                #     now a TOTAL COST line and NET is stated as gross minus
+                #     it, with every component above it.
+                #  "express it in % as well, notional changes every trade" —
+                #     every row carries a bps column beside its dollars, all
+                #     on one stated denominator (the ADR leg), so two trades
+                #     of different size are directly comparable.
+                #  "funding/borrow why positive?" — because on a SHORT it is
+                #     a CREDIT: you sold the ADR, the proceeds sit at the PB
+                #     and earn SOFR-50. The column header now states the sign
+                #     convention (+ = money in) and the row says CREDIT in
+                #     words instead of leaving a bare plus sign to be decoded.
+                #  "SOFR-50 should be annualised / should be a daily series"
+                #     — it is annualised, and the row now SHOWS the
+                #     annual-to-daily step; and it is now an average of the
+                #     actual daily series over this hold, not today's print
+                #     applied retroactively to every past day [AC7].
+                # The unit of each row is in its own label, so no row has to
+                # carry a currency word in the middle of a sentence.
+                _b25 = (lambda _v: _v / _an25 * 1e4)     # USD -> bps of ADR leg
+                _fund_ann = (long_financing_ann(_cp['sofr']) if p['dir'] == 1
+                             else short_financing_ann(_cp['sofr']))
+                _mgn_ann = margin_ann_bps(_cp['sofr'])
+                _tot_cost = _cp['total']
+                _net_now = m['gross'] - _tot_cost
                 _mtm_detail.extend([
                     ('units held',
                      (f"{m['contracts']} contracts x {c['contract_sh']:,.0f} sh "
@@ -9638,66 +11364,101 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
                       f"(LEGACY row: no stored units)"),
                      (f"{m['shares']:,d} {ADR_LBL} sh + {m['contracts']} "
                       f"{HEDGE_LBL}" if m.get('contracts')
-                      else f"{m['shares']:,.1f} {ADR_LBL} sh")),
+                      else f"{m['shares']:,.1f} {ADR_LBL} sh"), ''),
                     ('leg notionals',
                      f"ADR {m['shares']:,.0f} x {p['entry_adr']:.4f} | hedge "
                      f"{m.get('contracts') or 0} x {c['contract_sh']:,.0f} x "
                      f"{p['entry_fut']:.2f} / {p['entry_fx']:.4f}",
-                     f"${_an25:,.0f} vs ${_hn25:,.0f} "
-                     f"({_an25 - _hn25:+,.0f} unhedged)"),
-                    (f'{ADR_LBL} leg (USD)',
+                     f"${_an25:,.0f} vs ${_hn25:,.0f}",
+                     f"{_b25(_an25 - _hn25):+,.0f} unhedged"),
+                    (f'{ADR_LBL} leg',
                      f"{_dr25} x {m['shares']:,.0f} sh x ({a_px:.4f} - "
-                     f"{p['entry_adr']:.4f})   [no FX: the ADR prices in USD]",
-                     f"${m['adr_leg']:+,.2f}"),
-                    (f'{HEDGE_LBL} leg ({LOCAL_CCY})',
+                     f"{p['entry_adr']:.4f})   [prices in USD, no FX]",
+                     f"{m['adr_leg']:+,.0f}", f"{_b25(m['adr_leg']):+,.0f}"),
+                    (f'{HEDGE_LBL} leg, in {LOCAL_CCY}',
                      f"{_nd25} x {m.get('contracts') or 0} x "
                      f"{c['contract_sh']:,.0f} sh x ({f_px:.2f} - "
                      f"{p['entry_fut']:.2f})"
                      if m.get('contracts') else
                      f"{_nd25} x ${p['notional']:,.0f} x ({f_px:.2f}/"
                      f"{p['entry_fut']:.2f} - 1) x {p['entry_fx']:.4f}",
-                     f"{LOCAL_CCY} {m['fut_leg'] * fxe:+,.0f}"),
-                    (f'{HEDGE_LBL} leg -> USD',
+                     f"{LOCAL_CCY} {m['fut_leg'] * fxe:+,.0f}", ''),
+                    (f'{HEDGE_LBL} leg, converted',
                      f"{LOCAL_CCY} {m['fut_leg'] * fxe:+,.0f} / {fxe:.4f}"
                      f"   [{_fx25['mark_label']}]",
-                     f"${m['fut_leg']:+,.2f}"),
+                     f"{m['fut_leg']:+,.0f}", f"{_b25(m['fut_leg']):+,.0f}"),
                     (f'{EXCH_LBL} dividend',
                      (f"{_nd25} x ${_hn25:,.0f} (hedge leg) x "
                       f"{div_cash_pct*100:.2f}%"
                       if m['div_leg'] else 'no ex-date today'),
-                     f"${m['div_leg']:+,.2f}"),
+                     f"{m['div_leg']:+,.0f}" if m['div_leg'] else '—',
+                     f"{_b25(m['div_leg']):+,.0f}" if m['div_leg'] else ''),
                     ('GROSS mark',
                      f"{ADR_LBL} leg + {HEDGE_LBL} leg"
-                     + (" + dividend" if m['div_leg'] else ""),
-                     f"${m['gross']:+,.2f}   ({m['bps']:+.0f} bps)"),
-                    ('fees if closed now',
+                     + (" + dividend" if m['div_leg'] else "")
+                     + "   — before any cost",
+                     f"{m['gross']:+,.0f}", f"{m['bps']:+,.0f}"),
+                    ('fees to close',
                      f"ADR {ADR_FEE_IN_BPS}+{ADR_FEE_OUT_BPS}bps on "
                      f"${_an25:,.0f} + ({FUT_FEE_IN_BPS}+{FUT_FEE_OUT_BPS}"
                      f"+2x{(FX_SPOT_HALF_SPREAD_BPS if FX_EXEC_MODE == 'spot_next_open' else FX_NDF_HALF_SPREAD_BPS):g}"
-                     f")bps on ${_hn25:,.0f}   (spread/impact excluded [X9])",
-                     f"-${_cp['fee']:,.2f}"),
-                    ('funding / borrow',
-                     f"{(c['carry_fund_long_bpd'] if p['dir'] == 1 else c['carry_fund_short_bpd']):+.3f}"
-                     f"bps/cd x {held}cd x ${_an25:,.0f} (ADR leg) — "
-                     + (f"SOFR+{FUNDING_SPREAD_ANN*100:.1f}%, you are LONG the ADR"
-                        if p['dir'] == 1 else
-                        (f"SOFR-{BORROW_SPREAD_ANN_BPS}bps REBATE on the short "
-                         f"proceeds [AA7]" if BORROW_MODE == 'sofr_minus'
-                         else f"{BORROW_ANN_BPS}bps borrow, flat")),
-                     f"{-_cp['carry_fund']:+,.2f}".replace('+', '+$')
-                     .replace('-', '-$')),
+                     f")bps on ${_hn25:,.0f}   — round trip, in AND out. "
+                     f"Spread and impact excluded: your typed fills already "
+                     f"crossed them [X9]",
+                     f"{-_cp['fee']:+,.0f}", f"{_b25(-_cp['fee']):+,.0f}"),
+                    ('funding / borrow'
+                     + ('  (CREDIT)' if _cp['carry_fund'] < 0 else '  (charge)'),
+                     # the whole chain, left to right, so nothing has to be
+                     # taken on trust: rate -> annual -> daily -> dollars
+                     (f"SOFR {_cp['sofr']*100:.2f}% "
+                      + (f"+ {FUNDING_SPREAD_ANN*100:.2f}% funding spread"
+                         if p['dir'] == 1 else
+                         (f"- {BORROW_SPREAD_ANN_BPS}bps borrow, EARNED on the "
+                          f"short proceeds" if BORROW_MODE == 'sofr_minus'
+                          else f"-> {BORROW_ANN_BPS}bps flat borrow"))
+                      + f" = {abs(_fund_ann)*100:.2f}%/yr "
+                      + ('paid' if _fund_ann > 0 else 'received')
+                      + f"  ->  /360 = {abs(_cp['fund_bpd']):.3f} bps/cd  x "
+                      + f"{held}cd  x ${_an25:,.0f} (ADR leg)"
+                      + f"   [{_cp['sofr_src']}]"),
+                     f"{-_cp['carry_fund']:+,.0f}",
+                     f"{_b25(-_cp['carry_fund']):+,.0f}"),
                     (f'{EXCH_LBL} margin funding',
-                     f"{c['carry_margin_bpd']:.3f}bps/cd x {held}cd x "
-                     f"${_hn25:,.0f} (hedge leg) — "
-                     + (f"{MARGIN_PCT*100:.1f}% margin x {MARGIN_FUND_ANN_BPS}"
-                        f"bps ann [AA7]" if FUT_MARGIN_MODE == 'pct_x_spread'
-                        else f"{margin_ann_bps():.1f}bps ann"),
-                     f"-${_cp['carry_margin']:,.2f}"),
+                     (f"{MARGIN_PCT*100:.1f}% initial margin x "
+                      f"{MARGIN_FUND_ANN_BPS}bps/yr = {_mgn_ann:.1f}bps/yr of "
+                      f"notional [AA7]" if FUT_MARGIN_MODE == 'pct_x_spread'
+                      else f"{_mgn_ann:.1f}bps/yr")
+                     + f"  ->  /360 = {_cp['margin_bpd']:.3f} bps/cd  x "
+                     + f"{held}cd  x ${_hn25:,.0f} (hedge leg)",
+                     f"{-_cp['carry_margin']:+,.0f}",
+                     f"{_b25(-_cp['carry_margin']):+,.0f}"),
+                    ('contract roll [AC5]',
+                     (f"{_cp['n_rolls']} roll(s) x {_cp['roll_bps']:.0f}bps of "
+                      f"${_hn25:,.0f} — the {HEDGE_LBL} leg closed in the "
+                      f"expiring month and reopened in the next"
+                      if _cp['n_rolls'] else
+                      f"none — this contract expires "
+                      f"{next_roll_date(p['date'])}, "
+                      f"{max((pd.Timestamp(str(next_roll_date(p['date']))) - pd.Timestamp(str(date))).days, 0)}cd "
+                      f"away. {_cp['roll_bps']:.0f}bps each if you hold past it"),
+                     f"{-_cp['roll']:+,.0f}" if _cp['roll'] else '—',
+                     f"{_b25(-_cp['roll']):+,.0f}" if _cp['roll'] else ''),
+                    # every term below is quoted in the SAME convention as the
+                    # value column (+ in / - out), so the row can be added up
+                    # by eye. Quoting costs as positives here while the column
+                    # shows them negative is how a table stops being checkable.
+                    ('TOTAL COST',
+                     f"fees {-_cp['fee']:+,.0f} "
+                     f"{'+' if -_cp['carry_fund'] >= 0 else '-'} funding "
+                     f"{abs(_cp['carry_fund']):,.0f} "
+                     f"- margin {_cp['carry_margin']:,.0f}"
+                     + (f" - roll {_cp['roll']:,.0f}" if _cp['roll'] else "")
+                     + f"   over {held} calendar day(s)",
+                     f"{-_tot_cost:+,.0f}", f"{_b25(-_tot_cost):+,.0f}"),
                     ('NET if closed now',
-                     f"${m['gross']:+,.2f} - fees ${_cp['fee']:,.2f} - carry "
-                     f"${_cp['carry']:,.2f}",
-                     f"${m['gross'] - xc:+,.2f}   "
-                     f"({(m['gross'] - xc) / p['notional'] * 1e4:+.0f} bps)")])
+                     f"gross {m['gross']:+,.0f}  {'+' if _tot_cost <= 0 else '-'}"
+                     f"  cost {abs(_tot_cost):,.0f}",
+                     f"{_net_now:+,.0f}", f"{_b25(_net_now):+,.0f}")])
                 _hl_lvl, _hl_head, _hl_lines = _position_health(
                     z, sd, _gamma, gate_ok, date, m['bps'])
                 _health.clear()
@@ -9705,8 +11466,13 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
                     _health.extend([_hl_lvl, _hl_head, _hl_lines])
                     _L("")
                     _L(f"   POSITION HEALTH [Y24]   {_hl_head}")
-                    for _hx in _hl_lines:
-                        _L(f"     {_hx}")
+                    # [AC6] the rows are (check, reading, why) triples now, so
+                    # the text fallback aligns the reading into a column
+                    # instead of printing three welded sentences.
+                    _kw = max((len(_x[0]) for _x in _hl_lines), default=0)
+                    for _hk, _hv, _hw in _hl_lines:
+                        _L(f"     {_hk:<{_kw}}  {_hv}"
+                           + (f"   ({_hw})" if _hw else ''))
         # [AA1] AMENDMENT DIFF — a correction must show what it corrected.
         # Re-typing 29 -> 28 -> 27 used to print three identical-looking day
         # cards, each ending in an ENTER command, so three corrections read
@@ -9744,6 +11510,8 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
                          gamma=(round(_gamma, 3) if _gamma == _gamma else ''),
                          hl=(round(_hl_led, 1) if _hl_led == _hl_led else ''),
                          drift=(round(_dr_led, 2) if _dr_led == _dr_led else ''),
+                         drift_now=(round(_dn_led, 2)          # [AC4]
+                                    if _dn_led == _dn_led else ''),
                          n=n, threshold=thr, gate=('open' if gate_ok else 'shut'),
                          div_carry=div_carry, in_position=bool(p), net='',
                          note=note))
@@ -9776,31 +11544,41 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
                       'point the grid was fit on — treat as indicative. '
                       'Signal FX = 13:30 fixing [D2]; FX column = execution '
                       'rate for that snapshot [Y17].'))
-        if _mtm_detail:                       # [Y25] full P&L arithmetic
+        if _mtm_detail:                       # [Y25][AC7] full P&L arithmetic
             show_html_table(
                 _pd.DataFrame(_mtm_detail,
                               columns=['component', 'how it is computed',
-                                       'value']).set_index('component'),
-                title='MARK TO MARKET \u2014 every line substituted',
+                                       'USD  (+ in / - out)',
+                                       'bps of ADR leg']).set_index('component'),
+                title='MARK TO MARKET \u2014 gross, every cost, then net',
                 fmt='{}',
-                note='Two-leg convention, identical to run_backtest: the ADR '
-                     'leg prices in SHARES, the SSF leg as a RETURN on the '
-                     'same notional, converted at entry FX / current FX. Fees '
-                     'exclude spread and impact because your typed fills '
-                     'already crossed them [X9].')
+                note='SIGN: + is money IN, - is money OUT, in both number '
+                     'columns. That is why funding shows POSITIVE on a short '
+                     '\u2014 the SOFR-50 stock-loan rebate is a credit you receive, '
+                     'not a charge [AA7]. BPS: every row is divided by the '
+                     f'SAME denominator, the ADR-leg notional (${_an25:,.0f} '
+                     'on this trade), so trades of different size compare '
+                     'directly. TWO-LEG CONVENTION, identical to '
+                     'run_backtest: the ADR leg prices in shares, the SSF leg '
+                     'in contracts, converted at the mark FX.')
         if _health:
+            # [AC6] THREE columns. The old version split each line on the first
+            # double-space and dumped everything after it into one cell, so the
+            # reading and the four-clause explanation ended up in the same
+            # column — which is what made this block a wall. check | reading |
+            # why, with the reading right-aligned so the numbers form a column
+            # you can run your eye down.
             _lvl, _head, _lines = _health
-            _hrows = []
-            for _x in _lines:
-                _k, _, _v = _x.partition('  ')
-                _hrows.append((_k.strip() if _v else '', (_v or _k).strip()))
             display(HTML(
                 _CSS + "<table class='v31tbl'><caption>POSITION HEALTH "
                 + _badge(_head, _lvl) + "</caption><tr><th>check</th>"
-                "<th style='text-align:left'>reading</th></tr>"
-                + "".join(f"<tr><td>{_k}</td><td style='text-align:left;"
-                          f"white-space:normal'>{_v}</td></tr>"
-                          for _k, _v in _hrows) + "</table>"))
+                "<th>reading</th><th style='text-align:left'>why</th></tr>"
+                + "".join(f"<tr><td>{_k}</td>"
+                          f"<td style='white-space:nowrap;font-weight:500'>"
+                          f"{_v}</td>"
+                          f"<td style='text-align:left;white-space:normal;"
+                          f"color:#5f6b76'>{_w}</td></tr>"
+                          for _k, _v, _w in _lines) + "</table>"))
         if _cmds:
             display(HTML(_CSS + "<div class='v31pre'>"
                          + "\n".join(_cmds) + "</div>"))
@@ -9861,13 +11639,18 @@ def exit_pos(adr, fut, fx, date, div_cash_pct=0.0, note=''):
         print(_m0)
     m = _mtm(float(adr), float(fut), float(fx), div_cash_pct)
     held = (pd.Timestamp(date) - pd.Timestamp(p['date'])).days
-    cost = _trade_cost(p['dir'], p['notional'], held,
-                       adr_notional=p.get('adr_notional'),
-                       hedge_notional=p.get('hedge_notional'))
-    _fee = (_fee_usd(p['adr_notional'], p['hedge_notional'])
-            if p.get('adr_notional') and p.get('hedge_notional')
-            else c['rt_fee_bps'] / 1e4 * p['notional'])   # [Y32]
-    _bpd = c['carry_long_bpd'] if p['dir'] == 1 else c['carry_short_bpd']
+    # [AC5][AC7] the PARTS, so the waterfall below can state each component
+    # with the arithmetic that actually produced it. `cost - _fee` used to be
+    # printed as "carry"; with a roll charge in the total that label would be
+    # wrong, and with funding accruing on the daily SOFR path the flat
+    # c['carry_*_bpd'] rate would no longer reproduce the number either.
+    _cp0 = _trade_cost_parts(p['dir'], p['notional'], held,
+                             adr_notional=p.get('adr_notional'),
+                             hedge_notional=p.get('hedge_notional'),
+                             entry_date=p['date'], asof_date=str(date))
+    cost = _cp0['total']
+    _fee = _cp0['fee']
+    _bpd = _cp0['bpd']            # realised over THIS hold, not the constant
     net = m['gross'] - cost
     row = dict(instrument=c['instrument'], date=str(date), point='EXIT',
                side=('LONG' if p['dir'] == 1 else 'SHORT'),
@@ -9875,7 +11658,8 @@ def exit_pos(adr, fut, fx, date, div_cash_pct=0.0, note=''):
                ordinary='', fut_1330='', fx=float(fx), adr=float(adr),
                fut=float(fut), fair='', premium_bps='',
                dev_bps='', z='', n=c['n'], threshold=c['thresh'], gate='',
-               div_carry='', in_position=False, net=round(net, 2),
+               div_carry='', div_pct=float(div_cash_pct or 0.0),  # [AD1]
+               in_position=False, net=round(net, 2),
                # [Y32] the units this exit actually closed, so a later
                # fx_fill() re-prices the SAME ticket instead of re-deriving a
                # fractional one from the notional [AA6].
@@ -9909,10 +11693,10 @@ def exit_pos(adr, fut, fx, date, div_cash_pct=0.0, note=''):
             ('units', f"{m['shares']:,d} sh + {m['contracts']} contracts",
              f"whole shares / whole {HEDGE_LBL} contracts — real fills "
              f"cannot be fractional"),
-            (f'{ADR_LBL} leg', f"${m['adr_leg']:+,.2f}",
+            (f'{ADR_LBL} leg', _money(m['adr_leg']),
              f"dir({_d}) x {m['shares']:,d} sh x ({float(adr):.4f} - "
              f"{p['entry_adr']:.4f})"),
-            (f'{HEDGE_LBL} leg', f"${m['fut_leg']:+,.2f}",
+            (f'{HEDGE_LBL} leg', _money(m['fut_leg']),
              f"-dir({_d}) x {m['contracts']} x {c['contract_sh']:,.0f} sh x "
              f"({float(fut):.2f} - {p['entry_fut']:.2f}) {LOCAL_CCY} "
              f"/ FX {float(fx):.4f}"),
@@ -9938,24 +11722,51 @@ def exit_pos(adr, fut, fx, date, div_cash_pct=0.0, note=''):
                           f"-dir({_d}) x ${p['notional']:,.0f} x "
                           f"{div_cash_pct*100:.2f}%"))
     _rows += [
-        ('GROSS', f"${m['gross']:+,.2f}",
+        ('GROSS', _money(m['gross']),
          f"the legs above, summed  ({m['bps']:+.0f} bps)"),
-        ('less fees', f"-${_fee:,.2f}",
+        ('fees', _money(-_fee),
          (f"ADR {ADR_FEE_IN_BPS}+{ADR_FEE_OUT_BPS} bps on "
           f"${p['adr_notional']:,.0f} + {HEDGE_LBL}+FX on "
           f"${p['hedge_notional']:,.0f}"
           if p.get('adr_notional') else
           f"{c['rt_fee_bps']:.0f} bps x ${p['notional']:,.0f}")),
-        ('less carry', f"-${cost - _fee:,.2f}",
-         f"{_bpd:.2f} bps/cd x {held}cd x ${p['notional']:,.0f} — "
-         + ('funding + margin (you are LONG the ADR)' if p['dir'] == 1
-            else 'borrow - rebate + margin (you are SHORT the ADR)')),
-        ('NET', f"${net:+,.2f}",
+        # [AC7] funding and margin are separate lines on separate notionals,
+        # each with the rate it really accrued at — not one blended bps/day
+        # on one notional. The sign is stated in words: on a short the
+        # funding leg is the SOFR-50 rebate and is a CREDIT.
+        ('funding / borrow'
+         + ('  (CREDIT)' if _cp0['carry_fund'] < 0 else ''),
+         _money(-_cp0['carry_fund']),
+         f"{_cp0['fund_bpd']:+.3f} bps/cd x {held}cd x "
+         f"${p.get('adr_notional') or p['notional']:,.0f} (ADR leg), at SOFR "
+         f"{_cp0['sofr']*100:.2f}% [{_cp0['sofr_src']}]"
+         + ('' if _cp0['carry_fund'] >= 0 else
+            f" — the rate is negative because you EARN it: SOFR minus "
+            f"{BORROW_SPREAD_ANN_BPS}bps on the short proceeds, so it ADDS "
+            f"to the P&L [AA7]")),
+        ('margin funding', _money(-_cp0['carry_margin']),
+         f"{_cp0['margin_bpd']:.3f} bps/cd x {held}cd x "
+         f"${p.get('hedge_notional') or p['notional']:,.0f} (hedge leg)"),
+    ]
+    if _cp0['roll']:
+        _rows.append(
+            ('contract roll [AC5]', _money(-_cp0['roll']),
+             f"{_cp0['n_rolls']} contract roll(s) x {_cp0['roll_bps']:.0f} bps "
+             f"of ${p.get('hedge_notional') or p['notional']:,.0f} — the "
+             f"{HEDGE_LBL} leg was closed in the expiring month and reopened"))
+    _rows += [
+        ('TOTAL COST', _money(-cost),
+         f"{cost / p['notional'] * 1e4:.0f} bps of the clip, over {held}cd"),
+        ('NET', _money(net),
          f"{_bps_net:+.0f} bps of the ${p['notional']:,.0f} clip"),
     ]
-    kv_table('P&L — HOW THIS NUMBER WAS BUILT', _rows, col='amount',
-             note='Each line shows the substituted formula that produced '
-                  'it, so the whole trade can be re-derived by hand.')
+    kv_table('P&L — HOW THIS NUMBER WAS BUILT', _rows,
+             col='amount  (+ in / - out)',
+             note='Each line shows the substituted formula that produced it, '
+                  'so the whole trade can be re-derived by hand. The column '
+                  'adds up: GROSS + every cost line = NET. A POSITIVE cost '
+                  'line is a credit you received, not a typo — on a short '
+                  'spread the SOFR-50 stock-loan rebate is one [AA7].')
     _note_lines = [
         f"EXCLUDES bid/ask and impact — the prices you typed are your own",
         f"fills and already crossed them. The backtest's full round trip is",
@@ -10390,8 +12201,16 @@ def scrub_ledger(max_abs_prem_bps=None, fix=False):
 POS_HEALTH_ON = True
  
 def _position_health(z, sd, gamma, gate_ok, date, mark_bps=None):
-    """[Y24] Returns (level, headline, [lines]) where level is
-    'ok' | 'warn' | 'bad'. Pure diagnosis — no side effects."""
+    """[Y24] Returns (level, headline, rows) where level is 'ok'|'warn'|'bad'
+    and rows are (check, reading, why) TRIPLES. Pure diagnosis, no side effects.
+
+    [AC6] The rows used to be free-text paragraphs with the numbers buried
+    inside them. One of them was a 47-word sentence carrying four separate
+    facts — expected reversion, the carry rate, carry to the stop, and edge
+    remaining — welded together with the figures mid-clause. That cannot be
+    scanned and cannot be compared with yesterday's. Every fact is now its own
+    row with its number in its own column, and the 'why' column is one clause,
+    never a paragraph."""
     c, p = _MANUAL['ctx'], _MANUAL['pos']
     if p is None or not POS_HEALTH_ON:
         return None, '', []
@@ -10404,13 +12223,14 @@ def _position_health(z, sd, gamma, gate_ok, date, mark_bps=None):
     if _g0 is True and not gate_ok:
         score += 2
         flags.append('gate CLOSED since entry')
-        L.append(f"gate      OPEN at entry \u2192 SHUT now. The regime that "
-                 f"justified this trade is gone; the backtest would not "
-                 f"re-enter here (it just does not force an exit either).")
+        L.append(('gate', 'OPEN at entry -> SHUT now',
+                  'the regime that justified this trade is gone. The backtest '
+                  'would not re-enter here; it just does not force an exit '
+                  'either'))
     elif gate_ok:
-        L.append(f"gate      open (unchanged since entry)")
+        L.append(('gate', 'open', 'unchanged since entry'))
     else:
-        L.append(f"gate      shut (it was already shut at entry)")
+        L.append(('gate', 'shut', 'it was already shut at entry'))
     # 2. half-life
     _hl = (np.log(0.5) / np.log(1.0 + max(gamma, -0.999))
            if (gamma == gamma and gamma < 0) else float('nan'))
@@ -10418,19 +12238,20 @@ def _position_health(z, sd, gamma, gate_ok, date, mark_bps=None):
     if _hl == _hl:
         if _hl0 == _hl0 and _hl0 and _hl > _hl0 * 1.5:
             score += 1
-            flags.append(f'half-life {_hl0:.1f}\u2192{_hl:.1f}d')
-            L.append(f"half-life {_hl0:.1f}d at entry \u2192 {_hl:.1f}d now. "
-                     f"Reversion is {_hl/_hl0:.1f}x slower, so the same edge "
-                     f"now costs {(_hl-_hl0)*_bpd:.0f}bps more carry to "
-                     f"collect.")
+            flags.append(f'half-life {_hl0:.1f}->{_hl:.1f}d')
+            L.append(('half-life', f"{_hl0:.1f}d -> {_hl:.1f}d",
+                      f"reversion is {_hl / _hl0:.1f}x slower than at entry, "
+                      f"so the same edge now costs "
+                      f"{(_hl - _hl0) * _bpd:.0f}bps more carry to collect"))
         else:
-            L.append(f"half-life {_hl:.1f}d"
-                     + (f" (entry {_hl0:.1f}d)" if _hl0 == _hl0 else ""))
+            L.append(('half-life', f"{_hl:.1f}d",
+                      (f"entry {_hl0:.1f}d" if _hl0 == _hl0 else '')))
     else:
         score += 1
         flags.append('no mean reversion in the window')
-        L.append(f"half-life gamma {gamma:+.3f} \u2265 0 — the window shows "
-                 f"NO mean reversion at all right now.")
+        L.append(('half-life', 'none',
+                  f"gamma {gamma:+.3f} >= 0 — the window shows NO mean "
+                  f"reversion at all right now"))
     # 3. drift of the mean itself
     _mu0 = p.get('entry_mu')
     _s = _series_before(str(date))
@@ -10441,73 +12262,91 @@ def _position_health(z, sd, gamma, gate_ok, date, mark_bps=None):
         if abs(_dmu) > 0.75 * sd and _away:
             score += 2
             flags.append(f'mean re-rating {_dmu:+.0f}bps against you')
-            L.append(f"drift     the rolling mean moved {_dmu:+.0f}bps "
-                     f"({abs(_dmu)/sd:.1f}\u03c3) AWAY from your side since "
-                     f"entry. That is a RE-RATING, not an oscillation: the "
-                     f"level you are short/long of is finding a new home, so "
-                     f"z can fall to 0 without the premium ever coming back "
-                     f"to where you sold it.")
+            L.append(('drift', f"{_dmu:+,.0f} bps ({abs(_dmu) / sd:.1f} sigma)",
+                      'the rolling mean moved AWAY from your side since entry '
+                      '— a RE-RATING, not an oscillation. z can fall to 0 '
+                      'without the premium ever returning to where you dealt'))
         else:
-            L.append(f"drift     rolling mean {_dmu:+.0f}bps since entry "
-                     f"({abs(_dmu)/sd:.1f}\u03c3) — no re-rating")
+            L.append(('drift', f"{_dmu:+,.0f} bps ({abs(_dmu) / sd:.1f} sigma)",
+                      'the rolling mean has not moved materially — no '
+                      're-rating'))
     # 4. z path
     _z0 = p.get('entry_z')
     if z == z and _z0 == _z0:
         if abs(z) > abs(_z0) + 0.5:
-            flags.append(f'z extended {_z0:+.2f}\u2192{z:+.2f}')
+            flags.append(f'z extended {_z0:+.2f}->{z:+.2f}')
             score += 1
-            L.append(f"z path    {_z0:+.2f} at entry \u2192 {z:+.2f} now: the "
-                     f"dislocation WIDENED. On its own this is the [Y12] "
-                     f"add-on case; with a dying gate it is the loss case.")
+            L.append(('z path', f"{_z0:+.2f} -> {z:+.2f}   WIDENED",
+                      'on its own this is the [Y12] add-on case; with a dying '
+                      'gate it is the loss case'))
         else:
-            L.append(f"z path    {_z0:+.2f} \u2192 {z:+.2f} "
-                     f"({'converging' if abs(z) < abs(_z0) else 'flat'})")
-    # 5. carry vs what is left to collect
+            L.append(('z path', f"{_z0:+.2f} -> {z:+.2f}",
+                      'converging' if abs(z) < abs(_z0) else 'flat'))
+    # 5. [AC6] carry vs what is left to collect — FOUR rows, not one sentence
     if z == z and sd == sd and sd > 0 and gamma == gamma and gamma < 0:
         _exp = abs(max(gamma, -1.0)) * abs(z) * sd
         _tot = abs(z) * sd
         _carry_left = _bpd * left
-        # [AA7] the carry can be a CREDIT now (short leg, SOFR-50 rebate), so
-        # "vs -1.2bps/day carry ... vs -23bps of carry still to run" has to be
-        # said in words or it reads as a cost with a typo.
-        if _bpd >= 0:
-            L.append(f"carry     expect {_exp:.0f}bps/day of reversion vs "
-                     f"{_bpd:.2f}bps/day of carry COST; {_tot:.0f}bps of "
-                     f"dislocation left to collect vs {_carry_left:.0f}bps of "
-                     f"carry still to burn to the {c['time_stop']}cd stop "
-                     f"({left}cd)")
-            if _tot < _carry_left:
-                score += 2
-                flags.append('carry to the stop exceeds the edge left')
-                L.append(f"          \u2192 the carry still to run EXCEEDS "
-                         f"the whole dislocation left. Holding to the time "
-                         f"stop is negative EV even if z goes to 0 perfectly.")
-        else:
-            L.append(f"carry     expect {_exp:.0f}bps/day of reversion, and "
-                     f"the position EARNS {abs(_bpd):.2f}bps/day of carry "
-                     f"({abs(_carry_left):.0f}bps more if held to the "
-                     f"{c['time_stop']}cd stop) \u2014 time is on your side here, "
-                     f"so there is no carry hurdle to clear [AA7]. "
-                     f"{_tot:.0f}bps of dislocation left to collect.")
+        L.append(('edge left', f"{_tot:,.0f} bps",
+                  f"the dislocation still on the table: |z| {abs(z):.2f} x "
+                  f"sigma {sd:,.0f}bps"))
+        L.append(('expected reversion', f"{_exp:,.0f} bps/day",
+                  f"|gamma| {abs(gamma):.3f} x that dislocation — what one "
+                  f"more day of holding is worth"))
+        # [AA7] the carry can be a CREDIT (short leg, SOFR-50 rebate), so the
+        # sign is spelled out in words rather than left as a bare minus.
+        L.append(('carry rate',
+                  f"{abs(_bpd):.2f} bps/day "
+                  + ('COST' if _bpd >= 0 else 'EARNED'),
+                  'funding + margin across the two legs'
+                  + ('' if _bpd >= 0 else
+                     '. The short proceeds earn more than the position pays, '
+                     'so time is on your side and there is no hurdle to clear '
+                     '[AA7]')))
+        L.append(('carry to the stop',
+                  f"{abs(_carry_left):,.0f} bps "
+                  + ('to burn' if _bpd >= 0 else 'to earn'),
+                  f"{left}cd left of the {c['time_stop']}cd stop"))
+        if _bpd >= 0 and _tot < _carry_left:
+            score += 2
+            flags.append('carry to the stop exceeds the edge left')
+            L.append(('  -> VERDICT', 'negative EV to the stop',
+                      'the carry still to run EXCEEDS the whole dislocation '
+                      'left, so holding to the time stop loses money even if '
+                      'z goes to 0 perfectly'))
+    # 5b. [AC5] the roll, when this hold is heading for one
+    try:
+        _nx = next_roll_date(p['date'])
+        _dleft = (pd.Timestamp(str(_nx)) - pd.Timestamp(str(date))).days
+        if _nx is not None and _dleft <= max(int(c['time_stop']), 30):
+            L.append(('contract roll', f"{_nx}  ({_dleft}cd away)",
+                      f"holding past it costs {roll_cost_bps():.0f}bps of the "
+                      f"hedge leg per roll, charged automatically [AC5]"))
+    except Exception:
+        pass
     # 6. drawdown context
     if mark_bps is not None and c['hard_stop_bps'] > 0:
         _room = c['hard_stop_bps'] + mark_bps
-        L.append(f"stop      mark {mark_bps:+.0f}bps, hard stop "
-                 f"{-c['hard_stop_bps']:.0f}bps \u2192 {_room:.0f}bps of room")
+        L.append(('hard stop', f"{_room:,.0f} bps of room",
+                  f"mark {mark_bps:+.0f}bps against a "
+                  f"{-c['hard_stop_bps']:.0f}bps stop"))
         if mark_bps < -0.6 * c['hard_stop_bps']:
             score += 1
             flags.append('inside 40% of the hard stop')
     _mk = [m['bps'] for m in _MANUAL['marks']] if _MANUAL['marks'] else []
     if _mk and mark_bps is not None:
-        L.append(f"path      best {max(_mk):+.0f}bps / worst {min(_mk):+.0f}"
-                 f"bps so far"
-                 + (f", giving back {max(_mk)-mark_bps:.0f}bps from the peak"
-                    if max(_mk) > mark_bps else ""))
+        L.append(('path so far',
+                  f"best {max(_mk):+,.0f} / worst {min(_mk):+,.0f} bps",
+                  (f"giving back {max(_mk) - mark_bps:,.0f}bps from the peak"
+                   if max(_mk) > mark_bps else 'at or near the peak')))
     lvl = 'bad' if score >= 4 else ('warn' if score >= 2 else 'ok')
     head = ({'ok': 'HEALTHY', 'warn': 'WATCH', 'bad': 'DETERIORATING'}[lvl]
-            + (' \u2014 ' + '; '.join(flags[:3]) if flags else
-               ' \u2014 regime unchanged since entry'))
-    L.append("advisory only — not a backtested exit rule [Y24]")
+            + (' — ' + '; '.join(flags[:3]) if flags else
+               ' — regime unchanged since entry'))
+    L.append(('', 'ADVISORY ONLY',
+              'none of these is a backtested exit rule. If one keeps proving '
+              'right, add it to run_backtest and re-run the grid before '
+              'trusting it live [Y24]'))
     return lvl, head, L
  
 # ============================================================================
@@ -10536,12 +12375,12 @@ def fx_fill(date, fx, point=None):
     if not (20.0 <= fx <= 45.0):
         print(f"[Y21] FX {fx} outside 20–45 — not applied"); return
     led = _read_ledger()
-    _pts = [point] if point else ['ENTRY', 'EXIT']
+    _pts = [point] if point else ['ENTRY', 'REDUCE', 'EXIT']
     _m = ((led['instrument'] == c['instrument'])
           & (led['date'].astype(str) == str(date))
           & (led['point'].isin(_pts)))
     if not _m.any():
-        print(f"[Y21] no ENTRY/EXIT row on {date} — nothing to amend")
+        print(f"[Y21] no ENTRY/REDUCE/EXIT row on {date} — nothing to amend")
         return
     for _ix in led.index[_m]:
         _r = led.loc[_ix]
@@ -10550,41 +12389,31 @@ def fx_fill(date, fx, point=None):
         led.loc[_ix, 'fx_src'] = 'next_open'          # [AA6] this one is real
         print(f"[Y21] {_r['point']} {date}: FX {_old:.4f} -> {fx:.4f} "
               f"({LOCAL_LBL} open {FX_HEDGE_OPEN_UTC}Z — no longer provisional)")
-        if _r['point'] == 'EXIT' and str(_r['net']) not in ('', 'nan'):
-            # [AA6] BUGFIX — the SSF-leg delta was computed with the LEGACY
-            # FRACTIONAL formula:
-            #     -dir x notional x (fut_x/fut_e - 1) x fx_entry x (1/new - 1/old)
-            # while the P&L it was patching came from the INTEGER-unit form
-            #     -dir x contracts x contract_sh x (fut_x - fut_e) / fx.
-            # Two errors compounded: (a) the fractional hedge differs from the
-            # whole-contract one by the rounding residue, and (b) `notional`
-            # on an ENTRY row is the ADR-LEG notional [Y32], not the hedge
-            # leg, so the delta was scaled off the wrong base entirely. The
-            # exit FX is a pure re-conversion of a TWD number, so it is
-            # computed exactly, from the stored contract count.
-            _ent = led[(led['instrument'] == c['instrument'])
-                       & (led['point'] == 'ENTRY')
-                       & (led['date'].astype(str) < str(date))]
-            if len(_ent):
-                _e = _ent.sort_values('date').iloc[-1]
-                _dir = 1 if str(_e['side']).upper() == 'LONG' else -1
-                _cn = (_led_num(_r, 'contracts')
-                       or _led_num(_e, 'contracts'))
-                if _cn:
-                    _twd = (-_dir * float(_cn) * float(c['contract_sh'])
-                            * (float(_r['fut']) - float(_e['fut'])))
-                    _dlt = _twd * (1.0 / fx - 1.0 / _old)
-                    _how = (f"{LOCAL_CCY} {_twd:+,.0f} reconverted "
-                            f"1/{fx:.4f} - 1/{_old:.4f}")
-                else:      # pre-[Y32] ledger with no stored units
-                    _nt = float(_e['notional'])
-                    _fr = float(_r['fut']) / float(_e['fut'])
-                    _dlt = (-_dir * _nt * (_fr - 1.0) * float(_e['fx'])
-                            * (1.0 / fx - 1.0 / _old))
-                    _how = 'legacy fractional form (no stored units)'
-                led.loc[_ix, 'net'] = round(float(_r['net']) + _dlt, 2)
-                print(f"       {HEDGE_LBL}-leg P&L delta {_dlt:+,.2f} "
-                      f"({_how}) -> net ${float(led.loc[_ix, 'net']):+,.2f}")
+    # ---------------------------------------------------------------- [AD2]
+    # RE-DERIVE, DO NOT PATCH. The old code adjusted the stored `net` on an
+    # EXIT row by an arithmetic delta for the re-converted TWD leg. That was
+    # exact for a ONE-LEG position closed in ONE go, and wrong for anything
+    # else: it read the basis off "the last ENTRY row before this date", so a
+    # position built from several legs was re-priced against the newest leg
+    # instead of the blended average, and an FX amendment on an ENTRY row
+    # never propagated to the realisations that came after it at all.
+    #
+    # [AD1] made patching unnecessary. The walk recomputes every realisation
+    # from the average cost basis and the stored prints, so the honest move is
+    # to CLEAR the stored P&L on every realisation from this date onward and
+    # let the rebuild produce it again with the corrected FX in place.
+    _touched = led.index[_m]
+    _from = min(str(led.loc[_ix, 'date']) for _ix in _touched)
+    _clr = led.index[(led['instrument'] == c['instrument'])
+                     & (led['point'].isin(['REDUCE', 'EXIT']))
+                     & (led['date'].astype(str) >= str(_from))]
+    if len(_clr):
+        # NaN, not '': pandas 3.0 refuses to write an empty string into a
+        # float64 column, and _led_num already reads NaN as "absent".
+        led.loc[_clr, 'net'] = float('nan')
+        print(f"       cleared the stored P&L on {len(_clr)} realisation(s) "
+              f"from {_from} onward — they are recomputed from the corrected "
+              f"FX against the position's AVERAGE entry basis [AD2]")
     _write_ledger(led)
     _rebuild()
     _fx = _fx_status()                                    # [AA6]
@@ -10607,7 +12436,8 @@ def enter(side, adr, fut, fx, date, notional=None, note=''):
     _r = _enter_v31_11(side, adr, fut, fx, date, notional=notional, note=note)
     # [AA2] only remind when the write actually produced a position, and only
     # for the rows that are genuinely still provisional [AA6].
-    if FX_EXEC_MODE == 'spot_next_open' and _MANUAL['pos'] is not None:
+    if (FX_EXEC_MODE == 'spot_next_open' and _MANUAL['pos'] is not None
+            and not _ENTER_REFUSED[0]):                       # [AC8]
         say(f"[Y21] FX {float(fx):,.4f} is PROVISIONAL — the hedge deals at "
             f"the NEXT {LOCAL_LBL} open ({FX_HEDGE_OPEN_UTC} UTC = 09:00 "
             f"Taipei). Tomorrow: fx_fill('{date}', <{FX_LBL} 09:00>)", 'warn')
@@ -10645,7 +12475,7 @@ def add_to(adr, fut, fx, date, notional=None, note=''):
                shares=int(_u['shares']), contracts=int(_u['contracts']),
                ordinary='', fut_1330='', fx=float(fx), adr=float(adr),
                fut=float(fut), fair='', premium_bps='', dev_bps='', z='',
-               gamma='', hl='', drift='',
+               gamma='', hl='', drift='', drift_now='',
                n=c['n'], threshold=c['thresh'], gate='', div_carry='',
                in_position=True, net='',
                fx_src=('provisional' if FX_EXEC_MODE == 'spot_next_open'
@@ -10670,6 +12500,254 @@ def add_to(adr, fut, fx, date, notional=None, note=''):
     say(f"time stop still anchors on the FIRST leg ({p['date']}) — an add "
         f"does NOT reset the clock", 'warn')
     return p
+# ============================================================================
+# [AD2] reduce_pos — TAKE SOME OFF WITHOUT CLOSING THE TRADE.
+# ----------------------------------------------------------------------------
+# The mirror of add_to(). Until [AD1] the desk could only be all-in or flat:
+# an EXIT closed everything, so scaling out meant closing and re-entering,
+# which resets the time stop, re-pays the full round trip on the part you
+# wanted to keep, and breaks the trade record into two unrelated trades.
+#
+# WHAT IT DOES. Closes the units you name at today's prints, realises their
+# P&L at the position's AVERAGE entry cost, and leaves the rest open with:
+#   * the same average entry prices (average cost, not FIFO — the only
+#     convention consistent with how add_to blends legs in),
+#   * the same time stop, anchored on the first leg,
+#   * its own row in the trade record, so a trim counts in the win rate and
+#     shows on the P&L chart exactly like a close.
+#
+# SIZE IT BY WHATEVER YOU ACTUALLY THINK IN. The SSF leg is the granular one
+# (one contract is ~US$40-150k), so contracts are the master and the ADR
+# shares follow proportionally — that keeps the hedge ratio of the REMAINING
+# position equal to the ratio you entered with, which is the thing a trim must
+# not disturb.
+#     reduce_pos(adr=.., fut=.., fx=.., date=.., frac=0.5)      half
+#     reduce_pos(..., contracts=6)                              6 SSF
+#     reduce_pos(..., notional=250_000)                         ~$250k
+# ============================================================================
+def reduce_pos(adr, fut, fx, date, frac=None, contracts=None, shares=None,
+               notional=None, div_cash_pct=0.0, note=''):
+    """[AD2] Partially unwind the open position. Returns the position that
+    REMAINS (None if the trim happened to close it)."""
+    c, p = _MANUAL['ctx'], _MANUAL['pos']
+    if c is None:
+        say('run setup_manual() first', 'bad'); return None
+    if p is None:
+        say('no open position to reduce', 'bad'); return None
+    _pc, _ps = int(p.get('contracts') or 0), int(p.get('shares') or 0)
+    if _pc <= 0 or _ps <= 0:
+        say('this position has no stored units — reduce needs them. Re-run '
+            'enter(...) so the ticket is written properly [Y32]', 'bad')
+        return p
+    # ---- how many CONTRACTS are coming off ------------------------------
+    if contracts is not None:
+        _cn_out = int(round(float(contracts)))
+        _how = f"{_cn_out} contract(s), as asked"
+    elif frac is not None:
+        _cn_out = int(round(float(frac) * _pc))
+        _how = f"{float(frac):.0%} of {_pc} contracts"
+    elif shares is not None:
+        _cn_out = int(round(float(shares) / max(_ps, 1) * _pc))
+        _how = f"{float(shares):,.0f} shares -> the contracts that hedge them"
+    elif notional is not None:
+        _cn_out = int(round(float(notional) / max(p['c_usd'], 1e-9)))
+        _how = (f"${float(notional):,.0f} / ${p['c_usd']:,.0f} per contract")
+    else:
+        say('say how much: frac=0.5, contracts=6, shares=5000 or '
+            'notional=250_000', 'bad')
+        return p
+    if _cn_out <= 0:
+        say(f"that rounds to ZERO contracts ({_how}) — one {HEDGE_LBL} "
+            f"contract is ${p['c_usd']:,.0f}, so that is the smallest trim "
+            f"this position can do", 'bad')
+        return p
+    if _cn_out >= _pc:
+        say(f"that is the WHOLE position ({_cn_out} of {_pc} contracts) — a "
+            f"full close is exit_pos(), which books it as a completed trade "
+            f"and prints the full P&L waterfall. Refusing so a trim cannot "
+            f"become a close by rounding.", 'bad')
+        say(f"exit_pos(adr={float(adr):.4f}, fut={float(fut):.2f}, "
+            f"fx={float(fx):.4f}, date='{date}')", 'info')
+        return p
+    # shares follow the contracts, so the REMAINING position keeps the hedge
+    # ratio it was entered with
+    _sh_out = int(round(_ps * _cn_out / _pc))
+    _sh_out = max(1, min(_sh_out, _ps - 1))
+    # ---- what it realises ------------------------------------------------
+    _cu_in = c['contract_sh'] * p['entry_fut'] / p['entry_fx']
+    _an_sl, _hn_sl = _sh_out * p['entry_adr'], _cn_out * _cu_in
+    _wd = p.get('wdate') or p['date']
+    _held = max((pd.Timestamp(str(date)) - pd.Timestamp(str(_wd))).days, 0)
+    _al = p['dir'] * (float(adr) - p['entry_adr']) * _sh_out
+    _fl = (-p['dir'] * _cn_out * c['contract_sh']
+           * (float(fut) - p['entry_fut']) / float(fx))
+    _dv = -p['dir'] * _hn_sl * float(div_cash_pct or 0.0)
+    _cp = _trade_cost_parts(p['dir'], _an_sl, _held,
+                            adr_notional=_an_sl, hedge_notional=_hn_sl,
+                            entry_date=str(_wd), asof_date=str(date))
+    _gross = _al + _fl + _dv
+    _net = _gross - _cp['total']
+    row = dict(instrument=c['instrument'], date=str(date), point='REDUCE',
+               side=('LONG' if p['dir'] == 1 else 'SHORT'), notional=_an_sl,
+               shares=int(_sh_out), contracts=int(_cn_out),
+               ordinary='', fut_1330='', fx=float(fx), adr=float(adr),
+               fut=float(fut), fair='', premium_bps='', dev_bps='', z='',
+               gamma='', hl='', drift='', drift_now='',
+               n=c['n'], threshold=c['thresh'], gate='', div_carry='',
+               div_pct=float(div_cash_pct or 0.0),
+               in_position=True, net=round(_net, 2),
+               fx_src=('provisional' if FX_EXEC_MODE == 'spot_next_open'
+                       else 'ndf'),                            # [AA6]
+               note=('TRIM ' + str(note)).strip())
+    led = _read_ledger()
+    # [AA2] scope the row-replace: re-running the same trim on the same date
+    # CORRECTS it, exactly like add_day and enter.
+    led = led[~((led['instrument'] == c['instrument'])
+                & (led['point'] == 'REDUCE')
+                & (led['date'].astype(str) == str(date)))]
+    _write_ledger(pd.concat([led, pd.DataFrame([row])], ignore_index=True))
+    _rebuild()
+    if not _assert_state('REDUCE', str(date)):
+        return _MANUAL['pos']
+    q = _MANUAL['pos']
+    _side = 'LONG' if p['dir'] == 1 else 'SHORT'
+    banner(f"TRIM — took {_cn_out} of {_pc} {HEDGE_LBL} off the {_side} spread",
+           sub=f"{date}   realised {_money(_net, 0)} "
+               f"({_net / _an_sl * 1e4:+.0f} bps of the slice)"
+               + (f"   ·  {q['contracts']} contracts still on"
+                  if q else "   ·  position is now FLAT"))
+    fact_table(
+        'WHAT THE TRIM REALISED',
+        [('sized by', _how, f"1 {HEDGE_LBL} = ${p['c_usd']:,.0f}, so the trim "
+                            f"can only move in whole contracts"),
+         ('units closed', f"{_sh_out:,d} sh + {_cn_out} {HEDGE_LBL}",
+          f"{_sh_out / _ps:.0%} of the shares, {_cn_out / _pc:.0%} of the "
+          f"contracts — kept proportional so the REMAINING hedge ratio is "
+          f"unchanged"),
+         ('realised at', f"avg cost ADR {p['entry_adr']:.4f}",
+          f"average cost, not FIFO — the same convention add_to() blends "
+          f"with. The units left keep this same basis"),
+         (f'{ADR_LBL} leg', _money(_al), f"dir({p['dir']:+d}) x {_sh_out:,d} sh "
+          f"x ({float(adr):.4f} - {p['entry_adr']:.4f})"),
+         (f'{HEDGE_LBL} leg', _money(_fl),
+          f"-dir({p['dir']:+d}) x {_cn_out} x {c['contract_sh']:,.0f} sh x "
+          f"({float(fut):.2f} - {p['entry_fut']:.2f}) / {float(fx):.4f}"),
+         ('GROSS', _money(_gross), f"{_gross / _an_sl * 1e4:+.0f} bps of the "
+          f"${_an_sl:,.0f} slice"),
+         ('costs', _money(-_cp['total']),
+          f"fees {_money(-_cp['fee'], 0)}, carry {_money(-_cp['carry'], 0)} "
+          f"over {_held}cd"
+          + (f", roll {_money(-_cp['roll'], 0)}" if _cp['roll'] else '')),
+         ('NET realised', _money(_net),
+          f"booked as a PARTIAL trade in the paper record — it counts in the "
+          f"win rate and shows on the P&L chart"),
+         ('still open',
+          (f"{q['shares']:,d} sh + {q['contracts']} {HEDGE_LBL} "
+           f"(${q['notional']:,.0f})" if q else 'nothing — FLAT'),
+          (f"time stop unchanged: still anchored on {q['date']}" if q else ''))],
+        note='A trim does NOT reset the clock and does NOT re-price the units '
+             'you kept. Their entry basis, their time stop and their carry '
+             'clock all continue from the original fill [AD2].')
+    if q is not None and FX_EXEC_MODE == 'spot_next_open':
+        say(f"[Y21] FX {float(fx):,.4f} is PROVISIONAL — the TWD leg of this "
+            f"trim deals at the NEXT {LOCAL_LBL} open. Tomorrow: "
+            f"fx_fill('{date}', <{FX_LBL} 09:00>)", 'warn')
+    return q
+# ============================================================================
+# [AD3] blotter — EVERY ACTION, IN ORDER, WITH WHAT IT DID.
+# ----------------------------------------------------------------------------
+# show_ledger() prints the raw CSV: every row, every column, including the
+# ~250 daily scoring rows that are not actions at all. The trade record in
+# status() prints only CLOSED round trips. Neither answers "what have I
+# actually done on this name, and what did each one do to the P&L" — which is
+# the question you ask when reviewing your own trading.
+#
+# The blotter is that answer: one line per DEAL (entry, add, trim, close),
+# never a scoring row, with the units, the prices, what it realised, the
+# position it left behind, and the running realised P&L down the right-hand
+# side. It reads _MANUAL['events'], which is the same walk the position
+# itself is derived from [AD1] — so the blotter cannot disagree with the desk.
+# ============================================================================
+def blotter(tail=None, show_open=True):
+    """[AD3] The deal-by-deal record. tail=N for the last N deals."""
+    c = _MANUAL['ctx']
+    if c is None:
+        say('run setup_manual() first', 'bad'); return None
+    _ev = _MANUAL.get('events') or []
+    if not _ev:
+        say('no deals yet — enter(...) records the first one', 'info')
+        return None
+    # [AD3] the running total accumulates over the WHOLE record and only the
+    # DISPLAY is tailed. Accumulating over the tail would restart "cum
+    # realised" at zero mid-history, so blotter(tail=3) would have quietly
+    # contradicted blotter() about how much the name has made.
+    _cum_by_i, _run = [], 0.0
+    for e in _ev:
+        if e.get('net') is not None:
+            _run += float(e['net'])
+        _cum_by_i.append(_run)
+    _lo = 0 if tail is None else max(len(_ev) - int(tail), 0)
+    _rows, _n_deal = [], 0
+    for _i3, e in enumerate(_ev[_lo:], start=_lo):
+        _n_deal += 1
+        _run = _cum_by_i[_i3]
+        _net = e.get('net')
+        _side = 'LONG' if e['dir'] == 1 else 'SHORT'
+        _sgn = '+' if e['kind'] in ('ENTRY', 'ADD') else '-'
+        _rows.append({
+            'date': e['date'],
+            'action': {'ENTRY': 'OPEN', 'ADD': 'ADD', 'REDUCE': 'TRIM',
+                       'EXIT': 'CLOSE', 'CLOSE': 'CLOSE'}[e['kind']],
+            'side': _side,
+            'units': f"{_sgn}{e['shares']:,d} sh / {_sgn}{e['contracts']} "
+                     f"{HEDGE_LBL}",
+            'ADR': e['adr'], HEDGE_LBL: e['fut'], 'FX': e['fx'],
+            'slice $': e['notional'],
+            'realised $': (float(_net) if _net is not None else None),
+            'bps': ((float(_net) / e['notional'] * 1e4)
+                    if (_net is not None and e['notional']) else None),
+            'cd': (e.get('held') if e.get('held') is not None else None),
+            'position after': (f"{e['pos_shares']:,d} sh / "
+                               f"{e['pos_contracts']} {HEDGE_LBL}"
+                               if e['pos_shares'] else 'FLAT'),
+            'cum realised $': _run})
+    show_html_table(
+        _pd.DataFrame(_rows).set_index('date'),
+        title=(f"BLOTTER — {_n_deal} deal(s) on {c['instrument']}"
+               + (f" (last {_n_deal} of {len(_ev)})" if _lo else '')),
+        fmt={'ADR': '{:,.4f}', HEDGE_LBL: '{:,.2f}', 'FX': '{:.4f}',
+             'slice $': '{:,.0f}', 'realised $': '{:+,.0f}', 'bps': '{:+,.0f}',
+             'cd': '{:.0f}', 'cum realised $': '{:+,.0f}'},
+        note=_bullets([
+            'OPEN / ADD put units on and realise nothing — their realised '
+            'column is blank by definition, not by omission',
+            'TRIM and CLOSE realise at the position AVERAGE cost, so "bps" is '
+            'measured against the slice that came off, not the whole trade',
+            'cd is the hold of THAT slice, measured from the share-weighted '
+            'average entry date — a leg added later is not charged for days '
+            'it was not on [AD1]',
+            '"cum realised" is cash booked. It does NOT include the mark on '
+            'whatever is still open — chart() plots both together']))
+    if show_open and _MANUAL['pos'] is not None:
+        p = _MANUAL['pos']
+        _mk = _MANUAL['marks'][-1] if _MANUAL['marks'] else None
+        fact_table(
+            'STILL OPEN',
+            [('position', f"{'LONG' if p['dir'] == 1 else 'SHORT'} "
+                          f"{p['shares']:,d} sh / {p['contracts']} {HEDGE_LBL}",
+              f"${p['notional']:,.0f} at avg ADR {p['entry_adr']:.4f}"),
+             ('opened', p['date'],
+              f"{p.get('n_legs', 1)} leg(s)"
+              + (f", weighted entry {p['wdate']}"
+                 if p.get('wdate') and p['wdate'] != p['date'] else '')),
+             ('mark', (f"{_money(_mk['gross'], 0)} ({_mk['bps']:+.0f} bps)"
+                       if _mk else 'no scored day yet'),
+              'unrealised, gross of the cost to close'),
+             ('realised so far', _money(_run, 0),
+              'booked cash from every trim and close above')],
+            note='Total P&L on this name = realised + the mark on what is '
+                 'still open. chart() shows the two stacked.')
+    return _pd.DataFrame(_rows)
 def gate_history(tail=15):
     """[Y37g] The gate's LEVELS over the last `tail` typed days — the trend
     view the verdict alone hides. gamma more negative = faster reversion;
@@ -10683,19 +12761,48 @@ def gate_history(tail=15):
     led = led.drop_duplicates('date', keep='last').sort_values('date').tail(tail)
     if not len(led):
         say('no typed days yet', 'info'); return
-    _rows = [{'date': str(r['date']), 'gamma': _led_num(r, 'gamma'),
-              'half-life d': _led_num(r, 'hl'), 'drift': _led_num(r, 'drift'),
-              'gate': str(r['gate'])} for _, r in led.iterrows()]
+    # [AC4] head-room, not just the level: 'drift 0.44' means nothing without
+    # 'ceiling 0.50' beside it. The bar column makes a build-up scannable at a
+    # glance, which is the whole point of a history view.
+    _cap = float(c['drift_max'])
+    def _bar(v):
+        if v is None or v != v:
+            return ''
+        _f = min(max(v / _cap, 0.0), 1.6)
+        _n = int(round(_f * 10))
+        return ('█' * min(_n, 10) + '░' * max(0, 10 - _n)
+                + ('  OVER' if v > _cap else ''))
+    _rows = []
+    for _, r in led.iterrows():
+        _d = _led_num(r, 'drift')
+        _dn = _led_num(r, 'drift_now')
+        _rows.append({'date': str(r['date']), 'gamma': _led_num(r, 'gamma'),
+                      'half-life d': _led_num(r, 'hl'), 'drift': _d,
+                      f'vs {_cap:.2f} ceiling': _bar(_d),
+                      'nowcast [AC4]': _dn,
+                      'lead': (_dn - _d if (_d == _d and _dn == _dn) else None),
+                      'gate': str(r['gate'])})
     show_html_table(
         _pd.DataFrame(_rows).set_index('date'),
         title=f'GATE LEVELS — last {len(_rows)} day(s)',
-        fmt={'gamma': '{:+.3f}', 'half-life d': '{:.1f}', 'drift': '{:.2f}'},
-        note=f"gamma is the AR(1) slope of the de-trended deviation "
-             f"(negative = mean-reverting), half-life its implied speed, "
-             f"drift the [Z4] mean-shift ratio vs the "
-             f"{c['drift_max']:.2f} ceiling. A drift GRINDING UP across "
-             f"days is a re-rating building — the single most useful trend "
-             f"to watch here.")
+        fmt={'gamma': '{:+.3f}', 'half-life d': '{:.1f}', 'drift': '{:.2f}',
+             'nowcast [AC4]': '{:.2f}', 'lead': '{:+.2f}'},
+        note=f"gamma = AR(1) slope of the de-trended deviation (negative = "
+             f"mean-reverting). half-life = its implied speed. drift = the "
+             f"[Z4] 5-row mean-shift ratio. nowcast = the [AC4] slope "
+             f"statistic in the SAME units. lead = nowcast minus drift: a "
+             f"persistently POSITIVE lead means a re-rating the shipped test "
+             f"has not registered yet. Currently DRIFT_MODE='{DRIFT_MODE}', "
+             f"so the {'drift' if DRIFT_MODE == 'lagged' else 'nowcast' if DRIFT_MODE == 'nowcast' else 'worse of the two'} "
+             f"column is the one that decides.")
+    _dd = [r['drift'] for r in _rows if r['drift'] == r['drift']]
+    if len(_dd) >= 3:
+        _trend = _dd[-1] - _dd[0]
+        say(f"drift over these {len(_dd)} day(s): {_dd[0]:.2f} → "
+            f"{_dd[-1]:.2f} ({_trend:+.2f}) against a {_cap:.2f} ceiling",
+            'warn' if _trend > 0.15 else 'info',
+            'grinding up = a re-rating building' if _trend > 0.15
+            else 'no build-up')
 # ============================================================================
 # [Y37] BLOOMBERG PULL & LIVE VIEW — stop typing what the terminal knows.
 # ----------------------------------------------------------------------------
@@ -11114,9 +13221,33 @@ def live_now():
     _x = _now.normalize() + (pd.Timedelta(hours=20) if _dst
                              else pd.Timedelta(hours=21))
     if not (_o <= _now <= _x):
-        say(f"US market is CLOSED (now {_now.strftime('%H:%M')}Z; session "
-            f"{_o.strftime('%H:%M')}–{_x.strftime('%H:%M')}Z today) — "
-            f"live_now() only works while the ADR is actually trading", 'warn')
+        # [AC9] say WHEN, not just NO. The old line stated the window and left
+        # the reader to do UTC arithmetic against their own clock at 5am.
+        _nxt = _o if _now < _o else (_o + pd.Timedelta(days=1))
+        while _nxt.weekday() >= 5:               # skip the weekend
+            _nxt = _nxt + pd.Timedelta(days=1)
+        _wait = (_nxt - _now)
+        fact_table(
+            'LIVE CARD UNAVAILABLE — the US market is closed',
+            [('now', f"{_now.strftime('%H:%M')}Z",
+              f"your local clock reads "
+              f"{pd.Timestamp.now().strftime('%H:%M')}"),
+             ('US session today',
+              f"{_o.strftime('%H:%M')}–{_x.strftime('%H:%M')}Z",
+              f"{'summer' if _dst else 'winter'} clock"),
+             ('opens in',
+              f"{int(_wait.total_seconds() // 3600)}h "
+              f"{int(_wait.total_seconds() % 3600 // 60)}m",
+              f"{_nxt.strftime('%a %d %b %H:%M')}Z"),
+             ('why it refuses', 'both legs must be live',
+              'the ADR only prints during US hours and that is also when the '
+              'SSF night session is quotable. Outside the overlap one leg is '
+              'a stale close, and a premium built from one live and one stale '
+              'price is not a premium'),
+             ('what to use instead', "pull_day('YYYY-MM-DD')",
+              'the finished snapshots for a completed session')],
+            note='This is the one real constraint on the live card [AC9]: it '
+                 'is a market-hours limit, not a software one.')
         return None
     if not _MANUAL['days']:
         say('type or pull at least one day first — the live card marks '
@@ -11191,19 +13322,46 @@ def live_now():
                + (f" [{_ssf_tk}{'' if _ssf_ok else ' ?CONTRACT'}]" if _fut_live
                   else ' (ANCHOR — no live SSF print)')
                + f"   FX {_fx_live:,.4f}")
-    say(f"fair {fair:,.4f} -> premium {prem:+,.0f} bps | z {z:+.2f} "
-        f"(band ±{c['thresh']:.2f})",
-        'warn' if abs(z) > c['thresh'] else 'info')
-    say(f"gate {'OPEN' if gate_ok else 'SHUT'} — {gtxt}",
-        'ok' if gate_ok else 'bad')
+    # [AC9] one table instead of four say() lines — the live card is read in a
+    # hurry, in the middle of a session, and a stack of prose lines is the
+    # worst possible shape for that.
+    _dev_live = (prem - mu) if mu == mu else float('nan')
+    _rows9 = [
+        ('ADR', f"{_live['adr']:,.4f}", f"live print, {c['adr_ticker']}"),
+        (HEDGE_LBL,
+         f"{_fut_for_fair:,.2f}" if _fut_for_fair else 'n/a',
+         (f"live, {_ssf_tk}" + ('' if _ssf_ok else '  — CONTRACT CHECK FAILED')
+          if _fut_live else
+          f"ANCHOR from {_anchor['date']} — no live SSF print came back")),
+        ('FX', f"{_fx_live:,.4f}",
+         'live USDTWD' if 'fx' in _live else
+         f"anchor {_anchor['date']} fixing"),
+        ('fair', f"{fair:,.4f}", f"FAIR_MODE='{c['fair_mode']}'"),
+        ('premium', f"{prem:+,.0f} bps",
+         f"deviation {_dev_live:+,.0f} bps from the {c['n']}-row mean"
+         if _dev_live == _dev_live else ''),
+        ('z', f"{z:+.2f}",
+         f"entry band is |z| > {c['thresh']:.2f}"
+         + ('  — THROUGH THE BAND' if abs(z) > c['thresh'] else '')),
+        ('cost floor', f"{c['min_dev_bps']:.0f} bps",
+         'the deviation must also clear this before an entry qualifies [H4]'
+         + ('  — CLEARED' if (_dev_live == _dev_live
+                              and abs(_dev_live) >= c['min_dev_bps'])
+            else '')),
+        ('gate', 'OPEN' if gate_ok else 'SHUT', gtxt)]
     if _MANUAL['pos'] is not None and _fut_live:
         m = _mtm(_live['adr'], _fut_live, _fx_live)
-        say(f"open position mark: ${m['gross']:+,.0f} ({m['bps']:+.0f} bps)",
-            'ok' if m['gross'] >= 0 else 'warn')
-    say('reminder: a LIVE z uses the live prints against CLOSE-based '
-        'history — indicative, not the booked signal', 'info')
+        _rows9.append(('open position', f"${m['gross']:+,.0f} "
+                                        f"({m['bps']:+.0f} bps)",
+                       f"marked live against the "
+                       f"{'LONG' if _MANUAL['pos']['dir'] == 1 else 'SHORT'} "
+                       f"opened {_MANUAL['pos']['date']} — gross, before cost"))
+    fact_table(f"LIVE CARD — {_now.strftime('%H:%M')}Z", _rows9,
+               note='INDICATIVE, not the booked signal: a live z scores live '
+                    'prints against a CLOSE-based history, and the day is '
+                    'booked from the US close [AA1]. Nothing here is saved.')
     return dict(adr=_live['adr'], fut=_fut_live, fx=_fx_live,
-                fair=fair, prem_bps=prem, z=z)
+                fair=fair, prem_bps=prem, z=z, gate=gate_ok)
 banner("v32 TW — EXTRAS LOADED", sub=f"{INSTRUMENT}: {ADR_TICKER} vs {ORD_TICKER}")
 menu([
     ("setup_manual()", "paper desk — start here each session"),
@@ -11211,10 +13369,24 @@ menu([
     ("pull_day('2026-07-28')", "[Y37] fetch a day's inputs from Bloomberg "
                                "(preview; save=True books it) — ~140d of "
                                "intraday history"),
-    ("live_now()", "[Y37] live premium/z card, US hours only"),
+    ("live_now()", "[Y37][AC9] live premium/z card — also the panel's 'Live "
+                   "now' button. US trading hours only: that is the one "
+                   "window where BOTH legs are quotable"),
     ("add_to(adr=..., fut=..., fx=..., date=...)",
-     "[Y38] add a leg while the spike extends (the card suggests it)"),
-    ("gate_history()", "[Y37g] gamma / half-life / drift trend, from the ledger"),
+     "[Y38][AC8] add a leg to an OPEN position — 'yesterday I entered, today "
+     "I want more'. Also the panel's 'Add to position' button"),
+    ("reduce_pos(adr=..., fut=..., fx=..., date=..., frac=0.5)",
+     "[AD2] PARTIAL UNWIND — take some off and keep the rest. Also "
+     "contracts=6 / shares=5000 / notional=250_000, and the panel's 'Trim' "
+     "button. Time stop and entry basis are unchanged"),
+    ("blotter()", "[AD3] every deal in order — units, prices, what each one "
+                  "realised, the position it left and running P&L"),
+    ("chart()", "[AD4] premium with every deal marked, the open mark, the "
+                "performance track (realised + unrealised) and P&L per deal"),
+    ("gate_history()", "[Y37g][AC4] gamma / half-life / drift / nowcast "
+                       "trend, from the ledger"),
+    ("why_gate()", "[AB6][AC4] the gate arithmetic, both drift readings, and "
+                   "which side the drift is actually against"),
     ("status()", "[AA5] DESK STATE first — is the panel showing what is "
                  "stored? — then position, marks, live z and the exit verdict"),
     ("why_gate()", "[AB6] the gate verdict WITH the arithmetic — every input, "
