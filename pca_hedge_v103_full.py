@@ -162,7 +162,11 @@ from sklearn.linear_model import RidgeCV
 from statsmodels.tsa.stattools import adfuller
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
+import matplotlib.dates as _mdates
 import warnings
+import re
+import html as _html
+import textwrap as _textwrap
 
 warnings.filterwarnings('ignore')
 
@@ -424,53 +428,316 @@ except Exception:                      # [Fix 87] _HTML kept defined either way
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# [Fix 104] REPORT TYPOGRAPHY — one place, so nothing can drift again.
+# [Fix 115] REPORT TYPOGRAPHY — ONE renderer, one type scale, one grammar.
 # ─────────────────────────────────────────────────────────────────────────────
-# The old report mixed three renderers: styled HTML tables (_print_table),
-# bare `print()` key-value lines (kv), and `print()` rules/titles. In a
-# notebook the print() output lands in the raw stdout <pre>, which uses the
-# browser's default monospace at whatever size the theme picked — so half the
-# report was a proportional-ish table and the other half was cramped
-# typewriter text, packed 26 columns deep with no visual hierarchy. That is
-# the "messy, packed, ugly font, can't catch the highlights" report.
+# [Fix 104] set out to unify the report and only got half way: it introduced
+# _kv_block (hand-built HTML) but left _print_table on the pandas Styler. Two
+# renderers meant two looks on one page — Styler sized tables to their content
+# while kv tables ran to 1100px, Styler set EVERY cell in monospace including
+# the prose ones, and the two disagreed about zebra striping. Against the raw
+# stdout <pre> that the engine's progress lines still landed in, the page
+# carried three fonts and three widths. That is the reported "the font and
+# tables are ugly, the structure is messy".
 #
-# The fix is that EVERY block now renders through the same three primitives:
-#   _print_table(headers, rows)      a data table
-#   _kv_block(title, rows, ...)      label / reading / WHAT IT MEANS
-#   _section(title, subtitle)        a section header
-# with one font stack and one scale. Numbers use tabular figures so columns
-# line up; prose columns use the UI font so they are readable at length.
+# What this pass changes:
+#   · ONE table renderer. _print_table and _kv_block both build their markup
+#     through _html_table, so every table on the page shares a header band,
+#     rules, padding, row rhythm and measure. The pandas Styler path is gone
+#     (and with it the jinja2 dependency that [Fix 75] had to guard).
+#   · COLUMNS ARE TYPED, not uniformly monospaced. A column of numbers gets
+#     tabular figures, right alignment and no wrapping; readings and prose get
+#     the UI font. Monospace on a sentence was the ugliest thing on the page.
+#   · ONE FACT PER LINE. Readings are written as 'a · b · c'; they are now
+#     broken at the '·' so each fact sits on its own line instead of reflowing
+#     into a grey block.
+#   · PROSE HAS A HIERARCHY. The first sentence of a WHAT IT MEANS cell is the
+#     claim and is set in ink; the rest is set muted and a step smaller, so the
+#     page can be read at two depths instead of one.
+#   · NO INTERNAL TAGS. '[Fix 108]' and friends are changelog markers for
+#     whoever maintains this file. They meant nothing to a reader and made the
+#     output look like debug spew; they are scrubbed at render time, so no call
+#     site can leak one again.
+#   · A PLAIN-TEXT TRANSCRIPT. In a notebook the report is displayed as HTML
+#     and never touches stdout, so the Word export used to receive only the few
+#     progress lines that were still bare print()s. Every renderer now also
+#     records a text copy, and Export gets the whole report.
 _RF_UI = ("-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,"
           "'Helvetica Neue',Arial,sans-serif")
 _RF_NUM = ("ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,"
            "'Liberation Mono',monospace")
-_RF_INK = '#1f2933'          # body text
-_RF_MUTE = '#5c6b7a'         # secondary text
-_RF_HEAD = '#22436a'         # header band
-_RF_RULE = '#dfe4ea'         # hairlines
-_RF_ZEBRA = '#f6f8fa'
+_RF_INK = '#1c2733'          # body text / the claim
+_RF_MUTE = '#5b6b7c'         # supporting prose
+_RF_FAINT = '#8a97a6'        # captions, notes, sub-labels
+_RF_HEAD = '#1f3f66'         # header band
+_RF_RULE = '#e4e9ef'         # hairlines
+_RF_ZEBRA = '#fafbfc'
+_RF_MAXW = '1120px'          # one measure for every block on the page
+_TXT_W = 96                  # terminal fallback: total table width budget
+
+# Changelog markers ('[Fix 104]', '[Fix 89/95]') are for maintainers of this
+# file, never for the reader of a hedge report. Scrubbed at render time.
+_FIXTAG = re.compile(r'\[Fix\s*\d+(?:\s*[/,]\s*\d+)*\]\s*')
+
+
+def _clean(s):
+    """Text as it should reach the reader: no internal tags, no double spaces."""
+    return re.sub(r'[ \t]{2,}', ' ', _FIXTAG.sub('', str(s))).strip()
+
+
+# ── plain-text transcript ────────────────────────────────────────────────────
+# Populated by every renderer below whichever path it takes, so there is always
+# a faithful text copy of what was shown — for the Word export, for a log file,
+# and for anyone reading a saved run.
+_REPORT_TX = []
+
+
+def _tx(*lines):
+    _REPORT_TX.extend(lines)
+
+
+def transcript_reset():
+    del _REPORT_TX[:]
+
+
+def transcript_text():
+    """The report as plain text, exactly as it was rendered."""
+    return '\n'.join(_REPORT_TX)
+
+
+# ── column typing ────────────────────────────────────────────────────────────
+# Typing the COLUMN rather than the cell is deliberate: a column reads as a
+# column only when every cell in it is set the same way, and one stray 'n/a'
+# should not knock a numeric column back into prose.
+_NUMISH = re.compile(r'^[+\-±$<>~≈#]*\s*[\d.,]+')
+
+
+def _col_kind(cells):
+    """'num' | 'prose' | 'text' — decides font, alignment and wrapping."""
+    vals = [c.strip() for c in cells if c.strip() and c.strip().lower() != 'n/a']
+    if not vals:
+        return 'text'
+    if sum(bool(_NUMISH.match(v)) for v in vals) >= 0.7 * len(vals):
+        return 'num'
+    if max(len(v) for v in vals) > 46:
+        return 'prose'
+    return 'text'
+
+
+def _facts(s):
+    """Split a reading written as 'a · b · c' into its facts.
+
+    The convention throughout this file is to join related readings with ' · '.
+    Rendered as one string they reflow into an unreadable run; one per line
+    they read like a ticket."""
+    parts = [p.strip() for p in re.split(r'\s+·\s+', str(s)) if p.strip()]
+    return parts or ['']
+
+
+def _lede(s):
+    """(claim, rest) — the first sentence of an explanation, and the rest.
+
+    Every WHAT IT MEANS cell is written claim-first, so setting the first
+    sentence in ink and the remainder muted gives the page a skim layer
+    without deleting the detail underneath it."""
+    s = _clean(s)
+    if not s:
+        return '', ''
+    m = re.search(r'(?<=[.!?])\s+(?=[A-Z(“"])', s)
+    return (s[:m.start()], s[m.end():]) if m else (s, '')
+
+
+# ── the single HTML table renderer ───────────────────────────────────────────
+def _html_table(headers, rows, kinds, title='', note=''):
+    n = len(headers)
+    # a table carrying an explanation column stretches to the page measure; a
+    # data table (a ticket, a weights list, a two-column readout) sizes to its
+    # content instead of sitting in a field of white space
+    wide = 'prose' in kinds
+    th = (f'background:{_RF_HEAD};color:#fff;text-align:left;'
+          f'padding:7px 12px;font-size:10.5px;font-weight:600;'
+          f'letter-spacing:.06em;text-transform:uppercase;'
+          f'font-family:{_RF_UI};white-space:nowrap')
+    out = [f'<table style="border-collapse:collapse;border-spacing:0;'
+           f'margin:4px 0 14px 0;font-family:{_RF_UI};'
+           f'{"width:100%;" if wide else ""}max-width:{_RF_MAXW}">']
+    if title:
+        out.append(f'<caption style="caption-side:top;text-align:left;'
+                   f'font-family:{_RF_UI};font-size:11px;font-weight:700;'
+                   f'letter-spacing:.06em;text-transform:uppercase;'
+                   f'color:{_RF_HEAD};padding:2px 0 6px 1px;'
+                   f'white-space:nowrap">'
+                   f'{_html.escape(_clean(title))}</caption>')
+    out.append('<tr>' + ''.join(
+        f'<th style="{th}{";text-align:right" if kinds[i] == "num" else ""}">'
+        f'{_html.escape(_clean(h))}</th>' for i, h in enumerate(headers))
+        + '</tr>')
+    for ri, row in enumerate(rows):
+        sub = str(row[0]).startswith('  ')     # '  label' → a sub-row
+        bg = f'background:{_RF_ZEBRA};' if (ri % 2) else ''
+        out.append('<tr>')
+        for ci in range(n):
+            cell, kind = str(row[ci]), kinds[ci]
+            td = (f'padding:6px 12px;vertical-align:top;'
+                  f'border-bottom:1px solid {_RF_RULE};{bg}')
+            if kind == 'num':
+                out.append(f'<td style="{td}text-align:right;'
+                           f'font-family:{_RF_NUM};font-size:11.5px;'
+                           f'font-variant-numeric:tabular-nums;'
+                           f'white-space:nowrap;color:{_RF_INK}">'
+                           f'{_html.escape(_clean(cell))}</td>')
+            elif kind == 'label':
+                # [Fix 116] a label may be written as two lines: what the row
+                # tells you, then the technical name for it. The reader who
+                # does not know the method reads the first line; the reader
+                # who does gets the term they were looking for.
+                _l1, _, _l2 = str(cell).partition('\n')
+                body = _html.escape(_clean(_l1))
+                if _l2.strip():
+                    body += (f'<div style="font-weight:400;font-size:10.5px;'
+                             f'color:{_RF_FAINT};margin-top:2px;'
+                             f'letter-spacing:.01em">'
+                             f'{_html.escape(_clean(_l2))}</div>')
+                out.append(
+                    f'<td style="{td}white-space:nowrap;font-size:'
+                    f'{11 if sub else 12}px;font-weight:{400 if sub else 600};'
+                    f'color:{_RF_FAINT if sub else _RF_INK};'
+                    f'padding-left:{26 if sub else 12}px">{body}</td>')
+            elif kind == 'prose':
+                claim, rest = _lede(cell)
+                body = (f'<span style="color:{_RF_INK}">'
+                        f'{_html.escape(claim)}</span>')
+                if rest:
+                    body += (f' <span style="color:{_RF_MUTE};'
+                             f'font-size:11.5px">{_html.escape(rest)}</span>')
+                out.append(f'<td style="{td}font-size:12px;line-height:1.5;'
+                           f'width:46%">{body}</td>')
+            else:                              # 'read' / 'text'
+                # only a READING is broken into one fact per line; doing it to
+                # every text column turned 'lb 252 · pc auto · k 3' in the
+                # ALTERNATIVES summary into three lines and made a scan table
+                # three times as tall
+                parts = (_facts(_clean(cell)) if kind == 'read'
+                         else [_clean(cell)])
+                body = '<br>'.join(_html.escape(f) for f in parts)
+                # a short label ('◄ chosen', 'normal') is a tag, not prose —
+                # letting it wrap mid-phrase reads as a layout accident
+                _nw = ('white-space:nowrap;'
+                       if max((len(x) for x in parts), default=0) <= 22
+                       else '')
+                out.append(f'<td style="{td}{_nw}font-size:12px;'
+                           f'line-height:1.5;font-variant-numeric:tabular-nums;'
+                           f'color:{_RF_INK}">{body}</td>')
+        out.append('</tr>')
+    out.append('</table>')
+    if note:
+        out.append(f'<div style="font-family:{_RF_UI};font-size:11px;'
+                   f'color:{_RF_FAINT};margin:-10px 0 14px 2px;'
+                   f'max-width:{_RF_MAXW}">{_html.escape(_clean(note))}</div>')
+    return ''.join(out)
+
+
+def _text_table(headers, rows, kinds, title='', note='', indent='  '):
+    """Terminal fallback — the boxed layout, with every cell wrapped so a table
+    cannot run off the side of the terminal."""
+    n = len(headers)
+    cells = [[_facts(_clean(r[i])) if kinds[i] == 'read'
+              else ([_clean(x) for x in str(r[i]).split('\n')]  # [Fix 116]
+                    if kinds[i] == 'label' else [_clean(r[i])])
+              for i in range(n)] for r in rows]
+    w = [max([len(_clean(headers[i]))]
+             + [max((len(x) for x in row[i]), default=0) for row in cells])
+         for i in range(n)]
+    budget = _TXT_W - len(indent) - 3 * n - 1
+    # Prose gives up width first, but only down to a readable measure; after
+    # that every wrappable column shrinks widest-first. Shrinking prose alone
+    # produced tables with a 72-char reading column beside a 14-char ribbon of
+    # explanation — technically inside the budget, unreadable in practice.
+    while sum(w) > budget:
+        cand = [i for i in range(n) if kinds[i] != 'num'
+                and w[i] > max(len(_clean(headers[i])), 12)]
+        if not cand:
+            break
+        wide_prose = [i for i in cand if kinds[i] == 'prose' and w[i] > 30]
+        w[max(wide_prose or cand, key=lambda j: w[j])] -= 1
+
+    def wrap(cell, width):
+        out = []
+        for piece in cell:
+            out += _textwrap.wrap(piece, width) or ['']
+        return out
+
+    def rule(l, m, r):
+        return indent + l + m.join('─' * (x + 2) for x in w) + r
+
+    def band(vals):
+        cols = [wrap(v, w[i]) for i, v in enumerate(vals)]
+        out = []
+        for k in range(max(len(c) for c in cols)):
+            parts = []
+            for i, c in enumerate(cols):
+                s = c[k] if k < len(c) else ''
+                pad = ' ' * (w[i] - len(s))
+                parts.append(f' {pad}{s} ' if kinds[i] == 'num'
+                             else f' {s}{pad} ')
+            out.append(indent + '│' + '│'.join(parts) + '│')
+        return out
+
+    lines = ['', f"{indent}{_clean(title).upper()}"] if title else []
+    lines.append(rule('┌', '┬', '┐'))
+    lines += band([[_clean(h)] for h in headers])
+    lines.append(rule('├', '┼', '┤'))
+    for row in cells:
+        lines += band(row)
+    lines.append(rule('└', '┴', '┘'))
+    if note:
+        lines += [indent + x for x in
+                  _textwrap.wrap(_clean(note), _TXT_W - len(indent))]
+    return lines
+
+
+def _emit_table(headers, rows, kinds, title='', note='', indent='  '):
+    """The one entry point for both renderers, so a table can look only one
+    way. Both paths are fed the same headers/rows/kinds."""
+    _kv_flush()                    # ordering — see the note on _KVCTX below
+    lines = _text_table(headers, rows, kinds, title=title, note=note,
+                        indent=indent)
+    _tx(*lines)
+    try:
+        if _IN_JUPYTER:
+            _ipy_display(_HTML(_html_table(headers, rows, kinds, title=title,
+                                           note=note)))
+            return
+    except Exception:
+        pass                       # never lose a block to a display problem
+    for ln in lines:
+        print(ln)
 
 
 # [Fix 104] ORDERING. kv() buffers its rows so a run of them renders as ONE
 # table. Anything else that writes to the report must therefore flush that
 # buffer first, or the table jumps ahead of the prose above it. Rather than
 # police ~44 call sites by hand, the buffer lives at module level and the
-# three writers (_section, _print_table, _P) flush it on entry — so the
-# ordering is correct by construction and stays correct when lines are added.
-_KVCTX = {'title': None, 'note': '', 'rows': [],
-          'headers': ('', 'READING', 'WHAT IT MEANS')}
+# writers (_section, _emit_table, _P) flush it on entry — so the ordering is
+# correct by construction and stays correct when lines are added.
+_KV_HEADERS = ('', 'READING', 'WHAT IT MEANS')
+_KVCTX = {'title': None, 'note': '', 'rows': [], 'headers': _KV_HEADERS}
 
 
 def _kv_flush():
     if _KVCTX['rows']:
-        _rows = list(_KVCTX['rows'])
-        _KVCTX['rows'] = []
-        _kv_block(_KVCTX['title'], _rows, note=_KVCTX['note'],
-                  headers=_KVCTX['headers'])
-        _KVCTX['title'], _KVCTX['note'] = None, ''
+        _rows, _title = list(_KVCTX['rows']), _KVCTX['title']
+        _note, _hdr = _KVCTX['note'], _KVCTX['headers']
+        # [Fix 115] clear the context BEFORE rendering — that makes the
+        # _kv_flush() at the top of _emit_table a no-op instead of a recursion,
+        # and it clears `headers`, which the old version left behind. Leaving
+        # them behind is how [1] VALIDATION came to be headed 'WATCH / THIS RUN
+        # / WHY AT THIS HORIZON' — inherited from the block above it — with an
+        # empty third column under the third heading.
+        _kv_reset()
+        _kv_block(_title, _rows, note=_note, headers=_hdr)
 
 
-def _kv_open(title=None, headers=('', 'READING', 'WHAT IT MEANS'), note=''):
+def _kv_open(title=None, headers=_KV_HEADERS, note=''):
     _kv_flush()
     _KVCTX.update(title=title, headers=headers, note=note, rows=[])
 
@@ -483,210 +750,103 @@ def _kv_reset():
     lets you re-run, so the next run's first table would silently open with
     rows from the failed one. Discarding is right, not flushing: those rows
     describe a run that did not finish."""
-    _KVCTX.update(title=None, note='', rows=[],
-                  headers=('', 'READING', 'WHAT IT MEANS'))
+    _KVCTX.update(title=None, note='', rows=[], headers=_KV_HEADERS)
 
 
 def _P(*a, **k):
-    """[Fix 104] print() for the report — flushes any pending kv table first.
+    """print() for the report — flushes any pending kv table first.
     In Jupyter a bare line renders as styled prose rather than raw <pre>."""
     _kv_flush()
     if not a:
+        _tx('')
         if not _IN_JUPYTER:
             print()
         return
-    _txt = ' '.join(str(x) for x in a)
+    _raw = ' '.join(str(x) for x in a).strip('\n')
+    _lead = len(_raw) - len(_raw.lstrip())
+    _txt = _clean(_raw)
+    if not _txt:
+        return
+    # '►' takeaways and '⚠' warnings are the lines a reader is meant to stop
+    # on; everything else at this level is connective tissue.
+    _key = _txt[:1] in '►⚠✓✗△'
+    # the text copy is wrapped: it is what the Word appendix and any saved log
+    # get, and a 160-column paragraph is unreadable in both
+    _pad = ' ' * (_lead + 2)
+    _wrapped = _textwrap.wrap(_txt, _TXT_W - len(_pad) - 2,
+                              subsequent_indent='  ') or ['']
+    _tx(*[_pad + ln for ln in _wrapped])
     try:
         if _IN_JUPYTER and k.pop('html', True):
-            import html as _h
-            _lead = len(_txt) - len(_txt.lstrip())
-            _bullet = _txt.strip().startswith(('·', '►', '⚠', '△', '✓', '✗'))
             _ipy_display(_HTML(
                 f'<div style="font-family:{_RF_UI};font-size:12px;'
-                f'color:{"#1f2933" if _bullet else _RF_MUTE};'
-                f'line-height:1.5;margin:2px 0 2px {8 + _lead * 3}px;'
-                f'max-width:1100px">{_h.escape(_txt.strip())}</div>'))
+                f'color:{_RF_INK if _key else _RF_MUTE};'
+                f'font-weight:{600 if _key else 400};line-height:1.5;'
+                f'margin:3px 0 3px {8 + _lead * 3}px;max-width:{_RF_MAXW}">'
+                f'{_html.escape(_txt)}</div>'))
             return
     except Exception:
         pass
-    print(_txt, **k)
+    for _ln in _wrapped:
+        print(_pad + _ln, **k)
 
 
 def _section(title, subtitle=''):
-    """[Fix 104] A report section header — styled in Jupyter, ruled in text."""
+    """A report section header — styled in Jupyter, ruled in text."""
     _kv_flush()
+    title, subtitle = _clean(title), _clean(subtitle)
+    _tx('', '═' * _TXT_W, f" {title}")
+    if subtitle:
+        _tx(f" {subtitle}")
+    _tx('═' * _TXT_W)
     try:
         if _IN_JUPYTER:
-            import html as _h
             _ipy_display(_HTML(
-                f'<div style="margin:22px 0 6px 0;padding:0 0 4px 0;'
-                f'border-bottom:2px solid {_RF_HEAD};font-family:{_RF_UI}">'
-                f'<span style="font-size:14px;font-weight:700;letter-spacing:'
-                f'.02em;color:{_RF_HEAD}">{_h.escape(str(title))}</span>'
-                + (f'<span style="font-size:12px;color:{_RF_MUTE};'
-                   f'margin-left:10px">{_h.escape(str(subtitle))}</span>'
+                f'<div style="margin:26px 0 8px 0;padding:0 0 5px 0;'
+                f'border-bottom:2px solid {_RF_HEAD};font-family:{_RF_UI};'
+                f'max-width:{_RF_MAXW}">'
+                f'<span style="font-size:14.5px;font-weight:700;'
+                f'letter-spacing:.03em;color:{_RF_HEAD}">'
+                f'{_html.escape(title)}</span>'
+                + (f'<span style="font-size:12px;color:{_RF_FAINT};'
+                   f'margin-left:10px">{_html.escape(subtitle)}</span>'
                    if subtitle else '')
                 + '</div>'))
             return
     except Exception:
         pass
-    print(f"\n{'═' * 78}\n {title}" + (f"\n {subtitle}" if subtitle else '')
-          + f"\n{'═' * 78}")
+    print(f"\n{'═' * _TXT_W}\n {title}" + (f"\n {subtitle}" if subtitle else '')
+          + f"\n{'═' * _TXT_W}")
 
 
-def _kv_block(title, rows, note='', headers=('', 'READING', 'WHAT IT MEANS')):
-    """[Fix 104] The workhorse: rows of (label, reading, implication).
+def _kv_block(title, rows, note='', headers=_KV_HEADERS):
+    """The workhorse: rows of (label, reading, implication).
 
     Every ticket line used to be `kv('SIZING', <one long sentence>)` — a
     26-char label and then an unbroken run of numbers and prose that the eye
     cannot parse and that wraps unpredictably. Splitting the implication into
-    its own column is the single biggest readability win in this pass, and it
-    forces each number to come with a statement of what to DO about it.
+    its own column is the single biggest readability win, and it forces each
+    number to come with a statement of what to DO about it.
 
     rows may be 2-tuples (label, reading) or 3-tuples with the implication.
     A row whose label starts with '  ' renders as a sub-row (indented, muted).
     """
-    rows = [tuple(r) + ('',) * (3 - len(r)) for r in rows if r is not None]
+    rows = [list(r) + [''] * (3 - len(r)) for r in rows if r is not None]
     if not rows:
         return
-    try:
-        if _IN_JUPYTER:
-            import html as _h
-            _th = (f'background:{_RF_HEAD};color:#fff;text-align:left;'
-                   f'padding:6px 12px;font-size:11px;font-weight:600;'
-                   f'letter-spacing:.04em;text-transform:uppercase;'
-                   f'font-family:{_RF_UI}')
-            _out = [f'<table style="border-collapse:collapse;margin:2px 0 '
-                    f'12px 0;width:100%;max-width:1100px;font-family:{_RF_UI}">']
-            if title:
-                _out.append(
-                    f'<caption style="caption-side:top;text-align:left;'
-                    f'font-family:{_RF_UI};font-size:12px;font-weight:700;'
-                    f'color:{_RF_INK};padding:4px 0 5px 0">'
-                    f'{_h.escape(str(title))}</caption>')
-            _out.append('<tr>' + ''.join(
-                f'<th style="{_th}">{_h.escape(str(x))}</th>'
-                for x in headers) + '</tr>')
-            for _lab, _val, _imp in rows:
-                _sub = str(_lab).startswith('  ')
-                _bg = f'background:{_RF_ZEBRA};' if _sub else ''
-                _td = (f'padding:5px 12px;font-size:12px;vertical-align:top;'
-                       f'border-bottom:1px solid {_RF_RULE};{_bg}')
-                _out.append(
-                    '<tr>'
-                    f'<td style="{_td}white-space:nowrap;font-weight:'
-                    f'{400 if _sub else 600};color:'
-                    f'{_RF_MUTE if _sub else _RF_INK};font-size:'
-                    f'{11 if _sub else 12}px">'
-                    f'{_h.escape(str(_lab).strip())}</td>'
-                    f'<td style="{_td}font-family:{_RF_NUM};'
-                    f'font-variant-numeric:tabular-nums;color:{_RF_INK}">'
-                    f'{_h.escape(str(_val))}</td>'
-                    f'<td style="{_td}color:{_RF_MUTE};line-height:1.45">'
-                    f'{_h.escape(str(_imp))}</td></tr>')
-            _out.append('</table>')
-            if note:
-                _out.append(f'<div style="font-family:{_RF_UI};font-size:11px;'
-                            f'color:{_RF_MUTE};margin:-8px 0 12px 0;'
-                            f'max-width:1100px">{_h.escape(str(note))}</div>')
-            _ipy_display(_HTML(''.join(_out)))
-            return
-    except Exception:
-        pass
-    # ── terminal fallback: a real table, not padded prose ───────────────────
-    _hdr = [h for h in headers]
-    _rows = [[str(a).strip(), str(b), str(c)] for a, b, c in rows]
-    if not any(r[2] for r in _rows):          # no implications → 2 columns
-        _hdr, _rows = _hdr[:2], [r[:2] for r in _rows]
-    if title:
-        print(f"\n  {title}")
-    _kv_block._in_flush = True             # [Fix 104] don't re-enter the flush
-    try:
-        _print_table(_hdr, _rows, indent='  ', wrap_last=64)
-    finally:
-        _kv_block._in_flush = False
+    headers, kinds = list(headers), ['label', 'read', 'prose']
+    if not any(str(r[2]).strip() for r in rows):     # no implications → 2 cols
+        headers, rows, kinds = headers[:2], [r[:2] for r in rows], kinds[:2]
+    _emit_table(headers, rows, kinds, title=title, note=note)
 
 
-_kv_block._in_flush = False
-
-
-def _print_table(headers, rows, indent='  ', wrap_last=None):
-    """[Fix 41/51/104] Render rows as a table.
-
-    [Fix 41] gave every printed block a boxed unicode layout. [Fix 51] adds a
-    styled HTML rendering when the notebook is running inside Jupyter and
-    keeps the boxed unicode version as the terminal fallback. [Fix 104]
-    retypesets both paths (UI font for prose, tabular figures for numbers)
-    and adds wrap_last so a long final column wraps inside its cell instead
-    of blowing the table width out. Same signature and values as before."""
-    if not _kv_block._in_flush:            # [Fix 104] ordering — see _kv_flush
-        _kv_flush()
-    rows = [[str(x) for x in r] for r in rows]
-    # [Fix 75] the styled path needs jinja2 (pandas Styler) — present in any
-    # real Jupyter install, but if it is missing or the Styler API changes,
-    # fall back to the boxed table instead of crashing the report.
-    try:
-      if _IN_JUPYTER and rows:
-        df = pd.DataFrame(rows, columns=list(headers))
-        # a column is "numeric" if every cell starts with a digit, sign or $
-        num_cols = [h for h in df.columns
-                    if df[h].str.match(r'^[+\-$]?\d').all()]
-        sty = (df.style.hide(axis='index')
-               .set_table_styles([
-                   {'selector': '', 'props':
-                    f'border-collapse:collapse;margin:2px 0 12px 0;'
-                    f'font-family:{_RF_UI}'},
-                   {'selector': 'th', 'props':
-                    f'background:{_RF_HEAD};color:#ffffff;text-align:left;'
-                    f'padding:6px 12px;font-size:11px;font-weight:600;'
-                    f'letter-spacing:.04em;text-transform:uppercase;'
-                    f'font-family:{_RF_UI}'},
-                   {'selector': 'td', 'props':
-                    f'padding:5px 12px;font-size:12px;color:{_RF_INK};'
-                    f'font-family:{_RF_NUM};'
-                    f'font-variant-numeric:tabular-nums;'
-                    f'border-bottom:1px solid {_RF_RULE}'},
-                   {'selector': 'tr:nth-child(even) td', 'props':
-                    f'background:{_RF_ZEBRA}'}])
-               .set_properties(subset=num_cols, **{'text-align': 'right'}))
-        _ipy_display(sty)
-        return
-    except Exception:
-        pass                       # [Fix 75] fall through to the boxed table
-    # [Fix 104] wrap the last column so a prose cell cannot widen the table
-    if wrap_last:
-        import textwrap as _tw
-        _wr = []
-        for r in rows:
-            _lines = _tw.wrap(r[-1], wrap_last) or ['']
-            _wr.append(r[:-1] + [_lines[0]])
-            for _extra in _lines[1:]:
-                _wr.append([''] * (len(r) - 1) + [_extra])
-        rows = _wr
-    # ── terminal fallback: the original [Fix 41] boxed layout, unchanged ────
-    widths = [max(len(headers[i]), max((len(r[i]) for r in rows), default=0))
-              for i in range(len(headers))]
-
-    def hline(l, m, r):
-        print(indent + l + m.join('─' * (w + 2) for w in widths) + r)
-
-    def prow(vals):
-        cells = []
-        for i, v in enumerate(vals):
-            pad = ' ' * (widths[i] - len(v))
-            # right-align $-amount cells, left-align everything else
-            if v[:1] == '$':
-                cells.append(f' {pad}{v} ')
-            else:
-                cells.append(f' {v}{pad} ')
-        print(indent + '│' + '│'.join(cells) + '│')
-
-    hline('┌', '┬', '┐')
-    prow(headers)
-    hline('├', '┼', '┤')
-    for r in rows:
-        prow(r)
-    hline('└', '┴', '┘')
+def _print_table(headers, rows, indent='  ', wrap_last=None, title='',
+                 note=''):
+    """Render rows as a table. `wrap_last` is kept for call-site compatibility
+    and ignored — wrapping is decided per column now, by _col_kind."""
+    headers, rows = list(headers), [[str(x) for x in r] for r in rows]
+    kinds = [_col_kind([r[i] for r in rows]) for i in range(len(headers))]
+    _emit_table(headers, rows, kinds, title=title, note=note, indent=indent)
 
 
 def _market_of(target_ticker, country_iso):
@@ -1356,28 +1516,74 @@ def load_hedge_data(which=0, cache_dir=None):
 # confused with each other. They are not competing estimates of one quantity;
 # each answers a different question, and the differences between them are the
 # most informative part of the report. Printed at the top of section [1].
-R2_GLOSSARY = """\
-  HOW TO READ THE FOUR R-SQUARED NUMBERS (each answers a different question)
-  1) In-sample R2            Fit and scored on the SAME window. Always the
-                             highest. A sanity check on the fit, never a
-                             measure of the hedge.
-  2) Full-data CV OOS R2     Walk-forward: fit on 'lookback' days, score on
-                             the NEXT unseen 42d window, averaged over folds.
-                             Honest for the WEIGHTS, but the config
-                             (lookback / PCs / basket size) was chosen by
-                             looking at ALL folds, so the recipe as a whole
-                             is still slightly flattered.
-  3) THIS config, unseen OOS The chosen config re-fit strictly on data
-                             BEFORE each outer window and scored on it.
-                             Honest weights AND honest windows; a small
-                             selection bias remains because the config was
-                             picked using full-data CV.
-  4) Pipeline nested OOS     The ENTIRE pipeline (CV -> selection -> refit)
-                             re-run using only data before each outer
-                             window. Closest to what running this tool live
-                             would actually have delivered.
-  Expected ordering: (1) >= (2) >= (3) ~= (4). A large (1)-vs-(4) gap means
-  overfitting. Trade on (3)/(4); quote (1) only as a caveat."""
+# [Fix 115] was a hand-aligned block of text passed to print(). Hand alignment
+# survives a terminal and nothing else — in a notebook the whole thing
+# collapsed into one paragraph. It is data, so it is now rows, and it renders
+# through the same table as everything else.
+R2_GLOSSARY_ROWS = [
+    ('1 · Fitted and scored on the\n    same days  (in-sample R²)',
+     'flattered — a sanity check only',
+     'The model grades its own homework, so this is always the highest number '
+     'on the page. It says the fit converged. It says nothing about whether '
+     'the hedge works.'),
+    ('2 · Fitted on the past, scored\n    on what came next',
+     'honest weights, flattered recipe',
+     'Fit on the last N days, score on the days that follow, repeat, average. '
+     'The WEIGHTS never see the days they are graded on — but the recipe was '
+     'chosen by looking at all of them.'),
+    ('3 · This recipe, re-fitted\n    before each test stretch',
+     'honest weights AND honest days',
+     'The chosen recipe re-fitted strictly on data from before each held-back '
+     'stretch. A small bias remains, because the recipe itself was picked '
+     'using all the data.'),
+    ('4 · The whole method re-run\n    from scratch each time',
+     'the number to trade on',
+     'Everything — choosing the recipe and fitting the weights — redone using '
+     'only data from before each held-back stretch. This is closest to what '
+     'running this tool live would actually have delivered.'),
+]
+R2_GLOSSARY_NOTE = ('Expect them to fall in that order: 1 highest, 4 lowest. '
+                    'A big gap between 1 and 4 means the recipe was tuned to '
+                    'its own data. Trade on 3 and 4; quote 1 only as a '
+                    'caveat.')
+
+# [Fix 116] The report is read by people who do not build these models. Where a
+# term is unavoidable — it is on a chart axis, in a column header, or it is what
+# a desk would actually say out loud — it is defined here once, in the appendix,
+# where it costs nothing to a reader who does not need it.
+WORDS_USED = [
+    ('Hedge / basket', 'the set of names you trade against your position',
+     'Shorting the basket is meant to cancel the part of your position that '
+     'moves with the rest of the market.'),
+    ('Tracks N% of the moves', 'how much of the position the hedge follows',
+     'The statistical name is R². 100% would be a perfect mirror; 0% means '
+     'the hedge is unrelated to what you hold.'),
+    ('Drift / tracking error', 'the part the hedge does NOT cancel',
+     'Quoted as %/yr. This is what you actually carry, and what a risk limit '
+     'should be set against.'),
+    ('Unseen data / out-of-sample', 'days the model had never looked at',
+     'The only honest test. Any score measured on the days a model was fitted '
+     'to is a description of the past, not a forecast.'),
+    ('Its own data / in-sample', 'the days the model WAS fitted on',
+     'Always flattering. Useful as a ceiling and a sanity check, never as an '
+     'expectation.'),
+    ('Test stretch / window', 'a block of consecutive days held back',
+     'The model is fitted on everything before it and graded on it, then the '
+     'block moves forward.'),
+    ('Lookback', 'how many days of history each refit is fitted on',
+     'Short adapts faster and is noisier; long is steadier and staler.'),
+    ('Gross / net', 'total position size vs the direction left over',
+     'Gross $74 per $100 means you trade $74 of hedge for every $100 of book. '
+     'Borrow and financing scale with gross.'),
+    ('Market drivers', 'the shared movements pulled out of the universe',
+     'Formally principal components. The first one is usually "the whole '
+     'market went up"; later ones are sector or style moves.'),
+    ('Refit', 'recomputing the weights on newer data',
+     'The RE-HEDGE button. Weights go stale as relationships move.'),
+    ('1 standard deviation', 'a typical, not a worst, outcome',
+     'Two-thirds of the time you land inside it. About 1 time in 20 you are '
+     'outside twice it.'),
+]
 # ─────────────────────────────────────────────────────────────────────────────
 # [Fix 42] Robust PCA inputs
 #   Ordinary PCA on a sample covariance is optimal only for Gaussian data. Daily
@@ -1861,31 +2067,46 @@ def _parse_sample_window(sample_window, idx):
 def _verdict_banner(grade, reasons, subtitle=''):
     """[Fix 87] Colour-coded verdict banner in Jupyter; plain text elsewhere.
     Any rendering failure falls through to the text version, so the report
-    can never be lost to a display problem."""
-    pal = {'✓': ('#1b6b3a', '#e8f5ec'), '△': ('#8a5a00', '#fff6e5'),
-           '✗': ('#8c1c1c', '#fdecec'), '?': ('#3d4650', '#eef1f4')}
+    can never be lost to a display problem.
+
+    [Fix 115] Was set in monospace, which made the one block a reader looks at
+    first the least legible thing on the page. It now uses the report's own
+    type scale, and it records itself into the transcript like every other
+    block."""
+    _kv_flush()
+    pal = {'✓': ('#1b6b3a', '#edf7f0'), '△': ('#8a5a00', '#fff8ea'),
+           '✗': ('#8c1c1c', '#fdeeee'), '?': ('#3d4650', '#eff2f5')}
+    grade, subtitle = _clean(grade), _clean(subtitle)
+    reasons = [_clean(r) for r in reasons[:4]]
     fg, bg = pal.get(grade[:1], pal['?'])
+    _tx('', f"  VERDICT   {grade}")
+    if subtitle:
+        _tx(f"            {subtitle}")
+    _tx(*[f"            · {r}" for r in reasons])
     try:
         if _IN_JUPYTER:
-            import html as _html
-            li = ''.join(f"<li>{_html.escape(r)}</li>" for r in reasons[:4])
+            li = ''.join(
+                f'<li style="margin:2px 0">{_html.escape(r)}</li>'
+                for r in reasons)
             _ipy_display(_HTML(
-                f'<div style="border-left:6px solid {fg};background:{bg};'
-                f'padding:10px 14px;margin:8px 0 4px 0;border-radius:4px;'
-                f'font-family:Menlo,Consolas,monospace">'
-                f'<div style="font-size:15px;font-weight:700;color:{fg}">'
-                f'{_html.escape(grade)}</div>'
-                + (f'<div style="font-size:12px;color:#333;margin-top:2px">'
+                f'<div style="border-left:5px solid {fg};background:{bg};'
+                f'padding:12px 16px;margin:10px 0 14px 0;border-radius:3px;'
+                f'font-family:{_RF_UI};max-width:{_RF_MAXW}">'
+                f'<div style="font-size:17px;font-weight:700;color:{fg};'
+                f'letter-spacing:.01em">{_html.escape(grade)}</div>'
+                + (f'<div style="font-size:12.5px;color:{_RF_INK};'
+                   f'margin-top:3px;line-height:1.5">'
                    f'{_html.escape(subtitle)}</div>' if subtitle else '')
-                + f'<ul style="margin:6px 0 0 0;padding-left:18px;'
-                  f'font-size:12px;color:#333">{li}</ul></div>'))
+                + f'<ul style="margin:8px 0 0 0;padding-left:18px;'
+                  f'font-size:12px;color:{_RF_MUTE};line-height:1.5">'
+                  f'{li}</ul></div>'))
             return
     except Exception:
         pass
-    print(f"  VERDICT   {grade}")
+    print(f"\n  VERDICT   {grade}")
     if subtitle:
         print(f"            {subtitle}")
-    for r in reasons[:4]:
+    for r in reasons:
         print(f"            · {r}")
 
 
@@ -2064,56 +2285,62 @@ def _ticket_verdict(quality, worst_r2, overfit_gap, min_sim, trend,
       ✓  none of the above.
     Returns (grade, [reasons])."""
     if quality is None or np.isnan(quality):
-        return ('? INSUFFICIENT OOS EVIDENCE',
-                ['no valid unseen windows — every number in this report '
-                 'should be read as in-sample'])
+        return ('? NOT ENOUGH EVIDENCE TO JUDGE',
+                ['the hedge was never tested on data it had not seen — read '
+                 'every number here as a description of the past'])
     reasons, fail, warn = [], False, False
     if quality < 0.20:
         fail = True
-        reasons.append(f'pooled OOS R² {quality:.2f} < 0.20 — the hedge '
-                       f'explains too little to pay for')
+        reasons.append(f'it tracks only {quality*100:.0f}% of the moves on '
+                       f'unseen data — too little to pay for')
     if not np.isnan(overfit_gap) and overfit_gap >= 0.35:
         fail = True
-        reasons.append(f'in-sample vs OOS gap {overfit_gap:.2f} ≥ 0.35 — '
-                       f'clearly overfit')
+        reasons.append(f'it scores {overfit_gap*100:.0f} points worse on '
+                       f'unseen data than on its own — it was tuned to the '
+                       f'past, not to the market')
     if not np.isnan(worst_r2) and worst_r2 < 0.0:
         fail = True
-        reasons.append(f'worst window OOS R² {worst_r2:.2f} < 0 — the hedge '
-                       f'ADDED risk in that window')
+        reasons.append(f'in its worst stretch the hedge ADDED risk instead '
+                       f'of removing it')
     if roll_breach:
         warn = True
-        reasons.append('latest rolling TE is already above the kill-switch '
-                       'level — do not add risk on this hedge')
+        reasons.append('it is already drifting more than its own stop level '
+                       '— do not add risk on this hedge today')
     if not fail:
         if quality < 0.45:
             warn = True
-            reasons.append(f'pooled OOS R² {quality:.2f} is moderate')
+            reasons.append(f'it tracks {quality*100:.0f}% of the moves on '
+                           f'unseen data — workable, not strong')
         if not np.isnan(worst_r2) and worst_r2 < 0.15:
             warn = True
-            reasons.append(f'worst window OOS R² {worst_r2:.2f} — size off '
-                           f'this window, not the average')
+            reasons.append(f'in its worst stretch it tracked only '
+                           f'{worst_r2*100:.0f}% — size off that, not the '
+                           f'average')
         if not np.isnan(overfit_gap) and overfit_gap >= 0.15:
             warn = True
-            reasons.append(f'in-sample vs OOS gap {overfit_gap:.2f} — some '
-                           f'overfitting')
+            reasons.append(f'it scores {overfit_gap*100:.0f} points worse '
+                           f'on unseen data than on its own — somewhat tuned '
+                           f'to the past')
         if min_sim is not None and min_sim <= 0.5:
             warn = True
-            reasons.append(f'windows fitted materially different baskets '
-                           f'(min weight cosine {min_sim:+.2f})')
+            reasons.append(f'the model picked noticeably different baskets '
+                           f'on different stretches — the choice of names is '
+                           f'not settled')
         if trend:
             warn = True
-            reasons.append('R² deteriorates toward the MOST RECENT window — '
-                           'trust the newest reading, not the mean')
+            reasons.append('it tracked worse in the most recent stretches — '
+                           'trust the newest reading, not the average')
     if (not np.isnan(ref_pca) and not np.isnan(ref_simple)
             and ref_simple >= ref_pca):
         warn = True
-        reasons.append('a single-instrument hedge matches the basket OOS — '
-                       'prefer the simple hedge (see [3])')
+        reasons.append('one single instrument did just as well on unseen '
+                       'data — prefer the simple hedge (see [2])')
     grade = ('✗ DO NOT TRADE AS-IS' if fail
              else ('△ TRADE AT REDUCED SIZE' if warn else '✓ TRADE'))
     if not reasons:
-        reasons.append('all gates passed: pooled OOS strong, worst window '
-                       'acceptable, no overfit signal, weights stable')
+        reasons.append('every check passed: it tracks well on unseen data, '
+                       'holds up in its worst stretch, is not tuned to the '
+                       'past, and picks a stable set of names')
     return grade, reasons
 
 
@@ -2486,9 +2713,13 @@ def find_best_hedge(
                                   # (adds long-form explanations and per-
                                   # config weight tables)
     show_plots=True,
+    _rehedge_of=None,             # [Fix 115] set by quick_rehedge so the
+                                  # report can say what it inherited and what
+                                  # it did not re-validate
 ):
     outer_window = outer_window or cv_test_window
     _kv_reset()             # [Fix 114] never inherit a failed run's rows
+    transcript_reset()      # [Fix 115] this run's text copy starts empty
     # ── [Fix 100] WHY THE HORIZON DOES NOT RE-CUT THE WINDOWS ───────────────
     # [Fix 91] originally set the OOS windows to the holding period, on the
     # intuition that you should be validated on the period you will live.
@@ -2557,7 +2788,7 @@ def find_best_hedge(
             raise ValueError('[Fix 91] hedge_horizon_days must be >= 1')
         if horizon_sets_windows:
             cv_test_window = outer_window = int(np.clip(_h, 10, 63))
-            print(f"  [Fix 100] horizon_sets_windows=True → OOS windows set "
+            _P(f"  [Fix 100] horizon_sets_windows=True → OOS windows set "
                   f"to {cv_test_window} rows (measured as no better than the "
                   f"default; kept as an option)")
     # [Fix 46] single-name vs portfolio ---------------------------------------
@@ -2592,13 +2823,13 @@ def find_best_hedge(
                 f"re-run download_hedge_data() for this book, or pass them "
                 f"via force_include= there so they are fetched")
         if set(_coerce_targets(data.get('target'))[0]) != set(pf_legs):
-            print(f"  [Fix 66] note: data was downloaded for "
+            _P(f"  [Fix 66] note: data was downloaded for "
                   f"{data.get('target_label', data.get('target'))} — reusing "
                   f"its universe for {target_short}. Fine for leg churn on "
                   f"the same book; re-run CELL A after a material change.")
         prices = data['prices'].copy()
-        print(f"Using pre-downloaded data: {prices.shape[0]} rows × "
-              f"{prices.shape[1]} tickers (no API calls)")
+        _P(f"Using data already downloaded: {prices.shape[0]} days of "
+              f"prices for {prices.shape[1]} names (nothing fetched)")
     else:
         data = download_hedge_data(target_ticker, candidates=candidates,
                                    session=session or get_session(),
@@ -2612,11 +2843,11 @@ def find_best_hedge(
     forced, fi_unres = _resolve_force_include(force_include, prices.columns,
                                               target_ticker)
     if fi_unres:
-        print(f"  ⚠ force_include: {fi_unres} not in the downloaded data — "
+        _P(f"  ⚠ force_include: {fi_unres} not in the downloaded data — "
               f"re-run download_hedge_data(..., force_include=...) to fetch "
               f"them (they will be ignored this run)")
     if forced:
-        print(f"  Force-include active: {', '.join(forced)} will be held in "
+        _P(f"  Force-include active: {', '.join(forced)} will be held in "
               f"every basket (CV folds, nested windows, and final recipe)")
 
     # [Fix 36] Manual exclusions on COLUMNS — works on pre-downloaded data
@@ -2624,12 +2855,12 @@ def find_best_hedge(
         [c for c in prices.columns if c not in target_keepset], exclude)
     readd = [c for c in removed_cols if c in forced]       # [Fix 40]
     if readd:
-        print(f"  ⚠ {', '.join(readd)} in both exclude= and force_include= — "
+        _P(f"  ⚠ {', '.join(readd)} in both exclude= and force_include= — "
               f"force_include wins, keeping")
         kept_cols += readd
         removed_cols = [c for c in removed_cols if c not in forced]
     if removed_cols:
-        print(f"  Manual exclusions: dropped {len(removed_cols)} names "
+        _P(f"  Manual exclusions: dropped {len(removed_cols)} names "
               f"({', '.join(t.split(' ')[0] for t in removed_cols[:12])}"
               f"{', ...' if len(removed_cols) > 12 else ''})")
     if removed_cols or readd:
@@ -2649,14 +2880,14 @@ def find_best_hedge(
     pm_exempt = set(data.get('non_index_shorts') or [])
     pm_active = bool(pm_snaps)
     if pm_active:
-        print(f"  [Fix 49] point-in-time index membership active — "
+        _P(f"  [Fix 49] point-in-time index membership active — "
               f"{len(pm_dates)} snapshots, {len(pm_union)} names ever members")
     if min_mktcap_usd_mm and not pit_active:
         # static (current-cap) floor on COLUMNS — used only when point-in-time
         # caps are unavailable or pit_size=False. NOTE: this legacy path carries
         # the "big now / small then" look-ahead that [Fix 44] removes.
         if not caps:
-            print("  ⚠ market-cap floor requested but data has no "
+            _P("  ⚠ market-cap floor requested but data has no "
                   "'mktcap_usd_mm' — re-run download_hedge_data() to enable it")
         else:
             kept, dropped, unknown = list(target_keepset), 0, 0
@@ -2676,14 +2907,15 @@ def find_best_hedge(
                 else:
                     dropped += 1
             if dropped:
-                print(f"  Market-cap floor {_fmt_mktcap(min_mktcap_usd_mm)}: "
+                _P(f"  Market-cap floor {_fmt_mktcap(min_mktcap_usd_mm)}: "
                       f"dropped {dropped} names"
                       + (f" ({unknown} unknown caps kept)" if unknown else ""))
                 prices = prices[_uniq(kept)]
     elif pit_active:
-        print(f"  [Fix 44] point-in-time size filtering active — the "
-              f"{_fmt_mktcap(min_mktcap_usd_mm)} floor is applied as-of each "
-              f"window (no current-cap look-ahead); universe not pre-trimmed")
+        _P(f"  the {_fmt_mktcap(min_mktcap_usd_mm)} size floor is applied "
+              f"using what each name was worth AT THE TIME, not what it is "
+              f"worth today — so a name that grew into the filter cannot "
+              f"flatter the backtest")
 
     prices = prices.ffill()
     if mask_stale_days:                                     # [Fix 56]
@@ -2697,7 +2929,7 @@ def find_best_hedge(
                 f"[Fix 76] sample window {_sw0:%Y-%m-%d} → {_sw1:%Y-%m-%d} "
                 f"leaves {len(prices)} sessions (data spans "
                 f"{_avail[0]:%Y-%m-%d} → {_avail[1]:%Y-%m-%d}) — need ≥ 10")
-        print(f"  [Fix 76] sample window: {prices.index[0]:%Y-%m-%d} → "
+        _P(f"  [Fix 76] sample window: {prices.index[0]:%Y-%m-%d} → "
               f"{prices.index[-1]:%Y-%m-%d} ({len(prices)} sessions)")
     # completeness threshold applies WITHIN the analysis window
     prices = prices.dropna(axis=1, thresh=int(len(prices) * 0.85))
@@ -2715,7 +2947,7 @@ def find_best_hedge(
     # loudly instead of silently forcing NaNs into every window
     lost = [c for c in forced if c not in prices.columns]
     if lost:
-        print(f"  ⚠ force_include: {', '.join(lost)} dropped — less than 85% "
+        _P(f"  ⚠ force_include: {', '.join(lost)} dropped — less than 85% "
               f"price history in the window; cannot be forced into baskets")
         forced = [c for c in forced if c in prices.columns]
 
@@ -2741,7 +2973,7 @@ def find_best_hedge(
         tgt_close = _close_utc_of(target_ticker)
     others = [c for c in prices.columns if c not in target_keepset]
     if tgt_close is None:
-        print(f"  ⚠ unknown exchange close for {target_ticker} — timezone "
+        _P(f"  ⚠ unknown exchange close for {target_ticker} — timezone "
               f"restriction unavailable; universe treated as cross-timezone")
         same_tz, do_restrict = [], False
     else:
@@ -2756,7 +2988,7 @@ def find_best_hedge(
         # cross-timezone the async detection below flips to 2-day returns
         keep_tz = same_tz + [c for c in list(forced) + pf_legs
                              if c not in same_tz]   # [Fix 46] legs kept
-        print(f"  Restricting universe to closes within "
+        _P(f"  Restricting universe to closes within "
               f"{tz_tolerance_hours:.1f}h of the target's "
               f"({len(others)} → {len(keep_tz)} candidates"
               + (f"; {len(keep_tz) - len(same_tz)} kept by force_include"
@@ -2764,7 +2996,7 @@ def find_best_hedge(
               + "; set restrict_to_target_tz=False to keep global names)")
         prices = prices[_uniq(list(target_keepset) + keep_tz)]
     elif restrict_to_target_tz is True and len(same_tz) == len(others):
-        print(f"  All candidates already close within "
+        _P(f"  All candidates already close within "
               f"{tz_tolerance_hours:.1f}h of the target — nothing to drop")
 
     # ── Cross-timezone detection → 2-day overlapping returns [Fix 5/34] ─────
@@ -2788,7 +3020,7 @@ def find_best_hedge(
                   if has_unknown and max_gap <= tz_tolerance_hours
                   else f"max close gap {max_gap:.1f}h > "
                        f"{tz_tolerance_hours:.1f}h tolerance")
-        print(f"  ⚠ Universe treated as cross-timezone ({reason}) → "
+        _P(f"  ⚠ Universe treated as cross-timezone ({reason}) → "
               f"switching to 2-day overlapping returns to correct "
               f"async-trading bias")
 
@@ -2800,7 +3032,7 @@ def find_best_hedge(
                              f"filtering — cannot build the book ({pf_legs})")
         if len(legs_present) < len(pf_legs):
             miss = [c for c in pf_legs if c not in legs_present]
-            print(f"  ⚠ portfolio legs dropped by filtering: {miss} — weights "
+            _P(f"  ⚠ portfolio legs dropped by filtering: {miss} — weights "
                   f"renormalized over the {len(legs_present)} remaining legs")
         _wser = pd.Series([pf_w[c] for c in legs_present], index=legs_present)
         _wser = _wser / (_wser.abs().sum() or 1.0)
@@ -2837,7 +3069,7 @@ def find_best_hedge(
     rolling_refit_every = _tier['rolling_refit_every']
     basket_size_options = _tier['basket_size_options']
     for _note in _tier['notes']:
-        print(_note)
+        _P(_note)
 
     universe = [c for c in prices.columns
                 if c not in set(pf_legs) and c != target_ticker]   # [Fix 46]
@@ -2924,7 +3156,7 @@ def find_best_hedge(
         w = w / (np.abs(w).sum() or 1.0)
         lds.loc[PORTFOLIO_COL] = (lds.loc[legs_in].values * w[:, None]).sum(axis=0)
         return lds
-    print(f"  ✓ {len(rets)} return rows, {len(universe) + 1} tickers retained")
+    _P(f"  ✓ {len(rets)} days of returns across {len(universe) + 1} names")
 
     # ── Reusable building blocks ─────────────────────────────────────────────
     def _forced_basket(ranked, ok, bsize):
@@ -2991,7 +3223,7 @@ def find_best_hedge(
         for lookback in lookback_options:
             if lookback + cv_test_window * cv_n_folds > len(rets_sub):
                 if verbose:
-                    print(f"  Skipping lookback={lookback} (insufficient data)")
+                    _P(f"  Skipping lookback={lookback} (insufficient data)")
                 continue
             for fold in range(cv_n_folds):
                 te = len(rets_sub) - fold * cv_test_window
@@ -3009,7 +3241,7 @@ def find_best_hedge(
                 ok = [c for c in ok if ret_te_all[c].notna().all()]
                 if target_ticker not in ok:
                     if verbose:
-                        print(f"  ⚠ skipping fold {fold} (lookback {lookback}): "
+                        _P(f"  ⚠ skipping fold {fold} (lookback {lookback}): "
                               f"{target_short} incomplete or zero variance")
                     continue
                 ret_tr = ret_tr_all[ok]
@@ -3156,7 +3388,7 @@ def find_best_hedge(
             if len(within):
                 summary = within.reset_index(drop=True)
             else:
-                print(f"  ⚠ no config satisfies max_gross={max_gross:.1f} — "
+                _P(f"  ⚠ no config satisfies max_gross={max_gross:.1f} — "
                       f"cap ignored for this run")
         return summary, cv
 
@@ -3250,7 +3482,7 @@ def find_best_hedge(
         kvo = _kv_open
         title(f"PCA HEDGE — {target_short}   ·   "
               f"{datetime.now():%Y-%m-%d %H:%M}")
-        _P(f"  {val_mode} validation · {len(universe)} candidates · "
+        _P(f"  {val_mode} validation · {len(universe)} names considered · "
            f"{'2-day overlapping' if two_day else 'daily'} returns · "
            f"{rows} rows ({rets.index[0]:%d%b%y}→{rets.index[-1]:%d%b%y})")
         title("[0] TICKET")
@@ -3391,9 +3623,10 @@ def find_best_hedge(
     # using ONLY data prior to that window, then score on it. This measures
     # the whole pipeline out-of-sample, across multiple periods — not a
     # single-window estimate.
-    print(f"\nNested walk-forward validation "
-          f"({outer_folds} outer windows × {outer_window}d; "
-          f"inner CV: {cv_n_folds} folds × {cv_test_window}d)...")
+    _P(f"Testing the whole method on data it has never seen — "
+          f"{outer_folds} stretch{'es' if outer_folds != 1 else ''} of "
+          f"{outer_window} days, each with the recipe re-chosen beforehand on "
+          f"{cv_n_folds} earlier stretch{'es' if cv_n_folds != 1 else ''}...")
     nested_rows = []
     nested_y_all, nested_res_all = [], []                     # [Fix 69]
     N = len(rets)
@@ -3404,7 +3637,7 @@ def find_best_hedge(
         outer_test = rets.iloc[o_start:o_end]
         summary_j, _ = _walk_forward_cv(inner)
         if summary_j is None:
-            print(f"  outer window {j}: inner CV failed — skipped")
+            _P(f"  outer window {j}: inner CV failed — skipped")
             continue
         cfg = summary_j.loc[summary_j['composite'].idxmax()]
         lb_j = int(cfg['lookback'])
@@ -3413,7 +3646,7 @@ def find_best_hedge(
                 inner.iloc[-lb_j:], cfg['pc_spec'], int(cfg['basket_size']))
             r2_j, vr_j = _eval_on_window(reg_j, bkt_j, outer_test)
         except RuntimeError as e:
-            print(f"  outer window {j}: refit failed ({e}) — skipped")
+            _P(f"  outer window {j}: refit failed ({e}) — skipped")
             continue
         if not np.isnan(r2_j):                                # [Fix 69]
             _yo = outer_test[target_ticker].values
@@ -3426,10 +3659,11 @@ def find_best_hedge(
             'basket_size': int(cfg['basket_size']),
             'r2_oos': r2_j, 'vol_red_oos': vr_j,
         })
-        print(f"  outer window {j} ({outer_test.index[0]:%Y-%m-%d} → "
-              f"{outer_test.index[-1]:%Y-%m-%d}): OOS R²={r2_j:.3f}, "
-              f"vol red={vr_j*100:.1f}%  "
-              f"[picked lb={lb_j}, pc={cfg['pc_spec']}, size={int(cfg['basket_size'])}]")
+        _P(f"  stretch {j} ({outer_test.index[0]:%d %b %Y} → "
+              f"{outer_test.index[-1]:%d %b %Y}): tracked {r2_j*100:.0f}% of "
+              f"the moves, removed {vr_j*100:.0f}% of the risk  "
+              f"[chose a {lb_j}-day lookback, {cfg['pc_spec']} drivers, "
+              f"{int(cfg['basket_size'])} names]")
     nested = pd.DataFrame(nested_rows)
     nested_valid = nested.dropna(subset=['r2_oos']) if len(nested) else nested
     if len(nested_valid):
@@ -3438,7 +3672,7 @@ def find_best_hedge(
         nested_vr_mean = nested_valid['vol_red_oos'].mean()
     else:
         nested_r2_mean = nested_r2_std = nested_vr_mean = np.nan
-        print("  ⚠ nested validation produced no valid windows")
+        _P("  ⚠ nested validation produced no valid windows")
     # [Fix 69] pooled R² across the CONCATENATED nested windows — the same
     # statistic as [Fix 65]'s pooled figure, but for the HONEST pipeline
     # (selection re-run before each window). This is the headline number.
@@ -3620,7 +3854,8 @@ def find_best_hedge(
                 'n_rows': int(len(_df))}
 
     # ── STEP 4: FULL-DATA CV → SELECT LIVE CONFIG ────────────────────────────
-    print(f"\nRunning full-data walk-forward CV for live config selection...")
+    _P(f"Now choosing the recipe to actually trade, walking forward "
+          f"through all of the data...")
     summary, cv_df = _walk_forward_cv(rets, verbose=True)
     if summary is None:
         raise RuntimeError("All CV folds failed — the stock likely lacks "
@@ -3655,7 +3890,7 @@ def find_best_hedge(
     # held — flag it explicitly rather than let the user assume it is inside
     miss_final = [c for c in forced if c not in basket_final]
     if miss_final:
-        print(f"  ⚠ force_include: {', '.join(miss_final)} could not be held "
+        _P(f"  ⚠ force_include: {', '.join(miss_final)} could not be held "
               f"in the final basket (incomplete data or zero variance in the "
               f"final {best_lookback}d window)")
 
@@ -3700,7 +3935,8 @@ def find_best_hedge(
                  '★' if tk in forced else '']
                 for tk, wgt in weights.sort_values(key=lambda s: -s.abs()).items()]
 
-    BASKET_HEADERS = ['ACTION', 'AMOUNT', 'INSTRUMENT', 'FULL TICKER', 'FORCED']
+    BASKET_HEADERS = ['BUY / SELL', 'PER $100', 'NAME', 'FULL TICKER',
+                      'PINNED']
 
     # ── [Fix 65/70/71/72] PRECOMPUTE OOS EVIDENCE ────────────────────────────
     # Used by the trade ticket, the charts and sections [1]/[1b]/[1c] below.
@@ -4070,71 +4306,144 @@ def find_best_hedge(
                    'horizon': horizon_info}               # [Fix 91]
 
     # ── STEP 6: CHARTS ───────────────────────────────────────────────────────
-    if show_plots:
-        fig, axes = plt.subplots(2, 3, figsize=(18, 10))
-        ev = pca_f.explained_variance_ratio_
-        axes[0, 0].bar(range(1, n_pc_final + 1), ev * 100, color='steelblue', alpha=0.7)
-        axes[0, 0].plot(range(1, n_pc_final + 1), np.cumsum(ev) * 100, 'ro-')
-        axes[0, 0].set_title(f'Scree ({n_pc_final} PCs, {np.sum(ev)*100:.0f}% var)')
-        axes[0, 0].set_xlabel('PC')
-        # [Fix 62] label only what matters. Annotating every name is
-        # unreadable past ~100 candidates: the target, the basket and the 30
-        # best-ranked candidates carry all the information anyone reads this
-        # panel for; the rest stay as unlabelled dots.
-        lab = set(basket_final) | {target_ticker} | set(final_rank.index[:30])
-        for tk in loadings_f.index:
-            c = ('red' if tk == target_ticker
-                 else ('green' if tk in basket_final else 'steelblue'))
-            s = 120 if tk == target_ticker else 40
-            axes[0, 1].scatter(loadings_f.loc[tk, 'PC1'],
-                               loadings_f.loc[tk, 'PC2'], c=c, s=s)
-            if tk in lab:
-                axes[0, 1].annotate(disp[tk],
-                                    (loadings_f.loc[tk, 'PC1'],
-                                     loadings_f.loc[tk, 'PC2']), fontsize=6)
-        axes[0, 1].set_title('PC1 vs PC2'); axes[0, 1].set_xlabel('PC1'); axes[0, 1].set_ylabel('PC2')
-        corrs = returns_final.corr()[target_ticker].drop(target_ticker).sort_values(ascending=False).head(10)
-        colors = ['green' if t in basket_final else 'steelblue' for t in corrs.index]
-        axes[0, 2].barh(range(len(corrs)), corrs.values, color=colors)
-        axes[0, 2].set_yticks(range(len(corrs)))
-        axes[0, 2].set_yticklabels([disp[t] for t in corrs.index], fontsize=7)
-        axes[0, 2].set_title(f'Top Correlations with {target_short}')
-        spread = pd.Series(resid_final, index=returns_final.index)
-        # [Fix 15] true cumulative % = expm1(cumulative log return)
-        axes[1, 0].plot(np.expm1(returns_final[target_ticker].cumsum()) * 100, 'r-', label='Unhedged')
-        axes[1, 0].plot(np.expm1(spread.cumsum()) * 100, 'g-', label='Hedged')
-        axes[1, 0].axhline(0, color='grey', ls='--', alpha=0.5)
-        axes[1, 0].legend(); axes[1, 0].set_title('Cumulative Return %')
-        w = 20
-        axes[1, 1].plot(returns_final[target_ticker].rolling(w).std() * ann_sqrt * 100, 'r-', label='Unhedged')
-        axes[1, 1].plot(spread.rolling(w).std() * ann_sqrt * 100, 'g-', label='Hedged')
-        axes[1, 1].legend(); axes[1, 1].set_title(f'Rolling {w}-obs Annualized Vol %')
-        for lb in summary['lookback'].unique():
-            sub = summary[summary['lookback'] == lb].groupby('basket_size')['avg_r2_oos'].mean()
-            axes[1, 2].plot(sub.index, sub.values, 'o-', label=f'{int(lb)}d')
-        axes[1, 2].set_xlabel('Basket Size'); axes[1, 2].set_ylabel('OOS R²')
-        axes[1, 2].legend(); axes[1, 2].set_title('Sensitivity')
-        plt.tight_layout(); plt.show()
-        # [Fix 71] rolling OOS curve — TE panel with the kill-switch line,
-        # R² panel with the pooled level
-        if len(rolling_df) and rolling_df['te_roll'].notna().any():
-            fig2, ax2 = plt.subplots(2, 1, figsize=(12, 6), sharex=True)
-            ax2[0].plot(rolling_df.index, rolling_df['te_roll'] * 100, 'g-')
-            if np.isfinite(wdisp['worst_te']):
-                ax2[0].axhline(wdisp['worst_te'] * 100, color='orange',
-                               ls='--', label='worst validated window')
-                ax2[0].axhline(1.5 * wdisp['worst_te'] * 100, color='red',
-                               ls='--', label='kill-switch (1.5×)')
-                ax2[0].legend(fontsize=8)
-            ax2[0].set_title('Rolling 21-row OOS tracking error (%/yr)')
-            ax2[1].plot(rolling_df.index,
-                        rolling_df['r2_roll'].clip(-0.5, 1.0), 'b-')
-            if not np.isnan(sel_pooled):
-                ax2[1].axhline(sel_pooled, color='grey', ls='--',
-                               label='pooled OOS R²')
-                ax2[1].legend(fontsize=8)
-            ax2[1].set_title('Rolling 21-row OOS R² (clipped at −0.5)')
-            plt.tight_layout(); plt.show()
+    # [Fix 115] The charts used to be drawn HERE, which put six matplotlib
+    # panels at the top of the cell, above the verdict — the first thing on the
+    # page was the thing you look at last. They are now a closure, called from
+    # the report as section [5], so the output reads verdict → evidence →
+    # pictures. They are also drawn in the report's own type scale instead of
+    # matplotlib's defaults (8pt Deja Vu with overlapping date ticks).
+    def _draw_charts():
+        if not show_plots:
+            return
+        _CLR = {'tgt': '#c0392b', 'hedged': '#1b6b3a', 'pick': '#1f3f66',
+                'other': '#9fb3c8', 'warn': '#b7791f', 'kill': '#8c1c1c'}
+        _rc = {'font.size': 9, 'axes.titlesize': 11, 'axes.titleweight': 'bold',
+               'axes.labelsize': 9, 'axes.labelcolor': _RF_MUTE,
+               'axes.edgecolor': '#c8d2dd', 'axes.titlecolor': _RF_HEAD,
+               'axes.grid': True, 'grid.color': '#eef1f5',
+               'grid.linewidth': .8, 'axes.axisbelow': True,
+               'xtick.color': _RF_MUTE, 'ytick.color': _RF_MUTE,
+               'xtick.labelsize': 8, 'ytick.labelsize': 8,
+               'legend.fontsize': 8, 'legend.frameon': False,
+               'figure.facecolor': 'white', 'axes.spines.top': False,
+               'axes.spines.right': False, 'lines.linewidth': 1.4}
+        with plt.rc_context(_rc):
+            fig, axes = plt.subplots(2, 3, figsize=(16, 8.5))
+            ev = pca_f.explained_variance_ratio_
+            axes[0, 0].bar(range(1, n_pc_final + 1), ev * 100,
+                           color=_CLR['pick'], alpha=.75)
+            axes[0, 0].plot(range(1, n_pc_final + 1), np.cumsum(ev) * 100,
+                            'o-', color=_CLR['tgt'], ms=4)
+            axes[0, 0].set_title(f'What drives this universe — '
+                                 f'{n_pc_final} drivers explain '
+                                 f'{np.sum(ev)*100:.0f}% of all movement')
+            axes[0, 0].set_xlabel('market driver, biggest first')
+            axes[0, 0].set_ylabel('% of movement explained')
+            # [Fix 62] label only what matters. Annotating every name is
+            # unreadable past ~100 candidates: the target, the basket and the 30
+            # best-ranked candidates carry all the information anyone reads this
+            # panel for; the rest stay as unlabelled dots.
+            lab = set(basket_final) | {target_ticker} | set(final_rank.index[:30])
+            for tk in loadings_f.index:
+                c = (_CLR['tgt'] if tk == target_ticker
+                     else (_CLR['hedged'] if tk in basket_final
+                           else _CLR['other']))
+                s = 130 if tk == target_ticker else 34
+                axes[0, 1].scatter(loadings_f.loc[tk, 'PC1'],
+                                   loadings_f.loc[tk, 'PC2'], c=c, s=s,
+                                   edgecolors='white', linewidths=.5, zorder=3)
+                if tk in lab:
+                    axes[0, 1].annotate(disp[tk],
+                                        (loadings_f.loc[tk, 'PC1'],
+                                         loadings_f.loc[tk, 'PC2']),
+                                        fontsize=6.5, color=_RF_MUTE,
+                                        xytext=(3, 3),
+                                        textcoords='offset points')
+            axes[0, 1].set_title('Which names move like the target '
+                                 '(red = target, green = in the basket)')
+            axes[0, 1].set_xlabel('exposure to driver 1')
+            axes[0, 1].set_ylabel('exposure to driver 2')
+            corrs = (returns_final.corr()[target_ticker].drop(target_ticker)
+                     .sort_values(ascending=False).head(10))
+            colors = [_CLR['hedged'] if t in basket_final else _CLR['other']
+                      for t in corrs.index]
+            axes[0, 2].barh(range(len(corrs)), corrs.values, color=colors)
+            axes[0, 2].invert_yaxis()
+            axes[0, 2].set_yticks(range(len(corrs)))
+            axes[0, 2].set_yticklabels([disp[t] for t in corrs.index],
+                                       fontsize=7.5)
+            axes[0, 2].set_title(f'Closest names to {target_short} '
+                                 f'(green = in the basket)')
+            axes[0, 2].set_xlabel('correlation')
+            spread = pd.Series(resid_final, index=returns_final.index)
+            # [Fix 15] true cumulative % = expm1(cumulative log return)
+            axes[1, 0].plot(np.expm1(returns_final[target_ticker].cumsum()) * 100,
+                            color=_CLR['tgt'], label='unhedged')
+            axes[1, 0].plot(np.expm1(spread.cumsum()) * 100,
+                            color=_CLR['hedged'], label='hedged')
+            axes[1, 0].axhline(0, color='#b0bcc8', ls='--', lw=.9)
+            axes[1, 0].legend(); axes[1, 0].set_ylabel('%')
+            axes[1, 0].set_title('Cumulative return — unhedged vs hedged')
+            w = 20
+            axes[1, 1].plot(returns_final[target_ticker].rolling(w).std()
+                            * ann_sqrt * 100, color=_CLR['tgt'],
+                            label='unhedged')
+            axes[1, 1].plot(spread.rolling(w).std() * ann_sqrt * 100,
+                            color=_CLR['hedged'], label='hedged')
+            axes[1, 1].legend(); axes[1, 1].set_ylabel('%/yr')
+            axes[1, 1].set_title(f'Rolling {w}-observation volatility')
+            for lb in summary['lookback'].unique():
+                sub = (summary[summary['lookback'] == lb]
+                       .groupby('basket_size')['avg_r2_oos'].mean())
+                axes[1, 2].plot(sub.index, sub.values, 'o-', ms=4,
+                                label=f'lookback {int(lb)}d')
+            axes[1, 2].set_xlabel('names in the basket')
+            axes[1, 2].set_ylabel('moves tracked, unseen data')
+            axes[1, 2].legend()
+            axes[1, 2].set_title('Does a bigger basket help?')
+            # date axes: matplotlib's default tick density overlapped the
+            # labels into an unreadable smear on the two time-series panels
+            for _ax in (axes[1, 0], axes[1, 1]):
+                _ax.xaxis.set_major_locator(_mdates.AutoDateLocator(maxticks=7))
+                _ax.xaxis.set_major_formatter(_mdates.DateFormatter('%b %y'))
+            fig.tight_layout(pad=1.6)
+            plt.show()
+            # [Fix 71] rolling OOS curve — TE panel with the kill-switch line,
+            # R² panel with the pooled level
+            if len(rolling_df) and rolling_df['te_roll'].notna().any():
+                fig2, ax2 = plt.subplots(2, 1, figsize=(13, 6), sharex=True)
+                ax2[0].plot(rolling_df.index, rolling_df['te_roll'] * 100,
+                            color=_CLR['hedged'])
+                if np.isfinite(wdisp['worst_te']):
+                    ax2[0].axhline(wdisp['worst_te'] * 100, color=_CLR['warn'],
+                                   ls='--', label='worst validated window')
+                    ax2[0].axhline(1.5 * wdisp['worst_te'] * 100,
+                                   color=_CLR['kill'], ls='--',
+                                   label='kill-switch (1.5×)')
+                    # headroom + an opaque box, or the legend sits on top of
+                    # the kill-switch line it is labelling
+                    ax2[0].margins(y=.22)
+                    ax2[0].legend(loc='lower left', frameon=True,
+                                  facecolor='white', edgecolor='#dfe4ea',
+                                  framealpha=.95)
+                ax2[0].set_ylabel('%/yr')
+                ax2[0].set_title('How far the hedge drifted, month by month '
+                                 '— above the red line, stop')
+                ax2[1].plot(rolling_df.index,
+                            rolling_df['r2_roll'].clip(-0.5, 1.0),
+                            color=_CLR['pick'])
+                if not np.isnan(sel_pooled):
+                    ax2[1].axhline(sel_pooled, color='#8a97a6', ls='--',
+                                   label='average across all of it')
+                    ax2[1].legend(loc='lower left')
+                ax2[1].set_title('Share of the moves the hedge tracked, '
+                                 'month by month (floored at −0.5)')
+                ax2[1].xaxis.set_major_locator(
+                    _mdates.AutoDateLocator(maxticks=9))
+                ax2[1].xaxis.set_major_formatter(
+                    _mdates.DateFormatter('%b %y'))
+                fig2.tight_layout(pad=1.4)
+                plt.show()
 
     # ── STEP 7: REPORT [Fix 79] ─────────────────────────────────────────────
     # One visual grammar: banner → [0] TICKET → [1] VALIDATION →
@@ -4148,7 +4457,7 @@ def find_best_hedge(
     def hr(c='─'):
         _kv_flush()
         if not _IN_JUPYTER:
-            print(' ' + c * (L - 2))
+            _P(' ' + c * (L - 2))
     # [Fix 104] title/kv/print now route through the shared renderers. kv()
     # BUFFERS into the current block so a run of kv() calls comes out as ONE
     # table instead of 20 loose prints; _section/_print_table/_P flush it.
@@ -4161,52 +4470,78 @@ def find_best_hedge(
         _KVCTX['rows'].append((label, value, implication))
     kvo = _kv_open
 
-    title(f"PCA HEDGE — {target_short}   ·   {datetime.now():%Y-%m-%d %H:%M}")
-    _P(f"  {val_mode} validation · {len(universe)} candidates · "
-          f"{'2-day overlapping (cross-tz)' if two_day else 'daily'} returns "
-          f"· {len(rets)} rows ({rets.index[0]:%d%b%y}→{rets.index[-1]:%d%b%y})")
+    title(f"PCA HEDGE — {target_short}"
+          + ("  ·  RE-HEDGE" if _rehedge_of else '')
+          + f"   ·   {datetime.now():%Y-%m-%d %H:%M}")
+    if _rehedge_of:                                        # [Fix 115]
+        _pp = _rehedge_of.get('params') or {}
+        _P(f"  ► RE-HEDGE: weights refit on today's data using the config "
+           f"already validated by the last full run "
+           f"(lookback {_pp.get('lookback')}d · PCs {_pp.get('pc_spec')} · "
+           f"basket {_pp.get('basket_size')}). The config was NOT re-searched.")
+        _P(f"  the validation below re-runs on {outer_folds} outer window"
+           f"{'s' if outer_folds != 1 else ''} rather than the full 3 — it is "
+           f"a sanity check on the refit, not a fresh validation. The "
+           f"config's credentials come from the run it inherits from. Press "
+           f"RUN HEDGE (or pass full_validation=True) for the full protocol.")
+    _P(f"  {val_mode} validation · {len(universe)} names considered · "
+          f"{len(rets)} days of history "
+          f"({rets.index[0]:%d %b %Y} → {rets.index[-1]:%d %b %Y})"
+          + ("  ·  returns paired over 2 days because the markets close at "
+             "different times" if two_day else ""))
     if sample_window is not None:                          # [Fix 99]
-        _P(f"  window locked: EVERY number below uses only "
-              f"{rets.index[0]:%d %b %Y} → {rets.index[-1]:%d %b %Y} "
-              f"({len(rets)} rows); no data outside it enters the fit, the "
-              f"selection or the scoring")
+        _P(f"  period locked: every number below uses ONLY "
+              f"{rets.index[0]:%d %b %Y} → {rets.index[-1]:%d %b %Y}. "
+              f"Nothing outside it is fitted on, chosen on or scored on.")
     if hedge_horizon_days:                             # [Fix 91/100]
-        _P(f"  hedge horizon {int(hedge_horizon_days)} trading days: risk "
-              f"is quoted over that hold, and [0] reports what holds of that "
-              f"length actually delivered")
+        _P(f"  you plan to hold this for {int(hedge_horizon_days)} trading "
+              f"days, so risk is quoted over that period and [0] shows what "
+              f"holds of that length actually delivered")
     if forced:
-        _P(f"  force-included (★): "
+        _P(f"  names you pinned into every basket (★): "
               f"{', '.join(disp.get(c, c) for c in forced)}")
 
     # ── [0] TICKET ──────────────────────────────────────────────────────────
-    title("[0] TICKET")
+    # [Fix 116] PLAIN ENGLISH FIRST. Every label in this report used to be the
+    # NAME OF A STATISTIC — 'Evidence', 'Exposure', 'Nested pooled OOS R²'. A
+    # reader who does not already know the method cannot decode any of those,
+    # and this section is the one everybody reads. Labels are now written as
+    # two lines: what the row TELLS you, then the technical term underneath in
+    # small type for anyone who wants it. Nothing computed changed — only the
+    # words the numbers are filed under.
+    title("[0] TICKET", "what to trade, how big, and when to stop")
     _sub = ''
     if not np.isnan(ticket_info['quality_r2']):
         # [Fix 86] plain English: R² is "share of the target's moves the
         # hedge tracks", vol reduction is the risk actually removed.
-        _sub = (f"the hedge tracks ~{ticket_info['quality_r2']*100:.0f}% of "
-                f"{target_short}'s moves out-of-sample")
+        _sub = (f"on data it had never seen, this hedge followed about "
+                f"{ticket_info['quality_r2']*100:.0f}% of {target_short}'s "
+                f"moves")
         if sel_n and np.isfinite(sel_vrm):
-            _sub += f", cutting ~{sel_vrm*100:.0f}% of its risk"
+            _sub += f" and removed about {sel_vrm*100:.0f}% of its risk"
     _verdict_banner(grade, reasons, _sub)                     # [Fix 87]
     _qbits = []
     if not np.isnan(ticket_info['quality_r2']):
-        _qbits.append(f"pooled OOS R² {ticket_info['quality_r2']:.2f} "
-                      f"({ticket_info['quality_source']})")
+        # spell the ratio out — '0.72' means nothing until it is '72% of the
+        # moves', which is the same wording the verdict banner already uses
+        _qbits.append(f"tracked {ticket_info['quality_r2']*100:.0f}% of the "
+                      f"moves")
     if boot:
-        _qbits.append(f"95% CI [{boot['r2_lo']:.2f}, {boot['r2_hi']:.2f}]")
+        _qbits.append(f"almost certainly {boot['r2_lo']*100:.0f}–"
+                      f"{boot['r2_hi']*100:.0f}%")
     if not np.isnan(wdisp['worst_r2']):
-        _qbits.append(f"worst window {wdisp['worst_r2']:.2f}")
+        _qbits.append(f"worst stretch {wdisp['worst_r2']*100:.0f}%")
     if _qbits:
         kvo('QUALITY')
-        kv('Evidence', ' · '.join(_qbits),
-           'the pooled figure is the headline; size off the WORST window, '
-           'not the average')
-    _P(f"  EXECUTE   per $100 of "
-          f"{'gross book' if is_portfolio else 'long ' + target_short}"
-          + (f"  ($MM column: ${notional_mm:g}mm gross)" if notional_mm
-             else ""))
-    _t_head = ['ACTION', '$/100', 'INSTRUMENT', 'FULL TICKER', '★']
+        kv('How well it tracked\non data the model never saw',
+           ' · '.join(_qbits),
+           'This is the headline. Size the trade off the WORST stretch, not '
+           'the average.')
+    _P(f"  WHAT TO TRADE — sized per $100 of "
+          f"{'your book' if is_portfolio else 'your ' + target_short}"
+          + (f", and again for the ${notional_mm:g}mm you entered"
+             if notional_mm else ""))
+    _t_head = ['BUY / SELL', '$/100', 'NAME', 'FULL TICKER', '★']
     if notional_mm:
         _t_head.insert(2, '≈$MM')
     _t_rows = []
@@ -4223,34 +4558,36 @@ def find_best_hedge(
     _te_bp = te_final * 1e4 / np.sqrt(252)
     _gross = weights_final.abs().sum() * 100
     kvo('THE POSITION')
-    kv('Exposure', f"gross ${_gross:.1f} · net "
-                   f"{'short' if _net >= 0 else 'long'} ${abs(_net):.1f}",
-       f"You put on ${_gross:.0f} of hedge per $100 of book. "
-       + (f"Gross above $200 usually means the ridge has found offsetting "
-          f"near-duplicates rather than real risk — check [4] for a cheaper "
-          f"config with similar OOS."
+    kv('How much you put on\ngross / net exposure',
+       f"gross ${_gross:.1f} per $100 · net "
+       f"{'short' if _net >= 0 else 'long'} ${abs(_net):.1f}",
+       f"You put on ${_gross:.0f} of hedge for every $100 of book. "
+       + (f"Above $200 usually means the fit has paired off near-duplicate "
+          f"names rather than hedging real risk — check [4] for a cheaper "
+          f"recipe that scores about the same."
           if _gross > 200 else
-          f"That is a normal single-layer hedge; financing and borrow scale "
-          f"with this number, and neither is modelled here."))
-    kv('Hedged (in-sample)', f"vol {tgt_std_final*100:.1f}% → "
-       f"{te_final*100:.1f}%/yr ({vol_red_final*100:.0f}% cut) · "
-       f"TE ≈ {_te_bp:.0f} bp/day · R² {r2_final:.2f}",
-       'IN-SAMPLE — the fit scored on its own data. It is the ceiling, not '
-       'the expectation. Everything you should size off is out-of-sample and '
-       'sits in the rows below and in [1].')
+          f"That is a normal single-layer hedge. Financing and borrow scale "
+          f"with this number, and neither is priced here."))
+    kv('Risk before vs after\nsame data the model was fitted on',
+       f"was {tgt_std_final*100:.1f}%/yr · now "
+       f"{te_final*100:.1f}%/yr · {vol_red_final*100:.0f}% of the risk "
+       f"removed · about {_te_bp:.0f} bp of noise a day",
+       'These are the flattering numbers — the fit graded on its own homework. '
+       'They are the ceiling, not the expectation. What you size off is on the '
+       'rows below and in [1].')
     if notional_mm:                                           # [Fix 86]
         # dollarize the risk: a %/yr tracking error means little at the desk
         # until it is the 1-sigma P&L swing on the actual ticket size.
         _te_use = (wdisp['worst_te'] if np.isfinite(wdisp['worst_te'])
                    else te_final)
-        _basis = ('worst validated window'
-                  if np.isfinite(wdisp['worst_te']) else 'in-sample')
-        kv('RISK ($)', f"±{_fmt_money_mm(_te_use*notional_mm)}/yr · "
-                       f"±{_fmt_money_mm(_te_use*notional_mm/np.sqrt(252))}"
-                       f"/day",
-           f"1σ residual P&L on ${notional_mm:g}mm gross, priced off the "
-           f"{_basis}. Roughly one day in three moves more than the daily "
-           f"figure, and one in twenty moves more than twice it.")
+        _basis = ('worst stretch the hedge has been through'
+                  if np.isfinite(wdisp['worst_te']) else 'in-sample fit')
+        kv('What the hedge can cost you\nresidual P&L, 1 standard deviation',
+           f"±{_fmt_money_mm(_te_use*notional_mm)} a year · "
+           f"±{_fmt_money_mm(_te_use*notional_mm/np.sqrt(252))} a day",
+           f"A typical swing on ${notional_mm:g}mm, priced off the {_basis}. "
+           f"About one day in three moves more than the daily figure, and one "
+           f"in twenty moves more than twice it.")
     # ── [Fix 104] HOW TO RUN IT — every line gets a WHAT IT MEANS ──────────
     # These five lines are the ones a trader acts on, and they were the
     # densest prose in the report: a 26-char label followed by an unbroken
@@ -4260,111 +4597,108 @@ def find_best_hedge(
         'the middle column is the measurement, the right column is what to '
         'do about it.')
     if np.isfinite(wdisp['worst_te']):
-        kv('SIZING',
-           f"worst window {wdisp['worst_te']*100:.1f}%/yr · in-sample "
+        kv('Size the trade off this\nworst stretch vs best case',
+           f"worst {wdisp['worst_te']*100:.1f}%/yr · best case "
            f"{te_final*100:.1f}%/yr",
-           f"Set the risk budget off {wdisp['worst_te']*100:.1f}%, not "
-           f"{te_final*100:.1f}%. The in-sample number is the best this hedge "
-           f"ever looked; the worst validated window is what it did when it "
-           f"was working hardest, and that is the one you have to survive.")
+           f"Budget for {wdisp['worst_te']*100:.1f}%, not "
+           f"{te_final*100:.1f}%. The lower number is the best this hedge ever "
+           f"looked; the higher one is what it did when it was working "
+           f"hardest, and that is the one you have to survive.")
     if nowcast:                                        # [Fix 93/97]
         _nc = nowcast['condition']
-        _mark = {'GOOD': '✓', 'NORMAL': '·', 'DEGRADED': '⚠'}[_nc]
+        # [Fix 115] '·' is the separator the renderer splits readings on, so a
+        # '·' used as a status glyph came out as a fact of its own.
+        _mark = {'GOOD': '✓', 'NORMAL': '•', 'DEGRADED': '⚠'}[_nc]
         _bits, _imp = [], []
         if np.isfinite(nowcast.get('te_pctile', np.nan)):
-            _bits.append(f"recent TE {nowcast['te_block']*100:.1f}%/yr "
-                         f"({_ordinal(nowcast['te_pctile']*100)} pctile)")
-            _imp.append(f"today's tracking error sits at the "
-                        f"{_ordinal(nowcast['te_pctile']*100)} percentile of "
-                        f"this hedge's OWN history — "
-                        + ('comfortably inside its normal range'
+            _bits.append(f"drifting {nowcast['te_block']*100:.1f}%/yr lately "
+                         f"— wider than "
+                         f"{nowcast['te_pctile']*100:.0f}% of its own history")
+            _imp.append(f"Recent drift is wider than "
+                        f"{nowcast['te_pctile']*100:.0f}% of everything this "
+                        f"hedge has done before — "
+                        + ('comfortably inside its normal range.'
                            if nowcast['te_pctile'] < 0.7 else
-                           'toward the wide end of its normal range'))
+                           'toward the wide end of its normal range.'))
         if nowcast.get('latest_window_r2') is not None:
-            _bits.append(f"newest window R² "
-                         f"{nowcast['latest_window_r2']:.2f}"
+            _bits.append(f"newest stretch tracked "
+                         f"{nowcast['latest_window_r2']*100:.0f}% of the moves"
                          + (f" ({nowcast['latest_flag']})"
                             if nowcast.get('latest_flag') else ''))
-        _imp.append('the hedge is behaving as it did historically — trade it '
-                    'at full size' if _nc == 'GOOD' else
-                    ('nothing unusual — trade it, keep the MONITOR level'
-                     if _nc == 'NORMAL' else
-                     'it is NOT behaving as validated — cut size and size off '
-                     'the conservative case, or refit before adding risk'))
-        kv('RIGHT NOW', f"{_mark} {_nc} · " + ' · '.join(_bits),
-           '. '.join(_imp).replace('..', '.'))
+        _imp.append('It is behaving as it always has — trade it at full size.'
+                    if _nc == 'GOOD' else
+                    ('Nothing unusual — trade it, and keep the stop level '
+                     'below.' if _nc == 'NORMAL' else
+                     'It is NOT behaving the way it was validated — cut size, '
+                     'or refit before adding risk.'))
+        kv('Is it working today?\ncurrent condition', f"{_mark} {_nc} · "
+           + ' · '.join(_bits), ' '.join(_imp))
     if horizon_info and horizon_info.get('blocks'):        # [Fix 98]
         _hb = horizon_info['blocks']
-        kv(f"{horizon_info['days']}-DAY HOLDS",
-           f"{_hb['n']} holds · median TE {_hb['te_median']*100:.1f}% · "
-           f"worst {_hb['te_worst']*100:.1f}%/yr · helped "
-           f"{_hb['share_helped']*100:.0f}%",
-           f"This is the only line measured on YOUR holding period rather "
-           f"than on daily data: {_hb['n']} non-overlapping "
-           f"{horizon_info['days']}-day holds actually happened inside the "
-           f"validated span, and the hedge reduced risk in "
-           f"{_hb['share_helped']*100:.0f}% of them. "
-           + ('A share near 100% is what you want; below ~70% means the '
-              'hedge is a coin-flip over a hold this long.'
+        kv(f"What {horizon_info['days']}-day holds actually did\n"
+           f"real holds inside the tested period",
+           f"{_hb['n']} holds happened · typical drift "
+           f"{_hb['te_median']*100:.1f}% · worst "
+           f"{_hb['te_worst']*100:.1f}%/yr · helped in "
+           f"{_hb['share_helped']*100:.0f}% of them",
+           f"The only line measured over YOUR holding period instead of day "
+           f"by day. {_hb['n']} separate {horizon_info['days']}-day holds "
+           f"actually happened in the tested period, and the hedge reduced "
+           f"risk in {_hb['share_helped']*100:.0f}% of them. "
+           + ('Near 100% is what you want; below ~70% means the hedge is a '
+              'coin-flip over a hold this long.'
               if _hb['share_helped'] < 0.7 else
-              'Plan for the WORST of those, not the median.'))
+              'Plan for the WORST of those, not the typical one.'))
     if horizon_info:                                       # [Fix 91/92]
         _hh = horizon_info
         _line = f"±{_hh['sigma_pct']*100:.2f}% over {_hh['days']} days"
         if notional_mm:
             _line += f" ≈ ±{_fmt_money_mm(_hh['sigma_pct']*notional_mm)}"
-        _himp = (f"One standard deviation of hedge slippage over the whole "
-                 f"hold. Two-thirds of the time you land inside "
-                 f"±{_hh['sigma_pct']*100:.2f}%"
-                 + (f" (±{_fmt_money_mm(_hh['sigma_pct']*notional_mm)} on "
-                    f"${notional_mm:g}mm)" if notional_mm else '')
-                 + f"; roughly 1 hold in 20 is more than twice that. This is "
-                   f"the number to put in a risk limit.")
+        # [Fix 115] this was one nine-line paragraph. Split: the risk limit is
+        # the decision, the variance-ratio caveat is a separate sub-row.
+        kv(f"Risk over the whole {_hh['days']}-day hold\n"
+           f"typical miss, 1 standard deviation", _line,
+           f"Put this in the risk limit. Two-thirds of holds land inside it; "
+           f"about 1 in 20 is more than twice it.")
         if np.isfinite(_hh['vr']) and _hh['vr'] > 1.15:
-            _himp += (f" Residuals TRENDED over the sample "
-                      f"(×{np.sqrt(_hh['vr']):.2f} vs iid), so daily tracking "
-                      f"error UNDERSTATES what a hold of this length risks — "
-                      f"the figure above already carries that uplift. Treat "
-                      f"it as a floor, not a forecast: [Fix 111] measured "
-                      f"this ratio to have near-zero out-of-sample "
-                      f"persistence, so it is used only when it RAISES the "
-                      f"number.")
+            kv('  the number above is padded\n  for trending residuals',
+               f"×{np.sqrt(_hh['vr']):.2f}",
+               "The leftover risk trended rather than bouncing around zero, so "
+               "a day-by-day figure would understate a hold this long. The "
+               "padding is already in. Treat it as a floor, not a forecast.")
         elif np.isfinite(_hh['vr']) and _hh['vr'] < 0.85:
-            _himp += (f" The sample's residuals actually mean-reverted "
-                      f"(variance ratio {_hh['vr']:.2f}), which would imply "
-                      f"LESS horizon risk than the √h scaling above. That "
-                      f"discount is deliberately NOT taken — [Fix 111] "
-                      f"measured the ratio to have near-zero out-of-sample "
-                      f"persistence, so shrinking a risk number on it is "
-                      f"unjustified. The figure above is the plain √h number.")
-        kv('HORIZON', _line, _himp)
+            kv('  no discount taken\n  for mean-reverting residuals',
+               f"×{np.sqrt(_hh['vr']):.2f} available",
+               "The leftover risk mean-reverted, which would justify a SMALLER "
+               "number above. It is deliberately not taken — that behaviour "
+               "does not repeat reliably enough to cut a risk limit on.")
         if _hh['refits_needed'] is not None:
-            kv('  refits',
-               ('0' if _hh['refits_needed'] <= 0
-                else f"~{_hh['refits_needed']}"),
-               ("The hedge stays inside its measured shelf life for the whole "
-                "hold — set it and leave it."
+            kv('  refits needed mid-hold',
+               ('none' if _hh['refits_needed'] <= 0
+                else f"about {_hh['refits_needed']}"),
+               ("The hedge stays fresh for the whole hold — set it and leave "
+                "it."
                 if _hh['refits_needed'] <= 0 else
                 f"The weights go stale before the hold ends. Plan about "
-                f"{_hh['refits_needed']} quick_rehedge() refit(s) mid-hedge; "
-                f"skipping them is the single most likely way this hedge "
-                f"underperforms its report."))
+                f"{_hh['refits_needed']} RE-HEDGE run(s) part-way through; "
+                f"skipping them is the likeliest way this hedge underperforms "
+                f"its report."))
     if np.isfinite(kill_te):
-        _mon = f"kill at {kill_te*100:.1f}%/yr"
+        _mon = f"stop at {kill_te*100:.1f}%/yr"
         if roll_stats:
-            _mon += (f" · latest {roll_stats['te_latest']*100:.1f}%"
+            _mon += (f" · running at {roll_stats['te_latest']*100:.1f}% now"
                      + (' ⚠ ABOVE' if _roll_breach else ' ✓'))
         if decay_stats:
-            _mon += f" · refit every {decay_stats['rec_rows']} rows"
-        kv('MONITOR', _mon,
-           f"Track the rolling 21-row tracking error. If it goes above "
-           f"{kill_te*100:.1f}%/yr the hedge is no longer doing what it was "
-           f"validated to do — refit or cut, do not wait for the next review."
+            _mon += f" · refit every {decay_stats['rec_rows']} days"
+        kv('When to pull the plug\nstop level', _mon,
+           f"Watch how far the hedge is drifting, month by month. Above "
+           f"{kill_te*100:.1f}%/yr it is no longer doing what it was tested to "
+           f"do — refit or cut, do not wait for the next review."
            + ((' It is ALREADY above that level: do not add risk on this '
                'hedge today.') if _roll_breach else '')
-           + (f" Independently of that, refit roughly every "
-              f"{decay_stats['rec_rows']} rows — that is where the measured "
-              f"weight decay starts costing more than a refit."
+           + (f" Separately, refit about every "
+              f"{decay_stats['rec_rows']} days — past that the weights go "
+              f"stale faster than a refit costs."
               if decay_stats else ''))
 
     # ── [Fix 115] WHAT THE HORIZON *DOES* CHANGE ───────────────────────────
@@ -4390,65 +4724,83 @@ def find_best_hedge(
         _h115 = int(hedge_horizon_days)
         _long = _h115 >= 63
         kvo(f"AT A {_h115}-DAY HOLD, WATCH THESE",
-            headers=('WATCH', 'THIS RUN', 'WHY AT THIS HORIZON'))
+            headers=('WATCH', 'THIS RUN', 'WHY IT MATTERS OVER THIS HOLD'))
         _adf_txt = ('n/a' if not np.isfinite(adf_p) else
-                    f"ADF p={adf_p:.3f} "
-                    + ('stationary ✓' if adf_p < 0.05 else 'MAY DRIFT ⚠'))
-        _cos = (f"cosine {turnover_stats['mean_cosine']:+.2f}"
-                if turnover_stats else 'n/a')
+                    ('bounces around zero ✓' if adf_p < 0.05
+                     else 'CAN GRIND ONE WAY ⚠'))
+        _cos = (f"{turnover_stats['mean_cosine']*100:+.0f}% alike between "
+                f"refits" if turnover_stats else 'n/a')
         _nc115 = nowcast['condition'] if nowcast else 'n/a'
         _gr115 = weights_final.abs().sum() * 100
         if _long:
-            kv('Residual drift', _adf_txt,
-               'drift grows with h, noise only with √h — it dominates here')
-            kv('Factor tilts', 'see [3] FACTOR EXPOSURE',
-               f'a tilt is carried {_h115} days, not one')
-            kv('Weight stability', _cos,
-               (f"you refit ~{horizon_info['refits_needed']}x inside this hold"
-                if horizon_info and horizon_info.get('refits_needed')
-                else 'you hold one basket the whole way'))
-            kv('Financing', f"${_gr115:.0f} gross × {_h115}d",
-               'NOT modelled here — price borrow yourself')
-            kv('Condition now', _nc115,
-               'least useful line at this horizon — the regime will turn')
+            kv('Does the leftover risk drift?', _adf_txt,
+               'A slow one-way drift compounds over a hold this long; random '
+               'noise does not. Over 3 months the drift is what gets you.')
+            kv('Leftover market tilts', 'see [3] FACTOR EXPOSURE',
+               f'You carry any tilt for {_h115} days, not for one.')
+            kv('Do the weights stay put?', _cos,
+               (f"You refit about {horizon_info['refits_needed']}x inside this "
+                f"hold." if horizon_info and horizon_info.get('refits_needed')
+                else 'You hold one basket the whole way.'))
+            kv('Cost of carrying it', f"${_gr115:.0f} gross for {_h115} days",
+               'Borrow and financing are NOT priced anywhere in this tool — '
+               'price them yourself.')
+            kv('Is it working today?', _nc115,
+               'The least useful line at this horizon — the regime will turn '
+               'before you are out.')
         else:
-            kv('Condition now', _nc115,
-               'you trade inside today\'s regime — this is the key line')
-            kv('Rolling TE', (f"{roll_stats['te_latest']*100:.1f}% vs kill "
-                              f"{kill_te*100:.1f}%" if roll_stats else 'n/a'),
-               'variance is the risk over a hold this short')
-            kv('Worst window', (f"{wdisp['worst_te']*100:.1f}%/yr"
-                                if np.isfinite(wdisp['worst_te']) else 'n/a'),
-               'size off this, never the median')
-            kv('Residual drift', _adf_txt,
-               'secondary here — too few days for a tilt to compound')
+            kv('Is it working today?', _nc115,
+               'You trade inside today\'s conditions — this is the key line.')
+            kv('How far it is drifting now',
+               (f"{roll_stats['te_latest']*100:.1f}% vs a "
+                f"{kill_te*100:.1f}% stop" if roll_stats else 'n/a'),
+               'Over a hold this short, the size of the swing IS the risk.')
+            kv('Worst it has been',
+               (f"{wdisp['worst_te']*100:.1f}%/yr"
+                if np.isfinite(wdisp['worst_te']) else 'n/a'),
+               'Size off this, never off the typical number.')
+            kv('Does the leftover risk drift?', _adf_txt,
+               'Secondary here — too few days for a slow drift to add up.')
         _kv_flush()
 
     # ── [1] VALIDATION ──────────────────────────────────────────────────────
-    title("[1] VALIDATION — how good is this hedge, really?")
+    title("[1] VALIDATION", "how good is this hedge, really?")
+    # [Fix 115] this block used to open with a bare kv() and inherit whatever
+    # headers the previous block had left in _KVCTX — most often the horizon
+    # block's 'WATCH / THIS RUN / WHY AT THIS HORIZON', so the validation
+    # numbers came out under a promise of a third column that was never filled.
+    kvo(headers=('MEASURE', 'THIS RUN', ''))
     if not np.isnan(nested_pooled):
-        kv('► Nested pooled OOS R²', f"{nested_pooled:.3f}   (selection "
-           f"re-run before each window — the honest headline)")
+        kv('► The headline number\nwhole method re-run on unseen data',
+           f"tracked {nested_pooled*100:.0f}% of the moves")
     if sel_n:
-        kv('This config, unseen OOS', f"{sel_r2m:.3f} ± {sel_r2s:.3f} over "
-           f"{sel_n}×{outer_window}d · pooled {sel_pooled:.3f}"
-           + (f" · CI [{boot['r2_lo']:.2f}, {boot['r2_hi']:.2f}]"
+        kv('This recipe on unseen data\nre-fitted before each test stretch',
+           f"{sel_r2m*100:.0f}% ± {sel_r2s*100:.0f} across {sel_n} stretches "
+           f"of {outer_window} days · {sel_pooled*100:.0f}% all together"
+           + (f" · almost certainly {boot['r2_lo']*100:.0f}–"
+              f"{boot['r2_hi']*100:.0f}%" if boot else ''))
+        kv('Risk removed on unseen data\nvolatility reduction',
+           f"{sel_vrm*100:.1f}% of the swing taken out"
+           + (f" · leftover drift almost certainly "
+              f"{boot['te_lo']*100:.1f}–{boot['te_hi']*100:.1f}%/yr"
               if boot else ''))
-        kv('OOS vol reduction', f"{sel_vrm*100:.1f}%"
-           + (f" · TE CI [{boot['te_lo']*100:.1f}%, "
-              f"{boot['te_hi']*100:.1f}%]/yr" if boot else ''))
-    kv('Full-data CV (selection)', f"{best['avg_r2_oos']:.3f} ± "
-       f"{best['std_r2_oos']:.3f} ({int(best['n_folds'])} folds)")
+    kv('Score used to pick the recipe\nwalk-forward cross-validation',
+       f"{best['avg_r2_oos']*100:.0f}% ± {best['std_r2_oos']*100:.0f} over "
+       f"{int(best['n_folds'])} test stretches")
     _ref_oos = sel_r2m if sel_n else nested_r2_mean
     if not np.isnan(_ref_oos):
         _gap = r2_final - _ref_oos
-        _gv = ('✓ generalizes' if _gap < 0.15 else
-               '△ some overfit' if _gap < 0.35 else '✗ overfit')
-        kv('In-sample vs unseen', f"{r2_final:.3f} vs {_ref_oos:.3f} "
-           f"(gap {_gap:+.2f}) → {_gv}")
-    kv('Selected config', f"lookback {best_lookback}d · PCs {best_pc_spec}"
-       f"{f' ({n_pc_final})' if best_pc_spec == 'auto' else ''} · "
-       f"basket {best_bsize}")
+        _gv = ('✓ it holds up' if _gap < 0.15 else
+               '△ flatters itself a bit' if _gap < 0.35 else
+               '✗ flatters itself badly')
+        kv('Does it hold up off its own data?\nin-sample vs out-of-sample',
+           f"{r2_final*100:.0f}% on its own data vs {_ref_oos*100:.0f}% on "
+           f"unseen data ({abs(_gap)*100:.0f} points "
+           f"{'worse' if _gap >= 0 else 'better'}) → {_gv}")
+    kv('The recipe it chose\nlookback · components · basket size',
+       f"fits on the last {best_lookback} days · {best_pc_spec} "
+       f"{'(' + str(n_pc_final) + ') ' if best_pc_spec == 'auto' else ''}"
+       f"market drivers · {best_bsize} names in the basket")
     if len(nested_valid):
         _picks = nested_valid.apply(
             lambda r: f"lb={int(r['lookback'])}, pc={r['pc_spec']}, "
@@ -4463,45 +4815,62 @@ def find_best_hedge(
         _P()
         w_rows = []
         for _wi, (_, r) in enumerate(sel_detail.iterrows()):
+            # the internal flag strings stay as they are — other code
+             # compares against them — but they are translated for display
+            _VERDICT = {'noise-range': 'normal',
+                        'BELOW band': 'WORSE THAN CHANCE EXPLAINS',
+                        'above band': 'better than usual'}
             w_rows.append([f"{int(r['window'])}"
                            f"{' (latest)' if r['window'] == 1 else ''}",
                            f"{r['start']:%d%b}–{r['end']:%d%b%y}",
-                           format(r['r2'], '.3f'),
-                           format(r['vol_red'] * 100, '.1f') + '%',
-                           format(r['tgt_vol'] * 100, '.1f') + '%',
-                           wdisp['flags'][_wi]])
-        _print_table(['WIN', 'DATES', 'OOS R²', 'VOL RED', 'TGT VOL',
-                      'VS NOISE BAND'], w_rows)
+                           format(r['r2'] * 100, '.0f') + '%',
+                           format(r['vol_red'] * 100, '.0f') + '%',
+                           format(r['tgt_vol'] * 100, '.0f') + '%',
+                           _VERDICT.get(wdisp['flags'][_wi],
+                                        wdisp['flags'][_wi])])
+        _print_table(['#', 'DATES TESTED', 'MOVES TRACKED', 'RISK REMOVED',
+                      'HOW WILD IT WAS', 'VERDICT'], w_rows,
+                     title='EACH TEST STRETCH, ONE AT A TIME',
+                     note='Each row is a stretch of days the model had never '
+                          'seen when it picked these weights. "How wild it '
+                          'was" is the target\'s own volatility over that '
+                          'stretch — tracking scores look worse in calm '
+                          'periods for arithmetic reasons, not because the '
+                          'hedge got worse.')
         _band = wdisp['band']
         _below = [str(int(r['window'])) for _wi, (_, r)
                   in enumerate(sel_detail.iterrows())
                   if wdisp['flags'][_wi] == 'BELOW band']
         if _band is not None:
             if not _below:
-                _P(f"  ► window spread sits inside the sampling-noise "
-                      f"band [{_band[0]:.2f}, {_band[1]:.2f}] — NOT "
-                      f"instability; trust the pooled number")
+                _P(f"  ► the spread between those stretches is no more than "
+                      f"chance would produce ({_band[0]*100:.0f}–"
+                      f"{_band[1]*100:.0f}%) — it is not instability, so "
+                      f"trust the combined number")
             else:
-                _P(f"  ► window(s) {', '.join(_below)} sit BELOW the "
-                      f"noise band [{_band[0]:.2f}, {_band[1]:.2f}] — not "
-                      f"explained by window length")
+                _P(f"  ► stretch(es) {', '.join(_below)} came in BELOW what "
+                      f"chance alone explains ({_band[0]*100:.0f}–"
+                      f"{_band[1]*100:.0f}%) — something real went wrong "
+                      f"there, not just a short sample")
         if np.isfinite(wdisp['reg_corr']) and wdisp['reg_corr'] > 0.5:
-            _P(f"  ► weak windows are LOW-VOL windows (corr "
-                  f"{wdisp['reg_corr']:+.2f}) — R² is mechanically depressed "
-                  f"there; judge them by TE")
+            _P(f"  ► the weak stretches are the CALM ones — a tracking score "
+                  f"is mechanically lower when there is less to track. Judge "
+                  f"those stretches by how far the hedge drifted instead")
         if wdisp['min_sim'] is not None:
-            _stab = ('stable' if wdisp['min_sim'] > 0.8 else
-                     'drifting' if wdisp['min_sim'] > 0.5 else 'UNSTABLE')
-            _msg = (f"  ► per-window baskets: min weight cosine "
-                    f"{wdisp['min_sim']:+.2f} → {_stab}")
+            _stab = ('the same basket every time' if wdisp['min_sim'] > 0.8
+                     else 'a drifting basket' if wdisp['min_sim'] > 0.5
+                     else 'a DIFFERENT basket each time')
+            _msg = (f"  ► re-picked on each stretch, the model chose "
+                    f"{_stab} ({wdisp['min_sim']*100:+.0f}% alike at worst)")
             if wdisp['min_sim'] <= 0.5:
-                _msg += (" — dispersion here is basket turnover; try a "
-                         "longer lookback, smaller basket, or force_include")
+                _msg += (" — that churn is the real source of the spread "
+                         "above. Try a longer lookback, a smaller basket, or "
+                         "pin names with force_include")
             _P(_msg)
         if wdisp['trend']:
-            _P("  ► ⚠ R² deteriorates toward the LATEST window — do not "
-                  "average it away; the newest")
-            _P("    reading is tomorrow's best estimate")
+            _P("  ► ⚠ it tracked WORSE in the most recent stretches. Do not "
+               "average that away — the newest reading is the best guess at "
+               "tomorrow")
         # ── [Fix 108] IS THE WINNER STILL THE WINNER *NOW*? ────────────────
         # The selection maximises the composite over ALL CV folds. If the
         # hedge is decaying, that average is partly historical. This block
@@ -4517,59 +4886,56 @@ def find_best_hedge(
             _alt = _rsrt.iloc[0]
             _same = all(_cur[k] == _alt[k] for k in _bkey)
             _slope = _cur.get('r2_slope_per_fold', np.nan)
-            kvo('RECENCY — is this still the right config TODAY?',
-                note='[Fix 108] The live pick maximises the composite over '
-                     'ALL folds. These rows say what that costs, and what '
-                     'recency-only selection would have done instead.')
+            kvo('IS THIS STILL THE RIGHT RECIPE TODAY?',
+                note='The recipe was chosen on the whole history, weighting '
+                     'three years ago the same as last month. These rows say '
+                     'what that costs and what recent data alone would pick.')
             if np.isfinite(_slope):
-                kv('Decay of the pick',
-                   f"{-_slope:+.3f} R² per {cv_test_window}-row fold",
-                   ('The selected config is HOLDING UP — its OOS R² is flat '
-                    'or improving as the folds get newer.' if _slope <= 0.005
+                kv('Is it fading?\ntrend across test stretches',
+                   f"{-_slope*100:+.1f} points per stretch of "
+                   f"{cv_test_window} days",
+                   ('It is HOLDING UP — it tracks as well on the newest '
+                    'stretches as on the oldest.' if _slope <= 0.005
                     else
-                    f"The selected config LOSES about {_slope:.3f} of R² per "
-                    f"{cv_test_window}-row fold going forward in time. Over "
-                    f"the {int(_cur.get('n_folds', 0))} folds measured that is "
-                    f"~{_slope * max(int(_cur.get('n_folds', 1)) - 1, 1):.2f} "
-                    f"of R² — so its headline average is flattered by the "
-                    f"older folds and the newest reading is the better "
-                    f"estimate of tomorrow."))
+                    f"It tracks about {_slope*100:.1f} percentage points worse "
+                    f"with each stretch further forward in time — roughly "
+                    f"{_slope * max(int(_cur.get('n_folds', 1)) - 1, 1)*100:.0f} "
+                    f"points across the "
+                    f"{int(_cur.get('n_folds', 0))} stretches measured. Its "
+                    f"headline average is flattered by the older ones, and "
+                    f"the newest reading is the better guess at tomorrow."))
             if np.isfinite(_cur.get('recent_r2', np.nan)):
-                kv('  all folds vs recent',
-                   f"{_cur['avg_r2_oos']:.3f} all · "
-                   f"{_cur['recent_r2']:.3f} newest "
-                   f"{int(_cur.get('n_recent', 0))} folds",
-                   'The gap between these two IS the recency question. A '
-                   'small gap means the average is a fair summary; a large '
-                   'one means you are trading a config on evidence that is '
-                   'mostly historical.')
+                kv('  whole history vs recent',
+                   f"{_cur['avg_r2_oos']*100:.0f}% over everything · "
+                   f"{_cur['recent_r2']*100:.0f}% over the newest "
+                   f"{int(_cur.get('n_recent', 0))} stretches",
+                   'The gap between these two IS the question. Small means the '
+                   'average is a fair summary; large means you are trading on '
+                   'evidence that is mostly old.')
             if _same:
-                kv('  recency-only pick', 'SAME config',
-                   'Selecting on the most recent folds alone would have '
-                   'chosen this same recipe — the ranking is not an artifact '
-                   'of averaging over old regimes. This is the answer to '
-                   '"how can the best result be one that is deteriorating": '
-                   'here, it is also the best on the recent evidence.')
+                kv('  what recent data alone would pick', 'the SAME recipe',
+                   'Choosing on the most recent stretches only would have '
+                   'landed on this same recipe, so the ranking is not an '
+                   'artifact of averaging over old market conditions.')
             else:
-                kv('  recency-only pick',
-                   f"lb {int(_alt['lookback'])} · pc {_alt['pc_spec']} · "
-                   f"k {int(_alt['basket_size'])}",
-                   f"On the newest {int(_alt.get('n_recent', 0))} folds alone "
-                   f"a DIFFERENT config leads "
-                   f"({_alt.get('recent_r2', float('nan')):.3f} vs "
-                   f"{_cur.get('recent_r2', float('nan')):.3f} for the pick). "
-                   f"It is NOT selected by default, on purpose: half the "
-                   f"folds is a handful of independent windows and choosing "
-                   f"on them alone usually buys noise. Treat it as a "
-                   f"challenger — run it from [4] and compare, or set "
-                   f"recency_weight=0.35 to tilt the selection toward recent "
-                   f"folds and re-run.")
+                kv('  what recent data alone would pick',
+                   f"{int(_alt['lookback'])}-day lookback · "
+                   f"{_alt['pc_spec']} drivers · "
+                   f"{int(_alt['basket_size'])} names",
+                   f"A DIFFERENT recipe leads over the newest "
+                   f"{int(_alt.get('n_recent', 0))} stretches "
+                   f"({_alt.get('recent_r2', float('nan'))*100:.0f}% vs "
+                   f"{_cur.get('recent_r2', float('nan'))*100:.0f}%). It is "
+                   f"not "
+                   f"chosen, on purpose — a handful of recent stretches "
+                   f"usually buys noise. Treat it as a challenger: run it "
+                   f"from [4], or set recency_weight=0.35 and re-run.")
             if recency_weight:
-                kv('  recency_weight', f"{recency_weight:g} (ACTIVE)",
-                   f"The composite above is already recency-weighted: fold f "
-                   f"back in time counts exp(-{recency_weight:g}·f). The "
-                   f"validation numbers in [1] are unaffected — they never "
-                   f"reweight anything.")
+                kv('  recent data is already favoured',
+                   f"recency_weight {recency_weight:g}",
+                   f"The choice above already discounts older stretches. The "
+                   f"scores in [1] are unaffected — they never reweight "
+                   f"anything.")
         except Exception as _e108:
             # [Fix 114] never swallow a diagnostic silently — a section that
             # just is not there reads as "nothing to report", which is the
@@ -4588,117 +4954,130 @@ def find_best_hedge(
                   "'BELOW band' flag is weak")
             _P("    evidence. The CI conditions on the fitted weights.)")
     if roll_stats:
-        kvo('ROLLING OOS — 21-row walk-forward',
-            note='[Fix 105] R² and TE answer DIFFERENT questions. R² also '
-                 'charges directional drift; TE does not. When they '
-                 'disagree, the drift row below is the whole difference.')
-        kv('Tracking error', f"median {roll_stats['te_median']*100:.1f}% · "
-           f"worst {roll_stats['te_worst']*100:.1f}% · latest "
+        kvo('HOW IT BEHAVED THROUGH TIME — refit every 21 days',
+            note='Every 21 trading days the weights are refit and scored on '
+                 'the days that follow. The first three rows answer different '
+                 'questions — when they disagree, the "cost of one-way drift" '
+                 'row is the whole difference.')
+        kv('How far it drifts\ntracking error', f"typically "
+           f"{roll_stats['te_median']*100:.1f}% · worst "
+           f"{roll_stats['te_worst']*100:.1f}% · lately "
            f"{roll_stats['te_latest']*100:.1f}%/yr",
-           'The size of the residual swing. This is the number that sets '
-           'your risk budget and the kill-switch.')
-        kv('R² (strict)', f"median {roll_stats['r2_median']:+.2f} · worst "
-           f"{roll_stats['r2_worst']:+.2f} · latest "
-           f"{roll_stats['r2_latest']:+.2f}",
-           'Share of the target explained, charging BOTH mistracking and '
-           'directional drift. Can go below zero even while the hedge is '
-           'cutting risk — see the next two rows.')
+           'The size of the swing the hedge does not remove. This is the '
+           'number that sets your risk budget and your stop.')
+        kv('Share of the moves tracked\ndrift charged', f"typically "
+           f"{roll_stats['r2_median']*100:+.0f}% · worst "
+           f"{roll_stats['r2_worst']*100:+.0f}% · lately "
+           f"{roll_stats['r2_latest']*100:+.0f}%",
+           'Counts BOTH missing the moves and sliding one way over time. It '
+           'can go negative even while the hedge is cutting risk — the next '
+           'two rows say why.')
         if np.isfinite(roll_stats.get('r2var_median', np.nan)):
-            kv('R² (variance only)',
-               f"median {roll_stats['r2var_median']:+.2f} · worst "
-               f"{roll_stats['r2var_worst']:+.2f} · latest "
-               f"{roll_stats['r2var_latest']:+.2f}",
-               'The same windows with the mean removed from BOTH sides: '
-               'purely "did hedging shrink the swing?". This is the twin of '
-               'the TE row and is what vol-reduction means.')
+            kv('Share of the swing removed\ndrift not charged', f"typically "
+               f"{roll_stats['r2var_median']*100:+.0f}% · worst "
+               f"{roll_stats['r2var_worst']*100:+.0f}% · lately "
+               f"{roll_stats['r2var_latest']*100:+.0f}%",
+               'The same stretches, ignoring any one-way slide: purely "did '
+               'hedging make the swing smaller?".')
         if roll_stats.get('n_neg'):
             _nn, _nc2 = roll_stats['n_neg'], roll_stats['n_neg_but_cut']
-            kv('  negative R² windows',
+            kv('  stretches that scored negative',
                f"{_nn} of {roll_stats['n_scored']}"
-               + (f" · {_nc2} still CUT variance" if _nn else ''),
-               (f"{_nc2} of those {_nn} windows had the hedge genuinely "
-                f"reducing variance — the negative R² there is entirely "
-                f"directional drift (the target ground away from the basket), "
-                f"not a tracking failure. Judge those windows by TE. The "
-                f"other {_nn - _nc2} are real: the hedge added variance."
+               + (f" · {_nc2} still made the swing smaller" if _nn else ''),
+               (f"In {_nc2} of those {_nn}, the hedge genuinely did shrink the "
+                f"swing — the negative score is entirely the target grinding "
+                f"away from the basket, not a tracking failure. Judge those by "
+                f"drift instead. The other {_nn - _nc2} are real: the hedge "
+                f"made things worse."
                 if _nc2 else
-                f"In all {_nn}, the hedge genuinely ADDED variance — those "
-                f"are real failures, not a definitional artifact."))
+                f"In all {_nn} the hedge genuinely made the swing BIGGER. "
+                f"Those are real failures, not an artifact of the measure."))
         if np.isfinite(roll_stats.get('drift_median', np.nan)):
-            kv('  drift penalty', f"median {roll_stats['drift_median']:+.2f} R²",
-               'How much R² the average window loses purely to the residual '
-               'having a non-zero mean. Big here means the hedge tracks the '
-               'SHAPE of the target but keeps sliding against its LEVEL — '
-               'usually one leg running on its own story.')
-        kv('  coverage', f"{roll_stats['n_days']} OOS rows over "
+            kv('  cost of one-way drift',
+               f"{roll_stats['drift_median']*100:+.0f} pts of the score",
+               'The gap between the two rows above. Big here means the hedge '
+               'follows the SHAPE of the target but keeps sliding against its '
+               'LEVEL — usually one leg running on its own story.')
+        kv('  what this covers', f"{roll_stats['n_days']} days across "
            f"{roll_stats['n_segments']} refits, "
            f"{rolling_df.index[0]:%d%b%y}→{rolling_df.index[-1]:%d%b%y}",
-           'Weights are honest per segment, but the CONFIG was chosen on '
-           'full data — read this block as STABILITY, not as a clean OOS '
-           'score. The clean score is [1].')
+           'Read this block as STEADINESS, not as a clean score — the weights '
+           'are honest but the recipe saw all the data. The clean score is in '
+           'the table at the top of [1].')
     if decay_stats:                                            # [Fix 84]
-        _dstr = ' · '.join(f"every {_iv}r {_te*100:.1f}%"
+        _dstr = ' · '.join(f"every {_iv} days {_te*100:.1f}%"
                            for _iv, _te in decay_stats['te_by_interval'])
-        kv('TE vs refit interval', _dstr)
+        kv('Does waiting to refit cost you?\ndrift by refit interval', _dstr)
         _pen = (decay_stats['te_by_interval'][-1][1]
                 / decay_stats['fresh_te'] - 1) * 100
-        kv('Rebalance cadence', f"refit every ~{decay_stats['rec_rows']} "
-           f"rows (skipping to "
-           f"{decay_stats['te_by_interval'][-1][0]}r costs {_pen:+.0f}% TE)")
-        kv('  basis', f"{decay_stats['n_rows']} rows, each scored by all "
-           f"three weight vintages — paired, same days")
+        kv('How often to refit',
+           f"about every {decay_stats['rec_rows']} days · waiting "
+           f"{decay_stats['te_by_interval'][-1][0]} days instead "
+           + (f"costs {_pen:.0f}% more drift" if _pen >= 0.5 else
+              "costs you nothing measurable"))
+        kv('  measured on', f"{decay_stats['n_rows']} days, each scored by "
+           f"fresh, one-refit-old and two-refit-old weights on the same days")
     if turnover_stats:
-        kv('Basket turnover', f"consecutive refits share "
-           f"{turnover_stats['mean_jaccard']*100:.0f}% of names · weight "
-           f"cosine {turnover_stats['mean_cosine']:+.2f} "
+        kv('Do the names change between refits?\nturnover',
+           f"{turnover_stats['mean_jaccard']*100:.0f}% of the names stay · "
+           f"weights {turnover_stats['mean_cosine']*100:+.0f}% alike "
            f"({turnover_stats['n_refits']} refits)")
 
     # ── [2] COMPARISON ──────────────────────────────────────────────────────
-    title(f"[2] COMPARISON — basket vs simplest hedges, same "
-          f"{len(outer_windows)} unseen windows")
+    title("[2] COMPARISON",
+          f"could one simple instrument have done the same job?")
     _etf_dir = 'short' if reg_e.coef_[0] > 0 else 'long'
-    _P(f"  simplest alternative: {_etf_dir} "
-          f"${abs(reg_e.coef_[0])*100:.0f} {disp[best_etf]} per $100 "
-          f"(β {reg_e.coef_[0]:+.2f}, in-sample R² {r2_etf:.2f})")
+    _P(f"  the simplest thing you could do instead: {_etf_dir} "
+          f"${abs(reg_e.coef_[0])*100:.0f} of {disp[best_etf]} per $100 "
+          f"of book")
     cmp_rows = []
     if sel_n:
-        cmp_rows.append(['PCA basket — this recipe',
-                         f"{sel_r2m:.3f} ± {sel_r2s:.3f}",
-                         f"{sel_vrm*100:.1f}%", str(sel_n)])
+        cmp_rows.append(['The basket in this ticket',
+                         f"{sel_r2m*100:.0f}% ± {sel_r2s*100:.0f}",
+                         f"{sel_vrm*100:.0f}%", str(sel_n)])
     if not np.isnan(nested_r2_mean):
-        cmp_rows.append(['PCA pipeline — nested',
-                         f"{nested_r2_mean:.3f} ± {nested_r2_std:.3f}",
-                         f"{nested_vr_mean*100:.1f}%", str(len(nested_valid))])
+        cmp_rows.append(['The whole method, re-run each time',
+                         f"{nested_r2_mean*100:.0f}% ± "
+                         f"{nested_r2_std*100:.0f}",
+                         f"{nested_vr_mean*100:.0f}%", str(len(nested_valid))])
     if len(etf_bench):
         _p = '/'.join(sorted({e.split(' ')[0]
                               for e in etf_bench['instrument']}))
-        cmp_rows.append([f'Best single ETF [{_p}]', f"{etf_r2_mean:.3f}",
-                         f"{etf_vr_mean*100:.1f}%", str(len(etf_bench))])
+        cmp_rows.append([f'Just one ETF — {_p}',
+                         f"{etf_r2_mean*100:.0f}%",
+                         f"{etf_vr_mean*100:.0f}%", str(len(etf_bench))])
     if len(name_bench):
         _p = '/'.join(sorted({e.split(' ')[0]
                               for e in name_bench['instrument']}))
-        cmp_rows.append([f'Best single name [{_p}]', f"{name_r2_mean:.3f}",
-                         f"{name_vr_mean*100:.1f}%", str(len(name_bench))])
+        cmp_rows.append([f'Just one stock — {_p}',
+                         f"{name_r2_mean*100:.0f}%",
+                         f"{name_vr_mean*100:.0f}%", str(len(name_bench))])
     if cmp_rows:
-        _print_table(['HEDGE', 'OOS R²', 'VOL RED', 'WINDOWS'], cmp_rows)
+        _print_table(['WHAT YOU COULD TRADE', 'MOVES TRACKED', 'RISK REMOVED',
+                      'STRETCHES TESTED'], cmp_rows,
+                     note='All of them scored on the same unseen stretches, '
+                          'so this is a fair fight. If a single instrument '
+                          'gets close, it is usually the better trade — one '
+                          'leg, one borrow, nothing to refit.')
     _ref_pca = sel_r2m if sel_n else nested_r2_mean
     _ref_simple = np.nanmax([etf_r2_mean, name_r2_mean])
     if not (np.isnan(_ref_pca) or np.isnan(_ref_simple)):
-        _P("  ► " + ("the basket beats every single instrument on the "
-                        "same unseen windows — it adds value"
-                        if _ref_pca > _ref_simple else
-                        "a single instrument is at least as robust OOS — "
-                        "prefer the simple hedge"))
+        _P("  ► " + ("the basket beats every single instrument on the same "
+                     "unseen stretches — the extra legs are earning their keep"
+                     if _ref_pca > _ref_simple else
+                     "a single instrument held up at least as well — prefer "
+                     "the simple hedge"))
 
     # ── [3] DIAGNOSTICS ─────────────────────────────────────────────────────
-    title("[3] DIAGNOSTICS")
-    kvo('DIAGNOSTICS')
-    kv('Residual ADF', f"p={adf_p:.4f} → "
-       f"{'stationary ✓' if adf_p < 0.05 else 'may drift ⚠'}",
-       'Tests whether the leftover risk mean-reverts or wanders. Stationary '
-       'means the hedge error oscillates around zero; "may drift" means it '
-       'can grind one way for a long time, which is exactly what pushes the '
-       'rolling R² negative while TE still looks fine.')
+    title("[3] DIAGNOSTICS", "what is left after the hedge, and why")
+    kvo()                     # [Fix 115] no 'DIAGNOSTICS' caption under a
+    kv('Does the leftover risk wander?\n'  # section already called that
+       'stationarity test',
+       ('bounces around zero ✓' if adf_p < 0.05
+        else 'CAN GRIND ONE WAY ⚠') + f" (p={adf_p:.4f})",
+       'Whether what the hedge leaves behind oscillates around zero or can '
+       'grind in one direction for months. Grinding is what pushes the '
+       'tracking score negative while the size of the swing still looks fine.')
     # ── [Fix 105] HOW MUCH OF THIS TARGET IS HEDGEABLE AT ALL ──────────────
     # The reported AAPL/TSLA/SK-Hynix case raised the right question: does
     # basket hedging even make sense for a concentrated book? A hedge built
@@ -4730,33 +5109,34 @@ def find_best_hedge(
             _got = float(ticket_info['quality_r2']) if np.isfinite(
                 ticket_info.get('quality_r2', np.nan)) else np.nan
             _idio = 1.0 - _ceil
-            _msg = (f"About {_idio*100:.0f}% of "
-                    f"{target_short}'s variance is NOT spanned by any "
-                    f"combination of the {len(_uni_cols)} candidates — it is "
-                    f"idiosyncratic and cannot be hedged with them at any "
-                    f"weighting. ")
+            _msg = (f"About {_idio*100:.0f}% of what {target_short} does is "
+                    f"its own story — nothing among the "
+                    f"{len(_uni_cols)} candidates moves with it, at any "
+                    f"weighting. That part cannot be hedged by anyone. ")
             if np.isfinite(_got):
-                _msg += (f"The hedge captured {_got:.2f} of a possible "
-                         f"~{_ceil:.2f}, i.e. "
+                _msg += (f"This hedge got {_got*100:.0f} of the "
+                         f"{_ceil*100:.0f} points available, so it captured "
                          f"{_got/_ceil*100 if _ceil > 0.05 else 0:.0f}% of "
                          f"what was there to take. ")
-                _msg += ('The gap to a perfect hedge is structural, not a '
-                         'model failure — a better config cannot close it.'
+                _msg += ('The rest of the gap is structural, not a modelling '
+                         'failure — no recipe can close it.'
                          if _got > 0.75 * _ceil else
-                         'There is real headroom left — the alternatives in '
-                         '[4] are worth comparing.')
+                         'There is real room left — the alternatives in [4] '
+                         'are worth comparing.')
             if _ceil < 0.45:
-                _msg += (f" A ceiling this low is the honest verdict that "
-                         f"this target is mostly a single-name bet: expect a "
-                         f"volatile rolling R², and size off TE rather than "
-                         f"R².")
-            kv('Hedgeable ceiling',
-               f"R² ≤ ~{_ceil:.2f} · idio {_idio*100:.0f}%", _msg)
+                _msg += (f" A ceiling this low is the honest verdict that this "
+                         f"position is mostly a single-name bet. Expect the "
+                         f"tracking score to jump around, and size off how far "
+                         f"the hedge drifts instead.")
+            kv('Best any hedge could do here\nhow much is hedgeable at all',
+               f"can't beat {_ceil*100:.0f}% of the moves · "
+               f"{_idio*100:.0f}% is this name's own story", _msg)
     except Exception as _e105:
-        kv('Hedgeable ceiling', 'unavailable',            # [Fix 114]
+        kv('Best any hedge could do here', 'unavailable',   # [Fix 114]
            f"could not be estimated ({type(_e105).__name__}: {_e105}). "
            f"Without it there is no reading on how much of this target is "
-           f"hedgeable at all — judge the hedge by TE, not by R².")
+           f"hedgeable at all — judge the hedge by how far it drifts, not by "
+           f"the share of moves it tracks.")
     if is_portfolio:
         hedge_ret = returns_final[basket_final].values.dot(
             weights_final.values)
@@ -4790,16 +5170,30 @@ def find_best_hedge(
         _P("  (factor diagnostics need ~6+ non-ETF names in the "
               "universe)")
     else:
-        _P()
-        _P("  FACTOR EXPOSURE — target β vs hedged-residual β "
-              "(orthogonalized, [Fix 50]):")
-        _print_table(['FACTOR', 'TARGET β', 'RESID β'],
-                     [[r['factor'], format(r['target_beta'], '+.3f'),
-                       format(r['residual_beta'], '+.3f')]
-                      for _, r in fl.iterrows()])
+        # [Fix 116] the internal keys ('SMB(univ)') stay as they are —
+        # result['factor_leakage'] is consumed elsewhere — but nobody outside
+        # a factor desk reads them, so the table shows what they MEAN.
+        _FACNAME = {'MKT(univ)': 'The market overall',
+                    'SMB(univ)': 'Small companies vs large',
+                    'WML(univ)': 'Recent winners vs recent losers',
+                    'REV(univ)': 'Last month\u2019s losers bouncing back',
+                    'VOL(univ)': 'Jumpy names vs steady names'}
+        _print_table(['WHAT MOVES THE MARKET', 'YOUR POSITION',
+                      'WHAT IS LEFT AFTER HEDGING'],
+                     [[_FACNAME.get(r['factor'], r['factor']),
+                       format(r['target_beta'], '+.2f'),
+                       format(r['residual_beta'], '+.2f')]
+                      for _, r in fl.iterrows()],
+                     title='WHAT YOU ARE STILL EXPOSED TO',
+                     note='Left column: how strongly your position moves with '
+                          'each of these. Right column: how much of that is '
+                          'still there after the hedge. Near zero means the '
+                          'hedge neutralised it; a big number is a bet you '
+                          'are still carrying whether you meant to or not.')
         _lo = fl.loc[fl['residual_beta'].abs().idxmax()]
-        _P(f"  ► largest surviving tilt: {_lo['factor']} (residual β "
-              f"{_lo['residual_beta']:+.3f}; ≈0 would mean neutralized)")
+        _P(f"  ► the biggest thing the hedge does NOT remove: "
+              f"{_FACNAME.get(_lo['factor'], _lo['factor']).lower()} "
+              f"({_lo['residual_beta']:+.2f} left over)")
 
     # ── [4] ALTERNATIVES ────────────────────────────────────────────────────
     # [Fix 109] Every alternative now carries the SAME evidence as the pick:
@@ -4808,7 +5202,8 @@ def find_best_hedge(
     # CV average and a truncated holdings string, so there was no way to tell
     # whether #2 was genuinely comparable or merely close on one statistic —
     # which is the only thing this section exists to answer.
-    title("[4] ALTERNATIVES — top configs, on the same evidence as the pick")
+    title("[4] ALTERNATIVES",
+          "the next-best recipes, judged on exactly the same evidence")
     top5 = summary.sort_values('composite', ascending=False).head(5)
     _alt_cache = []
     for _i5, (_, cfg) in enumerate(top5.iterrows(), 1):
@@ -4831,76 +5226,102 @@ def find_best_hedge(
                                vrm=_c_vrm, n=_c_n, roll=_rs5, w=_w5,
                                r2_in=_r25))
     # ── summary table: one row per config, every headline side by side ─────
-    _hd = ['', 'CONFIG', 'CV R²', 'UNSEEN R²', 'ROLL TE med/worst',
-           'ROLL R² med', 'RECENT R²', 'VOLRED', 'GROSS', '']
+    _hd = ['', 'RECIPE', 'SCORE IT WAS PICKED ON', 'ON UNSEEN DATA',
+           'DRIFT TYPICAL / WORST', 'TRACKED THROUGH TIME', 'LATELY',
+           'RISK REMOVED', 'SIZE PUT ON', '']
     _rows5 = []
     for _a in _alt_cache:
         _rr = _a['roll']
         _rows5.append([
-            f"#{_a['i']}", f"lb {_a['lb']} · pc {_a['ps']} · k {_a['bs']}",
-            f"{_a['cfg']['avg_r2_oos']:.3f}",
-            (f"{_a['r2m']:.3f} ± {_a['r2s']:.3f}" if _a['n'] else 'n/a'),
-            (f"{_rr['te_median']*100:.1f}% / {_rr['te_worst']*100:.1f}%"
+            f"#{_a['i']}",
+            f"{_a['lb']}d fit, {_a['bs']} names"
+            + ('' if _a['ps'] == 'auto' else f", {_a['ps']} drivers"),
+            f"{_a['cfg']['avg_r2_oos']*100:.0f}%",
+            (f"{_a['r2m']*100:.0f}% ± {_a['r2s']*100:.0f}"
+             if _a['n'] else 'n/a'),
+            (f"{_rr['te_median']*100:.0f}% / {_rr['te_worst']*100:.0f}%"
              if _rr else 'n/a'),
-            (f"{_rr['r2_median']:+.2f}" if _rr else 'n/a'),
-            (f"{_a['cfg']['recent_r2']:.3f}"
+            (f"{_rr['r2_median']*100:+.0f}%" if _rr else 'n/a'),
+            (f"{_a['cfg']['recent_r2']*100:.0f}%"
              if np.isfinite(_a['cfg'].get('recent_r2', np.nan)) else 'n/a'),
             f"{_a['cfg']['avg_vol_red']*100:.0f}%",
             f"${_a['cfg']['avg_gross']*100:.0f}",
-            ('◄ selected' if _a['sel'] else '')])
-    _print_table(_hd, _rows5)
-    _P("  ► compare on UNSEEN R² and ROLL TE, not on CV R² — CV R² is what "
-       "the selection already optimised, so it is the one statistic that is "
-       "guaranteed to favour the pick")
+            ('◄ chosen' if _a['sel'] else '')])
+    _print_table(_hd, _rows5,
+                 note='Compare on ON UNSEEN DATA and DRIFT — never on the '
+                      'score it was picked on, which is the one the search '
+                      'already optimised and so is guaranteed to flatter the '
+                      'winner. "Recipe" = how many days of history each refit '
+                      'uses, and how many names go in the basket.')
     # ── per-config detail: the exact ticket each alternative would produce ──
+    # [Fix 115] This used to repeat the SAME four explanation rows under every
+    # config — five configs × four paragraphs of identical prose, ~20 rows of
+    # boilerplate for four distinct sentences. The explanations are a property
+    # of the COLUMNS, not of any one config, so they are stated once here and
+    # each config below shows only its own numbers.
+    _P("  ► each block below is the ticket that recipe would produce, and "
+       "how it scored on exactly the same evidence as the one chosen")
+    _kv_open('WHAT THE FOUR MEASURES BELOW MEAN')
+    kv('size put on / best case', 'what you would trade, and its ceiling',
+       'The second number is the fit graded on its own homework — the best the '
+       'recipe ever looks. Never size off it.')
+    kv('on unseen data', 're-fitted before each test stretch',
+       'The honest comparison between recipes.')
+    kv('drift through time', 'refit every 21 days, walked forward',
+       'Read steadiness here. A recipe with a similar typical number but a '
+       'much worse worst case is the more dangerous one.')
+    kv('lately vs always', 'whole history vs the newest stretches',
+       'Recent better than the whole history means the recipe is improving; '
+       'the reverse means it is fading.')
+    _kv_flush()
     for _a in _alt_cache:
-        _tagsel = '  ◄ THE SELECTED CONFIG' if _a['sel'] else ''
+        _tagsel = '   ◄ THIS IS THE ONE IN THE TICKET' if _a['sel'] else ''
         if _a['w'] is None:
-            _P(f"  #{_a['i']}  lb {_a['lb']} · pc {_a['ps']} · k {_a['bs']}"
-               f" — refit failed, no weights available")
+            _P(f"  #{_a['i']}  fits on {_a['lb']} days, {_a['bs']} names "
+               f"— refit failed, no weights available")
             continue
-        _P(f"\n  #{_a['i']}   lb {_a['lb']} · pc {_a['ps']} · "
-           f"k {_a['bs']}{_tagsel}")
+        _P(f"  #{_a['i']}   fits on {_a['lb']} days, {_a['bs']} names in "
+           f"the basket{_tagsel}")
         _print_table(BASKET_HEADERS, _basket_rows(_a['w']), indent='      ')
         _rr = _a['roll']
-        kvo(None, headers=('', 'READING', 'WHAT IT MEANS'))
-        kv('  gross / in-sample',
-           f"${_a['w'].abs().sum()*100:.0f} per $100 · in-sample R² "
-           f"{_a['r2_in']:.2f}",
-           'What you would actually put on, and the ceiling number for it.')
+        _det = [('size put on / best case',
+                 f"${_a['w'].abs().sum()*100:.0f} per $100 · tracks "
+                 f"{_a['r2_in']*100:.0f}% on its own data")]
         if _a['n']:
-            kv('  unseen windows',
-               f"R² {_a['r2m']:.3f} ± {_a['r2s']:.3f} · vol red "
-               f"{_a['vrm']*100:.0f}% · {_a['n']} windows",
-               'Refit before each window and scored on it — the honest '
-               'comparison between configs.')
+            _det.append(('on unseen data',
+                         f"tracked {_a['r2m']*100:.0f}% ± {_a['r2s']*100:.0f} "
+                         f"· removed {_a['vrm']*100:.0f}% of the risk · "
+                         f"{_a['n']} stretches"))
         if _rr:
-            kv('  rolling OOS',
-               f"TE {_rr['te_median']*100:.1f}% med / "
-               f"{_rr['te_worst']*100:.1f}% worst / "
-               f"{_rr['te_latest']*100:.1f}% latest · R² "
-               f"{_rr['r2_median']:+.2f} med / {_rr['r2_worst']:+.2f} worst "
-               f"/ {_rr['r2_latest']:+.2f} latest",
-               f"{_rr.get('n_scored', 0)} rolling windows over "
-               f"{_rr.get('n_rows', _rr.get('n_days', 0))} OOS rows"
-               + (f"; {_rr['n_neg']} scored a NEGATIVE R²"
-                  if _rr.get('n_neg') else '; none scored a negative R²')
-               + (f" (variance-only median {_rr['r2var_median']:+.2f} — see "
-                  f"[1c] for why the two differ)"
-                  if np.isfinite(_rr.get('r2var_median', np.nan)) else ''))
+            _det.append((
+                'drift through time',
+                f"TE {_rr['te_median']*100:.1f}% med / "
+                f"{_rr['te_worst']*100:.1f}% worst / "
+                f"{_rr['te_latest']*100:.1f}% latest · R² "
+                f"{_rr['r2_median']:+.2f} med / {_rr['r2_worst']:+.2f} worst "
+                f"/ {_rr['r2_latest']:+.2f} latest · "
+                + (f"{_rr['n_neg']} of {_rr.get('n_scored', 0)} windows "
+                   f"NEGATIVE" if _rr.get('n_neg') else
+                   f"0 of {_rr.get('n_scored', 0)} windows negative")))
         if np.isfinite(_a['cfg'].get('recent_r2', np.nan)):
-            kv('  recency',
-               f"all folds {_a['cfg']['avg_r2_oos']:.3f} · recent "
-               f"{_a['cfg']['recent_r2']:.3f}"
-               + (f" · slope {-_a['cfg']['r2_slope_per_fold']:+.3f}/fold"
-                  if np.isfinite(_a['cfg'].get('r2_slope_per_fold', np.nan))
-                  else ''),
-               'A config whose recent figure beats its all-fold figure is '
-               'improving; the reverse is decaying. See [1b] RECENCY.')
-        _kv_flush()
+            _det.append((
+                'lately vs always',
+                f"always {_a['cfg']['avg_r2_oos']*100:.0f}% · lately "
+                f"{_a['cfg']['recent_r2']*100:.0f}%"
+                + (f" · {-_a['cfg']['r2_slope_per_fold']*100:+.1f} pts per "
+                   f"stretch"
+                   if np.isfinite(_a['cfg'].get('r2_slope_per_fold', np.nan))
+                   else '')))
+        _kv_block(None, _det, headers=('MEASURE', 'THIS RECIPE'))
+
+    # ── [5] CHARTS ──────────────────────────────────────────────────────────
+    # [Fix 115] drawn here, not before the report — see the STEP 6 comment.
+    if show_plots:
+        title("[5] CHARTS", "the same evidence, drawn")
+        _draw_charts()
 
     # ── [A] APPENDIX ────────────────────────────────────────────────────────
-    title("[A] APPENDIX")
+    title("[A] APPENDIX", "settings, definitions and caveats")
     # ── [Fix 110] WHICH KNOBS ACTUALLY MOVED ANYTHING ──────────────────────
     # Two questions kept coming back — "does the hedge duration change the
     # analysis?" and "does the book size?" — and the report gave no way to
@@ -4909,25 +5330,25 @@ def find_best_hedge(
     # the ones that touch nothing are listed as touching nothing.
     _rows_a = []
     _rows_a.append((
-        'Book size (notional_mm)',
+        'Book size\nnotional_mm',
         f"${notional_mm:g}mm" if notional_mm else 'not set',
-        'DISPLAY ONLY — it does not affect the model. A hedge ratio is '
-        'scale-free: the weights, the config search, the validation and '
-        'every R²/TE are identical at $1mm and $100mm. It only dollarizes '
-        'the ticket and the risk lines. (What book size DOES change in real '
-        'life — market impact and borrow availability — is not modelled '
-        'here at all; see the caveats below.)'))
+        'DISPLAY ONLY — it does not affect the model. A hedge ratio is a '
+        'ratio: the weights, the recipe search, the testing and every score '
+        'are identical at $1mm and $100mm. All this does is turn them into '
+        'dollars. (What book size DOES change in real life — market impact '
+        'and whether you can borrow the stock — is not modelled here at all; '
+        'see the notes at the end.)'))
     _rows_a.append((
-        'Hedge duration (hedge_horizon_days)',
+        'Hedge duration\nhedge_horizon_days',
         f"{int(hedge_horizon_days)} trading days" if hedge_horizon_days
         else 'not set',
         ('DOES affect the report, NOT the weights. It scales the risk to '
          'your holding period, reports what holds of that length actually '
-         'delivered, and checks whether the weights go stale inside the '
-         'hold. It deliberately does NOT re-cut the validation windows — '
-         '[Fix 100] measured that and found no benefit, at the cost of '
-         'evidence. horizon_sets_windows=True restores the old behaviour '
-         'and WILL change which config wins.'
+         'delivered, and checks whether the weights go stale before the hold '
+         'ends. It deliberately does NOT change which stretches are held back '
+         'for testing — that was measured and found to buy nothing while '
+         'costing evidence. horizon_sets_windows=True restores the old '
+         'behaviour and WILL change which recipe wins.'
          if hedge_horizon_days else
          'Not set, so risk is quoted annualised and the "holds" evidence is '
          'skipped. Set it to the number of trading days you intend to hold '
@@ -4950,27 +5371,26 @@ def find_best_hedge(
              + outer_window * outer_folds + purge * 2)
     _spare = len(rets) - _need
     _rows_a.append((
-        'History READ',
+        'How much history was read\nof what you downloaded',
         f"≈{min(_need, len(rets))} of {len(rets)} rows"
         + (f" · {_spare} unused" if _spare > 0 else ''),
         (f"The SELECTION and the VALIDATION read about {_need} rows and "
          f"stop; the oldest {_spare} ({_spare/252:.1f}y) never enter either. "
-         f"Measured: 2.5y and 5y of history give bit-identical picks and "
-         f"bit-identical nested OOS at these fold counts. So downloading "
-         f"more history does not stabilise the choice — only raising "
-         f"cv_n_folds / outer_folds consumes more, and measured that did not "
-         f"improve the honest OOS either (it reaches back into older, less "
-         f"relevant regimes). Longer history IS worth having for one thing: "
-         f"a longer LOOKBACK option, which needs its own training window "
-         f"before every validation window."
+         f"Measured: 2.5 and 5 years of history give identical picks and "
+         f"identical scores at these settings. So downloading more history "
+         f"does not steady the choice — only testing on more stretches "
+         f"consumes more, and that was measured not to help either (it "
+         f"reaches back into older, less relevant markets). Longer history IS "
+         f"worth having for one thing: it allows a longer lookback, which "
+         f"needs its own training run before every test stretch."
          if _spare > 20 else
-         f"TIGHT — the walk-forward wants about {_need} rows and has "
-         f"{len(rets)}. Folds get dropped silently when a window cannot be "
-         f"trained, which is why the fold count can come back below "
-         f"{cv_n_folds}. Here — and only here — more history genuinely "
-         f"helps, because folds are being lost.")))
+         f"TIGHT — the testing wants about {_need} days and has "
+         f"{len(rets)}. Test stretches get dropped when there is not enough "
+         f"history in front of them to train on, which is why the count can "
+         f"come back below {cv_n_folds}. Here — and only here — more history "
+         f"genuinely helps.")))
     _rows_a.append((
-        'Basket sizes tried', str(tuple(basket_size_options)),
+        'Basket sizes tried\nnames per basket', str(tuple(basket_size_options)),
         'The grid the selection searched. 3/5/7 is a deliberate '
         'bias-variance compromise: fewer names means less overfitting but '
         'less spanning; more means the ridge starts pairing off '
@@ -5013,22 +5433,19 @@ def find_best_hedge(
                         f"here — measured at 3 years of data it is chosen 0 "
                         f"times out of 20 and buys nothing.")
     _rows_a.append((
-        'Lookbacks tried', str(tuple(lookback_options)),
-        'How much history each refit sees. Short adapts faster and is '
-        'noisier; long is stabler and staler. If [1b] RECENCY says the '
-        'config is decaying, a shorter lookback is the first thing to try — '
-        'it is a different fix from recency_weight, which changes which '
-        'config wins rather than how fast it adapts. '
-        # [Fix 115] the question this row gets asked most often
-        'NOTE: the right lookback is set by how STABLE the relationship is, '
-        'not by how long you intend to hold. Measured across four regimes '
-        '(static, drifting, random-walk and structurally-breaking betas, 12 '
-        'seeds each), the best lookback was IDENTICAL at a 10-day hold and a '
-        '120-day hold in every one — but it moved from 504 to 126 when the '
-        'betas broke. Holding period changes your risk and your refit count, '
-        'not how much history to fit on.' + _lb_hint))
+        'Lookbacks tried\ndays of history per refit', str(tuple(lookback_options)),
+        # [Fix 115] this row was a 120-word essay. The measured finding stays,
+        # because it answers the question this row actually gets asked; the
+        # recital of the experiment does not.
+        'How much history each refit sees. Short adapts faster and is noisier; '
+        'long is steadier and staler. The right lookback is set by how STABLE '
+        'the relationships are, NOT by how long you intend to hold — measured '
+        'across four kinds of market, the winner was identical at a 10-day and '
+        'a 120-day hold, but dropped from 504 days to 126 when the '
+        'relationships broke. If [1] says the recipe is fading, a shorter '
+        'lookback is the first thing to try.' + _lb_hint))
     _rows_a.append((
-        'Winsorize', f"{winsorize_pct:.1%}" if winsorize_pct else 'off',
+        'Outlier clipping\nwinsorize', f"{winsorize_pct:.1%}" if winsorize_pct else 'off',
         'Clips returns before the PCA that SELECTS candidates — never '
         'before the ridge that sets the hedge ratios, so no fitted number '
         'is computed on doctored data. 1% keeps a handful of observations '
@@ -5036,11 +5453,11 @@ def find_best_hedge(
         'starts deleting genuine crisis co-movement, which is exactly the '
         'behaviour a hedge exists to capture.'))
     _rows_a.append((
-        'Gross penalty',
+        'Penalty on a big position\ngross_penalty',
         f"{gross_penalty:g} per 1.0x gross"
         + (f" · hard cap {max_gross:g}x" if max_gross else ' · no hard cap'),
-        f"Costs a config {gross_penalty*100:.0f} composite points per $100 "
-        f"of gross. This chosen basket runs "
+        f"Costs a recipe {gross_penalty*100:.0f} points in the ranking per "
+        f"$100 of position. This chosen basket runs "
         f"${weights_final.abs().sum()*100:.0f} per $100, so it paid "
         f"{gross_penalty*weights_final.abs().sum():.3f}. The penalty is a "
         f"proxy, not a cost model — borrow, financing and impact are NOT "
@@ -5048,32 +5465,44 @@ def find_best_hedge(
         f"economically, set max_gross (3.0 is a common desk limit) rather "
         f"than relying on the penalty to hold it down."))
     _rows_a.append((
-        'Recency weight',
+        'How much recent data counts extra\nrecency_weight',
         f"{recency_weight:g}" + (' (ACTIVE)' if recency_weight else
-                                 ' — all folds weighted equally'),
-        'At 0 the selection treats a fold from three years ago exactly like '
-        'last month. See [1b] RECENCY for what that cost on this run and '
-        'what a recency-only selection would have chosen instead.'))
+                                 ' — every test stretch counts the same'),
+        'At 0 the search treats a test stretch from three years ago exactly '
+        'like one from last month. See "IS THIS STILL THE RIGHT RECIPE '
+        'TODAY?" in [1] for what that cost on this run, and what choosing on '
+        'recent data alone would have picked instead.'))
     _kv_block('SETTINGS — what each knob actually did', _rows_a,
-              headers=('SETTING', 'THIS RUN', 'WHAT IT AFFECTS'))
-    _P(R2_GLOSSARY)                                        # [Fix 52]
+              headers=('SETTING', 'THIS RUN', 'WHAT IT AFFECTS'),
+              note='Reference material — nothing here changes unless you '
+                   'change it. The rows that say DISPLAY ONLY genuinely do '
+                   'not move a single number in the model.')
+    _kv_block('WORDS USED IN THIS REPORT', WORDS_USED,   # [Fix 116]
+              headers=('TERM', 'IN ONE LINE', 'A BIT MORE'))
+    _kv_block('FOUR WAYS OF SCORING A HEDGE — and why they differ',
+              R2_GLOSSARY_ROWS, note=R2_GLOSSARY_NOTE,   # [Fix 52]
+              headers=('HOW IT WAS MEASURED', 'WHAT IT IS WORTH',
+                       'WHAT IT ACTUALLY TELLS YOU'))
     hr()
-    _P("  Caveats — read before trading:")
-    _P("  · universe from today's members/peers"
-          + (" (index membership point-in-time ✓)" if pm_active else
-             " — survivorship: delisted names absent"))
-    _P("  · size floor " + ("applied point-in-time (as-of each window)"
-                               if pit_active else
-                               "uses TODAY's caps — look-ahead for names "
-                               "that grew"))
-    _P("  · statistical ratios only: borrow, slippage and FX are NOT "
-          "modelled; returns are local-ccy")
+    _P("  Read before trading:")
+    _P("  · the candidate list comes from today's index members and peers"
+          + (" — but membership is checked as of each date, so delisted names "
+             "are included where they belong ✓" if pm_active else
+             ". Names that have since delisted are missing, which flatters "
+             "every backtest here"))
+    _P("  · the size floor uses "
+          + ("what each name was worth at the time ✓" if pit_active else
+             "what each name is worth TODAY — a name that grew into the "
+             "filter can flatter the backtest"))
+    _P("  · these are statistical ratios only. Borrow cost, slippage and FX "
+          "are NOT priced anywhere in this tool, and returns are in each "
+          "name's own currency")
     if is_portfolio:
-        _P("  · portfolio mode hedges the NET book as one synthetic "
-              "asset; legs are excluded as candidates")
+        _P("  · your book is hedged as ONE combined position, not leg by "
+              "leg. The names you hold are excluded from the candidate list")
     if forced:
-        _P("  · ★ names are held by construction — compare runs with and "
-              "without force_include")
+        _P("  · ★ names were pinned in by you, not chosen by the model — "
+              "run it once without them to see what they cost")
     _P('═' * L)
 
     return {
@@ -5139,13 +5568,24 @@ def find_best_hedge(
 # day to the next. quick_rehedge pins the config that was already validated
 # and refits the weights only — seconds, and zero Bloomberg calls. Re-run the
 # full find_best_hedge weekly, or whenever the book changes materially.
-def quick_rehedge(book, data, prev_result):
+def quick_rehedge(book, data, prev_result, show_plots=True, rolling_oos=True,
+                  full_validation=False):
     """Refit hedge weights for an updated book using a previously VALIDATED
     config. `prev_result` is the dict returned by a full find_best_hedge run.
 
-    Deliberately reduced validation (cv_n_folds=2, outer_folds=1, no plots):
-    the OOS numbers it prints are a sanity check, not a fresh validation —
-    the config's credentials come from the full run this inherits from.
+    The config is NOT re-searched — that is the point of this path, and it is
+    what makes it seconds instead of minutes. What you can choose:
+
+      show_plots       draw the charts (default True)
+      rolling_oos      compute the rolling walk-forward curve (default True)
+      full_validation  re-run the same number of validation windows as a full
+                       run (3 outer × 5 inner) instead of the fast 1 × 2
+
+    [Fix 115] show_plots and rolling_oos used to be hard-wired OFF here, so a
+    re-hedge silently dropped every chart the full run had drawn and reported
+    a single outer window with no explanation of why. Both are now the
+    caller's choice, defaulting ON, and the report says in [0] exactly what
+    was and was not re-validated.
     """
     p = prev_result['params']
     return find_best_hedge(
@@ -5163,12 +5603,15 @@ def quick_rehedge(book, data, prev_result):
         mask_stale_days=p.get('mask_stale_days', 7),
         notional_mm=p.get('notional_mm'),              # [Fix 72]
         boot_n=p.get('boot_n', 2000),                  # [Fix 70]
-        rolling_oos=False,                             # [Fix 71] fast path
+        rolling_oos=rolling_oos,                       # [Fix 71]
         sample_window=p.get('sample_window'),          # [Fix 76]
         hedge_horizon_days=p.get('hedge_horizon_days'),  # [Fix 91]
         horizon_sets_windows=p.get('horizon_sets_windows', False),
         report=p.get('report', 'compact'),             # [Fix 79]
-        cv_n_folds=2, outer_folds=1, show_plots=False)
+        cv_n_folds=5 if full_validation else 2,
+        outer_folds=3 if full_validation else 1,
+        show_plots=show_plots,
+        _rehedge_of=prev_result)                       # [Fix 115] for the note
 
 
 # =============================================================================
@@ -5594,6 +6037,10 @@ def export_result(result, report_text='', out_dir=None, also_csv=True):
     written as .txt instead so an export never silently fails. Returns the
     path actually written."""
     import os as _o
+    # [Fix 115] In a notebook the report renders as HTML and never reaches
+    # stdout, so a caller that captured stdout handed us only the progress
+    # lines. The renderers keep their own text copy; prefer it.
+    report_text = report_text or transcript_text()
     folder, warn = _export_folder(out_dir)
     if warn:
         print(f"  ⚠ {warn}")
@@ -5673,14 +6120,27 @@ def hedge_ui(data=None):
         description='Target / book', style=LBL,
         layout=W.Layout(width='460px', height='96px'))
     w_parsed = W.HTML()
+    # ── [Fix 115] CUSTOM VALUES YOU CAN ACTUALLY TYPE INTO ──────────────────
+    # Reported: "I can select custom for hedge duration and analysis window
+    # but at least please let me enter WHAT custom? After running once the
+    # custom box pops up — this is not good."
+    # The boxes were created with layout.display='none' and only revealed by an
+    # observer, so picking 'Custom…' left nothing to type into until some later
+    # event forced a re-layout — by which time the run had already gone off
+    # with the wrong horizon. Hiding an input to express "not applicable" is
+    # the bug: it hides the ONE control the user just asked for.
+    # They are now ALWAYS visible and always show the value that will actually
+    # be used. Pick a preset and the box mirrors it (read-only); pick 'Custom…'
+    # and the same box becomes editable. Nothing appears, disappears or moves.
     w_horizon = W.Dropdown(
         options=[('— not set —', 0), ('1 week (5d)', 5), ('2 weeks (10d)', 10),
                  ('1 month (21d)', 21), ('2 months (42d)', 42),
                  ('3 months (63d)', 63), ('Custom…', -1)],
         value=21, description='Hedge duration', style=LBL, layout=FULL)
-    w_horizon_n = W.IntText(value=21, description='  custom (days)',
-                            style=LBL, layout=HALF)
-    w_horizon_n.layout.display = 'none'
+    w_horizon_n = W.BoundedIntText(
+        value=21, min=1, max=756, step=1, description='trading days',
+        style=LBL, layout=HALF)
+    w_horizon_hint = W.HTML()
     w_win = W.Dropdown(
         options=[('Full downloaded history', 'none'), ('Last 3 months', '3m'),
                  ('Last 6 months', '6m'), ('Last 1 year', '1y'),
@@ -5688,7 +6148,8 @@ def hedge_ui(data=None):
         value='none', description='Analysis window', style=LBL, layout=FULL)
     w_from = W.DatePicker(description='from', style=LBL, layout=HALF)
     w_to = W.DatePicker(description='to', style=LBL, layout=HALF)
-    w_dates = W.HBox([w_from, w_to], layout=W.Layout(display='none'))
+    w_dates = W.HBox([w_from, w_to])
+    w_dates_hint = W.HTML()
     w_tier = W.HTML()
     w_notional = W.FloatText(value=10.0, description='Book size ($mm)',
                              style=LBL, layout=FULL)
@@ -5696,13 +6157,13 @@ def hedge_ui(data=None):
     tab_trade = W.VBox([
         H('What to hedge'), w_target, w_parsed,
         H('How long you will hold the hedge'),
-        HELP('validation windows are matched to this horizon, and risk is '
-             'quoted per-horizon in the ticket'),
-        w_horizon, w_horizon_n,
+        HELP('risk is quoted over this hold, and the ticket reports what holds '
+             'of that length actually delivered'),
+        w_horizon, w_horizon_n, w_horizon_hint,
         H('Which period to analyse'),
         HELP('short windows can only support weaker validation — the line '
              'below tells you what the chosen window buys BEFORE you run'),
-        w_win, w_dates, w_tier,
+        w_win, w_dates, w_dates_hint, w_tier,
         H('Sizing'), w_notional])
 
     # ── Universe tab ────────────────────────────────────────────────────────
@@ -5753,13 +6214,25 @@ def hedge_ui(data=None):
     w_plots = W.Checkbox(value=True, description='Charts', indent=False)
     w_roll = W.Checkbox(value=True, description='Rolling OOS + cadence',
                         indent=False)
+    # [Fix 115] "after rehedge... only one outer window?" — that was hard-wired
+    # and unexplained. It is a real trade-off (seconds vs a full re-validation),
+    # so it becomes a choice, and the report states which one ran.
+    w_requick = W.Dropdown(
+        options=[('Fast — 1 validation window', 'fast'),
+                 ('Full — same 3 windows as RUN HEDGE', 'full')],
+        value='fast', description='RE-HEDGE depth', style=LBL, layout=FULL)
     tab_model = W.VBox([
         H('Factor model'),
         HELP('these shape candidate SELECTION only; hedge weights always '
              'come from ridge on real returns'),
         w_cov, w_pcs, w_wins,
         H('Penalties'), w_gross, w_maxgross,
-        H('Output'), w_boot, w_report, W.HBox([w_plots, w_roll])])
+        H('Output'), w_boot, w_report, W.HBox([w_plots, w_roll]),
+        H('Re-hedging'),
+        HELP('RE-HEDGE never re-searches the config — that is what makes it '
+             'fast. This only sets how many windows it re-validates the refit '
+             'on. Charts and Rolling OOS above apply to RE-HEDGE too.'),
+        w_requick])
 
     # ── Data tab ────────────────────────────────────────────────────────────
     w_cache = W.Dropdown(options=[('(no cached downloads)', None)],
@@ -5816,12 +6289,16 @@ def hedge_ui(data=None):
     out = W.Output()
 
     # ── helpers ─────────────────────────────────────────────────────────────
+    # [Fix 115] The number box is the single source of truth for the horizon:
+    # a preset writes into it, Custom… lets you edit it, and _horizon_arg only
+    # ever reads it. That is what makes the displayed value and the value the
+    # engine receives impossible to disagree about.
+    _SYNC = {'busy': False}          # guard: preset → box → preset feedback
+
     def _horizon_arg():
         if w_horizon.value == 0:
             return None
-        if w_horizon.value == -1:
-            return int(w_horizon_n.value) or None
-        return int(w_horizon.value)
+        return int(w_horizon_n.value) or None
 
     def _window_arg():
         if w_win.value == 'none':
@@ -5832,6 +6309,81 @@ def hedge_ui(data=None):
             return (str(w_from.value) if w_from.value else None,
                     str(w_to.value) if w_to.value else None)
         return w_win.value
+
+    def _on_horizon_preset(_=None):
+        """Preset picked → mirror it into the box and lock the box."""
+        if _SYNC['busy']:
+            return
+        _SYNC['busy'] = True
+        try:
+            custom = (w_horizon.value == -1)
+            w_horizon_n.disabled = not custom
+            if w_horizon.value > 0:
+                w_horizon_n.value = int(w_horizon.value)
+        finally:
+            _SYNC['busy'] = False
+        _horizon_hint()
+
+    def _on_horizon_typed(_=None):
+        """Typed a number → switch the dropdown to Custom… unless it matches
+        a preset. Typing is an intent, so it wins."""
+        if _SYNC['busy'] or w_horizon.value == 0:
+            return
+        _SYNC['busy'] = True
+        try:
+            _preset = {5, 10, 21, 42, 63}
+            w_horizon.value = (int(w_horizon_n.value)
+                               if int(w_horizon_n.value) in _preset else -1)
+            w_horizon_n.disabled = (w_horizon.value != -1)
+        finally:
+            _SYNC['busy'] = False
+        _horizon_hint()
+
+    def _horizon_hint(_=None):
+        h = _horizon_arg()
+        if not h:
+            w_horizon_hint.value = (
+                "<div class='hui-help'>no horizon set — risk is quoted "
+                "annualised and the per-hold evidence is skipped</div>")
+            return
+        w_horizon_hint.value = (
+            f"<div class='hui-help'>using <b>{h} trading days</b> "
+            f"(≈{h/21:.1f} months)"
+            + ('' if w_horizon.value == -1 else
+               ' — choose <b>Custom…</b> above to type your own')
+            + "</div>")
+
+    def _dates_hint(_=None):
+        custom = (w_win.value == 'custom')
+        w_from.disabled = w_to.disabled = not custom
+        if not custom:
+            w_dates_hint.value = (
+                "<div class='hui-help'>choose <b>Custom dates…</b> above to "
+                "enable these and type an exact range</div>")
+            return
+        if not (w_from.value or w_to.value):
+            w_dates_hint.value = (
+                "<div class='hui-help' style='color:#8a5a00'>pick a "
+                "<b>from</b> and/or <b>to</b> date — until you do, the full "
+                "downloaded history is used</div>")
+            return
+        w_dates_hint.value = (
+            f"<div class='hui-help'>window: "
+            f"<b>{w_from.value or 'start of data'}</b> → "
+            f"<b>{w_to.value or 'end of data'}</b></div>")
+
+    def _seed_dates():
+        """Pre-fill the pickers with the loaded data's real span, so 'Custom
+        dates…' starts from the range that actually exists rather than empty
+        boxes with no clue what is valid."""
+        d = UI_STATE.get('data')
+        if d is None or w_from.value or w_to.value:
+            return
+        try:
+            idx = d['prices'].index
+            w_from.value, w_to.value = idx[0].date(), idx[-1].date()
+        except Exception:
+            pass
 
     def _status(msg, kind='info'):
         col = {'info': '#24435f', 'ok': '#1b6b3a', 'warn': '#8a5a00',
@@ -5987,10 +6539,9 @@ def hedge_ui(data=None):
                        f"data: {fit['message']}{extra}</div>")
 
     def _refresh_tier(_=None):
-        w_horizon_n.layout.display = ('flex' if w_horizon.value == -1
-                                      else 'none')
-        w_dates.layout.display = ('flex' if w_win.value == 'custom'
-                                  else 'none')
+        # [Fix 115] no widget is shown or hidden here any more — the custom
+        # inputs are permanent and _on_horizon_preset / _dates_hint enable or
+        # disable them in place.
         if UI_STATE['data'] is None:
             w_tier.value = ("<span style='color:#8a5a00;font-size:12px'>"
                             "load or download data to preview the "
@@ -6085,7 +6636,11 @@ def hedge_ui(data=None):
             res = fn(*args, **kw)
         finally:
             _sys.stdout = _old
-        UI_STATE['report_text'] = buf.getvalue()
+        # [Fix 115] in a notebook the report is displayed as HTML and never
+        # goes near stdout, so the tee only ever caught stray print()s. The
+        # renderers keep a faithful text copy — use it, and keep the tee as
+        # the fallback for anything printed outside them.
+        UI_STATE['report_text'] = transcript_text() or buf.getvalue()
         UI_STATE['last_seconds'] = _time.time() - _t0
         return res
 
@@ -6187,12 +6742,20 @@ def hedge_ui(data=None):
             tgt = _pre_run()
             if tgt is None:
                 return
+            _full = (w_requick.value == 'full')
             _status('re-hedging on the pinned config…', 'info')
             try:
+                # [Fix 115] the Charts and Rolling-OOS checkboxes apply here
+                # too. They used to be forced off inside quick_rehedge, so a
+                # re-hedge silently threw away every chart the full run drew.
                 UI_STATE['result'] = _run_engine(
                     quick_rehedge, tgt, UI_STATE['data'],
-                    UI_STATE['result'])
-                _status('re-hedged · weights refit, config unchanged', 'ok')
+                    UI_STATE['result'], show_plots=w_plots.value,
+                    rolling_oos=w_roll.value, full_validation=_full)
+                _status('re-hedged · weights refit, config unchanged · '
+                        + ('full validation re-run' if _full else
+                           '1 validation window (fast) — see the note at the '
+                           'top of the report'), 'ok')
             except Exception as e:
                 _status(f"re-hedge failed: {e}", 'err')
 
@@ -6234,10 +6797,19 @@ def hedge_ui(data=None):
     for wdg in (w_win, w_from, w_to, w_look, w_basket, w_horizon,
                 w_horizon_n):
         wdg.observe(_refresh_tier, names='value')
+    # [Fix 115] preset ⇄ number box, and the date pickers' enabled state
+    w_horizon.observe(_on_horizon_preset, names='value')
+    w_horizon_n.observe(_on_horizon_typed, names='value')
+    w_win.observe(_dates_hint, names='value')
+    for wdg in (w_from, w_to):
+        wdg.observe(_dates_hint, names='value')
     w_target.observe(_refresh_parsed, names='value')
 
     _refresh_cache()
     _refresh_parsed()
+    _on_horizon_preset()
+    _seed_dates()
+    _dates_hint()
     _refresh_tier()
     _refresh_fit()
     root = W.VBox([
