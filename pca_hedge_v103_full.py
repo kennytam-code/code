@@ -2285,62 +2285,56 @@ def _ticket_verdict(quality, worst_r2, overfit_gap, min_sim, trend,
       ✓  none of the above.
     Returns (grade, [reasons])."""
     if quality is None or np.isnan(quality):
-        return ('? NOT ENOUGH EVIDENCE TO JUDGE',
-                ['the hedge was never tested on data it had not seen — read '
-                 'every number here as a description of the past'])
+        return ('? INSUFFICIENT OOS EVIDENCE',
+                ['no valid unseen windows — read every number here as '
+                 'in-sample'])
     reasons, fail, warn = [], False, False
     if quality < 0.20:
         fail = True
-        reasons.append(f'it tracks only {quality*100:.0f}% of the moves on '
-                       f'unseen data — too little to pay for')
+        reasons.append(f'pooled OOS R² {quality:.2f} < 0.20 — too little to '
+                       f'pay for')
     if not np.isnan(overfit_gap) and overfit_gap >= 0.35:
         fail = True
-        reasons.append(f'it scores {overfit_gap*100:.0f} points worse on '
-                       f'unseen data than on its own — it was tuned to the '
-                       f'past, not to the market')
+        reasons.append(f'in-sample vs OOS gap {overfit_gap:.2f} ≥ 0.35 — '
+                       f'clearly overfit')
     if not np.isnan(worst_r2) and worst_r2 < 0.0:
         fail = True
-        reasons.append(f'in its worst stretch the hedge ADDED risk instead '
-                       f'of removing it')
+        reasons.append(f'worst window OOS R² {worst_r2:.2f} < 0 — the hedge '
+                       f'ADDED risk there')
     if roll_breach:
         warn = True
-        reasons.append('it is already drifting more than its own stop level '
-                       '— do not add risk on this hedge today')
+        reasons.append('latest rolling TE is already above the kill level — '
+                       'do not add risk on this hedge today')
     if not fail:
         if quality < 0.45:
             warn = True
-            reasons.append(f'it tracks {quality*100:.0f}% of the moves on '
-                           f'unseen data — workable, not strong')
+            reasons.append(f'pooled OOS R² {quality:.2f} is moderate')
         if not np.isnan(worst_r2) and worst_r2 < 0.15:
             warn = True
-            reasons.append(f'in its worst stretch it tracked only '
-                           f'{worst_r2*100:.0f}% — size off that, not the '
-                           f'average')
+            reasons.append(f'worst window OOS R² {worst_r2:.2f} — size off '
+                           f'that window, not the average')
         if not np.isnan(overfit_gap) and overfit_gap >= 0.15:
             warn = True
-            reasons.append(f'it scores {overfit_gap*100:.0f} points worse '
-                           f'on unseen data than on its own — somewhat tuned '
-                           f'to the past')
+            reasons.append(f'in-sample vs OOS gap {overfit_gap:.2f} — some '
+                           f'overfitting')
         if min_sim is not None and min_sim <= 0.5:
             warn = True
-            reasons.append(f'the model picked noticeably different baskets '
-                           f'on different stretches — the choice of names is '
-                           f'not settled')
+            reasons.append(f'windows fitted materially different baskets '
+                           f'(min weight cosine {min_sim:+.2f})')
         if trend:
             warn = True
-            reasons.append('it tracked worse in the most recent stretches — '
-                           'trust the newest reading, not the average')
+            reasons.append('R² deteriorates toward the LATEST window — '
+                           'trust the newest reading, not the mean')
     if (not np.isnan(ref_pca) and not np.isnan(ref_simple)
             and ref_simple >= ref_pca):
         warn = True
-        reasons.append('one single instrument did just as well on unseen '
-                       'data — prefer the simple hedge (see [2])')
+        reasons.append('a single instrument matches the basket OOS — prefer '
+                       'the simple hedge (see [2])')
     grade = ('✗ DO NOT TRADE AS-IS' if fail
              else ('△ TRADE AT REDUCED SIZE' if warn else '✓ TRADE'))
     if not reasons:
-        reasons.append('every check passed: it tracks well on unseen data, '
-                       'holds up in its worst stretch, is not tuned to the '
-                       'past, and picks a stable set of names')
+        reasons.append('all gates passed — OOS strong, worst window fine, '
+                       'no overfit, stable basket')
     return grade, reasons
 
 
@@ -3623,10 +3617,11 @@ def find_best_hedge(
     # using ONLY data prior to that window, then score on it. This measures
     # the whole pipeline out-of-sample, across multiple periods — not a
     # single-window estimate.
-    _P(f"Testing the whole method on data it has never seen — "
-          f"{outer_folds} stretch{'es' if outer_folds != 1 else ''} of "
-          f"{outer_window} days, each with the recipe re-chosen beforehand on "
-          f"{cv_n_folds} earlier stretch{'es' if cv_n_folds != 1 else ''}...")
+    _P(f"Nested walk-forward validation — the whole pipeline on data it has "
+          f"never seen: {outer_folds} unseen "
+          f"window{'s' if outer_folds != 1 else ''} of {outer_window}d, with "
+          f"the config re-chosen from scratch before each one on "
+          f"{cv_n_folds} earlier fold{'s' if cv_n_folds != 1 else ''}...")
     nested_rows = []
     nested_y_all, nested_res_all = [], []                     # [Fix 69]
     N = len(rets)
@@ -3659,11 +3654,10 @@ def find_best_hedge(
             'basket_size': int(cfg['basket_size']),
             'r2_oos': r2_j, 'vol_red_oos': vr_j,
         })
-        _P(f"  stretch {j} ({outer_test.index[0]:%d %b %Y} → "
-              f"{outer_test.index[-1]:%d %b %Y}): tracked {r2_j*100:.0f}% of "
-              f"the moves, removed {vr_j*100:.0f}% of the risk  "
-              f"[chose a {lb_j}-day lookback, {cfg['pc_spec']} drivers, "
-              f"{int(cfg['basket_size'])} names]")
+        _P(f"  window {j} ({outer_test.index[0]:%d %b %Y} → "
+              f"{outer_test.index[-1]:%d %b %Y}): OOS R² {r2_j:.3f} · "
+              f"vol red {vr_j*100:.1f}%   [picked lb={lb_j}, "
+              f"pc={cfg['pc_spec']}, k={int(cfg['basket_size'])}]")
     nested = pd.DataFrame(nested_rows)
     nested_valid = nested.dropna(subset=['r2_oos']) if len(nested) else nested
     if len(nested_valid):
@@ -3854,8 +3848,7 @@ def find_best_hedge(
                 'n_rows': int(len(_df))}
 
     # ── STEP 4: FULL-DATA CV → SELECT LIVE CONFIG ────────────────────────────
-    _P(f"Now choosing the recipe to actually trade, walking forward "
-          f"through all of the data...")
+    _P(f"Full-data walk-forward CV — choosing the config to trade...")
     summary, cv_df = _walk_forward_cv(rets, verbose=True)
     if summary is None:
         raise RuntimeError("All CV folds failed — the stock likely lacks "
@@ -4306,12 +4299,12 @@ def find_best_hedge(
                    'horizon': horizon_info}               # [Fix 91]
 
     # ── STEP 6: CHARTS ───────────────────────────────────────────────────────
-    # [Fix 115] The charts used to be drawn HERE, which put six matplotlib
-    # panels at the top of the cell, above the verdict — the first thing on the
-    # page was the thing you look at last. They are now a closure, called from
-    # the report as section [5], so the output reads verdict → evidence →
-    # pictures. They are also drawn in the report's own type scale instead of
-    # matplotlib's defaults (8pt Deja Vu with overlapping date ticks).
+    # [Fix 117] Charts lead the output, as they always did. [Fix 115] moved them
+    # below the report on the theory that the verdict should come first; that
+    # was wrong for how this is actually used — the pictures are what you scan
+    # to decide whether the ticket below is worth reading. They keep the
+    # [Fix 115] restyling (report type scale, readable date ticks) and lose the
+    # relocation.
     def _draw_charts():
         if not show_plots:
             return
@@ -4334,11 +4327,10 @@ def find_best_hedge(
                            color=_CLR['pick'], alpha=.75)
             axes[0, 0].plot(range(1, n_pc_final + 1), np.cumsum(ev) * 100,
                             'o-', color=_CLR['tgt'], ms=4)
-            axes[0, 0].set_title(f'What drives this universe — '
-                                 f'{n_pc_final} drivers explain '
-                                 f'{np.sum(ev)*100:.0f}% of all movement')
-            axes[0, 0].set_xlabel('market driver, biggest first')
-            axes[0, 0].set_ylabel('% of movement explained')
+            axes[0, 0].set_title(f'Scree — {n_pc_final} PCs, '
+                                 f'{np.sum(ev)*100:.0f}% of variance')
+            axes[0, 0].set_xlabel('principal component')
+            axes[0, 0].set_ylabel('% of variance')
             # [Fix 62] label only what matters. Annotating every name is
             # unreadable past ~100 candidates: the target, the basket and the 30
             # best-ranked candidates carry all the information anyone reads this
@@ -4359,10 +4351,8 @@ def find_best_hedge(
                                         fontsize=6.5, color=_RF_MUTE,
                                         xytext=(3, 3),
                                         textcoords='offset points')
-            axes[0, 1].set_title('Which names move like the target '
-                                 '(red = target, green = in the basket)')
-            axes[0, 1].set_xlabel('exposure to driver 1')
-            axes[0, 1].set_ylabel('exposure to driver 2')
+            axes[0, 1].set_title('PC1 vs PC2 — red = target, green = basket')
+            axes[0, 1].set_xlabel('PC1'); axes[0, 1].set_ylabel('PC2')
             corrs = (returns_final.corr()[target_ticker].drop(target_ticker)
                      .sort_values(ascending=False).head(10))
             colors = [_CLR['hedged'] if t in basket_final else _CLR['other']
@@ -4372,8 +4362,8 @@ def find_best_hedge(
             axes[0, 2].set_yticks(range(len(corrs)))
             axes[0, 2].set_yticklabels([disp[t] for t in corrs.index],
                                        fontsize=7.5)
-            axes[0, 2].set_title(f'Closest names to {target_short} '
-                                 f'(green = in the basket)')
+            axes[0, 2].set_title(f'Top correlations with {target_short} '
+                                 f'— green = in the basket')
             axes[0, 2].set_xlabel('correlation')
             spread = pd.Series(resid_final, index=returns_final.index)
             # [Fix 15] true cumulative % = expm1(cumulative log return)
@@ -4383,7 +4373,7 @@ def find_best_hedge(
                             color=_CLR['hedged'], label='hedged')
             axes[1, 0].axhline(0, color='#b0bcc8', ls='--', lw=.9)
             axes[1, 0].legend(); axes[1, 0].set_ylabel('%')
-            axes[1, 0].set_title('Cumulative return — unhedged vs hedged')
+            axes[1, 0].set_title('Cumulative return % — unhedged vs hedged')
             w = 20
             axes[1, 1].plot(returns_final[target_ticker].rolling(w).std()
                             * ann_sqrt * 100, color=_CLR['tgt'],
@@ -4391,16 +4381,16 @@ def find_best_hedge(
             axes[1, 1].plot(spread.rolling(w).std() * ann_sqrt * 100,
                             color=_CLR['hedged'], label='hedged')
             axes[1, 1].legend(); axes[1, 1].set_ylabel('%/yr')
-            axes[1, 1].set_title(f'Rolling {w}-observation volatility')
+            axes[1, 1].set_title(f'Rolling {w}-obs annualized vol %')
             for lb in summary['lookback'].unique():
                 sub = (summary[summary['lookback'] == lb]
                        .groupby('basket_size')['avg_r2_oos'].mean())
                 axes[1, 2].plot(sub.index, sub.values, 'o-', ms=4,
                                 label=f'lookback {int(lb)}d')
-            axes[1, 2].set_xlabel('names in the basket')
-            axes[1, 2].set_ylabel('moves tracked, unseen data')
+            axes[1, 2].set_xlabel('basket size')
+            axes[1, 2].set_ylabel('OOS R²')
             axes[1, 2].legend()
-            axes[1, 2].set_title('Does a bigger basket help?')
+            axes[1, 2].set_title('Sensitivity — does a bigger basket help?')
             # date axes: matplotlib's default tick density overlapped the
             # labels into an unreadable smear on the two time-series panels
             for _ax in (axes[1, 0], axes[1, 1]):
@@ -4427,23 +4417,24 @@ def find_best_hedge(
                                   facecolor='white', edgecolor='#dfe4ea',
                                   framealpha=.95)
                 ax2[0].set_ylabel('%/yr')
-                ax2[0].set_title('How far the hedge drifted, month by month '
-                                 '— above the red line, stop')
+                ax2[0].set_title('Rolling 21-row OOS tracking error — above '
+                                 'the red line, stop')
                 ax2[1].plot(rolling_df.index,
                             rolling_df['r2_roll'].clip(-0.5, 1.0),
                             color=_CLR['pick'])
                 if not np.isnan(sel_pooled):
                     ax2[1].axhline(sel_pooled, color='#8a97a6', ls='--',
-                                   label='average across all of it')
+                                   label='pooled OOS R²')
                     ax2[1].legend(loc='lower left')
-                ax2[1].set_title('Share of the moves the hedge tracked, '
-                                 'month by month (floored at −0.5)')
+                ax2[1].set_title('Rolling 21-row OOS R² (clipped at −0.5)')
                 ax2[1].xaxis.set_major_locator(
                     _mdates.AutoDateLocator(maxticks=9))
                 ax2[1].xaxis.set_major_formatter(
                     _mdates.DateFormatter('%b %y'))
                 fig2.tight_layout(pad=1.4)
                 plt.show()
+
+    _draw_charts()                                          # [Fix 117] up top
 
     # ── STEP 7: REPORT [Fix 79] ─────────────────────────────────────────────
     # One visual grammar: banner → [0] TICKET → [1] VALIDATION →
@@ -4514,34 +4505,35 @@ def find_best_hedge(
     if not np.isnan(ticket_info['quality_r2']):
         # [Fix 86] plain English: R² is "share of the target's moves the
         # hedge tracks", vol reduction is the risk actually removed.
-        _sub = (f"on data it had never seen, this hedge followed about "
-                f"{ticket_info['quality_r2']*100:.0f}% of {target_short}'s "
-                f"moves")
+        _sub = (f"tracks {ticket_info['quality_r2']*100:.0f}% of "
+                f"{target_short} out-of-sample")
         if sel_n and np.isfinite(sel_vrm):
-            _sub += f" and removed about {sel_vrm*100:.0f}% of its risk"
+            _sub += f", cutting {sel_vrm*100:.0f}% of its risk"
+    # ── [Fix 117] THE TICKET, DE-DUPLICATED ────────────────────────────────
+    # Measured on the previous build's own output: 73% appeared 7 times, 72%
+    # five times, and 21.5% / 18.5% / 32.2% / 17.4% three times each — inside
+    # ONE section. Three blocks were restating each other:
+    #   QUALITY          repeated the verdict banner's subtitle verbatim, and
+    #                    [1]'s headline row.
+    #   AT A n-DAY HOLD  restated four rows that HOW TO RUN IT had already
+    #                    printed two rows above, plus one from [3].
+    #   THE POSITION     quoted the in-sample TE that SIZING then quoted again
+    #                    as its "best case" comparison.
+    # Both redundant blocks are gone. What is left is two blocks with no
+    # overlap at all: WHAT YOU ARE PUTTING ON, then HOW TO RUN IT. Every
+    # number in the ticket now appears exactly once, which is the only way the
+    # eye can find the one it came for.
+    #
+    # Vocabulary: standard desk terms (R², TE, gross/net, OOS, bp) are used
+    # plainly as labels — a trader reads them faster than any paraphrase. The
+    # second, smaller label line is reserved for the things that are specific
+    # to THIS tool and genuinely need saying: which window a number came from,
+    # what "condition" means, what the stop is measured on.
     _verdict_banner(grade, reasons, _sub)                     # [Fix 87]
-    _qbits = []
-    if not np.isnan(ticket_info['quality_r2']):
-        # spell the ratio out — '0.72' means nothing until it is '72% of the
-        # moves', which is the same wording the verdict banner already uses
-        _qbits.append(f"tracked {ticket_info['quality_r2']*100:.0f}% of the "
-                      f"moves")
-    if boot:
-        _qbits.append(f"almost certainly {boot['r2_lo']*100:.0f}–"
-                      f"{boot['r2_hi']*100:.0f}%")
-    if not np.isnan(wdisp['worst_r2']):
-        _qbits.append(f"worst stretch {wdisp['worst_r2']*100:.0f}%")
-    if _qbits:
-        kvo('QUALITY')
-        kv('How well it tracked\non data the model never saw',
-           ' · '.join(_qbits),
-           'This is the headline. Size the trade off the WORST stretch, not '
-           'the average.')
-    _P(f"  WHAT TO TRADE — sized per $100 of "
-          f"{'your book' if is_portfolio else 'your ' + target_short}"
-          + (f", and again for the ${notional_mm:g}mm you entered"
-             if notional_mm else ""))
-    _t_head = ['BUY / SELL', '$/100', 'NAME', 'FULL TICKER', '★']
+    _P(f"  THE TRADE — per $100 of "
+          f"{'gross book' if is_portfolio else 'long ' + target_short}"
+          + (f", and on the ${notional_mm:g}mm entered" if notional_mm else ""))
+    _t_head = ['SIDE', '$/100', 'NAME', 'FULL TICKER', '★']
     if notional_mm:
         _t_head.insert(2, '≈$MM')
     _t_rows = []
@@ -4557,211 +4549,138 @@ def find_best_hedge(
     _net = weights_final.sum() * 100
     _te_bp = te_final * 1e4 / np.sqrt(252)
     _gross = weights_final.abs().sum() * 100
-    kvo('THE POSITION')
-    kv('How much you put on\ngross / net exposure',
-       f"gross ${_gross:.1f} per $100 · net "
-       f"{'short' if _net >= 0 else 'long'} ${abs(_net):.1f}",
-       f"You put on ${_gross:.0f} of hedge for every $100 of book. "
-       + (f"Above $200 usually means the fit has paired off near-duplicate "
-          f"names rather than hedging real risk — check [4] for a cheaper "
-          f"recipe that scores about the same."
-          if _gross > 200 else
-          f"That is a normal single-layer hedge. Financing and borrow scale "
-          f"with this number, and neither is priced here."))
-    kv('Risk before vs after\nsame data the model was fitted on',
-       f"was {tgt_std_final*100:.1f}%/yr · now "
-       f"{te_final*100:.1f}%/yr · {vol_red_final*100:.0f}% of the risk "
-       f"removed · about {_te_bp:.0f} bp of noise a day",
-       'These are the flattering numbers — the fit graded on its own homework. '
-       'They are the ceiling, not the expectation. What you size off is on the '
-       'rows below and in [1].')
+
+    # ── what you are putting on ────────────────────────────────────────────
+    kvo('WHAT YOU ARE PUTTING ON')
+    kv('Gross / net',
+       f"${_gross:.1f} gross · ${abs(_net):.1f} net "
+       f"{'short' if _net >= 0 else 'long'} per $100",
+       (f"Above $200 gross usually means the ridge paired off near-duplicate "
+        f"names rather than hedging real risk — see [4] for a cheaper config."
+        if _gross > 200 else
+        f"A normal single-layer hedge. Borrow and financing scale with gross "
+        f"and are NOT priced here."))
+    _qbits = []
+    if not np.isnan(ticket_info['quality_r2']):
+        _qbits.append(f"{ticket_info['quality_r2']:.2f} pooled")
+    if boot:
+        _qbits.append(f"CI {boot['r2_lo']:.2f}–{boot['r2_hi']:.2f}")
+    if not np.isnan(wdisp['worst_r2']):
+        _qbits.append(f"{wdisp['worst_r2']:.2f} worst window")
+    if _qbits:
+        kv('OOS R²\nnested pooled — the honest one', ' · '.join(_qbits),
+           'Judge the hedge on the worst window, not the pooled average. '
+           'Full breakdown in [1].')
+    kv('Vol cut\nIN-SAMPLE — the ceiling',
+       f"{tgt_std_final*100:.1f}% → {te_final*100:.1f}%/yr · "
+       f"{vol_red_final*100:.0f}% cut · {_te_bp:.0f} bp/day",
+       'Scored on its own fitting data, so it is the best this hedge ever '
+       'looks. Size off the row below, not this one.')
+
+    # ── how to run it ──────────────────────────────────────────────────────
+    kvo('HOW TO RUN IT', note='Every row is an instruction. Nothing here is '
+        'repeated from the block above.')
+    if np.isfinite(wdisp['worst_te']):
+        kv('SIZE OFF\nworst validated window TE',
+           f"{wdisp['worst_te']*100:.1f}%/yr",
+           f"Not the {te_final*100:.1f}% in-sample figure above. This is what "
+           f"the hedge did when it was working hardest, and it is what you "
+           f"have to survive.")
     if notional_mm:                                           # [Fix 86]
         # dollarize the risk: a %/yr tracking error means little at the desk
         # until it is the 1-sigma P&L swing on the actual ticket size.
         _te_use = (wdisp['worst_te'] if np.isfinite(wdisp['worst_te'])
                    else te_final)
-        _basis = ('worst stretch the hedge has been through'
-                  if np.isfinite(wdisp['worst_te']) else 'in-sample fit')
-        kv('What the hedge can cost you\nresidual P&L, 1 standard deviation',
-           f"±{_fmt_money_mm(_te_use*notional_mm)} a year · "
-           f"±{_fmt_money_mm(_te_use*notional_mm/np.sqrt(252))} a day",
-           f"A typical swing on ${notional_mm:g}mm, priced off the {_basis}. "
-           f"About one day in three moves more than the daily figure, and one "
-           f"in twenty moves more than twice it.")
-    # ── [Fix 104] HOW TO RUN IT — every line gets a WHAT IT MEANS ──────────
-    # These five lines are the ones a trader acts on, and they were the
-    # densest prose in the report: a 26-char label followed by an unbroken
-    # run of numbers, units and conditional clauses. Each is now a row with
-    # the reading in one column and the decision it implies in the next.
-    kvo('HOW TO RUN IT', note='Each row is an instruction, not a statistic — '
-        'the middle column is the measurement, the right column is what to '
-        'do about it.')
-    if np.isfinite(wdisp['worst_te']):
-        kv('Size the trade off this\nworst stretch vs best case',
-           f"worst {wdisp['worst_te']*100:.1f}%/yr · best case "
-           f"{te_final*100:.1f}%/yr",
-           f"Budget for {wdisp['worst_te']*100:.1f}%, not "
-           f"{te_final*100:.1f}%. The lower number is the best this hedge ever "
-           f"looked; the higher one is what it did when it was working "
-           f"hardest, and that is the one you have to survive.")
+        _rl = (f"±{_fmt_money_mm(_te_use*notional_mm)}/yr · "
+               f"±{_fmt_money_mm(_te_use*notional_mm/np.sqrt(252))}/day")
+        if horizon_info:
+            _rl += (f" · ±{_fmt_money_mm(horizon_info['sigma_pct']*notional_mm)}"
+                    f" over the {horizon_info['days']}d hold "
+                    f"(±{horizon_info['sigma_pct']*100:.1f}%)")
+        kv('RISK ($)\n1σ residual P&L, priced off the worst window', _rl,
+           f"On ${notional_mm:g}mm gross. Two-thirds of the time you land "
+           f"inside these; roughly 1 in 20 is more than twice.")
+    elif horizon_info:
+        kv(f"RISK over the {horizon_info['days']}d hold\n1σ residual",
+           f"±{horizon_info['sigma_pct']*100:.2f}%",
+           'Two-thirds of holds land inside it; about 1 in 20 is more than '
+           'twice it. This is the number for a risk limit.')
     if nowcast:                                        # [Fix 93/97]
         _nc = nowcast['condition']
         # [Fix 115] '·' is the separator the renderer splits readings on, so a
         # '·' used as a status glyph came out as a fact of its own.
         _mark = {'GOOD': '✓', 'NORMAL': '•', 'DEGRADED': '⚠'}[_nc]
-        _bits, _imp = [], []
+        _bits = []
         if np.isfinite(nowcast.get('te_pctile', np.nan)):
-            _bits.append(f"drifting {nowcast['te_block']*100:.1f}%/yr lately "
-                         f"— wider than "
-                         f"{nowcast['te_pctile']*100:.0f}% of its own history")
-            _imp.append(f"Recent drift is wider than "
-                        f"{nowcast['te_pctile']*100:.0f}% of everything this "
-                        f"hedge has done before — "
-                        + ('comfortably inside its normal range.'
-                           if nowcast['te_pctile'] < 0.7 else
-                           'toward the wide end of its normal range.'))
+            _bits.append(f"TE {nowcast['te_block']*100:.1f}%/yr "
+                         f"({_ordinal(nowcast['te_pctile']*100)} pctile of its "
+                         f"own history)")
         if nowcast.get('latest_window_r2') is not None:
-            _bits.append(f"newest stretch tracked "
-                         f"{nowcast['latest_window_r2']*100:.0f}% of the moves"
+            _bits.append(f"newest window R² "
+                         f"{nowcast['latest_window_r2']:.2f}"
                          + (f" ({nowcast['latest_flag']})"
                             if nowcast.get('latest_flag') else ''))
-        _imp.append('It is behaving as it always has — trade it at full size.'
-                    if _nc == 'GOOD' else
-                    ('Nothing unusual — trade it, and keep the stop level '
-                     'below.' if _nc == 'NORMAL' else
-                     'It is NOT behaving the way it was validated — cut size, '
-                     'or refit before adding risk.'))
-        kv('Is it working today?\ncurrent condition', f"{_mark} {_nc} · "
-           + ' · '.join(_bits), ' '.join(_imp))
+        kv('CONDITION NOW\nlatest readings vs this hedge’s own history',
+           f"{_mark} {_nc} · " + ' · '.join(_bits),
+           ('Behaving as it always has — trade it at full size.'
+            if _nc == 'GOOD' else
+            ('Nothing unusual — trade it and keep the stop below.'
+             if _nc == 'NORMAL' else
+             'NOT behaving as validated — cut size, or refit before adding '
+             'risk.')))
     if horizon_info and horizon_info.get('blocks'):        # [Fix 98]
         _hb = horizon_info['blocks']
-        kv(f"What {horizon_info['days']}-day holds actually did\n"
-           f"real holds inside the tested period",
-           f"{_hb['n']} holds happened · typical drift "
-           f"{_hb['te_median']*100:.1f}% · worst "
-           f"{_hb['te_worst']*100:.1f}%/yr · helped in "
-           f"{_hb['share_helped']*100:.0f}% of them",
-           f"The only line measured over YOUR holding period instead of day "
-           f"by day. {_hb['n']} separate {horizon_info['days']}-day holds "
-           f"actually happened in the tested period, and the hedge reduced "
-           f"risk in {_hb['share_helped']*100:.0f}% of them. "
-           + ('Near 100% is what you want; below ~70% means the hedge is a '
-              'coin-flip over a hold this long.'
-              if _hb['share_helped'] < 0.7 else
-              'Plan for the WORST of those, not the typical one.'))
-    if horizon_info:                                       # [Fix 91/92]
+        kv(f"{horizon_info['days']}-DAY HOLDS\nthe only evidence on your "
+           f"actual horizon",
+           f"{_hb['n']} holds · TE {_hb['te_median']*100:.1f}% median / "
+           f"{_hb['te_worst']*100:.1f}% worst · cut risk in "
+           f"{_hb['share_helped']*100:.0f}%",
+           ('Below ~70% means the hedge is a coin-flip over a hold this long.'
+            if _hb['share_helped'] < 0.7 else
+            'Plan for the worst of those, not the median.'))
+    if horizon_info and np.isfinite(horizon_info['vr']):
         _hh = horizon_info
-        _line = f"±{_hh['sigma_pct']*100:.2f}% over {_hh['days']} days"
-        if notional_mm:
-            _line += f" ≈ ±{_fmt_money_mm(_hh['sigma_pct']*notional_mm)}"
-        # [Fix 115] this was one nine-line paragraph. Split: the risk limit is
-        # the decision, the variance-ratio caveat is a separate sub-row.
-        kv(f"Risk over the whole {_hh['days']}-day hold\n"
-           f"typical miss, 1 standard deviation", _line,
-           f"Put this in the risk limit. Two-thirds of holds land inside it; "
-           f"about 1 in 20 is more than twice it.")
-        if np.isfinite(_hh['vr']) and _hh['vr'] > 1.15:
-            kv('  the number above is padded\n  for trending residuals',
+        if _hh['vr'] > 1.15:
+            kv('  horizon risk is padded\n  residuals trended',
                f"×{np.sqrt(_hh['vr']):.2f}",
-               "The leftover risk trended rather than bouncing around zero, so "
-               "a day-by-day figure would understate a hold this long. The "
-               "padding is already in. Treat it as a floor, not a forecast.")
-        elif np.isfinite(_hh['vr']) and _hh['vr'] < 0.85:
-            kv('  no discount taken\n  for mean-reverting residuals',
+               'A daily figure would understate a hold this long. The uplift '
+               'is already in the RISK row. Treat it as a floor.')
+        elif _hh['vr'] < 0.85:
+            kv('  no discount taken\n  residuals mean-reverted',
                f"×{np.sqrt(_hh['vr']):.2f} available",
-               "The leftover risk mean-reverted, which would justify a SMALLER "
-               "number above. It is deliberately not taken — that behaviour "
-               "does not repeat reliably enough to cut a risk limit on.")
-        if _hh['refits_needed'] is not None:
-            kv('  refits needed mid-hold',
-               ('none' if _hh['refits_needed'] <= 0
-                else f"about {_hh['refits_needed']}"),
-               ("The hedge stays fresh for the whole hold — set it and leave "
-                "it."
-                if _hh['refits_needed'] <= 0 else
-                f"The weights go stale before the hold ends. Plan about "
-                f"{_hh['refits_needed']} RE-HEDGE run(s) part-way through; "
-                f"skipping them is the likeliest way this hedge underperforms "
-                f"its report."))
+               'Would justify a smaller RISK number. Deliberately not taken — '
+               'the effect does not repeat reliably enough to size on.')
     if np.isfinite(kill_te):
-        _mon = f"stop at {kill_te*100:.1f}%/yr"
+        _mon = f"kill at {kill_te*100:.1f}%/yr"
         if roll_stats:
-            _mon += (f" · running at {roll_stats['te_latest']*100:.1f}% now"
+            _mon += (f" · {roll_stats['te_latest']*100:.1f}% now"
                      + (' ⚠ ABOVE' if _roll_breach else ' ✓'))
         if decay_stats:
-            _mon += f" · refit every {decay_stats['rec_rows']} days"
-        kv('When to pull the plug\nstop level', _mon,
-           f"Watch how far the hedge is drifting, month by month. Above "
-           f"{kill_te*100:.1f}%/yr it is no longer doing what it was tested to "
-           f"do — refit or cut, do not wait for the next review."
-           + ((' It is ALREADY above that level: do not add risk on this '
-               'hedge today.') if _roll_breach else '')
-           + (f" Separately, refit about every "
-              f"{decay_stats['rec_rows']} days — past that the weights go "
-              f"stale faster than a refit costs."
-              if decay_stats else ''))
-
-    # ── [Fix 115] WHAT THE HORIZON *DOES* CHANGE ───────────────────────────
-    # Measured, the horizon must not change how the hedge is FITTED — not the
-    # hard window and not a soft one:
-    #   LOOKBACK   best window identical at h=10 and h=120 in all four beta
-    #              regimes (static / drifting / random-walk / breaking). What
-    #              moves it is STABILITY: 504 normally, 126 once betas break.
-    #   WEIGHTING  same test with exponential row weights. Best halflife is
-    #              also identical across h — equal weighting when betas only
-    #              drift, halflife 63 when they break (where equal weighting
-    #              is the WORST of the five). Again stability, not horizon.
-    #   SELECTION  [Fix 112] — horizon-scaled scoring is measurably worse.
-    # But the horizon very much changes WHICH LINE OF
-    # THIS REPORT YOU SHOULD BE READING, because the risks scale differently:
-    #     tracking noise  grows with sqrt(h)
-    #     a carried tilt  grows with h
-    # so over a long hold a small persistent bias overtakes the tracking
-    # error, and the nowcast — a statement about today's regime — stops being
-    # about the period you will actually live. Short holds are the mirror.
-    # Deliberately terse: four lines, one clause each.
+            _mon += f" · refit every {decay_stats['rec_rows']} rows"
+        if horizon_info and horizon_info.get('refits_needed'):
+            _mon += f" · ~{horizon_info['refits_needed']} refit(s) inside the hold"
+        kv('STOP / REFIT\nrolling 21-row TE vs the kill level', _mon,
+           (f"Above {kill_te*100:.1f}%/yr the hedge is no longer doing what it "
+            f"was validated to do — refit or cut."
+            + (' It is ALREADY above: do not add risk today.'
+               if _roll_breach else '')
+            + (f" Separately, refit every ~{decay_stats['rec_rows']} rows — "
+               f"past that the weights decay faster than a refit costs."
+               if decay_stats else '')))
+    # [Fix 117] the horizon block that used to sit here restated four rows
+    # printed immediately above it. Its one real contribution was telling you
+    # WHICH of them dominates at your holding period — that is one line, not a
+    # table.
     if hedge_horizon_days:
-        _h115 = int(hedge_horizon_days)
-        _long = _h115 >= 63
-        kvo(f"AT A {_h115}-DAY HOLD, WATCH THESE",
-            headers=('WATCH', 'THIS RUN', 'WHY IT MATTERS OVER THIS HOLD'))
-        _adf_txt = ('n/a' if not np.isfinite(adf_p) else
-                    ('bounces around zero ✓' if adf_p < 0.05
-                     else 'CAN GRIND ONE WAY ⚠'))
-        _cos = (f"{turnover_stats['mean_cosine']*100:+.0f}% alike between "
-                f"refits" if turnover_stats else 'n/a')
-        _nc115 = nowcast['condition'] if nowcast else 'n/a'
-        _gr115 = weights_final.abs().sum() * 100
-        if _long:
-            kv('Does the leftover risk drift?', _adf_txt,
-               'A slow one-way drift compounds over a hold this long; random '
-               'noise does not. Over 3 months the drift is what gets you.')
-            kv('Leftover market tilts', 'see [3] FACTOR EXPOSURE',
-               f'You carry any tilt for {_h115} days, not for one.')
-            kv('Do the weights stay put?', _cos,
-               (f"You refit about {horizon_info['refits_needed']}x inside this "
-                f"hold." if horizon_info and horizon_info.get('refits_needed')
-                else 'You hold one basket the whole way.'))
-            kv('Cost of carrying it', f"${_gr115:.0f} gross for {_h115} days",
-               'Borrow and financing are NOT priced anywhere in this tool — '
-               'price them yourself.')
-            kv('Is it working today?', _nc115,
-               'The least useful line at this horizon — the regime will turn '
-               'before you are out.')
-        else:
-            kv('Is it working today?', _nc115,
-               'You trade inside today\'s conditions — this is the key line.')
-            kv('How far it is drifting now',
-               (f"{roll_stats['te_latest']*100:.1f}% vs a "
-                f"{kill_te*100:.1f}% stop" if roll_stats else 'n/a'),
-               'Over a hold this short, the size of the swing IS the risk.')
-            kv('Worst it has been',
-               (f"{wdisp['worst_te']*100:.1f}%/yr"
-                if np.isfinite(wdisp['worst_te']) else 'n/a'),
-               'Size off this, never off the typical number.')
-            kv('Does the leftover risk drift?', _adf_txt,
-               'Secondary here — too few days for a slow drift to add up.')
-        _kv_flush()
+        _P("  ► over a "
+           + (f"{int(hedge_horizon_days)}-day hold, a small persistent tilt "
+              f"compounds faster than tracking noise — read the ADF and "
+              f"FACTOR EXPOSURE rows in [3] before CONDITION NOW, which will "
+              f"have turned over long before you are out"
+              if int(hedge_horizon_days) >= 63 else
+              f"{int(hedge_horizon_days)}-day hold, variance dominates — "
+              f"CONDITION NOW and the STOP row are the lines that matter; "
+              f"drift in [3] is secondary"))
 
     # ── [1] VALIDATION ──────────────────────────────────────────────────────
     title("[1] VALIDATION", "how good is this hedge, really?")
@@ -4769,38 +4688,39 @@ def find_best_hedge(
     # headers the previous block had left in _KVCTX — most often the horizon
     # block's 'WATCH / THIS RUN / WHY AT THIS HORIZON', so the validation
     # numbers came out under a promise of a third column that was never filled.
+    # [Fix 117] R² is R² — a trader reads the term faster than a paraphrase of
+    # it, and the four flavours below only make sense NAMED, because the whole
+    # point of the block is that they answer four different questions. The
+    # small second label line says which question each one answers; the
+    # appendix spells the four out side by side.
     kvo(headers=('MEASURE', 'THIS RUN', ''))
     if not np.isnan(nested_pooled):
-        kv('► The headline number\nwhole method re-run on unseen data',
-           f"tracked {nested_pooled*100:.0f}% of the moves")
+        kv('► Nested pooled OOS R²\nthe headline — whole pipeline re-run',
+           f"{nested_pooled:.3f}   (selection re-run before each window, so "
+           f"nothing downstream ever saw the scoring data)")
     if sel_n:
-        kv('This recipe on unseen data\nre-fitted before each test stretch',
-           f"{sel_r2m*100:.0f}% ± {sel_r2s*100:.0f} across {sel_n} stretches "
-           f"of {outer_window} days · {sel_pooled*100:.0f}% all together"
-           + (f" · almost certainly {boot['r2_lo']*100:.0f}–"
-              f"{boot['r2_hi']*100:.0f}%" if boot else ''))
-        kv('Risk removed on unseen data\nvolatility reduction',
-           f"{sel_vrm*100:.1f}% of the swing taken out"
-           + (f" · leftover drift almost certainly "
-              f"{boot['te_lo']*100:.1f}–{boot['te_hi']*100:.1f}%/yr"
+        kv('This config, unseen OOS\nweights honest, config not',
+           f"{sel_r2m:.3f} ± {sel_r2s:.3f} over {sel_n}×{outer_window}d · "
+           f"pooled {sel_pooled:.3f}"
+           + (f" · CI {boot['r2_lo']:.2f}–{boot['r2_hi']:.2f}" if boot else ''))
+        kv('OOS vol reduction\nthe risk actually removed',
+           f"{sel_vrm*100:.1f}%"
+           + (f" · TE CI {boot['te_lo']*100:.1f}–{boot['te_hi']*100:.1f}%/yr"
               if boot else ''))
-    kv('Score used to pick the recipe\nwalk-forward cross-validation',
-       f"{best['avg_r2_oos']*100:.0f}% ± {best['std_r2_oos']*100:.0f} over "
-       f"{int(best['n_folds'])} test stretches")
+    kv('Full-data CV R²\nwhat the selection optimised',
+       f"{best['avg_r2_oos']:.3f} ± {best['std_r2_oos']:.3f} "
+       f"({int(best['n_folds'])} folds) — flattered by construction; never "
+       f"rank configs on it")
     _ref_oos = sel_r2m if sel_n else nested_r2_mean
     if not np.isnan(_ref_oos):
         _gap = r2_final - _ref_oos
-        _gv = ('✓ it holds up' if _gap < 0.15 else
-               '△ flatters itself a bit' if _gap < 0.35 else
-               '✗ flatters itself badly')
-        kv('Does it hold up off its own data?\nin-sample vs out-of-sample',
-           f"{r2_final*100:.0f}% on its own data vs {_ref_oos*100:.0f}% on "
-           f"unseen data ({abs(_gap)*100:.0f} points "
-           f"{'worse' if _gap >= 0 else 'better'}) → {_gv}")
-    kv('The recipe it chose\nlookback · components · basket size',
-       f"fits on the last {best_lookback} days · {best_pc_spec} "
-       f"{'(' + str(n_pc_final) + ') ' if best_pc_spec == 'auto' else ''}"
-       f"market drivers · {best_bsize} names in the basket")
+        _gv = ('✓ generalizes' if _gap < 0.15 else
+               '△ some overfit' if _gap < 0.35 else '✗ overfit')
+        kv('In-sample vs unseen\nthe overfit check',
+           f"{r2_final:.3f} vs {_ref_oos:.3f} (gap {_gap:+.2f}) → {_gv}")
+    kv('Selected config', f"lookback {best_lookback}d · PCs {best_pc_spec}"
+       f"{f' ({n_pc_final})' if best_pc_spec == 'auto' else ''} · "
+       f"basket {best_bsize}")
     if len(nested_valid):
         _picks = nested_valid.apply(
             lambda r: f"lb={int(r['lookback'])}, pc={r['pc_spec']}, "
@@ -4815,28 +4735,21 @@ def find_best_hedge(
         _P()
         w_rows = []
         for _wi, (_, r) in enumerate(sel_detail.iterrows()):
-            # the internal flag strings stay as they are — other code
-             # compares against them — but they are translated for display
-            _VERDICT = {'noise-range': 'normal',
-                        'BELOW band': 'WORSE THAN CHANCE EXPLAINS',
-                        'above band': 'better than usual'}
             w_rows.append([f"{int(r['window'])}"
                            f"{' (latest)' if r['window'] == 1 else ''}",
                            f"{r['start']:%d%b}–{r['end']:%d%b%y}",
-                           format(r['r2'] * 100, '.0f') + '%',
-                           format(r['vol_red'] * 100, '.0f') + '%',
-                           format(r['tgt_vol'] * 100, '.0f') + '%',
-                           _VERDICT.get(wdisp['flags'][_wi],
-                                        wdisp['flags'][_wi])])
-        _print_table(['#', 'DATES TESTED', 'MOVES TRACKED', 'RISK REMOVED',
-                      'HOW WILD IT WAS', 'VERDICT'], w_rows,
-                     title='EACH TEST STRETCH, ONE AT A TIME',
-                     note='Each row is a stretch of days the model had never '
-                          'seen when it picked these weights. "How wild it '
-                          'was" is the target\'s own volatility over that '
-                          'stretch — tracking scores look worse in calm '
-                          'periods for arithmetic reasons, not because the '
-                          'hedge got worse.')
+                           format(r['r2'], '.3f'),
+                           format(r['vol_red'] * 100, '.1f') + '%',
+                           format(r['tgt_vol'] * 100, '.1f') + '%',
+                           wdisp['flags'][_wi]])
+        _print_table(['WIN', 'DATES', 'OOS R²', 'VOL RED', 'TGT VOL',
+                      'VS NOISE BAND'], w_rows,
+                     title='THE THREE UNSEEN WINDOWS, ONE BY ONE',
+                     note='TGT VOL is the target\'s own volatility in that '
+                          'window — R² is mechanically depressed in calm '
+                          'windows, so judge those by TE. NOISE BAND is the '
+                          'spread a perfectly stable hedge would show on '
+                          'windows this short.')
         _band = wdisp['band']
         _below = [str(int(r['window'])) for _wi, (_, r)
                   in enumerate(sel_detail.iterrows())
@@ -4886,56 +4799,48 @@ def find_best_hedge(
             _alt = _rsrt.iloc[0]
             _same = all(_cur[k] == _alt[k] for k in _bkey)
             _slope = _cur.get('r2_slope_per_fold', np.nan)
-            kvo('IS THIS STILL THE RIGHT RECIPE TODAY?',
-                note='The recipe was chosen on the whole history, weighting '
-                     'three years ago the same as last month. These rows say '
-                     'what that costs and what recent data alone would pick.')
+            kvo('RECENCY — is this still the right config TODAY?',
+                note='The config was picked on ALL folds, weighting three '
+                     'years ago the same as last month. These rows say what '
+                     'that costs, and what a recency-only pick would be.')
             if np.isfinite(_slope):
-                kv('Is it fading?\ntrend across test stretches',
-                   f"{-_slope*100:+.1f} points per stretch of "
-                   f"{cv_test_window} days",
-                   ('It is HOLDING UP — it tracks as well on the newest '
-                    'stretches as on the oldest.' if _slope <= 0.005
-                    else
-                    f"It tracks about {_slope*100:.1f} percentage points worse "
-                    f"with each stretch further forward in time — roughly "
-                    f"{_slope * max(int(_cur.get('n_folds', 1)) - 1, 1)*100:.0f} "
-                    f"points across the "
-                    f"{int(_cur.get('n_folds', 0))} stretches measured. Its "
-                    f"headline average is flattered by the older ones, and "
-                    f"the newest reading is the better guess at tomorrow."))
+                kv('Decay of the pick\nR² slope per fold',
+                   f"{-_slope:+.3f} per {cv_test_window}-row fold",
+                   ('HOLDING UP — its OOS R² is flat or improving as the folds '
+                    'get newer.' if _slope <= 0.005 else
+                    f"Loses ~{_slope:.3f} of R² per fold going forward, or "
+                    f"~{_slope * max(int(_cur.get('n_folds', 1)) - 1, 1):.2f} "
+                    f"across the {int(_cur.get('n_folds', 0))} folds measured. "
+                    f"The headline average is flattered by the older folds; "
+                    f"the newest reading is the better estimate of tomorrow."))
             if np.isfinite(_cur.get('recent_r2', np.nan)):
-                kv('  whole history vs recent',
-                   f"{_cur['avg_r2_oos']*100:.0f}% over everything · "
-                   f"{_cur['recent_r2']*100:.0f}% over the newest "
-                   f"{int(_cur.get('n_recent', 0))} stretches",
+                kv('  all folds vs recent',
+                   f"{_cur['avg_r2_oos']:.3f} all · {_cur['recent_r2']:.3f} "
+                   f"newest {int(_cur.get('n_recent', 0))} folds",
                    'The gap between these two IS the question. Small means the '
                    'average is a fair summary; large means you are trading on '
-                   'evidence that is mostly old.')
+                   'mostly historical evidence.')
             if _same:
-                kv('  what recent data alone would pick', 'the SAME recipe',
-                   'Choosing on the most recent stretches only would have '
-                   'landed on this same recipe, so the ranking is not an '
-                   'artifact of averaging over old market conditions.')
+                kv('  recency-only pick', 'SAME config',
+                   'Selecting on the newest folds alone lands on this same '
+                   'config, so the ranking is not an artifact of averaging '
+                   'over old regimes.')
             else:
-                kv('  what recent data alone would pick',
-                   f"{int(_alt['lookback'])}-day lookback · "
-                   f"{_alt['pc_spec']} drivers · "
-                   f"{int(_alt['basket_size'])} names",
-                   f"A DIFFERENT recipe leads over the newest "
-                   f"{int(_alt.get('n_recent', 0))} stretches "
-                   f"({_alt.get('recent_r2', float('nan'))*100:.0f}% vs "
-                   f"{_cur.get('recent_r2', float('nan'))*100:.0f}%). It is "
-                   f"not "
-                   f"chosen, on purpose — a handful of recent stretches "
-                   f"usually buys noise. Treat it as a challenger: run it "
-                   f"from [4], or set recency_weight=0.35 and re-run.")
+                kv('  recency-only pick',
+                   f"lb {int(_alt['lookback'])} · pc {_alt['pc_spec']} · "
+                   f"k {int(_alt['basket_size'])}",
+                   f"A DIFFERENT config leads on the newest "
+                   f"{int(_alt.get('n_recent', 0))} folds "
+                   f"({_alt.get('recent_r2', float('nan')):.3f} vs "
+                   f"{_cur.get('recent_r2', float('nan')):.3f}). Not chosen, "
+                   f"on purpose — a handful of recent folds usually buys "
+                   f"noise. Treat it as a challenger: run it from [4], or set "
+                   f"recency_weight=0.35 and re-run.")
             if recency_weight:
-                kv('  recent data is already favoured',
-                   f"recency_weight {recency_weight:g}",
-                   f"The choice above already discounts older stretches. The "
-                   f"scores in [1] are unaffected — they never reweight "
-                   f"anything.")
+                kv('  recency_weight', f"{recency_weight:g} (ACTIVE)",
+                   f"The pick above already discounts older folds. The scores "
+                   f"in the table at the top of [1] are unaffected — they "
+                   f"never reweight anything.")
         except Exception as _e108:
             # [Fix 114] never swallow a diagnostic silently — a section that
             # just is not there reads as "nothing to report", which is the
@@ -4954,36 +4859,34 @@ def find_best_hedge(
                   "'BELOW band' flag is weak")
             _P("    evidence. The CI conditions on the fitted weights.)")
     if roll_stats:
-        kvo('HOW IT BEHAVED THROUGH TIME — refit every 21 days',
+        kvo('ROLLING OOS — 21-row walk-forward',
             note='Every 21 trading days the weights are refit and scored on '
                  'the days that follow. The first three rows answer different '
                  'questions — when they disagree, the "cost of one-way drift" '
                  'row is the whole difference.')
-        kv('How far it drifts\ntracking error', f"typically "
-           f"{roll_stats['te_median']*100:.1f}% · worst "
-           f"{roll_stats['te_worst']*100:.1f}% · lately "
+        kv('Tracking error', f"median {roll_stats['te_median']*100:.1f}% · "
+           f"worst {roll_stats['te_worst']*100:.1f}% · latest "
            f"{roll_stats['te_latest']*100:.1f}%/yr",
-           'The size of the swing the hedge does not remove. This is the '
-           'number that sets your risk budget and your stop.')
-        kv('Share of the moves tracked\ndrift charged', f"typically "
-           f"{roll_stats['r2_median']*100:+.0f}% · worst "
-           f"{roll_stats['r2_worst']*100:+.0f}% · lately "
-           f"{roll_stats['r2_latest']*100:+.0f}%",
-           'Counts BOTH missing the moves and sliding one way over time. It '
-           'can go negative even while the hedge is cutting risk — the next '
-           'two rows say why.')
+           'Sets the risk budget and the kill level.')
+        kv('R² (strict)\ndrift charged', f"median "
+           f"{roll_stats['r2_median']:+.2f} · worst "
+           f"{roll_stats['r2_worst']:+.2f} · latest "
+           f"{roll_stats['r2_latest']:+.2f}",
+           'Charges BOTH mistracking and directional drift, so it can go '
+           'negative while the hedge is still cutting risk — the next two '
+           'rows say why.')
         if np.isfinite(roll_stats.get('r2var_median', np.nan)):
-            kv('Share of the swing removed\ndrift not charged', f"typically "
-               f"{roll_stats['r2var_median']*100:+.0f}% · worst "
-               f"{roll_stats['r2var_worst']*100:+.0f}% · lately "
-               f"{roll_stats['r2var_latest']*100:+.0f}%",
-               'The same stretches, ignoring any one-way slide: purely "did '
-               'hedging make the swing smaller?".')
+            kv('R² (variance only)\ndrift not charged', f"median "
+               f"{roll_stats['r2var_median']:+.2f} · worst "
+               f"{roll_stats['r2var_worst']:+.2f} · latest "
+               f"{roll_stats['r2var_latest']:+.2f}",
+               'Same windows, mean removed from both sides: purely "did '
+               'hedging shrink the swing?". The twin of the TE row.')
         if roll_stats.get('n_neg'):
             _nn, _nc2 = roll_stats['n_neg'], roll_stats['n_neg_but_cut']
-            kv('  stretches that scored negative',
+            kv('  negative-R² windows',
                f"{_nn} of {roll_stats['n_scored']}"
-               + (f" · {_nc2} still made the swing smaller" if _nn else ''),
+               + (f" · {_nc2} still CUT variance" if _nn else ''),
                (f"In {_nc2} of those {_nn}, the hedge genuinely did shrink the "
                 f"swing — the negative score is entirely the target grinding "
                 f"away from the basket, not a tracking failure. Judge those by "
@@ -4993,34 +4896,34 @@ def find_best_hedge(
                 f"In all {_nn} the hedge genuinely made the swing BIGGER. "
                 f"Those are real failures, not an artifact of the measure."))
         if np.isfinite(roll_stats.get('drift_median', np.nan)):
-            kv('  cost of one-way drift',
-               f"{roll_stats['drift_median']*100:+.0f} pts of the score",
+            kv('  drift penalty',
+               f"median {roll_stats['drift_median']:+.2f} R²",
                'The gap between the two rows above. Big here means the hedge '
-               'follows the SHAPE of the target but keeps sliding against its '
-               'LEVEL — usually one leg running on its own story.')
-        kv('  what this covers', f"{roll_stats['n_days']} days across "
+               'tracks the SHAPE of the target but slides against its LEVEL — '
+               'usually one leg running on its own story.')
+        kv('  coverage', f"{roll_stats['n_days']} OOS rows across "
            f"{roll_stats['n_segments']} refits, "
            f"{rolling_df.index[0]:%d%b%y}→{rolling_df.index[-1]:%d%b%y}",
            'Read this block as STEADINESS, not as a clean score — the weights '
            'are honest but the recipe saw all the data. The clean score is in '
            'the table at the top of [1].')
     if decay_stats:                                            # [Fix 84]
-        _dstr = ' · '.join(f"every {_iv} days {_te*100:.1f}%"
+        _dstr = ' · '.join(f"every {_iv}r {_te*100:.1f}%"
                            for _iv, _te in decay_stats['te_by_interval'])
-        kv('Does waiting to refit cost you?\ndrift by refit interval', _dstr)
+        kv('TE vs refit interval', _dstr)
         _pen = (decay_stats['te_by_interval'][-1][1]
                 / decay_stats['fresh_te'] - 1) * 100
-        kv('How often to refit',
-           f"about every {decay_stats['rec_rows']} days · waiting "
-           f"{decay_stats['te_by_interval'][-1][0]} days instead "
-           + (f"costs {_pen:.0f}% more drift" if _pen >= 0.5 else
-              "costs you nothing measurable"))
-        kv('  measured on', f"{decay_stats['n_rows']} days, each scored by "
-           f"fresh, one-refit-old and two-refit-old weights on the same days")
+        kv('Rebalance cadence',
+           f"refit every ~{decay_stats['rec_rows']} rows · stretching to "
+           f"{decay_stats['te_by_interval'][-1][0]}r "
+           + (f"costs {_pen:.0f}% more TE" if _pen >= 0.5 else
+              "costs nothing measurable"))
+        kv('  basis', f"{decay_stats['n_rows']} rows, each scored by fresh, "
+           f"one-refit-old and two-refit-old weights — paired, same days")
     if turnover_stats:
-        kv('Do the names change between refits?\nturnover',
-           f"{turnover_stats['mean_jaccard']*100:.0f}% of the names stay · "
-           f"weights {turnover_stats['mean_cosine']*100:+.0f}% alike "
+        kv('Basket turnover',
+           f"consecutive refits share {turnover_stats['mean_jaccard']*100:.0f}%"
+           f" of names · weight cosine {turnover_stats['mean_cosine']:+.2f} "
            f"({turnover_stats['n_refits']} refits)")
 
     # ── [2] COMPARISON ──────────────────────────────────────────────────────
@@ -5032,33 +4935,30 @@ def find_best_hedge(
           f"of book")
     cmp_rows = []
     if sel_n:
-        cmp_rows.append(['The basket in this ticket',
-                         f"{sel_r2m*100:.0f}% ± {sel_r2s*100:.0f}",
-                         f"{sel_vrm*100:.0f}%", str(sel_n)])
+        cmp_rows.append(['PCA basket — this config',
+                         f"{sel_r2m:.3f} ± {sel_r2s:.3f}",
+                         f"{sel_vrm*100:.1f}%", str(sel_n)])
     if not np.isnan(nested_r2_mean):
-        cmp_rows.append(['The whole method, re-run each time',
-                         f"{nested_r2_mean*100:.0f}% ± "
-                         f"{nested_r2_std*100:.0f}",
-                         f"{nested_vr_mean*100:.0f}%", str(len(nested_valid))])
+        cmp_rows.append(['PCA pipeline — nested',
+                         f"{nested_r2_mean:.3f} ± {nested_r2_std:.3f}",
+                         f"{nested_vr_mean*100:.1f}%",
+                         str(len(nested_valid))])
     if len(etf_bench):
         _p = '/'.join(sorted({e.split(' ')[0]
                               for e in etf_bench['instrument']}))
-        cmp_rows.append([f'Just one ETF — {_p}',
-                         f"{etf_r2_mean*100:.0f}%",
-                         f"{etf_vr_mean*100:.0f}%", str(len(etf_bench))])
+        cmp_rows.append([f'Best single ETF [{_p}]', f"{etf_r2_mean:.3f}",
+                         f"{etf_vr_mean*100:.1f}%", str(len(etf_bench))])
     if len(name_bench):
         _p = '/'.join(sorted({e.split(' ')[0]
                               for e in name_bench['instrument']}))
-        cmp_rows.append([f'Just one stock — {_p}',
-                         f"{name_r2_mean*100:.0f}%",
-                         f"{name_vr_mean*100:.0f}%", str(len(name_bench))])
+        cmp_rows.append([f'Best single name [{_p}]', f"{name_r2_mean:.3f}",
+                         f"{name_vr_mean*100:.1f}%", str(len(name_bench))])
     if cmp_rows:
-        _print_table(['WHAT YOU COULD TRADE', 'MOVES TRACKED', 'RISK REMOVED',
-                      'STRETCHES TESTED'], cmp_rows,
-                     note='All of them scored on the same unseen stretches, '
-                          'so this is a fair fight. If a single instrument '
-                          'gets close, it is usually the better trade — one '
-                          'leg, one borrow, nothing to refit.')
+        _print_table(['HEDGE', 'OOS R²', 'VOL RED', 'WINDOWS'], cmp_rows,
+                     note='All scored on the SAME unseen windows, so this is '
+                          'a fair fight. If a single instrument gets close it '
+                          'is usually the better trade — one leg, one borrow, '
+                          'nothing to refit.')
     _ref_pca = sel_r2m if sel_n else nested_r2_mean
     _ref_simple = np.nanmax([etf_r2_mean, name_r2_mean])
     if not (np.isnan(_ref_pca) or np.isnan(_ref_simple)):
@@ -5071,13 +4971,12 @@ def find_best_hedge(
     # ── [3] DIAGNOSTICS ─────────────────────────────────────────────────────
     title("[3] DIAGNOSTICS", "what is left after the hedge, and why")
     kvo()                     # [Fix 115] no 'DIAGNOSTICS' caption under a
-    kv('Does the leftover risk wander?\n'  # section already called that
-       'stationarity test',
-       ('bounces around zero ✓' if adf_p < 0.05
-        else 'CAN GRIND ONE WAY ⚠') + f" (p={adf_p:.4f})",
-       'Whether what the hedge leaves behind oscillates around zero or can '
-       'grind in one direction for months. Grinding is what pushes the '
-       'tracking score negative while the size of the swing still looks fine.')
+    kv('Residual ADF\ndoes the leftover risk drift?',  # section is the caption
+       f"p={adf_p:.4f} → "
+       + ('stationary ✓ (oscillates around zero)' if adf_p < 0.05
+          else 'MAY DRIFT ⚠ (can grind one way)'),
+       'Drift is what pushes the rolling R² negative while TE still looks '
+       'fine — the hedge tracks the SHAPE but slides against the LEVEL.')
     # ── [Fix 105] HOW MUCH OF THIS TARGET IS HEDGEABLE AT ALL ──────────────
     # The reported AAPL/TSLA/SK-Hynix case raised the right question: does
     # basket hedging even make sense for a concentrated book? A hedge built
@@ -5128,11 +5027,10 @@ def find_best_hedge(
                          f"position is mostly a single-name bet. Expect the "
                          f"tracking score to jump around, and size off how far "
                          f"the hedge drifts instead.")
-            kv('Best any hedge could do here\nhow much is hedgeable at all',
-               f"can't beat {_ceil*100:.0f}% of the moves · "
-               f"{_idio*100:.0f}% is this name's own story", _msg)
+            kv('Hedgeable ceiling\nR² no config can beat here',
+               f"R² ≤ ~{_ceil:.2f} · idio {_idio*100:.0f}%", _msg)
     except Exception as _e105:
-        kv('Best any hedge could do here', 'unavailable',   # [Fix 114]
+        kv('Hedgeable ceiling', 'unavailable',              # [Fix 114]
            f"could not be estimated ({type(_e105).__name__}: {_e105}). "
            f"Without it there is no reading on how much of this target is "
            f"hedgeable at all — judge the hedge by how far it drifts, not by "
@@ -5170,30 +5068,17 @@ def find_best_hedge(
         _P("  (factor diagnostics need ~6+ non-ETF names in the "
               "universe)")
     else:
-        # [Fix 116] the internal keys ('SMB(univ)') stay as they are —
-        # result['factor_leakage'] is consumed elsewhere — but nobody outside
-        # a factor desk reads them, so the table shows what they MEAN.
-        _FACNAME = {'MKT(univ)': 'The market overall',
-                    'SMB(univ)': 'Small companies vs large',
-                    'WML(univ)': 'Recent winners vs recent losers',
-                    'REV(univ)': 'Last month\u2019s losers bouncing back',
-                    'VOL(univ)': 'Jumpy names vs steady names'}
-        _print_table(['WHAT MOVES THE MARKET', 'YOUR POSITION',
-                      'WHAT IS LEFT AFTER HEDGING'],
-                     [[_FACNAME.get(r['factor'], r['factor']),
-                       format(r['target_beta'], '+.2f'),
-                       format(r['residual_beta'], '+.2f')]
+        _print_table(['FACTOR', 'TARGET β', 'RESIDUAL β'],
+                     [[r['factor'], format(r['target_beta'], '+.3f'),
+                       format(r['residual_beta'], '+.3f')]
                       for _, r in fl.iterrows()],
-                     title='WHAT YOU ARE STILL EXPOSED TO',
-                     note='Left column: how strongly your position moves with '
-                          'each of these. Right column: how much of that is '
-                          'still there after the hedge. Near zero means the '
-                          'hedge neutralised it; a big number is a bet you '
-                          'are still carrying whether you meant to or not.')
+                     title='FACTOR EXPOSURE — target vs hedged residual',
+                     note='Factors are sequentially orthogonalized. Residual '
+                          'β ≈ 0 means the hedge neutralized that factor; a '
+                          'large one is a tilt you are still carrying.')
         _lo = fl.loc[fl['residual_beta'].abs().idxmax()]
-        _P(f"  ► the biggest thing the hedge does NOT remove: "
-              f"{_FACNAME.get(_lo['factor'], _lo['factor']).lower()} "
-              f"({_lo['residual_beta']:+.2f} left over)")
+        _P(f"  ► largest surviving tilt: {_lo['factor']} "
+              f"(residual β {_lo['residual_beta']:+.3f})")
 
     # ── [4] ALTERNATIVES ────────────────────────────────────────────────────
     # [Fix 109] Every alternative now carries the SAME evidence as the pick:
@@ -5226,33 +5111,29 @@ def find_best_hedge(
                                vrm=_c_vrm, n=_c_n, roll=_rs5, w=_w5,
                                r2_in=_r25))
     # ── summary table: one row per config, every headline side by side ─────
-    _hd = ['', 'RECIPE', 'SCORE IT WAS PICKED ON', 'ON UNSEEN DATA',
-           'DRIFT TYPICAL / WORST', 'TRACKED THROUGH TIME', 'LATELY',
-           'RISK REMOVED', 'SIZE PUT ON', '']
+    _hd = ['', 'CONFIG', 'CV R²', 'UNSEEN R²', 'ROLL TE med/worst',
+           'ROLL R² med', 'RECENT R²', 'VOL RED', 'GROSS', '']
     _rows5 = []
     for _a in _alt_cache:
         _rr = _a['roll']
         _rows5.append([
             f"#{_a['i']}",
-            f"{_a['lb']}d fit, {_a['bs']} names"
-            + ('' if _a['ps'] == 'auto' else f", {_a['ps']} drivers"),
-            f"{_a['cfg']['avg_r2_oos']*100:.0f}%",
-            (f"{_a['r2m']*100:.0f}% ± {_a['r2s']*100:.0f}"
-             if _a['n'] else 'n/a'),
-            (f"{_rr['te_median']*100:.0f}% / {_rr['te_worst']*100:.0f}%"
+            f"lb {_a['lb']} · pc {_a['ps']} · k {_a['bs']}",
+            f"{_a['cfg']['avg_r2_oos']:.3f}",
+            (f"{_a['r2m']:.3f} ± {_a['r2s']:.3f}" if _a['n'] else 'n/a'),
+            (f"{_rr['te_median']*100:.1f}% / {_rr['te_worst']*100:.1f}%"
              if _rr else 'n/a'),
-            (f"{_rr['r2_median']*100:+.0f}%" if _rr else 'n/a'),
-            (f"{_a['cfg']['recent_r2']*100:.0f}%"
+            (f"{_rr['r2_median']:+.2f}" if _rr else 'n/a'),
+            (f"{_a['cfg']['recent_r2']:.3f}"
              if np.isfinite(_a['cfg'].get('recent_r2', np.nan)) else 'n/a'),
             f"{_a['cfg']['avg_vol_red']*100:.0f}%",
             f"${_a['cfg']['avg_gross']*100:.0f}",
             ('◄ chosen' if _a['sel'] else '')])
     _print_table(_hd, _rows5,
-                 note='Compare on ON UNSEEN DATA and DRIFT — never on the '
-                      'score it was picked on, which is the one the search '
-                      'already optimised and so is guaranteed to flatter the '
-                      'winner. "Recipe" = how many days of history each refit '
-                      'uses, and how many names go in the basket.')
+                 note='Compare on UNSEEN R² and ROLL TE — never on CV R², '
+                      'which is what the selection already optimised and is '
+                      'therefore guaranteed to favour the pick. Config = '
+                      'lookback days · PCs · basket size.')
     # ── per-config detail: the exact ticket each alternative would produce ──
     # [Fix 115] This used to repeat the SAME four explanation rows under every
     # config — five configs × four paragraphs of identical prose, ~20 rows of
@@ -5261,18 +5142,16 @@ def find_best_hedge(
     # each config below shows only its own numbers.
     _P("  ► each block below is the ticket that recipe would produce, and "
        "how it scored on exactly the same evidence as the one chosen")
-    _kv_open('WHAT THE FOUR MEASURES BELOW MEAN')
-    kv('size put on / best case', 'what you would trade, and its ceiling',
-       'The second number is the fit graded on its own homework — the best the '
-       'recipe ever looks. Never size off it.')
-    kv('on unseen data', 're-fitted before each test stretch',
-       'The honest comparison between recipes.')
-    kv('drift through time', 'refit every 21 days, walked forward',
-       'Read steadiness here. A recipe with a similar typical number but a '
-       'much worse worst case is the more dangerous one.')
-    kv('lately vs always', 'whole history vs the newest stretches',
-       'Recent better than the whole history means the recipe is improving; '
-       'the reverse means it is fading.')
+    _kv_open('WHAT THE FOUR MEASURES BELOW MEAN')  # stated once, not per row
+    kv('gross / in-sample', 'what you would put on, and its ceiling',
+       'The second figure is the fit scored on its own data. Never size off it.')
+    kv('unseen windows', 'refit before each window, scored on it',
+       'The honest comparison between configs.')
+    kv('rolling OOS', '21-row walk-forward TE and R²',
+       'Read stability here — a config with a similar median but a much worse '
+       'worst case is the more dangerous one.')
+    kv('recency', 'all folds vs the newest folds',
+       'Recent above all-fold means improving; the reverse means decaying.')
     _kv_flush()
     for _a in _alt_cache:
         _tagsel = '   ◄ THIS IS THE ONE IN THE TICKET' if _a['sel'] else ''
@@ -5284,17 +5163,16 @@ def find_best_hedge(
            f"the basket{_tagsel}")
         _print_table(BASKET_HEADERS, _basket_rows(_a['w']), indent='      ')
         _rr = _a['roll']
-        _det = [('size put on / best case',
-                 f"${_a['w'].abs().sum()*100:.0f} per $100 · tracks "
-                 f"{_a['r2_in']*100:.0f}% on its own data")]
+        _det = [('gross / in-sample',
+                 f"${_a['w'].abs().sum()*100:.0f} per $100 · in-sample R² "
+                 f"{_a['r2_in']:.2f}")]
         if _a['n']:
-            _det.append(('on unseen data',
-                         f"tracked {_a['r2m']*100:.0f}% ± {_a['r2s']*100:.0f} "
-                         f"· removed {_a['vrm']*100:.0f}% of the risk · "
-                         f"{_a['n']} stretches"))
+            _det.append(('unseen windows',
+                         f"R² {_a['r2m']:.3f} ± {_a['r2s']:.3f} · vol red "
+                         f"{_a['vrm']*100:.0f}% · {_a['n']} windows"))
         if _rr:
             _det.append((
-                'drift through time',
+                'rolling OOS',
                 f"TE {_rr['te_median']*100:.1f}% med / "
                 f"{_rr['te_worst']*100:.1f}% worst / "
                 f"{_rr['te_latest']*100:.1f}% latest · R² "
@@ -5305,20 +5183,13 @@ def find_best_hedge(
                    f"0 of {_rr.get('n_scored', 0)} windows negative")))
         if np.isfinite(_a['cfg'].get('recent_r2', np.nan)):
             _det.append((
-                'lately vs always',
-                f"always {_a['cfg']['avg_r2_oos']*100:.0f}% · lately "
-                f"{_a['cfg']['recent_r2']*100:.0f}%"
-                + (f" · {-_a['cfg']['r2_slope_per_fold']*100:+.1f} pts per "
-                   f"stretch"
+                'recency',
+                f"all folds {_a['cfg']['avg_r2_oos']:.3f} · recent "
+                f"{_a['cfg']['recent_r2']:.3f}"
+                + (f" · slope {-_a['cfg']['r2_slope_per_fold']:+.3f}/fold"
                    if np.isfinite(_a['cfg'].get('r2_slope_per_fold', np.nan))
                    else '')))
-        _kv_block(None, _det, headers=('MEASURE', 'THIS RECIPE'))
-
-    # ── [5] CHARTS ──────────────────────────────────────────────────────────
-    # [Fix 115] drawn here, not before the report — see the STEP 6 comment.
-    if show_plots:
-        title("[5] CHARTS", "the same evidence, drawn")
-        _draw_charts()
+        _kv_block(None, _det, headers=('MEASURE', 'THIS CONFIG'))
 
     # ── [A] APPENDIX ────────────────────────────────────────────────────────
     title("[A] APPENDIX", "settings, definitions and caveats")
