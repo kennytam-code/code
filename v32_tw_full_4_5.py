@@ -1,4 +1,53 @@
 # ============================================================================
+# v32.6 (TW) — THE POSITION IS A LIST OF LOTS. Tagged [AG..].
+#
+# THE REPORT (user): "whenever I add on or trim, calculate the funding and
+# margin separately for the two clips. My first clip entered last month and
+# the second this month — the future should be DIFFERENT. The MTM and
+# everything should show different calculations for two clips separately. And
+# for unwind it should be first in first out. Can I input the roll cost
+# myself? And the charts are smaller now and the CUSUM looks messy."
+#
+# [AG1]  EVERY ENTRY IS ITS OWN LOT, AND IT STAYS ONE. [AD1] folded each clip
+#        into a blended average — one entry ADR, one entry SSF, one weighted
+#        entry date. Exact only when the clips are the same size and on the
+#        same contract; wrong the moment a real book differs:
+#          * a July clip holds AUGUST and an August clip holds SEPTEMBER, and
+#            averaging 1,188 with 1,195 gives a number that is not the price
+#            of anything. Marking it against either month books the calendar
+#            spread as P&L — the [AE2] roll bug, inside one position, with no
+#            roll to blame and nothing to warn you.
+#          * carry accrues per clip, per day, on that clip's own notionals.
+#            One weighted date on the blend is exact only for equal clips.
+#        Now: lots carry their own date, units, prices, month, carry clock and
+#        roll cost. Marks, fees, funding, margin and roll are computed PER LOT
+#        and summed. UNWIND IS FIFO — the oldest clip goes first — so every
+#        realisation is a clean round trip on ONE clip. Nothing new is stored:
+#        the ledger already wrote one row per clip, the walk simply stopped
+#        averaging them. status() gains THE CLIPS, the trim/close cards gain a
+#        FIFO breakdown, trade_report() gains a PER CLIP table.
+#        `add_day(fut_alt=)` supplies the other month's price so an older clip
+#        marks against ITS OWN month; when it is missing the desk marks that
+#        clip at the newest price that month has had and SAYS SO, rather than
+#        silently pricing September off an August print.
+#        `roll_hedge(cost_bps=/cost_usd=)` takes YOUR roll cost and charges it
+#        verbatim on the lots that rolled; a clip entered after the roll pays
+#        nothing for it. `from_contract=` rolls one month out of a two-month
+#        book. Verified: a fill price you TYPE prices the clips you are
+#        closing (a lookup-by-contract there produced a futures leg of exactly
+#        zero — a silently free close — once a position had been rolled to a
+#        month the scored days were not on).
+#
+# [AG2]  THE CHARTS. The [AF3] titles were four lines of prose that pushed the
+#        panels down and shrank them, and drawing S+ and S- as two lines ÷ an
+#        alarm that is never reached produced a sawtooth hugging zero under an
+#        empty band. A CUSUM pair is naturally ONE SIGNED series: S+ up, S-
+#        down, filled, in its own sigma units, axis scaled to the data, alarm
+#        annotated when it is off-scale (which is itself the message). Titles
+#        are one line. Entry markers are off the backtest CUSUM panel — 331
+#        triangles buried the series they were drawn on, and they are already
+#        on the two panels above sharing the same x-axis.
+# ============================================================================
 # v32.5 (TW) — THE DRIFT SLOT BECOMES A CUSUM, REFERENCE-ONLY. Tagged [AF..].
 #
 # THE QUESTION (user): "the drift — does it really help? I don't think so."
@@ -2518,6 +2567,17 @@ _LED_COLS = ['instrument', 'date', 'point', 'side', 'notional',
              # spread the position actually crossed, and it is what rebases
              # entry_fut so the mark does not jump.
              'fut_old',
+             # [AG1] a ROLL also records WHICH month it rolled out of (blank =
+             # every lot) and WHAT IT COST in bps of the hedge leg — your own
+             # quoted number when you give one, the derived [AC5] figure when
+             # you do not. Each rolled lot carries that cost with it, so a
+             # clip that entered after the roll is never billed for it.
+             'roll_from', 'roll_bps',
+             # [AG1] the price of any OTHER contract still held on a scored
+             # day, as '<contract>@<price>; <contract>@<price>'. With two
+             # clips on two months the desk needs two prices to mark them;
+             # this is where the second one lives.
+             'fut_alt',
              'note']
 def _signal_point():
     """[X8] The execution point the SIGNAL is defined at. The desk used to
@@ -2837,88 +2897,306 @@ def _freeze_regime24(e):
 # days it stops charging the later legs for days they were not on. The TIME
 # STOP still anchors on the first leg (conservative, unchanged).
 # ============================================================================
-def _blend(st, dirn, sh, cn, adr, fut, fx, date, c):
-    """[AD1] Fold one ENTRY leg into the running state. Returns the new state."""
-    _cu = c['contract_sh'] * float(fut) / float(fx)
-    _hn = cn * _cu
-    _an = sh * float(adr)
+# ============================================================================
+# [AG1] THE POSITION IS A LIST OF LOTS, NOT ONE BLEND.
+# ----------------------------------------------------------------------------
+# WHY THIS CHANGED (user): "my first clip entered last month and the second
+# this month — the future should be DIFFERENT. The MTM and everything should
+# show different calculations for the two clips separately. And for unwind it
+# should be first in first out."
+#
+# Three complaints, one defect. [AD1] folded every ENTRY into a single blended
+# state: one average entry ADR, one average entry SSF, one share-weighted
+# entry date. That is exact for P&L in the case it was designed for — every
+# clip on the SAME contract, and only the total ever mattering. It is wrong
+# the moment the clips differ in the two ways a real book actually differs:
+#
+#   * DIFFERENT CONTRACTS. Under ROLL_RULE='month_start' a clip opened in July
+#     holds the AUGUST future and a clip opened in August holds SEPTEMBER.
+#     Averaging 1,188 (Aug) with 1,195 (Sep) into 1,191.50 produces a number
+#     that is not the price of anything, and marking it against either month
+#     books the calendar spread as P&L. That is the [AE2] roll bug happening
+#     INSIDE one position, with no roll involved and nothing to warn you.
+#
+#   * DIFFERENT CARRY CLOCKS. Funding and margin accrue per calendar day, per
+#     leg notional, from the day that clip went on. [AD1] approximated that
+#     with ONE share-weighted average entry date applied to the whole
+#     position — exact only when the clips are the same size, wrong by the
+#     size-weighted date spread otherwise.
+#
+# So: every ENTRY row IS a lot and stays one. A lot keeps its own date, units,
+# prices, contract and carry clock. Marks, fees, funding, margin and roll cost
+# are computed PER LOT and summed. FIFO consumes the oldest lot first, which
+# is what a desk means by unwinding and what makes every realisation a clean
+# round trip on ONE clip instead of a slice of an average.
+#
+# NOTHING NEW IS STORED. The ledger already writes one row per clip — the walk
+# simply stops averaging them together.
+# ============================================================================
+def _lot_cu(lot, c):
+    """[AG1] USD value of one contract at THIS lot's own entry basis."""
+    return c['contract_sh'] * float(lot['fut']) / float(lot['fx'])
+def _lot_an(lot):
+    """[AG1] This lot's ADR-leg notional, at its own entry price."""
+    return lot['shares'] * float(lot['adr'])
+def _lot_hn(lot, c):
+    """[AG1] This lot's hedge-leg notional, at its own entry basis."""
+    return lot['contracts'] * _lot_cu(lot, c)
+def _add_lot(st, dirn, sh, cn, adr, fut, fx, date, c, contract=''):
+    """[AG1] Append one ENTRY clip as its OWN lot — never blended in."""
+    _lot = dict(date=str(date), shares=int(sh), contracts=int(cn),
+                adr=float(adr), fut=float(fut), fx=float(fx),
+                contract=str(contract or ''), roll_bps=0.0, n_rolls=0)
     if st is None:
-        return dict(dir=dirn, shares=int(sh), contracts=int(cn),
-                    adr=float(adr), fut=float(fut), fx=float(fx),
-                    date=str(date), wdate=float(pd.Timestamp(str(date)).value),
-                    an=_an, hn=_hn, n_legs=1, legs=[str(date)])
-    _tsh, _tcn = st['shares'] + int(sh), st['contracts'] + int(cn)
-    _tan, _thn = st['an'] + _an, st['hn'] + _hn
-    return dict(
-        dir=st['dir'], shares=_tsh, contracts=_tcn,
-        adr=(st['adr'] * st['shares'] + float(adr) * sh) / max(_tsh, 1),
-        fut=(st['fut'] * st['contracts'] + float(fut) * cn) / max(_tcn, 1),
-        fx=(st['fx'] * st['hn'] + float(fx) * _hn) / max(_thn, 1e-9),
-        date=st['date'],            # time stop stays on the FIRST leg
-        wdate=(st['wdate'] * st['an']
-               + float(pd.Timestamp(str(date)).value) * _an) / max(_tan, 1e-9),
-        an=_tan, hn=_thn, n_legs=st['n_legs'] + 1,
-        legs=st['legs'] + [str(date)])
+        return dict(dir=dirn, date=str(date), lots=[_lot])
+    return dict(st, lots=list(st['lots']) + [_lot])
+def _consume_fifo(lots, cn_out):
+    """[AG1] Take `cn_out` contracts off the OLDEST lots first.
+    Returns (taken, remaining) where taken is [(lot, cn_taken, sh_taken)].
+    Shares are DERIVED from each lot pro-rata to the contracts taken — the
+    contracts are the master leg [AD2], so a FIFO trim can never disturb the
+    hedge ratio of the lots it leaves behind."""
+    _take, _rest, _left = [], [], int(cn_out)
+    for _l in lots:
+        if _left <= 0 or _l['contracts'] <= 0:
+            _rest.append(_l)
+            continue
+        _cn = min(_left, int(_l['contracts']))
+        # the LAST contract out of a lot takes all its remaining shares, so
+        # rounding can never strand a share in a lot with no contracts.
+        _sh = (int(_l['shares']) if _cn >= int(_l['contracts'])
+               else int(round(_l['shares'] * _cn / _l['contracts'])))
+        _sh = max(0, min(_sh, int(_l['shares'])))
+        _take.append((_l, _cn, _sh))
+        _left -= _cn
+        if _cn < int(_l['contracts']):
+            _rest.append(dict(_l, contracts=int(_l['contracts']) - _cn,
+                              shares=int(_l['shares']) - _sh))
+    return _take, _rest
 def _state_pos(st, c):
-    """[AD1] Present the running state in the shape the rest of the desk
-    already expects from _MANUAL['pos'] — no consumer has to know about the
-    walk."""
-    if st is None or st['shares'] <= 0 or st['contracts'] <= 0:
+    """[AD1][AG1] Present the lot list in the shape the rest of the desk
+    already expects from _MANUAL['pos'], PLUS the lots themselves. The
+    weighted averages below are for DISPLAY and for legacy callers only —
+    every number that matters is computed per lot and summed."""
+    if st is None or not st.get('lots'):
         return None
-    _cu = c['contract_sh'] * st['fut'] / st['fx']
-    _an, _hn = st['shares'] * st['adr'], st['contracts'] * _cu
+    _lots = [l for l in st['lots'] if l['shares'] > 0 and l['contracts'] > 0]
+    if not _lots:
+        return None
+    _sh = sum(int(l['shares']) for l in _lots)
+    _cn = sum(int(l['contracts']) for l in _lots)
+    _an = sum(_lot_an(l) for l in _lots)
+    _hn = sum(_lot_hn(l, c) for l in _lots)
+    _adr = _an / max(_sh, 1)
+    _fut = sum(l['fut'] * l['contracts'] for l in _lots) / max(_cn, 1)
+    _fx = sum(l['fx'] * _lot_hn(l, c) for l in _lots) / max(_hn, 1e-9)
+    _cons = sorted({str(l.get('contract') or '') for l in _lots} - {''})
+    # kept so [AE4]'s "(w ..)" column and any legacy caller still resolve. The
+    # CARRY no longer uses it — each lot bills from its own date [AG1].
+    _wd = (sum(pd.Timestamp(l['date']).value * _lot_an(l) for l in _lots)
+           / max(_an, 1e-9))
     return dict(date=st['date'], dir=st['dir'], notional=_an,
-                entry_adr=st['adr'], entry_fut=st['fut'], entry_fx=st['fx'],
-                shares=int(st['shares']), contracts=int(st['contracts']),
-                c_usd=_cu, adr_notional=_an, hedge_notional=_hn,
-                mismatch=_an - _hn, n_legs=st['n_legs'],
-                wdate=str(pd.Timestamp(int(st['wdate'])).date()),
-                note=(f"{st['n_legs']} legs (base + {st['n_legs'] - 1} add)"
-                      if st['n_legs'] > 1 else ''))
+                entry_adr=_adr, entry_fut=_fut, entry_fx=_fx,
+                shares=int(_sh), contracts=int(_cn),
+                c_usd=(_hn / _cn if _cn else 0.0),
+                adr_notional=_an, hedge_notional=_hn,
+                mismatch=_an - _hn, n_legs=len(_lots),
+                wdate=str(pd.Timestamp(int(_wd)).date()),
+                lots=_lots, contracts_held=_cons,
+                multi_contract=len(_cons) > 1,
+                note=(f"{len(_lots)} lots (base + {len(_lots) - 1} add)"
+                      if len(_lots) > 1 else ''))
 def _cu_in0(st, c):
-    """[AE4] USD value of one hedge contract AT THE POSITION'S ENTRY BASIS —
-    the denominator every slice's hedge notional is struck on."""
-    return c['contract_sh'] * st['fut'] / st['fx']
-def _realise(st, sh_out, cn_out, adr, fut, fx, date, c, div_cash_pct=0.0):
-    """[AD1] Close `sh_out` shares / `cn_out` contracts out of the running
-    state at average cost. Returns (gross, cost_parts, net, an_slice)."""
-    _cu_in = c['contract_sh'] * st['fut'] / st['fx']
-    _an = sh_out * st['adr']                     # the slice, at ENTRY cost
-    _hn = cn_out * _cu_in
-    _al = st['dir'] * (float(adr) - st['adr']) * sh_out
-    _fl = (-st['dir'] * cn_out * c['contract_sh']
-           * (float(fut) - st['fut']) / float(fx))
-    _dv = -st['dir'] * _hn * float(div_cash_pct or 0.0)
-    _wd = str(pd.Timestamp(int(st['wdate'])).date())
-    _held = max((pd.Timestamp(str(date)) - pd.Timestamp(_wd)).days, 0)
-    _cp = _trade_cost_parts(st['dir'], _an, _held,
-                            adr_notional=_an, hedge_notional=_hn,
-                            entry_date=_wd, asof_date=str(date))
-    _gross = _al + _fl + _dv
-    return _gross, _cp, _gross - _cp['total'], _an, _al, _fl, _dv, _held
-def _roll_basis(st, fut_old, fut_new):
-    """[AE2] Rebase the position's entry futures price across a contract roll.
+    """[AE4] USD value of one hedge contract at the position's average entry
+    basis — the denominator legacy slice reporting is struck on."""
+    _p = _state_pos(st, c)
+    return (_p['c_usd'] if _p else 0.0)
+def _lot_price(lot, fut_now, day_contract=None, px_by_contract=None):
+    """[AG1] Today's price for the contract THIS lot holds, and how good it is.
+    Returns (price, source) where source is:
+        'day'    the day's own print — this lot is on the day's contract
+        'typed'  supplied for that contract (add_day's fut_alt)
+        'stale'  the newest price seen for that contract, on an earlier day
+        'entry'  nothing has ever been seen — the lot marks flat, which is
+                 not a mark at all and says so
+    Marking a September lot against an August print is exactly the error this
+    function exists to make impossible."""
+    _k = str(lot.get('contract') or '')
+    _dk = str(day_contract or '')
+    if not _k or not _dk or _k == _dk:
+        # unstamped lots (pre-[AE2] rows) fall back to the day's price: that
+        # WAS the old behaviour and there is nothing better to do with a row
+        # that never recorded which month it was on.
+        return float(fut_now), ('day' if (_k and _dk and _k == _dk) else 'day')
+    if px_by_contract and _k in px_by_contract:
+        _v = px_by_contract[_k]
+        return float(_v[0]), _v[1]
+    return float(lot['fut']), 'entry'
+def _realise_fifo(st, cn_out, adr, fut, fx, date, c, div_cash_pct=0.0,
+                  day_contract=None, px_by_contract=None):
+    """[AG1] Close `cn_out` contracts FIFO. Every consumed lot slice is priced
+    as its OWN round trip: its own entry prices, ITS contract's exit price,
+    its own carry clock, its own fees, its own recorded roll cost.
+    Returns (slices, remaining_lots, totals)."""
+    _take, _rest = _consume_fifo(st['lots'], cn_out)
+    # ------------------------------------------------------------------ [AG1]
+    # `fut` IS A FILL, NOT A MARK. On a trim or a close you type the price you
+    # actually dealt at, and that price belongs to the month you dealt. So
+    # when every consumed clip is on ONE month, that price prices all of them
+    # — whatever the day's scoring row happens to be stamped with. Looking it
+    # up by contract instead produced a futures leg of exactly ZERO whenever
+    # the position had been rolled to a month the scored days were not on:
+    # a silently free close. Only a realisation that SPANS two months needs
+    # the per-contract lookup, and then the second month's price has to have
+    # been supplied (fut_alt) or the slice is flagged.
+    _months = {str(_l.get('contract') or '') for _l, _cn, _sh in _take if _cn > 0}
+    _one_month = len(_months) <= 1
+    _slices = []
+    for _l, _cn, _sh in _take:
+        if _cn <= 0:
+            continue
+        _cu = _lot_cu(_l, c)
+        _an, _hn = _sh * float(_l['adr']), _cn * _cu
+        if _one_month:
+            _fp, _src = float(fut), 'dealt'
+        else:
+            _fp, _src = _lot_price(_l, fut, day_contract, px_by_contract)
+            if str(_l.get('contract') or '') == str(day_contract or ''):
+                _fp, _src = float(fut), 'dealt'
+        _al = st['dir'] * (float(adr) - float(_l['adr'])) * _sh
+        _fl = (-st['dir'] * _cn * c['contract_sh']
+               * (_fp - float(_l['fut'])) / float(fx))
+        _dv = -st['dir'] * _hn * float(div_cash_pct or 0.0)
+        _held = max((pd.Timestamp(str(date))
+                     - pd.Timestamp(str(_l['date']))).days, 0)
+        # [AG1] the whole point: this lot's OWN dates and OWN notionals drive
+        # its funding and margin. A clip added on day 12 is not billed for
+        # days 1-11, and it is billed on ITS notional, not on a share of the
+        # blend. Its recorded roll cost rides with it too.
+        _cp = _trade_cost_parts(st['dir'], _an, _held,
+                                adr_notional=_an, hedge_notional=_hn,
+                                entry_date=str(_l['date']), asof_date=str(date),
+                                roll_bps_paid=float(_l.get('roll_bps') or 0.0),
+                                n_rolls_paid=int(_l.get('n_rolls') or 0))
+        _g = _al + _fl + _dv
+        _slices.append(dict(
+            lot_date=str(_l['date']), contract=str(_l.get('contract') or ''),
+            shares=int(_sh), contracts=int(_cn),
+            entry_adr=float(_l['adr']), entry_fut=float(_l['fut']),
+            entry_fx=float(_l['fx']), exit_fut=_fp, exit_fut_src=_src,
+            an=_an, hn=_hn, adr_leg=_al, fut_leg=_fl, div_leg=_dv,
+            gross=_g, held=_held, cp=_cp, net=_g - _cp['total']))
+    _tot = dict(
+        gross=sum(s['gross'] for s in _slices),
+        net=sum(s['net'] for s in _slices),
+        an=sum(s['an'] for s in _slices),
+        hn=sum(s['hn'] for s in _slices),
+        shares=sum(s['shares'] for s in _slices),
+        contracts=sum(s['contracts'] for s in _slices),
+        adr_leg=sum(s['adr_leg'] for s in _slices),
+        fut_leg=sum(s['fut_leg'] for s in _slices),
+        div_leg=sum(s['div_leg'] for s in _slices),
+        fee=sum(s['cp']['fee'] for s in _slices),
+        carry_fund=sum(s['cp']['carry_fund'] for s in _slices),
+        carry_margin=sum(s['cp']['carry_margin'] for s in _slices),
+        roll=sum(s['cp']['roll'] for s in _slices),
+        n_rolls=sum(s['cp']['n_rolls'] for s in _slices),
+        cost_total=sum(s['cp']['total'] for s in _slices),
+        sofr=(_slices[0]['cp']['sofr'] if _slices else float('nan')),
+        held=(max(s['held'] for s in _slices) if _slices else 0),
+        held_min=(min(s['held'] for s in _slices) if _slices else 0))
+    return _slices, _rest, _tot
+def _roll_lots(st, fut_old, fut_new, from_contract=None, to_contract='',
+               roll_bps=0.0):
+    """[AE2][AG1] Rebase the lots that are ON `from_contract` across a roll.
 
     WHY IT IS ADDITIVE AND NOT A RATIO. The hedge leg's P&L is
         -dir x contracts x contract_sh x (fut_now - entry_fut) / fx
-    i.e. it is priced off a PRICE DIFFERENCE in TWD, not off a return. So the
-    correction that makes the mark continuous across a roll is the difference
-    the roll itself crossed:
-        entry_fut  ->  entry_fut + (fut_new - fut_old)
+    i.e. priced off a PRICE DIFFERENCE in TWD, not off a return. So the
+    correction that makes the mark continuous is the difference the roll
+    itself crossed:  entry_fut -> entry_fut + (fut_new - fut_old).
     Substitute it back and the mark on roll day is unchanged, which is the
-    whole requirement: rolling the hedge must not create or destroy P&L. What
-    it DOES cost is the two fills, and that is charged separately by [AC5] —
-    charging it here as well would double it.
+    requirement: rolling a hedge must not create or destroy P&L.
 
-    (The backtest never needs this because its hedge index is built entirely
-    from same-day, same-contract ratios [24]. The desk marks a real position
-    against a real contract, so the desk has to do it explicitly.)"""
-    return dict(st, fut=st['fut'] + (float(fut_new) - float(fut_old)))
-def _walk_events():
-    """[AD1] Walk ENTRY / REDUCE / EXIT in order and return
-    (events, open_state, closed, orphans, mixed). This is the single place
-    position state is derived; _rebuild() only stores what it returns."""
+    [AG1] It now rolls ONLY the lots on the month being rolled out of, and
+    each rolled lot carries the bps it paid — so a clip that never crossed a
+    roll is never charged for one, and a clip that crossed two pays for two.
+    (The backtest never needs any of this: its hedge index is built entirely
+    from same-day, same-contract ratios [24].)"""
+    _d = float(fut_new) - float(fut_old)
+    _from = str(from_contract or '')
+    _out = []
+    _n = 0
+    for _l in st['lots']:
+        _lk = str(_l.get('contract') or '')
+        if _from and _lk and _lk != _from:
+            _out.append(_l)               # a different month — leave it alone
+            continue
+        _out.append(dict(_l, fut=float(_l['fut']) + _d,
+                         contract=(str(to_contract) or _lk),
+                         roll_bps=float(_l.get('roll_bps') or 0.0)
+                         + float(roll_bps or 0.0),
+                         n_rolls=int(_l.get('n_rolls') or 0) + 1))
+        _n += 1
+    return dict(st, lots=_out), _n
+def _parse_fut_alt(s):
+    """[AG1] '2330=Q6 TT Equity@1188.5; 2330=U6 TT Equity@1195' -> dict.
+    The ledger is a CSV, so a per-contract price map has to be one cell; this
+    is the smallest format that survives a hand edit and a spreadsheet."""
+    _out = {}
+    for _p in str(s or '').split(';'):
+        _p = _p.strip()
+        if not _p or '@' not in _p:
+            continue
+        _k, _v = _p.rsplit('@', 1)
+        try:
+            _out[_k.strip()] = float(_v)
+        except Exception:
+            continue
+    return _out
+def _price_maps():
+    """[AG1] Two lookups the lot-level mark needs, built once from the scored
+    days: which CONTRACT each day's futures print belongs to, and the newest
+    price known for every contract as of each date.
+    Without these a September lot gets marked against an August print — the
+    exact error keeping lots separate exists to prevent."""
     c = _MANUAL['ctx']
+    _day_con, _hist = {}, []
+    try:
+        led = _read_ledger()
+        led = led[(led['instrument'] == c['instrument'])
+                  & (led['point'] == c.get('exec_point', 'close'))]
+        led = led.drop_duplicates('date', keep='last').sort_values('date')
+        for _, r in led.iterrows():
+            _d = str(r['date'])
+            _k = _txt(r.get('contract', ''))
+            _f = _led_num(r, 'fut')
+            _row = {}
+            if _k and _f is not None:
+                _day_con[_d] = _k
+                _row[_k] = float(_f)
+            for _ak, _av in _parse_fut_alt(r.get('fut_alt', '')).items():
+                _row[_ak] = _av
+            _hist.append((_d, _row))
+    except Exception:
+        pass
+    def _px_at(date):
+        """{contract: (price, 'typed'|'stale')} as of `date`."""
+        _out = {}
+        for _d, _row in _hist:
+            if _d > str(date):
+                break
+            for _k, _v in _row.items():
+                _out[_k] = (_v, 'typed' if _d == str(date) else 'stale')
+        return _out
+    return _day_con, _px_at
+def _walk_events():
+    """[AD1] Walk ENTRY / ROLL / REDUCE / EXIT in order and return
+    (events, open_state, closed, orphans, mixed). This is the single place
+    position state is derived; _rebuild() only stores what it returns.
+    [AG1] the state is a LIST OF LOTS and realisations are FIFO."""
+    c = _MANUAL['ctx']
+    _day_con, _px_at = _price_maps()                            # [AG1]
     led = _read_ledger()
     led = led[led['instrument'] == c['instrument']]
     led = led[led['point'].isin(['ENTRY', 'ROLL', 'REDUCE', 'EXIT'])]
@@ -2952,15 +3230,18 @@ def _walk_events():
                       f"the row is IGNORED. That ledger cannot be right; run "
                       f"desk_audit().")
                 continue
-            st = _blend(st, _dir, int(_sh), int(_cn), _adr, _fut, _fx, _dt, c)
-            events.append(dict(date=_dt, kind=('ENTRY' if st['n_legs'] == 1
+            st = _add_lot(st, _dir, int(_sh), int(_cn), _adr, _fut, _fx, _dt,
+                          c, _txt(r.get('contract', '')))       # [AG1]
+            _ps = _state_pos(st, c)
+            events.append(dict(date=_dt, kind=('ENTRY' if len(st['lots']) == 1
                                                else 'ADD'),
                                dir=st['dir'], shares=int(_sh),
                                contracts=int(_cn), adr=_adr, fut=_fut, fx=_fx,
                                net=None, held=None,
-                               pos_shares=st['shares'],
-                               pos_contracts=st['contracts'],
-                               avg_adr=st['adr'], avg_fut=st['fut'],
+                               pos_shares=_ps['shares'],
+                               pos_contracts=_ps['contracts'],
+                               avg_adr=_ps['entry_adr'],
+                               avg_fut=_ps['entry_fut'],
                                notional=int(_sh) * _adr,
                                contract=_txt(r.get('contract', '')),
                                note=_txt(r.get('note', ''))))
@@ -2974,17 +3255,32 @@ def _walk_events():
             if _fo is None or _fn is None:
                 orphans.append((_dt, 'ROLL (missing fut_old/fut)'))
                 continue
-            _was = st['fut']
-            st = _roll_basis(st, _fo, _fn)
+            _p0 = _state_pos(st, c)
+            _was = _p0['entry_fut']
+            # [AG1] roll ONLY the lots on the month being rolled out of, and
+            # stamp each one with the bps it paid. `roll_from` names that
+            # month; blank (a pre-[AG1] row) rolls everything, which is what
+            # the whole-position version did.
+            _rb = _led_num(r, 'roll_bps')
+            if _rb is None:
+                _rb = roll_cost_bps(c.get('exec_point'))
+            st, _nrl = _roll_lots(st, _fo, _fn,
+                                  from_contract=_txt(r.get('roll_from', '')),
+                                  to_contract=_txt(r.get('contract', '')),
+                                  roll_bps=float(_rb))
+            _p1 = _state_pos(st, c)
             events.append(dict(date=_dt, kind='ROLL', dir=st['dir'],
                                shares=0, contracts=0,
                                adr=_adr, fut=_fn, fx=_fx, net=None, held=None,
-                               pos_shares=st['shares'],
-                               pos_contracts=st['contracts'],
-                               avg_adr=st['adr'], avg_fut=st['fut'],
+                               pos_shares=_p1['shares'],
+                               pos_contracts=_p1['contracts'],
+                               avg_adr=_p1['entry_adr'],
+                               avg_fut=_p1['entry_fut'],
                                notional=0.0,
                                spread=float(_fn) - float(_fo),
-                               basis_was=_was, basis_now=st['fut'],
+                               basis_was=_was, basis_now=_p1['entry_fut'],
+                               roll_bps=float(_rb), lots_rolled=_nrl,
+                               roll_from=_txt(r.get('roll_from', '')),
                                contract=_txt(r.get('contract', '')),
                                note=_txt(r.get('note', ''))))
             continue
@@ -2996,18 +3292,33 @@ def _walk_events():
             _div = float(_led_num(r, 'div_pct') or 0.0)
         except Exception:
             _div = 0.0
+        _p0 = _state_pos(st, c)
         if _pt == 'EXIT':
-            _sh_out, _cn_out = st['shares'], st['contracts']
+            _cn_out = _p0['contracts']
         else:
-            _sh_out = int(_led_num(r, 'shares') or 0)
+            # [AG1] CONTRACTS are the master leg and the ONLY input; the share
+            # count is derived by the FIFO walk from the lots it consumes, so
+            # a rebuild can never disagree with the deal that was written.
             _cn_out = int(_led_num(r, 'contracts') or 0)
-            _sh_out = max(min(_sh_out, st['shares']), 0)
-            _cn_out = max(min(_cn_out, st['contracts']), 0)
-            if _sh_out <= 0 or _cn_out <= 0:
+            _cn_out = max(min(_cn_out, _p0['contracts']), 0)
+            if _cn_out <= 0:
                 orphans.append((_dt, 'REDUCE (no units)'))
                 continue
-        _g, _cp, _net, _an_sl, _al, _fl, _dvl, _held = _realise(
-            st, _sh_out, _cn_out, _adr, _fut, _fx, _dt, c, _div)
+        _sl, _rest, _tt = _realise_fifo(
+            st, _cn_out, _adr, _fut, _fx, _dt, c, _div,
+            day_contract=_day_con.get(_dt, ''), px_by_contract=_px_at(_dt))
+        if not _sl:
+            orphans.append((_dt, f'{_pt} (no lots to consume)'))
+            continue
+        _g, _net = _tt['gross'], _tt['net']
+        _an_sl, _al, _fl, _dvl = _tt['an'], _tt['adr_leg'], _tt['fut_leg'], _tt['div_leg']
+        _held = _tt['held']
+        _sh_out, _cn_out = _tt['shares'], _tt['contracts']
+        _cp = dict(fee=_tt['fee'], carry_fund=_tt['carry_fund'],
+                   carry_margin=_tt['carry_margin'], roll=_tt['roll'],
+                   carry=_tt['carry_fund'] + _tt['carry_margin'],
+                   total=_tt['cost_total'], n_rolls=_tt['n_rolls'],
+                   sofr=_tt['sofr'])
         # [AA3] honour a STORED net only when the row reconciles with the
         # state it is closing; otherwise recompute and say so.
         _suspect = False
@@ -3023,7 +3334,7 @@ def _walk_events():
                   f"position is {'LONG' if st['dir'] == 1 else 'SHORT'} — the "
                   f"stored P&L cannot belong to it and has been RECOMPUTED "
                   f"from the prints. Run desk_audit().")
-        _frac = (_sh_out / st['shares']) if st['shares'] else 1.0
+        _frac = (_sh_out / _p0['shares']) if _p0['shares'] else 1.0
         # [AE4] EVERYTHING the trade report needs is captured HERE, at the one
         # moment all of it is in scope. The old record kept net / gross / fee /
         # carry and threw away the leg split, the FX at both ends, and the
@@ -3031,72 +3342,88 @@ def _walk_events():
         # either re-derived them (and could disagree with this walk) or simply
         # did not show them. Storing them costs nothing and makes the report a
         # rendering job rather than a second calculation.
+        # [AG1] `slices` carries the same thing PER CLIP, which is how the
+        # report shows two lots' arithmetic separately instead of one blend.
         _cost_tot = _cp['total']
         # a STORED net overrides the computed one [AA3]; when it does, the
         # component columns still have to add up to it or the table lies. The
         # residual is carried explicitly rather than silently absorbed.
         _resid = float(_net) - (_g - _cost_tot)
+        _wan = sum(s['an'] for s in _sl) or 1e-9
         closed.append(dict(
-            entry_date=st['date'], exit_date=_dt, dir=st['dir'],
+            entry_date=_sl[0]['lot_date'], exit_date=_dt, dir=st['dir'],
             notional=_an_sl, net=float(_net), held=_held,
             suspect=_suspect, kind=('full' if _pt == 'EXIT' else 'partial'),
             frac=_frac, shares=_sh_out, contracts=_cn_out,
             gross=_g, fee=_cp['fee'], carry=_cp['carry'], roll=_cp['roll'],
-            entry_adr=st['adr'], entry_fut=st['fut'], exit_adr=_adr,
-            exit_fut=_fut,
-            # [AE4] the pieces the report shows in their own columns
-            entry_fx=st['fx'], exit_fx=_fx,
-            entry_date_w=str(pd.Timestamp(int(st['wdate'])).date()),
+            # [AG1] notional-weighted across the consumed lots — a single
+            # "entry price" for a slice that spans two clips can only be an
+            # average, and `slices` below has the real per-clip numbers.
+            entry_adr=sum(s['entry_adr'] * s['an'] for s in _sl) / _wan,
+            entry_fut=sum(s['entry_fut'] * s['an'] for s in _sl) / _wan,
+            entry_fx=sum(s['entry_fx'] * s['an'] for s in _sl) / _wan,
+            exit_adr=_adr, exit_fut=_fut,
+            entry_date_w=(_sl[-1]['lot_date'] if len(_sl) > 1
+                          else _sl[0]['lot_date']),
+            n_lots=len(_sl), slices=_sl,
+            lots_span=(len(_sl) > 1),
             adr_leg=_al, fut_leg=_fl, div_leg=_dvl, div_pct=_div,
             carry_fund=_cp['carry_fund'], carry_margin=_cp['carry_margin'],
-            cost_total=_cost_tot, hedge_notional=_cn_out * _cu_in0(st, c),
+            cost_total=_cost_tot, hedge_notional=_tt['hn'],
             n_rolls=_cp['n_rolls'], sofr=_cp['sofr'],
             recomputed=bool(_stored is None or _suspect), residual=_resid,
             contract=_txt(r.get('contract', ''))))
-        # decrement (average cost: the remaining units keep the same basis)
-        _cu_in = c['contract_sh'] * st['fut'] / st['fx']
-        st = dict(st, shares=st['shares'] - _sh_out,
-                  contracts=st['contracts'] - _cn_out,
-                  an=st['an'] - _an_sl, hn=st['hn'] - _cn_out * _cu_in)
-        _flat = st['shares'] <= 0 or st['contracts'] <= 0
+        # [AG1] FIFO already returned the surviving lots — the clips that were
+        # not touched keep their own basis, dates and contract untouched.
+        st = dict(st, lots=_rest)
+        _p2 = _state_pos(st, c)
+        _flat = _p2 is None
         events.append(dict(date=_dt, kind=('EXIT' if _pt == 'EXIT' else
                                            'CLOSE' if _flat else 'REDUCE'),
                            dir=st['dir'], shares=_sh_out, contracts=_cn_out,
                            adr=_adr, fut=_fut, fx=_fx, net=float(_net),
-                           held=_held, pos_shares=max(st['shares'], 0),
-                           pos_contracts=max(st['contracts'], 0),
-                           avg_adr=st['adr'], avg_fut=st['fut'],
+                           held=_held,
+                           pos_shares=(_p2['shares'] if _p2 else 0),
+                           pos_contracts=(_p2['contracts'] if _p2 else 0),
+                           avg_adr=(_p2['entry_adr'] if _p2 else 0.0),
+                           avg_fut=(_p2['entry_fut'] if _p2 else 0.0),
                            notional=_an_sl, frac=_frac,
+                           n_lots=len(_sl), fifo=[
+                               (s['lot_date'], s['contracts']) for s in _sl],
                            note=_txt(r.get('note', ''))))
         if _flat:
             st = None
     return events, st, closed, orphans, mixed
 def _state_as_of(events, date, c):
-    """[AD1] The position as it stood at the END of `date` — what the mark
-    path has to use once the size can change mid-trade."""
+    """[AD1][AG1] The position as it stood at the END of `date` — what the
+    mark path has to use once the size can change mid-trade. Replays the SAME
+    lot list and the SAME FIFO consumption as the live walk, so a historical
+    mark can never be drawn against a basis the desk never held."""
     st = None
     for e in events:
         if str(e['date']) > str(date):
             break
         if e['kind'] in ('ENTRY', 'ADD'):
-            st = _blend(st, e['dir'], e['shares'], e['contracts'],
-                        e['adr'], e['fut'], e['fx'], e['date'], c)
+            st = _add_lot(st, e['dir'], e['shares'], e['contracts'],
+                          e['adr'], e['fut'], e['fx'], e['date'], c,
+                          e.get('contract', ''))
         elif e['kind'] == 'ROLL':
             # [AE2] the mark path has to cross the roll the same way the live
             # position does, or every mark AFTER a roll would be drawn against
             # the expired contract's basis and the chart would show a step
             # that the desk itself does not have.
             if st is not None:
-                st = dict(st, fut=e['basis_now'])
+                st, _ = _roll_lots(
+                    st, 0.0, e.get('spread', 0.0),
+                    from_contract=e.get('roll_from', ''),
+                    to_contract=e.get('contract', ''),
+                    roll_bps=float(e.get('roll_bps') or 0.0))
         else:
             if st is None:
                 continue
-            _cu = c['contract_sh'] * st['fut'] / st['fx']
-            st = dict(st, shares=st['shares'] - e['shares'],
-                      contracts=st['contracts'] - e['contracts'],
-                      an=st['an'] - e['shares'] * st['adr'],
-                      hn=st['hn'] - e['contracts'] * _cu)
-            if st['shares'] <= 0 or st['contracts'] <= 0:
+            _take, _rest = _consume_fifo(st['lots'], e['contracts'])
+            st = dict(st, lots=_rest)
+            if _state_pos(st, c) is None:
                 st = None
     return st
 def _rebuild():
@@ -3118,7 +3445,13 @@ def _rebuild():
                             fx=float(r['fx']),
                             # [Y37] Taiwan anchors, for the live fair
                             ordinary=_led_num(r, 'ordinary'),
-                            fut_1330=_led_num(r, 'fut_1330'))
+                            fut_1330=_led_num(r, 'fut_1330'),
+                            # [AG1] which contract this day's SSF print IS,
+                            # and any other month's price typed alongside it —
+                            # the mark path needs both to value two clips on
+                            # two different months.
+                            contract=_txt(r.get('contract', '')),
+                            fut_alt=_parse_fut_alt(r.get('fut_alt', '')))
                        for _, r in cl.iterrows()
                        if str(r['premium_bps']) not in ('', 'nan')]
     # 2-3. [AD1] position, realisations and the chronology, in one pass
@@ -3143,13 +3476,16 @@ def _rebuild():
         _real_by_date[str(t['exit_date'])] = (
             _real_by_date.get(str(t['exit_date']), 0.0) + float(t['net']))
     _cum = 0.0
+    _dc_map, _px_at = _price_maps()                             # [AG1]
     for d in _MANUAL['days']:
         _cum += _real_by_date.get(str(d['date']), 0.0)
         _sd = _state_as_of(_ev, d['date'], c)
         _pd_ = _state_pos(_sd, c)
         _un = 0.0
         if _pd_ is not None:
-            _m = _mtm_of(_pd_, d['adr'], d['fut'], d['fx'])
+            _m = _mtm_of(_pd_, d['adr'], d['fut'], d['fx'],
+                         day_contract=d.get('contract', ''),
+                         px_by_contract=_px_at(d['date']))
             _un = _m['gross'] if _m else 0.0
             if p is not None and str(d['date']) >= str(p['date']):
                 _MANUAL['marks'].append(dict(date=d['date'], gross=_m['gross'],
@@ -3743,53 +4079,44 @@ def drift_explain(date=None, chart=True):
         ax = axes[0]
         ax.plot(_xx, _f[-_k:], lw=1.0, color='#1f77b4', label='premium (bps)')
         ax.plot(_xx, _mu.values[-_k:], lw=1.6, color='#d62728',
-                label=f'its {_n}-row MEAN — this is what the reading watches')
+                label=f'its {_n}-row MEAN')
         ax.axhline(0, color='black', lw=0.6)
-        ax.set_title('The premium (blue) and the mean it is supposed to revert '
-                     'to (red). The panel below counts the evidence that the '
-                     'RED LINE is walking [AE5][AF2]')
+        ax.set_title('The premium, and the mean it is supposed to revert to')
         ax.legend(fontsize=8, loc='upper left'); ax.grid(alpha=0.3)
         ax.set_ylabel('bps')
-        # ------------------------------------------------------------- [AF2]
-        # the CUSUM pair ÷ the alarm level, so 1.0 is the alarm whatever h
-        # is; the retired ratio ÷ its old ceiling rides along in grey. Same
-        # normalization convention as backtest panel 4 and zchart panel 3.
-        _cpn = _cp_arr[-_k:] / _ch
-        _cmn = _cm_arr[-_k:] / _ch
-        _lagn = _lagarr.values[-_k:] / float(c['drift_max'])
+        # ------------------------------------------------------------- [AG2]
+        # SIGNED, FILLED, AND IN ITS OWN UNITS. Two lines hugging zero under
+        # an alarm that is never reached is a dense sawtooth over an empty
+        # band — unreadable, and it made the panel look like noise. A CUSUM
+        # pair is naturally ONE signed series: S+ up, S- down. Filled, scaled
+        # to the DATA, with the alarm annotated when it is off-scale (which is
+        # itself the message), it reads as a regime chart.
+        _csig = _np.where(_cp_arr >= _cm_arr, _cp_arr, -_cm_arr)[-_k:]
         ax = axes[1]
-        ax.plot(_xx, _cpn, lw=1.1, color='#d62728',
-                label='CUSUM S+ — mean RISING (hurts a SHORT spread)')
-        ax.plot(_xx, _cmn, lw=1.1, color='#2ca02c',
-                label='CUSUM S- — mean FALLING (hurts a LONG)')
-        ax.plot(_xx, _lagn, lw=0.7, color='#999', alpha=0.8,
-                label=f"old drift / {c['drift_max']:.2f} (RETIRED — reference)")
-        ax.axhline(1.0, color='red', ls='--', lw=1.1,
-                   label=f'alarm h = {_ch:.1f}  (reference only: '
-                         f'CUSUM_BLOCK_ENTRY={CUSUM_BLOCK_ENTRY})')
-        _fin = np.concatenate([_cpn[np.isfinite(_cpn)],
-                               _cmn[np.isfinite(_cmn)],
-                               _lagn[np.isfinite(_lagn)]])
-        _top = max(1.3, float(np.nanpercentile(_fin, 99))
-                   if _fin.size else 1.3) * 1.15
-        ax.axhspan(1.0, _top, color='red', alpha=0.07)
-        ax.axhspan(0, 1.0, color='green', alpha=0.06)
-        # the two labels straddle the alarm rather than sitting at the top
-        # and bottom of the axes, where they collide with the lines whenever
-        # the readings hug zero — which is most of the time, by design.
-        ax.set_ylim(0, _top)
-        ax.text(0.004, 1.02, 'a sustained one-way walk — the regime a fade '
-                             'must fear',
-                transform=ax.get_yaxis_transform(), fontsize=8, color='#a11',
-                va='bottom')
-        ax.text(0.004, 0.97, 'the mean is parked — deviations are round trips',
-                transform=ax.get_yaxis_transform(), fontsize=8, color='#161',
-                va='top')
-        ax.set_ylabel("accumulated evidence ÷ alarm\n(1.0 = alarm)")
-        ax.set_title('CUSUM = one-way premium moves beyond the daily '
-                     f'k={CUSUM_K:g}-sigma allowance, ACCUMULATED, resetting '
-                     'to zero when the walk stops')
-        ax.legend(fontsize=8, loc='upper right', ncol=1); ax.grid(alpha=0.3)
+        ax.fill_between(_xx, 0, _np.clip(_csig, 0, None), color='#d62728',
+                        alpha=0.55, lw=0,
+                        label='S+  mean RISING — hurts a SHORT')
+        ax.fill_between(_xx, 0, _np.clip(_csig, None, 0), color='#2ca02c',
+                        alpha=0.55, lw=0,
+                        label='S-  mean FALLING — hurts a LONG')
+        ax.axhline(0, color='#333', lw=0.7)
+        _fin = _csig[_np.isfinite(_csig)]
+        _top = max(1.0, float(_np.nanpercentile(_np.abs(_fin), 99.5))
+                   if _fin.size else 1.0) * 1.25
+        if _ch <= _top:
+            for _s3 in (1, -1):
+                ax.axhline(_s3 * _ch, color='red', ls='--', lw=0.9,
+                           label=(f'alarm ±{_ch:.1f}' if _s3 > 0 else None))
+        else:
+            ax.text(0.995, 0.94,
+                    f'alarm ±{_ch:.1f} — off this scale, never approached',
+                    transform=ax.transAxes, fontsize=8, color='#a11',
+                    ha='right', va='top')
+        ax.set_ylim(-_top, _top)
+        ax.set_ylabel('sigmas of one-way\nevidence  (0 = parked)')
+        ax.set_title(f'Regime CUSUM — is the mean walking?  '
+                     f'(reference only: CUSUM_BLOCK_ENTRY={CUSUM_BLOCK_ENTRY})')
+        ax.legend(fontsize=8, loc='upper left', ncol=3); ax.grid(alpha=0.3)
         plt.tight_layout()
         _fig_show(fig, name=f"{c['instrument']}_drift")
     return dict(cusum_up=_sp, cusum_dn=_sm, cusum_age=_cage, cusum_h=_ch,
@@ -4126,8 +4453,15 @@ def _recorded_rolls(d0, d1):
         return 0
 def _trade_cost_parts(direction, notional, held_days,
                       adr_notional=None, hedge_notional=None,
-                      entry_date=None, asof_date=None):
+                      entry_date=None, asof_date=None,
+                      roll_bps_paid=None, n_rolls_paid=None):
     """[AA4] The round-trip cost of a paper trade, BROKEN OUT, in dollars.
+
+    [AG1] roll_bps_paid / n_rolls_paid: the bps THIS LOT actually paid across
+    the rolls it crossed, carried on the lot itself. When given they replace
+    the calendar guess entirely — a lot that never crossed a roll is charged
+    nothing, one that crossed two pays for two, and a user-supplied roll cost
+    is honoured verbatim instead of being second-guessed by the rulebook.
     Returns dict(fee, carry_fund, carry_margin, roll, carry, total, days, bpd,
     sofr, sofr_src, n_rolls, roll_bps).
     SIGN: positive = a cost. carry_fund is NEGATIVE on a short whenever
@@ -4174,7 +4508,20 @@ def _trade_cost_parts(direction, notional, held_days,
     # [AC5] roll cost — hedge leg only, charged per contract change crossed
     _nroll, _rbps, _roll = 0, roll_cost_bps(c.get('exec_point')), 0.0
     _rsrc = ''
-    if ROLL_COST_ON_DESK and entry_date is not None:
+    if roll_bps_paid is not None:
+        # ------------------------------------------------------------ [AG1]
+        # THE LOT KNOWS WHAT IT PAID. Each lot accumulates the bps of every
+        # roll it actually crossed (user-supplied where you gave a number,
+        # derived where you did not), so there is nothing left to infer: a
+        # clip that entered AFTER the roll is charged zero, one that crossed
+        # two rolls pays both, and your own quoted cost is honoured verbatim
+        # rather than being overruled by the calendar.
+        _nroll = int(n_rolls_paid or 0)
+        _rbps = float(roll_bps_paid or 0.0)
+        _roll = _rbps / 1e4 * _base_mgn
+        _rsrc = ('this lot\'s own recorded roll(s)' if _nroll
+                 else 'this lot crossed no roll')
+    elif ROLL_COST_ON_DESK and entry_date is not None:
         # ------------------------------------------------------------ [AE2]
         # COUNT THE ROLLS YOU ACTUALLY DID, not only the ones the calendar
         # expects. rolls_between() derives the count from ROLL_RULE, which is
@@ -4297,36 +4644,78 @@ def _fx_status():
                + (" ..." if len(_pend) > 2 else ""))
     return dict(provisional=bool(_pend), pending=_pend, mark_label=_lbl,
                 banner=_bn)
-def _mtm(adr_now, fut_now, fx_now, div_cash_pct=0.0):
+def _mtm(adr_now, fut_now, fx_now, div_cash_pct=0.0,
+         day_contract=None, px_by_contract=None):
     """[Y32] Mark the CURRENTLY OPEN position. Thin wrapper over _mtm_of."""
-    return _mtm_of(_MANUAL['pos'], adr_now, fut_now, fx_now, div_cash_pct)
-def _mtm_of(p, adr_now, fut_now, fx_now, div_cash_pct=0.0):
+    return _mtm_of(_MANUAL['pos'], adr_now, fut_now, fx_now, div_cash_pct,
+                   day_contract=day_contract, px_by_contract=px_by_contract)
+def _mtm_of(p, adr_now, fut_now, fx_now, div_cash_pct=0.0,
+            day_contract=None, px_by_contract=None):
     """[Y32] Marks off the INTEGER units the position actually holds:
     whole shares on the ADR leg, whole contracts x contract_sh x the TWD
-    price move on the futures leg (identical algebra to the old
-    notional-ratio form when the notionals line up, exact when they do
-    not). Legacy ledgers without units fall back to the old formulas.
-    [AD1] takes the position EXPLICITLY, because the mark path now has to
-    mark the units held on each PAST date — which after a partial unwind is
-    not the same as the units held today."""
+    price move on the futures leg.
+    [AD1] takes the position EXPLICITLY, because the mark path has to mark
+    the units held on each PAST date — after a partial unwind that is not the
+    same as the units held today.
+    [AG1] MARKS LOT BY LOT. Each clip is valued against ITS OWN entry prices
+    and the price of ITS OWN contract; the results are summed. `per_lot`
+    carries the breakdown so status() and trade_report() can show the two
+    clips separately, which is the whole point of keeping lots. When a lot is
+    on a month the day did not print, `stale` names it rather than quietly
+    marking September against an August price."""
     if p is None:
         return None
     c = _MANUAL['ctx']
-    sh = p.get('shares') or p['notional'] / p['entry_adr']
-    n_con = p.get('contracts')
-    adr_leg = p['dir'] * (adr_now - p['entry_adr']) * sh
-    if n_con:
-        fut_leg = (-p['dir'] * n_con * c['contract_sh']
-                   * (fut_now - p['entry_fut']) / fx_now)
-        div_leg = (-p['dir'] * p.get('hedge_notional', p['notional'])
-                   * div_cash_pct)
-    else:
-        fut_leg = (-p['dir'] * p['notional'] * (fut_now / p['entry_fut'] - 1.0)
-                   * (p['entry_fx'] / fx_now))
-        div_leg = -p['dir'] * p['notional'] * div_cash_pct
-    g = adr_leg + fut_leg + div_leg
-    return dict(adr_leg=adr_leg, fut_leg=fut_leg, div_leg=div_leg, gross=g,
-                bps=g / p['notional'] * 1e4, shares=sh, contracts=n_con,
+    _lots = p.get('lots')
+    if not _lots:
+        # legacy / synthetic position with no lot list — the pre-[AG1] path,
+        # kept so an old ledger and any hand-built dict still mark.
+        sh = p.get('shares') or p['notional'] / p['entry_adr']
+        n_con = p.get('contracts')
+        adr_leg = p['dir'] * (adr_now - p['entry_adr']) * sh
+        if n_con:
+            fut_leg = (-p['dir'] * n_con * c['contract_sh']
+                       * (fut_now - p['entry_fut']) / fx_now)
+            div_leg = (-p['dir'] * p.get('hedge_notional', p['notional'])
+                       * div_cash_pct)
+        else:
+            fut_leg = (-p['dir'] * p['notional']
+                       * (fut_now / p['entry_fut'] - 1.0)
+                       * (p['entry_fx'] / fx_now))
+            div_leg = -p['dir'] * p['notional'] * div_cash_pct
+        g = adr_leg + fut_leg + div_leg
+        return dict(adr_leg=adr_leg, fut_leg=fut_leg, div_leg=div_leg,
+                    gross=g, bps=g / p['notional'] * 1e4, shares=sh,
+                    contracts=n_con, per_lot=[], stale=[],
+                    hedge_notional=p.get('hedge_notional'))
+    _per, _stale = [], []
+    for _l in _lots:
+        _hn = _lot_hn(_l, c)
+        _fp, _src = _lot_price(_l, fut_now, day_contract, px_by_contract)
+        _al = p['dir'] * (adr_now - float(_l['adr'])) * _l['shares']
+        _fl = (-p['dir'] * _l['contracts'] * c['contract_sh']
+               * (_fp - float(_l['fut'])) / fx_now)
+        _dv = -p['dir'] * _hn * float(div_cash_pct or 0.0)
+        if _src in ('stale', 'entry'):
+            _stale.append((str(_l['date']), str(_l.get('contract') or '?'),
+                           _src))
+        _per.append(dict(date=str(_l['date']),
+                         contract=str(_l.get('contract') or ''),
+                         shares=int(_l['shares']),
+                         contracts=int(_l['contracts']),
+                         entry_adr=float(_l['adr']), entry_fut=float(_l['fut']),
+                         entry_fx=float(_l['fx']), mark_fut=_fp,
+                         mark_fut_src=_src, an=_lot_an(_l), hn=_hn,
+                         adr_leg=_al, fut_leg=_fl, div_leg=_dv,
+                         gross=_al + _fl + _dv,
+                         bps=(_al + _fl + _dv) / max(_lot_an(_l), 1e-9) * 1e4))
+    _a = sum(x['adr_leg'] for x in _per)
+    _f = sum(x['fut_leg'] for x in _per)
+    _d = sum(x['div_leg'] for x in _per)
+    g = _a + _f + _d
+    return dict(adr_leg=_a, fut_leg=_f, div_leg=_d, gross=g,
+                bps=g / p['notional'] * 1e4, shares=p['shares'],
+                contracts=p['contracts'], per_lot=_per, stale=_stale,
                 hedge_notional=p.get('hedge_notional'))
 def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
             adr_1945=None, fut_1945=None, adr_close=None, fut_close=None,
@@ -4894,7 +5283,73 @@ def status():
                    if _fx['provisional'] else 'settled')
                 + f". It converts the {HEDGE_LBL} leg; it is NOT a third "
                   f"position",
-                "CLOSING — both legs go together, exit_pos() does both"]))
+                "CLOSING — both legs go together, exit_pos() does both"]
+                + ([f"AVERAGE ONLY — this position holds "
+                    f"{len(p.get('contracts_held') or [])} DIFFERENT months "
+                    f"({', '.join(p.get('contracts_held') or [])}), so the "
+                    f"{HEDGE_LBL} price above is a blend of prices that are "
+                    f"not comparable. The CLIPS table below is the real "
+                    f"position [AG1]"] if p.get('multi_contract') else [])))
+        # -------------------------------------------------------------- [AG1]
+        # THE CLIPS, ONE ROW EACH — the position as it actually is. Each clip
+        # keeps its own entry prices, its own month, its own carry clock and
+        # its own mark. This is the answer to "the MTM and everything should
+        # show different calculations for two clips separately": the blend
+        # above is a summary, this is the book.
+        _lots5 = p.get('lots') or []
+        if _lots5:
+            _d5m = _MANUAL['days'][-1] if _MANUAL['days'] else None
+            _mk5 = None
+            if _d5m is not None:
+                try:
+                    _dcm, _pxm = _price_maps()
+                    _mk5 = _mtm_of(p, _d5m['adr'], _d5m['fut'], _d5m['fx'],
+                                   day_contract=_d5m.get('contract', ''),
+                                   px_by_contract=_pxm(_d5m['date']))
+                except Exception:
+                    _mk5 = None
+            _pl5 = {x['date']: x for x in (_mk5 or {}).get('per_lot', [])}
+            _lrows5 = []
+            for _i5, _l5 in enumerate(_lots5):
+                _x5 = _pl5.get(str(_l5['date']))
+                _held5 = ((pd.Timestamp(str(_d5m['date']))
+                           - pd.Timestamp(str(_l5['date']))).days
+                          if _d5m is not None else None)
+                _lrows5.append({
+                    'clip': ('base' if _i5 == 0 else f"add {_i5}"),
+                    'opened': str(_l5['date']),
+                    'month': (str(_l5.get('contract') or '—').split()[0]),
+                    'units': f"{_l5['shares']:,d} sh / {_l5['contracts']} "
+                             f"{HEDGE_LBL}",
+                    f'{ADR_LBL} in': float(_l5['adr']),
+                    f'{HEDGE_LBL} in': float(_l5['fut']),
+                    'FX in': float(_l5['fx']),
+                    'notional $': _lot_an(_l5),
+                    'cd on': _held5,
+                    f'{HEDGE_LBL} mark': (_x5['mark_fut'] if _x5 else None),
+                    'px src': (_x5['mark_fut_src'] if _x5 else ''),
+                    'mark $': (_x5['gross'] if _x5 else None),
+                    'mark bps': (_x5['bps'] if _x5 else None)})
+            show_html_table(
+                _pd.DataFrame(_lrows5).set_index('clip'),
+                title=f"THE CLIPS — {len(_lots5)} lot(s), each marked on ITS "
+                      f"OWN month [AG1]",
+                fmt={f'{ADR_LBL} in': '{:,.4f}', f'{HEDGE_LBL} in': '{:,.2f}',
+                     'FX in': '{:.4f}', 'notional $': '{:,.0f}',
+                     'cd on': '{:.0f}', f'{HEDGE_LBL} mark': '{:,.2f}',
+                     'mark $': '{:+,.0f}', 'mark bps': '{:+,.0f}'},
+                note=_bullets([
+                    'Every clip is priced on ITS OWN entry, ITS OWN month and '
+                    'ITS OWN carry clock — nothing here is an average [AG1]',
+                    '"px src": day = the day\'s own print · typed = a fut_alt '
+                    'price you supplied for that month · stale = the newest '
+                    'that month has had · entry = never priced, so it marks '
+                    'flat and its P&L is not live',
+                    'A TRIM consumes these top-down (FIFO), so the clip on '
+                    'the first row is the one that goes next',
+                    f"FUNDING and MARGIN accrue per clip on its own leg "
+                    f"notionals from 'opened' — a clip added later is never "
+                    f"billed for days it was not on"]))
         # ------------------------------------------------------------- [AC8]
         # THE LEGS, ONE ROW EACH. "3 leg(s)" in the title told you a second
         # and third entry existed and nothing about them — not their dates,
@@ -4944,21 +5399,22 @@ def status():
                     fmt={'ADR': '{:,.4f}', HEDGE_LBL: '{:,.2f}', 'FX': '{:.4f}',
                          'realised $': '{:+,.0f}'},
                     note=_bullets([
-                        f"BLENDED ENTRY — ADR {p['entry_adr']:.4f}, "
+                        f"POSITION AVERAGE — ADR {p['entry_adr']:.4f}, "
                         f"{HEDGE_LBL} {p['entry_fut']:.2f}, FX "
-                        f"{p['entry_fx']:.4f}, share/contract weighted",
-                        "EXACT FOR P&L — sum_i sh_i x (now - adr_i) equals "
-                        "(sum sh_i) x (now - avg_adr), so blending loses "
-                        "nothing",
-                        "A TRIM realises at that average and leaves the "
-                        "average unchanged, so the units still on carry the "
-                        "same basis they always had [AD2]",
-                        f"TIME STOP — anchored on the FIRST leg "
+                        f"{p['entry_fx']:.4f}. A SUMMARY only: the clips above "
+                        f"are priced individually and nothing is computed off "
+                        f"this blend [AG1]",
+                        "A TRIM consumes clips FIFO — oldest first — at THAT "
+                        "clip's own entry prices. The clips it does not reach "
+                        "are untouched: same basis, same month, same clock "
+                        "[AG1]",
+                        f"TIME STOP — anchored on the FIRST clip "
                         f"({p['date']}); neither an add nor a trim moves it",
                         "A ROLL moves no units and realises nothing — its row "
                         "carries the calendar spread the entry basis was "
                         "shifted by, which is why the SSF price above jumps "
-                        "without any P&L appearing [AE2]",
+                        "without any P&L appearing [AE2]. It rolls only the "
+                        "clips on the month being rolled out of",
                         "exit_pos() closes whatever is left; reduce_pos() "
                         "takes another slice off"]))
             except Exception as _e8:
@@ -5208,6 +5664,12 @@ def form():
              # AUTO is kept as the default so no existing habit changes
              # meaning, and _trim() states what it resolved to before dealing.
              trim=F('Trim size', 0.0),
+             # [AG1] the OTHER month's SSF price, when your clips sit on two
+             # contracts. Blank on ~every day; required only while two months
+             # are open, and the day card says so when it is missing.
+             falt=F('SSF other month', 0.0),
+             # [AG1] your OWN roll cost. Blank = the [AC5] model figure.
+             rollc=F('Roll cost bps', 0.0),
              trimu=W.Dropdown(
                  options=[('auto:  <=1 = fraction, >1 = contracts', 'auto'),
                           ('fraction of the position  (0.5 = half)', 'frac'),
@@ -5353,6 +5815,10 @@ def form():
                 # stamped on the row so a month change is detectable later,
                 # instead of being reconstructible only from the free text.
                 contract=str(w['ssf'].value).strip() or None,
+                # [AG1] the OTHER month's price, when two clips sit on two
+                # contracts. A bare number is enough while exactly one other
+                # month is held, which is the only case the panel can be in.
+                fut_alt=(v('falt') or None),
                 note=w['note'].value)
     def _enter():
         if w['side'].value == '(none)':
@@ -5444,20 +5910,22 @@ def form():
     def _roll():
         # [AE2] the hedge roll. Both prices come out of the SAME two boxes the
         # rest of the panel uses for the futures — Fill SSF is the NEW month
-        # (what you bought) and the Trim box doubles as the OLD month's price,
-        # because adding two more permanent boxes for something done once a
-        # month is a worse trade than saying clearly which box is which.
+        # (what you bought) and 'SSF other month' is the OLD month's price.
+        # [AG1] and 'Roll cost bps' is YOUR cost; blank uses the [AC5] model.
         if 'roll_hedge' not in globals():
             print('[AE2] the roll block did not load in this session.'); return
-        _new, _old = v('ffut'), (w['trim'].value or 0)
+        _new = v('ffut')
+        _old = v('falt') or (w['trim'].value or 0)
         if not _new or not _old:
-            say("[AE2] a roll needs BOTH prices at the same moment: put the "
-                "NEW month's SSF price in 'Fill SSF' and the OLD month's in "
-                "the 'Trim size' box, then press Roll hedge. Their difference "
-                "is the calendar spread you crossed.", 'bad')
+            say("[AE2] a roll needs BOTH prices at the same moment: the NEW "
+                "month's SSF price in 'Fill SSF' and the OLD month's in 'SSF "
+                "other month'. Their difference is the calendar spread you "
+                "crossed.", 'bad')
             return
+        _rc = w['rollc'].value or 0
         roll_hedge(date=w['date'].value, fut_old=float(_old),
                    fut_new=float(_new), contract=str(w['ssf'].value).strip(),
+                   cost_bps=(float(_rc) if _rc else None),      # [AG1]
                    note=w['note'].value)
     def _clock():
         if 'desk_clock' not in globals():
@@ -5759,9 +6227,24 @@ def form():
                        "pick one and the guess disappears. AUTO keeps the old "
                        "behaviour (&le;1 = fraction, &gt;1 = contracts) and "
                        "says which way it read your number.<br>"
-                       "The <b>Trim size</b> box is ALSO where <b>Roll hedge</b> "
-                       "reads the OLD month's SSF price from, with the NEW "
-                       "month's in <b>Fill SSF</b> [AE2].</span>")],
+                       "A trim consumes your clips <b>FIFO</b> &mdash; oldest "
+                       "first, at THAT clip's own entry and its own month "
+                       "[AG1].</span>")],
+               layout=ROW),
+        # ------------------------------------------------------------- [AG1]
+        H('TWO MONTHS OPEN? &nbsp;(only while your clips sit on different SSF '
+          'contracts &mdash; blank on every other day)'),
+        W.HBox([w['falt'], w['rollc'],
+                W.HTML("<span style='color:#999;font-size:11px'>"
+                       "<b>SSF other month</b> &larr; the price of the OTHER "
+                       "contract you hold, so the older clip can be marked "
+                       "against ITS OWN month instead of this one's. "
+                       "<b>Roll hedge</b> also reads the OLD month's price "
+                       "from here (the NEW month goes in <b>Fill SSF</b>).<br>"
+                       "<b>Roll cost bps</b> &larr; YOUR roll cost, in bps of "
+                       "the hedge notional rolled. Leave it blank and the "
+                       "[AC5] model figure is used and labelled as a model "
+                       "[AG1].</span>")],
                layout=ROW),
         btns, btns2, out]))
 # ============================================================================
@@ -6007,33 +6490,33 @@ def zchart(tail=90, save=None):
              ).replace([_np.inf, -_np.inf], _np.nan)
     _zc_p, _zc_m, _zc_a = _af_cusum_arr(ser.values)
     _zc_h = cusum_h()
-    # [AE5][AF2] each line ÷ its own threshold, 1.0 = alarm — the same
-    # normalization as backtest panel 4. The retired ratio rides in grey.
-    _dlag_n = _dlag / _cap
-    _zc_pn = _pd.Series(_zc_p / _zc_h, index=ser.index)
-    _zc_mn = _pd.Series(_zc_m / _zc_h, index=ser.index)
-    ax.plot(x[lo:], _zc_pn.iloc[lo:], lw=1.1, color=_CH['short'],
-            label='CUSUM S+ — mean RISING (hurts a SHORT spread)')
-    ax.plot(x[lo:], _zc_mn.iloc[lo:], lw=1.1, color=_CH['long'],
-            label='CUSUM S- — mean FALLING (hurts a LONG)')
-    ax.plot(x[lo:], _dlag_n.iloc[lo:], lw=0.7, color='#999', alpha=0.8,
-            label=f'old drift / {_cap:.2f} (RETIRED — reference)')
-    ax.axhline(1.0, color=_CH['cost'], ls='--', lw=1.0,
-               label=f'alarm h = {_zc_h:.1f} (reference only: '
-                     f'CUSUM_BLOCK_ENTRY={CUSUM_BLOCK_ENTRY})')
-    ax.fill_between(x[lo:], 0, 1.0, color=_CH['band'], alpha=_CH['band_a'])
-    _d2d = {pd.Timestamp(d['date']):
-            float(max(_zc_pn.iloc[len(hist) + i], _zc_mn.iloc[len(hist) + i]))
+    # [AG2] signed and filled — see the note on backtest panel 4.
+    _zc_s = _pd.Series(_np.where(_zc_p >= _zc_m, _zc_p, -_zc_m),
+                       index=ser.index)
+    ax.fill_between(x[lo:], 0, _zc_s.iloc[lo:].clip(lower=0),
+                    color=_CH['short'], alpha=0.55, lw=0,
+                    label='S+  mean RISING — hurts a SHORT')
+    ax.fill_between(x[lo:], 0, _zc_s.iloc[lo:].clip(upper=0),
+                    color=_CH['long'], alpha=0.55, lw=0,
+                    label='S-  mean FALLING — hurts a LONG')
+    ax.axhline(0, color='#333', lw=0.7)
+    _fin = _zc_s.iloc[lo:].dropna().abs()
+    _ztop = max(1.0, float(_fin.quantile(0.995)) if len(_fin) else 1.0) * 1.25
+    if _zc_h <= _ztop:
+        for _s2 in (1, -1):
+            ax.axhline(_s2 * _zc_h, color=_CH['cost'], ls='--', lw=0.9,
+                       label=(f'alarm ±{_zc_h:.1f}' if _s2 > 0 else None))
+    else:
+        ax.text(0.995, 0.94, f'alarm ±{_zc_h:.1f} — off this scale',
+                transform=ax.transAxes, fontsize=8, color='#a11',
+                ha='right', va='top')
+    _d2d = {pd.Timestamp(d['date']): float(_zc_s.iloc[len(hist) + i])
             for i, d in enumerate(man)}
     _ch_deal_marks(ax, lambda d: _d2d.get(pd.Timestamp(d)))          # [AD4]
-    _fin = _pd.concat([_zc_pn.iloc[lo:], _zc_mn.iloc[lo:],
-                       _dlag_n.iloc[lo:]]).dropna()
-    _ztop = max(1.3, float(_fin.quantile(0.99)) if len(_fin) else 1.3) * 1.12
-    ax.set_ylim(0, _ztop)
-    _ch_axes(ax, "Is the MEAN standing still? CUSUM = accumulated one-way "
-                 "evidence, resetting to zero when the walk stops; which "
-                 "SIDE climbs is which side gets hurt [AF2]",
-             'accumulated evidence / alarm\n(1.0 = alarm)', ncol=3)
+    ax.set_ylim(-_ztop, _ztop)
+    _ch_axes(ax, f"Regime CUSUM — is the mean walking?  (reference only: "
+                 f"CUSUM_BLOCK_ENTRY={CUSUM_BLOCK_ENTRY})",
+             'sigmas of one-way\nevidence  (0 = parked)', ncol=4)
     _ch_datefmt(ax)
     # [U7] the same marker-integrity note the backtest figure carries
     axes[0].text(0.005, 0.02,
@@ -11694,44 +12177,43 @@ _dr_lag_ch = ((_zmuz - _zmuz.shift(5)).abs()
               ).replace([np.inf, -np.inf], np.nan)
 _cus_p_ch, _cus_m_ch, _cus_a_ch = _af_cusum_arr(df['Spread (Signal)'].values)
 _cus_h_ch = cusum_h()
-_dr_lag_n = _dr_lag_ch / DRIFT_MAX_SIGMA          # old test ÷ its old ceiling
-_cus_p_n = _cus_p_ch / _cus_h_ch
-_cus_m_n = _cus_m_ch / _cus_h_ch
-ax.plot(df['Date_dt'], _cus_p_n, lw=1.0, color='#d62728',
-        label='CUSUM S+ — mean RISING (the regime that hurts a SHORT spread)')
-ax.plot(df['Date_dt'], _cus_m_n, lw=1.0, color='#2ca02c',
-        label='CUSUM S- — mean FALLING (hurts a LONG)')
-ax.plot(df['Date_dt'], _dr_lag_n, lw=0.7, color='#999', alpha=0.8,
-        label=f'old drift test / {DRIFT_MAX_SIGMA:.2f} (RETIRED — reference)')
-ax.axhline(1.0, color='red', ls='--', lw=1.0,
-           label=f'alarm h = {_cus_h_ch:.1f}  (reference only: '
-                 f'CUSUM_BLOCK_ENTRY={CUSUM_BLOCK_ENTRY})')
-ax.fill_between(df['Date_dt'], 0, 1.0, color='green', alpha=0.06)
-if not _tr.empty:
-    _ded = df['Date_dt'].iloc[_tr['entry_day']].values
-    _deb = np.fmax(_cus_p_n, _cus_m_n)[_tr['entry_day'].values]
-    _dlong = (_tr['direction'] == 1).values
-    ax.scatter(_ded[_dlong], _deb[_dlong], marker='^', color='green', s=42, zorder=5)
-    ax.scatter(_ded[~_dlong], _deb[~_dlong], marker='v', color='red', s=42, zorder=5)
-_dr_fin = np.concatenate([np.asarray(_dr_lag_n, float).ravel(),
-                          _cus_p_n.ravel(), _cus_m_n.ravel()])
-_dr_fin = _dr_fin[np.isfinite(_dr_fin)]
-_dr_top = max(1.3, float(np.nanpercentile(_dr_fin, 99))
-              if _dr_fin.size else 1.3) * 1.12
-ax.set_ylim(0, _dr_top)
-ax.axhspan(1.0, _dr_top, color='red', alpha=0.07)
-ax.text(0.004, 1.02, 'a sustained one-way walk — the regime a fade must fear',
-        transform=ax.get_yaxis_transform(), fontsize=8, color='#a11',
-        va='bottom')
-ax.text(0.004, 0.97, 'the mean is parked — deviations are round trips',
-        transform=ax.get_yaxis_transform(), fontsize=8, color='#161', va='top')
-ax.set_title('IS THE MEAN STANDING STILL? CUSUM = accumulated evidence of a '
-             'one-way walk, in sigmas, ÷ the alarm level (1.0 = alarm). It '
-             'accumulates instead of diluting by 1/n — the retired test is '
-             'the grey line [AF3]. drift_explain() explains it')
-ax.set_ylabel('accumulated evidence ÷ alarm\n(1.0 = alarm)')
+# ---------------------------------------------------------------------- [AG2]
+# SIGNED, FILLED, AND IN ITS OWN UNITS. The first cut drew S+ and S- as two
+# separate lines ÷ the alarm, which produced a red/green sawtooth hugging zero
+# under an alarm line that is never reached — dense, unreadable, and mostly
+# empty band. A CUSUM pair is naturally ONE signed series: S+ up, S- down.
+# Filled, with the alarm as ±h in the statistic's own sigma units and the axis
+# scaled to the DATA (the alarm annotated when it is off-scale, which is
+# itself the message), it reads as a regime chart instead of noise.
+_cus_sig = np.where(_cus_p_ch >= _cus_m_ch, _cus_p_ch, -_cus_m_ch)
+_cus_pos = np.clip(_cus_sig, 0, None)
+_cus_neg = np.clip(_cus_sig, None, 0)
+ax.fill_between(df['Date_dt'], 0, _cus_pos, color='#d62728', alpha=0.55,
+                lw=0, label='S+  mean RISING — hurts a SHORT spread')
+ax.fill_between(df['Date_dt'], 0, _cus_neg, color='#2ca02c', alpha=0.55,
+                lw=0, label='S-  mean FALLING — hurts a LONG')
+ax.axhline(0, color='#333', lw=0.7)
+_cus_fin = _cus_sig[np.isfinite(_cus_sig)]
+_cus_lim = max(1.0, float(np.nanpercentile(np.abs(_cus_fin), 99.5))
+               if _cus_fin.size else 1.0) * 1.25
+if _cus_h_ch <= _cus_lim:
+    for _s in (1, -1):
+        ax.axhline(_s * _cus_h_ch, color='red', ls='--', lw=0.9,
+                   label=(f'alarm ±{_cus_h_ch:.1f}' if _s > 0 else None))
+else:
+    ax.text(0.995, 0.94, f'alarm ±{_cus_h_ch:.1f} — off this scale, never '
+                         f'approached', transform=ax.transAxes, fontsize=8,
+            color='#a11', ha='right', va='top')
+# [AG2] NO ENTRY MARKERS HERE. 331 triangles over five years bury the fill
+# they are drawn on, and they are already plotted on the spread and z panels
+# directly above sharing this exact x-axis — so the reading for any entry is
+# one vertical glance away. Density that hides the series is not information.
+ax.set_ylim(-_cus_lim, _cus_lim)
+ax.set_title(f'Regime CUSUM — is the mean walking?   '
+             f'(reference only: CUSUM_BLOCK_ENTRY={CUSUM_BLOCK_ENTRY})')
+ax.set_ylabel('sigmas of one-way\nevidence  (0 = parked)')
 ax.grid(alpha=0.3)
-ax.legend(fontsize=8, loc='upper left', ncol=2)
+ax.legend(fontsize=8, loc='upper left', ncol=4)
 ax.set_xlim(axes[1].get_xlim())
 # Panel 5: equity curve and drawdown at optimal parameters
 ax = axes[4]
@@ -12344,7 +12826,7 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
             adr_1945=None, fut_1945=None, adr_close=None, fut_close=None,
             fx_open=None, fx_1945=None, fx_close=None,
             div_cash_pct=0.0, div_carry=0.0, note='', save=True, quiet=False,
-            force=False, contract=None):
+            force=False, contract=None, fut_alt=None):
     """[Y9] v31.12 daily call. Same contract as v31.11 plus:
       force=True                bypass the [Y9a] input sanity guards
       fx_open/fx_1945/fx_close  [Y17] the USDTWD print AT each snapshot.
@@ -12353,6 +12835,14 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
                                 the spot_gap fair divides fut_pt by fut_1330
                                 and that ratio is only meaningful within ONE
                                 contract. Left None the desk resolves it.
+      fut_alt                   [AG1] the price of ANOTHER month you are still
+                                holding, when your clips sit on two contracts:
+                                a bare number (one other month) or a dict
+                                {'2330=Q6 TT Equity': 1188.5}. It never touches
+                                the SIGNAL — the premium, fair and z are built
+                                from `contract`'s prints alone — it exists so
+                                the OLDER clip can be marked against its own
+                                month instead of this one's [AG1].
     [Y17] FX CONVENTION, so it matches the backtest exactly:
       * the SIGNAL (fair, premium, z) always uses the 13:30 TW-close fixing
         `fx` — the [D2][I1] convention every historical premium in the
@@ -12404,6 +12894,28 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
     # the US-hours print on the next — is wrong, because then the ratio itself
     # is a calendar spread. One `contract` per day is the invariant.
     _con = _row_contract(date, contract)
+    # ------------------------------------------------------------------ [AG1]
+    # THE OTHER MONTH'S PRICE. With clips on two contracts the desk needs two
+    # prices to mark them; `fut_alt` is where the second one arrives. A bare
+    # number is accepted when exactly one other month is held, because typing
+    # the full ticker every evening to say "and September is 1,195" is the
+    # kind of friction that gets a workflow abandoned.
+    _alt = {}
+    _held_cons = [x for x in ((_MANUAL['pos'] or {}).get('contracts_held') or [])
+                  if x and x != _con]
+    if isinstance(fut_alt, dict):
+        _alt = {str(k): float(v) for k, v in fut_alt.items() if v}
+    elif fut_alt not in (None, '', 0):
+        if len(_held_cons) == 1:
+            _alt = {_held_cons[0]: float(fut_alt)}
+        else:
+            print(f"[AG1] fut_alt was given as a bare number but "
+                  f"{len(_held_cons)} other month(s) are held "
+                  f"({', '.join(_held_cons) or 'none'}) — pass a dict like "
+                  f"{{'2330=Q6 TT Equity': 1188.5}} so it is unambiguous. "
+                  f"Ignored.")
+    _alt_s = '; '.join(f"{k}@{v:g}" for k, v in sorted(_alt.items()))
+    _missing_px = [x for x in _held_cons if x not in _alt]
     _con_prev, _dprev = '', ''
     try:
         _lp = _read_ledger()
@@ -12995,7 +13507,19 @@ def add_day(date, ordinary, fut_1330, fx, adr_open=None, fut_open=None,
                          n=n, threshold=thr, gate=('open' if gate_ok else 'shut'),
                          div_carry=div_carry, in_position=bool(p), net='',
                          contract=_con,                        # [AE2]
+                         fut_alt=_alt_s,                       # [AG1]
                          note=note))
+    # ------------------------------------------------------------------ [AG1]
+    # A CLIP ON A MONTH TODAY DID NOT PRICE. Say it once, plainly: its hedge
+    # leg is being marked at the newest price that month HAS had, so its P&L
+    # is stale rather than wrong-contract. Marking it against today's other
+    # month would be the [AE2] error with no roll to blame.
+    if _missing_px and not quiet:
+        say(f"[AG1] {len(_missing_px)} clip month(s) with no price today: "
+            + ', '.join(_missing_px)
+            + f". Those lots mark at their newest known price — add it with "
+              f"fut_alt=<price> (one other month) or fut_alt={{'<contract>': "
+              f"<price>}} so the mark is live", 'warn')
     # -------------------- [Y18] the DAY CARD (Jupyter) ----------------------
     if _HT:
         from IPython.display import display, HTML
@@ -13118,33 +13642,46 @@ def exit_pos(adr, fut, fx, date, div_cash_pct=0.0, note='', contract=None):
     div_cash_pct, _dc, _dmsgs = _auto_dividend(date, div_cash_pct, 0.0, True)
     for _m0 in _dmsgs:
         print(_m0)
-    m = _mtm(float(adr), float(fut), float(fx), div_cash_pct)
     held = (pd.Timestamp(date) - pd.Timestamp(p['date'])).days
-    # ------------------------------------------------------------------ [AE4]
-    # CARRY IS BILLED FROM THE SHARE-WEIGHTED ENTRY DATE, NOT THE FIRST LEG.
-    # [AD1] established this and applied it to reduce_pos(); exit_pos() was
-    # missed and kept charging from p['date'], so on a position built in two
-    # legs the second leg was billed carry for days before it existed. The
-    # error was invisible because nothing compared the two numbers — until
-    # trade_report() put the stored `net` beside the walk's own components and
-    # they refused to add up (measured: $58.87 on a 2-leg TSMC short).
+    # ------------------------------------------------------------------ [AG1]
+    # CARRY IS BILLED PER CLIP, FROM EACH CLIP'S OWN ENTRY DATE, ON ITS OWN
+    # LEG NOTIONALS — and each clip's hedge leg is marked against the price of
+    # ITS OWN MONTH. [AE4] approximated this with one share-weighted entry
+    # date applied to the blended position, which is exact only when the clips
+    # are the same size and on the same contract. Closing everything is just a
+    # FIFO realisation of every remaining lot, so it goes through the same
+    # code path the trim does and cannot disagree with it.
     # The TIME STOP and the "held Ncd" the banner quotes still run from the
-    # FIRST leg: that is the trade's life, and neither an add nor a trim moves
-    # it. Only the money is weighted.
-    _wd0 = str(p.get('wdate') or p['date'])
-    _held_cost = max((pd.Timestamp(str(date)) - pd.Timestamp(_wd0)).days, 0)
-    # [AC5][AC7] the PARTS, so the waterfall below can state each component
-    # with the arithmetic that actually produced it. `cost - _fee` used to be
-    # printed as "carry"; with a roll charge in the total that label would be
-    # wrong, and with funding accruing on the daily SOFR path the flat
-    # c['carry_*_bpd'] rate would no longer reproduce the number either.
-    _cp0 = _trade_cost_parts(p['dir'], p['notional'], _held_cost,
-                             adr_notional=p.get('adr_notional'),
-                             hedge_notional=p.get('hedge_notional'),
-                             entry_date=_wd0, asof_date=str(date))
+    # FIRST clip: that is the trade's life, and neither an add nor a trim
+    # moves it. Only the money is per clip.
+    _st_now = dict(dir=p['dir'], date=p['date'], lots=p['lots'])
+    _dc_map, _px_at = _price_maps()
+    _sl, _rest, _tt = _realise_fifo(
+        _st_now, int(p['contracts']), adr, fut, fx, date, c, div_cash_pct,
+        day_contract=_dc_map.get(str(date),
+                                 _row_contract(date, contract, use_pos=False)),
+        px_by_contract=_px_at(date))
+    if not _sl:
+        say('no lots to close — run desk_audit()', 'bad'); return None
+    m = dict(adr_leg=_tt['adr_leg'], fut_leg=_tt['fut_leg'],
+             div_leg=_tt['div_leg'], gross=_tt['gross'],
+             bps=_tt['gross'] / max(_tt['an'], 1e-9) * 1e4,
+             shares=_tt['shares'], contracts=_tt['contracts'],
+             per_lot=[], stale=[], hedge_notional=_tt['hn'])
+    _held_cost = _tt['held']
+    _cp0 = dict(fee=_tt['fee'], carry_fund=_tt['carry_fund'],
+                carry_margin=_tt['carry_margin'], roll=_tt['roll'],
+                carry=_tt['carry_fund'] + _tt['carry_margin'],
+                total=_tt['cost_total'], n_rolls=_tt['n_rolls'],
+                sofr=_tt['sofr'],
+                fund_bpd=(_sl[0]['cp']['fund_bpd'] if _sl else 0.0),
+                margin_bpd=(_sl[0]['cp']['margin_bpd'] if _sl else 0.0),
+                sofr_src=(_sl[0]['cp']['sofr_src'] if _sl else ''),
+                roll_bps=(_sl[0]['cp']['roll_bps'] if _sl else 0.0),
+                roll_src=(_sl[0]['cp'].get('roll_src', '') if _sl else ''))
     cost = _cp0['total']
     _fee = _cp0['fee']
-    _bpd = _cp0['bpd']            # realised over THIS hold, not the constant
+    _bpd = _cp0['fund_bpd'] + _cp0['margin_bpd']
     net = m['gross'] - cost
     row = dict(instrument=c['instrument'], date=str(date), point='EXIT',
                side=('LONG' if p['dir'] == 1 else 'SHORT'),
@@ -13185,16 +13722,25 @@ def exit_pos(adr, fut, fx, date, div_cash_pct=0.0, note='', contract=None):
     # notional-ratio formulas instead.
     if m.get('contracts'):
         _rows = [
-            ('units', f"{m['shares']:,d} sh + {m['contracts']} contracts",
+            ('units', f"{m['shares']:,d} sh + {m['contracts']} contracts"
+                      + (f"  in {len(_sl)} clips" if len(_sl) > 1 else ''),
              f"whole shares / whole {HEDGE_LBL} contracts — real fills "
-             f"cannot be fractional"),
+             f"cannot be fractional"
+             + (f". Closed FIFO: {', '.join(s['lot_date'] for s in _sl)}"
+                if len(_sl) > 1 else '')),
+            # [AG1] one term per clip, at ITS entry price and ITS month
             (f'{ADR_LBL} leg', _money(m['adr_leg']),
-             f"dir({_d}) x {m['shares']:,d} sh x ({float(adr):.4f} - "
-             f"{p['entry_adr']:.4f})"),
+             f"dir({_d}) x [ "
+             + ' + '.join(f"{s['shares']:,d}sh x ({float(adr):.4f} - "
+                          f"{s['entry_adr']:.4f})" for s in _sl) + " ]"),
             (f'{HEDGE_LBL} leg', _money(m['fut_leg']),
-             f"-dir({_d}) x {m['contracts']} x {c['contract_sh']:,.0f} sh x "
-             f"({float(fut):.2f} - {p['entry_fut']:.2f}) {LOCAL_CCY} "
-             f"/ FX {float(fx):.4f}"),
+             f"-dir({_d}) x [ "
+             + ' + '.join(f"{s['contracts']} x {c['contract_sh']:,.0f} x "
+                          f"({s['exit_fut']:.2f} - {s['entry_fut']:.2f})"
+                          + (f" [{s['contract'].split()[0]}]"
+                             if s['contract'] else '')
+                          for s in _sl)
+             + f" ] {LOCAL_CCY} / FX {float(fx):.4f}"),
         ]
         if m['div_leg']:
             _rows.append((f'{EXCH_LBL} div cash [T3]', f"${m['div_leg']:+,.2f}",
@@ -13229,37 +13775,43 @@ def exit_pos(adr, fut, fx, date, div_cash_pct=0.0, note='', contract=None):
         # each with the rate it really accrued at — not one blended bps/day
         # on one notional. The sign is stated in words: on a short the
         # funding leg is the SOFR-50 rebate and is a CREDIT.
+        # [AG1] one term per clip: ITS days x ITS notional. Not one blended
+        # rate on one blended date, which is exact only when the clips are
+        # the same size and went on the same day.
         ('funding / borrow'
          + ('  (CREDIT)' if _cp0['carry_fund'] < 0 else ''),
          _money(-_cp0['carry_fund']),
-         f"{_cp0['fund_bpd']:+.3f} bps/cd x {_held_cost}cd x "
-         f"${p.get('adr_notional') or p['notional']:,.0f} (ADR leg), at SOFR "
-         f"{_cp0['sofr']*100:.2f}% [{_cp0['sofr_src']}]"
+         f"{_cp0['fund_bpd']:+.3f} bps/cd x [ "
+         + ' + '.join(f"{s['held']}cd x ${s['an']:,.0f}" for s in _sl)
+         + f" ] (ADR leg, per clip), at SOFR {_cp0['sofr']*100:.2f}% "
+         f"[{_cp0['sofr_src']}]"
          + ('' if _cp0['carry_fund'] >= 0 else
             f" — the rate is negative because you EARN it: SOFR minus "
             f"{BORROW_SPREAD_ANN_BPS}bps on the short proceeds, so it ADDS "
             f"to the P&L [AA7]")),
         ('margin funding', _money(-_cp0['carry_margin']),
-         f"{_cp0['margin_bpd']:.3f} bps/cd x {_held_cost}cd x "
-         f"${p.get('hedge_notional') or p['notional']:,.0f} (hedge leg)"),
+         f"{_cp0['margin_bpd']:.3f} bps/cd x [ "
+         + ' + '.join(f"{s['held']}cd x ${s['hn']:,.0f}" for s in _sl)
+         + " ] (hedge leg, per clip)"),
     ]
-    if _held_cost != held:
+    if len(_sl) > 1:
         _rows.append(
-            ('carry days', f"{_held_cost}cd, not {held}cd",
-             f"the trade LIVED {held}cd (first leg {p['date']} -> {date}) but "
-             f"carry is billed from the SHARE-WEIGHTED entry {_wd0}, because "
-             f"the later leg(s) were not on for the earlier days [AD1][AE4]. "
-             f"The time stop still runs from {p['date']}"))
+            ('carry days, per clip',
+             ' / '.join(f"{s['lot_date'][5:]} {s['held']}cd" for s in _sl),
+             f"the trade LIVED {held}cd (first clip {p['date']} -> {date}), "
+             f"but each clip is billed from ITS OWN entry date on ITS OWN "
+             f"notional [AG1]. The time stop still runs from {p['date']}"))
     if _cp0['roll']:
         _rows.append(
             ('contract roll [AC5]', _money(-_cp0['roll']),
-             f"{_cp0['n_rolls']} contract roll(s) x {_cp0['roll_bps']:.0f} bps "
-             f"of ${p.get('hedge_notional') or p['notional']:,.0f} — the "
-             f"{HEDGE_LBL} leg was closed in the expiring month and reopened"
-             f"  [counted from the {_cp0.get('roll_src', 'calendar')}]"))
+             ' + '.join(f"{s['lot_date'][5:]}: {s['cp']['n_rolls']} roll x "
+                        f"{s['cp']['roll_bps']:,.0f}bps of ${s['hn']:,.0f}"
+                        for s in _sl if s['cp']['roll'])
+             + " — each clip pays only for the rolls IT crossed [AG1]"))
     _rows += [
         ('TOTAL COST', _money(-cost),
-         f"{-cost / p['notional'] * 1e4:+.0f} bps of the clip, over {held}cd"),
+         f"{-cost / max(_tt['an'], 1e-9) * 1e4:+.0f} bps of the clip, over "
+         f"{held}cd"),
         ('NET', _money(net),
          f"{_bps_net:+.0f} bps of the ${p['notional']:,.0f} clip"),
     ]
@@ -14048,14 +14600,26 @@ def add_to(adr, fut, fx, date, notional=None, note='', contract=None):
     if not _assert_state('ENTRY', str(date)):              # [AA2]
         return _MANUAL['pos']
     p = _MANUAL['pos']
-    banner(f"ADD — leg {p.get('n_legs', 1)} of the {_side} spread",
+    _newcon = _row_contract(date, contract, use_pos=True)
+    banner(f"ADD — clip {p.get('n_legs', 1)} of the {_side} spread",
            sub=f"{date}   +{_u['shares']:,d} sh / +{_u['contracts']} "
-               f"{HEDGE_LBL} contracts (${_u['adr_notional']:,.0f})")
-    say(f"blended position now: {p['shares']:,d} sh + {p['contracts']} "
-        f"contracts = ${p['notional']:,.0f} | avg entry ADR "
-        f"{p['entry_adr']:.4f} / {HEDGE_LBL} {p['entry_fut']:.2f}", 'info')
-    say(f"time stop still anchors on the FIRST leg ({p['date']}) — an add "
-        f"does NOT reset the clock", 'warn')
+               f"{HEDGE_LBL} contracts (${_u['adr_notional']:,.0f})"
+               + (f"   on {_newcon}" if _newcon else ''))
+    # [AG1] the add is its OWN clip — it is NOT blended into the old one.
+    say(f"position now {p['shares']:,d} sh + {p['contracts']} contracts = "
+        f"${p['notional']:,.0f} across {len(p.get('lots') or [])} clip(s). "
+        f"The average entry (ADR {p['entry_adr']:.4f} / {HEDGE_LBL} "
+        f"{p['entry_fut']:.2f}) is a SUMMARY — each clip keeps its own "
+        f"prices, month and carry clock [AG1]", 'info')
+    if p.get('multi_contract'):
+        say(f"[AG1] this book now holds {len(p['contracts_held'])} MONTHS: "
+            + ', '.join(p['contracts_held'])
+            + ". Each clip marks against its own month, so add_day() needs "
+              "the other month's price too — pass fut_alt=<price>. Or "
+              "consolidate with roll_hedge()", 'warn')
+    say(f"time stop still anchors on the FIRST clip ({p['date']}) — an add "
+        f"does NOT reset the clock. A trim consumes clips FIFO, so this one "
+        f"goes LAST", 'warn')
     return p
 # ============================================================================
 # [AD2] reduce_pos — TAKE SOME OFF WITHOUT CLOSING THE TRADE.
@@ -14136,24 +14700,33 @@ def reduce_pos(adr, fut, fx, date, frac=None, contracts=None, shares=None,
         say(f"exit_pos(adr={float(adr):.4f}, fut={float(fut):.2f}, "
             f"fx={float(fx):.4f}, date='{date}')", 'info')
         return p
-    # shares follow the contracts, so the REMAINING position keeps the hedge
-    # ratio it was entered with
-    _sh_out = int(round(_ps * _cn_out / _pc))
-    _sh_out = max(1, min(_sh_out, _ps - 1))
-    # ---- what it realises ------------------------------------------------
-    _cu_in = c['contract_sh'] * p['entry_fut'] / p['entry_fx']
-    _an_sl, _hn_sl = _sh_out * p['entry_adr'], _cn_out * _cu_in
-    _wd = p.get('wdate') or p['date']
-    _held = max((pd.Timestamp(str(date)) - pd.Timestamp(str(_wd))).days, 0)
-    _al = p['dir'] * (float(adr) - p['entry_adr']) * _sh_out
-    _fl = (-p['dir'] * _cn_out * c['contract_sh']
-           * (float(fut) - p['entry_fut']) / float(fx))
-    _dv = -p['dir'] * _hn_sl * float(div_cash_pct or 0.0)
-    _cp = _trade_cost_parts(p['dir'], _an_sl, _held,
-                            adr_notional=_an_sl, hedge_notional=_hn_sl,
-                            entry_date=str(_wd), asof_date=str(date))
-    _gross = _al + _fl + _dv
-    _net = _gross - _cp['total']
+    # ---- what it realises, FIFO, lot by lot ------------------------------ [AG1]
+    # The oldest clip goes first, and each consumed clip is priced as its own
+    # round trip: its own entry prices, ITS contract's price today, its own
+    # carry clock, its own fees, its own roll cost. The share count is DERIVED
+    # from the lots consumed rather than assumed proportional to the blend —
+    # which is what makes the remaining clips keep the ratio they entered on.
+    _st_now = dict(dir=p['dir'], date=p['date'], lots=p['lots'])
+    _dc_map, _px_at = _price_maps()
+    _sl, _rest, _tt = _realise_fifo(
+        _st_now, _cn_out, adr, fut, fx, date, c, div_cash_pct,
+        day_contract=_dc_map.get(str(date), _row_contract(date, contract,
+                                                          use_pos=False)),
+        px_by_contract=_px_at(date))
+    if not _sl:
+        say('no lots to consume — run desk_audit()', 'bad')
+        return p
+    _sh_out, _cn_out = _tt['shares'], _tt['contracts']
+    _an_sl, _hn_sl = _tt['an'], _tt['hn']
+    _al, _fl, _dv = _tt['adr_leg'], _tt['fut_leg'], _tt['div_leg']
+    _held = _tt['held']
+    _cp = dict(fee=_tt['fee'], carry_fund=_tt['carry_fund'],
+               carry_margin=_tt['carry_margin'], roll=_tt['roll'],
+               carry=_tt['carry_fund'] + _tt['carry_margin'],
+               total=_tt['cost_total'], n_rolls=_tt['n_rolls'],
+               sofr=_tt['sofr'])
+    _gross = _tt['gross']
+    _net = _tt['net']
     row = dict(instrument=c['instrument'], date=str(date), point='REDUCE',
                side=('LONG' if p['dir'] == 1 else 'SHORT'), notional=_an_sl,
                shares=int(_sh_out), contracts=int(_cn_out),
@@ -14184,22 +14757,71 @@ def reduce_pos(adr, fut, fx, date, frac=None, contracts=None, shares=None,
                f"({_net / _an_sl * 1e4:+.0f} bps of the slice)"
                + (f"   ·  {q['contracts']} contracts still on"
                   if q else "   ·  position is now FLAT"))
+    # ------------------------------------------------------------------ [AG1]
+    # THE FIFO BREAKDOWN, one row per clip consumed. This is the answer to
+    # "the MTM and everything should show different calculations for the two
+    # clips separately": each line is that clip's own entry, its own month,
+    # its own exit price, its own carry days and its own net.
+    if len(_sl) > 1 or (p.get('multi_contract')):
+        show_html_table(
+            _pd.DataFrame([{
+                'clip opened': s['lot_date'],
+                'month': s['contract'] or '—',
+                'units': f"{s['shares']:,d} sh / {s['contracts']} {HEDGE_LBL}",
+                f'{ADR_LBL} in': s['entry_adr'], f'{ADR_LBL} out': float(adr),
+                f'{HEDGE_LBL} in': s['entry_fut'],
+                f'{HEDGE_LBL} out': s['exit_fut'],
+                'px src': s['exit_fut_src'],
+                'cd': s['held'],
+                f'{ADR_LBL} P&L': s['adr_leg'], f'{HEDGE_LBL} P&L': s['fut_leg'],
+                'GROSS': s['gross'],
+                'fees': -s['cp']['fee'], 'funding': -s['cp']['carry_fund'],
+                'margin': -s['cp']['carry_margin'], 'roll': -s['cp']['roll'],
+                'NET': s['net']} for s in _sl]).set_index('clip opened'),
+            title=f"[AG1] FIFO — {len(_sl)} clip(s) consumed, oldest first",
+            fmt={f'{ADR_LBL} in': '{:,.4f}', f'{ADR_LBL} out': '{:,.4f}',
+                 f'{HEDGE_LBL} in': '{:,.2f}', f'{HEDGE_LBL} out': '{:,.2f}',
+                 'cd': '{:.0f}', f'{ADR_LBL} P&L': '{:+,.0f}',
+                 f'{HEDGE_LBL} P&L': '{:+,.0f}', 'GROSS': '{:+,.0f}',
+                 'fees': '{:+,.0f}', 'funding': '{:+,.0f}',
+                 'margin': '{:+,.0f}', 'roll': '{:+,.0f}', 'NET': '{:+,.0f}'},
+            note=_bullets([
+                'FIRST IN, FIRST OUT — the oldest clip is consumed first, so '
+                'each line is a complete round trip on ONE clip rather than a '
+                'slice of an average [AG1]',
+                'FUNDING and MARGIN are computed per clip, from THAT clip\'s '
+                'own entry date and its own leg notionals — a clip added '
+                'later is not billed for days it was not on',
+                f'"{HEDGE_LBL} out" is the price of THAT clip\'s OWN month. '
+                f'"px src" says where it came from: day = the day\'s print, '
+                f'typed = a fut_alt price you supplied, stale = the newest '
+                f'that month has had, entry = never priced (marks flat)',
+                'ROLL cost is whatever those clips actually paid — a clip '
+                'that entered after a roll is charged nothing for it']))
     fact_table(
         'WHAT THE TRIM REALISED',
         [('sized by', _how, f"1 {HEDGE_LBL} = ${p['c_usd']:,.0f}, so the trim "
                             f"can only move in whole contracts"),
          ('units closed', f"{_sh_out:,d} sh + {_cn_out} {HEDGE_LBL}",
           f"{_sh_out / _ps:.0%} of the shares, {_cn_out / _pc:.0%} of the "
-          f"contracts — kept proportional so the REMAINING hedge ratio is "
-          f"unchanged"),
-         ('realised at', f"avg cost ADR {p['entry_adr']:.4f}",
-          f"average cost, not FIFO — the same convention add_to() blends "
-          f"with. The units left keep this same basis"),
-         (f'{ADR_LBL} leg', _money(_al), f"dir({p['dir']:+d}) x {_sh_out:,d} sh "
-          f"x ({float(adr):.4f} - {p['entry_adr']:.4f})"),
+          f"contracts — the share count is DERIVED from the clips consumed, "
+          f"so the clips left behind keep the ratio they entered on"),
+         ('realised at',
+          (f"FIFO — {', '.join(s['lot_date'] for s in _sl)}"
+           if len(_sl) > 1 else f"FIFO — the {_sl[0]['lot_date']} clip"),
+          "FIRST IN, FIRST OUT [AG1]: the oldest clip goes first, at ITS own "
+          "entry prices. The clips that remain are untouched — same basis, "
+          "same month, same carry clock"),
+         (f'{ADR_LBL} leg', _money(_al),
+          ' + '.join(f"{s['shares']:,d}sh x ({float(adr):.4f} - "
+                     f"{s['entry_adr']:.4f})" for s in _sl)
+          + f"   x dir({p['dir']:+d})"),
          (f'{HEDGE_LBL} leg', _money(_fl),
-          f"-dir({p['dir']:+d}) x {_cn_out} x {c['contract_sh']:,.0f} sh x "
-          f"({float(fut):.2f} - {p['entry_fut']:.2f}) / {float(fx):.4f}"),
+          ' + '.join(f"{s['contracts']} x {c['contract_sh']:,.0f} x "
+                     f"({s['exit_fut']:.2f} - {s['entry_fut']:.2f})"
+                     + (f" [{s['contract'].split()[0]}]" if s['contract'] else '')
+                     for s in _sl)
+          + f"   / FX {float(fx):.4f} x -dir({p['dir']:+d})"),
          ('GROSS', _money(_gross), f"{_gross / _an_sl * 1e4:+.0f} bps of the "
           f"${_an_sl:,.0f} slice"),
          # ------------------------------------------------------------ [AE4]
@@ -14216,19 +14838,22 @@ def reduce_pos(adr, fut, fx, date, frac=None, contracts=None, shares=None,
          ('  funding / borrow'
           + ('  (CREDIT)' if _cp['carry_fund'] < 0 else ''),
           _money(-_cp['carry_fund']),
-          f"{_cp['fund_bpd']:+.3f} bps/cd x {_held}cd x ${_an_sl:,.0f} (ADR "
-          f"leg) at SOFR {_cp['sofr']*100:.2f}%"
+          # [AG1] per clip, summed — not one blended rate on one blended date
+          ' + '.join(f"{s['held']}cd x ${s['an']:,.0f}" for s in _sl)
+          + f", at SOFR {_cp['sofr']*100:.2f}%"
           + ('' if _cp['carry_fund'] >= 0 else
              f" — negative because you EARN it: SOFR minus "
              f"{BORROW_SPREAD_ANN_BPS}bps on the short proceeds [AA7]")),
          ('  margin funding', _money(-_cp['carry_margin']),
-          f"{_cp['margin_bpd']:.3f} bps/cd x {_held}cd x ${_hn_sl:,.0f} "
-          f"(hedge leg)"),
+          ' + '.join(f"{s['held']}cd x ${s['hn']:,.0f}" for s in _sl)
+          + " (hedge leg, per clip)"),
          ('  contract roll', _money(-_cp['roll']) if _cp['roll'] else '—',
-          (f"{_cp['n_rolls']} roll(s) crossed x {_cp['roll_bps']:.0f} bps of "
-           f"${_hn_sl:,.0f} — counted from the {_cp.get('roll_src', 'calendar')}"
+          (' + '.join(f"{s['cp']['n_rolls']} roll x "
+                      f"{s['cp']['roll_bps']:,.0f}bps of ${s['hn']:,.0f}"
+                      for s in _sl if s['cp']['roll'])
+           + " — each clip pays only for the rolls IT crossed [AG1]"
            if _cp['roll'] else
-           'this slice did not cross a contract roll'),),
+           'none of these clips crossed a contract roll'),),
          # the bps must carry the SAME sign as the dollars beside it — a
          # "+20 bps" against a "-$618.89" is how a table stops being
          # checkable by eye [AC7].
@@ -14243,16 +14868,16 @@ def reduce_pos(adr, fut, fx, date, frac=None, contracts=None, shares=None,
            f"(${q['notional']:,.0f})" if q else 'nothing — FLAT'),
           (f"time stop unchanged: still anchored on {q['date']}" if q else ''))],
         note=_bullets(
-            ['A trim does NOT reset the clock and does NOT re-price the units '
-             'you kept. Their entry basis, their time stop and their carry '
-             'clock all continue from the original fill [AD2]',
+            ['A trim does NOT reset the clock and does NOT re-price the clips '
+             'you kept. Their entry basis, their month, their time stop and '
+             'their carry clock all continue from the original fill [AD2]',
              'SIGN — money IN is positive, money OUT negative, so a POSITIVE '
              'cost line is a credit you received']
-            + ([f"THE {HEDGE_LBL} ENTRY PRICE ABOVE ({p['entry_fut']:.2f}) IS "
-                f"THE ROLL-ADJUSTED BASIS, not the price you originally dealt "
-                f"— {_cp['n_rolls']} roll(s) shifted it by the calendar "
-                f"spread so both sides of (exit - entry) are the same "
-                f"contract [AE2]"] if _cp['n_rolls'] else [])))
+            + ([f"A {HEDGE_LBL} ENTRY PRICE ABOVE IS THE ROLL-ADJUSTED BASIS "
+                f"for that clip, not the price it originally dealt — a roll "
+                f"shifted it by the calendar spread so both sides of "
+                f"(exit - entry) are the same contract [AE2]"]
+               if _cp['n_rolls'] else [])))
     if q is not None and FX_EXEC_MODE == 'spot_next_open':
         say(f"[Y21] FX {float(fx):,.4f} is PROVISIONAL — the TWD leg of this "
             f"trim deals at the NEXT {LOCAL_LBL} open. Tomorrow: "
@@ -14289,10 +14914,25 @@ def reduce_pos(adr, fut, fx, date, frac=None, contracts=None, shares=None,
 # double it. The card below prints what [AC5] will bill so the two are visibly
 # the same number.
 # ============================================================================
-def roll_hedge(date, fut_old, fut_new, contract=None, note=''):
+def roll_hedge(date, fut_old, fut_new, contract=None, note='',
+               cost_bps=None, cost_usd=None, from_contract=None):
     """[AE2] Record a hedge roll on `date`: out of the contract priced
     `fut_old`, into the one priced `fut_new`, both quoted at the same instant.
-    Returns the position with its rebased basis."""
+    Returns the position with its rebased basis.
+
+    [AG1] YOUR COST, YOUR NUMBER (user: "is it possible for me to input the
+    roll cost myself?"). Yes:
+        cost_bps=25        25 bps of the rolled hedge notional
+        cost_usd=1800      a dollar figure, converted to bps for you
+        (neither)          the [AC5] derived figure — 2 x half-spread + both
+                           futures fees — which is a MODEL, not your fill
+    Whatever you give is charged verbatim, carried on the lots that rolled,
+    and billed when those lots realise. A clip that entered AFTER this roll
+    pays nothing for it.
+
+    [AG1] from_contract names the month being rolled OUT of, so a book holding
+    two months rolls only the one you mean. Left None it uses the oldest month
+    held, which is the one that expires first and the one you meant."""
     c, p = _MANUAL['ctx'], _MANUAL['pos']
     if c is None:
         say('run setup_manual() first', 'bad'); return None
@@ -14318,16 +14958,45 @@ def roll_hedge(date, fut_old, fut_new, contract=None, note=''):
             f"different day. Nothing written.", 'bad')
         return p
     _was = p['entry_fut']
-    _con_old = ''
-    try:
-        _le = _read_ledger()
-        _le = _le[(_le['instrument'] == c['instrument'])
-                  & (_le['point'].isin(['ENTRY', 'ROLL']))
-                  & (_le['date'].astype(str) <= str(date))]
-        if len(_le) and 'contract' in _le.columns:
-            _con_old = _txt(_le.sort_values('date')['contract'].iloc[-1])
-    except Exception:
-        pass
+    # [AG1] WHICH MONTH IS BEING ROLLED OUT OF. Default = the oldest month
+    # held, which is the one that expires first. With one month held this is
+    # the month; with two it is unambiguous and stated on the card.
+    _held = list(p.get('contracts_held') or [])
+    _con_old = str(from_contract or '')
+    if not _con_old:
+        _lot_order = []
+        for _l in (p.get('lots') or []):
+            _k = str(_l.get('contract') or '')
+            if _k and _k not in _lot_order:
+                _lot_order.append(_k)
+        _con_old = _lot_order[0] if _lot_order else ''
+    if _con_old and _held and _con_old not in _held:
+        say(f"REFUSED — no lot is on {_con_old}. Months held: "
+            f"{', '.join(_held) or '(unstamped)'}. Nothing written.", 'bad')
+        return p
+    _n_roll = sum(1 for _l in (p.get('lots') or [])
+                  if (not _con_old) or str(_l.get('contract') or '') == _con_old
+                  or not str(_l.get('contract') or ''))
+    _hn_roll = sum(_lot_hn(_l, c) for _l in (p.get('lots') or [])
+                   if (not _con_old)
+                   or str(_l.get('contract') or '') == _con_old
+                   or not str(_l.get('contract') or ''))
+    # [AG1] the cost you quote wins over the model's estimate.
+    _derived = roll_cost_bps(c.get('exec_point'))
+    if cost_usd not in (None, ''):
+        _rb = float(cost_usd) / max(_hn_roll, 1e-9) * 1e4
+        _csrc = f"YOUR ${float(cost_usd):,.0f}, on ${_hn_roll:,.0f} rolled"
+    elif cost_bps not in (None, ''):
+        _rb = float(cost_bps)
+        _csrc = 'YOUR quoted bps'
+    else:
+        _rb = float(_derived)
+        _csrc = (f"derived [AC5]: 2 x {FUT_HALF_SPREAD_CLOSE_BPS:g} half-spread "
+                 f"+ {FUT_FEE_IN_BPS}+{FUT_FEE_OUT_BPS} fees")
+    if _rb < 0 or _rb > 500:
+        say(f"REFUSED — a roll cost of {_rb:,.0f} bps is not a roll cost. "
+            f"Nothing written.", 'bad')
+        return p
     row = dict(instrument=c['instrument'], date=str(date), point='ROLL',
                side=('LONG' if p['dir'] == 1 else 'SHORT'), notional='',
                shares='', contracts=int(p['contracts']),
@@ -14338,6 +15007,7 @@ def roll_hedge(date, fut_old, fut_new, contract=None, note=''):
                n=c['n'], threshold=c['thresh'], gate='', div_carry='',
                div_pct='', in_position=True, net='', fx_src='',
                contract=_row_contract(date, contract),
+               roll_from=_con_old, roll_bps=round(float(_rb), 4),   # [AG1]
                note=('ROLL ' + str(note)).strip())
     led = _read_ledger()
     led = led[~((led['instrument'] == c['instrument'])       # [AA2] re-runnable
@@ -14350,16 +15020,17 @@ def roll_hedge(date, fut_old, fut_new, contract=None, note=''):
         say('the roll row was written but no position came back — run '
             'desk_audit()', 'bad')
         return None
-    _rb = roll_cost_bps(c.get('exec_point'))
-    _rc = _rb / 1e4 * (q.get('hedge_notional') or q['notional'])
+    _rc = _rb / 1e4 * _hn_roll
     # [FIX] locals first — a nested f-string reusing the outer quote only
     # parses on Python 3.12+ (PEP 701) and is a hard SyntaxError before it.
     _cn_old = f" ({_con_old})" if _con_old else ''
     _cn_new = f" ({row['contract']})" if row['contract'] else ''
+    _kept = [x for x in (q.get('contracts_held') or [])
+             if x and x != row['contract']]
     banner(f"HEDGE ROLLED — {_con_old or 'previous month'} → "
            f"{row['contract'] or 'next month'}",
-           sub=f"{date}   {q['contracts']} contracts   calendar spread "
-               f"{_spr:+,.2f} {LOCAL_CCY}")
+           sub=f"{date}   {_n_roll} lot(s) rolled   calendar spread "
+               f"{_spr:+,.2f} {LOCAL_CCY}   cost {_rb:,.0f} bps")
     fact_table(
         'WHAT THE ROLL DID TO THE POSITION',
         [('rolled out of', f"{_fo:,.2f} {LOCAL_CCY}",
@@ -14369,9 +15040,16 @@ def roll_hedge(date, fut_old, fut_new, contract=None, note=''):
           f"so their difference is the spread and nothing else"),
          ('calendar spread', f"{_spr:+,.2f} {LOCAL_CCY}",
           f"{_spr / _fo * 1e4:+,.0f} bps of the contract price"),
+         # [AG1] which CLIPS moved, not "the position" — with lots on two
+         # months a roll is not a whole-position event any more.
+         ('lots rolled', f"{_n_roll} of {len(q.get('lots') or [])}",
+          (f"only the clips on {_con_old} moved" if _con_old else
+           'every clip moved')
+          + (f"; {', '.join(_kept)} left where it was" if _kept else '')),
          ('entry basis', f"{_was:,.2f} → {q['entry_fut']:,.2f}",
-          "rebased by exactly the spread, so (fut_now - entry_fut) is "
-          "same-contract again on both sides"),
+          "each rolled lot rebased by exactly the spread, so "
+          "(fut_now - entry_fut) is same-contract again on both sides. This "
+          "is the position AVERAGE; the lots themselves are in status()"),
          ('mark across the roll', 'UNCHANGED',
           "which is the whole requirement — rolling a hedge must not create "
           "or destroy P&L. Check it: status() before and after this call "
@@ -14380,19 +15058,20 @@ def roll_hedge(date, fut_old, fut_new, contract=None, note=''):
           f"{q['shares']:,d} sh + {q['contracts']} {HEDGE_LBL}, still "
           f"{'LONG' if q['dir'] == 1 else 'SHORT'}, still anchored on "
           f"{q['date']}"),
-         ('what it COSTS', f"~{_money(-_rc, 0)} ({_rb:.0f} bps)",
-          "two half-spreads plus both fees on the hedge leg. NOT charged "
-          "here — [AC5] bills it inside every realisation whose hold spans "
-          "THIS date, on that slice's own hedge notional, so a position taken "
-          "off in three trims pays it in three pieces that sum to the same "
-          "number. This line is the whole-position figure, shown so you can "
-          "see it is not missing"),
+         # ------------------------------------------------------------ [AG1]
+         ('what it COSTS', f"{_money(-_rc, 0)}  ({_rb:,.1f} bps)", _csrc),
+         ('who pays it', 'the lots that rolled',
+          "charged when THOSE lots realise, on their own hedge notional. A "
+          "clip you add AFTER today pays nothing for this roll — which is why "
+          "the cost rides on the lot rather than on the position [AG1]"),
          ('the SIGNAL', 'untouched',
           "the premium and z come from add_day's same-day gap ratio, which "
           "never sees this row [AE2]")],
         note='Re-run roll_hedge() on the same date to CORRECT it — the row is '
              'replaced and the basis re-derived from scratch, exactly like '
-             'every other write on this desk.')
+             'every other write on this desk. Quote your own cost with '
+             'cost_bps= or cost_usd=; give neither and the [AC5] model figure '
+             'is used and labelled as such.')
     return q
 # ============================================================================
 # [AD3] blotter — EVERY ACTION, IN ORDER, WITH WHAT IT DID.
@@ -14660,6 +15339,48 @@ def trade_report(tail=None, show_costs=True, show_open=True):
             'funding': '{:+,.0f}', 'margin': '{:+,.0f}', 'roll': '{:+,.0f}',
             'COST': '{:+,.0f}', 'NET': '{:+,.0f}', 'net bps': '{:+,.0f}',
             'stored Δ': '{:+,.0f}', 'cd': '{:.0f}'}
+    # ------------------------------------------------------------------ [AG1]
+    # THE CLIP-LEVEL VIEW. The rows above are one per DEAL, which is the right
+    # unit for the trade record; but a deal that spans two clips is two round
+    # trips with different entries, different months and different carry
+    # clocks, and the deal row can only show their blend. This table is those
+    # round trips, which is what "show the two clips separately" means.
+    _cl_rows = []
+    for _i8, t in enumerate(_cl, start=1):
+        for s in (t.get('slices') or []):
+            _cl_rows.append({
+                'deal': f"{_i8} {'TRIM' if t.get('kind') == 'partial' else 'CLOSE'}",
+                'clip opened': s['lot_date'],
+                'month': (str(s['contract']).split()[0] if s['contract'] else '—'),
+                'out': t['exit_date'], 'cd': s['held'],
+                'units': f"{s['shares']:,d} sh / {s['contracts']} {_H}",
+                f'{_A} in': s['entry_adr'], f'{_A} out': t['exit_adr'],
+                f'{_H} in': s['entry_fut'], f'{_H} out': s['exit_fut'],
+                'px src': s['exit_fut_src'],
+                'slice $': s['an'],
+                f'{_A} P&L': s['adr_leg'], f'{_H} P&L': s['fut_leg'],
+                'GROSS': s['gross'], 'fees': _z(s['cp']['fee']),
+                'funding': _z(s['cp']['carry_fund']),
+                'margin': _z(s['cp']['carry_margin']),
+                'roll': _z(s['cp']['roll']),
+                'NET': s['net'],
+                'net bps': s['net'] / max(s['an'], 1e-9) * 1e4})
+    if _cl_rows and (len(_cl_rows) > len(_cl)
+                     or any(r['month'] != _cl_rows[0]['month']
+                            for r in _cl_rows)):
+        show_html_table(
+            _pd.DataFrame(_cl_rows).set_index('deal'),
+            title=f"PER CLIP — the same realisations, FIFO, one row per clip "
+                  f"[AG1]",
+            fmt=dict(_fmt, **{'slice $': '{:,.0f}'}),
+            note=_bullets([
+                'FIRST IN, FIRST OUT — each row is a complete round trip on '
+                'ONE clip: its own entry, its own month, its own exit price',
+                'FUNDING and MARGIN are that clip\'s own days x that clip\'s '
+                'own leg notionals. ROLL is what THAT clip crossed — a clip '
+                'that entered after a roll pays nothing for it',
+                'The deal table above is these rows summed; nothing differs '
+                'except the level of detail']))
     _resid_rows = [(t['exit_date'], float(t.get('residual') or 0.0))
                    for t in _cl if abs(float(t.get('residual') or 0.0)) >= 0.005]
     show_html_table(
