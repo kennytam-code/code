@@ -113,6 +113,13 @@
 #        structurally impossible here because there is exactly one
 #        gate-series builder, gate_series().)
 #
+# [XS] CROSS-SECTIONAL BOOK (added 2026-08-09) — a second engine, appended
+#   after every aggregate section: the SAME packages selected PER NAME (own
+#   z, own cost floor, 2-session persistence), long cheap ADRs / short rich
+#   simultaneously, ONE HTI bridge on the book's NET overnight imbalance,
+#   band exits. Prints its own verdict, survival test, N x Z plateau and an
+#   A/B head-to-head vs the aggregate book. Grep "[XS]".
+#
 # DATA
 #   Bloomberg daily BDH per name (ADR PX_LAST/PX_OPEN, ord PX_LAST/PX_OPEN),
 #   USDHKD, HSTECH Index; the SHARED HTI capture snaps
@@ -189,9 +196,11 @@ HTML_OUTPUT = True          # notebook tables; plain text always printed too
 CHART_FILE = 'v33_basket_charts.png'   # None = no chart file
 CHART_MODE = 'auto'         # 'auto' (inline in Jupyter, PNG in a terminal)
                             # | 'inline' | 'png' | 'both' | 'off'
-OUTPUT_DIR = ''             # '' = the working directory. Every HTML/PNG the
-                            # run writes lands HERE (the desk box was
-                            # dropping them in the Python install folder)
+OUTPUT_DIR = ''             # '' = AUTO: the capture-file folder (G: drive)
+                            # when it exists, else the working directory.
+                            # Every HTML/PNG the run writes lands HERE (the
+                            # desk box was dropping them in the Python
+                            # install folder). Set a path to override.
 INCLUDE_OTC = True          # [B0] add the OTC-traded ADRs (TCEHY/MPNGY/
                             # XIACY/KSHTY) — lifts basket coverage of HS
                             # Tech from ~30% to ~60%. No closing auction on
@@ -221,8 +230,69 @@ BETA_DRIFT_FLAG = 0.20      # |rolling beta - prior| beyond this -> a
                             # the bridge is sized off the PRIOR, so a
                             # drifted prior is a real mis-hedge — the BABA
                             # lesson from the 2026-08 real run)
+# ---- [XS] CROSS-SECTIONAL BOOK (2026-08-09) — the same ADR-vs-own-ordinary
+# packages, selected PER NAME instead of all-at-once. Each name trades on
+# its OWN z; long the cheap ADRs / short the rich ones simultaneously; ONE
+# HTI bridge covers only the book's NET overnight imbalance (the long and
+# short packages hedge each other across the gap, so the bridge line mostly
+# vanishes when the book is balanced). The aggregate engine is UNTOUCHED
+# and still prints every section — the [XS] blocks are appended after it,
+# ending in an A/B head-to-head on identical data and the identical cost
+# stack. Diagnosis that motivated it (2026-08-09 desk run): one averaged z
+# forces undislocated names into every package (JD dev +42 bought inside a
+# LONG book while NIO sat at -275), the breadth gate blocks exactly the
+# high-dispersion days, and H2 net was ~zero.
+BOOK_MODE = 'xs'            # WHICH BOOK THIS RUN IS ABOUT (2026-08-10):
+                            # 'xs'        DEFAULT — the cross-sectional
+                            #             book is the headline. The
+                            #             aggregate still runs ONCE at its
+                            #             configured cell so the A/B table
+                            #             is real, but its own battery
+                            #             ([B4] grid, [B2a] timings,
+                            #             cost-multiplier / sign-filter /
+                            #             drop-one robustness, [B3b]
+                            #             dispersion, its trade blotter)
+                            #             is SKIPPED — that is ~115 fewer
+                            #             backtests and about half the
+                            #             output.
+                            # 'aggregate' the old behaviour: full aggregate
+                            #             battery, no XS book.
+                            # 'both'      everything (the long run).
+XS_Z_ENTRY = 1.5            # per name: z_i >= +1.5 -> SHORT that name's
+                            # package | z_i <= -1.5 -> LONG it
+XS_EXIT_BAND = 0.25         # exit when z_i is back INSIDE +/-band (0 =
+                            # hold to full reversion, the aggregate's exit)
+XS_TIME_STOP = 10           # calendar days per name-lot
+XS_PERSIST = 2              # the signal must clear the threshold this many
+                            # CONSECUTIVE sessions before an entry — kills
+                            # the one-print spikes the [QC] jump audit
+                            # counts (XPEV 90 / NIO 102 suspect prints
+                            # would otherwise become fake XS "wins")
+XS_NAME_CAP = 0.25          # no name above 25% of the XS gross ...
+XS_ADV_CAP = 0.05           # ... and no name-slice above 5% of its OWN
+                            # adv_usd — trims MPNGY/XIACY/KSHTY size
+                            # VISIBLY (a tally prints when it binds). No
+                            # name is ever silently excluded (user call
+                            # 2026-08-09: OTC stays IN; floors and caps do
+                            # the work, not universe exclusions).
+XS_EXIT_BAND_GRID = [0.0, 0.25, 0.5]   # exit-band robustness line
+XS_PERSIST_GRID = [1, 2, 3]            # ... and the other two entry/exit
+XS_TIME_STOP_GRID = [5, 10, 20]        # knobs, one at a time vs the base.
+                            # MEASURED on the synthetic panel 2026-08-10:
+                            # persistence 1->2 roughly quadruples win rate
+                            # stability but costs net; a 10d stop fired on
+                            # 41% of lots (a stop that binds that often is
+                            # a second exit rule, not a safety valve) and
+                            # 20d earned more. Both are LEFT AS THEY ARE
+                            # rather than fitted to synthetic data — the
+                            # sweep prints so the DESK run settles it.
+XS_COST_MULTS = [0.5, 1.5, 2.0, 3.0]   # cost-multiplier robustness ->
+                            # the breakeven line (how far above the
+                            # modelled stack costs can go before the book
+                            # dies). x1.0 is the base run itself.
 # ============================================================================
 import os
+import sys
 import math
 import warnings
 from datetime import datetime, timedelta
@@ -238,6 +308,32 @@ except Exception:
 
 warnings.filterwarnings('ignore', category=FutureWarning)
 warnings.filterwarnings('ignore', category=RuntimeWarning)
+
+# ---- pandas floor: >= 2.0, checked LOUDLY instead of assumed. On 1.x the
+# capture-CSV timestamp parse (format='ISO8601', errors='coerce') returns
+# all-NaT WITHOUT raising, every HTI row then fails the +-20min window and
+# the run starves on an empty calendar with no clue why. 2.0 parses it fine;
+# 2.1 renamed DataFrame.applymap -> .map and 3.0 removed applymap — the desk
+# box is 2.0.x (Python 3.8), dev boxes are 3.x, and _dfmap() bridges the two
+# (a bare .map call was the desk crash that ate every table, chart and
+# scorecard after the [B4] banner, 2026-08-09).
+_PD_VER = tuple(int(''.join(c for c in p if c.isdigit()) or 0)
+                for p in pd.__version__.split('.')[:2])
+if _PD_VER < (2, 0):
+    raise RuntimeError(
+        f"pandas {pd.__version__} is below 2.0 — the capture-CSV timestamp "
+        f"parse would silently drop EVERY HTI row on this version (ISO8601 "
+        f"+ errors='coerce' NaTs instead of raising). Upgrade pandas on "
+        f"this box before trusting any output.")
+
+# OUTPUT_DIR '' in the QUICK SETTINGS means AUTO: prefer the capture-file
+# folder (the desk's G: drive) so PNGs/HTML stop landing in the Python
+# install directory; off-desk, where that folder does not exist, fall back
+# to the working directory exactly as before.
+if not OUTPUT_DIR:
+    _cap_dir = os.path.dirname(IDX_FILE_PREFIX)
+    if _cap_dir and os.path.isdir(_cap_dir):
+        OUTPUT_DIR = _cap_dir
 
 # ---- timing display names — every print that names a timing goes through
 # timing_label() so 'naked' is impossible to miss (user 2026-08-02: "The
@@ -501,13 +597,23 @@ def _in_jupyter():
     except Exception:
         return False
 
+def _dfmap(frame, fn):
+    """Element-wise map that runs on EVERY pandas this file meets:
+    DataFrame.map() exists only from 2.1, applymap() only until 3.0 — the
+    desk is 2.0.x, dev boxes 3.x. (A bare .map call here was the desk crash
+    that ate everything after the [B4] banner, 2026-08-09.)"""
+    return frame.map(fn) if hasattr(frame, 'map') else frame.applymap(fn)
+
+def _html_path():
+    return os.path.join(OUTPUT_DIR or '', HTML_FILE)
+
 def _html_to_file(html):
     global _HTML_STARTED
     if not HTML_FILE:
         return
     try:
         mode = 'a' if _HTML_STARTED else 'w'
-        with open(HTML_FILE, mode, encoding='utf-8') as f:
+        with open(_html_path(), mode, encoding='utf-8') as f:
             if not _HTML_STARTED:
                 f.write("<html><head><meta charset='utf-8'>"
                         "<title>v33 basket tables</title></head><body>" + _CSS)
@@ -515,9 +621,20 @@ def _html_to_file(html):
         if not _HTML_STARTED:
             _HTML_STARTED = True
             print(f"  [note] HTML tables also written to "
-                  f"{os.path.abspath(HTML_FILE)}")
+                  f"{os.path.abspath(_html_path())}")
     except Exception as e:
         print(f"  [note] could not write {HTML_FILE}: {e}")
+
+def _html_close():
+    """Closing tags, once, at the end of the run — the file opens 'w' on
+    the first table and appends after; before this it stayed unclosed and
+    read like a truncated run."""
+    if HTML_FILE and _HTML_STARTED:
+        try:
+            with open(_html_path(), 'a', encoding='utf-8') as f:
+                f.write('</body></html>')
+        except Exception:
+            pass
 
 def show_table(frame, title='', note='', fmt='{:,.0f}'):
     """Styled table in a notebook; the SAME formatted numbers as plain text
@@ -584,7 +701,8 @@ def print_scorecard():
     if not _SCORECARD:
         return
     print("\n" + "=" * 76)
-    print("  RUN SCORECARD — read the FAILs before believing any number below")
+    print("  RUN SCORECARD — read the WARNs before believing any number "
+          "below")
     print("=" * 76)
     order = {'FAIL': 0, 'WARN': 1, 'INFO': 2}
     for lv, k, v in sorted(_SCORECARD, key=lambda r: order.get(r[0], 3)):
@@ -604,16 +722,32 @@ def print_model_explained():
         "                  same clock by beta x HTI futures capture snaps",
         f"DEV (name)        premium minus its OWN {N_WINDOW}d rolling mean",
         "                  -> each name's STRUCTURAL premium is stripped",
-        f"BASKET DEV        ADV-weighted sum of devs (cap {W_CAP:.0%}/name)",
-        f"BASKET Z          basket dev / {N_WINDOW}d rolling sd (shifted 1d)",
-        f"ENTRY             |z| >= {Z_ENTRY_SHORT:.1f}  AND  |dev| >= floor "
-        f"+{fs:.0f}/{fl:.0f} bps ({DEV_FLOOR_MODE})",
-        f"GATES             reversion on (half-life <= {HL_MAX_DAYS:.0f}d) | "
-        f"drift <= {DRIFT_MAX_SIGMA:.2f} sigma",
-        f"                  | breadth >= {BREADTH_MIN:.0%} | earnings block | "
-        f">= {MIN_NAMES_LIVE} names live",
-        f"EXIT              z crosses {EXIT_Z:.1f} | time stop {TIME_STOP}d | "
-        "gate shuts",
+    ]
+    if BOOK_MODE == 'xs':
+        lines += [
+            "ACTIVE BOOK      CROSS-SECTIONAL [XS] — each name trades its",
+            "                  OWN z; the full rule set prints in the [XS]",
+            "                  block below. The aggregate book runs once at",
+            "                  its configured cell for the A/B table only",
+            f"                  (BOOK_MODE='{BOOK_MODE}'; set 'aggregate' or",
+            "                  'both' for its full battery).",
+        ]
+    else:
+        lines += [
+            f"BASKET DEV        ADV-weighted sum of devs (cap "
+            f"{W_CAP:.0%}/name)",
+            f"BASKET Z          basket dev / {N_WINDOW}d rolling sd "
+            f"(shifted 1d)",
+            f"ENTRY             |z| >= {Z_ENTRY_SHORT:.1f}  AND  |dev| >= "
+            f"floor +{fs:.0f}/{fl:.0f} bps ({DEV_FLOOR_MODE})",
+            f"GATES             reversion on (half-life <= "
+            f"{HL_MAX_DAYS:.0f}d) | drift <= {DRIFT_MAX_SIGMA:.2f} sigma",
+            f"                  | breadth >= {BREADTH_MIN:.0%} | earnings "
+            f"block | >= {MIN_NAMES_LIVE} names live",
+            f"EXIT              z crosses {EXIT_Z:.1f} | time stop "
+            f"{TIME_STOP}d | gate shuts",
+        ]
+    lines += [
         f"EXECUTION         {timing_label(EXEC_TIMING)}",
         "PNL               two_leg ONLY — every leg marked off its own",
         "                  fills; 'convergence' is a labeled diagnostic",
@@ -699,11 +833,18 @@ def _load_snapshot_csv(path, price_name, expected_utc=None):
                'date/price failed to parse')
     raw = raw.dropna(subset=['Date', price_name])
     if raw['CapTS'].notna().any() and expected_utc:
+        # utc=True is load-bearing, not tidiness: a capture stamped
+        # 2026-01-03T03:00:00+08:00 IS 19:00Z, and without normalising we
+        # would compare the LOCAL clock components — dropping good rows and
+        # keeping wrong ones, exactly inverting the check this exists for.
+        # It also stops a file with MIXED offsets (one DST-boundary
+        # re-capture is enough) from raising 'Mixed timezones detected'
+        # straight out of the loader.
         try:
             ts = pd.to_datetime(raw['CapTS'], errors='coerce',
-                                format='ISO8601')
+                                format='ISO8601', utc=True)
         except (TypeError, ValueError):
-            ts = pd.to_datetime(raw['CapTS'], errors='coerce')
+            ts = pd.to_datetime(raw['CapTS'], errors='coerce', utc=True)
         hh, mm = (int(x) for x in expected_utc.split(':'))
         target = hh * 60 + mm
         cap = ts.dt.hour * 60 + ts.dt.minute
@@ -1391,9 +1532,14 @@ def build_premium_panel(mats, beta_df, divs_map=None, adr_ex_map=None):
                 px = mats['ORD_close'][nm].iloc[loc]
                 if not (np.isfinite(px) and px > 0) or stop <= loc:
                     continue
-                rows = idx[loc:stop]
-                prem.loc[rows, nm] -= amt / px
-                prem16.loc[rows, nm] -= amt / px
+                prem.loc[idx[loc:stop], nm] -= amt / px
+                # prem16 needs ONE ROW MORE. On the ADR's own ex-date row
+                # prem16 still compares YESTERDAY's ADR (cum) against
+                # today's ord (ex), so the artefact is live for that row
+                # too — measured +121 bps left uncorrected against a
+                # ~103 bps dividend before this line (2026-08-10). prem
+                # marks both sides on the same row, so it stops at `stop`.
+                prem16.loc[idx[loc:min(stop + 1, len(idx))], nm] -= amt / px
                 n_applied += 1
         sc('INFO', 'dividend carry [B6b]',
            f'{n_div} ex-dates across {len(NAMES)} names, {n_applied} '
@@ -1571,11 +1717,15 @@ def estimate_half_spreads(mats, data=None):
     bias_note = ''
     if err_col in tbl.columns:
         mb = float(np.nanmean(tbl[err_col].values))
+        _dirn = ('OVER-estimates' if mb > 0 else 'UNDER-estimates')
         bias_note = (f" SELF-TEST on the synthetic panel (known planted "
-                     f"spreads): C-S is off by {mb:+.1f} bps on average — "
-                     f"this is the documented downward bias on gappy "
-                     f"names, and the reason the estimate may only RAISE "
-                     f"the assumed figure, never cut it.")
+                     f"spreads): C-S {_dirn} by {abs(mb):.1f} bps on "
+                     f"average, and its day-pairs go negative far too "
+                     f"often — either way it cannot price these spreads, "
+                     f"which is why it is a DIAGNOSTIC and may only ever "
+                     f"RAISE the assumed figure, never cut it. (The bias "
+                     f"SIGN is whatever this run measures — do not read a "
+                     f"direction into it that the number does not say.)")
     show_table(tbl, title='[B8b] bid-ask — HALF-spreads, one crossing '
                           f'(SPREAD_MODE={SPREAD_MODE})',
                note='ORDS: Corwin-Schultz on daily high/low, de-gapped by '
@@ -1621,12 +1771,24 @@ def build_inclusion(mats, corr_df, coint_ok, earnings_map, suspect=None):
            f'{CORR_WINDOW}d rolling corr gate [B5c] incl. its warm-up')
     if COINT_GATE == 'exclude':
         n_pre = int(incl.values.sum())
+        # NOTE coint_table computes ONE verdict from the LAST window and
+        # broadcasts it to every row, so excluding on it applies
+        # end-of-sample knowledge to the whole history. Fine as a report;
+        # as a GATE it is look-ahead, and the scorecard says so.
+        sc('WARN', 'coint gate [B5d]',
+           "COINT_GATE='exclude' applies the LAST window's verdict to "
+           "every historical row — that is look-ahead. Use 'report' for "
+           "an honest backtest.")
         incl &= coint_ok
         funnel('per-name days', 'cointegration gate', n_pre,
                int(incl.values.sum()), f'EG residual ADF p > {COINT_PMAX}')
     if suspect is not None and SPIKE_ACTION == 'exclude':
         n_pre = int(incl.values.sum())
-        incl &= ~suspect.reindex_like(incl).fillna(False)
+        # the suspect flag is built from "does the jump REVERSE tomorrow",
+        # so it is not knowable on the day itself — shift it a row before
+        # it may touch inclusion, or the backtest trades on tomorrow's
+        # information
+        incl &= ~suspect.reindex_like(incl).shift(1).fillna(False)
         funnel('per-name days', 'suspect print (spike + reversal)', n_pre,
                int(incl.values.sum()), f'>{SPIKE_QC_BPS:.0f} bps and back')
     # [B6] earnings block: a name inside its window is dropped from the
@@ -1642,12 +1804,17 @@ def build_inclusion(mats, corr_df, coint_ok, earnings_map, suspect=None):
             continue
         block = np.zeros(len(dates), dtype=bool)
         for ed in e:
-            loc = dates.searchsorted(str(ed)[:10])
+            loc = int(dates.searchsorted(str(ed)[:10]))
+            if loc >= len(dates):
+                # ERN_ANN_DT_AND_PER returns FUTURE/estimated dates too; a
+                # date past the calendar must not wrap round and block the
+                # last row of the sample
+                continue
             block[max(0, loc - EARNINGS_BLOCK_DAYS):loc + 1] = True
         incl[nm] &= ~pd.Series(block, index=incl.index)
     funnel('per-name days', 'earnings block [B6]', n_pre_ern,
            int(incl.values.sum()),
-           f'announcement day +/- {EARNINGS_BLOCK_DAYS}d')
+           f'announcement day and the {EARNINGS_BLOCK_DAYS}d before it')
     if n_dates_total == 0:
         sc('WARN', 'earnings gate [B6]',
            'NO earnings dates (auto-pull empty and no manual lists) — the '
@@ -1657,11 +1824,32 @@ def build_inclusion(mats, corr_df, coint_ok, earnings_map, suspect=None):
            f'{n_dates_total} announcement dates across {len(NAMES)} names '
            f'({EARNINGS_SOURCE})')
     w_raw = pd.Series({nm: UNIVERSE[nm]['adv_usd'] for nm in NAMES})
-    w_capped = np.minimum(w_raw / w_raw.sum(), W_CAP)
-    W = pd.DataFrame(np.tile(w_capped.values, (len(incl), 1)),
+    W = pd.DataFrame(np.tile(w_raw.values, (len(incl), 1)),
                      index=incl.index, columns=NAMES)
     W = W.where(incl, 0.0)
     W = W.div(W.sum(axis=1).replace(0, np.nan), axis=0)
+    # W_CAP must bind on the FINAL weights. Capping the raw ADV share and
+    # then renormalising (the old order) let survivors re-inflate straight
+    # back through the cap — BABA reached 46% of a book whose stated limit
+    # is 25%, on 94% of rows. Cap, spread the excess over the uncapped
+    # names, repeat until nothing is over.
+    # Redistribute the excess in proportion to each survivor's HEADROOM
+    # (W_CAP - w), not to its weight: a name already near the cap then
+    # absorbs almost none of it and cannot be pushed back over, so this
+    # settles in one or two passes instead of creeping toward the cap and
+    # leaving a residue. Infeasible rows (fewer than 1/W_CAP names live)
+    # simply end with every name at the cap; MIN_NAMES_LIVE keeps that
+    # from happening.
+    for _ in range(50):
+        over = W > W_CAP + 1e-12
+        if not over.values.any():
+            break
+        excess = (W - W_CAP).where(over, 0.0).sum(axis=1)
+        W = W.mask(over, W_CAP)
+        head = (W_CAP - W).clip(lower=0.0).where(~over, 0.0)
+        head_sum = head.sum(axis=1).replace(0, np.nan)
+        share = (excess / head_sum).clip(upper=1.0)
+        W = W.add(head.mul(share, axis=0).fillna(0.0))
     return W
 
 def basket_series(prem, prem16, W, n):
@@ -1671,28 +1859,39 @@ def basket_series(prem, prem16, W, n):
     SIGNAL off the 08:00Z clock, and a signal clock needs its own z, its
     own breadth and its own gate series ([L5]: one builder, fed whichever
     series the timing actually trades)."""
-    Wd = W.where(prem.notna(), 0.0)
-    Wd = Wd.div(Wd.sum(axis=1).replace(0, np.nan), axis=0)
     dev = prem - prem.rolling(n).mean().shift(1)
     dev16 = prem16 - prem16.rolling(n).mean().shift(1)
+    # renormalise on the series each sum actually uses. A name can have a
+    # live premium but a NaN dev (its rolling window is not full — one
+    # mid-sample gap costs it n rows); weighting on prem.notna() left that
+    # name holding up to 46% of the weight while contributing ZERO to the
+    # sum, which shrinks basket_dev and z toward nothing and silently
+    # misses entries (found 2026-08-10; invisible on synthetic data, whose
+    # holidays are global).
+    def _norm(mask):
+        w = W.where(mask, 0.0)
+        return w.div(w.sum(axis=1).replace(0, np.nan), axis=0)
+    Wd = _norm(dev.notna())
+    Wd16 = _norm(dev16.notna())
     basket_dev = (Wd * dev).sum(axis=1, min_count=1)
-    basket_dev16 = (Wd * dev16).sum(axis=1, min_count=1)
+    basket_dev16 = (Wd16 * dev16).sum(axis=1, min_count=1)
     # weighted RAW premium — the drift gate runs on THIS series' rolling
     # mean (basket_dev's own mean is ~0 by construction, a null test), and
     # its rolling sd is the z denominator
     basket_prem = (Wd * prem).sum(axis=1, min_count=1)
     sd = basket_prem.rolling(n).std(ddof=0).shift(1).replace(0, np.nan)
     basket_z = basket_dev / sd
-    basket_prem16 = (Wd * prem16).sum(axis=1, min_count=1)
+    basket_prem16 = (Wd16 * prem16).sum(axis=1, min_count=1)
     sd16 = basket_prem16.rolling(n).std(ddof=0).shift(1).replace(0, np.nan)
     basket_z16 = basket_dev16 / sd16
     n_incl = (Wd > 0).sum(axis=1)
+    n_incl16 = (Wd16 > 0).sum(axis=1)
     agree = ((np.sign(dev) == np.sign(basket_dev.values[:, None]))
              & (Wd > 0)).sum(axis=1)
     breadth = agree / n_incl.replace(0, np.nan)
     agree16 = ((np.sign(dev16) == np.sign(basket_dev16.values[:, None]))
-               & (Wd > 0)).sum(axis=1)
-    breadth16 = agree16 / n_incl.replace(0, np.nan)
+               & (Wd16 > 0)).sum(axis=1)
+    breadth16 = agree16 / n_incl16.replace(0, np.nan)
     return pd.DataFrame({'basket_dev': basket_dev,
                          'basket_dev16': basket_dev16,
                          'basket_prem': basket_prem,
@@ -1856,7 +2055,14 @@ def _adr_hs():
     v = _HS_CTX.get('adr')
     if v is not None:
         return float(v)
-    return float(np.mean([adr_half_spread_bps(nm) for nm in NAMES]))
+    # ADV-weighted, NOT a flat mean: the four OTC lines carry the wide
+    # 10 bps figure but only ~3% of the book, so a flat mean priced the
+    # ADR side ~2 bps too rich and [B11] printed a floor 4 bps above the
+    # one the engine went on to trade (fixed 2026-08-10).
+    w = np.array([UNIVERSE[nm]['adv_usd'] for nm in NAMES], dtype=float)
+    w = np.minimum(w / w.sum(), W_CAP)
+    hs = np.array([adr_half_spread_bps(nm) for nm in NAMES], dtype=float)
+    return float((w * hs).sum() / w.sum())
 
 def adr_side_cost_bps(hs=None):
     """One ADR crossing, bps of the ADR leg's notional."""
@@ -1876,7 +2082,24 @@ def is_bridged(timing=None):
     return (EXEC_TIMING if timing is None else timing) in (
         'hti_close', 'hk_close', 'hk_close_usopen')
 
-def bridge_window_cost_bps(timing=None, ratio=0.8):
+def default_bridge_ratio():
+    """The bridge ratio the ENGINE will actually use, so the printed cost
+    stack and the auto floor track the configured hedge mode instead of a
+    hardcoded 0.8 (which was only right by luck for the current priors —
+    under HEDGE_RATIO_MODE='beta_one' the stack understated by 3.3 bps)."""
+    if not is_bridged():
+        return 0.0
+    if HEDGE_RATIO_MODE == 'beta_one':
+        return 1.0
+    w = np.array([UNIVERSE[nm]['adv_usd'] for nm in NAMES], dtype=float)
+    w = np.minimum(w / w.sum(), W_CAP)
+    w = w / w.sum()
+    b = float((w * np.array([UNIVERSE[nm]['beta_prior']
+                             for nm in NAMES])).sum())
+    return float(np.clip(b, BETA_MIN, BETA_MAX))
+
+def bridge_window_cost_bps(timing=None, ratio=None):
+    ratio = default_bridge_ratio() if ratio is None else ratio
     """One bridge window (on + off) in bps of PACKAGE notional. The two
     half-spreads are the tail book and the day session — which one is paid
     going in depends on the timing, but the pair is the same either way."""
@@ -1922,6 +2145,28 @@ def dev_floor_bps():
     f = (package_rt_cost_bps()
          + FLOOR_CARRY_DAYS * net_carry_bps_per_day()) * MIN_EDGE_HARD
     return f, -f
+
+def xs_z_panel(prem, dev, n):
+    """[XS] per-name rolling z, the SAME convention as the aggregate z and
+    the TW book: deviation over the rolling sd of the RAW premium, window
+    ending at t-1 (ddof=0, shift 1 — no look-ahead)."""
+    sd = prem.rolling(n).std(ddof=0).shift(1).replace(0, np.nan)
+    return dev / sd
+
+def xs_floor_bps_arr(ord_hs_v, adr_hs_v):
+    """[XS] per-name (per-date) deviation floor in bps: that name's OWN
+    round trip — its venue's ADR fee + spread, the ord fee + its estimated
+    half-spread, both FX crossings — x MIN_EDGE_HARD. NO bridge legs in a
+    name's floor: the XS bridge hedges only the book's NET imbalance, and
+    its cost is charged (and reported) at book level. On the desk stack
+    that is ~43 bps listed and ~58 OTC — an OTC name must be MORE
+    dislocated to earn its slot, which is the whole liquidity control (no
+    exclusions)."""
+    base_bps = ORD_FEE_BPS + ADR_FEE_BPS + 2 * FX_HALF_SPREAD_BPS
+    one_side = np.full(np.shape(ord_hs_v), float(base_bps))
+    if COST_FEES_MODE != 'all_in':
+        one_side = one_side + ord_hs_v + np.asarray(adr_hs_v)[None, :]
+    return 2.0 * one_side * MIN_EDGE_HARD
 
 # ============================================================================
 # [B7] THE ENGINE — the [B2a] timeline, ADR side first. One package position
@@ -2008,6 +2253,10 @@ def run_basket_backtest(mats, basket, W, beta_df, z_short=None, z_long=None,
     ord_close_px = mats['ORD_close'].values
     adr_px = mats['ADR_close'].values
     adr_open_px = mats['ADR_open'].values
+    # forward-filled copies for MARKING ONLY — fills always use the raw
+    # prints above
+    adr_ff = mats['ADR_close'].ffill().values
+    ordc_ff = mats['ORD_close'].ffill().values
     Wv = W.values
     prior_arr = np.array([UNIVERSE[nm]['beta_prior'] for nm in NAMES])
     lot_arr = np.array([float(UNIVERSE[nm]['lot']) for nm in NAMES])
@@ -2063,6 +2312,13 @@ def run_basket_backtest(mats, basket, W, beta_df, z_short=None, z_long=None,
     br_used = 0.0
     margin_usd = 0.0
     exit_why = ''
+    # per-name ADR FILL PRICES, kept so a leg dropped mid-trade can be
+    # removed from adr_entry_val exactly. Without this the entry value
+    # still contains a leg the exit value no longer does, and book() books
+    # that leg's whole POSITION value as P&L (found 2026-08-10: one
+    # missing HK opening print turned a $8,740 trade into $518,824).
+    adr_entry_px = np.zeros(len(NAMES))
+    scratch_adr_pnl = 0.0
 
     def bridge_ratio(sig_t):
         if not bridged:
@@ -2160,15 +2416,21 @@ def run_basket_backtest(mats, basket, W, beta_df, z_short=None, z_long=None,
         return f + r + m
 
     def mark(t, ord_on):
-        m = np.nansum(leg_adr_sh * adr_px[t]) - adr_entry_val
+        # marks use the last finite ADR/ord print (adr_ff/ordc_ff): a
+        # single NaN close would otherwise drop that leg from the mark
+        # while its entry value stays in, dumping the equity curve for a
+        # day and polluting Sharpe and max drawdown
+        m = (np.nansum(leg_adr_sh * adr_ff[t]) - adr_entry_val
+             + scratch_adr_pnl)
         if ord_on:
-            m += (np.nansum(leg_ord_sh * ord_close_px[t] / fx[t])
+            m += (np.nansum(leg_ord_sh * ordc_ff[t] / fx[t])
                   - ord_entry_val)
         return m + bridge_pnl + carry_usd(t)
 
     def book(t, ord_exit_val, why):
-        nonlocal state, pos, realized, bridge_pnl
-        adr_pnl = np.nansum(leg_adr_sh * adr_exit_px()) - adr_entry_val
+        nonlocal state, pos, realized, bridge_pnl, scratch_adr_pnl
+        adr_pnl = (np.nansum(leg_adr_sh * adr_exit_px()) - adr_entry_val
+                   + scratch_adr_pnl)
         ord_pnl = ord_exit_val - ord_entry_val
         fund_c, reb_c, marg_c = carry_parts(t)
         carry = fund_c + reb_c + marg_c
@@ -2194,6 +2456,7 @@ def run_basket_backtest(mats, basket, W, beta_df, z_short=None, z_long=None,
         })
         state, pos = 0, 0
         bridge_pnl = 0.0
+        scratch_adr_pnl = 0.0
         equity[t] = realized
 
     for t in range(N_WINDOW + 1, n):
@@ -2204,17 +2467,36 @@ def run_basket_backtest(mats, basket, W, beta_df, z_short=None, z_long=None,
         if state == 1:
             for i in range(len(NAMES)):
                 if leg_ord_sh[i] != 0 and not np.isfinite(ord_open_px[t, i]):
-                    leg_ord_sh[i] = 0     # halted at the open: leg dropped
-                    leg_adr_sh[i] = 0     # its ADR twin is scratched below
+                    # halted at the open: the ord leg never goes on, so the
+                    # ADR twin comes back off at tonight's close. REALISE
+                    # it (price now vs its own fill price), take its entry
+                    # value out of adr_entry_val, and pay its share of one
+                    # ADR crossing — otherwise book() differences an exit
+                    # sum that excludes this leg against an entry sum that
+                    # still includes it, and books the position value.
+                    px_out = adr_px[t, i]
+                    if not np.isfinite(px_out):
+                        col = adr_px[:t + 1, i]
+                        fin = col[np.isfinite(col)]
+                        px_out = fin[-1] if len(fin) else adr_entry_px[i]
+                    scratch_adr_pnl += leg_adr_sh[i] * (px_out
+                                                        - adr_entry_px[i])
+                    adr_entry_val -= leg_adr_sh[i] * adr_entry_px[i]
+                    trade_costs += (pkg_notional * abs(leg_w[i])
+                                    * adr_side_cost_bps(adr_hs_v[i])
+                                    / 1e4 * cost_mult)
+                    leg_ord_sh[i] = 0
+                    leg_adr_sh[i] = 0
             if bridged:
                 bridge_pnl += ((-pos) * br_used * pkg_notional
                                * (idxo[t] / h19[e_sig] - 1.0))
             if not np.any(leg_ord_sh):
-                # nothing fillable: scratch — ADRs back out at tonight's
-                # close; only ADR + bridge costs were and are paid
+                # nothing fillable: scratch. Every leg was already
+                # realised and charged its own ADR crossing in the loop
+                # above, so there is nothing left to unwind here — a
+                # second adr_cross_cost() would double-charge the exit.
                 x_sig = t
                 exit_dev = d_bps
-                trade_costs += adr_cross_cost()
                 ord_entry_val = 0.0
                 book(t, 0.0, 'scratched: no fillable ord legs')
                 continue
@@ -2388,6 +2670,8 @@ def run_basket_backtest(mats, basket, W, beta_df, z_short=None, z_long=None,
             entry_dev, entry_z = d_bps, z_t
             br_used = bridge_ratio(t)
             adr_entry_val = np.nansum(leg_adr_sh * adr_fill)
+            adr_entry_px = np.where(np.isfinite(adr_fill), adr_fill, 0.0)
+            scratch_adr_pnl = 0.0
             ord_entry_val = 0.0
             bridge_pnl = 0.0
             if intraday:
@@ -2454,15 +2738,916 @@ def summarize(trades, eq):
     out['net'] = float(nets.sum())
     out['win_rate'] = float((nets > 0).mean() * 100)
     out['avg_hold'] = float(np.mean([t['hold_d'] for t in trades]))
+    # Sharpe over EVERY row, flat days included. Dropping the zero-P&L
+    # days and then annualising by sqrt(252) inflates the number by
+    # sqrt(all/active) — 1.5x on this book (found 2026-08-10). Capital is
+    # committed to the strategy on the flat days too, so they count.
     d = eq.diff().dropna()
-    d = d[d != 0]
     out['sharpe'] = (float(d.mean() / d.std() * np.sqrt(252))
                      if len(d) > 10 and d.std() > 0 else np.nan)
     peak = eq.cummax()
     out['max_dd'] = float((eq - peak).min())
-    out['tstat'] = (float(nets.mean() / nets.std() * np.sqrt(len(nets)))
-                    if len(nets) > 2 and nets.std() > 0 else np.nan)
+    out['tstat'] = (float(nets.mean() / nets.std(ddof=1)
+                          * np.sqrt(len(nets)))
+                    if len(nets) > 2 and nets.std(ddof=1) > 0 else np.nan)
     return out
+
+# ============================================================================
+# [XS] THE CROSS-SECTIONAL ENGINE — one lot per name, the SAME package
+# mechanics as the aggregate engine (ADR legs at the signal US close, ord
+# legs at the next HK opening auction), but every name answers to its OWN z
+# and its OWN cost floor. The overnight one-legged windows of ALL
+# transitioning lots NET at book level and ONE HTI bridge covers what is
+# left — the aggregate engine's 2x2 sign table applied per lot and summed:
+#   entering lot (ADR on tonight, ord tomorrow):  -pos x beta_prior x usd
+#   exiting lot  (ADR off tonight, ord tomorrow): +pos x beta_prior x usd
+# A balanced book (equal long/short $) nets to ~zero and pays ~no bridge.
+# Bridge PnL / fees / margin are BOOK-level lines: a shared hedge cannot be
+# honestly attributed to single lots, and the [XS] verdict says so.
+# ============================================================================
+def run_xs_backtest(mats, prem, dev, xz, W, ord_hs=None, z_entry=None,
+                    exit_band=None, time_stop=None, cost_mult=1.0,
+                    persist=None):
+    z_entry = XS_Z_ENTRY if z_entry is None else z_entry
+    exit_band = XS_EXIT_BAND if exit_band is None else exit_band
+    time_stop = XS_TIME_STOP if time_stop is None else time_stop
+    persist = XS_PERSIST if persist is None else persist
+    base = mats['base']
+    dates = base['Date'].values
+    dts = pd.to_datetime(base['Date'])
+    gap_next = np.r_[np.diff(dts.values) / np.timedelta64(1, 'D'), 999.0]
+    fx = base['FX'].values
+    h19 = base['HTI_1900'].values
+    idxo = (base['IDX_open'].values if 'IDX_open' in base.columns
+            else np.full(len(base), np.nan))
+    idxo = np.where(np.isfinite(idxo), idxo, base['HTI_0800'].values)
+    cal = mats['ORD_close'].index
+    ord_open_px = mats['ORD_open'].values
+    ord_close_px = mats['ORD_close'].values
+    adr_px = mats['ADR_close'].values
+    # forward-filled copies. Used for MARKS (a halted print must not zero
+    # a mark) and, deliberately, as the LAST-RESORT exit fill: a lot whose
+    # line stops printing has to come off at the last price anyone saw,
+    # not at zero and not never. Entries always use the raw prints. Stale
+    # exit fills are counted and reported (n_stale_exit) — an exit filled
+    # off a week-old close is a fiction the run has to admit to.
+    adr_ff = mats['ADR_close'].ffill().values
+    ordc_ff = mats['ORD_close'].ffill().values
+    nN = len(NAMES)
+    n = len(dates)
+    dev_v = dev.reindex(index=cal, columns=NAMES).values
+    z_v = xz.reindex(index=cal, columns=NAMES).values
+    incl_v = (W.reindex(index=cal, columns=NAMES).fillna(0.0).values > 0)
+    if ord_hs is not None:
+        ord_hs_v = ord_hs.reindex(index=cal, columns=NAMES).values
+    else:
+        ord_hs_v = np.full((n, nN), float(ORD_HALF_SPREAD_BPS))
+    adr_hs_v = np.array([adr_half_spread_bps(nm) for nm in NAMES])
+    floor_v = xs_floor_bps_arr(ord_hs_v, adr_hs_v)
+    prior_arr = np.clip(np.array([UNIVERSE[nm]['beta_prior']
+                                  for nm in NAMES]), BETA_MIN, BETA_MAX)
+    lot_arr = np.array([float(UNIVERSE[nm]['lot']) for nm in NAMES])
+    ratio_arr = np.array([UNIVERSE[nm]['ratio'] for nm in NAMES])
+    adv_arr = np.array([UNIVERSE[nm]['adv_usd'] for nm in NAMES])
+    # persistence: consecutive sessions spent beyond the threshold (NaN z
+    # resets the count — a data hole is not persistence)
+    zi = np.where(np.isfinite(z_v), z_v, 0.0)
+    run_s = np.zeros((n, nN))
+    run_l = np.zeros((n, nN))
+    for t in range(1, n):
+        run_s[t] = np.where(zi[t] >= z_entry, run_s[t - 1] + 1, 0)
+        run_l[t] = np.where(zi[t] <= -z_entry, run_l[t - 1] + 1, 0)
+    # carry prefix sums — identical convention to the aggregate engine
+    sofr = (base['SOFR_pct'].values / 100.0 if 'SOFR_pct' in base.columns
+            else np.full(n, SOFR_FALLBACK_PCT / 100.0))
+    dday = np.r_[0.0, np.diff(dts.values) / np.timedelta64(1, 'D')]
+    fund_cum = np.cumsum(np.r_[0.0, (sofr[:-1] + FUNDING_SPREAD_BPS / 1e4)
+                               * dday[1:] / 360.0])
+    reb_cum = np.cumsum(np.r_[0.0, (sofr[:-1] - BORROW_SPREAD_BPS / 1e4)
+                              * dday[1:] / 360.0])
+
+    # per-name lot state: 0 flat | 1 ADR on (ord fills next open) | 2 full
+    # | 3 ADR unwound (ord lifts next open)
+    st = np.zeros(nN, dtype=int)
+    pos = np.zeros(nN, dtype=int)
+    e_sig = np.zeros(nN, dtype=int)
+    ofill = np.full(nN, -1, dtype=int)
+    usd = np.zeros(nN)
+    sh_o = np.zeros(nN)
+    sh_a = np.zeros(nN)
+    a_val = np.zeros(nN)
+    o_val = np.zeros(nN)
+    a_exit = np.zeros(nN)
+    l_cost = np.zeros(nN)
+    ez = np.zeros(nN)
+    ed = np.zeros(nN)
+    xd = np.zeros(nN)
+    x_why = [''] * nN
+    trades = []
+    realized = 0.0
+    equity = np.zeros(n)
+    br_pnl_total = br_cost_total = br_margin_total = 0.0
+    br_fut_usd = 0.0             # signed futures $ riding since last night
+    br_on_t = -1
+    n_br_windows = 0
+    br_abs_usd = 0.0             # sum of |net| actually bridged
+    br_gross_usd = 0.0           # sum of |per-lot| beta-$ exposed those
+                                 # nights. 1 - abs/gross IS the long/short
+                                 # self-hedge, measured (see BOOK BALANCE)
+    n_advcap = n_clip = n_nobridge = n_budget = n_stale_exit = 0
+    open_cnt_l = np.zeros(n)
+    open_cnt_s = np.zeros(n)
+
+    def _adr_exit_px(t, i):
+        nonlocal n_stale_exit
+        px = adr_px[t, i]
+        if np.isfinite(px):
+            return px
+        n_stale_exit += 1
+        return adr_ff[t, i] if np.isfinite(adr_ff[t, i]) else 0.0
+
+    def _carry(i, t):
+        """(funding paid, rebate earned) for lot i through t — the long leg
+        pays SOFR+120 from its fill; the short leg's proceeds earn
+        SOFR-50. Same prefix sums as the aggregate engine."""
+        fund = reb = 0.0
+        if a_val[i]:
+            a = abs(a_val[i])
+            if pos[i] == +1:
+                fund -= a * (fund_cum[t] - fund_cum[e_sig[i]])
+            else:
+                reb += a * (reb_cum[t] - reb_cum[e_sig[i]])
+        if ofill[i] >= 0 and o_val[i]:
+            o = abs(o_val[i])
+            t0 = min(ofill[i], t)
+            if pos[i] == -1:
+                fund -= o * (fund_cum[t] - fund_cum[t0])
+            else:
+                reb += o * (reb_cum[t] - reb_cum[t0])
+        return fund, reb
+
+    def _book(i, t, a_exit_val, o_exit_val, why):
+        nonlocal realized
+        fund, reb = _carry(i, t)
+        carry = fund + reb
+        adr_pnl = a_exit_val - a_val[i]
+        ord_pnl = o_exit_val - o_val[i]
+        net = adr_pnl + ord_pnl + carry - l_cost[i]
+        realized += net
+        trades.append({
+            'name': NAMES[i],
+            'entry_day': int(e_sig[i]), 'exit_day': int(t),
+            'entry_date': dates[e_sig[i]], 'exit_date': dates[t],
+            'dir': 'SHORT pkg' if pos[i] == -1 else 'LONG pkg',
+            'entry_dev_bps': ed[i], 'entry_z': ez[i],
+            'exit_dev_bps': xd[i],
+            'hold_d': int((dts[t] - dts[e_sig[i]]).days),
+            'notional': usd[i],
+            'ord_pnl': ord_pnl, 'adr_pnl': adr_pnl,
+            'bridge_pnl': 0.0,          # book-level, see res['bridge_*']
+            'carry': carry, 'funding': fund, 'rebate': reb,
+            'costs': l_cost[i], 'net_after_all': net,
+            'exit_reason': why, 'timing': 'xs', 'n_legs': 1,
+            'conv_pnl_diag': pos[i] * (xd[i] - ed[i]) / 1e4 * usd[i]
+            if np.isfinite(xd[i]) else np.nan,
+        })
+        st[i] = 0
+        pos[i] = 0
+        usd[i] = sh_o[i] = sh_a[i] = 0.0
+        a_val[i] = o_val[i] = a_exit[i] = l_cost[i] = 0.0
+        ofill[i] = -1
+        x_why[i] = ''
+
+    for t in range(1, n):
+        # 1) last night's bridge comes off at THIS row's index open
+        if br_fut_usd != 0.0:
+            if (br_on_t >= 0 and np.isfinite(idxo[t])
+                    and np.isfinite(h19[br_on_t]) and h19[br_on_t] > 0):
+                br_pnl_total += br_fut_usd * (idxo[t] / h19[br_on_t] - 1.0)
+            br_fut_usd = 0.0
+            br_on_t = -1
+
+        # 2) state 1: ord legs fill at this row's opening auction
+        for i in np.nonzero(st == 1)[0]:
+            px = ord_open_px[t, i]
+            if not np.isfinite(px):
+                # halted at the open: scratch — the ADR backs out at
+                # tonight's close; only ADR costs were and are paid
+                a_ex = pos[i] * sh_a[i] * _adr_exit_px(t, i)
+                l_cost[i] += (usd[i] * adr_side_cost_bps(adr_hs_v[i])
+                              / 1e4 * cost_mult)
+                xd[i] = dev_v[t, i] * 1e4 if np.isfinite(dev_v[t, i]) \
+                    else np.nan
+                _book(i, t, a_ex, 0.0, 'scratched: ord leg unfillable')
+                continue
+            o_val[i] = -pos[i] * sh_o[i] * px / fx[t]
+            ofill[i] = t
+            l_cost[i] += (usd[i] * ord_side_cost_bps(ord_hs_v[t, i])
+                          / 1e4 * cost_mult)
+            st[i] = 2
+
+        # 3) state 3: ord legs lift at this row's open; the lot books
+        for i in np.nonzero(st == 3)[0]:
+            px = ord_open_px[t, i]
+            if not np.isfinite(px):
+                px = ord_close_px[t, i]        # same day, one clock late
+            if not np.isfinite(px):
+                px = ordc_ff[t, i]             # last resort: a stale print
+                n_stale_exit += 1
+            o_ex = -pos[i] * sh_o[i] * px / fx[t]
+            l_cost[i] += (usd[i] * ord_side_cost_bps(ord_hs_v[t, i])
+                          / 1e4 * cost_mult)
+            _book(i, t, a_exit[i], o_ex, x_why[i])
+
+        # 4) state 2: exit signals tonight (ADR off now, ord off tomorrow)
+        night_fut = 0.0
+        night_gross = 0.0
+        for i in np.nonzero(st == 2)[0]:
+            z_t = z_v[t, i]
+            held = int((dts[t] - dts[e_sig[i]]).days)
+            why = ''
+            if np.isfinite(z_t) and ((pos[i] == -1 and z_t <= exit_band)
+                                     or (pos[i] == +1
+                                         and z_t >= -exit_band)):
+                why = 'z back inside band'
+            elif held >= time_stop:
+                why = f'time stop {time_stop}d'
+            if why and t + 1 >= n:
+                # the exit fired on the last row: there is no next open to
+                # lift the ord into, so the force-out below books it — but
+                # keep the REAL reason instead of letting it be relabelled
+                # 'forced (end of data)', which would understate the exit
+                # tallies at the sample edge
+                x_why[i] = why
+            if why and t + 1 < n:
+                a_exit[i] = pos[i] * sh_a[i] * _adr_exit_px(t, i)
+                l_cost[i] += (usd[i] * adr_side_cost_bps(adr_hs_v[i])
+                              / 1e4 * cost_mult)
+                xd[i] = dev_v[t, i] * 1e4 if np.isfinite(dev_v[t, i]) \
+                    else np.nan
+                x_why[i] = why
+                st[i] = 3
+                night_fut += pos[i] * prior_arr[i] * usd[i]
+                night_gross += abs(prior_arr[i] * usd[i])
+
+        # 5) state 0: entry candidates tonight (per-name, own floor,
+        # persistence, earnings/corr via the inclusion mask)
+        if t + 1 < n and gap_next[t] <= MAX_ENTRY_GAP_DAYS:
+            cand = []
+            for i in range(nN):
+                if st[i] != 0 or not incl_v[t, i]:
+                    continue
+                d_bps = dev_v[t, i] * 1e4
+                if not np.isfinite(d_bps):
+                    continue
+                if run_s[t, i] >= persist and d_bps >= floor_v[t, i]:
+                    want = -1
+                elif run_l[t, i] >= persist and d_bps <= -floor_v[t, i]:
+                    want = +1
+                else:
+                    continue
+                if not (np.isfinite(ord_close_px[t, i])
+                        and np.isfinite(adr_px[t, i])
+                        and np.isfinite(fx[t])):
+                    continue
+                cand.append((i, want, d_bps))
+            if cand:
+                deployed = float(usd[st > 0].sum())
+                budget = max(NOTIONAL_BASKET - deployed, 0.0)
+                per = min(budget / len(cand), XS_NAME_CAP * NOTIONAL_BASKET)
+                for i, want, d_bps in cand:
+                    usd_i = min(per, XS_ADV_CAP * adv_arr[i])
+                    if usd_i <= 0:
+                        # the book is fully deployed — a REFUSAL for want
+                        # of capital, not a name too small to clip. These
+                        # were miscounted as board-lot clips until
+                        # 2026-08-10; every refusal reason gets its own
+                        # counter so none of them hide in another's label.
+                        n_budget += 1
+                        continue
+                    if usd_i < per - 1e-9:
+                        n_advcap += 1
+                    sh = math.floor(usd_i * fx[t] / ord_close_px[t, i]
+                                    / lot_arr[i]) * lot_arr[i]
+                    sa = round(sh / ratio_arr[i])
+                    if sh <= 0 or sa <= 0:
+                        n_clip += 1
+                        continue
+                    st[i] = 1
+                    pos[i] = want
+                    e_sig[i] = t
+                    ofill[i] = -1
+                    sh_o[i] = sh
+                    sh_a[i] = sa
+                    usd[i] = usd_i
+                    ez[i] = z_v[t, i]
+                    ed[i] = d_bps
+                    xd[i] = np.nan
+                    a_val[i] = want * sa * adr_px[t, i]
+                    o_val[i] = 0.0
+                    l_cost[i] = (usd_i * adr_side_cost_bps(adr_hs_v[i])
+                                 / 1e4 * cost_mult)
+                    night_fut += -want * prior_arr[i] * usd_i
+                    night_gross += abs(prior_arr[i] * usd_i)
+
+        # 6) ONE bridge on tonight, over the book's NET imbalance
+        if night_fut != 0.0:
+            if np.isfinite(h19[t]) and h19[t] > 0 and np.isfinite(fx[t]):
+                br_fut_usd = night_fut
+                br_on_t = t
+                n_br_windows += 1
+                br_abs_usd += abs(night_fut)
+                br_gross_usd += night_gross
+                br_cost_total += (abs(night_fut)
+                                  * (2 * FUT_FEE_BPS + FUT_HALF_SPREAD_BPS
+                                     + FUT_HALF_SPREAD_DAY_BPS)
+                                  / 1e4 * cost_mult)
+                ct = round(abs(night_fut) * fx[t]
+                           / (h19[t] * IDX_FUT_MULTIPLIER))
+                if ct >= 1:
+                    marg = ct * MARGIN_HKD_PER_CONTRACT / fx[t]
+                    br_margin_total += (marg * (MARGIN_FUND_SPREAD_BPS / 1e4)
+                                        * max(gap_next[t], 1.0) / 360.0
+                                        * cost_mult)
+            else:
+                n_nobridge += 1
+
+        # 7) mark the book
+        mtm = 0.0
+        for i in np.nonzero(st > 0)[0]:
+            if st[i] in (1, 2):
+                mtm += pos[i] * sh_a[i] * adr_ff[t, i] - a_val[i]
+            else:
+                mtm += a_exit[i] - a_val[i]
+            if st[i] in (2, 3):
+                mtm += -pos[i] * sh_o[i] * ordc_ff[t, i] / fx[t] - o_val[i]
+            f_, r_ = _carry(i, t)
+            mtm += f_ + r_ - l_cost[i]
+        equity[t] = (realized + mtm + br_pnl_total - br_cost_total
+                     - br_margin_total)
+        open_cnt_l[t] = int(((st > 0) & (pos > 0)).sum())
+        open_cnt_s[t] = int(((st > 0) & (pos < 0)).sum())
+
+    # data ended mid-book: force the remaining lots out at the last prints
+    t_l = n - 1
+    for i in range(nN):
+        if st[i] == 0:
+            continue
+        if st[i] == 1:
+            a_ex = pos[i] * sh_a[i] * _adr_exit_px(t_l, i)
+            l_cost[i] += (usd[i] * adr_side_cost_bps(adr_hs_v[i])
+                          / 1e4 * cost_mult)
+            xd[i] = np.nan
+            _book(i, t_l, a_ex, 0.0, 'scratched (end of data)')
+        elif st[i] == 2:
+            a_ex = pos[i] * sh_a[i] * _adr_exit_px(t_l, i)
+            l_cost[i] += ((usd[i] * adr_side_cost_bps(adr_hs_v[i])
+                           + usd[i] * ord_side_cost_bps(ord_hs_v[t_l, i]))
+                          / 1e4 * cost_mult)
+            o_ex = -pos[i] * sh_o[i] * ordc_ff[t_l, i] / fx[t_l]
+            xd[i] = dev_v[t_l, i] * 1e4 if np.isfinite(dev_v[t_l, i]) \
+                else np.nan
+            _book(i, t_l, a_ex, o_ex, 'forced (end of data)')
+        else:
+            l_cost[i] += (usd[i] * ord_side_cost_bps(ord_hs_v[t_l, i])
+                          / 1e4 * cost_mult)
+            o_ex = -pos[i] * sh_o[i] * ordc_ff[t_l, i] / fx[t_l]
+            _book(i, t_l, a_exit[i], o_ex, x_why[i] + ' (end of data)')
+
+    eq = pd.Series(equity, index=base['Date'])
+    res = summarize(trades, eq)
+    res['net_lots'] = res['net']            # name-lot net, ex-bridge
+    res['win_rate_lots'] = res['win_rate']
+    res['tstat_lots'] = res['tstat']
+    res['bridge_pnl'] = br_pnl_total
+    res['bridge_cost'] = br_cost_total
+    res['bridge_margin'] = br_margin_total
+    res['net'] = (res['net'] + br_pnl_total - br_cost_total
+                  - br_margin_total)
+    # summarize() only ever saw the LOT nets, and every lot carries
+    # bridge_pnl = 0 because the hedge is shared. On this book the bridge
+    # is most of the P&L, so a win rate and t-stat that ignore it describe
+    # a book nobody trades. Pro-rate the book-level bridge back onto the
+    # lots by notional and restate BOTH — the honest headline is the one
+    # that includes it (found 2026-08-10).
+    br_net = br_pnl_total - br_cost_total - br_margin_total
+    gross_n = sum(t_['notional'] for t_ in trades)
+    if trades and gross_n > 0:
+        for t_ in trades:
+            t_['bridge_alloc'] = br_net * t_['notional'] / gross_n
+            t_['net_incl_bridge'] = (t_['net_after_all']
+                                     + t_['bridge_alloc'])
+        nb = np.array([t_['net_incl_bridge'] for t_ in trades])
+        res['win_rate'] = float((nb > 0).mean() * 100)
+        res['tstat'] = (float(nb.mean() / nb.std(ddof=1) * np.sqrt(len(nb)))
+                        if len(nb) > 2 and nb.std(ddof=1) > 0 else np.nan)
+    res['trades'] = trades
+    res['equity'] = eq
+    res['n_advcap'] = n_advcap
+    res['n_clip'] = n_clip
+    res['n_nobridge'] = n_nobridge
+    res['n_budget'] = n_budget
+    res['n_stale_exit'] = n_stale_exit
+    res['n_br_windows'] = n_br_windows
+    res['br_abs_usd'] = br_abs_usd
+    res['br_gross_usd'] = br_gross_usd
+    res['open_long'] = pd.Series(open_cnt_l, index=base['Date'])
+    res['open_short'] = pd.Series(open_cnt_s, index=base['Date'])
+    return res
+
+def print_xs_book(mats, prem, prem16, W, ord_hs, agg_res):
+    """[XS] run the cross-sectional book and print every block: model
+    explained, per-name floors, verdict, per-name results, the survival
+    test (does the RELATIVE dislocation reach the ord fill?), halves,
+    exit-band line, the N x Z plateau, and the A/B against the aggregate
+    book. Returns what the charts need."""
+    dev_b = prem - prem.rolling(N_WINDOW).mean().shift(1)
+    z_b = xs_z_panel(prem, dev_b, N_WINDOW)
+    dev16_b = prem16 - prem16.rolling(N_WINDOW).mean().shift(1)
+    adr_hs_v = np.array([adr_half_spread_bps(nm) for nm in NAMES])
+    if ord_hs is not None:
+        ohs_full = ord_hs.reindex(index=dev_b.index, columns=NAMES).values
+    else:
+        ohs_full = np.full(dev_b.shape, float(ORD_HALF_SPREAD_BPS))
+    flv = xs_floor_bps_arr(ohs_full, adr_hs_v)
+
+    print("\n" + "=" * 76)
+    print("  [XS] CROSS-SECTIONAL BOOK — the same packages, selected PER "
+          "NAME")
+    print(f"  sign: z_i >= +{XS_Z_ENTRY:.2f} -> SHORT that name's package "
+          f"| z_i <= -{XS_Z_ENTRY:.2f} -> LONG it")
+    print("=" * 76)
+    for ln in (
+        "WHAT CHANGES      nothing about the trade unit — every position",
+        "                  is still one ADR vs its OWN ordinary at the",
+        "                  mechanical ratio (this is ADR arb, not pairs",
+        "                  trading between companies); what changes is",
+        "                  SELECTION: each name answers to its own z",
+        "                  instead of one averaged basket z",
+        f"ENTRY (name)      z_i beyond +/-{XS_Z_ENTRY:.1f} for "
+        f"{XS_PERSIST} consecutive sessions",
+        "                  AND |dev_i| >= that name's OWN cost floor",
+        f"EXIT (name)       z_i back inside +/-{XS_EXIT_BAND:.2f} | time "
+        f"stop {XS_TIME_STOP}d",
+        f"SIZING            equal $ per new lot inside "
+        f"US${NOTIONAL_BASKET:,.0f} gross;",
+        f"                  caps {XS_NAME_CAP:.0%}/name and "
+        f"{XS_ADV_CAP:.0%} of the name's own ADV",
+        "HEDGE             long and short packages hedge each other over",
+        "                  the gap; ONE HTI bridge carries the NET",
+        "                  imbalance (beta-prior weighted) — on at the",
+        "                  19:00Z print, off at the next HK open; fees,",
+        "                  spread and margin charged on the NET only",
+        "GATES             earnings block + corr gate (the inclusion mask,",
+        "                  same as the aggregate) | NO breadth gate —",
+        "                  dispersion is the fuel here, not a fault. Note",
+        "                  the half-life/drift REGIME gate is also absent:",
+        "                  it is a basket-level verdict and this book has",
+        "                  no basket-level signal to run it on",
+        "PNL               per-lot two_leg + carry; bridge PnL/fees/margin",
+        "                  are BOOK-level lines — a shared hedge cannot be",
+        "                  honestly attributed to single lots",
+    ):
+        print("  " + ln)
+
+    # ---- per-name floors & caps — the liquidity control, in the open ----
+    rows = []
+    for i, nm in enumerate(NAMES):
+        rows.append({'name': nm,
+                     'venue': UNIVERSE[nm].get('venue', 'listed'),
+                     'floor (bps)': flv[-1, i],
+                     'ADV cap ($)': XS_ADV_CAP * UNIVERSE[nm]['adv_usd'],
+                     'z latest': z_b[nm].iloc[-1],
+                     'dev latest (bps)': dev_b[nm].iloc[-1] * 1e4})
+    show_table(pd.DataFrame(rows).set_index('name'),
+               title='[XS] per-name entry floor and size cap',
+               note="floor = the name's OWN round trip (its fees + its "
+                    "half-spread, both FX crossings, NO bridge) x "
+                    f"MIN_EDGE_HARD {MIN_EDGE_HARD:.2f}. OTC floors are "
+                    "wider because OTC costs are — that, not exclusion, "
+                    "is how thin lines earn their slot (user call "
+                    "2026-08-09). ADV cap = "
+                    f"{XS_ADV_CAP:.0%} x adv_usd per name-slice.",
+               fmt={'floor (bps)': '{:,.0f}', 'ADV cap ($)': '{:,.0f}',
+                    'z latest': '{:+.2f}',
+                    'dev latest (bps)': '{:+,.0f}'})
+
+    # ---- base run + halves ----
+    xs = run_xs_backtest(mats, prem, dev_b, z_b, W, ord_hs=ord_hs)
+    half_n = len(mats['base']) // 2
+    halves = {}
+    for lbl, sl in (('first half', slice(0, half_n)),
+                    ('second half', slice(half_n, None))):
+        zh = z_b.copy()
+        zh.loc[~z_b.index.isin(z_b.index[sl])] = np.nan
+        halves[lbl] = run_xs_backtest(mats, prem, dev_b, zh, W,
+                                      ord_hs=ord_hs)
+
+    # ---- [XS] VERDICT ----
+    tr = xs['trades']
+    print("\n" + "=" * 76)
+    print("  [XS] VERDICT — the cross-sectional book, after everything")
+    print("=" * 76)
+    if not tr:
+        print("  NO TRADES — floors + persistence refused every candidate; "
+              "read the tallies below.")
+    else:
+        g = sum(t['notional'] for t in tr)
+        tnet = sum(t['net_after_all'] for t in tr)
+        costs = sum(t['costs'] for t in tr)
+        carry = sum(t['carry'] for t in tr)
+        gross = tnet + costs - carry
+
+        def _bp(v):
+            return v / g * 1e4
+        print(f"  net after ALL costs      ${xs['net']:>12,.0f}   "
+              f"{_bp(xs['net']):>+7.1f} bps per $ traded (incl. bridge)")
+        print(f"    name-lot net           ${tnet:>12,.0f}   "
+              f"{_bp(tnet):>+7.1f} bps")
+        print(f"    gross (before costs)   ${gross:>12,.0f}   "
+              f"{_bp(gross):>+7.1f} bps")
+        print(f"    execution costs        ${-costs:>12,.0f}   "
+              f"{-_bp(costs):>+7.1f} bps")
+        print(f"    carry (fund+rebate)    ${carry:>12,.0f}   "
+              f"{_bp(carry):>+7.1f} bps")
+        print(f"    bridge PnL             ${xs['bridge_pnl']:>12,.0f}   "
+              f"{_bp(xs['bridge_pnl']):>+7.1f} bps   what the hedge made/lost")
+        print(f"    bridge fees+spread     ${-xs['bridge_cost']:>12,.0f}   "
+              f"{-_bp(xs['bridge_cost']):>+7.1f} bps   charged on the NET only")
+        print(f"    bridge margin funding  ${-xs['bridge_margin']:>12,.0f}   "
+              f"{-_bp(xs['bridge_margin']):>+7.1f} bps")
+        avg_net = (xs['br_abs_usd'] / xs['n_br_windows']
+                   if xs['n_br_windows'] else 0.0)
+        print(f"    bridge windows         {xs['n_br_windows']:>12,}   avg "
+              f"net ${avg_net:,.0f} carried per night (see SELF-HEDGE "
+              f"below)")
+        print(f"  name-lots                {xs['n_trades']:>12,}   across "
+              f"{len(set(t_['name'] for t_ in tr))} names | avg hold "
+              f"{xs['avg_hold']:.1f} calendar days")
+        tst = xs['tstat']
+        print(f"  win rate                 {xs['win_rate']:>11.1f}%   "
+              f"lot P&L WITH its share of the book-level bridge")
+        print(f"  t-stat                   {tst:>12.2f}   "
+              + ('>2 = unlikely to be luck' if tst and tst > 2
+                 else 'BELOW 2 — could be luck'))
+        print(f"    the same, ex-bridge    {xs['tstat_lots']:>12.2f}   "
+              f"win {xs['win_rate_lots']:.1f}% — this is the flattering "
+              f"pair; the bridge is")
+        print(f"                                          shared, so it is "
+              f"pro-rated by notional, NOT ignored")
+        print(f"  Sharpe (book equity)     {xs['sharpe']:>12.2f}")
+        print(f"  max drawdown             ${xs['max_dd']:>12,.0f}")
+        h1, h2 = halves['first half'], halves['second half']
+        print(f"  first half               ${h1['net']:>12,.0f}   "
+              f"{h1['n_trades']} lots, win "
+              f"{h1['win_rate'] if h1['n_trades'] else float('nan'):.1f}%")
+        print(f"  second half              ${h2['net']:>12,.0f}   "
+              f"{h2['n_trades']} lots, win "
+              f"{h2['win_rate'] if h2['n_trades'] else float('nan'):.1f}%")
+        if h1['net'] > 0 and h2['net'] < h1['net'] * 0.5:
+            print("    -> the edge DECAYS across the sample; the second "
+                  "half is what to plan on")
+    print(f"  candidates refused: {xs['n_budget']} for want of capital "
+          f"(book already fully deployed) | {xs['n_clip']} too small for "
+          f"one board lot | ADV cap trimmed {xs['n_advcap']} more")
+    if xs['n_stale_exit'] or xs['n_nobridge']:
+        print(f"  data holes: {xs['n_stale_exit']} exit legs filled off a "
+              f"STALE print (the line stopped printing) | "
+              f"{xs['n_nobridge']} imbalanced nights with no HTI print "
+              f"(rode unhedged)")
+    if xs['n_stale_exit']:
+        sc('WARN', 'XS stale exit fills [XS]',
+           f"{xs['n_stale_exit']} exit legs filled at a carried-forward "
+           f"price — those fills are assumptions, not prints")
+    # ---- SELF-HEDGE — the load-bearing assumption of this design, and it
+    # has to be measured on the quantity the BRIDGE actually carries: the
+    # beta-dollars of the ONE-LEGGED lots each night (entering + exiting).
+    # A count of open lots is the wrong instrument — a fully paired lot
+    # needs no hedge at all, so "days with both sides on" can move
+    # opposite to the hedge (corrected 2026-08-10).
+    gr = xs.get('br_gross_usd') or 0.0
+    if gr > 0:
+        keep = xs['br_abs_usd'] / gr
+        print(f"  SELF-HEDGE               {(1 - keep) * 100:>11.0f}%   of "
+              f"the overnight beta-$ cancelled between entering and "
+              f"exiting lots")
+        print(f"    exposed, gross         ${gr / xs['n_br_windows']:>12,.0f}"
+              f"   avg per bridge night, before netting")
+        print(f"    left for the bridge    "
+              f"${xs['br_abs_usd'] / xs['n_br_windows']:>12,.0f}   avg per "
+              f"night — THIS is what the bridge lines above paid for")
+        print("    ^ the whole cost case for this design is that the two "
+              "sides hedge each other")
+        print("      overnight. 0% here means every night was one-way and "
+              "the HTI leg carried it all.")
+        if keep > 0.75:
+            sc('WARN', 'XS self-hedge [XS]',
+               f"only {(1 - keep) * 100:.0f}% of overnight exposure "
+               f"cancelled between lots — the bridge is carrying the "
+               f"book, and its cost/PnL lines are the price of that")
+    sc('INFO', 'XS book [XS]',
+       f"net ${xs['net']:,.0f} | {xs['n_trades']} lots | win "
+       f"{xs['win_rate'] if xs['n_trades'] else float('nan'):.1f}% | "
+       f"t {xs['tstat'] if xs['n_trades'] else float('nan'):.2f}")
+    if xs['n_nobridge']:
+        sc('WARN', 'XS unbridged nights [XS]',
+           f"{xs['n_nobridge']} nights had a net imbalance and no usable "
+           f"HTI 19:00Z print — those gaps rode unhedged")
+
+    # ---- per-name results ----
+    if tr:
+        tdf = pd.DataFrame(tr)
+        tdf['bps'] = tdf['net_after_all'] / tdf['notional'] * 1e4
+        by = tdf.groupby('name').agg(
+            lots=('net_after_all', 'size'),
+            net=('net_after_all', 'sum'),
+            win=('net_after_all', lambda s: float((s > 0).mean() * 100)),
+            avg_bps=('bps', 'mean'),
+            avg_hold=('hold_d', 'mean'))
+        by = by.reindex([nm for nm in NAMES if nm in by.index])
+        by.columns = ['lots', 'net $', 'win %', 'avg bps/lot', 'avg hold d']
+        show_table(by, title='[XS] per-name results — every name pays its '
+                             'own way',
+                   note='a name that only ever loses here is not earning '
+                        'its floor — raise its floor (half_spread_bps in '
+                        'UNIVERSE) or question its data before blaming '
+                        'the design.',
+                   fmt={'lots': '{:,.0f}', 'net $': '{:+,.0f}',
+                        'win %': '{:.0f}', 'avg bps/lot': '{:+,.0f}',
+                        'avg hold d': '{:,.1f}'})
+        show = tdf[['name', 'entry_date', 'exit_date', 'dir', 'entry_z',
+                    'entry_dev_bps', 'exit_dev_bps', 'hold_d', 'ord_pnl',
+                    'adr_pnl', 'carry', 'costs', 'net_after_all',
+                    'exit_reason']].copy()
+        show.columns = ['name', 'entry', 'exit', 'dir', 'z in', 'in dev',
+                        'out dev', 'days', 'ord PnL', 'ADR PnL', 'carry',
+                        'costs', 'NET', 'exit why']
+        show_table(show.tail(20).set_index('name'),
+                   title='[XS] last 20 name-lots — leg-by-leg',
+                   note='entry = the night the ADR leg went on; the ord '
+                        'locked the pair at the NEXT HK open; exit = the '
+                        'morning the ord came off. Bridge lines are book-'
+                        'level and not in these rows.',
+                   fmt={'z in': '{:+.2f}', 'in dev': '{:+,.0f}',
+                        'out dev': '{:+,.0f}', 'days': '{:,.0f}',
+                        'ord PnL': '{:+,.0f}', 'ADR PnL': '{:+,.0f}',
+                        'carry': '{:+,.0f}', 'costs': '{:,.0f}',
+                        'NET': '{:+,.0f}'})
+
+    # ---- [XS-TZ] the survival test: does the RELATIVE dislocation reach
+    # the ord fill? The aggregate [TZ1] showed the AVERAGE gives most of
+    # itself back by the HK open; the XS claim is that the LONG-SHORT
+    # spread is stickier because the common overnight move cancels ----
+    zvv = z_b.values
+    dv = dev_b.values * 1e4
+    dv16 = dev16_b.shift(-1).values * 1e4
+    inclv = (W.reindex(index=dev_b.index,
+                       columns=NAMES).fillna(0.0).values > 0)
+    fin = np.isfinite(zvv) & np.isfinite(dv) & np.isfinite(dv16)
+    m_s = fin & inclv & (zvv >= XS_Z_ENTRY) & (dv >= flv)
+    m_l = fin & inclv & (zvv <= -XS_Z_ENTRY) & (dv <= -flv)
+    if m_s.sum() >= 20 and m_l.sum() >= 20:
+        s_sig, s_fil = float(dv[m_s].mean()), float(dv16[m_s].mean())
+        l_sig, l_fil = float(dv[m_l].mean()), float(dv16[m_l].mean())
+        ls_sig, ls_fil = s_sig - l_sig, s_fil - l_fil
+        rows = [
+            {'side': 'SHORT side (ADR rich)', 'name-days': int(m_s.sum()),
+             'dev at signal': s_sig, 'at ord fill': s_fil,
+             'kept %': s_fil / s_sig * 100 if abs(s_sig) > 10 else np.nan},
+            {'side': 'LONG side (ADR cheap)', 'name-days': int(m_l.sum()),
+             'dev at signal': l_sig, 'at ord fill': l_fil,
+             'kept %': l_fil / l_sig * 100 if abs(l_sig) > 10 else np.nan},
+            {'side': 'LONG-SHORT spread', 'name-days': np.nan,
+             'dev at signal': ls_sig, 'at ord fill': ls_fil,
+             'kept %': ls_fil / ls_sig * 100 if abs(ls_sig) > 10
+             else np.nan},
+        ]
+        show_table(pd.DataFrame(rows).set_index('side'),
+                   title='[XS-TZ] candidate name-days — the dislocation '
+                         'at the signal vs at the ord fill (bps)',
+                   note='candidate = |z_i| past the threshold AND past '
+                        'the name\'s floor. Compare the LONG-SHORT row '
+                        'with [TZ1]: the common overnight index move '
+                        'cancels between the two sides, so the SPREAD '
+                        'should keep more of itself than the average did '
+                        '— if it does not, the XS premise fails and this '
+                        'table is where that shows first.',
+                   fmt={'name-days': '{:,.0f}', 'dev at signal': '{:+,.0f}',
+                        'at ord fill': '{:+,.0f}', 'kept %': '{:,.0f}'})
+    disp = (dev_b.where(W.reindex(index=dev_b.index, columns=NAMES)
+                        .fillna(0.0) > 0).std(axis=1, ddof=0) * 1e4)
+    print(f"\n  [XS] dispersion gauge — cross-sectional sd of devs: latest "
+          f"{disp.iloc[-1]:,.0f} bps | median {disp.median():,.0f} | p90 "
+          f"{disp.quantile(0.9):,.0f} (report-only; high dispersion = "
+          f"more XS candidates)")
+    # ---- does the book actually earn MORE in the regime it was designed
+    # for? Split the lots it already took by the dispersion on their entry
+    # day. No extra backtests — this is a grouping of the base run. ----
+    if tr:
+        dv_arr = disp.values
+        td = pd.DataFrame(tr)
+        td['disp'] = dv_arr[td['entry_day'].values]
+        td['bps'] = td['net_after_all'] / td['notional'] * 1e4
+        med_d = float(np.nanmedian(dv_arr))
+        q75 = float(np.nanquantile(dv_arr, 0.75))
+        rows = []
+        for lbl, sub in (
+                (f'LOW  (<= {med_d:,.0f} bps)', td[td['disp'] <= med_d]),
+                (f'HIGH (>  {med_d:,.0f} bps)', td[td['disp'] > med_d]),
+                (f'  of which top quartile (> {q75:,.0f})',
+                 td[td['disp'] > q75])):
+            if len(sub):
+                rows.append({'entry-day dispersion': lbl, 'lots': len(sub),
+                             'net $': sub['net_after_all'].sum(),
+                             'win %': float((sub['net_after_all'] > 0)
+                                            .mean() * 100),
+                             'avg bps/lot': sub['bps'].mean()})
+        if rows:
+            show_table(pd.DataFrame(rows).set_index('entry-day dispersion'),
+                       title='[XS] lot economics by dispersion regime — '
+                             'the premise of this design, tested',
+                       note='the cross-sectional book exists because the '
+                            'NAMES disagree; if the HIGH row does not beat '
+                            'the LOW row, the dislocations are common-mode '
+                            'and the aggregate book is the right one for '
+                            'this data. Lot nets EXCLUDE the book-level '
+                            'bridge (which is charged on the net '
+                            'imbalance — see BOOK BALANCE above).',
+                       fmt={'lots': '{:,.0f}', 'net $': '{:+,.0f}',
+                            'win %': '{:.1f}', 'avg bps/lot': '{:+,.1f}'})
+
+    # ---- cost robustness + breakeven: how far above the modelled stack
+    # can costs go before this book dies? ----
+    cost_runs = {1.0: xs}
+    rows = []
+    for cm in XS_COST_MULTS:
+        cost_runs[cm] = run_xs_backtest(mats, prem, dev_b, z_b, W,
+                                        ord_hs=ord_hs, cost_mult=cm)
+    for cm in sorted(cost_runs):
+        r = cost_runs[cm]
+        rows.append({'costs': f'x{cm:.1f}', 'lots': r['n_trades'],
+                     'net $': r['net'], 'win %': r['win_rate']})
+    be, prev_cm, prev_net = None, None, None
+    for cm in sorted(cost_runs):
+        nt = cost_runs[cm]['net']
+        if prev_net is not None and prev_net > 0 >= nt:
+            be = prev_cm + (cm - prev_cm) * prev_net / (prev_net - nt)
+            break
+        prev_cm, prev_net = cm, nt
+    show_table(pd.DataFrame(rows).set_index('costs'),
+               title='[XS] robustness — cost multiplier',
+               note='every fee, half-spread and bridge crossing scaled '
+                    'together. x1.0 is the base run. READ IT AS A '
+                    'SENSITIVITY, NOT A FORECAST: the entry floors are '
+                    'held at the x1.0 stack, so every row trades the SAME '
+                    'lots at a higher cost. A desk whose costs really were '
+                    '40% higher would also face a 40% higher hurdle and '
+                    'would take fewer, better trades — so the breakeven '
+                    'below is a lower bound on resilience, not an '
+                    'estimate of it.',
+               fmt={'lots': '{:,.0f}', 'net $': '{:+,.0f}',
+                    'win %': '{:.1f}'})
+    if be:
+        print(f"  [XS] cost breakeven: x{be:.2f} — costs "
+              f"{(be - 1) * 100:.0f}% above the modelled stack wipe this "
+              f"book out")
+    else:
+        worst = max(cost_runs)
+        print(f"  [XS] cost breakeven: not reached — still "
+              f"${cost_runs[worst]['net']:,.0f} at x{worst:.1f} costs")
+
+    # ---- entry/exit knob sweep — one knob moved at a time off the base ----
+    def _knob_row(lbl, r, base=False):
+        stops = sum(1 for t_ in r['trades']
+                    if 'time stop' in t_['exit_reason'])
+        return {'variant': lbl + (' <- base' if base else ''),
+                'lots': r['n_trades'], 'net $': r['net'],
+                'win %': r['win_rate'], 'avg hold d': r['avg_hold'],
+                'exits by stop %': stops / max(r['n_trades'], 1) * 100,
+                't-stat': r['tstat']}
+    rows = []
+    for p_ in XS_PERSIST_GRID:
+        r = (xs if p_ == XS_PERSIST
+             else run_xs_backtest(mats, prem, dev_b, z_b, W, ord_hs=ord_hs,
+                                  persist=p_))
+        rows.append(_knob_row(f'persistence {p_} session(s)', r,
+                              p_ == XS_PERSIST))
+    for eb in XS_EXIT_BAND_GRID:
+        r = (xs if eb == XS_EXIT_BAND
+             else run_xs_backtest(mats, prem, dev_b, z_b, W, ord_hs=ord_hs,
+                                  exit_band=eb))
+        rows.append(_knob_row(f'exit band +/-{eb:.2f}', r,
+                              eb == XS_EXIT_BAND))
+    for st_ in XS_TIME_STOP_GRID:
+        r = (xs if st_ == XS_TIME_STOP
+             else run_xs_backtest(mats, prem, dev_b, z_b, W, ord_hs=ord_hs,
+                                  time_stop=st_))
+        rows.append(_knob_row(f'time stop {st_}d', r, st_ == XS_TIME_STOP))
+    show_table(pd.DataFrame(rows).set_index('variant'),
+               title='[XS] entry/exit knobs — one moved at a time off the '
+                     'base run',
+               note='PERSISTENCE = sessions the signal must hold beyond '
+                    'the threshold before entry (1 = trade the first '
+                    'print, which also trades the bad prints the [QC] '
+                    'jump audit counts). EXIT BAND 0.00 = the aggregate\'s '
+                    'exit-at-zero; wider banks the middle of the reversion '
+                    'and skips its slowest, carry-heaviest last leg. TIME '
+                    'STOP: watch "exits by stop %" — a stop firing on a '
+                    'large share of lots is not a safety valve, it is a '
+                    'second exit rule cutting positions that had not '
+                    'converged yet.',
+               fmt={'lots': '{:,.0f}', 'net $': '{:+,.0f}',
+                    'win %': '{:.1f}', 'avg hold d': '{:,.1f}',
+                    'exits by stop %': '{:.0f}', 't-stat': '{:.2f}'})
+
+    # ---- exit-reason tally, same shape as the aggregate book's ----
+    if tr:
+        er = pd.DataFrame(tr).groupby('exit_reason')['net_after_all'].agg(
+            ['size', 'sum', 'mean'])
+        er.columns = ['n', 'net $', 'avg $']
+        show_table(er, title='[XS] exit-reason tally',
+                   fmt={'n': '{:,.0f}', 'net $': '{:+,.0f}',
+                        'avg $': '{:+,.0f}'})
+
+    # ---- [XS-B4] the plateau — same N x Z grid as the aggregate ----
+    t_grid = datetime.now()
+    print(f"\n{'=' * 76}")
+    print(f"  [XS-B4] PnL UNDER DIFFERENT THRESHOLDS — {len(N_GRID)} "
+          f"windows x {len(Z_GRID)} z levels = "
+          f"{len(N_GRID) * len(Z_GRID)} XS backtests")
+    print(f"  every cell pays the full per-name cost stack and clears the "
+          f"per-name floors")
+    print(f"{'=' * 76}")
+    gx_net = pd.DataFrame(index=[f"N={n_}" for n_ in N_GRID],
+                          columns=[f"Z={z_}" for z_ in Z_GRID], dtype=float)
+    gx_tr, gx_win = gx_net.copy(), gx_net.copy()
+    for n_ in N_GRID:
+        devN = prem - prem.rolling(n_).mean().shift(1)
+        zN = xs_z_panel(prem, devN, n_)
+        for z_ in Z_GRID:
+            r = run_xs_backtest(mats, prem, devN, zN, W, ord_hs=ord_hs,
+                                z_entry=z_)
+            gx_net.loc[f"N={n_}", f"Z={z_}"] = r['net']
+            gx_tr.loc[f"N={n_}", f"Z={z_}"] = r['n_trades']
+            gx_win.loc[f"N={n_}", f"Z={z_}"] = r['win_rate']
+    cfg = (f"N={N_WINDOW}", f"Z={XS_Z_ENTRY}")
+    flat = gx_net.stack()
+    best = flat.idxmax() if len(flat.dropna()) else None
+    shownx = _dfmap(gx_net, lambda v: f"{v:,.0f}" if np.isfinite(v)
+                    else '—')
+    if cfg[0] in shownx.index and cfg[1] in shownx.columns:
+        shownx.loc[cfg[0], cfg[1]] = f">{shownx.loc[cfg[0], cfg[1]]}<"
+    if best is not None:
+        shownx.loc[best[0], best[1]] = f"*{shownx.loc[best[0], best[1]]}*"
+    show_table(shownx, title='[XS] net PnL after ALL costs, by (N window, '
+                             'Z entry)',
+               note='>x< = the configured cell | *x* = the best cell. '
+                    'Prefer a broad plateau over a lone spike — same '
+                    'reading rules as the aggregate grid above.',
+               fmt=None)
+    if GRID_SHOW_WIN:
+        show_table(gx_win, title='[XS] win % by cell', fmt='{:.0f}')
+    print(f"  lot counts per cell: {int(np.nanmin(gx_tr.values))}-"
+          f"{int(np.nanmax(gx_tr.values))} (a cell with almost no lots is "
+          f"not evidence — read it beside the win % grid)")
+    print(f"  ({len(N_GRID) * len(Z_GRID)} XS backtests in "
+          f"{(datetime.now() - t_grid).seconds}s)")
+
+    # ---- A/B head to head — the question this whole block answers ----
+    rows = []
+    for lbl, r in (('aggregate (one z, all names)', agg_res),
+                   ('cross-sectional (per-name z)', xs)):
+        g_ = sum(t_['notional'] for t_ in r['trades'])
+        rows.append({'book': lbl, 'trades': r['n_trades'],
+                     'gross traded $': g_, 'net $': r['net'],
+                     'net bps': r['net'] / g_ * 1e4 if g_ else np.nan,
+                     'win %': r['win_rate'], 't-stat': r['tstat'],
+                     'Sharpe': r['sharpe'], 'maxDD $': r['max_dd']})
+    show_table(pd.DataFrame(rows).set_index('book'),
+               title='[XS] A/B HEAD-TO-HEAD — identical data, identical '
+                     'cost stack',
+               note='same premiums, same fill convention, same '
+                    'fees/spreads/carry. The aggregate book trades every '
+                    'name whenever the AVERAGE dislocates; the XS book '
+                    'trades only the names that are dislocated '
+                    'themselves, and its bridge is charged on the net '
+                    'imbalance only — that is the design difference being '
+                    'priced, not a discount. READ THE COLUMNS CAREFULLY: '
+                    '"net bps" is the like-for-like number. Both books now '
+                    'count their bridge in win % and t-stat (XS pro-rates '
+                    'the shared hedge onto its lots by notional), but the '
+                    'UNIT still differs — one PACKAGE for the aggregate, '
+                    'one NAME-LOT for XS — and t scales with the square '
+                    'root of the count, so slicing the same book finer '
+                    'flatters XS on that column. Sizing differs too: the '
+                    f'aggregate scales size by |z| up to {SIZE_CAP:.0f}x '
+                    f'({SIZING_MODE}) while XS puts equal dollars in every '
+                    'lot, which is why its gross traded is smaller.',
+               fmt={'trades': '{:,.0f}', 'gross traded $': '{:,.0f}',
+                    'net $': '{:+,.0f}', 'net bps': '{:+,.1f}',
+                    'win %': '{:.1f}', 't-stat': '{:.2f}',
+                    'Sharpe': '{:.2f}', 'maxDD $': '{:,.0f}'})
+    return {'res': xs, 'disp': disp, 'grid_net': gx_net}
 
 # ============================================================================
 # CHARTS — printed INLINE in a notebook (user 2026-08-02: "print the chart
@@ -2520,7 +3705,8 @@ def _finish(fig, plt, inline, stem):
     plt.close(fig)
     return out
 
-def render_charts(basket, res, dev, timing_results, grid_net, floors):
+def render_charts(basket, res, dev, timing_results, grid_net, floors,
+                  xs=None):
     if CHART_MODE == 'off':
         return
     try:
@@ -2531,75 +3717,82 @@ def render_charts(basket, res, dev, timing_results, grid_net, floors):
     floor_s, floor_l = floors
     x = pd.to_datetime(basket.index)
     saved = []
+    # under BOOK_MODE='xs' the aggregate figures (its signal and its equity
+    # /timing comparison) are skipped — FIG 5 already carries the equity
+    # comparison, and the timing panel would be empty because those runs
+    # did not happen
+    agg_figs = BOOK_MODE != 'xs'
     try:
         # ---- FIG 1: the signal, and where the packages sat ----
-        fig, ax = plt.subplots(2, 1, figsize=(13, 7.5), sharex=True)
-        ax[0].plot(x, basket['basket_dev'] * 1e4, lw=1.3, color=VIZ['s1'],
-                   label='basket deviation')
-        ax[0].axhline(floor_s, color=VIZ['ink2'], ls='--', lw=1.0)
-        ax[0].axhline(floor_l, color=VIZ['ink2'], ls='--', lw=1.0)
-        ax[0].axhline(0, color=VIZ['axis'], lw=0.8)
-        ax[0].annotate(f'cost floor +{floor_s:.0f}', (x[-1], floor_s),
-                       xytext=(4, 2), textcoords='offset points',
-                       fontsize=8, color=VIZ['ink2'], va='bottom')
-        ax[0].annotate(f'cost floor {floor_l:.0f}', (x[-1], floor_l),
-                       xytext=(4, -2), textcoords='offset points',
-                       fontsize=8, color=VIZ['ink2'], va='top')
-        for t_ in res['trades']:
-            ax[0].axvspan(pd.Timestamp(t_['entry_date']),
-                          pd.Timestamp(t_['exit_date']), alpha=0.13,
-                          lw=0, color=(VIZ['neg']
-                                       if t_['dir'].startswith('SHORT')
-                                       else VIZ['pos']))
-        ax[0].set_title('Basket deviation (bps) — shaded = a package on '
-                        '(blue LONG / red SHORT). Entries need the line '
-                        'OUTSIDE the dashed floor.')
-        ax[0].set_ylabel('bps')
-        ax[0].legend(loc='upper left')
-        ax[1].plot(x, basket['basket_z'], lw=1.3, color=VIZ['s1'],
-                   label=f'basket z (N={N_WINDOW})')
-        for lv in (Z_ENTRY_SHORT, -Z_ENTRY_LONG):
-            ax[1].axhline(lv, color=VIZ['ink2'], ls='--', lw=1.0)
-        ax[1].axhline(EXIT_Z, color=VIZ['axis'], lw=0.8)
-        ax[1].set_title(f'Basket z — entry at +/-{Z_ENTRY_SHORT:.1f} '
-                        f'(dashed), exit back through {EXIT_Z:.1f}')
-        ax[1].set_ylabel('z')
-        ax[1].legend(loc='upper left')
-        fig.tight_layout()
-        saved.append(_finish(fig, plt, inline, 'signal'))
+        if agg_figs:
+            fig, ax = plt.subplots(2, 1, figsize=(13, 7.5), sharex=True)
+            ax[0].plot(x, basket['basket_dev'] * 1e4, lw=1.3,
+                       color=VIZ['s1'], label='basket deviation')
+            ax[0].axhline(floor_s, color=VIZ['ink2'], ls='--', lw=1.0)
+            ax[0].axhline(floor_l, color=VIZ['ink2'], ls='--', lw=1.0)
+            ax[0].axhline(0, color=VIZ['axis'], lw=0.8)
+            ax[0].annotate(f'cost floor +{floor_s:.0f}', (x[-1], floor_s),
+                           xytext=(4, 2), textcoords='offset points',
+                           fontsize=8, color=VIZ['ink2'], va='bottom')
+            ax[0].annotate(f'cost floor {floor_l:.0f}', (x[-1], floor_l),
+                           xytext=(4, -2), textcoords='offset points',
+                           fontsize=8, color=VIZ['ink2'], va='top')
+            for t_ in res['trades']:
+                ax[0].axvspan(pd.Timestamp(t_['entry_date']),
+                              pd.Timestamp(t_['exit_date']), alpha=0.13,
+                              lw=0, color=(VIZ['neg']
+                                           if t_['dir'].startswith('SHORT')
+                                           else VIZ['pos']))
+            ax[0].set_title('Basket deviation (bps) — shaded = a package '
+                            'on (blue LONG / red SHORT). Entries need the '
+                            'line OUTSIDE the dashed floor.')
+            ax[0].set_ylabel('bps')
+            ax[0].legend(loc='upper left')
+            ax[1].plot(x, basket['basket_z'], lw=1.3, color=VIZ['s1'],
+                       label=f'basket z (N={N_WINDOW})')
+            for lv in (Z_ENTRY_SHORT, -Z_ENTRY_LONG):
+                ax[1].axhline(lv, color=VIZ['ink2'], ls='--', lw=1.0)
+            ax[1].axhline(EXIT_Z, color=VIZ['axis'], lw=0.8)
+            ax[1].set_title(f'Basket z — entry at +/-{Z_ENTRY_SHORT:.1f} '
+                            f'(dashed), exit back through {EXIT_Z:.1f}')
+            ax[1].set_ylabel('z')
+            ax[1].legend(loc='upper left')
+            fig.tight_layout()
+            saved.append(_finish(fig, plt, inline, 'signal'))
 
-        # ---- FIG 2: equity, drawdown, and the timings side by side ----
-        fig, ax = plt.subplots(2, 1, figsize=(13, 7.5))
-        eq = res['equity'].values
-        ax[0].plot(x, eq, lw=1.6, color=VIZ['s1'])
-        peak = pd.Series(eq).cummax().values
-        ax[0].fill_between(x, eq, peak, where=(eq < peak), alpha=0.16,
-                           lw=0, color=VIZ['neg'])
-        ax[0].axhline(0, color=VIZ['axis'], lw=0.8)
-        ax[0].annotate(f'${eq[-1]:,.0f}', (x[-1], eq[-1]), xytext=(5, 0),
-                       textcoords='offset points', fontsize=9,
-                       color=VIZ['ink'], va='center')
-        ax[0].set_title(f'Package equity, US$ — realised + marked '
-                        f'({timing_label(EXEC_TIMING).split(" (")[0]}); '
-                        f'red = drawdown from the running peak')
-        ax[0].set_ylabel('US$')
-        cols = {'hti_close': VIZ['s1'], 'us_close': VIZ['s2'],
-                'hk_close': VIZ['s3'], 'hk_close_usopen': VIZ['s4']}
-        for tm, r in timing_results.items():
-            lbl = tm + (' (NAKED)' if tm == 'us_close' else '')
-            ax[1].plot(x, r['equity'].values, lw=1.4, color=cols.get(tm),
-                       label=lbl)
-            ax[1].annotate(f"{r['equity'].values[-1]:,.0f}",
-                           (x[-1], r['equity'].values[-1]), xytext=(4, 0),
-                           textcoords='offset points', fontsize=8,
-                           color=VIZ['ink2'], va='center')
-        ax[1].axhline(0, color=VIZ['axis'], lw=0.8)
-        ax[1].set_title('Same signals, different execution clocks — the '
-                        'gap between the curves IS the timing decision')
-        ax[1].set_ylabel('US$')
-        ax[1].legend(loc='upper left', ncol=2)
-        fig.tight_layout()
-        saved.append(_finish(fig, plt, inline, 'equity'))
+            # ---- FIG 2: equity, drawdown, and the timings side by side --
+            fig, ax = plt.subplots(2, 1, figsize=(13, 7.5))
+            eq = res['equity'].values
+            ax[0].plot(x, eq, lw=1.6, color=VIZ['s1'])
+            peak = pd.Series(eq).cummax().values
+            ax[0].fill_between(x, eq, peak, where=(eq < peak), alpha=0.16,
+                               lw=0, color=VIZ['neg'])
+            ax[0].axhline(0, color=VIZ['axis'], lw=0.8)
+            ax[0].annotate(f'${eq[-1]:,.0f}', (x[-1], eq[-1]),
+                           xytext=(5, 0), textcoords='offset points',
+                           fontsize=9, color=VIZ['ink'], va='center')
+            ax[0].set_title(f'Package equity, US$ — realised + marked '
+                            f'({timing_label(EXEC_TIMING).split(" (")[0]}); '
+                            f'red = drawdown from the running peak')
+            ax[0].set_ylabel('US$')
+            cols = {'hti_close': VIZ['s1'], 'us_close': VIZ['s2'],
+                    'hk_close': VIZ['s3'], 'hk_close_usopen': VIZ['s4']}
+            for tm, r in timing_results.items():
+                lbl = tm + (' (NAKED)' if tm == 'us_close' else '')
+                ax[1].plot(x, r['equity'].values, lw=1.4,
+                           color=cols.get(tm), label=lbl)
+                ax[1].annotate(f"{r['equity'].values[-1]:,.0f}",
+                               (x[-1], r['equity'].values[-1]),
+                               xytext=(4, 0), textcoords='offset points',
+                               fontsize=8, color=VIZ['ink2'], va='center')
+            ax[1].axhline(0, color=VIZ['axis'], lw=0.8)
+            ax[1].set_title('Same signals, different execution clocks — '
+                            'the gap between the curves IS the timing '
+                            'decision')
+            ax[1].set_ylabel('US$')
+            ax[1].legend(loc='upper left', ncol=2)
+            fig.tight_layout()
+            saved.append(_finish(fig, plt, inline, 'equity'))
 
         # ---- FIG 3: every stock on its own (the user asked for this) ----
         nn = len(NAMES)
@@ -2612,12 +3805,23 @@ def render_charts(basket, res, dev, timing_results, grid_net, floors):
         for i, nm in enumerate(NAMES):
             a = axes[i]
             d = dev[nm] * 1e4
-            a.axhspan(floor_l, floor_s, color=VIZ['mid'], lw=0, zorder=0)
+            # in [XS] mode each name answers to its OWN floor, so the band
+            # drawn (and the % counted) must be that name's, not the
+            # basket's; and both sides get their own edge under a manual
+            # asymmetric floor
+            f_hi, f_lo = floor_s, floor_l
+            if BOOK_MODE == 'xs':
+                f_hi = float(np.nanmean(xs_floor_bps_arr(
+                    np.full((1, 1), _ord_hs()),
+                    np.array([adr_half_spread_bps(nm)]))))
+                f_lo = -f_hi
+            a.axhspan(f_lo, f_hi, color=VIZ['mid'], lw=0, zorder=0)
             a.plot(x, d, lw=0.9,
                    color=(VIZ['s2'] if UNIVERSE[nm].get('venue') == 'otc'
                           else VIZ['s1']))
             a.axhline(0, color=VIZ['axis'], lw=0.7)
-            share = float(np.nanmean(np.abs(d) > floor_s) * 100)
+            past = ((d > f_hi) | (d < f_lo))[d.notna()]
+            share = float(past.mean() * 100) if len(past) else np.nan
             a.set_title(f"{nm}  {UNIVERSE[nm].get('venue', 'listed')}  "
                         f"{share:.0f}% of days past the floor", fontsize=9)
             a.tick_params(labelsize=7.5)
@@ -2644,7 +3848,11 @@ def render_charts(basket, res, dev, timing_results, grid_net, floors):
             fig, ax = plt.subplots(1, 2, figsize=(13, 4.6),
                                    gridspec_kw={'width_ratios': [1.25, 1]})
             G = grid_net.astype(float)
-            lim = float(np.nanmax(np.abs(G.values))) or 1.0
+            # NaN is truthy, so `or 1.0` never fired on an all-NaN grid —
+            # imshow(vmin=nan, vmax=nan) then draws a silent blank panel
+            lim = float(np.nanmax(np.abs(G.values)))
+            if not np.isfinite(lim) or lim <= 0:
+                lim = 1.0
             from matplotlib.colors import LinearSegmentedColormap
             cmap = LinearSegmentedColormap.from_list(
                 'v33div', [VIZ['neg'], VIZ['mid'], VIZ['pos']])
@@ -2664,8 +3872,8 @@ def render_charts(basket, res, dev, timing_results, grid_net, floors):
                         ax[0].text(c_, r_, f"{v / 1e3:,.0f}",
                                    ha='center', va='center', fontsize=7,
                                    color=VIZ['ink'])
-            ax[0].set_title('Net PnL after all costs, US$ thousands — red '
-                            'loses, blue makes money')
+            _bk = '[XS] book' if BOOK_MODE == 'xs' else 'aggregate book'
+            ax[0].set_title(f'Net PnL after all costs, US$k — {_bk}')
             fig.colorbar(im, ax=ax[0], shrink=0.85).outline.set_visible(
                 False)
             for k, nlab in enumerate(G.index):
@@ -2680,11 +3888,53 @@ def render_charts(basket, res, dev, timing_results, grid_net, floors):
             ax[1].axhline(0, color=VIZ['axis'], lw=0.9)
             ax[1].set_xlabel('z entry threshold')
             ax[1].set_ylabel('net PnL, US$')
-            ax[1].set_title('Same thing as lines — a broad plateau is '
-                            'edge, a lone spike is fitting')
+            ax[1].set_title('Same thing as lines — a broad plateau is edge,'
+                            '\na lone spike is fitting')
             ax[1].legend(loc='best')
             fig.tight_layout()
             saved.append(_finish(fig, plt, inline, 'thresholds'))
+
+        # ---- FIG 5: [XS] the cross-sectional book vs the aggregate ----
+        if xs is not None:
+            xr = xs['res']
+            fig, ax = plt.subplots(3, 1, figsize=(13, 10.5), sharex=True)
+            ax[0].plot(x, res['equity'].values, lw=1.3, color=VIZ['s2'],
+                       label='aggregate (one z, all names)')
+            ax[0].plot(x, xr['equity'].values, lw=1.6, color=VIZ['s1'],
+                       label='cross-sectional (per-name z)')
+            for r_, c_ in ((res, VIZ['s2']), (xr, VIZ['s1'])):
+                ax[0].annotate(f"${r_['equity'].values[-1]:,.0f}",
+                               (x[-1], r_['equity'].values[-1]),
+                               xytext=(4, 0), textcoords='offset points',
+                               fontsize=8.5, color=c_, va='center')
+            ax[0].axhline(0, color=VIZ['axis'], lw=0.8)
+            ax[0].set_title('[XS] Aggregate vs cross-sectional — same '
+                            'data, same cost stack (US$)')
+            ax[0].set_ylabel('US$')
+            ax[0].legend(loc='upper left')
+            ax[1].step(x, xr['open_long'].values, lw=1.1, color=VIZ['pos'],
+                       where='post', label='LONG-package lots')
+            ax[1].step(x, -xr['open_short'].values, lw=1.1,
+                       color=VIZ['neg'], where='post',
+                       label='SHORT-package lots (down)')
+            ax[1].axhline(0, color=VIZ['axis'], lw=0.8)
+            ax[1].set_title('[XS] Open name-lots — LONG packages up, '
+                            'SHORT packages down (the overnight hedge is '
+                            'measured in the SELF-HEDGE line, not here)')
+            ax[1].set_ylabel('lots')
+            ax[1].legend(loc='upper left')
+            ax[2].plot(x, xs['disp'].values, lw=1.0, color=VIZ['s3'],
+                       label='cross-sectional sd of devs')
+            med = xs['disp'].rolling(120, min_periods=30).median()
+            ax[2].plot(x, med.values, lw=1.2, color=VIZ['ink2'], ls='--',
+                       label='120d rolling median')
+            ax[2].set_title('[XS] Dispersion gauge (bps) — how far apart '
+                            'the names are; the XS book needs this, the '
+                            'aggregate book averages it away')
+            ax[2].set_ylabel('bps')
+            ax[2].legend(loc='upper left')
+            fig.tight_layout()
+            saved.append(_finish(fig, plt, inline, 'xs'))
     except Exception as e:
         print(f"\n  (charts partially rendered: {type(e).__name__}: {e})")
     saved = [s for s in saved if s]
@@ -2699,16 +3949,40 @@ def render_charts(basket, res, dev, timing_results, grid_net, floors):
 # ============================================================================
 def main():
     t_start = datetime.now()
+    # module-level collectors must be reset, or a SECOND main() in the
+    # same kernel (the notebook case) double-counts every scorecard and
+    # funnel row and appends fresh tables AFTER the HTML's closing tags
+    global _HTML_STARTED
+    _FUNNEL.clear()
+    _SCORECARD.clear()
+    _STATS_CACHE.clear()
+    _AGG_GRID.clear()
+    _HS_CTX['ord'] = _HS_CTX['adr'] = None
+    _HTML_STARTED = False
     print("=" * 76)
     print("  v33 HK ADR BASKET BOOK — HS Tech pairs, HTI overnight bridge")
     print("  sign: prem > 0 = ADR RICH vs HK -> SHORT package | prem < 0 "
           "-> LONG package")
-    print(f"  entry: basket z >= +{Z_ENTRY_SHORT:.2f} -> SHORT package | "
-          f"z <= -{Z_ENTRY_LONG:.2f} -> LONG package (N={N_WINDOW})")
+    if BOOK_MODE == 'xs':
+        print(f"  BOOK: CROSS-SECTIONAL [XS] — per-name z, entry "
+              f"+/-{XS_Z_ENTRY:.2f} for {XS_PERSIST} sessions, exit band "
+              f"+/-{XS_EXIT_BAND:.2f} (N={N_WINDOW})")
+        print("        the aggregate book runs once for the A/B table; "
+              "BOOK_MODE='both' for its full battery")
+    else:
+        print(f"  BOOK: AGGREGATE — basket z >= +{Z_ENTRY_SHORT:.2f} -> "
+              f"SHORT package | z <= -{Z_ENTRY_LONG:.2f} -> LONG package "
+              f"(N={N_WINDOW})")
+        if BOOK_MODE == 'both':
+            print(f"        plus the cross-sectional [XS] book and the A/B "
+                  f"table")
     print(f"  timing: {timing_label(EXEC_TIMING)}")
     print(f"  hedge ratio: {HEDGE_RATIO_MODE} | basket "
           f"US${NOTIONAL_BASKET:,.0f} | {len(NAMES)} names | "
           f"mode: {RUN_MODE.upper()}")
+    print(f"  python {sys.version.split()[0]} | pandas {pd.__version__} | "
+          f"numpy {np.__version__} | outputs -> "
+          f"{os.path.abspath(OUTPUT_DIR or '.')}")
     print("=" * 76)
     print_model_explained()
 
@@ -2837,8 +4111,10 @@ def main():
           f"${nc / 1e4 * N0:>9,.0f}/day   long pays SOFR+"
           f"{FUNDING_SPREAD_BPS:.0f}, short earns SOFR-"
           f"{BORROW_SPREAD_BPS:.0f}")
-    print(f"    {'carry over the avg hold':<34} {'':>6}          "
-          f"{'':>10}   the SOFR level cancels on matched legs")
+    _hold = TIME_STOP / 2.0 if RUN_MODE != 'today' else TIME_STOP / 2.0
+    print(f"    {'carry over a ' + f'{_hold:.0f}' + 'd hold':<34} "
+          f"{nc * _hold:>6.2f} bps   ${nc * _hold / 1e4 * N0:>9,.0f}   "
+          f"the SOFR level cancels on matched legs")
     print(f"  [B4] deviation floor ({DEV_FLOOR_MODE}): entry needs dev "
           f">= +{floor_s:.0f} / <= {floor_l:.0f} bps, ON TOP of the z "
           f"threshold")
@@ -2858,9 +4134,23 @@ def main():
     # ---- [TZ] SIGNAL SURVIVAL: how much of the measured dislocation is
     # still there when the LAST leg actually fills? This is the whole
     # time-zone question, and it decides which timing can work at all.
-    bins = [-1e9, floor_l, -25, 25, floor_s, 1e9]
-    labs = [f'<= {floor_l:.0f}', f'({floor_l:.0f},-25]', '(-25,+25)',
-            f'[+25,+{floor_s:.0f})', f'>= +{floor_s:.0f}']
+    # the inner +/-25 edges are a fixed "inside the noise" band, the outer
+    # ones are the live floor — so a floor set inside 25 bps would make
+    # the edges non-monotonic and pd.cut would RAISE, killing the run
+    # right after the cost stack (no verdict, no charts, no scorecard).
+    # Build the edges from the sorted unique set instead.
+    _inner = min(25.0, abs(floor_s) / 2, abs(floor_l) / 2)
+    bins = sorted({-1e9, floor_l, -_inner, _inner, floor_s, 1e9})
+    labs = []
+    for a, b in zip(bins[:-1], bins[1:]):
+        if a <= -1e8:
+            labs.append(f'<= {b:.0f}')
+        elif b >= 1e8:
+            labs.append(f'>= +{a:.0f}')
+        elif a < 0 and b > 0:
+            labs.append(f'({a:.0f},+{b:.0f})')
+        else:
+            labs.append(f'[{a:+.0f},{b:+.0f})')
 
     def _survival(sig, fill, title, note):
         d = pd.DataFrame({'sig': sig * 1e4, 'fill': fill * 1e4}).dropna()
@@ -2894,26 +4184,102 @@ def main():
               'the package goes on at what is left. Compare the kept % '
               'here with [TZ1] before believing any hk_close backtest.')
 
-    # ---- base run at the configured cell ----
+    # ---- base run at the configured cell. ALWAYS runs: even in
+    # BOOK_MODE='xs' the A/B table needs a real aggregate result ----
     res = run_basket_backtest(mats, basket, Wd, beta_df, collect_audit=True,
                               ord_hs=ord_hs, dev=dev)
+    agg_full = BOOK_MODE in ('aggregate', 'both')
+    grid_net = None
+    timing_results, cost_results, halves = {}, {}, {}
+    if not agg_full:
+        print(f"\n  [AGG] aggregate book: base run only "
+              f"({res['n_trades']} trades, net ${res['net']:,.0f}) — it "
+              f"feeds the [XS] A/B table below.")
+        print(f"        its own battery (N x Z grid, [B2a] timings, "
+              f"cost/sign/drop-one robustness, blotter) is SKIPPED under "
+              f"BOOK_MODE='{BOOK_MODE}'.")
 
     # ---- everything the VERDICT needs, computed BEFORE it is printed ----
-    timing_results, cost_results, halves = {}, {}, {}
-    for cm in (0.5, 1.0, 1.5, 2.0, 3.0):
-        cost_results[cm] = run_basket_backtest(
-            mats, basket, Wd, beta_df, cost_mult=cm, ord_hs=ord_hs, dev=dev)
-    half_n = len(mats['base']) // 2
-    for lbl, sl in (('first half', slice(0, half_n)),
-                    ('second half', slice(half_n, None))):
-        b3 = basket.copy()
-        msk = ~basket.index.isin(basket.index[sl])
-        b3.loc[msk, 'basket_z'] = np.nan
-        b3.loc[msk, 'basket_z16'] = np.nan
-        halves[lbl] = run_basket_backtest(mats, b3, Wd, beta_df,
-                                          ord_hs=ord_hs, dev=dev)
+    if agg_full:
+        for cm in (0.5, 1.0, 1.5, 2.0, 3.0):
+            cost_results[cm] = run_basket_backtest(
+                mats, basket, Wd, beta_df, cost_mult=cm, ord_hs=ord_hs,
+                dev=dev)
+        half_n = len(mats['base']) // 2
+        for lbl, sl in (('first half', slice(0, half_n)),
+                        ('second half', slice(half_n, None))):
+            b3 = basket.copy()
+            msk = ~basket.index.isin(basket.index[sl])
+            b3.loc[msk, 'basket_z'] = np.nan
+            b3.loc[msk, 'basket_z16'] = np.nan
+            halves[lbl] = run_basket_backtest(mats, b3, Wd, beta_df,
+                                              ord_hs=ord_hs, dev=dev)
 
     # ---- THE VERDICT — the one question this run exists to answer ----
+    if agg_full:
+        _print_agg_battery(mats, prem, prem16, W, Wd, basket, dev, beta_df,
+                           ord_hs, res, cost_results, halves,
+                           timing_results, floor_s, floor_l)
+        grid_net = _AGG_GRID.get('net')
+
+    # ---- [XS] the cross-sectional book ----
+    xs_view = None
+    if BOOK_MODE in ('xs', 'both'):
+        xs_view = print_xs_book(mats, prem, prem16, W, ord_hs, res)
+
+    # ---- charts ----
+    render_charts(basket, res, dev, timing_results,
+                  (xs_view['grid_net'] if (xs_view is not None
+                                           and BOOK_MODE == 'xs')
+                   else grid_net),
+                  (floor_s, floor_l), xs=xs_view)
+
+    # ---- RUN_MODE='today': the screen, kept OFF by default. This file is
+    # a BACKTEST at this stage (user 2026-08-03) — the question is whether
+    # the strategy is profitable, not what to trade tonight.
+    if RUN_MODE == 'today':
+        print("\n" + "=" * 76)
+        print("  TODAY SCREEN — reference only, NOT a backtested "
+              "instruction")
+        print("=" * 76)
+        last = basket.index[-1]
+        z_now = basket['basket_z'].iloc[-1]
+        d_now = basket['basket_dev'].iloc[-1] * 1e4
+        br_now = basket['breadth'].iloc[-1]
+        act = 'FLAT — nothing clears the gates'
+        if np.isfinite(z_now) and np.isfinite(d_now):
+            if z_now >= Z_ENTRY_SHORT and d_now >= floor_s:
+                act = 'SHORT package (sell ADRs / buy ords)'
+            elif z_now <= -Z_ENTRY_LONG and d_now <= floor_l:
+                act = 'LONG package (buy ADRs / short ords)'
+        print(f"  as of                {last}")
+        print(f"  basket z             {z_now:+.2f}   (entry at "
+              f"+/-{Z_ENTRY_SHORT:.2f})")
+        print(f"  basket deviation     {d_now:+,.0f} bps   (floor "
+              f"+{floor_s:.0f}/{floor_l:.0f})")
+        print(f"  breadth              {br_now:.0%}   (needs "
+              f">={BREADTH_MIN:.0%})")
+        print(f"  would-be action      {act}")
+
+    print_scorecard()
+    print(f"\n  run finished in {(datetime.now() - t_start).seconds}s | "
+          f"mode={data['mode']} | {len(mats['base'])} dates | "
+          f"{len(NAMES)} names | book={BOOK_MODE}")
+    _html_close()
+    return {'aggregate': res, 'xs': xs_view}
+
+# ============================================================================
+# THE AGGREGATE BATTERY — everything that exists to interrogate the ONE-Z
+# book: its verdict, blotter, N x Z grid, timing comparison and robustness.
+# Split out of main() so BOOK_MODE='xs' can skip the lot (about 115
+# backtests and half the printed output) while the base run still feeds the
+# [XS] A/B table.
+# ============================================================================
+_AGG_GRID = {}
+
+def _print_agg_battery(mats, prem, prem16, W, Wd, basket, dev, beta_df,
+                       ord_hs, res, cost_results, halves, timing_results,
+                       floor_s, floor_l):
     print("\n" + "=" * 76)
     print("  VERDICT — is this strategy profitable, after everything?")
     print("=" * 76)
@@ -3072,7 +4438,7 @@ def main():
     cfg = (f"N={N_WINDOW}", f"Z={Z_ENTRY_SHORT}")
     flat = grid_net.stack()
     best = flat.idxmax() if len(flat.dropna()) else None
-    shown = grid_net.map(lambda v: f"{v:,.0f}" if np.isfinite(v) else '—')
+    shown = _dfmap(grid_net, lambda v: f"{v:,.0f}" if np.isfinite(v) else '—')
     if cfg[0] in shown.index and cfg[1] in shown.columns:
         shown.loc[cfg[0], cfg[1]] = f">{shown.loc[cfg[0], cfg[1]]}<"
     if best is not None:
@@ -3144,9 +4510,15 @@ def main():
         for ln in TIMING_SPEC[tm]:
             print(f"    {ln}")
         if r['n_trades']:
-            bps = r['net'] / (NOTIONAL_BASKET * max(r['n_trades'], 1)) * 1e4
+            # divide by the notional actually TRADED, not by
+            # NOTIONAL_BASKET x trades — SIZING_MODE='z_scaled' sizes
+            # packages up to SIZE_CAP x, so the flat denominator inflated
+            # every timing row ~47% and contradicted the VERDICT's own
+            # bps figure for the same run (fixed 2026-08-10)
+            gross_t = sum(t['notional'] for t in r['trades'])
+            bps = r['net'] / gross_t * 1e4
             print(f"    RESULT  {r['n_trades']} trades | net "
-                  f"${r['net']:,.0f} ({bps:+,.0f} bps per package) | win "
+                  f"${r['net']:,.0f} ({bps:+,.0f} bps per $ traded) | win "
                   f"{r['win_rate']:.1f}% | Sharpe {r['sharpe']:.2f}")
         else:
             print("    RESULT  no trades")
@@ -3259,43 +4631,7 @@ def main():
         print(f"  {lbl:<12} trades {r['n_trades']:>4} | net "
               f"${r['net']:>12,.0f} | win "
               f"{r['win_rate'] if r['n_trades'] else float('nan'):.1f}%")
-
-    # ---- charts ----
-    render_charts(basket, res, dev, timing_results, grid_net,
-                  (floor_s, floor_l))
-
-    # ---- RUN_MODE='today': the screen, kept OFF by default. This file is
-    # a BACKTEST at this stage (user 2026-08-03) — the question is whether
-    # the strategy is profitable, not what to trade tonight.
-    if RUN_MODE == 'today':
-        print("\n" + "=" * 76)
-        print("  TODAY SCREEN — reference only, NOT a backtested "
-              "instruction")
-        print("=" * 76)
-        last = basket.index[-1]
-        z_now = basket['basket_z'].iloc[-1]
-        d_now = basket['basket_dev'].iloc[-1] * 1e4
-        br_now = basket['breadth'].iloc[-1]
-        act = 'FLAT — nothing clears the gates'
-        if np.isfinite(z_now) and np.isfinite(d_now):
-            if z_now >= Z_ENTRY_SHORT and d_now >= floor_s:
-                act = 'SHORT package (sell ADRs / buy ords)'
-            elif z_now <= -Z_ENTRY_LONG and d_now <= floor_l:
-                act = 'LONG package (buy ADRs / short ords)'
-        print(f"  as of                {last}")
-        print(f"  basket z             {z_now:+.2f}   (entry at "
-              f"+/-{Z_ENTRY_SHORT:.2f})")
-        print(f"  basket deviation     {d_now:+,.0f} bps   (floor "
-              f"+{floor_s:.0f}/{floor_l:.0f})")
-        print(f"  breadth              {br_now:.0%}   (needs "
-              f">={BREADTH_MIN:.0%})")
-        print(f"  would-be action      {act}")
-
-    print_scorecard()
-    print(f"\n  run finished in {(datetime.now() - t_start).seconds}s | "
-          f"mode={data['mode']} | {len(mats['base'])} dates | "
-          f"{len(NAMES)} names")
-    return res
+    _AGG_GRID['net'] = grid_net
 
 if __name__ == '__main__' or _in_jupyter():
     RESULT = main()
