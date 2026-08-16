@@ -1,7 +1,68 @@
 # =============================================================================
-# PCA HEDGE FINDER — complete source, v104 (Fixes 1-110)
+# PCA HEDGE FINDER — complete source, v105 (Fixes 1-123)
 # =============================================================================
-# Built 30 Jul 2026; v104 pass 1 Aug 2026.
+# Built 30 Jul 2026; v104 pass 1 Aug 2026; v105 pass 16 Aug 2026.
+#
+# ── v105 — WHAT THE TOOL COULD NOT SEE ──────────────────────────────────────
+# Prompted by a live hedge that underperformed. The estimation core turned out
+# to be fine; the gaps were in what could enter the universe and what the
+# report was allowed to conclude.
+#
+# [Fix 119] THE UNIVERSE HAD NO IDEA WHAT THE TARGET WAS EXPOSED TO. CONTROL_ETFS
+#           held broad-market and style wrappers only — across the whole file
+#           there was not one commodity, rates or sector instrument. A gold
+#           miner was hedged with other equities, an airline got no fuel leg, a
+#           REIT no duration leg. Measured (synthetic ASX-miner universe, 250
+#           paired seeds, 63-day OOS): supplying the missing exposure cut
+#           tracking error 22.76% → 21.28%/yr, 7% relative, winning 240 of 250.
+#           Hard-coding one market's gold ETFs would have fixed one ticker, so
+#           instead the BICS/GICS taxonomy this file ALREADY pulls now decides
+#           which exposures a target carries (HEDGE_EXPOSURES) and each resolves
+#           to an instrument listed in the target's own market
+#           (MARKET_INSTRUMENTS). Everything is an ETF on purpose: no ticker
+#           formatter change, no timezone cost, and the market-cap exemption
+#           applies. An exposure with no instrument for that market is REPORTED
+#           — "the hedge was built WITHOUT that leg" — because a universe that
+#           quietly lacks the thing the target moves with is the failure this
+#           whole pass exists to stop. The instrument tables are stamped into
+#           the download fingerprint, so a cache from before an edit says so
+#           instead of silently serving yesterday's universe.
+# [Fix 118] ETF MEMBERSHIP BY FULL TICKER. The cap floor, the PIT gate and the
+#           single-instrument benchmark all asked "is this an ETF?" of the SHORT
+#           NAME. Safe while the list held only broad wrappers; not once local
+#           instruments are added, because short names collide across exchanges.
+#           'GOLD US Equity' is Barrick Gold — adding an ASX bullion ETF named
+#           GOLD would have made BARRICK read as an ETF everywhere: exempt from
+#           the cap floor, exempt from point-in-time membership, and eligible to
+#           win the "best single ETF" benchmark the report is framed against.
+# [Fix 120] LOOK-AHEAD IN CANDIDATE ELIGIBILITY. _walk_forward_cv required a
+#           name to have complete data in the TEST window before it could enter
+#           the basket — a name was admitted only if it had prices in the
+#           stretch it was about to be graded on. _select_and_fit never did
+#           this, so the live path and the scoring path disagreed about who was
+#           eligible. Eligibility is now decided on training data alone.
+# [Fix 121] THE HEDGED BOOK'S DRIFT WAS COMPUTED, USED, THEN THROWN AWAY.
+#           RidgeCV fits an intercept and reg.predict() subtracts it in every
+#           scored window, but the traded recipe is reg_f.coef_ alone. Since TE
+#           is a standard deviation, a constant never appears in it: the risk
+#           figures described dispersion around a mean that had been removed.
+#           Measured (400 seeds, 63-day hold): at 30%/yr relative drift the
+#           reported 1σ stayed flat at 8.64% while realised mean P&L was 6.98%.
+#           Now reported, never subtracted, and explicitly not a forecast.
+# [Fix 122] NOTHING IN THE FILE CONDITIONED ON THE MARKET FALLING. Every
+#           statistic was a symmetric second moment, and the ridge loss prices
+#           an up-day and a down-day error identically. Correlations rise in the
+#           left tail (Ang-Chen 2002; Longin-Solnik 2001), so a hedge fitted on
+#           the average day can under-protect on the day it is held for while TE
+#           barely moves: lifting the hedge's beta only in the worst 20% of days
+#           moved TE 15.8% → 16.9%/yr while the worst-decile residual went
+#           -0.04% → -0.72% PER DAY. Reported, not optimised — selecting on a
+#           semivariance halves the sample to estimate a noisier quantity, the
+#           trap [Fix 112] already refused.
+# [Fix 123] MAX DRAWDOWN. The hedged cumulative series was built solely to be
+#           drawn on a chart and then discarded, so no peak-to-trough number
+#           existed anywhere. A 1σ figure says how wide the spread scatters; it
+#           does not say how far it went against a holder before recovering.
 #
 # ── v104 — READABILITY, RE-ENTRY, AND TWO STATISTICAL QUESTIONS ─────────────
 # [Fix 104] EVERY BLOCK IS A TABLE, AND EVERY NUMBER CARRIES ITS MEANING.
@@ -289,8 +350,108 @@ CONTROL_ETFS = {
     'GLOBAL': ['ACWI US Equity', 'EEM US Equity', 'EFA US Equity', 'URTH US Equity'],
 }
 
-# [Fix 14] ETF whitelist (short names) auto-generated — always in sync
+# [Fix 14] ETF whitelist (short names) auto-generated — always in sync.
+# [Fix 118] SUPERSEDED as a membership test by _is_etf() below, which matches on
+# the full ticker; kept because external scripts may import it.
 ETF_SHORT_SET = {t.split(' ')[0] for lst in CONTROL_ETFS.values() for t in lst}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# [Fix 119] WHAT IS THIS TARGET ACTUALLY EXPOSED TO?
+#
+# CONTROL_ETFS holds broad-market and style wrappers only, so until now the
+# candidate universe contained no commodity, rates or sector instrument at all.
+# A gold miner was hedged with other equities, an airline got no fuel leg, a
+# REIT got no duration leg. Measured on a synthetic ASX-miner universe (250
+# paired seeds, 63-day OOS), supplying the missing exposure cut tracking error
+# 22.76% → 21.28%/yr — 7% relative, winning 240 of 250 seeds.
+#
+# Hard-coding one market's gold ETFs would fix exactly one ticker. Instead the
+# BICS/GICS taxonomy already pulled in auto_discover_universe decides WHICH
+# exposures a target carries, and MARKET_INSTRUMENTS resolves each to the
+# locally-listed instrument for that market.
+#
+# Everything here is an ' Equity' line (an ETF), which is deliberate on three
+# counts: _fmt_bbg_ticker needs no change; a local listing closes with the
+# target so the run never flips to 2-day overlapping returns; and _is_etf below
+# exempts it from the market-cap floor. A 'Comdty'/'Curncy' ticker would do the
+# opposite — _exch_of reads parts[-2], which on a two-token ticker returns the
+# root symbol, so _close_utc_of returns None and has_unknown drops the WHOLE
+# universe to 2-day returns.
+#
+# Keyword → exposure tags. Substring-matched, case-insensitive, against BICS
+# levels 2/3/4 and the GICS sub-industry/industry names. Tags are unioned, so a
+# diversified miner can carry two.
+# ─────────────────────────────────────────────────────────────────────────────
+HEDGE_EXPOSURES = {
+    'gold':               ('GOLD',),
+    'precious metal':     ('GOLD',),
+    'silver':             ('GOLD',),
+    'copper':             ('BASE_METALS',),
+    'iron':               ('BASE_METALS',),
+    'steel':              ('BASE_METALS',),
+    'aluminum':           ('BASE_METALS',),
+    'aluminium':          ('BASE_METALS',),
+    'nickel':             ('BASE_METALS',),
+    'zinc':               ('BASE_METALS',),
+    'diversified mining': ('BASE_METALS',),
+    'diversified metal':  ('BASE_METALS',),
+    'metals & mining':    ('BASE_METALS',),
+    'coal':               ('ENERGY',),
+    'oil':                ('ENERGY',),
+    'gas':                ('ENERGY',),
+    'refin':              ('ENERGY',),
+    'petroleum':          ('ENERGY',),
+    'airline':            ('ENERGY',),     # jet fuel is the dominant cost line
+    'semiconductor':      ('SEMIS',),
+    'reit':               ('RATES', 'PROPERTY'),
+    'real estate':        ('RATES', 'PROPERTY'),
+    'bank':               ('RATES',),
+    'insurance':          ('RATES',),
+    'utilit':             ('RATES',),
+    'homebuild':          ('RATES',),
+    'home build':         ('RATES',),
+    'uranium':            ('URANIUM',),
+    'lithium':            ('BATTERY',),
+}
+
+# (market, exposure tag) → locally-listed instruments, most representative
+# first. Resolution order is (market, tag) → (country, tag) → unresolved, and an
+# unresolved tag is REPORTED rather than silently skipped: a hedge built without
+# the leg its target most depends on is exactly the case the desk needs told.
+#
+# ⚠ EVERY MNEMONIC BELOW NEEDS ONE TERMINAL VERIFICATION PASS. A ticker that
+# does not resolve returns no price data and its column is dropped silently by
+# the 85%-history rule, so a typo degrades the hedge without ever erroring.
+MARKET_INSTRUMENTS = {
+    # ── Australia (ASX) ──────────────────────────────────────────────────────
+    ('AU', 'GOLD'):         ['PMGOLD AU Equity'],   # Global X Gold Bullion
+    ('AU', 'BASE_METALS'):  ['MVR AU Equity',       # VanEck Aus Resources
+                             'OZR AU Equity'],      # SPDR ASX 200 Resources
+    ('AU', 'ENERGY'):       ['FUEL AU Equity'],     # BetaShares Global Energy
+    ('AU', 'RATES'):        ['IAF AU Equity'],      # iShares Core Comp Bond
+    ('AU', 'PROPERTY'):     ['SLF AU Equity'],      # SPDR ASX 200 Property
+    ('AU', 'URANIUM'):      ['ATOM AU Equity'],     # Global X Uranium
+    ('AU', 'BATTERY'):      ['ACDC AU Equity'],     # Global X Battery/Lithium
+    # ── United States ────────────────────────────────────────────────────────
+    ('US', 'GOLD'):         ['GLD US Equity', 'GDX US Equity'],
+    ('US', 'BASE_METALS'):  ['XME US Equity', 'COPX US Equity'],
+    ('US', 'ENERGY'):       ['XLE US Equity', 'USO US Equity'],
+    ('US', 'SEMIS'):        ['SMH US Equity', 'SOXX US Equity'],
+    ('US', 'RATES'):        ['TLT US Equity', 'IEF US Equity'],
+    ('US', 'PROPERTY'):     ['VNQ US Equity'],
+    ('US', 'URANIUM'):      ['URA US Equity'],
+    ('US', 'BATTERY'):      ['LIT US Equity'],
+    # ── Hong Kong ────────────────────────────────────────────────────────────
+    ('HK', 'GOLD'):         ['2840 HK Equity'],     # SPDR Gold Trust (HK line)
+    # ── Japan ────────────────────────────────────────────────────────────────
+    ('JP', 'GOLD'):         ['1540 JT Equity'],     # MUFJ Physical Gold
+    ('JP', 'RATES'):        ['1482 JT Equity'],     # iShares Core JGB
+    # ── United Kingdom ───────────────────────────────────────────────────────
+    ('GB', 'GOLD'):         ['SGLN LN Equity'],     # iShares Physical Gold
+    ('GB', 'RATES'):        ['IGLT LN Equity'],     # iShares Core UK Gilts
+    # ── Taiwan / Korea / India / Europe: add as they are verified. An absent
+    #    (market, tag) is not a failure — it prints the "built WITHOUT it" line.
+}
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Exchange code mappings
@@ -348,6 +509,89 @@ def _exch_of(full_ticker):
     if len(parts) >= 2:
         return EXCH_MAP.get(parts[-2], parts[-2])
     return 'US'
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# [Fix 118] ETF membership by FULL TICKER, not by short name.
+#
+# The market-cap floor, the PIT-membership gate and the single-instrument
+# benchmark all ask "is this an ETF?", and until now all three asked it of the
+# short name alone. That was safe while the list held only broad wrappers; it
+# stops being safe the moment locally-listed instruments are added, because
+# short names collide ACROSS exchanges and the failure is silent and backwards.
+# Concretely: 'GOLD US Equity' is Barrick Gold. Adding an ASX bullion ETF whose
+# short name is also GOLD would have made BARRICK register as an ETF everywhere
+# — exempt from the cap floor, exempt from point-in-time membership, eligible to
+# win the "best single ETF" benchmark the whole report is framed against, and
+# dropped from _stock_cols in the factor diagnostic.
+#
+# Full ticker first; the short name is honoured only when it is unambiguous
+# across the listed instruments. Behaviour is identical for every ticker listed
+# today (all are three-token, so _exch_of resolves normally).
+# ─────────────────────────────────────────────────────────────────────────────
+ETF_FULL_SET = ({t for lst in CONTROL_ETFS.values() for t in lst}
+                | {t for lst in MARKET_INSTRUMENTS.values() for t in lst})
+_ETF_SHORT_EXCH = {}
+for _t in ETF_FULL_SET:
+    _ETF_SHORT_EXCH.setdefault(_t.split(' ')[0], set()).add(_exch_of(_t))
+del _t
+
+
+import hashlib as _hashlib
+
+# [Fix 119] A cached download predates any edit to the tables above, and
+# check_cache_fit only ever asked whether the LEGS were present — so adding a
+# gold leg to MARKET_INSTRUMENTS would appear to do nothing at all, because the
+# cache silently supplied yesterday's universe. Stamp the tables into the
+# fingerprint so an out-of-date cache announces itself.
+_INSTRUMENT_MAP_HASH = _hashlib.md5(
+    repr(sorted((str(k), tuple(v)) for k, v in MARKET_INSTRUMENTS.items())
+         + sorted((str(k), tuple(v)) for k, v in CONTROL_ETFS.items())
+         ).encode()).hexdigest()[:12]
+
+
+def _is_etf(tk):
+    """True when `tk` is one of the control / market instruments. Full-ticker
+    match first, short name only where that short name maps to exactly one
+    exchange across the lists above."""
+    if tk in ETF_FULL_SET:
+        return True
+    exs = _ETF_SHORT_EXCH.get(str(tk).split(' ')[0])
+    return bool(exs) and _exch_of(tk) in exs
+
+
+def _exposure_tags(*taxonomy_strings):
+    """[Fix 119] Exposure tags implied by a target's BICS/GICS descriptors.
+    Substring match, case-insensitive, union across every string supplied."""
+    tags = set()
+    for s in taxonomy_strings:
+        if not s:
+            continue
+        low = str(s).lower()
+        for key, tg in HEDGE_EXPOSURES.items():
+            if key in low:
+                tags.update(tg)
+    return tags
+
+
+def _resolve_exposures(tags, market, country):
+    """[Fix 119] Map exposure tags to locally-listed instruments.
+
+    Returns (instruments, resolved{tag: [tickers]}, unresolved{tag: hint}).
+    `hint` names a US-listed instrument when one exists for the tag, so the
+    report can say the leg EXISTS but is not synchronous with this market
+    rather than leaving the omission unexplained."""
+    instruments, resolved, unresolved = [], {}, {}
+    for tag in sorted(tags):
+        hit = (MARKET_INSTRUMENTS.get((market, tag))
+               or MARKET_INSTRUMENTS.get((country, tag)))
+        if hit:
+            resolved[tag] = list(hit)
+            instruments.extend(hit)
+        else:
+            alt = MARKET_INSTRUMENTS.get(('US', tag))
+            unresolved[tag] = (alt[0] if alt else None)
+    return instruments, resolved, unresolved
 
 
 def _close_utc_of(full_ticker):
@@ -1210,11 +1454,37 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=10,
 
     sector_key = 'Broad'
     for key_word in ['Technology', 'Communication', 'Financials',
-                     'Health Care', 'Energy', 'Consumer Discretionary']:
+                     'Health Care', 'Energy', 'Consumer Discretionary',
+                     'Materials']:            # [Fix 119] miners were 'Broad'
         if (tgt_bics_lvl2 and key_word.lower() in str(tgt_bics_lvl2).lower()) or \
            (key_word.lower() in str(tgt_gics_sec).lower()):
             sector_key = key_word
             break
+
+    # ── [Fix 119] WHAT THIS TARGET IS EXPOSED TO ────────────────────────────
+    # The taxonomy above was fetched anyway and then used for one six-word
+    # match. Read it properly: derive the exposures the target carries, and
+    # resolve each to an instrument listed in ITS OWN market so the candidate
+    # set contains the thing the target actually moves with.
+    _tags = _exposure_tags(tgt_bics_lvl4, tgt_bics_lvl3, tgt_bics_lvl2,
+                           tgt_gics_sub, tgt_gics_ind)
+    exp_instruments, exp_resolved, exp_unresolved = _resolve_exposures(
+        _tags, market, country)
+    if _tags:
+        print(f"    ├─ exposures required: {', '.join(sorted(_tags))}")
+        if exp_resolved:
+            print(f"    ├─ resolved: "
+                  + ', '.join(t.split(' ')[0] + ' ' + _exch_of(t)
+                              for t in exp_instruments))
+        for _tag, _alt in sorted(exp_unresolved.items()):
+            print(f"    ⚠ {_tag} — no {market}-listed instrument mapped; the "
+                  f"hedge is built WITHOUT it"
+                  + (f" (US-listed {_alt.split(' ')[0]} exists but is not "
+                     f"synchronous with {market}; add it via force_include and "
+                     f"the run drops to 2-day returns)" if _alt else ''))
+    else:
+        print(f"    ├─ no specific commodity/rates exposure implied by the "
+              f"taxonomy — broad-market candidates only")
 
     # 1. Local index mapping — keyed by listing market [Fix 19/37]
     idx_spec = (INDEX_MAP.get((market, sector_key))
@@ -1283,12 +1553,21 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=10,
         meta['non_index_shorts'] = (
             {t.split(' ')[0] for t in peer_matches} |
             {t.split(' ')[0] for t in industry_matches} |
-            {t.split(' ')[0] for t in all_etfs})
+            {t.split(' ')[0] for t in all_etfs} |
+            {t.split(' ')[0] for t in exp_instruments})      # [Fix 119]
+        meta['exposure_tags'] = sorted(_tags)                # [Fix 119]
+        meta['exposures_resolved'] = exp_resolved
+        meta['exposures_unresolved'] = exp_unresolved
 
     # Merge + [Fix 7] dedupe by short name but KEEP full tickers
     # (local members take priority on collision)
+    # [Fix 119] exposure instruments go FIRST. They were resolved for THIS
+    # target from its own taxonomy, so on a short-name collision they must beat
+    # a generic peer — the reverse of the old order, where all_etfs came last
+    # and a colliding foreign listing silently displaced the local instrument.
     merged, seen_short = [], set()
-    for tk in local_members + peer_matches + industry_matches + all_etfs:
+    for tk in (exp_instruments + local_members + peer_matches
+               + industry_matches + all_etfs):
         if tk == target_ticker:
             continue
         short = tk.split(' ')[0]
@@ -1309,7 +1588,7 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=10,
                                 overrides={'EQY_FUND_CRNCY': 'USD'})
             kept, dropped, unknown = [], 0, 0
             for tk in merged:
-                if tk.split(' ')[0] in ETF_SHORT_SET:
+                if _is_etf(tk):
                     kept.append(tk)
                     continue
                 try:
@@ -1446,11 +1725,20 @@ def check_cache_fit(target, data=None, fingerprint=None, stale_after=5):
         cols = set(map(str, data['prices'].columns))
         fp_legs = sorted((data.get('portfolio') or {}).get('legs') or [])
         last = str(data['prices'].index[-1].date())
+        fp = dict(data.get('fingerprint') or {})       # [Fix 119]
     else:
         fp = fingerprint or {}
         cols = set(fp.get('columns') or [])
         fp_legs = sorted(fp.get('legs') or [])
         last = fp.get('last_date')
+    # [Fix 119] the hedging instruments changed since this was downloaded, so
+    # the cached universe cannot contain them. Said plainly, because the
+    # symptom otherwise is a hedge quietly built without the leg it needs.
+    if fp.get('instrument_map') != _INSTRUMENT_MAP_HASH:
+        return {'status': 'mismatch', 'missing': [], 'last_date': last,
+                'message': ('needs a fresh download — the hedging-instrument '
+                            'map changed since this was cached, so the saved '
+                            'universe cannot contain the new instruments')}
     missing = [l for l in legs if l not in cols]
     if missing:
         return {'status': 'mismatch', 'missing': missing, 'last_date': last,
@@ -2603,6 +2891,15 @@ def download_hedge_data(target, candidates=None, session=None,
             print(f"  ⚠ historical market-cap download skipped ({e}) — the size "
                   f"filter will fall back to today's caps (look-ahead)")
 
+    # [Fix 119] carry the exposure verdict with the data. Merged across legs so
+    # a book reports the union of what its legs need.
+    _exp = {'tags': set(), 'resolved': {}, 'unresolved': {}}
+    for _m in disc_meta:
+        _exp['tags'].update(_m.get('exposure_tags') or [])
+        _exp['resolved'].update(_m.get('exposures_resolved') or {})
+        _exp['unresolved'].update(_m.get('exposures_unresolved') or {})
+    _exp['tags'] = sorted(_exp['tags'])
+
     out = {'target': target, 'target_label': label,
            'portfolio': {'legs': legs, 'weights': pf_w,
                          'is_portfolio': is_portfolio, 'label': label},
@@ -2610,10 +2907,12 @@ def download_hedge_data(target, candidates=None, session=None,
            'mktcap_hist': mktcap_hist,
            'pit_members': pit_members,                        # [Fix 49]
            'non_index_shorts': sorted(non_index_shorts),
+           'exposures': _exp,                                 # [Fix 119]
            'downloaded_at': datetime.now(),                   # [Fix 88]
            'fingerprint': {'legs': sorted(legs), 'years': years,  # [Fix 90]
                            'min_mktcap_usd_mm': min_mktcap_usd_mm,
                            'exclude': sorted(map(str, exclude or [])),
+                           'instrument_map': _INSTRUMENT_MAP_HASH,  # [Fix 119]
                            'force_include': sorted(map(str,
                                                        force_include or []))}}
     if cache:                                                 # [Fix 88]
@@ -2888,7 +3187,7 @@ def find_best_hedge(
             for c in prices.columns:
                 if c in target_keepset:
                     continue
-                if c.split(' ')[0] in ETF_SHORT_SET or c in forced:
+                if _is_etf(c) or c in forced:
                     kept.append(c)
                     continue
                 mc = caps.get(c)
@@ -3114,7 +3413,7 @@ def find_best_hedge(
                 tgt_cap = _cap_asof(target_ticker_single, asof)
         out = []
         for c in universe:
-            if c.split(' ')[0] in ETF_SHORT_SET or c in forced:
+            if _is_etf(c) or c in forced:
                 out.append(c)
                 continue
             if pm_active and c in pm_union \
@@ -3232,8 +3531,18 @@ def find_best_hedge(
                 # [Fix 6] complete data + non-zero variance only, no fillna
                 ok = ret_tr_all.columns[(ret_tr_all.notna().all()) &
                                         (ret_tr_all.std() > 1e-6)]
-                ok = [c for c in ok if ret_te_all[c].notna().all()]
-                if target_ticker not in ok:
+                # [Fix 120] eligibility is decided on TRAINING data only.
+                # This line used to also require complete data in the TEST
+                # window, so a name entered the basket only if it had prices in
+                # the stretch it was about to be graded on — a look-ahead, and
+                # one _select_and_fit never applied, so the live path and the
+                # scoring path disagreed about who was eligible. The test
+                # window still has to be scoreable; that is now checked on the
+                # TARGET alone, and _eval_on_window already returns NaN (and
+                # the fold is skipped) if a chosen basket name has a gap.
+                ok = list(ok)
+                if target_ticker not in ok or \
+                        not ret_te_all[target_ticker].notna().all():
                     if verbose:
                         _P(f"  ⚠ skipping fold {fold} (lookback {lookback}): "
                               f"{target_short} incomplete or zero variance")
@@ -3419,7 +3728,7 @@ def find_best_hedge(
                  and c not in set(pf_legs)]
         _acorr = (fit_rets[_pool].corrwith(fit_rets[target_ticker]).abs()
                   if _pool else pd.Series(dtype=float))
-        _etf_p = [c for c in _pool if c.split(' ')[0] in ETF_SHORT_SET]
+        _etf_p = [c for c in _pool if _is_etf(c)]
         _etf_c = _acorr[_etf_p].dropna() if _etf_p else pd.Series(dtype=float)
         s_best_etf = _etf_c.idxmax() if len(_etf_c) else None  # [Fix 83]
         s_r2e = np.nan
@@ -3572,6 +3881,10 @@ def find_best_hedge(
             'outer_window_detail': pd.DataFrame(),
             'bootstrap_ci': None, 'rolling_oos': pd.DataFrame(),
             'decay': {}, 'turnover': {},
+            'drift_ann': (float(s_reg.intercept_) * 252.0    # [Fix 121]
+                          / (2 if two_day else 1)),
+            'asymmetry': {}, 'path': {},                     # [Fix 122/123]
+            'exposures': (data or {}).get('exposures') or {},  # [Fix 119]
             'ticket': {'grade': grade, 'reasons': reasons,
                        'quality_r2': (s_r2_h if hold_rows else np.nan),
                        'quality_source': ('holdout' if hold_rows
@@ -3722,8 +4035,8 @@ def find_best_hedge(
                              'r2_oos': r2_b, 'vol_red_oos': vr_b})
         return pd.DataFrame(rows)
 
-    etf_bench = _single_bench(lambda c: c.split(' ')[0] in ETF_SHORT_SET)
-    name_bench = _single_bench(lambda c: c.split(' ')[0] not in ETF_SHORT_SET)
+    etf_bench = _single_bench(lambda c: _is_etf(c))
+    name_bench = _single_bench(lambda c: not _is_etf(c))
     etf_r2_mean = etf_bench['r2_oos'].mean() if len(etf_bench) else np.nan
     etf_vr_mean = etf_bench['vol_red_oos'].mean() if len(etf_bench) else np.nan
     name_r2_mean = name_bench['r2_oos'].mean() if len(name_bench) else np.nan
@@ -3891,6 +4204,22 @@ def find_best_hedge(
     te_final = np.std(resid_final) * ann_sqrt
     tgt_std_final = returns_final[target_ticker].std() * ann_sqrt
     vol_red_final = 1 - te_final / tgt_std_final if tgt_std_final > 1e-6 else 0.0
+    # ── [Fix 121] THE DRIFT THE TICKET NEVER SHOWED ─────────────────────────
+    # RidgeCV fits an intercept (nothing in this file passes
+    # fit_intercept=False), and reg.predict() subtracts it in EVERY scored
+    # window — but the traded recipe is reg_f.coef_ alone, so the desk carries
+    # a spread whose expected drift the tool computed and then dropped. TE is a
+    # standard deviation, so a constant never shows up in it: the risk figures
+    # describe dispersion around a mean that was quietly removed.
+    #   Measured (400 seeds, 63-day hold): at a 30%/yr relative drift the
+    #   reported 63-day 1σ stayed flat at 8.64% while the realised mean P&L was
+    #   6.98% — 0.81σ of omission, growing past 1σ by 45%/yr.
+    # The column scaling in _fit_basket divides X only (no centering), so the
+    # intercept is already in raw-return space and is directly the daily drift.
+    # It is reported, never subtracted and never forecast — see [Fix 111] on
+    # what may and may not be done with an estimate that has no persistence.
+    drift_ann = float(reg_f.intercept_) * 252.0 / (2 if two_day else 1)
+    asym_stats, path_stats = {}, {}     # [Fix 122/123] filled in section [3]
     try:
         # [Fix 39] overlapping 2-day residuals carry induced MA(1)
         # autocorrelation that makes the ADF p-value anti-conservative;
@@ -3905,7 +4234,7 @@ def find_best_hedge(
     corr_final = returns_final.corr()[target_ticker].drop(
         [target_ticker] + pf_legs, errors='ignore')        # [Fix 46] no self/legs
     best_single = corr_final.abs().idxmax()
-    etf_cands = [c for c in corr_final.index if c.split(' ')[0] in ETF_SHORT_SET]
+    etf_cands = [c for c in corr_final.index if _is_etf(c)]
     best_etf = (corr_final[etf_cands].abs().idxmax()
                 if etf_cands else best_single)   # [Fix 14]
     reg_s, r2_single, _ = _fit_basket(returns_final, target_ticker, [best_single])
@@ -4599,7 +4928,9 @@ def find_best_hedge(
                     f"(±{horizon_info['sigma_pct']*100:.1f}%)")
         kv('RISK ($)\n1σ residual P&L, priced off the worst window', _rl,
            f"On ${notional_mm:g}mm gross. Two-thirds of the time you land "
-           f"inside these; roughly 1 in 20 is more than twice.")
+           f"inside these; roughly 1 in 20 is more than twice. [Fix 121] These "
+           f"are dispersion around the hedge's own drift ({drift_ann*100:+.1f}"
+           f"%/yr, see [3]), not around zero.")
     elif horizon_info:
         kv(f"RISK over the {horizon_info['days']}d hold\n1σ residual",
            f"±{horizon_info['sigma_pct']*100:.2f}%",
@@ -5035,6 +5366,105 @@ def find_best_hedge(
            f"Without it there is no reading on how much of this target is "
            f"hedgeable at all — judge the hedge by how far it drifts, not by "
            f"the share of moves it tracks.")
+
+    # ── [Fix 121] DRIFT ─────────────────────────────────────────────────────
+    kv('Hedge drift\nwhat the spread earned per year, not its wobble',
+       f"{drift_ann*100:+.1f}%/yr"
+       + (f" · {drift_ann*hedge_horizon_days/252*100:+.1f}% over the "
+          f"{int(hedge_horizon_days)}d hold" if hedge_horizon_days else ''),
+       'The fitted intercept — the level the hedged book ground at while it '
+       'was tracking. Every risk figure above is dispersion AROUND this, not '
+       'around zero. It is what the hedge HAS drifted, not a forecast: read '
+       'it as a warning when it is large, never size on it.')
+
+    # ── [Fix 122] ASYMMETRY AND PATH ────────────────────────────────────────
+    # Every other statistic in this report is a symmetric second moment: TE,
+    # R², vol reduction, the drift penalty, the bootstrap band and the ridge
+    # loss itself all price an up-day error and a down-day error identically.
+    # Correlations rise in the left tail (Ang-Chen 2002; Longin-Solnik 2001),
+    # so a hedge fitted on the average day can under-protect on the day it is
+    # held for while TE barely moves. Measured (300 seeds): lifting the hedge's
+    # beta only in the worst 20% of days moved TE 15.8% → 16.9%/yr while the
+    # worst-decile residual went -0.04% → -0.72% PER DAY.
+    # Reported only. Selecting on a semivariance would halve the sample to
+    # estimate a noisier quantity — the trap [Fix 112] already refused.
+    try:
+        _dn_src = pd.Series(resid_final, index=returns_final.index)
+        _tgt_d = returns_final[target_ticker]
+        _q = _tgt_d.quantile(0.10)
+        _worst = _dn_src[_tgt_d <= _q]
+        _best = _dn_src[_tgt_d >= _tgt_d.quantile(0.90)]
+        if len(_worst) >= 5 and len(_best) >= 5:
+            _wm, _bm = float(_worst.mean()), float(_best.mean())
+            asym_stats = {'worst_decile_mean': _wm, 'best_decile_mean': _bm,
+                          'gap_bp_day': (_wm - _bm) * 1e4,
+                          'n_worst': int(len(_worst))}
+            kv('Worst-day behaviour\nresidual on the target’s worst 10% of days',
+               f"{_wm*1e4:+.0f} bp/day vs {_bm*1e4:+.0f} bp on its best 10%",
+               ('Roughly symmetric — the hedge behaves the same in both tails, '
+                'so the TE above describes the bad days too.'
+                if abs(_wm - _bm) * 1e4 < 15 else
+                f"The hedge is NOT symmetric: it loses "
+                f"{abs(_wm - _bm)*1e4:.0f} bp/day more on the worst days than "
+                f"on the best. TE cannot see this — size for the left column."))
+    except Exception as _e122:
+        kv('Worst-day behaviour', 'unavailable',
+           f"could not be computed ({type(_e122).__name__}: {_e122}) — the "
+           f"report then says nothing about how this hedge behaves in a "
+           f"sell-off, so treat the TE above as an average-day figure.")
+
+    # Path risk. The hedged series was built only to be drawn on a chart and
+    # then discarded, so no peak-to-trough number existed anywhere. Prefer the
+    # walk-forward residual (honest weights, refit through time) over the
+    # in-sample one; returns are logs, hence expm1 on the cumulative.
+    try:
+        if roll_stats and len(rolling_df) and rolling_df['resid'].notna().any():
+            _dd_src, _dd_lbl = rolling_df['resid'].dropna(), 'out-of-sample'
+        else:
+            _dd_src, _dd_lbl = (pd.Series(resid_final,
+                                          index=returns_final.index),
+                                'in-sample')
+        _c = _dd_src.cumsum()
+        _dd = np.expm1(_c - _c.cummax())
+        _mdd = float(_dd.min())
+        _trough = _dd.idxmin()
+        _peak = _c.loc[:_trough].idxmax()
+        _w5 = float(np.expm1(_dd_src.rolling(5).sum()).min())
+        path_stats = {'max_drawdown': _mdd, 'peak': _peak, 'trough': _trough,
+                      'worst_5d': _w5, 'source': _dd_lbl}
+        kv('Hedged drawdown\nworst peak-to-trough of the hedged book',
+           f"{_mdd*100:.1f}% ({_peak:%d%b%y}→{_trough:%d%b%y})"
+           + (f" · worst 5 days {_w5*100:.1f}%" if np.isfinite(_w5) else ''),
+           f"On the {_dd_lbl} residual. A 1σ figure says how wide the spread "
+           f"scatters; this says how far it actually went against a holder "
+           f"before recovering — the number a stop is set against.")
+    except Exception as _e123:
+        kv('Hedged drawdown', 'unavailable',
+           f"could not be computed ({type(_e123).__name__}: {_e123}) — with no "
+           f"path figure, judge survivability from the worst-window TE alone.")
+
+    # ── [Fix 119] WHAT THE UNIVERSE COULD NOT OFFER ─────────────────────────
+    _exp_info = (data or {}).get('exposures') or {}
+    if _exp_info.get('tags'):
+        _res = _exp_info.get('resolved') or {}
+        _unres = _exp_info.get('unresolved') or {}
+        _held = [t for t in basket_final
+                 if any(t in v for v in _res.values())]
+        # [Fix 115] '·' is the separator the renderer splits readings on, so
+        # the tag list joins on a comma — a '·' there split "GOLD · SEMIS →
+        # holding PMGOLD" across lines and made SEMIS look like the thing held.
+        kv('Exposures this target carries\nfrom its BICS / GICS taxonomy',
+           ', '.join(_exp_info['tags'])
+           + (f" · holding {', '.join(disp.get(t, t) for t in _held)}"
+              if _held else " · none held in the final basket"),
+           ('Every exposure the taxonomy implies has an instrument in the '
+            'candidate set; whether the model chose it is a separate question '
+            'answered by the basket above.' if not _unres else
+            'MISSING: ' + ', '.join(sorted(_unres))
+            + ' — no instrument is mapped for this market, so the hedge was '
+              'built without that leg. Add one to MARKET_INSTRUMENTS and '
+              're-download, or expect it in the residual.'))
+
     if is_portfolio:
         hedge_ret = returns_final[basket_final].values.dot(
             weights_final.values)
@@ -5059,7 +5489,7 @@ def find_best_hedge(
               "or pair it off")
     _stock_cols = [c for c in returns_final.columns
                    if c != target_ticker and c not in set(pf_legs)
-                   and c.split(' ')[0] not in ETF_SHORT_SET]      # [Fix 47]
+                   and not _is_etf(c)]                          # [Fix 47]
     _caps_map = {c: _cap_asof(c, returns_final.index[-1])
                  for c in _stock_cols}
     fl = _factor_leakage(returns_final, target_ticker, weights_final,
@@ -5396,6 +5826,10 @@ def find_best_hedge(
         'validation_mode': val_mode,                   # [Fix 77]
         'decay': decay_stats,                          # [Fix 78]
         'turnover': turnover_stats,                    # [Fix 78]
+        'drift_ann': drift_ann,                        # [Fix 121]
+        'asymmetry': asym_stats,                       # [Fix 122]
+        'path': path_stats,                            # [Fix 123]
+        'exposures': (data or {}).get('exposures') or {},   # [Fix 119]
         'etf_benchmark': etf_bench,
         'etf_nested_r2_mean': etf_r2_mean,
         'name_benchmark': name_bench,                  # [Fix 53]
