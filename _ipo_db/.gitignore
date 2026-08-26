@@ -2,6 +2,7 @@
 scrape/pdf_cache/
 __pycache__/
 TO_NOMURA/*
-# the two files published to github.com/kennytam-code/code stay tracked
+# the deliverables published to github.com/kennytam-code/code stay tracked
 !TO_NOMURA/HK_IPO_Database_v1.xlsx
 !TO_NOMURA/hk_ipo_dashboard.html
+!TO_NOMURA/AH_Premium_Study.docx
