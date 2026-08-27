@@ -11,20 +11,43 @@ The `date` in the URL is the ANNOUNCEMENT date (anndate) = the trade date the
 in-kind basket is good for.  The holdings block inside is stamped `trandate`,
 which is the prior business day's close.  Both are written to the sheet header.
 
-The two halves of the payload
------------------------------
-  InKind/FundComposition   "basket" quantity  -- shares per ONE creation unit
-                           (baseunit = 500,000 ETF units).  Integer, rounded.
-  FundWeights/StockWeights "real"  quantity   -- shares the fund actually holds
-  FundWeights/FutureWeights                   -- futures contracts held (TX, NYF, ...)
+Basket vs real quantity
+-----------------------
+The page shows these stacked, but in the payload they are SEPARATE KEYS, not
+two halves of one list -- there is no split point to find:
 
-We take the REAL quantity, i.e. the lower half.  See basket_vs_real() for the
-conversion identity between the two.
+  InKind/FundComposition    BASKET  shares per ONE creation unit (baseunit =
+                            500,000 ETF units).  id field is "stkcd", no
+                            "weights" field, qty in the tens-to-thousands.
+  FundWeights/StockWeights  REAL    shares the fund actually holds.  id field
+                            is "code", carries "weights", qty in the millions.
+  FundWeights/FutureWeights REAL    futures contracts (TX, NYF, ...).  Futures
+                            appear ONLY here -- never in the in-kind basket.
+
+This script reads FundWeights only.  basket_vs_real() is diagnostic and is the
+sole place InKind is touched.  Conversion, if you ever need it:
+
+    real_qty  ~=  basket_qty * (osunit / baseunit)          # ~44,660 units
+
+approximate only, because basket_qty is rounded to whole shares (worst case
+-2.4% on the smallest line) and osunit is stamped on anndate while holdings are
+stamped on trandate.  Futures cannot be reconstructed this way at all.
+
+Usage
+-----
+    python yuanta_0050_pcf.py                     # 17 Jun 2026 -> today, audited
+    python yuanta_0050_pcf.py --end 20260930      # extend to a fixed date
+    python yuanta_0050_pcf.py --start 20260101 --end 20261231
+
+Re-run to extend: cached dates are not re-fetched, so only the new days hit the
+API and the workbook is rewritten whole.  A new tab opens automatically at every
+rebalance (--split auto, the default); the integrity audit runs on the result
+unless --no-audit.
 
 Output
 ------
-0050_holdings_<from>_<to>.xlsx with one tab per constituent regime:
-rows = RIC, columns = date, cells = real quantity (shares / contracts).
+0050_holdings_<from>_<to>.xlsx, one tab per constituent regime, named by its
+date span: rows = RIC, columns = date, cells = real quantity (shares/contracts).
 """
 
 import argparse
@@ -232,14 +255,38 @@ def report_changes(dates, members):
     return hits
 
 
-def split_regimes(dates, members, cut=None, mode="cut"):
+def residual_map(dates, members):
+    """Per date, the deleted names the fund had not finished selling.
+
+    An index review is executed at the close BEFORE the effective date, so the
+    transition book holds the new names in full alongside unsold tails of the
+    outgoing ones.  A stock that is present on date d and on no later date in
+    the run is exactly such a tail.  The final date is exempt -- it has no
+    "later" to disappear from, so nothing there can be judged a residual.
+    """
+    out = {}
+    for i, d in enumerate(dates):
+        later = set().union(*(members[x] for x in dates[i + 1:])) if i + 1 < len(dates) else None
+        out[d] = frozenset() if later is None else frozenset(members[d] - later)
+    return out
+
+
+def persistent(dates, members):
+    """The constituent set with transition tails stripped out.
+
+    This is what defines a tab: a rebalance changes the persistent set once, on
+    the transition date, instead of twice (adds land, then tails clear).
+    """
+    res = residual_map(dates, members)
+    return {d: members[d] - res[d] for d in dates}, res
+
+
+def split_regimes(dates, members, cut=None, mode="auto"):
     """Group dates into tabs.
 
-    mode='cut'  -- a single break immediately before `cut` (the index review
-                   effective date).  The transition day, where the fund still
-                   carries residual tails of the deleted names alongside the
-                   full new positions, stays with the post-rebalance tab.
-    mode='auto' -- a break at every detected constituent-set change.
+    mode='auto' -- a new tab wherever the PERSISTENT constituent set changes,
+                   so any future rebalance opens its own tab automatically.
+    mode='cut'  -- a single manual break immediately before `cut`.
     """
     if mode == "cut":
         if cut is None:
@@ -248,9 +295,10 @@ def split_regimes(dates, members, cut=None, mode="cut"):
         post = [d for d in dates if d >= cut]
         return [g for g in (pre, post) if g]
 
+    keep, _ = persistent(dates, members)
     groups, cur = [], []
     for i, d in enumerate(dates):
-        if cur and members[d] != members[dates[i - 1]]:
+        if cur and keep[d] != keep[dates[i - 1]]:
             groups.append(cur)
             cur = [d]
         else:
@@ -260,24 +308,12 @@ def split_regimes(dates, members, cut=None, mode="cut"):
     return groups
 
 
-def residual_rows(df, kinds):
-    """Deleted names the fund had not finished selling at the rebalance close.
+def matrix(group, frames, residuals=None):
+    """dates -> DataFrame: col A = RIC, then one column per date. Nothing else.
 
-    The tab's opening column carries the prior close, i.e. the transition book,
-    so an outgoing name still shows an unsold tail there and never again.  Any
-    STOCK present only in that first column is exactly that residual.  Futures
-    are exempt -- a contract legitimately expires out of the front of a tab.
+    Rows that are transition residuals anywhere in the tab are dropped; futures
+    are exempt, since a contract legitimately expires out of a tab.
     """
-    if df.shape[1] < 3:                      # need at least two date columns
-        return []
-    first, rest = df.columns[1], list(df.columns[2:])
-    only_first = df[first].notna() & df[rest].isna().all(axis=1)
-    is_stock = df["RIC"].map(kinds).eq("Stock")
-    return df.loc[only_first & is_stock, "RIC"].tolist()
-
-
-def matrix(group, frames, drop_residuals=True):
-    """dates -> DataFrame: col A = RIC, then one column per date. Nothing else."""
     sort_key, kinds, cols = {}, {}, {}
     for d in group:
         col = {}
@@ -294,16 +330,18 @@ def matrix(group, frames, drop_residuals=True):
     df.index.name = "RIC"
     df = df.reset_index()
 
-    dropped = residual_rows(df, kinds) if drop_residuals else []
+    drop = set().union(*(residuals[d] for d in group)) if residuals else set()
+    drop = {r for r in drop if kinds.get(r) == "Stock"}
+    dropped = sorted(df.loc[df.RIC.isin(drop), "RIC"])
     if dropped:
-        df = df[~df.RIC.isin(dropped)].reset_index(drop=True)
+        df = df[~df.RIC.isin(drop)].reset_index(drop=True)
     return df, dropped
 
 
 def sheet_name(group, members, index):
+    """Date span, so an N-th rebalance names its own tab without renaming others."""
     a, b = group[0], group[-1]
-    tag = "pre-rebal" if index == 0 else "post-rebal"
-    return f"{tag} {a:%m%d}-{b:%m%d}"
+    return f"{a:%Y%m%d}-{b:%Y%m%d}"
 
 
 # --------------------------------------------------------------------- main --
@@ -313,21 +351,26 @@ def main():
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--ticker", default="0050")
     ap.add_argument("--start", default="20260617")
-    ap.add_argument("--end", default="20260825")
-    ap.add_argument("--cut", default="20260622",
-                    help="index review effective date: the single tab break")
-    ap.add_argument("--split", default="cut", choices=["cut", "auto"],
-                    help="'cut' = one break at --cut; 'auto' = break at every "
-                         "detected constituent change")
+    ap.add_argument("--end", default="today",
+                    help="YYYYMMDD, or 'today' (the default) to extend the file "
+                         "to the latest PCF Yuanta has published")
+    ap.add_argument("--split", default="auto", choices=["auto", "cut"],
+                    help="'auto' (default) opens a new tab at every rebalance; "
+                         "'cut' forces a single manual break at --cut")
+    ap.add_argument("--cut", default="none",
+                    help="only with --split cut: the one tab break, YYYYMMDD")
+    ap.add_argument("--no-audit", action="store_true",
+                    help="skip the integrity audit that normally runs on the output")
     ap.add_argument("--out", default=None)
     args = ap.parse_args()
 
     start = dt.datetime.strptime(args.start, "%Y%m%d").date()
-    end = dt.datetime.strptime(args.end, "%Y%m%d").date()
+    end = (dt.date.today() if args.end.lower() == "today"
+           else dt.datetime.strptime(args.end, "%Y%m%d").date())
     cut = None if args.cut.lower() == "none" else \
         dt.datetime.strptime(args.cut, "%Y%m%d").date()
 
-    print(f"Fetching {args.ticker} PCF {args.start} -> {args.end}")
+    print(f"Fetching {args.ticker} PCF {start:%Y%m%d} -> {end:%Y%m%d}")
     frames, meta, members = build(args.ticker, start, end)
     if not frames:
         sys.exit("no data")
@@ -335,13 +378,14 @@ def main():
     dates = sorted(frames)
     print("\nconstituent audit")
     report_changes(dates, members)
+    _, residuals = persistent(dates, members)
     groups = split_regimes(dates, members, cut, args.split)
     print(f"\n{len(dates)} publish dates -> {len(groups)} tab(s)")
 
-    out = args.out or f"{args.ticker}_holdings_{args.start}_{args.end}.xlsx"
+    out = args.out or f"{args.ticker}_holdings_{start:%Y%m%d}_{end:%Y%m%d}.xlsx"
     with pd.ExcelWriter(out, engine="openpyxl") as xl:
         for i, g in enumerate(groups):
-            df, dropped = matrix(g, frames)
+            df, dropped = matrix(g, frames, residuals)
             if dropped:
                 print(f"  dropped {len(dropped)} rebalance residual(s) from tab {i + 1}: "
                       f"{dropped} (held only into {g[0]:%Y-%m-%d}, then sold out)")
@@ -369,6 +413,14 @@ def main():
     print(f"  implied units from qty ratios: min {chk.implied_units.min():,.0f} "
           f"median {chk.implied_units.median():,.0f} max {chk.implied_units.max():,.0f}")
 
+    if args.no_audit:
+        print("\naudit skipped (--no-audit)")
+        return 0
+    print("\n" + "=" * 70)
+    import audit_0050_pcf                       # same directory as this file
+    return audit_0050_pcf.run(out, dates_expected=[d.strftime("%Y%m%d") for d in dates])
+
 
 if __name__ == "__main__":
-    main()
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    sys.exit(main())
