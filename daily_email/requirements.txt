@@ -1,0 +1,5 @@
+# The API path needs blpapi, which is not on PyPI:
+#   pip install blpapi --index-url=https://blpapi.bloomberg.com/repository/releases/python/simple/
+# Outlook drafts need pywin32 (Windows only).  openpyxl is only for --source excel.
+pywin32>=306 ; sys_platform == "win32"
+openpyxl>=3.1
