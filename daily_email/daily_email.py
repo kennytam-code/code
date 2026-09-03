@@ -1,26 +1,37 @@
-"""Daily calendar email — two Outlook drafts straight from Bloomberg, no Excel.
+"""Daily calendar email - two Outlook drafts, straight from Bloomberg, no Excel.
 
-Draft 1  Macro calendar   central-bank decisions (US/TW/KR/MY/TH/ID/IN/CN/JP/AU)
-                          + the high-relevance US data calendar, next 3 months
-Draft 2  HSI earnings     constituents reporting in the next 91 days,
-                          with the conference-call date/time
+    Draft 1  Macro calendar    central-bank decisions across the US and Asia, then
+                               the high-relevance US data calendar, next 3 months
+    Draft 2  HSI earnings      constituents reporting in the next 91 days, with
+                               the conference-call date and time
 
-Run it on the Bloomberg terminal PC with Outlook open:
-    RUN_DAILY_EMAIL.bat                (double-click)
-    python daily_email.py              two drafts saved into Outlook's Drafts folder
-    python daily_email.py --display    the two drafts pop open for review instead
-    python daily_email.py --probe      FIRST RUN: checks every field mnemonic and
-                                       ticker against the terminal, prints a report
-    python daily_email.py --source excel --xlsx "C:\\...\\calendar.xlsx"
-                                       read the workbook's cached BQL output instead
-                                       of the API (open + refresh + save it first)
-    python daily_email.py --parity --xlsx "C:\\...\\calendar.xlsx"
-                                       API vs workbook, row by row
-    python daily_email.py --source fixture --no-outlook
-                                       sample data, HTML only (works on any machine)
+Everything is in this one file.  Read README.md for the guide; the four commands
+you need are:
 
-Everything you would change lives in the CONFIG block below.
+    python daily_email.py --demo      sample data, works anywhere, see the layout
+    python daily_email.py --test      run the self-tests
+    python daily_email.py --probe     FIRST RUN on the terminal: verify every
+                                      field and ticker against Bloomberg
+    python daily_email.py             the real thing: two drafts into Outlook
+
+What is in this file, in order:
+    CONFIG      recipients, subjects, the exclusion list, tickers   <- edit here
+    ENGINE      the Bloomberg session, the three pulls, the HTML, Outlook
+    FIXTURE     a fake terminal, so --demo and --test run on any machine
+    TESTS       ~90 checks over parsing, filtering, sorting and rendering
 """
+
+import argparse
+import datetime as dt
+import html as _html
+import os
+import re
+import sys
+from email.message import EmailMessage
+from email.utils import format_datetime
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+
 
 import argparse
 import datetime as dt
@@ -237,7 +248,7 @@ CENTRAL_BANKS = [
 #               ('Sheet2', 'A1', 'hsi_earnings')]   (cell = first header cell)
 EXCEL_BLOCKS = None
 
-# BQuant source (--source bql): your three queries in string form.  Only runs
+# BQuant source (--bql): your three queries in string form.  Only runs
 # inside BQuant, where `import bql` works; the Desktop API has no BQL service.
 BQL_QUERIES = {
     'us_eco': "get(calendar(dates=range(0D, 3M), relevancy=HIGH)) for('US Country')",
@@ -262,6 +273,9 @@ SECTION_TITLES = {
     'hsi_earnings':  'HSI constituents - expected earnings',
 }
 # ============================================================ END CONFIG ===
+
+
+# ================================================================ ENGINE ===
 
 
 # -------------------------------------------------------------- helpers ---
@@ -616,7 +630,7 @@ class Bloomberg:
             lines.append(f'{name}: openService raised {e!r}')
         if not opened:
             lines.append(f'{name}: not available (expected - BQL is not part of the Desktop API). '
-                         'Verdict: stay on the refdata path, or run --source bql inside BQuant.')
+                         'Verdict: stay on the refdata path, or run --bql inside BQuant.')
             return lines
         svc = self.session.getService(name)
         lines.append(f'{name}: OPENED. Operations and request schemas:')
@@ -993,7 +1007,7 @@ def build_sections_bql(today):
         import bql
     except ImportError:
         raise RuntimeError('`import bql` failed - the bql package only exists inside BQuant. '
-                           'Use --source blpapi on the terminal PC.')
+                           'Run this on the terminal PC without --bql instead.')
     bq = bql.Service()
     sections = {}
     for key, query in BQL_QUERIES.items():
@@ -1353,30 +1367,679 @@ def parity(api_sections, xl_sections):
             print(f'     API only  : {d} {e}')
 
 
-# ------------------------------------------------------------------ main ---
-def load_fixture_blpapi(today):
-    tests = os.path.join(HERE, 'tests')
-    if tests not in sys.path:
-        sys.path.insert(0, tests)
-    import fake_blpapi
-    fake_blpapi.configure(today)
-    return fake_blpapi
+# ============================================================== FIXTURE ===
+# A fake Bloomberg terminal, so --demo and --test run on any machine.  It speaks
+# enough of the API to exercise the real code path above: batched requests,
+# the event drain, dead tickers, rejected mnemonics and bulk fields.
+_TODAY_FIXTURE = dt.date.today()
+
+
+def fixture_configure(today):
+    global _TODAY_FIXTURE
+    _TODAY_FIXTURE = today
+
+
+class FakeEvent:
+    TIMEOUT, RESPONSE, PARTIAL_RESPONSE = 0, 1, 2
+
+    def __init__(self, messages, event_type=1):
+        self._messages, self._type = messages, event_type
+
+    def __iter__(self):
+        return iter(self._messages)
+
+    def eventType(self):
+        return self._type
+
+
+class FakeName(str):
+    pass
+
+
+class FakeElement:
+    """Scalar, array-of-scalars, or complex (named children), like the real thing."""
+
+    def __init__(self, name, value=None, children=None, array=None):
+        self._name, self._value = name, value
+        self._children = children                 # list[(name, FakeElement)] when complex
+        self._array = array                       # list[FakeElement] when an array
+
+    def name(self):
+        return FakeName(self._name)
+
+    def isArray(self):
+        return self._array is not None
+
+    def isComplexType(self):
+        # A bulk field (INDX_MEMBERS) is an array whose values are complex, and
+        # the real API reports isArray() and isComplexType() both True for it.
+        if self._array is not None:
+            return bool(self._array) and self._array[0]._children is not None
+        return self._children is not None
+
+    def isNull(self):
+        return self._value is None and self._children is None and self._array is None
+
+    def numValues(self):
+        return len(self._array or [])
+
+    def numElements(self):
+        return len(self._children or [])
+
+    def getValueAsElement(self, i):
+        return self._array[i]
+
+    def getElement(self, key):
+        if isinstance(key, int):
+            return self._children[key][1]
+        for n, el in (self._children or []):
+            if n == key:
+                return el
+        raise KeyError(key)
+
+    def hasElement(self, key):
+        return any(n == key for n, _ in (self._children or []))
+
+    def getValue(self, i=None):
+        return self._array[i]._value if i is not None else self._value
+
+    def getValueAsString(self):
+        return '' if self._value is None else str(self._value)
+
+    def getElementAsString(self, key):
+        v = self.getElement(key)._value
+        return '' if v is None else str(v)
+
+    def getElementAsFloat(self, key):
+        return float(self.getElement(key)._value)
+
+    def appendValue(self, v):
+        self._array.append(FakeElement('item', v))
+
+    def set(self, key, value):
+        self._children = [(n, e) for n, e in (self._children or []) if n != key]
+        self._children.append((key, FakeElement(key, value)))
+
+
+def fake_complex(name, pairs):
+    return FakeElement(name, children=[(n, e if isinstance(e, FakeElement) else FakeElement(n, e))
+                                   for n, e in pairs])
+
+
+def fake_array(name, items):
+    return FakeElement(name, array=list(items))
+
+
+class FakeMessage:
+    def __init__(self, root):
+        self._root = root
+
+    def hasElement(self, key):
+        return self._root.hasElement(key)
+
+    def getElement(self, key):
+        return self._root.getElement(key)
+
+    def toString(self):
+        return f'<fake message {self._root.name()}>'
+
+
+class FakeRequest:
+    def __init__(self, operation):
+        self.operation = operation
+        self._root = FakeElement('request', children=[
+            ('securities', fake_array('securities', [])),
+            ('fields', fake_array('fields', [])),
+        ])
+
+    def getElement(self, key):
+        return self._root.getElement(key)
+
+    def asElement(self):
+        return self._root
+
+    def set(self, key, value):
+        self._root.set(key, value)
+
+    @property
+    def securities(self):
+        return [e._value for e in self._root.getElement('securities')._array]
+
+    @property
+    def fields(self):
+        return [e._value for e in self._root.getElement('fields')._array]
+
+
+class FakeService:
+    def __init__(self, name):
+        self._name = name
+
+    def createRequest(self, operation):
+        return FakeRequest(operation)
+
+    def numOperations(self):
+        return 0
+
+
+class FakeSessionOptions:
+    def setServerHost(self, *a): pass
+    def setServerPort(self, *a): pass
+
+
+# ------------------------------------------------------------ fake market ---
+UNKNOWN_SECURITY = {'XXXX FAKE Index'}          # exercises the securityError path
+UNKNOWN_FIELDS = {'ECO_RELEASE_DT', 'CONF_CALL_DT', 'CONF_CALL_TIME', 'ECO_RELEASE_TIME'}
+
+HSI_MEMBERS = [
+    ('700 HK', 'TENCENT'), ('939 HK', 'CCB'), ('1299 HK', 'AIA'), ('941 HK', 'CHINA MOBILE'),
+    ('9988 HK', 'BABA-W'), ('388 HK', 'HKEX'), ('1398 HK', 'ICBC'), ('3988 HK', 'BANK OF CHINA'),
+    ('2318 HK', 'PING AN'), ('883 HK', 'CNOOC'), ('16 HK', 'SHK PPT'), ('1810 HK', 'XIAOMI-W'),
+    ('3690 HK', 'MEITUAN-W'), ('2020 HK', 'ANTA SPORTS'), ('27 HK', 'GALAXY ENT'),
+    ('1113 HK', 'CK ASSET'), ('2 HK', 'CLP HOLDINGS'), ('386 HK', 'SINOPEC'),
+    ('9618 HK', 'JD-SW'), ('1211 HK', 'BYD'), ('6862 HK', 'HAIDILAO'), ('1928 HK', 'SANDS CHINA'),
+]
+
+
+def _bday(base, n):
+    d, step = base, (1 if n >= 0 else -1)
+    for _ in range(abs(n)):
+        d += dt.timedelta(days=step)
+        while d.weekday() >= 5:
+            d += dt.timedelta(days=step)
+    return d
+
+
+def _eco_row(ticker, label, idx):
+    offset = (idx * 5) % 88 + 2
+    when = _bday(_TODAY_FIXTURE, offset)
+    survey = round(0.1 + (idx % 17) * 0.13, 2)
+    prior = round(survey - 0.05 * ((idx % 5) - 2), 2)
+    return [('ECO_FUTURE_RELEASE_DATE', when.strftime('%Y-%m-%d')),
+            ('ECO_FUTURE_RELEASE_TIME', '08:30' if idx % 3 == 0 else ('10:00' if idx % 3 == 1 else '14:00')),
+            ('BN_SURVEY_MEDIAN', survey), ('PX_LAST', prior),
+            ('RELEVANCE_VALUE', 99 - (idx % 40)), ('NAME', label.upper())]
+
+
+def _cb_row(ticker, label, idx):
+    when = _bday(_TODAY_FIXTURE, (idx * 9) % 80 + 3)
+    rate = round(0.25 + idx * 0.55, 2)
+    return [('ECO_FUTURE_RELEASE_DATE', when.strftime('%Y-%m-%d')),
+            ('ECO_FUTURE_RELEASE_TIME', '14:00' if idx % 2 else '09:00'),
+            ('BN_SURVEY_MEDIAN', rate), ('PX_LAST', rate),
+            ('RELEVANCE_VALUE', 99), ('NAME', label.upper())]
+
+
+def _earn_row(ticker, name, idx):
+    when = _bday(_TODAY_FIXTURE, (idx * 4) % 86 + 1)
+    call = _bday(when, 0)
+    # ERN_ANN_DT_AND_PER returns history AND estimated forward dates together.
+    bulk = fake_array('ERN_ANN_DT_AND_PER', [
+        fake_complex('row', [('Announcement Date', d.strftime('%Y-%m-%d')),
+                           ('Financial Period', 'FY26')])
+        for d in (_bday(_TODAY_FIXTURE, -120), _bday(_TODAY_FIXTURE, -30), when)])
+    # every 7th name has no scalar report date - only the bulk field, so the
+    # fallback path is exercised on every fixture run
+    scalar_missing = (idx % 7 == 3)
+    return [('NAME', name),
+            ('EXPECTED_REPORT_DT', None if scalar_missing else when.strftime('%Y-%m-%d')),
+            ('EXPECTED_REPORT_TIME', None if scalar_missing else
+             ['Bef-mkt', '12:00', 'Aft-mkt', '07:00'][idx % 4]),
+            ('EARNINGS_CONF_CALL_DT', call.strftime('%Y-%m-%d') if idx % 5 else None),
+            ('EARNINGS_CONF_CALL_TIME', '16:30' if idx % 5 else None),
+            ('ERN_ANN_DT_AND_PER', bulk)]
+
+
+def _fake_fields(security, wanted):
+    """Everything the fixture knows, before the requested-field filter."""
+    if security == HSI_INDEX:
+        members = [fake_complex('INDX_MEMBERS',
+                              [('Member Ticker and Exchange Code', t)]) for t, _ in HSI_MEMBERS]
+        return [('INDX_MEMBERS', fake_array('INDX_MEMBERS', members))]
+    for i, (t, label) in enumerate(US_ECO_TICKERS):
+        if t == security:
+            return _eco_row(t, label, i)
+    for i, (_c, _b, t, label, _tz) in enumerate(CENTRAL_BANKS):
+        if t == security:
+            return _cb_row(t, label, i)
+    base = security[:-len(' Equity')] if security.upper().endswith(' EQUITY') else security
+    for i, (t, name) in enumerate(HSI_MEMBERS):
+        if t == base:
+            return _earn_row(t, name, i)
+    return []
+
+
+class FakeSession:
+    def __init__(self, options=None):
+        self._queue = []
+
+    def start(self):
+        return True
+
+    def stop(self):
+        pass
+
+    def openService(self, name):
+        return name in ('//blp/refdata', '//blp/apiflds', '//blp/instruments')
+
+    def getService(self, name):
+        return FakeService(name)
+
+    def sendRequest(self, request):
+        wanted = set(request.fields)
+        sec_elements = []
+        for sec in request.securities:
+            if sec in UNKNOWN_SECURITY:
+                sec_elements.append(fake_complex('securityData', [
+                    ('security', sec),
+                    ('securityError', fake_complex('securityError', [('message', 'Unknown/Invalid Security')])),
+                ]))
+                continue
+            pairs = [(k, v) for k, v in _fake_fields(sec, wanted)
+                     if k in wanted and v is not None]
+            fd = fake_complex('fieldData', pairs)
+            kids = [('security', sec), ('fieldData', fd)]
+            bad = sorted(wanted & UNKNOWN_FIELDS)
+            if bad:
+                kids.append(('fieldExceptions', fake_array('fieldExceptions', [
+                    fake_complex('fieldExceptions', [
+                        ('fieldId', f),
+                        ('errorInfo', fake_complex('errorInfo', [
+                            ('subcategory', 'BAD_FLD'), ('message', 'Invalid Field')])),
+                    ]) for f in bad])))
+            sec_elements.append(fake_complex('securityData', kids))
+        root = FakeElement('ReferenceDataResponse',
+                       children=[('securityData', fake_array('securityData', sec_elements))])
+        self._queue = [FakeEvent([FakeMessage(root)], FakeEvent.RESPONSE)]
+
+    def nextEvent(self, timeout=0):
+        return self._queue.pop(0) if self._queue else FakeEvent([], FakeEvent.TIMEOUT)
+
+
+class FixtureAPI:
+    """Stands in for the blpapi module itself."""
+    SessionOptions = FakeSessionOptions
+    Session = FakeSession
+    Event = FakeEvent
+
+
+# ================================================================ TESTS ===
+# python daily_email.py --test     (no terminal, no Outlook, no network)
+TEST_TODAY = dt.date(2026, 9, 4)
+FAILURES = []
+
+
+def check(name, cond, detail=''):
+    if cond:
+        print(f'  ok    {name}')
+    else:
+        print(f'  FAIL  {name}  {detail}')
+        FAILURES.append(name)
+
+
+# ------------------------------------------------------------ conversions ---
+def test_dates_and_times():
+    print('dates and times')
+    check('ISO date', as_date('2026-09-04') == dt.date(2026, 9, 4))
+    check('datetime keeps the date', as_date(dt.datetime(2026, 9, 4, 8, 30)) == dt.date(2026, 9, 4))
+    check('Excel serial 46269 -> 2026-09-04', as_date(46269) == dt.date(2026, 9, 4),
+          str(as_date(46269)))
+    check('day/month/year', as_date('04/09/2026') == dt.date(2026, 9, 4))
+    check('blank is None', as_date('') is None and as_date(None) is None)
+    check('junk is None', as_date('n.a.') is None)
+    check('clock text', as_time('8:30') == '08:30')
+    check('Excel fraction 0.354166 -> 08:30', as_time(0.3541666667) == '08:30', as_time(0.3541666667))
+    check('text time survives', as_time('Bef-mkt') == 'Bef-mkt')
+    check('midnight datetime is not a time', as_time(dt.datetime(2026, 9, 4, 0, 0)) is None)
+    check('time object', as_time(dt.time(14, 0)) == '14:00')
+
+
+def test_sort_and_format():
+    print('sorting and formatting')
+    keys = [time_key('Bef-mkt'), time_key('08:30'), time_key('16:00'),
+            time_key('Aft-mkt'), time_key(None)]
+    check('before < clock < after < unknown', keys == sorted(keys), str(keys))
+    check('thousands', fmt_num(1234567.0) == '1,234,567', fmt_num(1234567.0))
+    check('trailing zeros trimmed', fmt_num(0.700) == '0.7', fmt_num(0.7))
+    check('rate to 2dp', fmt_num(5.5, 2) == '5.50')
+    check('None is a dash', fmt_num(None) == '–')
+    check('zero prints as 0', fmt_num(0.0) == '0', fmt_num(0.0))
+    check('negative survives', fmt_num(-0.25) == '-0.25', fmt_num(-0.25))
+    check('today tag', day_tag(TEST_TODAY, TEST_TODAY) == 'TODAY')
+    check('tomorrow tag', day_tag(TEST_TODAY + dt.timedelta(days=1), TEST_TODAY) == 'tomorrow')
+    check('n-day tag', day_tag(TEST_TODAY + dt.timedelta(days=9), TEST_TODAY) == 'in 9 days')
+
+
+def test_exclusions():
+    print('exclusion list')
+    check('exact name excluded', is_excluded('Building Permits'))
+    check('case and spacing ignored', is_excluded('  building   permits '))
+    check('kept name not excluded', not is_excluded('Change in Nonfarm Payrolls'))
+    check('near-miss kept', not is_excluded('Retail Sales Advance MoM'))
+    check('every VBA entry loaded', len(_EXCLUDE) == len(set(EXCLUDE_EVENTS)),
+          f'{len(_EXCLUDE)} vs {len(EXCLUDE_EVENTS)}')
+    labels = {lbl for _, lbl in US_ECO_TICKERS}
+    unmatched = [e for e in EXCLUDE_EVENTS if e not in labels]
+    check('every exclusion matches a configured label', not unmatched, str(unmatched))
+
+
+def test_pick_date_skips_stale():
+    print('date selection')
+    rec = {'ECO_FUTURE_RELEASE_DATE': '2026-08-01', 'ECO_RELEASE_DT': '2026-09-20'}
+    when, _ = pick_date(rec, ['ECO_FUTURE_RELEASE_DATE', 'ECO_RELEASE_DT'], [], TEST_TODAY)
+    check('a past date falls through to the next candidate', when == dt.date(2026, 9, 20), str(when))
+    rec = {'ECO_FUTURE_RELEASE_DATE': dt.datetime(2026, 9, 20, 8, 30)}
+    when, t = pick_date(rec, ['ECO_FUTURE_RELEASE_DATE'], ['ECO_FUTURE_RELEASE_TIME'], TEST_TODAY)
+    check('a datetime supplies the time', (when, t) == (dt.date(2026, 9, 20), '08:30'), f'{when} {t}')
+    rec = {'ECO_FUTURE_RELEASE_DATE': '2026-09-20', 'ECO_FUTURE_RELEASE_TIME': '14:00'}
+    _, t = pick_date(rec, ['ECO_FUTURE_RELEASE_DATE'], ['ECO_FUTURE_RELEASE_TIME'], TEST_TODAY)
+    check('an explicit time field wins', t == '14:00')
+    check('no usable date -> None', pick_date({}, ['A'], ['B'], TEST_TODAY) == (None, None))
+
+
+def test_timezone_shift():
+    print('time-zone conversion')
+    d, t = shift_tz(dt.date(2026, 9, 4), '08:30', 'America/New_York', 'Asia/Hong_Kong')
+    check('NY 08:30 -> HK 20:30 same day', (d, t) == (dt.date(2026, 9, 4), '20:30'), f'{d} {t}')
+    d, t = shift_tz(dt.date(2026, 9, 4), '16:00', 'America/New_York', 'Asia/Hong_Kong')
+    check('NY 16:00 rolls the date forward', (d, t) == (dt.date(2026, 9, 5), '04:00'), f'{d} {t}')
+    d, t = shift_tz(dt.date(2026, 9, 4), 'Bef-mkt', 'America/New_York', 'Asia/Hong_Kong')
+    check('text time passes through untouched', (d, t) == (dt.date(2026, 9, 4), 'Bef-mkt'))
+
+
+# ------------------------------------------------------------- API path ----
+def build(today=TEST_TODAY):
+    fixture_configure(today)
+    sections, bbg = build_sections_blpapi(today, blpapi_module=FixtureAPI)
+    return sections, bbg
+
+
+def test_api_path():
+    print('Bloomberg path (fake blpapi)')
+    sections, bbg = build()
+    check('three sections', set(sections) == {'central_banks', 'us_eco', 'hsi_earnings'})
+
+    eco = sections['us_eco']
+    check('us_eco has rows', len(eco.rows) > 10, str(len(eco.rows)))
+    check('nothing excluded survived', not [r for r in eco.rows if is_excluded(r['event'])])
+    check('excluded rows were counted', eco.n_excluded > 0, str(eco.n_excluded))
+    dates = [r['date'] for r in eco.rows]
+    check('sorted by date', dates == sorted(dates))
+    check('nothing in the past', all(d >= TEST_TODAY for d in dates))
+    check('nothing past the horizon',
+          all(d <= TEST_TODAY + dt.timedelta(days=LOOKAHEAD_DAYS) for d in dates))
+    same_day = [r for r in eco.rows if r['date'] == dates[0]]
+    check('same-day rows ordered by time',
+          [time_key(r['time']) for r in same_day] == sorted(time_key(r['time']) for r in same_day))
+
+    cb = sections['central_banks']
+    check('central banks have rows', len(cb.rows) >= 5, str(len(cb.rows)))
+    check('each names a bank', all(r['bank'] for r in cb.rows))
+    check('countries look right', {r['country'] for r in cb.rows} <= {c for c, *_ in CENTRAL_BANKS})
+
+    earn = sections['hsi_earnings']
+    check('earnings have rows', len(earn.rows) >= 5, str(len(earn.rows)))
+    check('tickers carry no Equity suffix', not [r for r in earn.rows if 'Equity' in r['ticker']])
+    check('every row has a company name', all(r['name'] for r in earn.rows))
+    check('sorted by date', [r['date'] for r in earn.rows] == sorted(r['date'] for r in earn.rows))
+    check('some rows carry a conference call', any(r['call_date'] for r in earn.rows))
+    check('the bulk-field fallback filled some dates', any(r['estimated'] for r in earn.rows))
+    check('bulk-sourced dates are still in the window',
+          all(TEST_TODAY <= r['date'] <= TEST_TODAY + dt.timedelta(days=LOOKAHEAD_DAYS)
+              for r in earn.rows if r['estimated']))
+    check('the fallback is disclosed in the notes',
+          any('ERN_ANN_DT_AND_PER' in n for n in earn.notes), str(earn.notes))
+
+
+def test_bulk_fields():
+    print('bulk fields')
+    rec = {'INDX_MEMBERS': [{'Member Ticker and Exchange Code': '700 HK'}, {'Ticker': '939 HK'}]}
+    check('substring match handles both element names',
+          bulk_field(rec, 'INDX_MEMBERS', 'ticker') == ['700 HK', '939 HK'],
+          str(bulk_field(rec, 'INDX_MEMBERS', 'ticker')))
+    odd = {'INDX_MEMBERS': [{'Something Unexpected': '1299 HK'}]}
+    check('an unknown element name falls back to the first value',
+          bulk_field(odd, 'INDX_MEMBERS', 'ticker') == ['1299 HK'])
+    check('a missing bulk field is empty, not an error', bulk_field({}, 'X', 'y') == [])
+    check('a scalar in place of a bulk field is ignored',
+          bulk_field({'X': ['not a dict']}, 'X', 'y') == [])
+    hist = {EARN_BULK_DATE: [{'Announcement Date': '2025-03-20'},
+                                {'Announcement Date': '2026-11-12'},
+                                {'Announcement Date': '2026-09-30'}]}
+    check('the earliest FUTURE announcement wins',
+          next_announced(hist, TEST_TODAY) == dt.date(2026, 9, 30),
+          str(next_announced(hist, TEST_TODAY)))
+    past = {EARN_BULK_DATE: [{'Announcement Date': '2025-03-20'}]}
+    check('history alone yields nothing', next_announced(past, TEST_TODAY) is None)
+
+
+def test_bad_security_and_field():
+    print('error handling')
+    fixture_configure(TEST_TODAY)
+    bbg = Bloomberg(blpapi_module=FixtureAPI).connect()
+    got = bbg.ref(['XXXX FAKE Index', 'FDTR Index'], ['PX_LAST', 'CONF_CALL_DT'])
+    check('a dead ticker is recorded, not raised', 'XXXX FAKE Index' in bbg.bad_securities)
+    check('the dead ticker returns no row', 'XXXX FAKE Index' not in got)
+    check('the good ticker still comes back', 'FDTR Index' in got)
+    check('a rejected mnemonic is recorded', 'CONF_CALL_DT' in bbg.field_errors)
+    quiet = field_notes(bbg, {'call_date': ['EARNINGS_CONF_CALL_DT', 'CONF_CALL_DT']},
+                           [{'EARNINGS_CONF_CALL_DT': '2026-09-20'}])
+    check('a covered fallback produces no note', quiet == [], str(quiet))
+    loud = field_notes(bbg, {'call_date': ['CONF_CALL_DT']}, [{}])
+    check('a role with no data at all is flagged', len(loud) == 1 and 'call_date' in loud[0], str(loud))
+    bbg.close()
+
+
+def test_chunking():
+    print('request chunking')
+    fixture_configure(TEST_TODAY)
+    bbg = Bloomberg(blpapi_module=FixtureAPI).connect()
+    tickers = [t for t, _ in US_ECO_TICKERS]
+    check('universe is larger than one chunk', len(tickers) > CHUNK, str(len(tickers)))
+    got = bbg.ref(tickers, ['PX_LAST'])
+    check('every ticker comes back across chunks', len(got) == len(tickers), f'{len(got)}/{len(tickers)}')
+    bbg.close()
+
+
+# ------------------------------------------------------------- rendering ---
+def test_rendering():
+    print('rendering')
+    sections, _ = build()
+    now = dt.datetime(2026, 9, 4, 7, 30)
+    for cfg in EMAILS:
+        subject, frag = render_email(cfg, sections, TEST_TODAY, now, 'test')
+        check(f'[{cfg["key"]}] subject filled in', '{' not in subject, subject)
+        check(f'[{cfg["key"]}] tags balance',
+              frag.count('<table') == frag.count('</table>') and frag.count('<tr') == frag.count('</tr>'))
+        check(f'[{cfg["key"]}] inline styles only (Outlook strips <style>)', '<style' not in frag)
+        check(f'[{cfg["key"]}] recipients not in the body', 'nomura.com' not in frag)
+        check(f'[{cfg["key"]}] greeting present', GREETING in frag)
+    subject, frag = render_email(EMAILS[1], sections, TEST_TODAY, now, 'test')
+    check('earnings count reaches the subject', str(len(sections['hsi_earnings'].rows)) in subject, subject)
+
+    row = dict(date=TEST_TODAY, time='08:30', country='US', bank='', event='Fish & Chips <PMI>',
+               bbg_name=None, survey=1.0, prior=2.0, relevance=99, ticker='X Index')
+    frag = render_calendar(Section('us_eco', [row]), TEST_TODAY)
+    check('markup in an event name is escaped', '&lt;PMI&gt;' in frag and '&amp;' in frag)
+
+    empty = render_email(EMAILS[0], {}, TEST_TODAY, now, 'test')[1]
+    check('no data still renders an email', 'Nothing returned' in empty)
+
+    doc = full_document('s', frag)
+    check('full document wraps the fragment', doc.startswith('<html>') and doc.rstrip().endswith('</html>'))
+    spliced = splice_into_signature('<html><body><p>-- <br>Sig</p></body></html>', '<b>BODY</b>')
+    check('body goes above the signature', spliced.index('BODY') < spliced.index('Sig'))
+    check('no <body> means the fragment is still kept',
+          'BODY' in splice_into_signature('', '<b>BODY</b>'))
+
+
+def test_eml_written():
+    print('files written')
+    sections, _ = build()
+    now = dt.datetime(2026, 9, 4, 7, 30)
+    subject, frag = render_email(EMAILS[0], sections, TEST_TODAY, now, 'test')
+    html_path, eml_path = write_files('unittest', subject, frag, TEST_TODAY, now)
+    raw = open(eml_path, encoding='utf-8').read()
+    check('.eml opens in compose mode', 'X-Unsent: 1' in raw)
+    check('.eml is addressed', 'nomura.com' in raw)
+    check('.eml carries the HTML part', 'text/html' in raw)
+    check('.html written', os.path.getsize(html_path) > 500)
+    for p in (html_path, eml_path):
+        os.remove(p)
+
+
+# ----------------------------------------------------------- excel path ----
+def test_excel_path():
+    print('Excel path')
+    try:
+        import openpyxl
+    except ImportError:
+        print('  skip  openpyxl not installed')
+        return
+    from openpyxl import Workbook
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'BQL'
+    # A BQL calendar block, exactly the shape the add-in spills: header then rows.
+    ws.append(['ID', 'RELEASE_DATE', 'RELEASE_TIME', 'EVENT_NAME', 'SURVEY_MEDIAN', 'PRIOR'])
+    rows = [
+        ('US Country', dt.datetime(2026, 9, 8), 0.3541666667, 'Change in Nonfarm Payrolls', 75, 22),
+        ('US Country', dt.datetime(2026, 9, 8), 0.3541666667, 'Building Permits', 1.4, 1.5),   # excluded
+        ('US Country', dt.datetime(2026, 9, 10), 0.3541666667, 'CPI MoM', 0.2, 0.3),
+        ('US Country', dt.datetime(2026, 8, 1), 0.3541666667, 'CPI YoY', 2.9, 3.0),            # past
+        ('US Country', dt.datetime(2027, 6, 1), 0.3541666667, 'GDP Annualized QoQ', 2.0, 1.8), # beyond
+    ]
+    for r in rows:
+        ws.append(list(r))
+    ws2 = wb.create_sheet('EARN')
+    ws2.append(['ID', 'NAME', 'EXPECTED_REPORT_DT', 'EXPECTED_REPORT_TIME',
+                'EARNINGS_CONF_CALL_DT', 'EARNINGS_CONF_CALL_TIME'])
+    ws2.append(['700 HK Equity', 'TENCENT', dt.datetime(2026, 11, 12), 'Aft-mkt',
+                dt.datetime(2026, 11, 12), 0.6875])
+    ws2.append(['939 HK Equity', 'CCB', dt.datetime(2026, 10, 29), 'Bef-mkt', None, None])
+    ws2.append(['1 HK Equity', 'CKH', dt.datetime(2025, 3, 20), 'Bef-mkt', None, None])   # past
+    path = os.path.join(HERE, '_tmp_excel_test.xlsx')
+    wb.save(path)
+    try:
+        sections = read_excel_sections(path, TEST_TODAY)
+        eco = sections.get('us_eco')
+        check('calendar block found', eco is not None)
+        events = [r['event'] for r in eco.rows]
+        check('two rows kept', len(eco.rows) == 2, str(events))
+        check('excluded name dropped', 'Building Permits' not in events)
+        check('past row dropped', 'CPI YoY' not in events)
+        check('beyond-horizon row dropped', 'GDP Annualized QoQ' not in events)
+        check('Excel time fraction decoded', eco.rows[0]['time'] == '08:30', str(eco.rows[0]['time']))
+        check('survey read', eco.rows[0]['survey'] == 75, str(eco.rows[0]['survey']))
+        earn = sections.get('hsi_earnings')
+        check('earnings block found', earn is not None)
+        check('two names kept', len(earn.rows) == 2, str([r['ticker'] for r in earn.rows]))
+        check('earliest first', earn.rows[0]['ticker'] == '939 HK', str(earn.rows[0]))
+        check('Equity suffix stripped', all(' Equity' not in r['ticker'] for r in earn.rows))
+        check('call time decoded', earn.rows[1]['call_time'] == '16:30', str(earn.rows[1]['call_time']))
+        subject, frag = render_email(EMAILS[1], sections, TEST_TODAY, dt.datetime(2026, 9, 4), 'xl')
+        check('an Excel-sourced email renders', 'TENCENT' in frag)
+    finally:
+        os.remove(path)
+
+
+def test_column_mapping():
+    print('column mapping')
+    m = map_columns(['ID', 'RELEASE_DATE', 'RELEASE_TIME', 'EVENT_NAME', 'SURVEY_MEDIAN', 'PRIOR'],
+                       CAL_SPEC)
+    check('date column', m['date'] == 1, str(m))
+    check('time not confused with date', m['time'] == 2, str(m))
+    check('event column', m['event'] == 3, str(m))
+    check('survey column', m['survey'] == 4, str(m))
+    check('prior column', m['prior'] == 5, str(m))
+    m = map_columns(['#DATES', '#TIMES', '#EVENTS', '#SURVEY', '#PRIOR'], CAL_SPEC)
+    check('BQL # headers still map', m.get('event') == 2 and m.get('survey') == 3, str(m))
+    check('calendar header classified', classify_header(['RELEASE_DATE', 'EVENT_NAME']) == 'calendar')
+    check('earnings header classified',
+          classify_header(['EXPECTED_REPORT_DT', 'NAME']) == 'hsi_earnings')
+    check('an unrelated header is ignored', classify_header(['Price', 'Qty']) is None)
+
+
+def test_config_sanity():
+    print('config')
+    tickers = [t for t, _ in US_ECO_TICKERS]
+    check('no duplicate US tickers', len(tickers) == len(set(tickers)))
+    cb = [t for _, _, t, _, _ in CENTRAL_BANKS]
+    check('no duplicate CB tickers', len(cb) == len(set(cb)))
+    check('every ticker carries a yellow key',
+          all(t.split()[-1] in ('Index', 'Equity', 'Curncy', 'Comdty') for t in tickers + cb))
+    keys = [k for cfg in EMAILS for k in cfg['sections']]
+    check('every email section is produced', set(keys) <= set(SECTION_TITLES))
+    check('every section has a title', set(SECTION_TITLES) >= set(keys))
+    check('recipients are the two names asked for',
+          RECIPIENTS.count('@') == 2 and 'oscar.chan1@nomura.com' in RECIPIENTS)
+
+
+def run_tests():
+    for fn in [test_dates_and_times, test_sort_and_format, test_exclusions, test_pick_date_skips_stale,
+               test_timezone_shift, test_api_path, test_bulk_fields, test_bad_security_and_field,
+               test_chunking,
+               test_rendering, test_eml_written, test_excel_path, test_column_mapping,
+               test_config_sanity]:
+        fn()
+    print()
+    if FAILURES:
+        print(f'{len(FAILURES)} FAILED: ' + ', '.join(FAILURES))
+        return 1
+    print('all tests passed')
+    return 0
+
+
+# ================================================================= MAIN ===
+LAUNCHER = """@echo off
+REM Double-click on the Bloomberg terminal PC, with Outlook open.
+title Daily calendar email
+cd /d "%~dp0"
+where python >nul 2>nul && (python daily_email.py %* & goto done)
+where py     >nul 2>nul && (py -3 daily_email.py %* & goto done)
+echo   No Python on the PATH - open the prompt the desk notebooks use.
+:done
+echo.
+pause
+"""
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument('--source', choices=['blpapi', 'excel', 'bql', 'fixture'], default='blpapi')
-    ap.add_argument('--xlsx', help='workbook with the three BQL blocks (for --source excel / --parity)')
-    ap.add_argument('--display', action='store_true', help='pop the drafts open instead of saving them')
-    ap.add_argument('--no-outlook', action='store_true', help='write the .html/.eml files only')
-    ap.add_argument('--probe', action='store_true', help='verify fields and tickers on the terminal')
+    ap = argparse.ArgumentParser(description=__doc__,
+                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument('--demo', action='store_true',
+                    help='sample data, no Bloomberg and no Outlook - see the layout')
+    ap.add_argument('--test', action='store_true', help='run the self-tests and exit')
+    ap.add_argument('--probe', action='store_true',
+                    help='verify every field and ticker against the terminal')
+    ap.add_argument('--display', action='store_true',
+                    help='pop the drafts open instead of saving them')
+    ap.add_argument('--no-outlook', action='store_true', help='write the files only')
+    ap.add_argument('--xlsx', help='workbook holding the BQL output, for --excel / --parity')
+    ap.add_argument('--excel', action='store_true',
+                    help='read --xlsx instead of the API (no mnemonic risk)')
     ap.add_argument('--parity', action='store_true', help='diff the API against --xlsx')
-    ap.add_argument('--asof', help='run date YYYY-MM-DD (default: today)')
+    ap.add_argument('--bql', action='store_true', help='run the BQL strings - BQuant only')
+    ap.add_argument('--asof', help='pretend it is another day, YYYY-MM-DD')
+    ap.add_argument('--make-launcher', action='store_true',
+                    help='write RUN_DAILY_EMAIL.bat next to this script and exit')
     args = ap.parse_args(argv)
+
+    if args.test:
+        return run_tests()
+
+    if args.make_launcher:
+        path = os.path.join(HERE, 'RUN_DAILY_EMAIL.bat')
+        with open(path, 'w', encoding='utf-8') as fh:
+            fh.write(LAUNCHER)
+        print(f'Wrote {path} - double-click it to run the real thing.')
+        return 0
 
     today = dt.date.fromisoformat(args.asof) if args.asof else dt.date.today()
     now = dt.datetime.now()
-    fake = load_fixture_blpapi(today) if args.source == 'fixture' else None
+    fake = None
+    if args.demo:
+        fixture_configure(today)
+        fake = FixtureAPI
 
     if args.probe:
         probe(today, blpapi_module=fake)
@@ -1390,27 +2053,29 @@ def main(argv=None):
         parity(api_sections, read_excel_sections(args.xlsx, today))
         return 0
 
-    if args.source == 'excel':
+    if args.excel:
         if not args.xlsx:
-            ap.error('--source excel needs --xlsx')
+            ap.error('--excel needs --xlsx')
         print('Reading workbook ...')
         sections = read_excel_sections(args.xlsx, today)
         source_label = f'Bloomberg BQL via {os.path.basename(args.xlsx)}'
-    elif args.source == 'bql':
+    elif args.bql:
         sections = build_sections_bql(today)
         source_label = 'Bloomberg BQL (BQuant)'
     else:
         sections, _ = build_sections_blpapi(today, blpapi_module=fake)
-        source_label = 'Bloomberg Desktop API (//blp/refdata)' + (' - FIXTURE DATA' if fake else '')
+        source_label = ('SAMPLE DATA - not Bloomberg' if fake
+                        else 'Bloomberg Desktop API (//blp/refdata)')
 
     print('')
     for cfg in EMAILS:
         subject, fragment = render_email(cfg, sections, today, now, source_label)
         html_path, eml_path = write_files(cfg['key'], subject, fragment, today, now)
-        status = 'not sent to Outlook (--no-outlook)'
-        if not args.no_outlook:
+        status = 'skipped (--demo)' if args.demo else 'not sent (--no-outlook)'
+        if not args.no_outlook and not args.demo:
             ok, status = outlook_draft(subject, fragment, args.display)
-        print(f'Draft [{cfg["key"]}] "{subject}"\n   Outlook: {status}\n   files:   {html_path}\n            {eml_path}')
+        print(f'Draft [{cfg["key"]}] "{subject}"\n   Outlook: {status}\n'
+              f'   files:   {html_path}\n            {eml_path}')
     return 0
 
 

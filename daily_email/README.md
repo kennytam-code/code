@@ -1,125 +1,177 @@
 # Daily calendar email
 
-Two Outlook drafts, straight from Bloomberg, no Excel in the loop:
+Two Outlook drafts every morning, straight from Bloomberg, no Excel in the loop.
 
-1. **Macro calendar** — central-bank decisions (US, TW, KR, MY, TH, ID, IN, CN, JP, AU) then
-   the high-relevance US data calendar, both for the next three months, with your 30-name
-   exclusion list applied.
-2. **HSI earnings** — index constituents reporting inside 91 days, with the conference-call
-   date and time.
-
-Addressed to Oscar Chan and Gordon Ho, grouped by day, today's row highlighted.
-
-```
-RUN_DAILY_EMAIL.bat                 double-click on the terminal PC
-python daily_email.py               two drafts saved to Outlook's Drafts folder
-python daily_email.py --display     drafts pop open for review instead
-python daily_email.py --probe       FIRST RUN — verify every field and ticker
-```
-
----
-
-## Can this really be migrated? Honest answer
-
-**The BQL strings cannot be sent through the Bloomberg API.** `calendar()`, `members()`,
-`filter()` and `btoday()` are BQL, and BQL runs in two places: the Excel add-in (the
-`=@BQL()` formula you use today) and BQuant. The Desktop API that Python talks to
-(`blpapi`, port 8194) exposes `//blp/refdata`, `//blp/mktdata` and friends — there is no
-BQL service. A one-for-one port of those three formulas does not exist.
-
-What *does* exist is the request/response snapshot behind `=BDP()`, and everything the two
-emails need can be rebuilt from it. So the script replicates the **output**, not the query.
-
-| Piece | How it is rebuilt | Confidence |
-| --- | --- | --- |
-| HSI constituent list | `INDX_MEMBERS` on `HSI Index` | **High.** Standard bulk field, unambiguous. |
-| Expected report date/time | `EXPECTED_REPORT_DT`, `EXPECTED_REPORT_TIME` per member, falling back to the `ERN_ANN_DT_AND_PER` bulk field | **High.** Same fields your BQL asks for, and BQL's `expected_report_dt` is this field. The 91-day filter moves from BQL into Python. The fallback is the one earnings mnemonic on the desk that is proven rather than assumed — `v33_hk_basket_full.py` already pulls it. A date that came from it is marked `est.` in the email. |
-| Conference call | `EARNINGS_CONF_CALL_DT` / `_TIME` | **Medium-high.** Field names taken from your own BQL. Verified by `--probe`. |
-| Central-bank decisions | Next release date on each policy-rate ticker | **Medium.** The mechanism is sound; three tickers are marked VERIFY in the config because I could not confirm them off-terminal. `--probe` checks each and searches for the right symbol when one is rejected. |
-| US data calendar | Next release date, survey and prior on ~78 release tickers | **Medium.** This is the real substitution: BQL enumerates the calendar for you, the API cannot, so the universe is a list in the script. Everything `relevancy=HIGH` normally returns is in it, and `--probe` prints Bloomberg's own name beside each so a wrong ticker is obvious. |
-| Exclusion list | Your 30 VBA entries, verbatim, matched case- and space-insensitively | **High.** Tested. |
-| Formatting and Outlook drafts | Inline-styled HTML, Outlook COM | **High.** No Bloomberg dependency. |
-
-**The honest summary:** the plumbing and the formatting are solid and tested — the same
-session pattern as `price_alarm.py`, which runs on your terminal today. The uncertainty is
-entirely in *mnemonics and ticker symbols*, which no amount of code review settles. That is
-what `--probe` is for. Run it once, send me the output, and every rejected field or ticker
-gets corrected in one pass.
-
-**If you want zero risk on day one**, use `--source excel`: keep the workbook as the data
-source, let Python do the filtering, formatting and drafting. Same two emails, guaranteed
-identical numbers, no mnemonic risk. `--parity` then diffs the API path against the workbook
-row by row, so you can watch the API path agree before you switch to it.
-
----
-
-## First run, on the terminal PC
-
-```
-python daily_email.py --probe
-```
-
-Checks every field mnemonic and every ticker against the live terminal and writes a report
-to `out/probe_YYYY-MM-DD.txt`. It also:
-
-- prints Bloomberg's own `NAME` beside each ticker, so a mislabelled row stands out;
-- runs a field search (FLDS from Python) for each thing we need, so a wrong mnemonic comes
-  back with the right one beside it;
-- searches for a replacement symbol when a central-bank ticker is rejected;
-- tells you whether release times arrive in New York or Hong Kong time — the one setting
-  (`TIME_IN_LOCAL_TZ`) you may need to flip;
-- opens `//blp/bqlsvc` and prints its schema, on the off chance your install exposes BQL to
-  the API after all. It normally does not, and the script does not depend on it.
-
-Send me that file and I will correct the config.
-
-## Every day after that
-
-```
-RUN_DAILY_EMAIL.bat
-```
-
-Both drafts are saved to Drafts with your Outlook signature underneath, and a copy of each
-lands in `out/` as `.html` and `.eml`. Nothing is ever sent — you press Send.
-
-## Options
-
-| Flag | Effect |
+| Draft | What is in it |
 | --- | --- |
-| `--display` | Open both drafts on screen instead of saving them |
-| `--no-outlook` | Write the `.html` / `.eml` files only, no Outlook |
-| `--probe` | Verify fields and tickers against the terminal |
-| `--source excel --xlsx PATH` | Read the workbook's cached BQL output instead of the API |
-| `--parity --xlsx PATH` | Diff the API path against the workbook, row by row |
-| `--source bql` | Run the three BQL strings verbatim — inside BQuant only |
-| `--source fixture` | Sample data, works on any machine, for checking the layout |
-| `--asof YYYY-MM-DD` | Pretend it is another day |
+| **Macro calendar** | Central-bank decisions across the US, Taiwan, Korea, Malaysia, Thailand, Indonesia, India, China, Japan and Australia, then the high-relevance US data calendar. Next three months, your 30-name exclusion list applied. |
+| **HSI earnings** | Hang Seng constituents reporting inside 91 days, with the conference-call date and time. |
 
-## Configuring
+Addressed to Oscar Chan and Gordon Ho, grouped by day, today highlighted.
+Nothing is ever sent. Both land in Drafts and you press Send.
 
-Everything you would change is in the CONFIG block at the top of `daily_email.py`:
-recipients, greeting, the two subject lines, the 91-day horizon, the exclusion list, the US
-release universe, the central banks, and `TIME_IN_LOCAL_TZ`. To drop an event, delete its
-row from `US_ECO_TICKERS` or add its name to `EXCLUDE_EVENTS` — both work.
+There are two files here and that is the whole thing:
 
-## Install
+- **`daily_email.py`** — the script. Also contains its own test suite and a fake
+  Bloomberg terminal, so it runs on any machine.
+- **`README.md`** — this guide.
+
+---
+
+## Try it right now, on any machine
+
+You do not need Bloomberg or Outlook to see what the emails look like.
+
+```
+python daily_email.py --demo
+```
+
+That writes both emails to `out/` using sample data. Open the `.html` files in a
+browser. Nothing touches Bloomberg, nothing touches Outlook.
+
+To check the logic is sound:
+
+```
+python daily_email.py --test
+```
+
+About ninety checks over date parsing, the exclusion list, sort order, dead
+tickers, rejected fields, the Excel reader and the HTML. It should end with
+`all tests passed`.
+
+---
+
+## Setting it up on the Bloomberg PC
+
+**1. Use the Python the desk notebooks run on.** That one already has `blpapi`.
+Open the prompt you launch Jupyter from. If you ever need to install things:
 
 ```
 pip install blpapi --index-url=https://blpapi.bloomberg.com/repository/releases/python/simple/
 pip install pywin32 openpyxl
 ```
 
-`blpapi` for the API path, `pywin32` for Outlook drafts, `openpyxl` only for `--source
-excel`. Run it from the same Python the desk notebooks use — that one already has `blpapi`.
+`blpapi` talks to Bloomberg, `pywin32` creates the Outlook drafts, `openpyxl` is
+only needed for the workbook option further down.
 
-## Tests
+**2. Run the probe. Do this before you trust a single number.**
 
 ```
-python tests/test_daily_email.py
+python daily_email.py --probe
 ```
 
-80-odd checks over date and time parsing (including Excel serials and fractions), the
-exclusion list, sorting, chunked requests, dead tickers, rejected mnemonics, bulk-field
-parsing (both spellings of the member element), the announcement-date fallback, the Excel
-reader, HTML escaping and the `.eml` output. A fake `blpapi` stands in for the terminal, so
-this runs on any machine.
+This is the important step, and here is why. Your Excel formulas use BQL, and
+**BQL cannot be called from Python.** `calendar()`, `members()` and `btoday()`
+run only in the Excel add-in and in BQuant; the Bloomberg API that Python talks
+to has no BQL service. So the script does not port your query, it rebuilds the
+same output from ordinary Bloomberg fields, the kind behind `=BDP()`.
+
+That rebuild depends on field names and ticker symbols being right, and a wrong
+field name does not raise an error. It quietly returns "invalid field" as if it
+were data. The probe is what catches that. It:
+
+- checks every field and every ticker against your live terminal;
+- prints Bloomberg's own name beside each ticker, so a mislabelled row is obvious;
+- searches for the correct field name whenever one is rejected;
+- searches for a replacement symbol whenever a ticker is rejected;
+- tells you whether release times arrive in New York or Hong Kong time.
+
+It writes `out/probe_YYYY-MM-DD.txt`. **Send me that file** and I will fix
+whatever it flags. Three central-bank tickers are flagged `VERIFY` in the script
+already, because I could not confirm them without a terminal.
+
+**3. Run it for real.**
+
+```
+python daily_email.py
+```
+
+Two drafts appear in Outlook's Drafts folder with your signature underneath, and
+copies land in `out/` as `.html` and `.eml`.
+
+Want a double-click icon instead of typing the command? Run
+`python daily_email.py --make-launcher` once. It writes `RUN_DAILY_EMAIL.bat`
+next to the script.
+
+---
+
+## If you would rather not trust the API yet
+
+Keep the workbook as the data source and let Python do the filtering, formatting
+and drafting. Same two emails, exactly the numbers Excel already shows you, no
+field-name risk at all:
+
+```
+python daily_email.py --excel --xlsx "C:\path\to\your\calendar.xlsx"
+```
+
+Open and refresh the workbook first so the BQL values are saved in it.
+
+And when you want to see whether the API path agrees before switching to it:
+
+```
+python daily_email.py --parity --xlsx "C:\path\to\your\calendar.xlsx"
+```
+
+That prints a row-by-row diff: what the API found, what the workbook found, and
+anything only one of them has.
+
+---
+
+## Every command
+
+| Command | What it does |
+| --- | --- |
+| `python daily_email.py` | The real thing. Two drafts into Outlook. |
+| `python daily_email.py --demo` | Sample data, no Bloomberg, no Outlook. |
+| `python daily_email.py --test` | Run the self-tests. |
+| `python daily_email.py --probe` | Verify every field and ticker on the terminal. |
+| `python daily_email.py --display` | Pop the drafts open instead of saving them. |
+| `python daily_email.py --no-outlook` | Write the files only. |
+| `python daily_email.py --excel --xlsx PATH` | Read the workbook instead of the API. |
+| `python daily_email.py --parity --xlsx PATH` | Diff the API against the workbook. |
+| `python daily_email.py --bql` | Run your BQL strings verbatim. BQuant only. |
+| `python daily_email.py --make-launcher` | Write the double-click `.bat`. |
+| `python daily_email.py --asof 2026-10-01` | Pretend it is another day. |
+
+---
+
+## Changing things
+
+Everything you would want to change sits in one block at the top of
+`daily_email.py`, between the lines marked `CONFIG` and `END CONFIG`. Nothing
+below that needs touching.
+
+| To change | Edit |
+| --- | --- |
+| Who gets the emails | `RECIPIENTS` |
+| The greeting line | `GREETING` |
+| Subject lines and the intro paragraph | `EMAILS` |
+| How far ahead to look | `LOOKAHEAD_DAYS` |
+| Events you do not care about | `EXCLUDE_EVENTS`, your 30 VBA names, carried over word for word |
+| Which US releases to track | `US_ECO_TICKERS` |
+| Which central banks | `CENTRAL_BANKS` |
+| New York times showing instead of Hong Kong | `TIME_IN_LOCAL_TZ` |
+
+To drop a release you can either delete its row from `US_ECO_TICKERS` or add its
+name to `EXCLUDE_EVENTS`. Both work.
+
+---
+
+## How much of this can I trust?
+
+| Piece | How confident |
+| --- | --- |
+| Formatting, filtering, Outlook drafts | **High.** Tested, and none of it depends on Bloomberg. |
+| HSI member list, expected report dates | **High.** Standard fields. The backup field is one your ADR-basket script already uses in production. |
+| Conference-call fields | **Medium-high.** Names taken from your own BQL formula. |
+| Central-bank tickers | **Medium.** The method is sound. Three symbols are unconfirmed and flagged in the script. |
+| US release list | **Medium.** BQL enumerates the calendar for you and the API cannot, so the list of about 78 releases lives in the script. That is the piece most likely to have a gap. |
+
+The uncertainty is entirely in field names and ticker symbols, and no amount of
+reading the code settles it. That is what `--probe` is for. One run, one file
+sent back, one correction pass.
+
+Dates that came from the backup earnings field are marked `est.` in the email,
+and the footer says how many. Anything the script could not fetch is named in
+that footer rather than left silently blank.
