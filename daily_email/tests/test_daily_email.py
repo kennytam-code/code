@@ -134,6 +134,34 @@ def test_api_path():
     check('every row has a company name', all(r['name'] for r in earn.rows))
     check('sorted by date', [r['date'] for r in earn.rows] == sorted(r['date'] for r in earn.rows))
     check('some rows carry a conference call', any(r['call_date'] for r in earn.rows))
+    check('the bulk-field fallback filled some dates', any(r['estimated'] for r in earn.rows))
+    check('bulk-sourced dates are still in the window',
+          all(TODAY <= r['date'] <= TODAY + dt.timedelta(days=de.LOOKAHEAD_DAYS)
+              for r in earn.rows if r['estimated']))
+    check('the fallback is disclosed in the notes',
+          any('ERN_ANN_DT_AND_PER' in n for n in earn.notes), str(earn.notes))
+
+
+def test_bulk_fields():
+    print('bulk fields')
+    rec = {'INDX_MEMBERS': [{'Member Ticker and Exchange Code': '700 HK'}, {'Ticker': '939 HK'}]}
+    check('substring match handles both element names',
+          de.bulk_field(rec, 'INDX_MEMBERS', 'ticker') == ['700 HK', '939 HK'],
+          str(de.bulk_field(rec, 'INDX_MEMBERS', 'ticker')))
+    odd = {'INDX_MEMBERS': [{'Something Unexpected': '1299 HK'}]}
+    check('an unknown element name falls back to the first value',
+          de.bulk_field(odd, 'INDX_MEMBERS', 'ticker') == ['1299 HK'])
+    check('a missing bulk field is empty, not an error', de.bulk_field({}, 'X', 'y') == [])
+    check('a scalar in place of a bulk field is ignored',
+          de.bulk_field({'X': ['not a dict']}, 'X', 'y') == [])
+    hist = {de.EARN_BULK_DATE: [{'Announcement Date': '2025-03-20'},
+                                {'Announcement Date': '2026-11-12'},
+                                {'Announcement Date': '2026-09-30'}]}
+    check('the earliest FUTURE announcement wins',
+          de.next_announced(hist, TODAY) == dt.date(2026, 9, 30),
+          str(de.next_announced(hist, TODAY)))
+    past = {de.EARN_BULK_DATE: [{'Announcement Date': '2025-03-20'}]}
+    check('history alone yields nothing', de.next_announced(past, TODAY) is None)
 
 
 def test_bad_security_and_field():
@@ -300,7 +328,8 @@ def test_config_sanity():
 
 if __name__ == '__main__':
     for fn in [test_dates_and_times, test_sort_and_format, test_exclusions, test_pick_date_skips_stale,
-               test_timezone_shift, test_api_path, test_bad_security_and_field, test_chunking,
+               test_timezone_shift, test_api_path, test_bulk_fields, test_bad_security_and_field,
+               test_chunking,
                test_rendering, test_eml_written, test_excel_path, test_column_mapping,
                test_config_sanity]:
         fn()

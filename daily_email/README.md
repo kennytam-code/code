@@ -33,7 +33,7 @@ emails need can be rebuilt from it. So the script replicates the **output**, not
 | Piece | How it is rebuilt | Confidence |
 | --- | --- | --- |
 | HSI constituent list | `INDX_MEMBERS` on `HSI Index` | **High.** Standard bulk field, unambiguous. |
-| Expected report date/time | `EXPECTED_REPORT_DT`, `EXPECTED_REPORT_TIME` per member | **High.** Same fields your BQL asks for, and BQL's `expected_report_dt` is this field. The 91-day filter moves from BQL into Python. |
+| Expected report date/time | `EXPECTED_REPORT_DT`, `EXPECTED_REPORT_TIME` per member, falling back to the `ERN_ANN_DT_AND_PER` bulk field | **High.** Same fields your BQL asks for, and BQL's `expected_report_dt` is this field. The 91-day filter moves from BQL into Python. The fallback is the one earnings mnemonic on the desk that is proven rather than assumed — `v33_hk_basket_full.py` already pulls it. A date that came from it is marked `est.` in the email. |
 | Conference call | `EARNINGS_CONF_CALL_DT` / `_TIME` | **Medium-high.** Field names taken from your own BQL. Verified by `--probe`. |
 | Central-bank decisions | Next release date on each policy-rate ticker | **Medium.** The mechanism is sound; three tickers are marked VERIFY in the config because I could not confirm them off-terminal. `--probe` checks each and searches for the right symbol when one is rejected. |
 | US data calendar | Next release date, survey and prior on ~78 release tickers | **Medium.** This is the real substitution: BQL enumerates the calendar for you, the API cannot, so the universe is a list in the script. Everything `relevancy=HIGH` normally returns is in it, and `--probe` prints Bloomberg's own name beside each so a wrong ticker is obvious. |
@@ -119,6 +119,7 @@ python tests/test_daily_email.py
 ```
 
 80-odd checks over date and time parsing (including Excel serials and fractions), the
-exclusion list, sorting, chunked requests, dead tickers, rejected mnemonics, the Excel
+exclusion list, sorting, chunked requests, dead tickers, rejected mnemonics, bulk-field
+parsing (both spellings of the member element), the announcement-date fallback, the Excel
 reader, HTML escaping and the `.eml` output. A fake `blpapi` stands in for the terminal, so
 this runs on any machine.

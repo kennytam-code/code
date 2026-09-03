@@ -85,6 +85,8 @@ ECO_FIELDS = {
     'relevance': ['RELEVANCE_VALUE'],
     'bbg_name':  ['NAME'],
 }
+# 'date' falls back to the ERN_ANN_DT_AND_PER bulk field, which v33_hk_basket_full.py
+# already pulls on this desk - the one earnings mnemonic here that is proven, not assumed.
 EARN_FIELDS = {
     'name':      ['NAME'],
     'date':      ['EXPECTED_REPORT_DT'],
@@ -92,6 +94,7 @@ EARN_FIELDS = {
     'call_date': ['EARNINGS_CONF_CALL_DT', 'CONF_CALL_DT'],
     'call_time': ['EARNINGS_CONF_CALL_TIME', 'CONF_CALL_TIME'],
 }
+EARN_BULK_DATE = 'ERN_ANN_DT_AND_PER'
 
 # US calendar universe = what BQL's relevancy=HIGH returns, as tickers.  The
 # label is the ECO event name (what the email shows and what EXCLUDE_EVENTS
@@ -747,11 +750,39 @@ def pull_central_banks(bbg, today):
     return Section('central_banks', sort_rows(rows), notes)
 
 
-def hsi_member_tickers(bbg):
-    members = bbg.ref([HSI_INDEX], ['INDX_MEMBERS']).get(HSI_INDEX, {}).get('INDX_MEMBERS') or []
+def bulk_field(rec, field, *want):
+    """Values out of a bulk field, matched by substring on the sub-element name.
+
+    Element names differ between terminal versions ('Member Ticker and Exchange
+    Code' vs 'Ticker'), which is why v33_hk_basket_full.py parses DVD_HIST_ALL by
+    substring rather than by exact key.  Same trick here."""
     out = []
-    for m in members:
-        code = m.get('Member Ticker and Exchange Code') or next(iter(m.values()), '')
+    for row in (rec.get(field) or []):
+        if not isinstance(row, dict):
+            continue
+        hit = next((v for k, v in row.items()
+                    if any(w in str(k).lower() for w in want)), None)
+        if hit is None:
+            hit = next(iter(row.values()), None)
+        if hit not in (None, ''):
+            out.append(hit)
+    return out
+
+
+def next_announced(rec, today):
+    """Earliest announcement date at or after today, out of ERN_ANN_DT_AND_PER.
+
+    The field returns history and estimated forward dates together, so past rows
+    are dropped rather than trusted."""
+    dates = [d for d in (as_date(v) for v in bulk_field(rec, EARN_BULK_DATE, 'announcement', 'date'))
+             if d is not None and d >= today]
+    return min(dates) if dates else None
+
+
+def hsi_member_tickers(bbg):
+    rec = bbg.ref([HSI_INDEX], ['INDX_MEMBERS']).get(HSI_INDEX, {})
+    out = []
+    for code in bulk_field(rec, 'INDX_MEMBERS', 'ticker'):
         code = str(code).strip()
         if code:
             out.append(code if code.upper().endswith(' EQUITY') else f'{code} Equity')
@@ -760,7 +791,7 @@ def hsi_member_tickers(bbg):
 
 def pull_hsi_earnings(bbg, today):
     tickers = hsi_member_tickers(bbg)
-    fields = flatten_fields(EARN_FIELDS)
+    fields = flatten_fields(EARN_FIELDS) + [EARN_BULK_DATE]
     data = bbg.ref(tickers, fields) if tickers else {}
     horizon = today + dt.timedelta(days=LOOKAHEAD_DAYS)
     rows = []
@@ -769,13 +800,18 @@ def pull_hsi_earnings(bbg, today):
         if rec is None:
             continue
         when = as_date(pick(rec, EARN_FIELDS['date']))
+        from_bulk = False
+        if when is None or when < today:
+            when = next_announced(rec, today)       # proven bulk fallback
+            from_bulk = when is not None
         if when is None or when < today or when > horizon:
             continue
         call_d = as_date(pick(rec, EARN_FIELDS['call_date']))
         rows.append(dict(date=when, time=as_time(pick(rec, EARN_FIELDS['time'])),
                          ticker=tkr[:-len(' Equity')] if tkr.upper().endswith(' EQUITY') else tkr,
                          name=pick(rec, EARN_FIELDS['name']) or '',
-                         call_date=call_d, call_time=as_time(pick(rec, EARN_FIELDS['call_time']))))
+                         call_date=call_d, call_time=as_time(pick(rec, EARN_FIELDS['call_time'])),
+                         estimated=from_bulk))
     notes = []
     if not tickers:
         notes.append(f'INDX_MEMBERS returned nothing for {HSI_INDEX}.')
@@ -783,6 +819,10 @@ def pull_hsi_earnings(bbg, today):
     if dead:
         notes.append('Members Bloomberg could not resolve: ' + ', '.join(dead))
     notes += field_notes(bbg, EARN_FIELDS, list(data.values()))
+    n_bulk = sum(1 for r in rows if r['estimated'])
+    if n_bulk:
+        notes.append(f'{n_bulk} date(s) marked "est." came from {EARN_BULK_DATE} because '
+                     f'EXPECTED_REPORT_DT was empty for that name.')
     print(f'  hsi_earnings: {len(tickers)} members, {len(rows)} reporting inside {LOOKAHEAD_DAYS}d, '
           f'{len(dead)} unresolved')
     return Section('hsi_earnings', sorted(rows, key=lambda r: (r['date'], time_key(r['time']), r['ticker'])),
@@ -860,7 +900,8 @@ def rows_from_table(headers, body, kind, today):
             tkr = str(g('ticker') or '').strip()
             tkr = tkr[:-len(' Equity')] if tkr.upper().endswith(' EQUITY') else tkr
             rows.append(dict(date=when, time=as_time(g('time')), ticker=tkr, name=str(g('name') or ''),
-                             call_date=as_date(g('call_date')), call_time=as_time(g('call_time'))))
+                             call_date=as_date(g('call_date')), call_time=as_time(g('call_time')),
+                             estimated=False))
         return 'hsi_earnings', sorted(rows, key=lambda r: (r['date'], time_key(r['time']), r['ticker'])), m
     m = map_columns(headers, CAL_SPEC)
     rows, ids = [], set()
@@ -1064,7 +1105,10 @@ def render_earnings(section, today):
                 call = r['call_time']
             else:
                 call = '\u2013'
-            out.append([f'<b>{esc(r["ticker"])}</b>', esc(r['name']), esc(r['time'] or '\u2013'), esc(call)])
+            when_cell = esc(r['time'] or '\u2013')
+            if r.get('estimated'):
+                when_cell += f'<span style="color:{MUTED};"> est.</span>'
+            out.append([f'<b>{esc(r["ticker"])}</b>', esc(r['name']), when_cell, esc(call)])
         groups.append((d, out))
     return html_table(cols, groups, today)
 
@@ -1233,7 +1277,7 @@ def probe(today, blpapi_module=None):
         lines.append('== HSI earnings ==')
         members = hsi_member_tickers(bbg)
         lines.append(f'  INDX_MEMBERS({HSI_INDEX}): {len(members)} members')
-        efields = flatten_fields(EARN_FIELDS)
+        efields = flatten_fields(EARN_FIELDS) + [EARN_BULK_DATE]
         sample = members[:12]
         ed = bbg.ref(sample, efields) if sample else {}
         for role, cands in EARN_FIELDS.items():
@@ -1241,11 +1285,17 @@ def probe(today, blpapi_module=None):
                 have = sum(1 for t in sample if f in ed.get(t, {}))
                 status = ('REJECTED ' + bbg.field_errors[f]) if f in bbg.field_errors else f'ok, {have}/{len(sample)} of the sample returned it'
                 lines.append(f'  {role:10s} {f:28s} {status}')
+        have_bulk = sum(1 for t in sample if ed.get(t, {}).get(EARN_BULK_DATE))
+        lines.append(f'  date(bulk)  {EARN_BULK_DATE:28s} '
+                     + (('REJECTED ' + bbg.field_errors[EARN_BULK_DATE])
+                        if EARN_BULK_DATE in bbg.field_errors
+                        else f'ok, {have_bulk}/{len(sample)} of the sample returned it'))
         for t in sample:
             rec = ed.get(t, {})
             lines.append(f'    {t:16s} {str(rec.get("NAME", ""))[:30]:30s} report {rec.get("EXPECTED_REPORT_DT", "-")} '
                          f'{rec.get("EXPECTED_REPORT_TIME", "")}  call {pick(rec, EARN_FIELDS["call_date"]) or "-"} '
-                         f'{pick(rec, EARN_FIELDS["call_time"]) or ""}')
+                         f'{pick(rec, EARN_FIELDS["call_time"]) or ""}  '
+                         f'next announced {next_announced(rec, today) or "-"}')
         lines.append('')
 
         # 4. FLDS from Python: what Bloomberg calls the things we need

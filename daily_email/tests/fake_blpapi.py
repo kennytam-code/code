@@ -210,11 +210,21 @@ def _cb_row(ticker, label, idx):
 def _earn_row(ticker, name, idx):
     when = _bday(_TODAY, (idx * 4) % 86 + 1)
     call = _bday(when, 0)
+    # ERN_ANN_DT_AND_PER returns history AND estimated forward dates together.
+    bulk = array_el('ERN_ANN_DT_AND_PER', [
+        complex_el('row', [('Announcement Date', d.strftime('%Y-%m-%d')),
+                           ('Financial Period', 'FY26')])
+        for d in (_bday(_TODAY, -120), _bday(_TODAY, -30), when)])
+    # every 7th name has no scalar report date - only the bulk field, so the
+    # fallback path is exercised on every fixture run
+    scalar_missing = (idx % 7 == 3)
     return [('NAME', name),
-            ('EXPECTED_REPORT_DT', when.strftime('%Y-%m-%d')),
-            ('EXPECTED_REPORT_TIME', ['Bef-mkt', '12:00', 'Aft-mkt', '07:00'][idx % 4]),
+            ('EXPECTED_REPORT_DT', None if scalar_missing else when.strftime('%Y-%m-%d')),
+            ('EXPECTED_REPORT_TIME', None if scalar_missing else
+             ['Bef-mkt', '12:00', 'Aft-mkt', '07:00'][idx % 4]),
             ('EARNINGS_CONF_CALL_DT', call.strftime('%Y-%m-%d') if idx % 5 else None),
-            ('EARNINGS_CONF_CALL_TIME', '16:30' if idx % 5 else None)]
+            ('EARNINGS_CONF_CALL_TIME', '16:30' if idx % 5 else None),
+            ('ERN_ANN_DT_AND_PER', bulk)]
 
 
 def _fake_fields(security, wanted):
