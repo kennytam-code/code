@@ -1,0 +1,49 @@
+{
+ "_note": "ENTITLEMENT issues (rights/open offers): Bloomberg back-adjusts history by the TERP factor; the raw traded print never jumps, so our price-vs-offer returns are UNADJUSTED by convention (they exclude the entitlement's value). Used by the Verify tab to compare on Bloomberg's basis, and by merge to note the convention per deal. Every entry needs the HKEX prospectus; append-only.",
+ "2350": [
+  {
+   "date": "2026-06-15",
+   "factor": 1.246,
+   "event": "rights 2-for-5 @ HK$0.275",
+   "src": "HKEX 2026062500717.pdf; cum close 0.890, TERP 0.7143 -> 1.2460 (BBG reproduces)"
+  }
+ ],
+ "2440": [
+  {
+   "date": "2025-06-24",
+   "factor": 1.22414,
+   "event": "rights 1-for-2 @ HK$1.262 (now MemeStrategy)",
+   "src": "HKEX 2025070302107.pdf; cum 2.800, TERP 2.2873 -> 1.22414"
+  }
+ ],
+ "2459": [
+  {
+   "date": "2025-07-16",
+   "factor": 1.195431,
+   "event": "rights 1-for-2 @ HK$0.08 (pre-consolidation)",
+   "src": "HKEX 2025072500005.pdf; cum 0.157, TERP 0.13133 -> 1.195431"
+  }
+ ],
+ "6696": [
+  {
+   "date": "2024-03-12",
+   "factor": 1.13235,
+   "event": "open offer 1-for-2 @ HK$0.15",
+   "src": "HKEX 2024032000597.pdf; cum 0.231 -> 1.13235"
+  },
+  {
+   "date": "2025-11-26",
+   "factor": 1.09705,
+   "event": "rights 6-for-1 @ HK$0.4753 (post-consolidation)",
+   "src": "HKEX 2025120500504.pdf; cum 0.53 -> 1.09705; product 1.24226 reproduces BBG"
+  }
+ ],
+ "2422": [
+  {
+   "date": "2022-11",
+   "factor": 1.1936,
+   "event": "UNVERIFIED entitlement-class adjustment",
+   "src": "Inferred: Yahoo hidden x1.194 (audit_opens, no split row) and BBG day-1 basis 1.131=1.350/1.1936 agree; HKEX announcement not yet located — basis-only, never applied to returns"
+  }
+ ]
+}

@@ -1,0 +1,229 @@
+{
+ "version": 1,
+ "note": "Single source of truth for sector/subsector. Screener gates on subsector FIRST (weight dominance). Edit here; re-run build_xlsx.py + build_dashboard.py to propagate.",
+ "sectors": {
+  "Tech/AI": [
+   {
+    "id": "llm",
+    "label": "LLM / foundation model",
+    "comp_note": "Model-layer cos (MiniMax-type). NOT data-center, NOT AI application."
+   },
+   {
+    "id": "ai_app",
+    "label": "AI application / agent software",
+    "comp_note": "AI-native software & agents monetising models; not the model layer itself."
+   },
+   {
+    "id": "ai_chips",
+    "label": "AI chips & semis",
+    "comp_note": "GPU/ASIC/accelerator designers and semi supply chain."
+   },
+   {
+    "id": "dc_cloud",
+    "label": "Data center / cloud infra",
+    "comp_note": "IDC, cloud capacity, AI infra landlords. Distinct from model layer."
+   },
+   {
+    "id": "robotics_ad",
+    "label": "Robotics & autonomous driving",
+    "comp_note": "Embodied AI, ADAS/AD stacks, robotaxi, humanoid."
+   },
+   {
+    "id": "smart_hw",
+    "label": "Smart hardware / consumer electronics",
+    "comp_note": "Devices, IoT, components ex-semis."
+   },
+   {
+    "id": "saas",
+    "label": "SaaS / enterprise software",
+    "comp_note": "Recurring-revenue software without AI-native positioning."
+   },
+   {
+    "id": "internet",
+    "label": "Internet platform / e-commerce",
+    "comp_note": "Marketplaces, local services, content platforms."
+   },
+   {
+    "id": "fintech",
+    "label": "Fintech platform",
+    "comp_note": "Payments, lending, wealth platforms (tech-first)."
+   }
+  ],
+  "Healthcare": [
+   {
+    "id": "biotech_prerev",
+    "label": "Biotech pre-revenue (18A)",
+    "comp_note": "Loss-making 18A; comp on pipeline/P-S-if-any, never P/E."
+   },
+   {
+    "id": "biopharma_comm",
+    "label": "Biopharma commercial",
+    "comp_note": "Revenue-generating pharma/biotech."
+   },
+   {
+    "id": "medtech",
+    "label": "Medical devices",
+    "comp_note": "Devices incl. 18A device names."
+   },
+   {
+    "id": "cxo",
+    "label": "CXO / pharma services",
+    "comp_note": "CRO/CDMO/CMO."
+   },
+   {
+    "id": "digital_health",
+    "label": "Digital health",
+    "comp_note": "Online healthcare platforms."
+   },
+   {
+    "id": "providers",
+    "label": "Hospitals / clinics",
+    "comp_note": "Service providers."
+   },
+   {
+    "id": "tcm",
+    "label": "TCM",
+    "comp_note": "Traditional Chinese medicine."
+   }
+  ],
+  "Consumer": [
+   {
+    "id": "fnb_chain",
+    "label": "F&B chains / restaurants",
+    "comp_note": "Mixue-type store-count stories."
+   },
+   {
+    "id": "food_bev",
+    "label": "Beverages / packaged food",
+    "comp_note": "Brands, not chains."
+   },
+   {
+    "id": "apparel_lux",
+    "label": "Apparel / luxury",
+    "comp_note": ""
+   },
+   {
+    "id": "beauty",
+    "label": "Beauty / personal care",
+    "comp_note": ""
+   },
+   {
+    "id": "consumer_svc",
+    "label": "Consumer services / education",
+    "comp_note": ""
+   },
+   {
+    "id": "nev_oem",
+    "label": "Autos (NEV OEM)",
+    "comp_note": "Vehicle OEMs; loss-making OEMs comp on P/S."
+   },
+   {
+    "id": "auto_parts",
+    "label": "Auto parts / supply chain",
+    "comp_note": ""
+   },
+   {
+    "id": "retail",
+    "label": "Retail / distribution",
+    "comp_note": ""
+   }
+  ],
+  "Financials": [
+   {
+    "id": "banks",
+    "label": "Banks",
+    "comp_note": ""
+   },
+   {
+    "id": "insurance",
+    "label": "Insurance",
+    "comp_note": ""
+   },
+   {
+    "id": "brokers_am",
+    "label": "Brokers / asset management",
+    "comp_note": ""
+   }
+  ],
+  "Industrials": [
+   {
+    "id": "capgoods",
+    "label": "Capital goods / machinery",
+    "comp_note": ""
+   },
+   {
+    "id": "battery_ess",
+    "label": "Batteries / energy storage",
+    "comp_note": "CATL bucket: cells, materials, ESS."
+   },
+   {
+    "id": "solar_wind",
+    "label": "Solar / wind supply chain",
+    "comp_note": ""
+   },
+   {
+    "id": "logistics",
+    "label": "Logistics",
+    "comp_note": ""
+   },
+   {
+    "id": "construction",
+    "label": "Construction / engineering",
+    "comp_note": ""
+   }
+  ],
+  "Materials/Energy": [
+   {
+    "id": "mining",
+    "label": "Mining / metals",
+    "comp_note": ""
+   },
+   {
+    "id": "chemicals",
+    "label": "Chemicals",
+    "comp_note": ""
+   },
+   {
+    "id": "oil_gas_util",
+    "label": "Oil & gas / utilities",
+    "comp_note": ""
+   }
+  ],
+  "Real Estate": [
+   {
+    "id": "developers",
+    "label": "Developers",
+    "comp_note": ""
+   },
+   {
+    "id": "prop_mgmt",
+    "label": "Property management",
+    "comp_note": ""
+   },
+   {
+    "id": "reit_light",
+    "label": "REITs / asset-light",
+    "comp_note": ""
+   }
+  ],
+  "TMT-other": [
+   {
+    "id": "telecom",
+    "label": "Telecom",
+    "comp_note": ""
+   },
+   {
+    "id": "media_ad",
+    "label": "Media / advertising",
+    "comp_note": ""
+   }
+  ],
+  "Other": [
+   {
+    "id": "other",
+    "label": "Other / unclassified",
+    "comp_note": "Must stay <5% of deals (checks.py enforces)."
+   }
+  ]
+ }
+}

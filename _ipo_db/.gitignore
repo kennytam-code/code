@@ -1,8 +1,21 @@
 .venv/
-scrape/pdf_cache/
+scrape/
 __pycache__/
+out/
+_model_scripts/
+_pca_tests/
+# heavy generated data: deals.json is rebuilt by the merge, the batches are
+# scrape caches. Neither belongs in the repo; both are reproducible.
+data/deals.json
+data/batches/
+data/auto_splits.json
 TO_NOMURA/*
 # the deliverables published to github.com/kennytam-code/code stay tracked
 !TO_NOMURA/HK_IPO_Database_v1.xlsx
 !TO_NOMURA/hk_ipo_dashboard.html
 !TO_NOMURA/AH_Premium_Study.docx
+# the weekly IPO email — the readable one, so it can be reviewed in the browser
+# straight from GitHub rather than only as a paste-into-Outlook artefact
+!TO_NOMURA/weekly_ipo_email.html
+!TO_NOMURA/weekly_ipo_email.txt
+.DS_Store

@@ -1,0 +1,1914 @@
+[
+ {
+  "code": "2536",
+  "field": "oversub_public_mult",
+  "kept": 1.29,
+  "kept_src": "hkex-pdf:allotment:table",
+  "dropped": 16.0,
+  "dropped_src": "aastocks:listedipo(+1 to subscription-level basis)"
+ },
+ {
+  "code": "2507",
+  "field": "oversub_public_mult",
+  "kept": 1.56,
+  "kept_src": "hkex-pdf:allotment:table",
+  "dropped": 1.6,
+  "dropped_src": "aastocks:listedipo(+1 to subscription-level basis)"
+ },
+ {
+  "code": "0300",
+  "field": "oversub_public_mult",
+  "kept": 9.0,
+  "kept_src": "hkex-pdf:allotment:table",
+  "dropped": 5.3,
+  "dropped_src": "aastocks:listedipo(+1 to subscription-level basis)"
+ },
+ {
+  "code": "2576",
+  "field": "oversub_public_mult",
+  "kept": 156.3,
+  "kept_src": "aastocks:listedipo(+1 to subscription-level basis)",
+  "dropped": 100.0,
+  "dropped_src": "hkex-pdf:allotment:prose"
+ },
+ {
+  "code": "2586",
+  "field": "oversub_public_mult",
+  "kept": 1.94,
+  "kept_src": "hkex-pdf:allotment:table",
+  "dropped": 1.9,
+  "dropped_src": "aastocks:listedipo(+1 to subscription-level basis)"
+ },
+ {
+  "code": "2570",
+  "field": "oversub_public_mult",
+  "kept": 1.55,
+  "kept_src": "hkex-pdf:allotment:table",
+  "dropped": 1.6,
+  "dropped_src": "aastocks:listedipo(+1 to subscription-level basis)"
+ },
+ {
+  "code": "0999",
+  "field": "oversub_public_mult",
+  "kept": 1.44,
+  "kept_src": "hkex-pdf:allotment:table",
+  "dropped": 1.4,
+  "dropped_src": "aastocks:listedipo(+1 to subscription-level basis)"
+ },
+ {
+  "code": "3750",
+  "field": "oversub_public_mult",
+  "kept": 151.2,
+  "kept_src": "aastocks:listedipo(+1 to subscription-level basis)",
+  "dropped": 15.17,
+  "dropped_src": "hkex-pdf:allotment:prose"
+ },
+ {
+  "code": "2050",
+  "field": "oversub_public_mult",
+  "kept": 747.9,
+  "kept_src": "aastocks:listedipo(+1 to subscription-level basis)",
+  "dropped": 23.57,
+  "dropped_src": "hkex-pdf:allotment:prose"
+ },
+ {
+  "code": "2590",
+  "field": "oversub_public_mult",
+  "kept": 133.6,
+  "kept_src": "aastocks:listedipo(+1 to subscription-level basis)",
+  "dropped": 30.17,
+  "dropped_src": "hkex-pdf:allotment:prose"
+ },
+ {
+  "code": "2580",
+  "field": "oversub_public_mult",
+  "kept": 557.2,
+  "kept_src": "aastocks:listedipo(+1 to subscription-level basis)",
+  "dropped": 100.0,
+  "dropped_src": "hkex-pdf:allotment:prose"
+ },
+ {
+  "code": "2525",
+  "field": "oversub_public_mult",
+  "kept": 168.7,
+  "kept_src": "aastocks:listedipo(+1 to subscription-level basis)",
+  "dropped": 14.09,
+  "dropped_src": "hkex-pdf:allotment:prose"
+ },
+ {
+  "code": "2525",
+  "field": "final_price",
+  "kept": 154.99,
+  "kept_src": "hkex-pdf:allotment",
+  "dropped": 212.8,
+  "dropped_src": "aastocks:listedipo"
+ },
+ {
+  "code": "6090",
+  "field": "final_price",
+  "kept": 63.58,
+  "kept_src": "hkex-pdf:allotment",
+  "dropped": 71.2,
+  "dropped_src": "aastocks:listedipo"
+ },
+ {
+  "code": "2026",
+  "field": "final_price",
+  "kept": 252.25,
+  "kept_src": "hkex-pdf:allotment",
+  "dropped": 139.0,
+  "dropped_src": "aastocks:listedipo"
+ },
+ {
+  "code": "2693",
+  "field": "oversub_public_mult",
+  "kept": 6876.17,
+  "kept_src": "hkex-pdf:allotment:table",
+  "dropped": 8285.3,
+  "dropped_src": "aastocks:listedipo(+1 to subscription-level basis)"
+ },
+ {
+  "code": "1021",
+  "field": "oversub_public_mult",
+  "kept": 5059.4,
+  "kept_src": "aastocks:listedipo(+1 to subscription-level basis)",
+  "dropped": 16.65,
+  "dropped_src": "hkex-pdf:allotment:prose"
+ },
+ {
+  "code": "6656",
+  "field": "final_price",
+  "kept": 210.8,
+  "kept_src": "hkex-pdf:allotment",
+  "dropped": 324.2,
+  "dropped_src": "aastocks:listedipo"
+ },
+ {
+  "code": "2476",
+  "field": "oversub_public_mult",
+  "kept": 431.15,
+  "kept_src": "hkex-pdf:allotment:table",
+  "dropped": 388.0,
+  "dropped_src": "aastocks:listedipo(+1 to subscription-level basis)"
+ },
+ {
+  "code": "9630",
+  "field": "final_price",
+  "kept": 91.7,
+  "kept_src": "hkex-pdf:allotment",
+  "dropped": 252.73,
+  "dropped_src": "aastocks:listedipo"
+ },
+ {
+  "code": "2672",
+  "field": "final_price",
+  "kept": 54382183.0,
+  "kept_src": "hkex-pdf:allotment",
+  "dropped": 15.6,
+  "dropped_src": "aastocks:listedipo"
+ },
+ {
+  "code": "1377",
+  "field": "oversub_public_mult",
+  "kept": 354.64,
+  "kept_src": "hkex-pdf:allotment:table",
+  "dropped": 319.2,
+  "dropped_src": "aastocks:listedipo(+1 to subscription-level basis)"
+ },
+ {
+  "code": "9600",
+  "field": "net_proceeds_hkdm",
+  "kept": 771.6,
+  "kept_src": "hkex-pdf:allotment",
+  "dropped": 520.1,
+  "dropped_src": "hkex-pdf:prospectus"
+ },
+ {
+  "code": "2195",
+  "field": "price_range_hi",
+  "kept": 0.56,
+  "kept_src": "hkex-pdf:prospectus",
+  "dropped": 0.5,
+  "dropped_src": "hkex-pdf:prospectus:cap"
+ },
+ {
+  "code": "2219",
+  "field": "price_range_hi",
+  "kept": 10.0,
+  "kept_src": "hkex-pdf:prospectus",
+  "dropped": 10.6,
+  "dropped_src": "hkex-pdf:prospectus:cap"
+ },
+ {
+  "code": "2260",
+  "field": "net_proceeds_hkdm",
+  "kept": 92.8,
+  "kept_src": "hkex-pdf:allotment",
+  "dropped": 90.6,
+  "dropped_src": "hkex-pdf:prospectus"
+ },
+ {
+  "code": "2250",
+  "field": "price_range_hi",
+  "kept": 3.45,
+  "kept_src": "hkex-pdf:prospectus",
+  "dropped": 3.4,
+  "dropped_src": "hkex-pdf:prospectus:cap"
+ },
+ {
+  "code": "2372",
+  "field": "price_range_hi",
+  "kept": 0.67,
+  "kept_src": "hkex-pdf:prospectus",
+  "dropped": 0.65,
+  "dropped_src": "hkex-pdf:prospectus:cap"
+ },
+ {
+  "code": "2372",
+  "field": "net_proceeds_hkdm",
+  "kept": 90.3,
+  "kept_src": "hkex-pdf:allotment",
+  "dropped": 94.1,
+  "dropped_src": "hkex-pdf:prospectus"
+ },
+ {
+  "code": "2610",
+  "field": "price_range_hi",
+  "kept": 31.5,
+  "kept_src": "hkex-pdf:allotment",
+  "dropped": 26.6,
+  "dropped_src": "hkex-pdf:prospectus:cap"
+ },
+ {
+  "code": "2219",
+  "field": "price_range_hi",
+  "kept": 10.6,
+  "kept_src": "hkex-pdf:deep(allotment):cap",
+  "dropped": 10.0,
+  "dropped_src": "hkex-pdf:prospectus"
+ },
+ {
+  "code": "2610",
+  "field": "price_range_hi",
+  "kept": 26.6,
+  "kept_src": "hkex-pdf:deep(allotment):cap",
+  "dropped": 31.5,
+  "dropped_src": "hkex-pdf:allotment"
+ },
+ {
+  "code": "2643",
+  "field": "cornerstone_investors",
+  "kept": [
+   "Mercedes-Benz Mobility Services",
+   "Mirae Asset Securities (HK)",
+   "Infini Global Master Fund",
+   "Gotion High-Tech (HK)",
+   "EVE Asia",
+   "RoboSense Hong Kong"
+  ],
+  "kept_src": "press:Tiger Brokers / AAStocks IPO coverage 2025-06: six cornerstones HK$951.6m combined = 22.6424m shares of the 44.1786m-share offer (51.3%); Mirae HK$274.7m, Gotion HK$163.8m, Mercedes-Benz HK$122.8m. PDF allotment parse had read footnote refs as names and 23%.",
+  "dropped": [
+   "are issued) Top",
+   "Please refer to Note (1). No",
+   "Please refer to Note (2). No"
+  ],
+  "dropped_src": "hkex-pdf:deep(allotment)"
+ },
+ {
+  "code": "2643",
+  "field": "cornerstone_pct",
+  "kept": 51.3,
+  "kept_src": "press:Tiger Brokers / AAStocks IPO coverage 2025-06: six cornerstones HK$951.6m combined = 22.6424m shares of the 44.1786m-share offer (51.3%); Mirae HK$274.7m, Gotion HK$163.8m, Mercedes-Benz HK$122.8m. PDF allotment parse had read footnote refs as names and 23%.",
+  "dropped": 23.2,
+  "dropped_src": "hkex-pdf:deep(allotment)"
+ },
+ {
+  "code": "2531",
+  "field": "cornerstone_investors",
+  "kept": [
+   "Huizhou Guohuilian Equity Investment Fund Partnership (LP)"
+  ],
+  "kept_src": "press:HKEX allotment results 2024-07-12 (2024071201219.pdf): sole cornerstone 惠州市國惠聯股權投資基金合夥企業 HK$88.0m = 18,723,000 sh @ HK$4.70 = 29.44% of offer. Parse had scraped lock-up-table BVI shareholder vehicles (ZH-tendency Inc etc.) as cornerstones.",
+  "dropped": [
+   "Partnership) / 惠州",
+   "ZH-tendency Inc",
+   "ZL-expectations Inc",
+   "Subtotal",
+   "Subtotal",
+   "J-Visionary Inc",
+   "ZZ-Intelligent Inc",
+   "Rongying Future Inc",
+   "Subtotal",
+   "Listing Top"
+  ],
+  "dropped_src": "hkex-pdf:deep(allotment)"
+ },
+ {
+  "code": "2714",
+  "field": "cornerstone_investors",
+  "kept": [
+   "Charoen Pokphand Foods (CPF)",
+   "Wii Pte Ltd (Wilmar)",
+   "HPRY Holdings (Wilmar)",
+   "Sinochem Hong Kong (Group)",
+   "Hong Kong Henan Agri International",
+   "FIL Investment Management (Hong Kong)",
+   "RBC Global Asset Management (Asia)",
+   "Perseverance Asset Management International (Singapore)",
+   "Shanghai Gaoyi Asset Management (via HTCI swaps)",
+   "Ping An of China Asset Management (Hong Kong)",
+   "Dajia Life Insurance",
+   "UBS Asset Management (Singapore)",
+   "Midea Development Holding (BVI)",
+   "Integrated Core Strategies (Asia) (Millennium)",
+   "Jane Street Asia Trading"
+  ],
+  "kept_src": "press:HKEX allotment results 2026-02-05 (2026020502402.pdf) cornerstone table pp.6-7: 136,972,800 sh = HK$5,341.9m = 50.0% of the 273,951,400-share global offering; CPF US$200m, FIL US$80m, Wilmar US$70m, Sinochem US$65m. 'Lu Deyan' was an International Offering placee, NOT a cornerstone; Subtotal rows were table debris.",
+  "dropped": [
+   "Subtotal",
+   "associates Subtotal",
+   "Sinochem",
+   "FIL Investment",
+   "Shareholder RBC GAM",
+   "Shareholders Subtotal",
+   "Ping An Asset",
+   "Shareholders Dajia Life",
+   "UBS AM Singapore",
+   "Shareholder Lu Deyan",
+   "Millennium ICSA Subtotal",
+   "HTCI"
+  ],
+  "dropped_src": "hkex-pdf:deep(allotment)"
+ },
+ {
+  "code": "9981",
+  "field": "cornerstone_investors",
+  "kept": [
+   "HHLR Advisors",
+   "Shanghai Greenwoods (via Huatai OTC swaps)",
+   "Jump Trading Pacific",
+   "Huizhou Huilian Investment Partnership (LP)",
+   "Jiangxi Copper (via GTJA OTC swaps)",
+   "Shen Zhen New World Investment (H.K.)",
+   "Best Cheer Development",
+   "RIME Capital",
+   "SCV Alpha LP",
+   "Yield Royal Investment Holding (Singapore)",
+   "Guohui (HK) Holdings",
+   "Pu Xin (via GTJA OTC swaps)",
+   "Capchem (Hongkong)",
+   "Enhanced Investment Products (EIP)",
+   "Factorial Master Fund",
+   "Qianhai Starlight Capital SPC"
+  ],
+  "kept_src": "press:HKEX allotment announcement 2026-02-12 (2026021201492.pdf) pp.5-6: 16 cornerstone entities, 48,231,800 sh @ HK$20.09 = HK$969.0m = 34.45% of the 139,988,800-share offer. Parse had deduped to 11 names and wrongly included Doo Financial HK (a separate placee, close associate of SCV Alpha).",
+  "dropped": [
+   "HHLR Advisors, Ltd. (“ HHLRA”)",
+   "RIME Capital Limited (“ RIME”)",
+   "SCV Alpha LP (“ SCV Alpha ”)",
+   "Factorial Master Fund (“ Factorial”)",
+   "Shen Zhen New World",
+   "HHLRA",
+   "Jump Trading",
+   "Huizhou Huilian",
+   "Shen Zhen New World",
+   "BEST CHEER",
+   "RIME",
+   "Doo Financial HK Limited",
+   "Offering Relationship Guohui",
+   "Qianhai Starlight",
+   "Factorial"
+  ],
+  "dropped_src": "hkex-pdf:deep(allotment)"
+ },
+ {
+  "code": "3881",
+  "field": "cornerstone_investors",
+  "kept": [
+   "Xiangjiang Zhicheng (Hunan state fund)",
+   "Zhijia No. 1 (Nanning Ruiyue LP)",
+   "ICBC UBS Asset Management",
+   "ICBC UBS Asset Management (International)",
+   "Qianhai Kaiyuan Qunwei QDII Plan"
+  ],
+  "kept_src": "press:Prospectus cornerstone section pp.366-373 (2025121100007.pdf) + allotment results 2025-12-18 (2025121801904.pdf): 5 cornerstones HK$546.1m = 2,076,390 of 5,407,980 offer sh = 38.39% @ HK$263. Xiangjiang Zhicheng HK$425.7m (29.93%), Zhijia No.1 RMB70m, ICBCUBS US$1m, ICBCUBSI US$2m, QHKY HK$20m. Parsed short names were the prospectus's own defined terms; only the RMB amount had bled into a name.",
+  "dropped": [
+   "Xiangjiang Zhicheng",
+   "Zhijia No. 1 RMB70,000,000",
+   "ICBCUBS",
+   "ICBCUBSI",
+   "QHKY Qunwei"
+  ],
+  "dropped_src": "hkex-pdf:deep(prospectus)"
+ },
+ {
+  "code": "2566",
+  "field": "cornerstone_investors",
+  "kept": [
+   "Heda Jinyuan (HK)",
+   "Fosun Industrial",
+   "Hong Kong King-Friend Industrial",
+   "Alibaba Health (Hong Kong) Technology",
+   "Jointown International",
+   "Mr. Wu Qiyuan",
+   "Delta Capital Hong Kong"
+  ],
+  "kept_src": "press:Prospectus cornerstone section pp.567-573 (2024112000019.pdf) + allotment results 2024-11-27 (2024112701177.pdf): 7 cornerstones allotted 22,543,400 of 45,398,800 offer sh = 49.66% (commitments HK$352.4m cut ~20% pro-rata by the 675.83x-public clawback). Heda Jinyuan US$25m (27.31%), Fosun US$5m, King-Friend US$5m, Alibaba Health US$3m, Jointown US$3m, Wu Qiyuan HK$21.5m, Delta HK$12m.",
+  "dropped": [
+   "Company Limited",
+   "Group Company Limited",
+   "Heda",
+   "Mr. Wu",
+   "Hong Kong Limited",
+   "Mr. Wu",
+   "Shareholder Heda",
+   "Subtotal",
+   "Subtotal",
+   "Heda"
+  ],
+  "dropped_src": "hkex-pdf:deep(allotment)"
+ },
+ {
+  "code": "2672",
+  "field": "final_price",
+  "kept": 15.6,
+  "kept_src": "press:OFFER PRICE: 10jqka 2026-06-29 + ifeng: 发行价15.6港元, 收报73港元 首日+367.95%, 全球发售3334.44万股, 募资总额5.2亿港元. The parse's 54,382,183 was the LISTING EXPENSES line (HK$54.38m), not a price.",
+  "dropped": 54382183.0,
+  "dropped_src": "hkex-pdf:allotment"
+ },
+ {
+  "code": "2525",
+  "field": "final_price",
+  "kept": 212.8,
+  "kept_src": "press:OFFER PRICE: STCN + HKEX allotment 2025-09-15 (2025091501458.pdf): 发行价212.80港元, 收报234港元 +9.96%, 19,550,000 offer shares incl. fully-exercised offer-size adjustment. ORIGINAL pre-subdivision price — do NOT restate to 26.60 for the 8-for-1 subdivision of 2026-07-10. | FINANCIALS (RMB x1.1): Hesai FY2024 PR: net revenues RMB2,077.2m (stored NI -112.6 HK$m = the RMB102.4m GAAP loss, kept)",
+  "dropped": 154.99,
+  "dropped_src": "hkex-pdf:allotment"
+ },
+ {
+  "code": "2026",
+  "field": "final_price",
+  "kept": 139.0,
+  "kept_src": "press:OFFER PRICE: Sina 2025-11-04 pricing + 2025-11-06 debut: 每股139.00港元 (22.8% below the HK$180 max), 收报126.10港元 -9.28%, 48,249,000 shares incl. full offer-size adjustment.",
+  "dropped": 252.25,
+  "dropped_src": "hkex-pdf:allotment"
+ },
+ {
+  "code": "6656",
+  "field": "final_price",
+  "kept": 324.2,
+  "kept_src": "press:OFFER PRICE: AAStocks debut report: opened HK$581 (+79.2%) from listing price HK$324.20, closed HK$659.5 +103.4%; 13,573,900 H shares, gross ≈HK$4.4bn (Mercom).",
+  "dropped": 210.8,
+  "dropped_src": "hkex-pdf:allotment"
+ },
+ {
+  "code": "9630",
+  "field": "final_price",
+  "kept": 252.73,
+  "kept_src": "press:OFFER PRICE: Sina 2026-06-26: 发行价252.73港元 (top of range), 收报515.00港元 +103.77%, 发行1283.865万股, 募资总额32.45亿港元. NOT the midday 445.8 snapshot.",
+  "dropped": 91.7,
+  "dropped_src": "hkex-pdf:allotment"
+ },
+ {
+  "code": "6090",
+  "field": "final_price",
+  "kept": 71.2,
+  "kept_src": "press:OFFER PRICE: Sina 2025-09-23: 发售价每股71.20港元 (top of the 62.01-71.20 range), 收报102.50港元 +43.96%, 全球发售1098.09万股.",
+  "dropped": 63.58,
+  "dropped_src": "hkex-pdf:allotment"
+ },
+ {
+  "code": "3223",
+  "field": "cornerstone_investors",
+  "kept": "Emerald Prime (US$60m); GF Fund (US$30m); Huaqin Singapore (US$15m); ICBC Wealth (US$15m); Arrow Target (US$13m); China Universal HK (US$12m); CloudAlpha (US$12m); HTCI via Huatai TRS (US$10m); Heading Pioneer 10 Fund (US$10m); Perseverance AM (US$9.65m); Dream'ee HK Fund (US$5m)",
+  "kept_src": "press:Ingenic FY2025 A-share AR (300223.SZ, 2026-03-28): revenue RMB4,741m, attributable NI RMB376m; x1.10 to HKD. Listed 2026-08-25 — trailing basis for the Database record. | ALLOTMENT (HKEX 2026-08-24, 2026082401907.pdf): final offer price HK$100.00 (max was HK$102.80); HK public 927.37x (141,851 applications), international 8.43x, no clawback (10/90 held); offer 31,287,300 H shares, gross HK$3,128.7m, net HK$3,054.6m; shares in issue upon listing 514,951,667 (483,664,367 A + 31,287,300 H); cornerstones US$191.65m = 15,034,000 sh = 48.05% of offer, lock-up to 2027-02-24; greenshoe 4,693,000 sh (15%) fully over-allocated, exercise not announced as of 2026-08-31, stabilisation to 2026-09-19 (Guotai Junan); one-lot ballot 0.27%",
+  "dropped": [
+   "Emerald Prime",
+   "GF Fund",
+   "Perseverance Asset Management",
+   "and the Huatai Client TRS)",
+   "Huaqin Singapore",
+   "ICBC Wealth",
+   "Arrow Target",
+   "China Universal",
+   "CloudAlpha Capital",
+   "Dream’ee HK Fund"
+  ],
+  "dropped_src": "hkex-pdf:deep(prospectus)"
+ },
+ {
+  "code": "3223",
+  "field": "cornerstone_pct",
+  "kept": 48.05,
+  "kept_src": "press:Ingenic FY2025 A-share AR (300223.SZ, 2026-03-28): revenue RMB4,741m, attributable NI RMB376m; x1.10 to HKD. Listed 2026-08-25 — trailing basis for the Database record. | ALLOTMENT (HKEX 2026-08-24, 2026082401907.pdf): final offer price HK$100.00 (max was HK$102.80); HK public 927.37x (141,851 applications), international 8.43x, no clawback (10/90 held); offer 31,287,300 H shares, gross HK$3,128.7m, net HK$3,054.6m; shares in issue upon listing 514,951,667 (483,664,367 A + 31,287,300 H); cornerstones US$191.65m = 15,034,000 sh = 48.05% of offer, lock-up to 2027-02-24; greenshoe 4,693,000 sh (15%) fully over-allocated, exercise not announced as of 2026-08-31, stabilisation to 2026-09-19 (Guotai Junan); one-lot ballot 0.27%",
+  "dropped": 46.74,
+  "dropped_src": "hkex-pdf:deep(prospectus)"
+ },
+ {
+  "code": "9615",
+  "field": "cornerstone_investors",
+  "kept": "Baillie Gifford (US$60m); Taikang Life (US$40m); Invus (US$15m); Jane Street (US$15m); Ghisallo (US$15m); Ruihua (US$15m); NGS Super Fund (US$10m); E Fund (US$10m); Golden Link Worldwide / BYD (US$6m)",
+  "kept_src": "press:HKEX allotment results 2026-08-31 (2026083102433.pdf): final offer price HK$101.70 = the CAP (range HK$95.30-101.70, 'Offer Price adjustment exercised: N/A'); listed 2026-09-01, board lot 30. Offer 23,140,590 H shares, 100% primary (no Sale Shares in the prospectus), gross HK$2,353.4m / net HK$2,200.2m. Shares upon Listing before the over-allotment option 125,011,050 -> stated expected market cap HK$12,713.6m at HK$101.70. HK public 3,835.36x on 252,461 valid applications (89,083 successful), international 13.39x on 130 placees; CLAWBACK TRIGGERED, 3,471,090 shares reallocated to public -> final split 20/80. Cornerstones US$186.0m = 14,351,310 shares = 62.02% of the offer, 11.48% of enlarged capital, locked to 2027-02-28. Greenshoe up to 3,471,060 (~15%) FULLY OVER-ALLOCATED; stabilising manager CLSA Limited; stabilisation to 2026-09-26; no exercise announced as of 2026-09-02. One-lot ballot 3.00% (1,623 of 54,080). FINANCIALS (RMB x1.10): FY2025 revenue RMB388.771m (+44.7%), loss for the year RMB360.168m, gross margin 64.6%; 3M-2026 revenue RMB106.9m (+73.1%), loss RMB56.8m.",
+  "dropped": [
+   "exercised) Relationship Golden Link",
+   "DAIDO Co., LTD",
+   "Mech-Mind Management (Note 2) Close associate of Mr. Shao",
+   "Hanchen Pathfinder SIIs",
+   "Qiming Rongke Pathfinder SIIs",
+   "Mr. Shao Beneficial Interest",
+   "Mech-Mind Management (Note 2) Beneficial Interest",
+   "Mr. Fu Beneficial Interest",
+   "Dr. Ding Beneficial Interest",
+   "lock-up undertakings Mr. Shao",
+   "Mr. Fu",
+   "Dr. Ding",
+   "Mech-Mind Management",
+   "Qingdao Jianrui",
+   "Qingdao Blue Bay"
+  ],
+  "dropped_src": "hkex-pdf:deep(allotment)"
+ },
+ {
+  "code": "9615",
+  "field": "cornerstone_pct",
+  "kept": 62.02,
+  "kept_src": "press:HKEX allotment results 2026-08-31 (2026083102433.pdf): final offer price HK$101.70 = the CAP (range HK$95.30-101.70, 'Offer Price adjustment exercised: N/A'); listed 2026-09-01, board lot 30. Offer 23,140,590 H shares, 100% primary (no Sale Shares in the prospectus), gross HK$2,353.4m / net HK$2,200.2m. Shares upon Listing before the over-allotment option 125,011,050 -> stated expected market cap HK$12,713.6m at HK$101.70. HK public 3,835.36x on 252,461 valid applications (89,083 successful), international 13.39x on 130 placees; CLAWBACK TRIGGERED, 3,471,090 shares reallocated to public -> final split 20/80. Cornerstones US$186.0m = 14,351,310 shares = 62.02% of the offer, 11.48% of enlarged capital, locked to 2027-02-28. Greenshoe up to 3,471,060 (~15%) FULLY OVER-ALLOCATED; stabilising manager CLSA Limited; stabilisation to 2026-09-26; no exercise announced as of 2026-09-02. One-lot ballot 3.00% (1,623 of 54,080). FINANCIALS (RMB x1.10): FY2025 revenue RMB388.771m (+44.7%), loss for the year RMB360.168m, gross margin 64.6%; 3M-2026 revenue RMB106.9m (+73.1%), loss RMB56.8m.",
+  "dropped": 77.7,
+  "dropped_src": "hkex-pdf:deep(allotment)"
+ },
+ {
+  "code": "0625",
+  "field": "cornerstone_investors",
+  "kept": "Exclusive Depot / Boyu (US$150m); Internet Fund IIIA / Tiger Global (US$53m); General Atlantic Singapore (US$50m); Huang River / Tencent (US$50m); Greenwoods Asset Management HK (US$30m); Taikang Life (US$30m); UBS Asset Management Singapore (US$20m)",
+  "kept_src": "press:HKEX allotment results 2026-08-31 (2026083102409.pdf): final offer price HK$48.56 against a HK$47.60-49.50 range (max HK$49.50) — priced 1.9% below the cap, a shade above the mid. Listed 2026-09-01; Class B shares, stock short name SHEIN-W (weighted voting rights). Offer 279,992,500 Class B shares, 100% primary ('Sale Shares' appears nowhere in the prospectus), gross HK$13,596.4m / net HK$13,214.1m. Shares upon Listing before the over-allotment option 4,246,202,609 (Class A + Class B). HK public 5.63x on 35,751 valid applications, international 2.59x on 106 placees; clawback NOT triggered, split held at 10/90. Cornerstones 7 investors US$383.0m = 61,890,000 shares = 22.1% of the offer, 1.5% of total issued capital. Greenshoe up to 41,998,500 (15.0%) FULLY OVER-ALLOCATED; stabilising manager Goldman Sachs (Asia) L.L.C.; stabilisation to 2026-09-26; no exercise announced as of 2026-09-02. One-lot ballot 18.42% (2,820 of 15,312, Pool A). Sponsors Goldman Sachs (Asia), Morgan Stanley Asia, J.P. Morgan Securities (Far East). FINANCIALS (US$ x7.8): FY2025 net revenues US$41,847m, net income US$2,064m (FY2024 US$38,748m / US$3,365m — earnings FELL on higher revenue); 3M-2026 was a net LOSS of US$99m vs +US$395m a year earlier. Day 1 traded down to HK$43.72 (-10.0%) before closing HK$48.50, one tick under the offer, inside a live stabilisation mandate.",
+  "dropped": [
+   "Exclusive Depot Limited",
+   "of Boyu Entities Subtotal",
+   "Subtotal",
+   "Huang River",
+   "General Atlantic",
+   "UBS AM Singapore",
+   "Exclusive Depot",
+   "Internet Fund IIIA",
+   "General Atlantic",
+   "Huang River",
+   "HK Greenwoods",
+   "HCEP Management Limited",
+   "the Company Subtotal",
+   "Willett Advisors LLC",
+   "Shareholder Subtotal"
+  ],
+  "dropped_src": "hkex-pdf:deep(allotment)"
+ },
+ {
+  "code": "2521",
+  "field": "oversub_intl_mult",
+  "kept": 1.33,
+  "kept_src": "bloomberg:CP037 (desk paste 2026-08-20)",
+  "dropped": 33.35,
+  "dropped_src": "hkex-pdf:allotment:table"
+ },
+ {
+  "code": "2516",
+  "field": "oversub_intl_mult",
+  "kept": 1.04,
+  "kept_src": "bloomberg:CP037 (desk paste 2026-08-20)",
+  "dropped": 14.49,
+  "dropped_src": "hkex-pdf:allotment:table"
+ },
+ {
+  "code": "9880",
+  "field": "oversub_intl_mult",
+  "kept": 2.16,
+  "kept_src": "bloomberg:CP037 (desk paste 2026-08-20)",
+  "dropped": 5.16,
+  "dropped_src": "hkex-pdf:allotment:table"
+ },
+ {
+  "code": "2503",
+  "field": "oversub_intl_mult",
+  "kept": 1.09,
+  "kept_src": "bloomberg:CP037 (desk paste 2026-08-20)",
+  "dropped": 58.44,
+  "dropped_src": "hkex-pdf:allotment:table"
+ },
+ {
+  "code": "2477",
+  "field": "oversub_intl_mult",
+  "kept": 0.97,
+  "kept_src": "bloomberg:CP037 (desk paste 2026-08-20)",
+  "dropped": 28.64,
+  "dropped_src": "hkex-pdf:allotment:table"
+ },
+ {
+  "code": "2535",
+  "field": "oversub_intl_mult",
+  "kept": 0.98,
+  "kept_src": "bloomberg:CP037 (desk paste 2026-08-20)",
+  "dropped": 70.48,
+  "dropped_src": "hkex-pdf:allotment:table"
+ },
+ {
+  "code": "2536",
+  "field": "oversub_public_mult",
+  "kept": 0.23,
+  "kept_src": "bloomberg:CP036 (desk paste 2026-08-20)",
+  "dropped": 1.29,
+  "dropped_src": "hkex-pdf:allotment:table"
+ },
+ {
+  "code": "2536",
+  "field": "oversub_intl_mult",
+  "kept": 1.29,
+  "kept_src": "bloomberg:CP037 (desk paste 2026-08-20)",
+  "dropped": 0.23,
+  "dropped_src": "hkex-pdf:allotment:table"
+ },
+ {
+  "code": "2497",
+  "field": "oversub_intl_mult",
+  "kept": 0.96,
+  "kept_src": "bloomberg:CP037 (desk paste 2026-08-20)",
+  "dropped": 294.13,
+  "dropped_src": "hkex-pdf:allotment:table"
+ },
+ {
+  "code": "2505",
+  "field": "oversub_intl_mult",
+  "kept": 0.98,
+  "kept_src": "bloomberg:CP037 (desk paste 2026-08-20)",
+  "dropped": 0.35,
+  "dropped_src": "hkex-pdf:allotment:table"
+ },
+ {
+  "code": "9639",
+  "field": "oversub_intl_mult",
+  "kept": 1.14,
+  "kept_src": "bloomberg:CP037 (desk paste 2026-08-20)",
+  "dropped": 120.6,
+  "dropped_src": "hkex-pdf:allotment:table"
+ },
+ {
+  "code": "2259",
+  "field": "oversub_intl_mult",
+  "kept": 20.38,
+  "kept_src": "bloomberg:CP037 (desk paste 2026-08-20)",
+  "dropped": 22.36,
+  "dropped_src": "hkex-pdf:allotment:table"
+ },
+ {
+  "code": "2575",
+  "field": "oversub_intl_mult",
+  "kept": 10.15,
+  "kept_src": "bloomberg:CP037 (desk paste 2026-08-20)",
+  "dropped": 72.49,
+  "dropped_src": "hkex-pdf:allotment:table"
+ },
+ {
+  "code": "9609",
+  "field": "oversub_intl_mult",
+  "kept": 6.11,
+  "kept_src": "bloomberg:CP037 (desk paste 2026-08-20)",
+  "dropped": 5426.27,
+  "dropped_src": "hkex-pdf:allotment:table"
+ },
+ {
+  "code": "9611",
+  "field": "oversub_intl_mult",
+  "kept": 9.02,
+  "kept_src": "bloomberg:CP037 (desk paste 2026-08-20)",
+  "dropped": 0.64,
+  "dropped_src": "hkex-pdf:allotment:table"
+ },
+ {
+  "code": "9980",
+  "field": "oversub_intl_mult",
+  "kept": 15.6,
+  "kept_src": "bloomberg:CP037 (desk paste 2026-08-20)",
+  "dropped": 0.9987,
+  "dropped_src": "hkex-pdf:allotment:table"
+ },
+ {
+  "code": "2692",
+  "field": "oversub_intl_mult",
+  "kept": 13.4,
+  "kept_src": "bloomberg:CP037 (desk paste 2026-08-20)",
+  "dropped": 1536.76,
+  "dropped_src": "hkex-pdf:allotment:table"
+ },
+ {
+  "code": "1081",
+  "field": "oversub_intl_mult",
+  "kept": 10.68,
+  "kept_src": "bloomberg:CP037 (desk paste 2026-08-20)",
+  "dropped": 134.39,
+  "dropped_src": "hkex-pdf:allotment:table"
+ },
+ {
+  "code": "1688",
+  "field": "oversub_intl_mult",
+  "kept": 10.27,
+  "kept_src": "bloomberg:CP037 (desk paste 2026-08-20)",
+  "dropped": 96.16,
+  "dropped_src": "hkex-pdf:allotment:table"
+ },
+ {
+  "code": "9630",
+  "field": "oversub_intl_mult",
+  "kept": 27.22,
+  "kept_src": "bloomberg:CP037 (desk paste 2026-08-20)",
+  "dropped": 1.0,
+  "dropped_src": "hkex-pdf:allotment:table"
+ },
+ {
+  "code": "1377",
+  "field": "oversub_intl_mult",
+  "kept": 24.5,
+  "kept_src": "bloomberg:CP037 (desk paste 2026-08-20)",
+  "dropped": 354.64,
+  "dropped_src": "hkex-pdf:allotment:table"
+ },
+ {
+  "code": "1880",
+  "field": "cornerstone_investors",
+  "kept": [
+   "AMOREPACIFIC Group",
+   "Ownership Reform Fund Co., Ltd",
+   "China Structural Reform Fund Corporation Limited",
+   "COSCO Shipping (Hong Kong) Co., Limited",
+   "Hainan Free Trade Port Construction Investment Fund Co., Ltd",
+   "Luzhou Laojiao Co., Ltd",
+   "The Oaktree Funds",
+   "Rongshi International Holding Company Limited",
+   "Shanghai Airport Investment Corporation Limited"
+  ],
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": [
+   "China State-Owned Enterprise Mixed Ownership Reform Fund",
+   "China Structural Reform Fund",
+   "COSCO Shipping (Hong Kong)",
+   "Hainan Free Trade Port Construction Investment Fund",
+   "Oaktree",
+   "AMOREPACIFIC Group",
+   "Luzhou Laojiao",
+   "Shanghai Airport Investment"
+  ],
+  "dropped_src": "agent:deep_cornerstone_fill:research"
+ },
+ {
+  "code": "2191",
+  "field": "cornerstone_investors",
+  "kept": [
+   "China Orient Asset Management",
+   "CI Global Asset Management"
+  ],
+  "kept_src": "agent:deep_cornerstone_fill:research",
+  "dropped": [
+   "exercised in full) Top"
+  ],
+  "dropped_src": "hkex-pdf:deep(allotment)"
+ },
+ {
+  "code": "6613",
+  "field": "cornerstone_investors",
+  "kept": [
+   "Green Better",
+   "Olympic Country",
+   "UBS AM Singapore",
+   "Poly Platinum",
+   "Infini",
+   "Verition"
+  ],
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": [
+   "UBS Asset Management",
+   "LMR Partners",
+   "Oaktree",
+   "QRT",
+   "Xiaomi (via Green Better)",
+   "Shiyun Circuit",
+   "Infini Capital",
+   "Poly Platinum"
+  ],
+  "dropped_src": "agent:deep_cornerstone_fill:research"
+ },
+ {
+  "code": "6166",
+  "field": "cornerstone_investors",
+  "kept": [
+   "Barings",
+   "Morgan Stanley Investment Management",
+   "HCEP (HongShan)",
+   "Boyu Capital",
+   "Taikang Life",
+   "ICBC Wealth Management",
+   "Schonfeld",
+   "Dymon Asia"
+  ],
+  "kept_src": "agent:deep_cornerstone_fill:research",
+  "dropped": [
+   "MSIP",
+   "Barings",
+   "HCEP",
+   "CloudAlpha Capital",
+   "Cithara Fund",
+   "Martis",
+   "Tulip Fund, L.P",
+   "Taikang Life"
+  ],
+  "dropped_src": "hkex-pdf:deep(allotment)"
+ },
+ {
+  "code": "2579",
+  "field": "cornerstone_investors",
+  "kept": [
+   "Guizhou New Industrialization Fund",
+   "Baoda Investment",
+   "CALB",
+   "Lens Technology (HK)",
+   "Sunwoda",
+   "Gaoyi Asset Management",
+   "North Rock",
+   "Hunan Xingxiang Industry Fund"
+  ],
+  "kept_src": "agent:deep_cornerstone_fill:research",
+  "dropped": [
+   "Pulead OTC Swaps)",
+   "NR 1 SP",
+   "Gaoyi OTC Swaps)",
+   "Industry Parent Fund ”)",
+   "(“Lens Hong Kong ”)",
+   "(“Sunwoda Treasury ”)",
+   "Ultimate Client (Gaoyi)",
+   "Pointer Investment",
+   "NR 1 SP",
+   "Ltd. (“Perseverance ”),",
+   "Industry Parent Fund",
+   "Lens Hong Kong",
+   "Sunwoda Treasury",
+   "Huatai Capital Investment Limited (“ HTCI”)",
+   "Limited (“ SWHY International ”)"
+  ],
+  "dropped_src": "hkex-pdf:deep(allotment)"
+ },
+ {
+  "code": "2475",
+  "field": "cornerstone_investors",
+  "kept": [
+   "Foresight Funds",
+   "Taikang Life",
+   "associates HGI",
+   "Taibai",
+   "Prosper High"
+  ],
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": [
+   "Temasek",
+   "HHLR Advisors (Hillhouse)",
+   "GIC",
+   "Abu Dhabi Investment Authority",
+   "Fidelity International",
+   "Oaktree Capital",
+   "GF Fund",
+   "Bosera International"
+  ],
+  "dropped_src": "agent:deep_cornerstone_fill:research"
+ },
+ {
+  "code": "2476",
+  "field": "cornerstone_pct",
+  "kept": 33.7,
+  "kept_src": "hkex-pdf:deep(prospectus)",
+  "dropped": 44.7,
+  "dropped_src": "agent:deep_cornerstone_fill:press: https://www.stcn.com/article/detail/3777700.html"
+ },
+ {
+  "code": "2476",
+  "field": "cornerstone_investors",
+  "kept": [
+   "CPE Rosewood",
+   "Janchor Fund",
+   "New Alternative Limited",
+   "New Golden Future Limited",
+   "Deliante",
+   "Hong Kong Mason",
+   "MSIP",
+   "Foresight",
+   "HHLRA",
+   "Pinpoint",
+   "Sunshine Life",
+   "Tanwan",
+   "Tropical Terrain Limited",
+   "YR Asset Management",
+   "Huizhou Huilian"
+  ],
+  "kept_src": "hkex-pdf:deep(prospectus)",
+  "dropped": [
+   "Yunfeng Fund",
+   "HHLRA (Hillhouse)",
+   "Morgan Stanley (MSIP)",
+   "CPE",
+   "Deliante",
+   "Ye Guofu",
+   "Sunshine Life",
+   "Hong Kong Mayson"
+  ],
+  "dropped_src": "agent:deep_cornerstone_fill:research"
+ },
+ {
+  "code": "1688",
+  "field": "cornerstone_investors",
+  "kept": [
+   "GF Fund",
+   "Value Partners",
+   "KKR",
+   "Qube Master Fund",
+   "Morgan Stanley (MSIP)",
+   "Honor",
+   "Sunny Optical",
+   "Victory Giant Technology"
+  ],
+  "kept_src": "agent:deep_cornerstone_fill:research",
+  "dropped": [
+   "(“GF Fund Management ”)",
+   "ʮ̡ (“GF Fund HK ”, together with GF Fund Management, “GF Fund ”)",
+   "Kaide Global Investment Ltd ( “Kaide Global Investment ”)",
+   "Qube Research & Technologies Hong Kong Limited ( “Qube”)",
+   "Fund IV (collectively, “Ti-Capital Funds ”)",
+   "Value Partners Hong Kong Limited",
+   "Value Partners Limited",
+   "Morgan Stanley & Co. International plc ( “MSIP”)",
+   "Greenwoods ”)",
+   "Deliante Holdings Co., Ltd. ( “Deliante ”)",
+   "(“Sunny Optical Capital ”)",
+   "Seven Grand Managers, LLC ( “Seven Grand ”)",
+   "(“Da Cheng International ”)",
+   "GX ACCESS, “GRANITE ASIA ”)",
+   "Verition Fund Management LLC ( “Verition ”)"
+  ],
+  "dropped_src": "hkex-pdf:deep(allotment)"
+ },
+ {
+  "code": "6809",
+  "field": "cornerstone_investors",
+  "kept": [
+   "J.P. Morgan Asset Management",
+   "UBS Asset Management",
+   "Yunfeng Capital",
+   "Alibaba (Alisoft China)",
+   "Aspex Management",
+   "Janchor Partners",
+   "abrdn Asia",
+   "Huaqin Technology"
+  ],
+  "kept_src": "agent:deep_cornerstone_fill:research",
+  "dropped": [
+   "Aspex Master Fund (“Aspex”)",
+   "abrdn Asia Limited (“abrdn Asia”)",
+   "Hel Ved Master Fund (“Hel Ved”)",
+   "Qube Master Fund Ltd (“Qube”)",
+   "Alisoft China",
+   "Shareholder UBS AM",
+   "(\"Strong Media\")",
+   "Shareholder Barings",
+   "Shareholder Mirae Asset",
+   "(HK) Limited",
+   "Mirae Asset AGIC",
+   "Relationship Aspex",
+   "Janchor Partners Limited",
+   "CICC Financial Trading Limited (\"CICC FT\")"
+  ],
+  "dropped_src": "hkex-pdf:deep(allotment)"
+ },
+ {
+  "code": "3200",
+  "field": "cornerstone_investors",
+  "kept": [
+   "GIC",
+   "Schroders",
+   "HHLR Advisors (Hillhouse)",
+   "Morgan Stanley",
+   "Fullgoal Fund",
+   "Hongxing International",
+   "OmniVision HK",
+   "Industrial Bank WM"
+  ],
+  "kept_src": "agent:deep_cornerstone_fill:research",
+  "dropped": [
+   "際科技有限公司) (“Hongxing International”)",
+   "GIC Private Limited",
+   "Management (Hong Kong) Limited (“Schroders”)",
+   "HHLR Advisors, Ltd. (“HHLRA”)",
+   "Morgan Stanley & Co. International plc (“MSIP”)",
+   "Fullgoal",
+   "(HK) Limited (“ Fullgoal HK”) Note",
+   "Co., Ltd. (“Fullgoal Fund”) Note",
+   "with the Tibet Longrising OTC Swaps)",
+   "Co., Ltd. (“ICBC Wealth”)",
+   "Opportunities Fund SP (“Wind Sabre”)",
+   "(“OmniVision HK”)",
+   "GIC Private Limited",
+   "(Singapore) Ltd",
+   "Hillhouse Investment Management Limited"
+  ],
+  "dropped_src": "hkex-pdf:deep(allotment)"
+ },
+ {
+  "code": "6228",
+  "field": "cornerstone_investors",
+  "kept": [
+   "CNGR",
+   "CNGR",
+   "Shareholder GF Fund",
+   "Subtotal",
+   "Mr. Winato Kartono",
+   "Mr. Hardi Wijaya Liong",
+   "Mr. Edi Permadi",
+   "Mr. Alexander Ramlie",
+   "Subtotal",
+   "Ping An AM",
+   "Wanguo",
+   "Glencore AG",
+   "Mercuria",
+   "Trafigura Group",
+   "Intera Mining"
+  ],
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": [
+   "Ping An Asset Management",
+   "Wanguo Gold Group",
+   "Glencore",
+   "Trafigura",
+   "Mercuria",
+   "JCHX Mining",
+   "GF Fund",
+   "CNGR"
+  ],
+  "dropped_src": "agent:deep_cornerstone_fill:research"
+ },
+ {
+  "code": "9927",
+  "field": "cornerstone_investors",
+  "kept": [
+   "Shareholder Lin Yuan",
+   "GF Fund Management",
+   "Shareholder GF Fund",
+   "New China Asset Management",
+   "Sanhua (Hong Kong)",
+   "Zhink International",
+   "Gold Wings",
+   "Honour Goal Investments",
+   "Hichain Logistics",
+   "Schroder Investment Management (Singapore) Ltd",
+   "Mirae Securities",
+   "Mirae Asset Securities (HK) Limited",
+   "New Alternative",
+   "China Meidong",
+   "Ghisallo Capital Management (HK) Limited"
+  ],
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": [
+   "Chongqing Industrial Investment Mother Fund",
+   "Schroders",
+   "GF Fund",
+   "Lin Yuan Investment",
+   "China Post Wealth Management",
+   "Xingyu Co. (HK)",
+   "Ghisallo Capital",
+   "Jain Global"
+  ],
+  "dropped_src": "agent:deep_cornerstone_fill:research"
+ },
+ {
+  "code": "6031",
+  "field": "cornerstone_investors",
+  "kept": [
+   "Temasek",
+   "Hillhouse (HHLR)",
+   "BlackRock",
+   "UBS Asset Management",
+   "Infore Capital",
+   "Oaktree Capital",
+   "Jane Street",
+   "Weichai Power"
+  ],
+  "kept_src": "agent:deep_cornerstone_fill:research",
+  "dropped": [
+   "HHLR Advisors, Ltd. (“HHLRA”)",
+   "BlackRock Funds Note",
+   "Ghisallo Fund Master Ltd. (“Ghisallo”)",
+   "FengHe Asia Fund Ltd. (“Fenghe”)",
+   "Qube Master Fund Ltd (“QRT”)",
+   "Temasek",
+   "Fullerton Fund Management Co Ltd",
+   "Infore Holding (Hong Kong) Limited",
+   "UBS Asset Management Singapore",
+   "LMR Partners Ltd",
+   "BlackRock AM North Asia Ltd",
+   "WT Asset Management",
+   "Foresight Fund (Hong Kong) Limited",
+   "Perseverance",
+   "Greenwoods"
+  ],
+  "dropped_src": "hkex-pdf:deep(allotment)"
+ },
+ {
+  "code": "0699",
+  "field": "cornerstone_investors",
+  "kept": [
+   "JSC (chairman vehicle)",
+   "Ningbo Xinzhi",
+   "Jump Trading",
+   "Zhongding Capital Fund VIII",
+   "China Post Wealth Management",
+   "Vandi (CCB International)",
+   "Fidelidade (Fosun)"
+  ],
+  "kept_src": "agent:deep_cornerstone_fill:research",
+  "dropped": [
+   "Jun Sheng SP ( “JSC”)",
+   "( “Ningbo Xinzhi ”)",
+   "Ltd. ( “Jump Trading ”)",
+   "( “Eastern Bell Capital VIII ”)",
+   "Vandi Investments Limited ( “Vandi ”)",
+   "Seguros, S.A. ( “Fidelidade ”)",
+   "Jump Trading",
+   "PSBC Wealth",
+   "Vandi",
+   "Fidelidade",
+   "GF Global Capital Limited ( “GFGC”)",
+   "Ningbo Xinzhi",
+   "Jump Trading",
+   "Eastern Bell Capital VIII",
+   "PSBC Wealth"
+  ],
+  "dropped_src": "hkex-pdf:deep(allotment)"
+ },
+ {
+  "code": "0501",
+  "field": "cornerstone_investors",
+  "kept": [
+   "Boyu Capital",
+   "UBS Asset Management",
+   "UG Investment",
+   "Huaqin (HK)",
+   "OPPO (Tiantian Trading)",
+   "Dajia Life Insurance",
+   "China Post Wealth Management",
+   "Ghisallo"
+  ],
+  "kept_src": "agent:deep_cornerstone_fill:research",
+  "dropped": [
+   "Wildlife",
+   "UBS AM Singapore",
+   "Formosa Opportunity Limited",
+   "Ghisallo Fund Master Ltd",
+   "Dajia Life Insurance Co., Ltd",
+   "are issued) Top",
+   "Listing Top"
+  ],
+  "dropped_src": "hkex-pdf:deep(allotment)"
+ },
+ {
+  "code": "3986",
+  "field": "cornerstone_investors",
+  "kept": [
+   "New Alternative Limited",
+   "New Golden Future Limited",
+   "Limited (“3W Fund”)",
+   "Metazone Link (HK) Limited (“Metazone”)",
+   "Sky Royal Trading Limited",
+   "(“Green Better”)",
+   "SP (“Summit Ridge”)",
+   "DAMSIMF",
+   "Taikang Life",
+   "New Alternative Limited",
+   "New Golden Future Limited",
+   "STRONG MEDIA LIMITED",
+   "CloudAlpha Capital",
+   "LI Dongsheng",
+   "Sky Royal Trading Limited"
+  ],
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": [
+   "Yunfeng Capital",
+   "CPE",
+   "Greenwoods (Jinglin)",
+   "Huatai Zijin",
+   "Xiaomi (Green Better)",
+   "Taikang Life",
+   "ICBC Wealth Management",
+   "Huaqin (HK)"
+  ],
+  "dropped_src": "agent:deep_cornerstone_fill:research"
+ },
+ {
+  "code": "1768",
+  "field": "cornerstone_investors",
+  "kept": [
+   "undertakings Mr. Yan",
+   "Mr. Zhao",
+   "Changsha Xunmang",
+   "Changsha Jianmang",
+   "Changsha Lingmang",
+   "Changsha Zhongmang",
+   "Shanghai Bird Nest",
+   "Yichun Yikouniao",
+   "HongShan Hanchen",
+   "Gaorong LKZN",
+   "Discounter Seed",
+   "HongShan Yaheng",
+   "BA HM",
+   "Shanghai Yihai",
+   "Xiamen Black Ant"
+  ],
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": [
+   "Tencent (Huang River Investment)",
+   "Temasek",
+   "BlackRock",
+   "Fidelity",
+   "E Fund",
+   "Taikang Life"
+  ],
+  "dropped_src": "agent:deep_cornerstone_fill:research"
+ },
+ {
+  "code": "0300",
+  "field": "cornerstone_investors",
+  "kept": [
+   "Holdings (Hong Kong) Limited",
+   "(Singapore) Ltd",
+   "Corporation Limited",
+   "Worldwide Limited",
+   "Splendor Achieve Limited",
+   "Supercluster Universe Limited",
+   "HCEP Master Fund",
+   "CPE Investment XVI Limited",
+   "Dajia Life Insurance Co., Ltd",
+   "Metazone Link (HK) Limited",
+   "Enreal Asset Management Limited",
+   "Vanguard Focus Limited",
+   "PSBC Wealth Management",
+   "Jump Trading Pacific Pte. Ltd",
+   "Opportunities Master Fund, L.P"
+  ],
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": [
+   "COSCO Shipping Holdings (HK)",
+   "UBS Asset Management (Singapore)",
+   "China Structural Reform Fund II",
+   "Golden Link Worldwide (BYD)",
+   "China Life Insurance",
+   "CPE Investment XVI",
+   "China Post Wealth Management",
+   "Jump Trading Pacific"
+  ],
+  "dropped_src": "agent:deep_cornerstone_fill:research"
+ },
+ {
+  "code": "2260",
+  "field": "cornerstone_investors",
+  "kept": [
+   "Mr. Gong Chaohui",
+   "Mr. Chen Xiong",
+   "Mr. Gong",
+   "Mr. Chen",
+   "Ms. Shen",
+   "Mr. Zhou"
+  ],
+  "kept_src": "agent:deep_cornerstone_reparse:prospectus:cornerstone section re-parse",
+  "dropped": [
+   "Scheme) Top"
+  ],
+  "dropped_src": "hkex-pdf:deep(allotment)"
+ },
+ {
+  "code": "2260",
+  "field": "cornerstone_n",
+  "kept": 1,
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": 6,
+  "dropped_src": "agent:deep_cornerstone_reparse:research"
+ },
+ {
+  "code": "2613",
+  "field": "cornerstone_investors",
+  "kept": [
+   "Mr. Tiago Braz",
+   "Fund SPC",
+   "Harvest International"
+  ],
+  "kept_src": "agent:deep_cornerstone_reparse:prospectus:cornerstone section re-parse",
+  "dropped": [
+   "Subtotal",
+   "upon Listing Top",
+   "upon Listing Top"
+  ],
+  "dropped_src": "hkex-pdf:deep(allotment)"
+ },
+ {
+  "code": "0325",
+  "field": "cornerstone_investors",
+  "kept": [
+   "Greenwoods Asset Management",
+   "Limited UBS Asset Management",
+   "Greenwoods Asset Management Hong Kong Limited",
+   "Gaintex Investment Limited",
+   "Shareholder Plus Force Enterprise Limited",
+   "Merron Ventures Limited",
+   "Huatai Capital Investment Limited",
+   "Hong Kong Limited",
+   "JYCP Holding Limited",
+   "JYMB Holding Limited",
+   "Beihai Kmind Management Consulting Limited",
+   "BlueCo Investment L.P",
+   "Yunfeng Blocks Management Limited",
+   "Hongshan Limited",
+   "Lenient Investment L.P"
+  ],
+  "kept_src": "agent:deep_cornerstone_reparse:prospectus:cornerstone section re-parse",
+  "dropped": [
+   "Subtotal",
+   "full) Top"
+  ],
+  "dropped_src": "hkex-pdf:deep(allotment)"
+ },
+ {
+  "code": "0325",
+  "field": "cornerstone_n",
+  "kept": 2,
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": 15,
+  "dropped_src": "agent:deep_cornerstone_reparse:research"
+ },
+ {
+  "code": "6693",
+  "field": "cornerstone_investors",
+  "kept": [
+   "International Mining Company Limited",
+   "Sparky International Company Limited"
+  ],
+  "kept_src": "agent:deep_cornerstone_reparse:prospectus:cornerstone section re-parse",
+  "dropped": [
+   "Subtotal",
+   "issued) Top",
+   "issued) Top"
+  ],
+  "dropped_src": "hkex-pdf:deep(allotment)"
+ },
+ {
+  "code": "6693",
+  "field": "cornerstone_n",
+  "kept": 3,
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": 2,
+  "dropped_src": "agent:deep_cornerstone_reparse:research"
+ },
+ {
+  "code": "1333",
+  "field": "cornerstone_investors",
+  "kept": [
+   "Changfeng Growth Equity Fund"
+  ],
+  "kept_src": "agent:deep_cornerstone_reparse:prospectus:cornerstone section re-parse",
+  "dropped": [
+   "upon Listing Top"
+  ],
+  "dropped_src": "hkex-pdf:deep(allotment)"
+ },
+ {
+  "code": "3288",
+  "field": "cornerstone_investors",
+  "kept": [
+   "GIC Private Limited",
+   "China Pinnacle Equity Management Limited",
+   "Supercluster Universe Limited",
+   "Boyu Capital Management Singapore Pte. Ltd",
+   "CICC Financial Trading Limited",
+   "GF Global Capital Limited",
+   "CITIC Securities International Capital Management Limited",
+   "Value Partners Hong Kong Limited",
+   "Huatai Capital Investment Limited",
+   "Shenzhen Victory Investment Fund Management Company Limited"
+  ],
+  "kept_src": "agent:deep_cornerstone_reparse:prospectus:cornerstone section re-parse",
+  "dropped": [
+   "HHLRA",
+   "Shareholder RBC",
+   "UBS AM Singapore"
+  ],
+  "dropped_src": "hkex-pdf:deep(allotment)"
+ },
+ {
+  "code": "3288",
+  "field": "cornerstone_n",
+  "kept": 3,
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": 10,
+  "dropped_src": "agent:deep_cornerstone_reparse:research"
+ },
+ {
+  "code": "2050",
+  "field": "cornerstone_investors",
+  "kept": [
+   "Schroders",
+   "HK Greenwoods",
+   "Greenwoods OTC Swaps)",
+   "Green Better",
+   "Verition",
+   "Capital VIII",
+   "Mirae Securities",
+   "ICBC Wealth",
+   "PSBC Wealth",
+   "Taikang Life",
+   "Mega Prime",
+   "Wind Sabre",
+   "Martis Fund",
+   "MSIP",
+   "Jane Street"
+  ],
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": [
+   "China International Capital Corporation Hong Kong Securities Limited",
+   "Huatai Financial Holdings Limited",
+   "GIC Private Limited",
+   ") Green Better Limited",
+   "Verition Multi- Strategy Master Fund Ltd",
+   "Mirae Securities",
+   "Mega Prime Development Limited",
+   "Wind Sabre Opportunities Fund",
+   "Martis Fund",
+   "Jane Street Asia Trading Limited",
+   "Eastern Bell Capital"
+  ],
+  "dropped_src": "agent:deep_cornerstone_reparse:prospectus:cornerstone section re-parse"
+ },
+ {
+  "code": "2050",
+  "field": "cornerstone_n",
+  "kept": 17,
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": 11,
+  "dropped_src": "agent:deep_cornerstone_reparse:research"
+ },
+ {
+  "code": "6168",
+  "field": "cornerstone_investors",
+  "kept": [
+   "CICC Financial Trading Limited",
+   "Jump Trading Pacific Pte. Ltd",
+   "Seraphim Advantage Inc",
+   "GF International Investment Management Limited",
+   "GF Global Capital Limited",
+   "CITIC Securities International Capital Management Limited",
+   "Trading Pacific Pte. Ltd"
+  ],
+  "kept_src": "agent:deep_cornerstone_reparse:prospectus:cornerstone section re-parse",
+  "dropped": [
+   "Subtotal",
+   "Subtotal",
+   "Subtotal",
+   "Subtotal",
+   "are issued) Top"
+  ],
+  "dropped_src": "hkex-pdf:deep(allotment)"
+ },
+ {
+  "code": "6168",
+  "field": "cornerstone_n",
+  "kept": 5,
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": 7,
+  "dropped_src": "agent:deep_cornerstone_reparse:research"
+ },
+ {
+  "code": "0668",
+  "field": "sponsors",
+  "kept": [
+   "China International Capital Corporation Hong Kong Securities Limited",
+   "Goldman Sachs (Asia) L.L.C.",
+   "J.P. Morgan Securities (Far East) Limited"
+  ],
+  "kept_src": "press:HKEX final prospectus 2026-06-23 (2026062300037.pdf) printed p.68 'Joint Sponsors (in alphabetical order)': CICC HK Securities, Goldman Sachs (Asia) L.L.C., J.P. Morgan Securities (FAR EAST) Limited — the (Asia Pacific) JPM entity one row below is an OC/bookrunner, NOT the sponsor. Prior parse had read p.70 instead (Compliance Adviser Rainbow Capital, Receiving Bank ICBC Asia). | HKEX allotment results 2026-06-30 (2026063003481.pdf): 582,909,162 shares upon Listing before any exercise of the Over-allotment Option (536,276,362 A + 46,632,800 H). Greenshoe partially exercised 2026-07-26 (+3,443,300 H) -> 586,352,713, AFTER the listing date. Prospectus statistics state HK$72,013.1m total cap on the mixed basis (A at the RMB109.22 5-day average); the book's convention is all share classes x the H offer price.",
+  "dropped": [
+   "CICC",
+   "Goldman Sachs",
+   "J.P. Morgan"
+  ],
+  "dropped_src": "agent:deep_sponsors_fill:https://news.futunn.com/en/post/74578713/anker-innovations-300866-has-passed-the-hong-kong-ipo-hearing"
+ },
+ {
+  "code": "0699",
+  "field": "sponsors",
+  "kept": [
+   "China International Capital Corporation Hong Kong Securities Limited",
+   "UBS Securities Hong Kong Limited"
+  ],
+  "kept_src": "press:cnstock 2025-11-07 + 36kr: 股份总数1,574,035,563 | SPONSORS: HKEX allotment announcement 2025-11-05 (2025110502028.pdf): cover 'Joint Sponsors … (in alphabetical order)' carries TWO logos, CICC + UBS; body p.1/p.22 says 'the Joint Sponsors' (plural); underwriters' counsel Paul Hastings names both as joint sponsors. Prior parse found UBS alone.",
+  "dropped": [
+   "CICC",
+   "UBS"
+  ],
+  "dropped_src": "agent:deep_sponsors_fill:https://www.paulhastings.com/news/paul-hastings-advises-cicc-ubs-and-other-underwriters-in-joyson-electronics-usd-437-million-hong-kong-ipo-and-global-offering"
+ },
+ {
+  "code": "9880",
+  "field": "sponsors",
+  "kept": [
+   "Guotai Junan Capital Limited"
+  ],
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": [
+   "Guotai Junan International"
+  ],
+  "dropped_src": "agent:deep_sponsors_fill:https://news.qq.com/rain/a/20230826A042S600"
+ },
+ {
+  "code": "2026",
+  "field": "sponsors",
+  "kept": [
+   "Goldman Sachs (Asia) L.L.C",
+   "Merrill Lynch (Asia Pacific) Limited",
+   "Deutsche Securities Asia Limited",
+   "Huatai Financial Holdings (Hong Kong) Limited"
+  ],
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": [
+   "Goldman Sachs",
+   "BofA Securities",
+   "Deutsche Bank",
+   "Huatai International"
+  ],
+  "dropped_src": "agent:deep_sponsors_fill:https://finance.cnr.cn/ycbd/20251021/t20251021_527403335.shtml"
+ },
+ {
+  "code": "9973",
+  "field": "sponsors",
+  "kept": [
+   "China International Capital Corporation Hong Kong Securities Limited",
+   "Huatai Financial Holdings (Hong Kong) Limited",
+   "GF Capital (Hong Kong) Limited"
+  ],
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": [
+   "CICC",
+   "Huatai International",
+   "GF Securities (Hong Kong)"
+  ],
+  "dropped_src": "agent:deep_sponsors_fill:https://finance.sina.com.cn/stock/stockzmt/2025-09-17/doc-infqurup4936034.shtml"
+ },
+ {
+  "code": "1880",
+  "field": "cornerstone_investors",
+  "kept": [
+   "AMOREPACIFIC Group",
+   "Ownership Reform Fund Co., Ltd",
+   "China Structural Reform Fund Corporation Limited",
+   "COSCO Shipping (Hong Kong) Co., Limited",
+   "Hainan Free Trade Port Construction Investment Fund Co., Ltd",
+   "Luzhou Laojiao Co., Ltd",
+   "The Oaktree Funds",
+   "Rongshi International Holding Company Limited",
+   "Shanghai Airport Investment Corporation Limited"
+  ],
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": [
+   "China State-Owned Enterprise Mixed Ownership Reform Fund",
+   "China Structural Reform Fund",
+   "COSCO Shipping (Hong Kong)",
+   "Hainan Free Trade Port Construction Investment Fund",
+   "Oaktree",
+   "AMOREPACIFIC Group",
+   "Luzhou Laojiao",
+   "Shanghai Airport Investment"
+  ],
+  "dropped_src": "agent:deep_cornerstone_fill:press research"
+ },
+ {
+  "code": "6613",
+  "field": "cornerstone_investors",
+  "kept": [
+   "Green Better",
+   "Olympic Country",
+   "UBS AM Singapore",
+   "Poly Platinum",
+   "Infini",
+   "Verition"
+  ],
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": [
+   "UBS Asset Management",
+   "LMR Partners",
+   "Oaktree",
+   "QRT",
+   "Xiaomi (via Green Better)",
+   "Shiyun Circuit",
+   "Infini Capital",
+   "Poly Platinum"
+  ],
+  "dropped_src": "agent:deep_cornerstone_fill:press research"
+ },
+ {
+  "code": "2475",
+  "field": "cornerstone_investors",
+  "kept": [
+   "Foresight Funds",
+   "Taikang Life",
+   "associates HGI",
+   "Taibai",
+   "Prosper High"
+  ],
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": [
+   "Temasek",
+   "HHLR Advisors (Hillhouse)",
+   "GIC",
+   "Abu Dhabi Investment Authority",
+   "Fidelity International",
+   "Oaktree Capital",
+   "GF Fund",
+   "Bosera International"
+  ],
+  "dropped_src": "agent:deep_cornerstone_fill:press research"
+ },
+ {
+  "code": "2476",
+  "field": "cornerstone_pct",
+  "kept": 33.7,
+  "kept_src": "hkex-pdf:deep(prospectus)",
+  "dropped": 44.7,
+  "dropped_src": "agent:deep_cornerstone_fill:press: https://www.stcn.com/article/detail/3777700.html"
+ },
+ {
+  "code": "2476",
+  "field": "cornerstone_investors",
+  "kept": [
+   "CPE Rosewood",
+   "Janchor Fund",
+   "New Alternative Limited",
+   "New Golden Future Limited",
+   "Deliante",
+   "Hong Kong Mason",
+   "MSIP",
+   "Foresight",
+   "HHLRA",
+   "Pinpoint",
+   "Sunshine Life",
+   "Tanwan",
+   "Tropical Terrain Limited",
+   "YR Asset Management",
+   "Huizhou Huilian"
+  ],
+  "kept_src": "hkex-pdf:deep(prospectus)",
+  "dropped": [
+   "Yunfeng Fund",
+   "HHLRA (Hillhouse)",
+   "Morgan Stanley (MSIP)",
+   "CPE",
+   "Deliante",
+   "Ye Guofu",
+   "Sunshine Life",
+   "Hong Kong Mayson"
+  ],
+  "dropped_src": "agent:deep_cornerstone_fill:press research"
+ },
+ {
+  "code": "6228",
+  "field": "cornerstone_investors",
+  "kept": [
+   "CNGR",
+   "CNGR",
+   "Shareholder GF Fund",
+   "Subtotal",
+   "Mr. Winato Kartono",
+   "Mr. Hardi Wijaya Liong",
+   "Mr. Edi Permadi",
+   "Mr. Alexander Ramlie",
+   "Subtotal",
+   "Ping An AM",
+   "Wanguo",
+   "Glencore AG",
+   "Mercuria",
+   "Trafigura Group",
+   "Intera Mining"
+  ],
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": [
+   "Ping An Asset Management",
+   "Wanguo Gold Group",
+   "Glencore",
+   "Trafigura",
+   "Mercuria",
+   "JCHX Mining",
+   "GF Fund",
+   "CNGR"
+  ],
+  "dropped_src": "agent:deep_cornerstone_fill:press research"
+ },
+ {
+  "code": "9927",
+  "field": "cornerstone_investors",
+  "kept": [
+   "Shareholder Lin Yuan",
+   "GF Fund Management",
+   "Shareholder GF Fund",
+   "New China Asset Management",
+   "Sanhua (Hong Kong)",
+   "Zhink International",
+   "Gold Wings",
+   "Honour Goal Investments",
+   "Hichain Logistics",
+   "Schroder Investment Management (Singapore) Ltd",
+   "Mirae Securities",
+   "Mirae Asset Securities (HK) Limited",
+   "New Alternative",
+   "China Meidong",
+   "Ghisallo Capital Management (HK) Limited"
+  ],
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": [
+   "Chongqing Industrial Investment Mother Fund",
+   "Schroders",
+   "GF Fund",
+   "Lin Yuan Investment",
+   "China Post Wealth Management",
+   "Xingyu Co. (HK)",
+   "Ghisallo Capital",
+   "Jain Global"
+  ],
+  "dropped_src": "agent:deep_cornerstone_fill:press research"
+ },
+ {
+  "code": "3986",
+  "field": "cornerstone_investors",
+  "kept": [
+   "New Alternative Limited",
+   "New Golden Future Limited",
+   "Limited (“3W Fund”)",
+   "Metazone Link (HK) Limited (“Metazone”)",
+   "Sky Royal Trading Limited",
+   "(“Green Better”)",
+   "SP (“Summit Ridge”)",
+   "DAMSIMF",
+   "Taikang Life",
+   "New Alternative Limited",
+   "New Golden Future Limited",
+   "STRONG MEDIA LIMITED",
+   "CloudAlpha Capital",
+   "LI Dongsheng",
+   "Sky Royal Trading Limited"
+  ],
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": [
+   "Yunfeng Capital",
+   "CPE",
+   "Greenwoods (Jinglin)",
+   "Huatai Zijin",
+   "Xiaomi (Green Better)",
+   "Taikang Life",
+   "ICBC Wealth Management",
+   "Huaqin (HK)"
+  ],
+  "dropped_src": "agent:deep_cornerstone_fill:press research"
+ },
+ {
+  "code": "1768",
+  "field": "cornerstone_investors",
+  "kept": [
+   "undertakings Mr. Yan",
+   "Mr. Zhao",
+   "Changsha Xunmang",
+   "Changsha Jianmang",
+   "Changsha Lingmang",
+   "Changsha Zhongmang",
+   "Shanghai Bird Nest",
+   "Yichun Yikouniao",
+   "HongShan Hanchen",
+   "Gaorong LKZN",
+   "Discounter Seed",
+   "HongShan Yaheng",
+   "BA HM",
+   "Shanghai Yihai",
+   "Xiamen Black Ant"
+  ],
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": [
+   "Tencent (Huang River Investment)",
+   "Temasek",
+   "BlackRock",
+   "Fidelity",
+   "E Fund",
+   "Taikang Life"
+  ],
+  "dropped_src": "agent:deep_cornerstone_fill:press research"
+ },
+ {
+  "code": "0300",
+  "field": "cornerstone_investors",
+  "kept": [
+   "Holdings (Hong Kong) Limited",
+   "(Singapore) Ltd",
+   "Corporation Limited",
+   "Worldwide Limited",
+   "Splendor Achieve Limited",
+   "Supercluster Universe Limited",
+   "HCEP Master Fund",
+   "CPE Investment XVI Limited",
+   "Dajia Life Insurance Co., Ltd",
+   "Metazone Link (HK) Limited",
+   "Enreal Asset Management Limited",
+   "Vanguard Focus Limited",
+   "PSBC Wealth Management",
+   "Jump Trading Pacific Pte. Ltd",
+   "Opportunities Master Fund, L.P"
+  ],
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": [
+   "COSCO Shipping Holdings (HK)",
+   "UBS Asset Management (Singapore)",
+   "China Structural Reform Fund II",
+   "Golden Link Worldwide (BYD)",
+   "China Life Insurance",
+   "CPE Investment XVI",
+   "China Post Wealth Management",
+   "Jump Trading Pacific"
+  ],
+  "dropped_src": "agent:deep_cornerstone_fill:press research"
+ },
+ {
+  "code": "0668",
+  "field": "sponsors",
+  "kept": [
+   "China International Capital Corporation Hong Kong Securities Limited",
+   "Goldman Sachs (Asia) L.L.C.",
+   "J.P. Morgan Securities (Far East) Limited"
+  ],
+  "kept_src": "press:HKEX final prospectus 2026-06-23 (2026062300037.pdf) printed p.68 'Joint Sponsors (in alphabetical order)': CICC HK Securities, Goldman Sachs (Asia) L.L.C., J.P. Morgan Securities (FAR EAST) Limited — the (Asia Pacific) JPM entity one row below is an OC/bookrunner, NOT the sponsor. Prior parse had read p.70 instead (Compliance Adviser Rainbow Capital, Receiving Bank ICBC Asia). | HKEX allotment results 2026-06-30 (2026063003481.pdf): 582,909,162 shares upon Listing before any exercise of the Over-allotment Option (536,276,362 A + 46,632,800 H). Greenshoe partially exercised 2026-07-26 (+3,443,300 H) -> 586,352,713, AFTER the listing date. Prospectus statistics state HK$72,013.1m total cap on the mixed basis (A at the RMB109.22 5-day average); the book's convention is all share classes x the H offer price.",
+  "dropped": [
+   "CICC",
+   "Goldman Sachs",
+   "J.P. Morgan"
+  ],
+  "dropped_src": "agent:deep_sponsors_fill:https://news.futunn.com/en/post/74578713/anker-innovations-300866-has-passed-the-hong"
+ },
+ {
+  "code": "0699",
+  "field": "sponsors",
+  "kept": [
+   "China International Capital Corporation Hong Kong Securities Limited",
+   "UBS Securities Hong Kong Limited"
+  ],
+  "kept_src": "press:cnstock 2025-11-07 + 36kr: 股份总数1,574,035,563 | SPONSORS: HKEX allotment announcement 2025-11-05 (2025110502028.pdf): cover 'Joint Sponsors … (in alphabetical order)' carries TWO logos, CICC + UBS; body p.1/p.22 says 'the Joint Sponsors' (plural); underwriters' counsel Paul Hastings names both as joint sponsors. Prior parse found UBS alone.",
+  "dropped": [
+   "CICC",
+   "UBS"
+  ],
+  "dropped_src": "agent:deep_sponsors_fill:https://www.paulhastings.com/news/paul-hastings-advises-cicc-ubs-and-other-underwrite"
+ },
+ {
+  "code": "9880",
+  "field": "sponsors",
+  "kept": [
+   "Guotai Junan Capital Limited"
+  ],
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": [
+   "Guotai Junan International"
+  ],
+  "dropped_src": "agent:deep_sponsors_fill:https://news.qq.com/rain/a/20230826A042S600"
+ },
+ {
+  "code": "2026",
+  "field": "sponsors",
+  "kept": [
+   "Goldman Sachs (Asia) L.L.C",
+   "Merrill Lynch (Asia Pacific) Limited",
+   "Deutsche Securities Asia Limited",
+   "Huatai Financial Holdings (Hong Kong) Limited"
+  ],
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": [
+   "Goldman Sachs",
+   "BofA Securities",
+   "Deutsche Bank",
+   "Huatai International"
+  ],
+  "dropped_src": "agent:deep_sponsors_fill:https://finance.cnr.cn/ycbd/20251021/t20251021_527403335.shtml"
+ },
+ {
+  "code": "9973",
+  "field": "sponsors",
+  "kept": [
+   "China International Capital Corporation Hong Kong Securities Limited",
+   "Huatai Financial Holdings (Hong Kong) Limited",
+   "GF Capital (Hong Kong) Limited"
+  ],
+  "kept_src": "hkex-pdf:deep(allotment)",
+  "dropped": [
+   "CICC",
+   "Huatai International",
+   "GF Securities (Hong Kong)"
+  ],
+  "dropped_src": "agent:deep_sponsors_fill:https://finance.sina.com.cn/stock/stockzmt/2025-09-17/doc-infqurup4936034.shtml"
+ }
+]

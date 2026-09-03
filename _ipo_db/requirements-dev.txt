@@ -1,0 +1,3 @@
+# verification-only extras (NOT needed to run the pipeline or open the outputs)
+formulas>=1.2     # evaluates the Excel formula chain in tests
+playwright>=1.40  # offline render check of the dashboard

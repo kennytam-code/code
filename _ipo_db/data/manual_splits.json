@@ -1,0 +1,17 @@
+{
+ "_note": "Corporate actions the price sources cannot see cleanly: Yahoo's split rows are discarded whenever present (they get double-recorded — the Zhida lesson), and raw Tencent prints carry subdivisions unadjusted. Each entry multiplies raw-print bars ON/AFTER the effective date by the ratio, restoring offer-scale continuity. Evidence required for every entry; append-only.",
+ "3881": [
+  {
+   "date": "2026-03-02",
+   "ratio": 10.0,
+   "src": "HKEX 2026-02-10 (2026021000932.pdf): the 1-into-10 subdivision's effective date was POSTPONED from 2026-02-20 to 2026-03-02 (Mainland holiday schedule delayed certificate exchange); effective date and dealings-start are the SAME day, 2026-03-02. Ratio per 2026-01-27 (2026012701499.pdf): 43,789,310 -> 437,893,100 shares. Independently confirmed by the monthly returns (Feb: 42.4m sh @RMB1; Mar: 424.4m @RMB0.1) and by the kline series (last old-scale print 2026-02-27)."
+  }
+ ],
+ "2477": [
+  {
+   "date": "2026-04-21",
+   "ratio": 4.0,
+   "src": "HKEX 2026-03-25 (2026032501192.pdf): each HK$0.005 share subdivided into FOUR of HK$0.00125; effective + dealings 2026-04-21 9am. Raw prints re-scale 27.82 -> 6.97 open; detect_splits missed it because the stock crashed the same session (close-to-close ~/5.5). Terminal verify 2026-08-26: BBG basis = /4 exactly."
+  }
+ ]
+}

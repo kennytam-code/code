@@ -1,0 +1,89 @@
+{
+ "note": "Official HKEX statistics, parsed directly from HKEX Annual Market Statistics PDFs (scrape/pdf_cache/s2023.pdf, s2024.pdf). Years without a verified figure are null — NOT estimated. 'new_listings_total' counts all newly listed companies (Main Board + GEM, including listings by introduction and GEM transfers); 'main_board_*' rows are the Main Board subset the same report publishes. The database's inclusion rule (IPOs with a public offering only) is narrower than both, so book counts should sit BELOW these numbers.",
+ "sources": {
+  "s2023": "https://www.hkex.com.hk/-/media/HKEX-Market/Market-Data/Statistics/Consolidated-Reports/Annual-Market-Statistics/FY_2023-Annual-Market-Stat_Eng.pdf",
+  "s2024": "https://www.hkex.com.hk/-/media/HKEX-Market/Market-Data/Statistics/Consolidated-Reports/Annual-Market-Statistics/2024FY-Ann-Mkt-Stat_eng.pdf",
+  "FB_2021": "https://www.hkex.com.hk/-/media/HKEX-Market/Market-Data/Statistics/Consolidated-Reports/HKEX-Fact-Book/HKEX-Fact-Book-2021/FB_2021.pdf"
+ },
+ "years": {
+  "2021": {
+   "new_listings_total": null,
+   "equity_funds_raised_ipo_hkdm": 331340,
+   "main_board_new_listings": 97,
+   "main_board_ipo_funds_hkdm": 331280,
+   "notes": "HKEX Fact Book 2021 funds-raised table: IPO funds 2020 HK$400.14bn -> 2021 HK$331.34bn (-17.19%), Main Board 399.58 -> 331.28; newly listed Main Board companies 146 -> 97 (-33.56%). Both year-on-year deltas were recomputed from the two columns to confirm the column order. All-market listing count not separated in the same table, so left null.",
+   "source": "FB_2021"
+  },
+  "2022": {
+   "new_listings_total": 90,
+   "equity_funds_raised_ipo_hkdm": 104622.4,
+   "main_board_new_listings": 75,
+   "main_board_ipo_funds_hkdm": 96300,
+   "notes": "Prior-year column of the FY2023 report.",
+   "source": "s2023"
+  },
+  "2023": {
+   "new_listings_total": 73,
+   "equity_funds_raised_ipo_hkdm": 46294.9,
+   "main_board_new_listings": 68,
+   "main_board_ipo_funds_hkdm": 41600,
+   "notes": "FY2023 report; the FY2024 report restates IPO funds as 46,321.2 (immaterial revision).",
+   "source": "s2023"
+  },
+  "2024": {
+   "new_listings_total": 71,
+   "equity_funds_raised_ipo_hkdm": 87477.8,
+   "main_board_new_listings": 62,
+   "main_board_ipo_funds_hkdm": 83900,
+   "notes": "FY2024 report.",
+   "source": "s2024"
+  },
+  "2025": {
+   "new_listings_total": null,
+   "equity_funds_raised_ipo_hkdm": null,
+   "main_board_new_listings": null,
+   "main_board_ipo_funds_hkdm": null,
+   "notes": "FY2025 annual-statistics PDF not resolvable at the published URL patterns during the build; left null rather than estimated."
+  },
+  "2026": {
+   "new_listings_total": null,
+   "equity_funds_raised_ipo_hkdm": null,
+   "main_board_new_listings": null,
+   "main_board_ipo_funds_hkdm": null,
+   "notes": "Year to date (as of 2026-08-16) — no annual publication exists yet."
+  }
+ },
+ "reference_deals": [
+  {
+   "code": "1024",
+   "name": "Kuaishou",
+   "final_price": 115.0
+  },
+  {
+   "code": "3750",
+   "name": "CATL (H)",
+   "final_price": 263.0
+  },
+  {
+   "code": "0300",
+   "name": "Midea Group (H)",
+   "final_price": 54.8
+  },
+  {
+   "code": "9660",
+   "name": "Horizon Robotics",
+   "final_price": 3.99
+  },
+  {
+   "code": "2097",
+   "name": "Mixue Group",
+   "final_price": 202.5
+  },
+  {
+   "code": "9696",
+   "name": "Tianqi Lithium (H)",
+   "final_price": 82.0
+  }
+ ],
+ "reference_deals_note": "Offer prices as widely reported in market coverage at the time of each deal. They are INDEPENDENT of this pipeline's PDF extraction and exist to prove the extractor reproduces known pricing. Treat as a regression fixture, not as a citable source — confirm on the terminal."
+}

@@ -1,0 +1,36 @@
+HK IPOs — week of 7 Sep: Medcaptain Medical Technology, Shenzhen Longsys Electronics, Excelland Robotics (Wuxi) Co. Ltd.
+========================================================================================================================
+
+Team,
+
+Coming up:
+  Medcaptain Medical Technology Co., Ltd. (2041) — Healthcare / Medical devices
+      range tbc; books close 09/02, lists 7 Sep
+  Shenzhen Longsys Electronics Co., Ltd. (9976) — Semiconductors & Semiconductor Equipment
+      max HK$240.60; books close 09/03, lists 8 Sep
+  Excelland Robotics (Wuxi) Co. Ltd. (3231) — Tech/AI / Robotics & autonomous driving
+      HK$14.45–19.55; cornerstones ~4% of the offer; books close 09/04, lists 9 Sep
+
+My notes and valuation work on Medcaptain Medical Technology Co., Ltd., Shenzhen Longsys Electronics Co., Ltd., Excelland Robotics (Wuxi) Co. Ltd. are attached.
+
+Listed in the last 2 weeks:
+
+  SHEIN-W (0625) — listed 1 Sep at HK$48.56, HK$13,596m raised
+      Book: public 5.6x, institutional 2.6x; cornerstones 22% of the offer
+      Tape: opened +0.0%, day-1 close -0.1%, now -5.3% vs offer (px 09/02)
+      Shoe: Goldman Sachs runs the shoe — support can run until Sat 26 Sep (22d left)
+      Wires ran 'plunges 10%' and 'ends flat' on the same day and both were true: it traded to 43.72 in the first minutes and was walked back to close one tick under issue, all inside a live Goldman mandate. Watch whether the bid persists into the shoe deadline.
+
+  MECH-MIND ROBOT (9615) — listed 1 Sep at HK$101.70, HK$2,353m raised
+      Book: public 3,835x, institutional 13.4x; cornerstones 62% of the offer
+      Tape: opened +0.0%, day-1 close -1.9%, now -3.4% vs offer (px 09/02)
+      Shoe: CLSA Limited runs the shoe — support can run until Sat 26 Sep (22d left)
+      A 3,835x retail book and it still broke issue — priced at the cap, 62% of the offer locked in cornerstones, so the free float is tiny and the tape is thin. Local press flagged the break the same evening.
+
+  INGENIC (3223) — listed 25 Aug at HK$100.00, HK$3,129m raised
+      Book: public 927x, institutional 8.4x; cornerstones 48% of the offer
+      Tape: opened +0.0%, day-1 close +0.0%, now +1.5% vs offer (px 08/31)
+      Shoe: Guotai Junan Securities runs the shoe — support can run until Sat 19 Sep (15d left)
+      Priced at 100.00 under the 102.80 cap on a 927x book, then the debut printed open = close = offer to the cent, low 97.10 — a stabiliser pinning the issue price, not a market finding it. Still worth respecting until the shoe dies.
+
+Shout if you want the full workbook cut on any of these.

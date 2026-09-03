@@ -1,0 +1,12 @@
+{
+  "_note": "Hand-written colour for the weekly email — one or two sentences per code, appended by the desk, shown under that deal's table. make_weekly_email.py never invents commentary; a code missing here just gets its numbers. Keep lines factual and sourced.",
+  "0625": {
+    "colour": "Wires ran 'plunges 10%' and 'ends flat' on the same day and both were true: it traded to 43.72 in the first minutes and was walked back to close one tick under issue, all inside a live Goldman mandate. Watch whether the bid persists into the shoe deadline."
+  },
+  "9615": {
+    "colour": "A 3,835x retail book and it still broke issue — priced at the cap, 62% of the offer locked in cornerstones, so the free float is tiny and the tape is thin. Local press flagged the break the same evening."
+  },
+  "3223": {
+    "colour": "Priced at 100.00 under the 102.80 cap on a 927x book, then the debut printed open = close = offer to the cent, low 97.10 — a stabiliser pinning the issue price, not a market finding it. Still worth respecting until the shoe dies."
+  }
+}

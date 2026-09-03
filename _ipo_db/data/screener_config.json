@@ -1,0 +1,36 @@
+{
+ "version": 1,
+ "note": "Similarity weights + size buckets. Shared by build_xlsx.py (writes to README input cells), build_dashboard.py (embedded in DATA blob), checks.py (parity fixture). Subsector weight dominates by design: subsector-first comps.",
+ "weights": {
+  "subsector_match": 1000,
+  "sector_match_fallback": 300,
+  "size_proximity": 200,
+  "profitability_match": 80,
+  "h_share_match": 50,
+  "recency": 80,
+  "pe_proximity": 150,
+  "shared_cornerstone": 12
+ },
+ "size_proximity_log10_halfwidth": 1.5,
+ "recency_horizon_days": 1825,
+ "size_buckets_hkdm": [
+  {
+   "label": "Mega",
+   "min": 20000
+  },
+  {
+   "label": "Large",
+   "min": 5000
+  },
+  {
+   "label": "Mid",
+   "min": 1000
+  },
+  {
+   "label": "Small",
+   "min": 0
+  }
+ ],
+ "top_n_comps": 5,
+ "pe_proximity_log10_halfwidth": 0.6
+}
