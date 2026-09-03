@@ -1,0 +1,458 @@
+<!doctype html>
+<!--
+================================================================================
+WEEK AHEAD EMAIL  -  week of 7-11 September 2026
+================================================================================
+
+WHAT THIS IS
+  One self-contained file. Open it in a browser to read it. To send it, open it,
+  select all, copy, paste into a new Outlook mail. That is the whole workflow.
+
+WHY IT LOOKS OLD-FASHIONED INSIDE
+  Tables and inline styles only. No <style> block, no flexbox, no grid, no CSS
+  variables, no web fonts. Outlook renders mail through Word and discards all of
+  those, so anything clever here would reach the reader as an unstyled wall of
+  text. It renders fine in a browser too.
+
+TO MAKE NEXT WEEK'S
+  Copy this file, rename the date, then work top to bottom:
+    1. Masthead dates and the standfirst.
+    2. "If you read nothing else" - four lines. This is the whole email.
+    3. "Where the world is standing" - usually only one or two rows change.
+    4. The day-by-day calendar. Days group by HONG KONG clock, so a US
+       after-close release sits on the following morning where the desk
+       actually trades it.
+    5. The focus blocks. Never leave a table without a verdict under it.
+    6. The terminal checklist at the foot.
+
+  Red text means one of two things: tier one, it moves the book; or ESTIMATED,
+  the date follows the usual monthly pattern and has not been posted. Keeping
+  guesses visibly red is deliberate - a guess must never pass for a fact at a
+  glance.
+
+  Leave consensus figures as "check ECO" until you have pulled them. A
+  placeholder is honest. A consensus lifted from a news article is not.
+
+CAN THIS BE AUTOMATED?
+  The skeleton yes, the read no.
+
+  Skeleton = every date, time, consensus and prior. Roughly 70% of the hours and
+  none of the value, and it is mechanical. ERN_ANN_DT_AND_PER already works in
+  v33_hk_basket_full.py and returns forward earnings dates. Economic release
+  dates and survey medians come off ECO tickers, but VERIFY THE FIELD NAMES ON
+  THE TERMINAL FIRST: a bad mnemonic returns "#N/A Invalid Field" as a value
+  rather than throwing, which is exactly what bit the dividend workbook.
+
+  Read = the four lines at the top, the "why it matters" on each row, the
+  tiering, every verdict, and anything involving a keynote, a conference or a
+  politician. Bloomberg has no field for "Jensen speaks at Goldman on Thursday",
+  and that was one of the three biggest items of this week.
+
+  Expect three hours to become about forty minutes. Do not send unread: two
+  public sources disagreed this week on whether the Fed's next move is a cut or
+  a hike.
+
+  An earlier version of this shipped as a Python builder plus a JSON data file
+  plus three rendered outputs. If you ever want that back it is in git history
+  at commit bf56124.
+================================================================================
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Week Ahead 7-11 September 2026</title>
+</head>
+<body style="margin:0;padding:0;background-color:#FFFFFF;">
+<div style="background-color:#FFFFFF;padding:30px 16px 60px 16px;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="780" align="center" style="width:780px;max-width:780px;margin:0 auto;">
+
+<!-- ============================ MASTHEAD ============================ -->
+<tr><td>
+  <div style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:2.4px;text-transform:uppercase;color:#A31D2E;">Week Ahead</div>
+  <div style="font-family:Georgia,'Times New Roman',serif;font-size:38px;line-height:1.12;font-weight:700;color:#14181D;padding-top:8px;">Thursday carries the whole week</div>
+  <div style="font-family:Georgia,'Times New Roman',serif;font-size:19px;font-style:italic;line-height:1.45;color:#3B424A;padding-top:14px;max-width:620px;">Two inflation prints and an ECB hike land inside a Fed blackout, four trading days before a meeting the market treats as live in the wrong direction.</div>
+</td></tr>
+<tr><td style="padding-top:20px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-top:2px solid #14181D;">
+    <tr><td style="padding-top:12px;font-family:Consolas,'SF Mono',Menlo,monospace;font-size:11.5px;color:#79808A;letter-spacing:0.4px;">
+      7 &ndash; 11 SEPTEMBER 2026 &nbsp;&nbsp;&middot;&nbsp;&nbsp; WRITTEN FRI 4 SEP &nbsp;&nbsp;&middot;&nbsp;&nbsp; ALL TIMES HKT (ET+12, CEST+6)
+    </td></tr>
+  </table>
+</td></tr>
+
+<!-- ============================ THESIS ============================ -->
+<tr><td style="padding-top:38px;">
+  <div style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#79808A;padding-bottom:12px;">If you read nothing else</div>
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr>
+      <td valign="top" width="34" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:12px;font-weight:700;color:#A31D2E;padding:14px 12px 14px 0;border-top:1px solid #E2DEDB;">01</td>
+      <td valign="top" style="font-family:Georgia,'Times New Roman',serif;font-size:18px;line-height:1.5;color:#14181D;padding:14px 0;border-top:1px solid #E2DEDB;">Thursday 10 September is the week. The ECB decision, US PPI, Nvidia at Goldman, then Oracle and Adobe after the US close all land inside one twelve-hour stretch.</td>
+    </tr>
+    <tr>
+      <td valign="top" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:12px;font-weight:700;color:#A31D2E;padding:14px 12px 14px 0;border-top:1px solid #E2DEDB;">02</td>
+      <td valign="top" style="font-family:Georgia,'Times New Roman',serif;font-size:18px;line-height:1.5;color:#14181D;padding:14px 0;border-top:1px solid #E2DEDB;">Every bit of it happens during the Fed blackout, four trading days before an FOMC where the debate is a <i>hike</i>, not a cut.</td>
+    </tr>
+    <tr>
+      <td valign="top" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:12px;font-weight:700;color:#A31D2E;padding:14px 12px 14px 0;border-top:1px solid #E2DEDB;">03</td>
+      <td valign="top" style="font-family:Georgia,'Times New Roman',serif;font-size:18px;line-height:1.5;color:#14181D;padding:14px 0;border-top:1px solid #E2DEDB;">Friday's August CPI is the last inflation data the Committee sees before it votes. This month it is not a data point, it is the vote.</td>
+    </tr>
+    <tr>
+      <td valign="top" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:12px;font-weight:700;color:#A31D2E;padding:14px 12px 14px 0;border-top:1px solid #E2DEDB;border-bottom:1px solid #E2DEDB;">04</td>
+      <td valign="top" style="font-family:Georgia,'Times New Roman',serif;font-size:18px;line-height:1.5;color:#14181D;padding:14px 0;border-top:1px solid #E2DEDB;border-bottom:1px solid #E2DEDB;">Asia spent the summer positioned for an easing Fed. Both major central banks are now pointed the other way.</td>
+    </tr>
+  </table>
+</td></tr>
+
+<!-- ======================= STATE OF THE WORLD ======================= -->
+<tr><td style="padding-top:44px;">
+  <div style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#79808A;padding-bottom:10px;">Where the world is standing &nbsp;&middot;&nbsp; as at Fri 4 Sep</div>
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;border-top:2px solid #14181D;">
+    <tr bgcolor="#F4F2F0">
+      <td valign="top" width="150" style="background-color:#F4F2F0;font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10.5px;letter-spacing:0.8px;text-transform:uppercase;color:#79808A;padding:11px 14px;border-bottom:1px solid #E2DEDB;">Fed funds target</td>
+      <td valign="top" width="215" style="background-color:#F4F2F0;font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:14.5px;font-weight:600;color:#14181D;padding:11px 14px;border-bottom:1px solid #E2DEDB;">3.50 &ndash; 3.75%, held 9&ndash;3 in July</td>
+      <td valign="top" style="background-color:#F4F2F0;font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13.5px;color:#3B424A;padding:11px 14px;border-bottom:1px solid #E2DEDB;">Hammack, Kashkari and Logan all dissented <i>for a hike</i></td>
+    </tr>
+    <tr>
+      <td valign="top" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10.5px;letter-spacing:0.8px;text-transform:uppercase;color:#79808A;padding:11px 14px;border-bottom:1px solid #E2DEDB;">Next FOMC</td>
+      <td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:14.5px;font-weight:600;color:#14181D;padding:11px 14px;border-bottom:1px solid #E2DEDB;">Tue&ndash;Wed 15&ndash;16 Sep</td>
+      <td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13.5px;color:#3B424A;padding:11px 14px;border-bottom:1px solid #E2DEDB;">Decision and dot plot land Thu 17 Sep at 02:00 HKT. Blackout covers all of next week.</td>
+    </tr>
+    <tr bgcolor="#F4F2F0">
+      <td valign="top" style="background-color:#F4F2F0;font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10.5px;letter-spacing:0.8px;text-transform:uppercase;color:#79808A;padding:11px 14px;border-bottom:1px solid #E2DEDB;">ECB deposit rate</td>
+      <td valign="top" style="background-color:#F4F2F0;font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:14.5px;font-weight:600;color:#14181D;padding:11px 14px;border-bottom:1px solid #E2DEDB;">2.25%, going to 2.50%</td>
+      <td valign="top" style="background-color:#F4F2F0;font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13.5px;color:#3B424A;padding:11px 14px;border-bottom:1px solid #E2DEDB;">Reuters poll of 65 economists unanimous for +25bp on Thursday</td>
+    </tr>
+    <tr>
+      <td valign="top" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10.5px;letter-spacing:0.8px;text-transform:uppercase;color:#79808A;padding:11px 14px;border-bottom:1px solid #E2DEDB;">Euro area Aug HICP</td>
+      <td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:14.5px;font-weight:600;color:#14181D;padding:11px 14px;border-bottom:1px solid #E2DEDB;">3.3% y/y, from 2.9%</td>
+      <td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13.5px;color:#3B424A;padding:11px 14px;border-bottom:1px solid #E2DEDB;">Energy +14.3% against +10.3%. Core actually eased, to 2.4%.</td>
+    </tr>
+    <tr bgcolor="#F4F2F0">
+      <td valign="top" style="background-color:#F4F2F0;font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10.5px;letter-spacing:0.8px;text-transform:uppercase;color:#79808A;padding:11px 14px;border-bottom:1px solid #E2DEDB;">What is driving it</td>
+      <td valign="top" style="background-color:#F4F2F0;font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:14.5px;font-weight:600;color:#14181D;padding:11px 14px;border-bottom:1px solid #E2DEDB;">Supply-side energy shock</td>
+      <td valign="top" style="background-color:#F4F2F0;font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13.5px;color:#3B424A;padding:11px 14px;border-bottom:1px solid #E2DEDB;">Tied to the Iran conflict. The kind of shock a central bank normally looks through.</td>
+    </tr>
+    <tr>
+      <td valign="top" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10.5px;letter-spacing:0.8px;text-transform:uppercase;color:#79808A;padding:11px 14px;border-bottom:1px solid #E2DEDB;">Fed chair</td>
+      <td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:14.5px;font-weight:600;color:#14181D;padding:11px 14px;border-bottom:1px solid #E2DEDB;">Warsh, Jackson Hole 28 Aug</td>
+      <td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13.5px;color:#3B424A;padding:11px 14px;border-bottom:1px solid #E2DEDB;">Said underlying inflation has not meaningfully improved</td>
+    </tr>
+  </table>
+</td></tr>
+
+<!-- ========================= THE CALENDAR ========================= -->
+<tr><td style="padding-top:46px;">
+  <div style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#79808A;">The week, hour by hour</div>
+  <div style="font-family:Georgia,'Times New Roman',serif;font-size:26px;line-height:1.2;font-weight:700;color:#14181D;padding-top:8px;">Everything that is scheduled</div>
+  <div style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.6;color:#3B424A;padding-top:10px;max-width:600px;">Days group by Hong Kong clock, so a US after-close release sits on the following morning where the desk actually trades it. Red means it moves the book.</div>
+</td></tr>
+
+<tr><td style="padding-top:26px;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">
+
+  <!-- ---- SUNDAY ---- -->
+  <tr><td colspan="3" style="font-family:Georgia,'Times New Roman',serif;font-size:19px;font-weight:700;color:#14181D;padding:18px 0 8px 0;border-bottom:2px solid #14181D;">Sunday 6 September <span style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:11px;font-weight:400;color:#79808A;">&nbsp; the weekend read</span></td></tr>
+  <tr>
+    <td valign="top" width="96" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:14px;font-weight:700;color:#14535B;">evening</div></td>
+    <td valign="top" width="230" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;font-weight:700;color:#14535B;background-color:#E4EDED;padding:2px 5px;">OPEC+</span> <span style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;color:#14181D;">Eight-country ministerial</span></td>
+    <td valign="top" style="padding:12px 0;border-bottom:1px solid #E2DEDB;">
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:11.5px;color:#3B424A;padding-bottom:4px;"><b style="color:#14181D;">Cons:</b> quotas held into year-end &nbsp;|&nbsp; <b style="color:#14181D;">Prior:</b> +188 kb/d for September</div>
+      <div style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13.5px;line-height:1.55;color:#3B424A;">Energy is the single input feeding both the Fed hike debate and the ECB hike. The September step completed the rollback of the voluntary cuts, so this meeting is about whether the taps stay where they are.</div>
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:5px;">CONFIRMED &middot; opec.org</div>
+    </td>
+  </tr>
+
+  <!-- ---- MONDAY ---- -->
+  <tr><td colspan="3" style="font-family:Georgia,'Times New Roman',serif;font-size:19px;font-weight:700;color:#14181D;padding:22px 0 8px 0;border-bottom:2px solid #14181D;">Monday 7 September <span style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:11px;font-weight:400;color:#79808A;">&nbsp; US shut, thin tape</span></td></tr>
+  <tr>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:14px;font-weight:700;color:#14535B;">all day</div></td>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;font-weight:700;color:#14535B;background-color:#E4EDED;padding:2px 5px;">US</span> <span style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;color:#14181D;">Labor Day, markets closed</span></td>
+    <td valign="top" style="padding:12px 0;border-bottom:1px solid #E2DEDB;">
+      <div style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13.5px;line-height:1.55;color:#3B424A;">A full Asia session with no US cash or Treasury market behind it. Liquidity is the risk, not the news.</div>
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:5px;">CONFIRMED &middot; NYSE holiday calendar</div>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:14px;font-weight:700;color:#14535B;">09:30</div></td>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;font-weight:700;color:#14535B;background-color:#E4EDED;padding:2px 5px;">HK</span> <span style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;color:#14181D;">Medcaptain debut</span></td>
+    <td valign="top" style="padding:12px 0;border-bottom:1px solid #E2DEDB;">
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:11.5px;color:#3B424A;padding-bottom:4px;"><b style="color:#14181D;">Offer:</b> HK$15.42, ~HK$600m &nbsp;|&nbsp; <b style="color:#14181D;">Book:</b> ~53x on the weekend count</div>
+      <div style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13.5px;line-height:1.55;color:#3B424A;">Our own note put the sum-of-the-parts 35&ndash;40% below the ask and read the book as a float game rather than a valuation signal. Day one is the test of that call.</div>
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:5px;">CONFIRMED &middot; listing documents, our IPO database</div>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:14px;font-weight:700;color:#14535B;">window</div></td>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;font-weight:700;color:#14535B;background-color:#E4EDED;padding:2px 5px;">CN</span> <span style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;color:#14181D;">August trade, exports and imports</span></td>
+    <td valign="top" style="padding:12px 0;border-bottom:1px solid #E2DEDB;">
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:11.5px;color:#3B424A;padding-bottom:4px;"><b style="color:#14181D;">Cons:</b> check ECO &nbsp;|&nbsp; <b style="color:#14181D;">Prior:</b> check ECO</div>
+      <div style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13.5px;line-height:1.55;color:#3B424A;">First read on whether the front-loading ahead of tariff deadlines has finally rolled over.</div>
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:5px;"><span style="color:#A31D2E;font-weight:700;">ESTIMATED</span> &middot; customs usually releases 7&ndash;8 Sep, date not posted</div>
+    </td>
+  </tr>
+
+  <!-- ---- TUESDAY ---- -->
+  <tr><td colspan="3" style="font-family:Georgia,'Times New Roman',serif;font-size:19px;font-weight:700;color:#14181D;padding:22px 0 8px 0;border-bottom:2px solid #14181D;">Tuesday 8 September <span style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:11px;font-weight:400;color:#79808A;">&nbsp; quiet before it</span></td></tr>
+  <tr>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:14px;font-weight:700;color:#14535B;">07:50</div><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:2px;">08:50 JST</div></td>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;font-weight:700;color:#14535B;background-color:#E4EDED;padding:2px 5px;">JP</span> <span style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;color:#14181D;">Q2 GDP, second estimate</span></td>
+    <td valign="top" style="padding:12px 0;border-bottom:1px solid #E2DEDB;">
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:11.5px;color:#3B424A;padding-bottom:4px;"><b style="color:#14181D;">Prior:</b> +0.3% q/q, +1.1% annualised against +2.0% expected</div>
+      <div style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13.5px;line-height:1.55;color:#3B424A;">A soft revision keeps the Bank of Japan patient and keeps the yen the funding leg of everything.</div>
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:5px;">CONFIRMED &middot; Cabinet Office</div>
+    </td>
+  </tr>
+
+  <!-- ---- WEDNESDAY ---- -->
+  <tr><td colspan="3" style="font-family:Georgia,'Times New Roman',serif;font-size:19px;font-weight:700;color:#14181D;padding:22px 0 8px 0;border-bottom:2px solid #14181D;">Wednesday 9 September <span style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:11px;font-weight:400;color:#79808A;">&nbsp; Apple night</span></td></tr>
+  <tr>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:14px;font-weight:700;color:#A31D2E;">01:00 Thu</div><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:2px;">10:00 PT Wed</div></td>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;font-weight:700;color:#A31D2E;background-color:#F7E9E6;padding:2px 5px;">US</span> <span style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;color:#14181D;">Apple event, &ldquo;Surprise and shine&rdquo;</span></td>
+    <td valign="top" style="padding:12px 0;border-bottom:1px solid #E2DEDB;">
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:11.5px;color:#3B424A;padding-bottom:4px;"><b style="color:#14181D;">Expected:</b> iPhone 18 Pro, Pro Max, foldable &ldquo;iPhone Ultra&rdquo; &nbsp;|&nbsp; <b style="color:#14181D;">Note:</b> base iPhone 18 slips to spring 2027</div>
+      <div style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13.5px;line-height:1.55;color:#3B424A;">Lands overnight in Hong Kong, so the Asia supply chain trades the read a full session before New York does.</div>
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:5px;">CONFIRMED &middot; Apple invite, 26 Aug</div>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:14px;font-weight:700;color:#14535B;">01:00 Thu</div><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:2px;">13:00 ET</div></td>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;font-weight:700;color:#14535B;background-color:#E4EDED;padding:2px 5px;">US</span> <span style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;color:#14181D;">10-year note reopening</span></td>
+    <td valign="top" style="padding:12px 0;border-bottom:1px solid #E2DEDB;">
+      <div style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13.5px;line-height:1.55;color:#3B424A;">First of two duration tests squeezed in ahead of the inflation prints.</div>
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:5px;">CONFIRMED &middot; Treasury tentative auction schedule</div>
+    </td>
+  </tr>
+
+  <!-- ---- THURSDAY ---- -->
+  <tr><td colspan="3" style="font-family:Georgia,'Times New Roman',serif;font-size:19px;font-weight:700;color:#A31D2E;padding:22px 0 8px 0;border-bottom:2px solid #A31D2E;">Thursday 10 September <span style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:11px;font-weight:400;color:#A31D2E;">&nbsp; the pivot: six events, three of them tier one</span></td></tr>
+  <tr>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:14px;font-weight:700;color:#14535B;">~10:00</div></td>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;font-weight:700;color:#14535B;background-color:#E4EDED;padding:2px 5px;">CN</span> <span style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;color:#14181D;">August CPI and PPI</span></td>
+    <td valign="top" style="padding:12px 0;border-bottom:1px solid #E2DEDB;">
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:11.5px;color:#3B424A;padding-bottom:4px;"><b style="color:#14181D;">Cons:</b> check ECO &nbsp;|&nbsp; <b style="color:#14181D;">Prior:</b> CPI 0.5% y/y in July, a six-month low</div>
+      <div style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13.5px;line-height:1.55;color:#3B424A;">China is still exporting disinflation at the same moment the West is importing an energy shock. That divergence is the year's cleanest macro trade.</div>
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:5px;"><span style="color:#A31D2E;font-weight:700;">ESTIMATED</span> &middot; NBS usually releases about the 10th, date not posted</div>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:14px;font-weight:700;color:#14535B;">~14:00</div></td>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;font-weight:700;color:#14535B;background-color:#E4EDED;padding:2px 5px;">TW</span> <span style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;color:#14181D;">TSMC August revenue</span></td>
+    <td valign="top" style="padding:12px 0;border-bottom:1px solid #E2DEDB;">
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:11.5px;color:#3B424A;padding-bottom:4px;"><b style="color:#14181D;">Prior:</b> July was released on 10 August</div>
+      <div style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13.5px;line-height:1.55;color:#3B424A;">The monthly cadence is the highest-frequency honest read anyone gets on the AI build-out.</div>
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:5px;"><span style="color:#A31D2E;font-weight:700;">ESTIMATED</span> &middot; TSMC has not posted the September date</div>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:14px;font-weight:700;color:#A31D2E;">20:15</div><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:2px;">14:15 CEST</div></td>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;font-weight:700;color:#A31D2E;background-color:#F7E9E6;padding:2px 5px;">EU</span> <span style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;color:#14181D;">ECB decision, presser 20:45</span></td>
+    <td valign="top" style="padding:12px 0;border-bottom:1px solid #E2DEDB;">
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:11.5px;color:#3B424A;padding-bottom:4px;"><b style="color:#14181D;">Cons:</b> +25bp to 2.50%, effectively fully priced &nbsp;|&nbsp; <b style="color:#14181D;">Prior:</b> 2.25%</div>
+      <div style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13.5px;line-height:1.55;color:#3B424A;">The first hike of the turn, with fresh staff projections attached. Held at the Bundesbank rather than the Eurotower, which is itself a signal about who is setting the tone.</div>
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:5px;">CONFIRMED &middot; ECB calendar</div>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:14px;font-weight:700;color:#A31D2E;">20:30</div><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:2px;">08:30 ET</div></td>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;font-weight:700;color:#A31D2E;background-color:#F7E9E6;padding:2px 5px;">US</span> <span style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;color:#14181D;">August PPI</span></td>
+    <td valign="top" style="padding:12px 0;border-bottom:1px solid #E2DEDB;">
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:11.5px;color:#3B424A;padding-bottom:4px;"><b style="color:#14181D;">Cons:</b> check ECO &nbsp;|&nbsp; <b style="color:#14181D;">Prior:</b> check ECO</div>
+      <div style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13.5px;line-height:1.55;color:#3B424A;">Feeds directly into the PCE components the Committee actually forecasts on, which is why it matters more than its usual billing this month.</div>
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:5px;">CONFIRMED &middot; BLS release schedule</div>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:14px;font-weight:700;color:#14535B;">20:30</div><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:2px;">08:30 ET</div></td>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;font-weight:700;color:#14535B;background-color:#E4EDED;padding:2px 5px;">US</span> <span style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;color:#14181D;">Initial jobless claims</span></td>
+    <td valign="top" style="padding:12px 0;border-bottom:1px solid #E2DEDB;">
+      <div style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13.5px;line-height:1.55;color:#3B424A;">The only weekly labour read available inside the blackout.</div>
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:5px;">CONFIRMED &middot; Department of Labor</div>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:14px;font-weight:700;color:#A31D2E;">23:50</div><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:2px;">08:50 PT</div></td>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;font-weight:700;color:#A31D2E;background-color:#F7E9E6;padding:2px 5px;">US</span> <span style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;color:#14181D;">Nvidia at Goldman Communacopia</span></td>
+    <td valign="top" style="padding:12px 0;border-bottom:1px solid #E2DEDB;">
+      <div style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13.5px;line-height:1.55;color:#3B424A;">Not an earnings event, but the only scheduled Nvidia commentary between prints, and it comes eight days after Broadcom guided to roughly $115bn of FY27 AI revenue on custom silicon.</div>
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:5px;">CONFIRMED &middot; NVIDIA newsroom, 27 Aug</div>
+    </td>
+  </tr>
+
+  <!-- ---- FRIDAY ---- -->
+  <tr><td colspan="3" style="font-family:Georgia,'Times New Roman',serif;font-size:19px;font-weight:700;color:#A31D2E;padding:22px 0 8px 0;border-bottom:2px solid #A31D2E;">Friday 11 September <span style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:11px;font-weight:400;color:#A31D2E;">&nbsp; two tier-one prints before Asia closes the week</span></td></tr>
+  <tr>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:14px;font-weight:700;color:#14535B;">01:00</div><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:2px;">13:00 ET Thu</div></td>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;font-weight:700;color:#14535B;background-color:#E4EDED;padding:2px 5px;">US</span> <span style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;color:#14181D;">30-year bond reopening</span></td>
+    <td valign="top" style="padding:12px 0;border-bottom:1px solid #E2DEDB;">
+      <div style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13.5px;line-height:1.55;color:#3B424A;">The long end absorbs supply the day before CPI, which is the least comfortable slot on the calendar.</div>
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:5px;">CONFIRMED &middot; Treasury tentative auction schedule</div>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:14px;font-weight:700;color:#A31D2E;">05:00</div><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:2px;">16:00 CT Thu</div></td>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;font-weight:700;color:#A31D2E;background-color:#F7E9E6;padding:2px 5px;">US</span> <span style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;color:#14181D;">Oracle FQ1 FY27, results and call</span></td>
+    <td valign="top" style="padding:12px 0;border-bottom:1px solid #E2DEDB;">
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:11.5px;color:#3B424A;padding-bottom:4px;"><b style="color:#14181D;">The number:</b> remaining performance obligation</div>
+      <div style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13.5px;line-height:1.55;color:#3B424A;">Last September's backlog print is what re-rated the stock, so the comparison is unforgiving. Watch cloud growth against capex and debt, and watch the gap between booked backlog and cash conversion.</div>
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:5px;">CONFIRMED &middot; Oracle investor relations</div>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:14px;font-weight:700;color:#14535B;">05:00</div><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:2px;">14:00 PT Thu</div></td>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;font-weight:700;color:#14535B;background-color:#E4EDED;padding:2px 5px;">US</span> <span style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;color:#14181D;">Adobe FQ3 FY26, results and call</span></td>
+    <td valign="top" style="padding:12px 0;border-bottom:1px solid #E2DEDB;">
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:11.5px;color:#3B424A;padding-bottom:4px;"><b style="color:#14181D;">The number:</b> net-new Digital Media annual recurring revenue</div>
+      <div style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13.5px;line-height:1.55;color:#3B424A;">The cleanest listed test of whether generative AI compounds an incumbent's moat or dissolves it.</div>
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:5px;">CONFIRMED &middot; Adobe, 31 Aug</div>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:14px;font-weight:700;color:#A31D2E;">20:30</div><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:2px;">08:30 ET</div></td>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;font-weight:700;color:#A31D2E;background-color:#F7E9E6;padding:2px 5px;">US</span> <span style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;font-weight:700;color:#14181D;">August CPI</span></td>
+    <td valign="top" style="padding:12px 0;border-bottom:1px solid #E2DEDB;">
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:11.5px;color:#3B424A;padding-bottom:4px;"><b style="color:#14181D;">Cons:</b> check ECO before send &nbsp;|&nbsp; <b style="color:#14181D;">Prior:</b> check ECO before send</div>
+      <div style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13.5px;line-height:1.55;color:#3B424A;">The last inflation print before the Committee votes, and the single most important line on this page.</div>
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:5px;">CONFIRMED &middot; BLS release schedule</div>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:14px;font-weight:700;color:#14535B;">22:00</div><div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:2px;">10:00 ET</div></td>
+    <td valign="top" style="padding:12px 14px 12px 0;border-bottom:1px solid #E2DEDB;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;font-weight:700;color:#14535B;background-color:#E4EDED;padding:2px 5px;">US</span> <span style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;color:#14181D;">U. Michigan sentiment, preliminary</span></td>
+    <td valign="top" style="padding:12px 0;border-bottom:1px solid #E2DEDB;">
+      <div style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13.5px;line-height:1.55;color:#3B424A;">The inflation-expectations series matters far more than the headline this month, given what the Committee is arguing about.</div>
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#9AA0A8;padding-top:5px;"><span style="color:#A31D2E;font-weight:700;">ESTIMATED</span> &middot; usually the second Friday, not confirmed</div>
+    </td>
+  </tr>
+
+</table>
+</td></tr>
+
+<!-- ===================== FOCUS 1: THE FED ===================== -->
+<tr><td style="padding-top:50px;border-top:1px solid #C9C3BF;">
+  <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10.5px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#A31D2E;padding-top:26px;">The Fed setup</div>
+  <div style="font-family:Georgia,'Times New Roman',serif;font-size:29px;line-height:1.16;font-weight:700;color:#14181D;padding-top:9px;">Why this CPI is different</div>
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="padding-top:8px;">
+    <tr><td valign="top" width="28" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:13px;font-weight:700;color:#A31D2E;padding:14px 10px 0 0;line-height:1.6;">1.</td><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15.5px;line-height:1.62;color:#3B424A;padding:14px 0 0 0;">July's FOMC held at 3.50&ndash;3.75% by nine votes to three, and all three dissents were for a hike. A three-dissent hold is a committee sitting one print away from moving.</td></tr>
+    <tr><td valign="top" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:13px;font-weight:700;color:#A31D2E;padding:13px 10px 0 0;line-height:1.6;">2.</td><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15.5px;line-height:1.62;color:#3B424A;padding:13px 0 0 0;">Warsh told Jackson Hole on 28 August that clear evidence of cooling has not appeared and that underlying inflation has not meaningfully improved.</td></tr>
+    <tr><td valign="top" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:13px;font-weight:700;color:#A31D2E;padding:13px 10px 0 0;line-height:1.6;">3.</td><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15.5px;line-height:1.62;color:#3B424A;padding:13px 0 0 0;">The inflation is supply-driven, out of the energy shock tied to the Iran conflict. A central bank normally looks straight through that. This one cannot, because the argument has moved from demand to credibility.</td></tr>
+    <tr><td valign="top" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:13px;font-weight:700;color:#A31D2E;padding:13px 10px 0 0;line-height:1.6;">4.</td><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15.5px;line-height:1.62;color:#3B424A;padding:13px 0 0 0;">Public pricing venues genuinely disagree. One read of CME FedWatch has a 66% hike, another summary still shows a cut favoured, and Kalshi and Polymarket had a hold near 70% with a hike near 28% in mid-August.</td></tr>
+    <tr><td valign="top" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:13px;font-weight:700;color:#A31D2E;padding:13px 10px 0 0;line-height:1.6;">5.</td><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15.5px;line-height:1.62;color:#3B424A;padding:13px 0 0 0;">When the venues disagree by that much, the data does the deciding rather than the guidance. Which is exactly what makes Friday at 20:30 HKT the whole week.</td></tr>
+  </table>
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:22px;"><tr>
+    <td bgcolor="#F4F2F0" style="background-color:#F4F2F0;border-left:3px solid #A31D2E;padding:15px 20px;">
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#A31D2E;padding-bottom:6px;">Verdict</div>
+      <div style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.58;color:#14181D;">Trade the dispersion, not the direction. The honest position into Friday is optionality rather than a Fed view, and Monday 14 September in Asia is the session that gaps on the answer. Pull live pricing off the terminal before this circulates: none of the public numbers above belong in a sent email.</div>
+    </td>
+  </tr></table>
+</td></tr>
+
+<!-- ===================== FOCUS 2: BROADCOM ===================== -->
+<tr><td style="padding-top:50px;">
+  <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10.5px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#A31D2E;">Context &middot; reported Wednesday 2 September</div>
+  <div style="font-family:Georgia,'Times New Roman',serif;font-size:29px;line-height:1.16;font-weight:700;color:#14181D;padding-top:9px;">Broadcom moved the bar, and the constraint list is the tell</div>
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;margin-top:22px;">
+    <tr>
+      <td width="190" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#79808A;padding:0 14px 8px 0;border-bottom:2px solid #14181D;">Line</td>
+      <td style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#79808A;padding:0 14px 8px 0;border-bottom:2px solid #14181D;">Q3 FY26</td>
+      <td width="185" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#79808A;padding:0 0 8px 0;border-bottom:2px solid #14181D;">Read</td>
+    </tr>
+    <tr bgcolor="#F4F2F0"><td style="background-color:#F4F2F0;font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:14px;font-weight:600;color:#14181D;padding:10px 14px 10px 0;border-bottom:1px solid #E2DEDB;">Revenue</td><td style="background-color:#F4F2F0;font-family:Consolas,'SF Mono',Menlo,monospace;font-size:13px;color:#3B424A;padding:10px 14px 10px 0;border-bottom:1px solid #E2DEDB;">$29.6bn, +86% y/y</td><td style="background-color:#F4F2F0;font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13px;color:#79808A;padding:10px 0;border-bottom:1px solid #E2DEDB;">beat</td></tr>
+    <tr><td style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:14px;font-weight:600;color:#14181D;padding:10px 14px 10px 0;border-bottom:1px solid #E2DEDB;">AI semiconductors</td><td style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:13px;color:#3B424A;padding:10px 14px 10px 0;border-bottom:1px solid #E2DEDB;">$16.7bn, +221% y/y, +54% q/q</td><td style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13px;color:#79808A;padding:10px 0;border-bottom:1px solid #E2DEDB;">more than tripled</td></tr>
+    <tr bgcolor="#F4F2F0"><td style="background-color:#F4F2F0;font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:14px;font-weight:600;color:#14181D;padding:10px 14px 10px 0;border-bottom:1px solid #E2DEDB;">Adjusted EPS</td><td style="background-color:#F4F2F0;font-family:Consolas,'SF Mono',Menlo,monospace;font-size:13px;color:#3B424A;padding:10px 14px 10px 0;border-bottom:1px solid #E2DEDB;">$3.32</td><td style="background-color:#F4F2F0;font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13px;color:#79808A;padding:10px 0;border-bottom:1px solid #E2DEDB;">beat</td></tr>
+    <tr><td style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:14px;font-weight:600;color:#14181D;padding:10px 14px 10px 0;border-bottom:1px solid #E2DEDB;">Q4 revenue guide</td><td style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:13px;font-weight:700;color:#A31D2E;padding:10px 14px 10px 0;border-bottom:1px solid #E2DEDB;">$34.8bn vs $35.03bn consensus</td><td style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13px;color:#A31D2E;padding:10px 0;border-bottom:1px solid #E2DEDB;">missed the total</td></tr>
+    <tr bgcolor="#F4F2F0"><td style="background-color:#F4F2F0;font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:14px;font-weight:600;color:#14181D;padding:10px 14px 10px 0;border-bottom:1px solid #E2DEDB;">FY26 AI revenue</td><td style="background-color:#F4F2F0;font-family:Consolas,'SF Mono',Menlo,monospace;font-size:13px;color:#3B424A;padding:10px 14px 10px 0;border-bottom:1px solid #E2DEDB;">$58bn</td><td style="background-color:#F4F2F0;font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13px;color:#79808A;padding:10px 0;border-bottom:1px solid #E2DEDB;">guided</td></tr>
+    <tr><td style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:14px;font-weight:600;color:#14181D;padding:10px 14px 10px 0;border-bottom:1px solid #E2DEDB;">FY27 / FY28 AI outlook</td><td style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:13px;color:#3B424A;padding:10px 14px 10px 0;border-bottom:1px solid #E2DEDB;">~$115bn / ~$230bn</td><td style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13px;color:#79808A;padding:10px 0;border-bottom:1px solid #E2DEDB;">where the multiple hangs</td></tr>
+    <tr bgcolor="#F4F2F0"><td style="background-color:#F4F2F0;font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:14px;font-weight:600;color:#14181D;padding:10px 14px 10px 0;border-bottom:1px solid #E2DEDB;">Named customers</td><td style="background-color:#F4F2F0;font-family:Consolas,'SF Mono',Menlo,monospace;font-size:13px;color:#3B424A;padding:10px 14px 10px 0;border-bottom:1px solid #E2DEDB;">Google, Anthropic, OpenAI, Meta</td><td style="background-color:#F4F2F0;font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13px;color:#79808A;padding:10px 0;border-bottom:1px solid #E2DEDB;">custom silicon, not merchant GPUs</td></tr>
+    <tr><td style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:14px;font-weight:600;color:#14181D;padding:10px 14px 10px 0;border-bottom:1px solid #E2DEDB;">Stated constraints</td><td style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:13px;font-weight:700;color:#A31D2E;padding:10px 14px 10px 0;border-bottom:1px solid #E2DEDB;">power, land, wafers, substrates, HBM</td><td style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:13px;color:#A31D2E;padding:10px 0;border-bottom:1px solid #E2DEDB;">physical, not demand</td></tr>
+  </table>
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr><td valign="top" width="28" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:13px;font-weight:700;color:#A31D2E;padding:16px 10px 0 0;line-height:1.6;">1.</td><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15.5px;line-height:1.62;color:#3B424A;padding:16px 0 0 0;">The total revenue guide missed while AI revenue tripled. The market is paying for mix now, not for the revenue line.</td></tr>
+    <tr><td valign="top" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:13px;font-weight:700;color:#A31D2E;padding:13px 10px 0 0;line-height:1.6;">2.</td><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15.5px;line-height:1.62;color:#3B424A;padding:13px 0 0 0;">Every constraint management named is physical build-out. Demand did not appear on the list at all.</td></tr>
+    <tr><td valign="top" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:13px;font-weight:700;color:#A31D2E;padding:13px 10px 0 0;line-height:1.6;">3.</td><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15.5px;line-height:1.62;color:#3B424A;padding:13px 0 0 0;">That is an Asia sentence, not a US one. If the bottleneck is wafers, substrates, memory and power, the margin sits with TSMC on advanced packaging, SK Hynix and Samsung on high-bandwidth memory, Ibiden and Unimicron on substrates, and Delta and LiteOn on power.</td></tr>
+  </table>
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:22px;"><tr>
+    <td bgcolor="#F4F2F0" style="background-color:#F4F2F0;border-left:3px solid #A31D2E;padding:15px 20px;">
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#A31D2E;padding-bottom:6px;">Verdict</div>
+      <div style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.58;color:#14181D;">Own the constraint, not the customer. The names that clear from here are the ones selling into a shortage that cannot be designed out inside a year.</div>
+    </td>
+  </tr></table>
+</td></tr>
+
+<!-- ===================== FOCUS 3: TECH TRIPLE ===================== -->
+<tr><td style="padding-top:50px;">
+  <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10.5px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#A31D2E;">Thursday's tech triple</div>
+  <div style="font-family:Georgia,'Times New Roman',serif;font-size:29px;line-height:1.16;font-weight:700;color:#14181D;padding-top:9px;">Oracle, Adobe, and Jensen on a stage</div>
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr><td valign="top" width="18" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;color:#A31D2E;padding:16px 10px 0 0;line-height:1.62;">&bull;</td><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15.5px;line-height:1.62;color:#3B424A;padding:16px 0 0 0;"><b style="color:#14181D;">Oracle FQ1 FY27</b>, 05:00 HKT Friday. Remaining performance obligation is the only number that matters. Last September's backlog print is what re-rated the stock, so the comparison is unforgiving. Watch cloud growth against capex and debt, and watch the gap between booked backlog and cash conversion.</td></tr>
+    <tr><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;color:#A31D2E;padding:13px 10px 0 0;line-height:1.62;">&bull;</td><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15.5px;line-height:1.62;color:#3B424A;padding:13px 0 0 0;"><b style="color:#14181D;">Adobe FQ3</b>, same slot. Net-new Digital Media annual recurring revenue is the line. This is the cleanest listed test of whether generative AI compounds an incumbent's moat or dissolves it, and the stock has been trading as though the answer is already settled.</td></tr>
+    <tr><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;color:#A31D2E;padding:13px 10px 0 0;line-height:1.62;">&bull;</td><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15.5px;line-height:1.62;color:#3B424A;padding:13px 0 0 0;"><b style="color:#14181D;">Nvidia at Goldman Communacopia</b>, 23:50 HKT Thursday. Any remark on merchant GPU share against custom silicon moves the entire complex, and it moves the Asia supply chain overnight rather than at the New York open.</td></tr>
+  </table>
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:22px;"><tr>
+    <td bgcolor="#F4F2F0" style="background-color:#F4F2F0;border-left:3px solid #A31D2E;padding:15px 20px;">
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#A31D2E;padding-bottom:6px;">Verdict</div>
+      <div style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.58;color:#14181D;">Three catalysts, one theme. The AI trade is being repriced from demand to delivery. Position for the rotation inside the sector, not for beats.</div>
+    </td>
+  </tr></table>
+</td></tr>
+
+<!-- ===================== FOCUS 4: APPLE ===================== -->
+<tr><td style="padding-top:50px;">
+  <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10.5px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#A31D2E;">Asia supply chain</div>
+  <div style="font-family:Georgia,'Times New Roman',serif;font-size:29px;line-height:1.16;font-weight:700;color:#14181D;padding-top:9px;">Apple, and what a foldable actually changes</div>
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <tr><td valign="top" width="18" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;color:#A31D2E;padding:16px 10px 0 0;line-height:1.62;">&bull;</td><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15.5px;line-height:1.62;color:#3B424A;padding:16px 0 0 0;">Keynote at 01:00 HKT Thursday, which means Asia trades the read before New York opens.</td></tr>
+    <tr><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;color:#A31D2E;padding:13px 10px 0 0;line-height:1.62;">&bull;</td><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15.5px;line-height:1.62;color:#3B424A;padding:13px 0 0 0;">Expected: iPhone 18 Pro, 18 Pro Max, and a foldable positioned as iPhone Ultra. The base iPhone 18 slips to spring 2027.</td></tr>
+    <tr><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;color:#A31D2E;padding:13px 10px 0 0;line-height:1.62;">&bull;</td><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15.5px;line-height:1.62;color:#3B424A;padding:13px 0 0 0;">The split cadence is the real structural news. September stops being the whole year for the assemblers, and a chunk of revenue moves into the first half of 2027.</td></tr>
+    <tr><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;color:#A31D2E;padding:13px 10px 0 0;line-height:1.62;">&bull;</td><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15.5px;line-height:1.62;color:#3B424A;padding:13px 0 0 0;">A foldable at Ultra pricing lifts bill-of-materials content per unit far more than it lifts units.</td></tr>
+  </table>
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:22px;"><tr>
+    <td bgcolor="#F4F2F0" style="background-color:#F4F2F0;border-left:3px solid #A31D2E;padding:15px 20px;">
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#A31D2E;padding-bottom:6px;">Verdict</div>
+      <div style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:15px;line-height:1.58;color:#14181D;">Buy content, not volume. Hinge, display and optics content gains; assembly volume does not. And do not extrapolate a September build number to the full year this time, because the calendar changed underneath the model.</div>
+    </td>
+  </tr></table>
+</td></tr>
+
+<!-- ===================== BEYOND ===================== -->
+<tr><td style="padding-top:50px;border-top:1px solid #C9C3BF;">
+  <div style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#79808A;padding-top:26px;">Already on the horizon</div>
+  <div style="font-family:Georgia,'Times New Roman',serif;font-size:24px;line-height:1.2;font-weight:700;color:#14181D;padding-top:8px;padding-bottom:16px;">Not next week, but priced next week</div>
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">
+    <tr><td valign="top" width="170" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:12px;font-weight:700;color:#14181D;padding:10px 14px 10px 0;border-top:1px solid #E2DEDB;">Mon 14 &ndash; Tue 15 Sep</td><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:14px;color:#3B424A;padding:10px 14px 10px 0;border-top:1px solid #E2DEDB;">China August activity data: industrial production, retail sales, fixed asset investment</td><td valign="top" width="80" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;font-weight:700;color:#A31D2E;padding:10px 0;border-top:1px solid #E2DEDB;">ESTIMATED</td></tr>
+    <tr><td valign="top" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:12px;font-weight:700;color:#14181D;padding:10px 14px 10px 0;border-top:1px solid #E2DEDB;">Tue&ndash;Wed 15&ndash;16 Sep</td><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:14px;color:#3B424A;padding:10px 14px 10px 0;border-top:1px solid #E2DEDB;">FOMC. Decision and dot plot land Thu 17 Sep at 02:00 HKT</td><td valign="top" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;color:#79808A;padding:10px 0;border-top:1px solid #E2DEDB;">CONFIRMED</td></tr>
+    <tr><td valign="top" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:12px;font-weight:700;color:#14181D;padding:10px 14px 10px 0;border-top:1px solid #E2DEDB;">Thu 17 Sep</td><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:14px;color:#3B424A;padding:10px 14px 10px 0;border-top:1px solid #E2DEDB;">Bank of England MPC</td><td valign="top" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;font-weight:700;color:#A31D2E;padding:10px 0;border-top:1px solid #E2DEDB;">ESTIMATED</td></tr>
+    <tr><td valign="top" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:12px;font-weight:700;color:#14181D;padding:10px 14px 10px 0;border-top:1px solid #E2DEDB;">Thu&ndash;Fri 17&ndash;18 Sep</td><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:14px;color:#3B424A;padding:10px 14px 10px 0;border-top:1px solid #E2DEDB;">Bank of Japan</td><td valign="top" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;font-weight:700;color:#A31D2E;padding:10px 0;border-top:1px solid #E2DEDB;">ESTIMATED</td></tr>
+    <tr><td valign="top" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:12px;font-weight:700;color:#14181D;padding:10px 14px 10px 0;border-top:1px solid #E2DEDB;">Fri 18 Sep</td><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:14px;color:#3B424A;padding:10px 14px 10px 0;border-top:1px solid #E2DEDB;">Quad witching and index rebalance effective</td><td valign="top" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;font-weight:700;color:#A31D2E;padding:10px 0;border-top:1px solid #E2DEDB;">ESTIMATED</td></tr>
+    <tr><td valign="top" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:12px;font-weight:700;color:#14181D;padding:10px 14px 10px 0;border-top:1px solid #E2DEDB;border-bottom:1px solid #E2DEDB;">Late September</td><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:14px;color:#3B424A;padding:10px 14px 10px 0;border-top:1px solid #E2DEDB;border-bottom:1px solid #E2DEDB;">Micron FQ4, the high-bandwidth memory read-across</td><td valign="top" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10px;font-weight:700;color:#A31D2E;padding:10px 0;border-top:1px solid #E2DEDB;border-bottom:1px solid #E2DEDB;">ESTIMATED</td></tr>
+  </table>
+</td></tr>
+
+<!-- ===================== CHECKLIST ===================== -->
+<tr><td style="padding-top:40px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr>
+    <td bgcolor="#F4F2F0" style="background-color:#F4F2F0;border:1px solid #E2DEDB;padding:20px 24px;">
+      <div style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#A31D2E;padding-bottom:12px;">Check on the terminal before this goes out</div>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr><td valign="top" width="20" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:13px;color:#A31D2E;padding:0 10px 9px 0;">&#9633;</td><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:14.5px;line-height:1.55;color:#3B424A;padding:0 0 9px 0;">Fed pricing off the terminal. Public sources conflict badly this week and not one of them should be quoted in a sent email.</td></tr>
+        <tr><td valign="top" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:13px;color:#A31D2E;padding:0 10px 9px 0;">&#9633;</td><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:14.5px;line-height:1.55;color:#3B424A;padding:0 0 9px 0;">CPI and PPI consensus and prior off ECO. They are left as placeholders here on purpose.</td></tr>
+        <tr><td valign="top" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:13px;color:#A31D2E;padding:0 10px 9px 0;">&#9633;</td><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:14.5px;line-height:1.55;color:#3B424A;padding:0 0 9px 0;">China trade, CPI and PPI release dates. The early-September window is the usual pattern, not a posted date.</td></tr>
+        <tr><td valign="top" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:13px;color:#A31D2E;padding:0 10px 9px 0;">&#9633;</td><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:14.5px;line-height:1.55;color:#3B424A;padding:0 0 9px 0;">TSMC August revenue date. July landed on the 10th; September has not been announced.</td></tr>
+        <tr><td valign="top" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:13px;color:#A31D2E;padding:0 10px 9px 0;">&#9633;</td><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:14.5px;line-height:1.55;color:#3B424A;padding:0 0 9px 0;">Bank of Japan and Bank of England September dates, and the U. Michigan date.</td></tr>
+        <tr><td valign="top" style="font-family:Consolas,'SF Mono',Menlo,monospace;font-size:13px;color:#A31D2E;padding:0 10px 0 0;">&#9633;</td><td valign="top" style="font-family:'Segoe UI',-apple-system,Helvetica,Arial,sans-serif;font-size:14.5px;line-height:1.55;color:#3B424A;">Whether Friday night's August payrolls print changes the framing. Consensus was around +58k with unemployment at 4.1%, and ADP came in at +38k.</td></tr>
+      </table>
+    </td>
+  </tr></table>
+</td></tr>
+
+<!-- ===================== FOOTER ===================== -->
+<tr><td style="padding-top:32px;">
+  <div style="border-top:1px solid #E2DEDB;padding-top:16px;font-family:Consolas,'SF Mono',Menlo,monospace;font-size:11px;line-height:1.7;color:#9AA0A8;">
+    Dates marked CONFIRMED come from the issuer or the statistical agency. Dates marked ESTIMATED follow the usual monthly pattern and have not been posted, and they print in red so a guess cannot be mistaken for a fact at a glance. Consensus figures left as placeholders are deliberate: they belong on the terminal, not in a draft.
+  </div>
+</td></tr>
+
+</table>
+</div>
+</body>
+</html>
