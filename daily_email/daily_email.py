@@ -5,20 +5,30 @@
     Draft 2  HSI earnings      constituents reporting in the next 91 days, with
                                the conference-call date and time
 
-Everything is in this one file.  Read README.md for the guide; the four commands
-you need are:
+Built for Jupyter.  Load it in one cell:
 
-    python daily_email.py --demo      sample data, works anywhere, see the layout
-    python daily_email.py --test      run the self-tests
-    python daily_email.py --probe     FIRST RUN on the terminal: verify every
-                                      field and ticker against Bloomberg
-    python daily_email.py             the real thing: two drafts into Outlook
+    %run daily_email.py
 
-What is in this file, in order:
+then call one of these in the next cell:
+
+    demo()                          both emails from sample data, no Bloomberg
+    test()                          run the self-tests
+    probe()                         check fields and tickers on the terminal
+    run()                           the real thing: two Outlook drafts
+    run(excel='C:/path/cal.xlsx')   from the workbook instead
+    compare('C:/path/cal.xlsx')     Bloomberg against the workbook
+
+The emails are drawn inside the notebook and saved to the out folder.  Nothing is
+ever sent.  None of the six raises: a problem is printed as a sentence saying what
+to do next, and the kernel keeps running.
+
+Everything is in this one file:
     CONFIG      recipients, subjects, the exclusion list, tickers   <- edit here
     ENGINE      the Bloomberg session, the three pulls, the HTML, Outlook
-    FIXTURE     a fake terminal, so --demo and --test run on any machine
+    FIXTURE     a fake terminal, so demo() and test() run on any machine
     TESTS       ~90 checks over parsing, filtering, sorting and rendering
+    JUPYTER     the six functions above
+    MAIN        the same thing from a command prompt, if you ever want it
 """
 
 import argparse
@@ -30,21 +40,23 @@ import sys
 from email.message import EmailMessage
 from email.utils import format_datetime
 
-HERE = os.path.dirname(os.path.abspath(__file__))
+try:                                    # normal: next to the script
+    HERE = os.path.dirname(os.path.abspath(__file__))
+except NameError:                       # pasted straight into a notebook cell
+    HERE = os.getcwd()
 
 
-import argparse
-import datetime as dt
-import html as _html
-import json
-import os
-import platform
-import re
-import sys
-from email.message import EmailMessage
-from email.utils import format_datetime
+def _in_jupyter():
+    """True inside a notebook.  Jupyter needs different manners: argparse must
+    never see the kernel's own argv, and sys.exit() would kill the kernel."""
+    try:
+        from IPython import get_ipython
+        return type(get_ipython()).__name__ == 'ZMQInteractiveShell'
+    except Exception:
+        return False
 
-HERE = os.path.dirname(os.path.abspath(__file__))
+
+IN_JUPYTER = _in_jupyter()
 
 # ================================================================ CONFIG ===
 RECIPIENTS = 'oscar.chan1@nomura.com; gordon.ho1@nomura.com'
@@ -1230,7 +1242,7 @@ def outlook_draft(subject, fragment, display):
 
 
 # ----------------------------------------------------------------- probe ---
-def probe(today, blpapi_module=None):
+def _probe_report(today, blpapi_module=None):
     bbg = Bloomberg(blpapi_module=blpapi_module).connect()
     lines = [f'daily_email --probe  {dt.datetime.now():%Y-%m-%d %H:%M}  host {BBG_HOST}:{BBG_PORT}', '']
     try:
@@ -1344,7 +1356,7 @@ def probe(today, blpapi_module=None):
     print(f'\nSaved: {path}')
 
 
-def parity(api_sections, xl_sections):
+def _parity_report(api_sections, xl_sections):
     """Row-by-row diff of the API path against the workbook's BQL output."""
     print('\n== Parity: API vs Excel ==')
     for key in ('central_banks', 'us_eco', 'hsi_earnings'):
@@ -1989,6 +2001,150 @@ def run_tests():
     return 0
 
 
+# ============================================================== JUPYTER ===
+# Six functions, meant to be called from a notebook cell.  None of them raises:
+# a problem is printed in plain language, with Bloomberg's own wording kept, and
+# the call returns None.  Nothing here is hidden - what failed is always named.
+
+
+def _say(problem, hint=''):
+    print(f'\n  Could not finish: {problem}')
+    if hint:
+        for line in hint.strip().split('\n'):
+            print(f'  {line.strip()}')
+    print()
+
+
+def _explain(exc):
+    """Turn the usual failures into a sentence that says what to do next."""
+    text = str(exc)
+    if isinstance(exc, ImportError) or 'blpapi' in text.lower() and 'install' in text.lower():
+        missing = 'blpapi' if 'blpapi' in text else ('pywin32' if 'win32' in text else
+                                                     ('openpyxl' if 'openpyxl' in text else text))
+        return (f'{missing} is not available in this kernel.',
+                'Run demo() to see the emails without Bloomberg, or start the notebook\n'
+                'from the environment that has blpapi installed.')
+    if 'session' in text.lower() or 'refdata' in text.lower():
+        return (text, 'Is the Bloomberg terminal running and logged in on this machine?')
+    if isinstance(exc, FileNotFoundError):
+        return (f'file not found: {text}', 'Check the path, and use forward slashes.')
+    return (text, '')
+
+
+def _show(fragment, subject):
+    """Draw the email inside the notebook, or say where the file is."""
+    if IN_JUPYTER:
+        try:
+            from IPython.display import display, HTML
+            display(HTML(f'<div style="margin:14px 0 4px 0;{FONT}font-size:11pt;color:{MUTED};">'
+                         f'<b style="color:{NAVY};">{esc(subject)}</b><br>'
+                         f'To: {esc(RECIPIENTS)}</div>{fragment}'))
+            return True
+        except Exception:
+            pass
+    return False
+
+
+def _deliver(sections, today, source_label, to_outlook, display_them):
+    out = {}
+    for cfg in EMAILS:
+        subject, fragment = render_email(cfg, sections, today, dt.datetime.now(), source_label)
+        html_path, eml_path = write_files(cfg['key'], subject, fragment, today, dt.datetime.now())
+        status = 'not sent'
+        if to_outlook:
+            try:
+                _ok, status = outlook_draft(subject, fragment, display_them)
+            except Exception as e:
+                status = f'Outlook step failed: {e}'
+        print(f'{cfg["key"]:9s} {status:26s} {os.path.basename(html_path)}')
+        if not _show(fragment, subject):
+            print(f'          open this to read it: {html_path}')
+        out[cfg['key']] = dict(subject=subject, html=fragment,
+                               html_path=html_path, eml_path=eml_path)
+    return out
+
+
+def demo(asof=None):
+    """Both emails from sample data.  No Bloomberg, no Outlook, works anywhere."""
+    try:
+        today = dt.date.fromisoformat(asof) if asof else dt.date.today()
+        fixture_configure(today)
+        print('Sample data - this is the layout, not real numbers.\n')
+        sections, _ = build_sections_blpapi(today, blpapi_module=FixtureAPI)
+        print('')
+        return _deliver(sections, today, 'SAMPLE DATA - not Bloomberg', False, False)
+    except Exception as e:
+        _say(*_explain(e))
+
+
+def test():
+    """The self-tests.  Prints a line per check and a verdict at the end."""
+    try:
+        return run_tests() == 0
+    except Exception as e:
+        _say(*_explain(e))
+
+
+def probe(asof=None):
+    """Check every field and ticker against the live terminal.  Do this first.
+
+    Writes out/probe_YYYY-MM-DD.txt.  Send that file back and the config gets
+    corrected in one pass."""
+    try:
+        today = dt.date.fromisoformat(asof) if asof else dt.date.today()
+        _probe_report(today)
+    except Exception as e:
+        _say(*_explain(e))
+
+
+def run(excel=None, display=False, outlook=True, asof=None):
+    """The real thing: two drafts into Outlook, and shown in the notebook.
+
+        run()                          from Bloomberg
+        run(excel='C:/path/cal.xlsx')  from the workbook instead, no field risk
+        run(outlook=False)             build them, do not touch Outlook
+    """
+    try:
+        today = dt.date.fromisoformat(asof) if asof else dt.date.today()
+        if excel:
+            print('Reading the workbook ...')
+            sections = read_excel_sections(excel, today)
+            label = f'Bloomberg BQL via {os.path.basename(excel)}'
+        else:
+            sections = build_sections_blpapi(today)[0]
+            label = 'Bloomberg Desktop API (//blp/refdata)'
+        print('')
+        return _deliver(sections, today, label, outlook, display)
+    except Exception as e:
+        _say(*_explain(e))
+
+
+def compare(excel, asof=None):
+    """Row-by-row diff: what Bloomberg gives against what the workbook holds."""
+    try:
+        today = dt.date.fromisoformat(asof) if asof else dt.date.today()
+        api = build_sections_blpapi(today)[0]
+        print('Reading the workbook ...')
+        _parity_report(api, read_excel_sections(excel, today))
+    except Exception as e:
+        _say(*_explain(e))
+
+
+MENU = """
+  Daily calendar email - ready.  Call one of these in the next cell:
+
+      demo()                          both emails from sample data, no Bloomberg
+      test()                          run the self-tests
+      probe()                         check fields and tickers on the terminal
+      run()                           the real thing: two Outlook drafts
+      run(excel='C:/path/cal.xlsx')   from the workbook instead
+      compare('C:/path/cal.xlsx')     Bloomberg against the workbook
+
+  Emails are drawn in the notebook and saved to the out folder.
+  Nothing is ever sent - both drafts wait in Outlook for you to press Send.
+"""
+
+
 # ================================================================= MAIN ===
 LAUNCHER = """@echo off
 REM Double-click on the Bloomberg terminal PC, with Outlook open.
@@ -2042,7 +2198,7 @@ def main(argv=None):
         fake = FixtureAPI
 
     if args.probe:
-        probe(today, blpapi_module=fake)
+        _probe_report(today, blpapi_module=fake)
         return 0
 
     if args.parity:
@@ -2050,7 +2206,7 @@ def main(argv=None):
             ap.error('--parity needs --xlsx')
         api_sections, _ = build_sections_blpapi(today, blpapi_module=fake)
         print('Reading workbook ...')
-        parity(api_sections, read_excel_sections(args.xlsx, today))
+        _parity_report(api_sections, read_excel_sections(args.xlsx, today))
         return 0
 
     if args.excel:
@@ -2080,4 +2236,10 @@ def main(argv=None):
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    if IN_JUPYTER:
+        print(MENU)                     # a notebook gets the menu, never argparse
+    else:
+        sys.exit(main())
+else:
+    if IN_JUPYTER:
+        print(MENU)

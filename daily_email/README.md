@@ -1,6 +1,7 @@
 # Daily calendar email
 
 Two Outlook drafts every morning, straight from Bloomberg, no Excel in the loop.
+Run from Jupyter.
 
 | Draft | What is in it |
 | --- | --- |
@@ -10,65 +11,96 @@ Two Outlook drafts every morning, straight from Bloomberg, no Excel in the loop.
 Addressed to Oscar Chan and Gordon Ho, grouped by day, today highlighted.
 Nothing is ever sent. Both land in Drafts and you press Send.
 
-There are two files here and that is the whole thing:
+Two files, and that is the whole thing:
 
-- **`daily_email.py`** — the script. Also contains its own test suite and a fake
-  Bloomberg terminal, so it runs on any machine.
-- **`README.md`** — this guide.
+- **`daily_email.py`** — the script, with its own tests and a fake Bloomberg
+  terminal inside it
+- **`README.md`** — this guide
 
 ---
 
-## Try it right now, on any machine
+## The only cell you need to remember
+
+Put the notebook in the same folder as the script, then in the first cell:
+
+```python
+%run daily_email.py
+```
+
+It prints a short menu and does nothing else. In the next cell, call one of six
+functions:
+
+```python
+demo()                          # both emails from sample data, no Bloomberg
+test()                          # run the self-tests
+probe()                         # check fields and tickers on the terminal
+run()                           # the real thing: two Outlook drafts
+run(excel='C:/path/cal.xlsx')   # from the workbook instead
+compare('C:/path/cal.xlsx')     # Bloomberg against the workbook
+```
+
+The emails are drawn **inside the notebook**, under the subject line and the
+recipients, so you can read them before anything reaches Outlook. Copies are also
+saved to the `out` folder.
+
+If your notebook lives somewhere else, point at the folder first:
+
+```python
+import sys; sys.path.insert(0, r'C:\path\to\daily_email')
+from daily_email import *
+```
+
+**None of the six will ever throw a red traceback.** If Bloomberg is not
+reachable, or a path is wrong, or a library is missing, you get a sentence
+telling you what to do next and the kernel keeps running.
+
+---
+
+## Start here: `demo()`
 
 You do not need Bloomberg or Outlook to see what the emails look like.
 
-```
-python daily_email.py --demo
+```python
+demo()
 ```
 
-That writes both emails to `out/` using sample data. Open the `.html` files in a
-browser. Nothing touches Bloomberg, nothing touches Outlook.
+Sample data, both emails drawn in the notebook, nothing touched. Run it now.
 
-To check the logic is sound:
+Then check the logic holds:
 
-```
-python daily_email.py --test
+```python
+test()
 ```
 
 About ninety checks over date parsing, the exclusion list, sort order, dead
-tickers, rejected fields, the Excel reader and the HTML. It should end with
+tickers, rejected fields, the Excel reader and the HTML. It ends with
 `all tests passed`.
+
+Both of these work on any machine, including one with no Bloomberg at all.
 
 ---
 
-## Setting it up on the Bloomberg PC
+## On the Bloomberg PC: `probe()` first
 
-**1. Use the Python the desk notebooks run on.** That one already has `blpapi`.
-Open the prompt you launch Jupyter from. If you ever need to install things:
+Start the notebook from the kernel that has `blpapi` — the same one the desk
+notebooks use. Then:
 
-```
-pip install blpapi --index-url=https://blpapi.bloomberg.com/repository/releases/python/simple/
-pip install pywin32 openpyxl
-```
-
-`blpapi` talks to Bloomberg, `pywin32` creates the Outlook drafts, `openpyxl` is
-only needed for the workbook option further down.
-
-**2. Run the probe. Do this before you trust a single number.**
-
-```
-python daily_email.py --probe
+```python
+probe()
 ```
 
-This is the important step, and here is why. Your Excel formulas use BQL, and
-**BQL cannot be called from Python.** `calendar()`, `members()` and `btoday()`
-run only in the Excel add-in and in BQuant; the Bloomberg API that Python talks
-to has no BQL service. So the script does not port your query, it rebuilds the
-same output from ordinary Bloomberg fields, the kind behind `=BDP()`.
+**Do this before you trust a single number.** Here is why.
 
-That rebuild depends on field names and ticker symbols being right, and a wrong
-field name does not raise an error. It quietly returns "invalid field" as if it
-were data. The probe is what catches that. It:
+Your Excel formulas use BQL, and **BQL cannot be called from Python.**
+`calendar()`, `members()` and `btoday()` run only in the Excel add-in and in
+BQuant. The Bloomberg API that Python talks to has no BQL service. So the script
+does not port your query. It rebuilds the same output from ordinary Bloomberg
+fields, the kind behind `=BDP()`.
+
+That rebuild depends on field names and ticker symbols being right, and **a wrong
+field name does not raise an error.** It quietly returns "invalid field" as if it
+were data, and it would sit in the email looking like a number. The probe is what
+catches that. It:
 
 - checks every field and every ticker against your live terminal;
 - prints Bloomberg's own name beside each ticker, so a mislabelled row is obvious;
@@ -77,21 +109,27 @@ were data. The probe is what catches that. It:
 - tells you whether release times arrive in New York or Hong Kong time.
 
 It writes `out/probe_YYYY-MM-DD.txt`. **Send me that file** and I will fix
-whatever it flags. Three central-bank tickers are flagged `VERIFY` in the script
-already, because I could not confirm them without a terminal.
+whatever it flags. Three central-bank tickers are already flagged `VERIFY` in the
+script, because I could not confirm them without a terminal.
 
-**3. Run it for real.**
+---
 
-```
-python daily_email.py
+## Then, every morning
+
+```python
+run()
 ```
 
 Two drafts appear in Outlook's Drafts folder with your signature underneath, and
-copies land in `out/` as `.html` and `.eml`.
+they are drawn in the notebook so you can read them first. Copies land in `out`
+as `.html` and `.eml`.
 
-Want a double-click icon instead of typing the command? Run
-`python daily_email.py --make-launcher` once. It writes `RUN_DAILY_EMAIL.bat`
-next to the script.
+Useful variations:
+
+```python
+run(display=True)     # pop the drafts open on screen instead of saving them
+run(outlook=False)    # build and show them, do not touch Outlook at all
+```
 
 ---
 
@@ -101,38 +139,21 @@ Keep the workbook as the data source and let Python do the filtering, formatting
 and drafting. Same two emails, exactly the numbers Excel already shows you, no
 field-name risk at all:
 
-```
-python daily_email.py --excel --xlsx "C:\path\to\your\calendar.xlsx"
-```
-
-Open and refresh the workbook first so the BQL values are saved in it.
-
-And when you want to see whether the API path agrees before switching to it:
-
-```
-python daily_email.py --parity --xlsx "C:\path\to\your\calendar.xlsx"
+```python
+run(excel='C:/path/to/your/calendar.xlsx')
 ```
 
-That prints a row-by-row diff: what the API found, what the workbook found, and
+Open and refresh the workbook first, so the BQL values are saved inside it.
+Forward slashes work fine in the path.
+
+When you want to see whether the API agrees before switching to it:
+
+```python
+compare('C:/path/to/your/calendar.xlsx')
+```
+
+That prints a row-by-row diff: what Bloomberg found, what the workbook found, and
 anything only one of them has.
-
----
-
-## Every command
-
-| Command | What it does |
-| --- | --- |
-| `python daily_email.py` | The real thing. Two drafts into Outlook. |
-| `python daily_email.py --demo` | Sample data, no Bloomberg, no Outlook. |
-| `python daily_email.py --test` | Run the self-tests. |
-| `python daily_email.py --probe` | Verify every field and ticker on the terminal. |
-| `python daily_email.py --display` | Pop the drafts open instead of saving them. |
-| `python daily_email.py --no-outlook` | Write the files only. |
-| `python daily_email.py --excel --xlsx PATH` | Read the workbook instead of the API. |
-| `python daily_email.py --parity --xlsx PATH` | Diff the API against the workbook. |
-| `python daily_email.py --bql` | Run your BQL strings verbatim. BQuant only. |
-| `python daily_email.py --make-launcher` | Write the double-click `.bat`. |
-| `python daily_email.py --asof 2026-10-01` | Pretend it is another day. |
 
 ---
 
@@ -140,7 +161,7 @@ anything only one of them has.
 
 Everything you would want to change sits in one block at the top of
 `daily_email.py`, between the lines marked `CONFIG` and `END CONFIG`. Nothing
-below that needs touching.
+below that needs touching. After an edit, re-run the `%run daily_email.py` cell.
 
 | To change | Edit |
 | --- | --- |
@@ -169,9 +190,18 @@ name to `EXCLUDE_EVENTS`. Both work.
 | US release list | **Medium.** BQL enumerates the calendar for you and the API cannot, so the list of about 78 releases lives in the script. That is the piece most likely to have a gap. |
 
 The uncertainty is entirely in field names and ticker symbols, and no amount of
-reading the code settles it. That is what `--probe` is for. One run, one file
+reading the code settles it. That is what `probe()` is for. One run, one file
 sent back, one correction pass.
 
 Dates that came from the backup earnings field are marked `est.` in the email,
 and the footer says how many. Anything the script could not fetch is named in
 that footer rather than left silently blank.
+
+---
+
+## If you ever want it outside Jupyter
+
+The same script runs from a command prompt, and
+`python daily_email.py --make-launcher` writes a `.bat` you can double-click.
+`--demo`, `--test`, `--probe`, `--excel` and `--parity` mirror the six functions
+above. You do not need any of this if you work in the notebook.
