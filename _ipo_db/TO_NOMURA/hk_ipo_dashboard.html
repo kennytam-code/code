@@ -1585,6 +1585,7 @@ const METRICS = [
   ["Eff. free float", "eff_free_float_pct", v => v == null ? "—" : v.toFixed(1) + "% of cap"],
   ["Greenshoe size", "greenshoe_pct", v => v == null ? "—" : v.toFixed(0) + "%"],
   ["Greenshoe outcome", "greenshoe_exercised_final", v => v || "—"],
+  ["Shoe ends (filed)", "stabilization_end_date", v => v || "—"],
   ["PERFORMANCE (vs offer)", null, null],
   ["Day-1", "first_day_return_pct", v => fmt.pct(v)],
   ["1-week", "ret_1w_pct", v => fmt.pct(v)],
