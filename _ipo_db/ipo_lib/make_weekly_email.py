@@ -1,12 +1,34 @@
 #!/usr/bin/env python3
 """The weekly HK IPO email, generated from the book — one command, no AI.
 
-    python ipo_lib/make_weekly_email.py            # 2-week lookback (default)
-    python ipo_lib/make_weekly_email.py --weeks 1
+FROM JUPYTER (the desk's way — the notebook has a cell for it):
+
+    %run ipo.py email                 # or: sh('ipo.py', 'email')
+    %run ipo.py email --weeks 1
+
+FROM A CELL, if you want the email rendered inline underneath it:
+
+    import sys; sys.path.insert(0, 'ipo_lib')
+    import make_weekly_email as W
+    W.run(weeks=2)                    # returns the text, shows the HTML
+
+FROM A TERMINAL:
+
+    python ipo_lib/make_weekly_email.py --weeks 2
 
 Writes out/weekly_ipo_email.html (paste into Outlook: open in a browser,
 Cmd-A, Cmd-C, paste) and out/weekly_ipo_email.txt (plain-text fallback), and
 prints the text version.
+
+JUPYTER SAFETY — three things break scripts inside a kernel and all three are
+handled here, because "run it in Jupyter" must mean no traceback, ever:
+  * the kernel puts its OWN arguments on sys.argv ("-f .../kernel-xxx.json"),
+    which argparse rejects with SystemExit(2). We parse KNOWN args only.
+  * __file__ is undefined when code is pasted into a cell, so the paths fall
+    back to the working directory.
+  * a Windows desk defaults to cp1252, and this email is full of en/em dashes
+    and →/≫ — write_text() without an explicit encoding raises
+    UnicodeEncodeError there. Every read and write below pins utf-8.
 
 Structure:
   * WHAT'S COMING — offerings live now or listing inside the next ten days,
@@ -26,12 +48,57 @@ import sys
 from datetime import date, timedelta
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+# __file__ is missing when this is pasted into a notebook cell; fall back to
+# the working directory, which the desk's notebook asserts is _ipo_db.
+try:
+    _HERE = Path(__file__).resolve().parent
+except NameError:                                               # pragma: no cover
+    _HERE = Path.cwd() / "ipo_lib" if (Path.cwd() / "ipo_lib").is_dir() else Path.cwd()
+sys.path.insert(0, str(_HERE))
 from pipeline_dedupe import merge_pipeline                      # noqa: E402
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = _HERE.parent
 OUT_HTML = ROOT / "out" / "weekly_ipo_email.html"
 OUT_TXT = ROOT / "out" / "weekly_ipo_email.txt"
+
+
+def _soften_console():
+    """Make the CONSOLE incapable of killing this run.
+
+    The email is full of en/em dashes. A Windows console on cp437 cannot
+    encode them and raises UnicodeEncodeError — and not necessarily in our
+    own print: pipeline_dedupe prints "2 row(s) dropped — now listed", so the
+    crash lands in an imported module before any local try/except can help.
+    Degrading the whole stream once, up front, is the only fix that covers
+    every printer. The FILES are always written as utf-8 regardless, so
+    nothing is lost — only the console rendering degrades.
+    """
+    for s in (sys.stdout, sys.stderr):
+        try:
+            enc = (getattr(s, "encoding", "") or "").lower()
+            if enc.replace("-", "") in ("utf8", "utf8mb4"):
+                continue
+            "—".encode(enc or "ascii")            # can it carry a dash?
+        except (LookupError, UnicodeEncodeError, ValueError):
+            try:
+                s.reconfigure(errors="replace")   # py3.7+
+            except Exception:
+                pass
+        except Exception:
+            pass
+
+
+_soften_console()
+
+
+def _in_notebook():
+    """True inside a Jupyter/IPython kernel (not a plain terminal REPL)."""
+    try:
+        from IPython import get_ipython
+        return get_ipython() is not None and \
+            "IPKernelApp" in getattr(get_ipython(), "config", {})
+    except Exception:
+        return False
 
 
 def load(name):
@@ -40,7 +107,7 @@ def load(name):
     p = ROOT / "data" / "batches" / name
     if not p.exists():
         return []
-    d = json.loads(p.read_text())
+    d = json.loads(p.read_text(encoding="utf-8"))
     if isinstance(d, list):
         return d
     for k in ("deals", "applications", "rows", "pipeline"):
@@ -106,18 +173,46 @@ def shoe_line(x, today):
     return f"{head} — stabilisation window open (end date not stated in the extractable text)"
 
 
+def run(weeks=2, asof=None, show=None):
+    """Build the email. Importable, so a notebook cell can call it directly.
+
+    show=None means "render the HTML inline if we are in a notebook".
+    Returns the plain-text email.
+    """
+    return _build(weeks=weeks, asof=asof, show=show)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--weeks", type=int, default=2, help="lookback for the listed section")
     ap.add_argument("--asof", default=None, help="pretend today is this ISO date")
-    a = ap.parse_args()
+    # parse_known_args, NOT parse_args: a Jupyter kernel appends its own
+    # "-f /.../kernel-1234.json" to sys.argv, and parse_args would exit(2)
+    # on it — the single most common way a working script "fails" in a
+    # notebook. Unknown flags are ignored rather than fatal.
+    a, _unknown = ap.parse_known_args()
+    return _build(weeks=a.weeks, asof=a.asof, show=False)
+
+
+def _build(weeks=2, asof=None, show=None):
+    class a:                                     # noqa: N801 - tiny arg holder
+        pass
+    a.weeks, a.asof = weeks, asof
     today = date.fromisoformat(a.asof) if a.asof else date.today()
 
-    deals = json.loads((ROOT / "data" / "deals.json").read_text())["deals"]
+    book = ROOT / "data" / "deals.json"
+    if not book.exists():
+        msg = (f"deals.json not found at {book}.\n"
+               f"Run the database update first:  %run ipo.py refresh\n"
+               f"(or, if you only need to rebuild from existing data: "
+               f"%run ipo.py build)")
+        print(msg)
+        return msg
+    deals = json.loads(book.read_text(encoding="utf-8"))["deals"]
     notes = {}
     np_ = ROOT / "data" / "weekly_email_notes.json"
     if np_.exists():
-        notes = json.loads(np_.read_text())
+        notes = json.loads(np_.read_text(encoding="utf-8"))
 
     # ---- recent listings ---------------------------------------------------
     lo = (today - timedelta(days=7 * a.weeks)).isoformat()
@@ -306,11 +401,30 @@ def main():
     html = "\n".join(H)
 
     OUT_HTML.parent.mkdir(exist_ok=True)
-    OUT_HTML.write_text(html)
-    OUT_TXT.write_text(txt)
-    print(txt)
+    # utf-8 pinned: the email carries en/em dashes and arrows, and a Windows
+    # desk would otherwise die with UnicodeEncodeError on cp1252.
+    OUT_HTML.write_text(html, encoding="utf-8")
+    OUT_TXT.write_text(txt, encoding="utf-8")
+
+    nb = _in_notebook() if show is None else show
+    if nb:
+        # render the real thing under the cell, then hand back the text
+        try:
+            from IPython.display import HTML, display
+            display(HTML(html))
+            print(f"[also written: {OUT_HTML.name} + .txt in out/ — open the "
+                  f"html and copy-paste it into Outlook]")
+            return txt
+        except Exception:
+            pass                                   # fall through to printing
+    try:
+        print(txt)
+    except UnicodeEncodeError:                     # pragma: no cover
+        # a cp1252 console cannot print the dashes; the FILES are still utf-8
+        print(txt.encode("ascii", "replace").decode("ascii"))
     print(f"\n[written: {OUT_HTML.relative_to(ROOT)} + .txt — open the html in a "
           f"browser, select-all, copy, paste into the mail client]")
+    return txt
 
 
 if __name__ == "__main__":

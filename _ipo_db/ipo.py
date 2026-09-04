@@ -121,6 +121,25 @@ def cmd_build(_args):
     run("ipo_lib/build_dashboard.py")
 
 
+def cmd_email(args):
+    """The weekly IPO email — what lists next week, what listed recently, and
+    every live greenshoe deadline. Written to out/weekly_ipo_email.html."""
+    argv = ["--weeks", str(getattr(args, "weeks", 2))]
+    if getattr(args, "asof", None):
+        argv += ["--asof", args.asof]
+    ok = run("ipo_lib/make_weekly_email.py", argv, quiet=True)
+    if ok:
+        p = ROOT / "out" / "weekly_ipo_email.txt"
+        if p.exists():
+            print(p.read_text(encoding="utf-8"))
+        print(f"\n  HTML : {ROOT / 'out' / 'weekly_ipo_email.html'}")
+        print("  Open that file, select all, copy, paste into Outlook.")
+    else:
+        print("  !! the email could not be built — is data/deals.json present? "
+              "run `ipo.py refresh` first")
+    return ok
+
+
 GATES = [
     # name, script, red = export-blocking
     ("coverage floors", "ipo_lib/checks.py", True),
@@ -332,6 +351,11 @@ def main():
     sub.add_parser("check", help="run the validation gate").set_defaults(fn=cmd_check)
     sub.add_parser("prices", help="re-pull prices only").set_defaults(fn=cmd_prices)
     sub.add_parser("status", help="coverage summary").set_defaults(fn=cmd_status)
+    em = sub.add_parser("email", help="write the weekly IPO email")
+    em.add_argument("--weeks", type=int, default=2,
+                    help="how far back the 'just listed' section reaches")
+    em.add_argument("--asof", default=None, help="pretend today is this ISO date")
+    em.set_defaults(fn=cmd_email)
     ex = sub.add_parser("export", help="bundle what another machine needs")
     ex.add_argument("--force", action="store_true",
                     help="skip the gate battery (emergencies only)")

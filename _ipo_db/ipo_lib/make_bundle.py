@@ -79,6 +79,7 @@ IN JUPYTER (three cells, in this order):
     %run hk_ipo.py status      # what is in the database right now
     %run hk_ipo.py refresh     # go get the latest deals (needs internet)
     %run hk_ipo.py build       # write the .xlsx and .html next to this file
+    %run hk_ipo.py email       # the weekly IPO email (add --weeks 1 for one week)
 
 FROM A TERMINAL: python hk_ipo.py status  (etc.)
 
@@ -319,6 +320,17 @@ def main():
     cmd = sys.argv[1] if len(sys.argv) > 1 else "build"
     if cmd == "status":
         return cmd_status()
+    if cmd == "email":
+        # the weekly IPO email, straight from the bundled book
+        _unpack(persist=True)
+        wk = 2
+        if "--weeks" in sys.argv:
+            try:
+                wk = int(sys.argv[sys.argv.index("--weeks") + 1])
+            except (IndexError, ValueError):
+                pass
+        _run_stage("make_weekly_email", ["--weeks", str(wk)])
+        return 0
     if cmd in ("refresh", "update"):
         skip = set()
         if "--skip" in sys.argv:
