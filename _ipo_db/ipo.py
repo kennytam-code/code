@@ -60,6 +60,11 @@ STAGES = [
     ("offering-window", "ipo_lib/fetch_newlistings.py", [], "hkex"),
     ("names-cn", "ipo_lib/fetch_names_cn.py", [], "hkex"),
     ("stabilisation", "ipo_lib/fetch_stabilization.py", [], "hkex"),
+    # the evening session before listing. MUST run every week: the headline
+    # leaves AAStocks' page one within days and no archive of past sessions
+    # exists anywhere, so a value not captured near the debut is lost. The
+    # batch is an accumulating cache — captured values are never re-fetched.
+    ("grey-market", "ipo_lib/fetch_greymarket.py", [], "aastocks"),
     ("ah-snapshot", "ipo_lib/fetch_ah_snapshot.py", [], "aastocks"),
     # AAStocks per-deal pages: sponsors, the full underwriting syndicate, market
     # cap at listing and the institutional book. Needs a browser engine, so it is

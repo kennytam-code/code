@@ -350,6 +350,21 @@ def main():
                       "stabilization_note"):
                 put(c, f, r.get(f), "hkexnews:end-of-stabilisation notice", 45)
 
+    # --- grey market: where the deal closed the night BEFORE it listed ------
+    # The off-exchange evening session is the last read before the exchange
+    # opens, and it is the closest thing to a forecast of day 1 that exists.
+    d = load("greymarket.json")
+    if d:
+        n_gm = 0
+        for r in d["deals"]:
+            c = r["code"]
+            if c not in deals or r.get("grey_close") is None:
+                continue
+            for f in ("grey_close", "grey_pct", "grey_date", "grey_venue"):
+                put(c, f, r.get(f), f"aastocks:{r.get('grey_src', 'grey-market headline')}", 45)
+            n_gm += 1
+        print(f"  grey-market close on {n_gm} deals")
+
     # --- who ran the stabilisation (the bank holding the shoe and the bid) ---
     d = load("stabilizing_managers.json")
     if d:
@@ -1864,6 +1879,23 @@ def main():
         # A RESOLVED shoe still leaves the expiry column blank on older deals
         # whose announcement never spelled the date out, and that blank needs
         # its own reason — the outcome is already known, so the date is moot.
+        # GREY MARKET vs what actually happened. The evening session is the
+        # last price before the exchange opens, so the interesting number is
+        # not the grey close itself but how much of it survived the night:
+        # grey_to_day1 is the day-1 close measured FROM the grey close, and
+        # grey_called_it says whether the grey market got the direction right.
+        gp, d1v = x.get("grey_pct"), x.get("first_day_return_pct")
+        if gp is not None and d1v is not None:
+            x["grey_to_day1_pct"] = round(
+                100 * ((1 + d1v / 100) / (1 + gp / 100) - 1), 2)
+            x["grey_called_it"] = ("Y" if (gp > 0) == (d1v > 0) or
+                                   (abs(gp) < 0.05 and abs(d1v) < 0.05) else "N")
+        if x.get("grey_close") is None and not x.get("grey_note"):
+            x["grey_note"] = (
+                "no grey-market headline on file for this deal — AAStocks "
+                "publishes one per listing but keeps only recent items on the "
+                "stock's news page, and no public archive of past evening "
+                "sessions exists; captured from this run onward")
         # No prospectus hyperlink: the per-stock HKEX search returned no
         # listing document for this code. Mostly older listings whose
         # prospectus was filed in a form the doc feed does not expose; the

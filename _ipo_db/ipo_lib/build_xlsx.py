@@ -269,6 +269,14 @@ DB_COLS = [
     ("DEMAND", "Cornerstone investors", "cornerstone_investors", None, 46),
     ("DEMAND", "CS keys", "cornerstone_keys", None, 16),
     ("DEMAND", "Greenshoe size (%)", "greenshoe_pct", '0.0"%"', 9),
+    # THE GREY MARKET — the evening session before listing. Sits in DEMAND
+    # because that is what it measures: what the book was worth once the
+    # allocations were out and anyone could leave. Feeds the screener comp
+    # table automatically (COMP_COLS is built from DB_COLS).
+    ("DEMAND", "Grey mkt % vs offer", "grey_pct", '+0.0"%";-0.0"%"', 14),
+    ("DEMAND", "Grey mkt close", "grey_close", "0.000", 12),
+    ("DEMAND", "Grey → day-1", "grey_to_day1_pct", '+0.0"%";-0.0"%"', 12),
+    ("DEMAND", "Grey called day-1", "grey_called_it", None, 13),
     ("DEMAND", "Shoe outcome (final)", "greenshoe_exercised_final", None, 17),
     # the date the stabilisation mandate dies, from the filing's own sentence —
     # the aftermarket desk plans around this, so it belongs on the row
@@ -352,6 +360,7 @@ NOTE_FIELDS = [("intl_note", "intl sub"), ("pe_note", "P/E"), ("shoe_note", "gre
                # unread reason is indistinguishable from an unexplained blank
                ("price_note", "price series"),
                ("doc_note", "filing links"),
+               ("grey_note", "grey market"),
                ("eff_ff_note", "eff free float"),
                ("eff_ff_shares_note", "eff float shares"),
                ("ipo_date_note", "listing date"),

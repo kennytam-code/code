@@ -53,6 +53,9 @@ NOTEMAP = {
     # the deal ran no shoe at all — shoe_note carries both reasons
     "stabilization_end_date": "shoe_note",
     "prospectus_link": "doc_note",
+    "grey_pct": "grey_note", "grey_close": "grey_note",
+    "grey_to_day1_pct": "grey_note", "grey_called_it": "grey_note",
+    "grey_date": "grey_note", "grey_venue": "grey_note",
 }
 ALT = {
     "rev_latest": "fin_check", "ni_latest": "fin_check",

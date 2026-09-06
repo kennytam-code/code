@@ -1293,6 +1293,50 @@ read once stays local, so every long stage now runs with up-to-3 retries
 (`run_v26_final_chain.sh` pattern). If a stage dies mid-write with a timeout,
 re-run it; the batches are regenerated whole, so a retry is always safe.
 
+## GREY MARKET (v27) — 暗盤, and why it must be captured WEEKLY
+
+The evening before a HK listing, brokers run an off-exchange session
+(16:15–18:30) in the new stock. Its close is the last price before the
+exchange opens, struck after allocations are out and anyone who wants out can
+leave — so a deal that closes the grey market below its offer has already
+broken issue in every sense that matters. It is the closest thing to a
+forecast of day 1 that exists, which is why it now sits in the Database, the
+screener comp table, the All-deals table, the explorer axes and the weekly
+email.
+
+**`fetch_greymarket.py` reads AAStocks' own standardised headline:**
+
+    《新股》希音－Ｗ暗盤收報42.2元 低上市價13.1%
+
+Machine-readable, and the same line the desk reads, so it can be eyeballed.
+`grey_pct` is signed off the headline's own 高/低/平 wording — never inferred
+by comparing prices. The quoted venue is Phillip's (輝立) platform, which is
+what AAStocks reports; Futu's print differs by a tick (SHEIN closed 42.2 on
+Phillip vs 42.12 on Futu), so `grey_venue` records which, and the two are
+never mixed.
+
+**THIS IS A CAPTURE-OR-LOSE FIELD — the single most important thing to know.**
+There is no public archive of past HK grey-market sessions anywhere:
+  * AAStocks' `greymarket.aspx` **ignores its own `?symbol=` parameter** and
+    always renders TODAY's session; live quotes arrive over a websocket and no
+    REST endpoint serves a past one.
+  * The per-stock news list is server-rendered only for RECENT items; older
+    pages are JS-paginated and eight pages deep still does not reach a listing
+    six weeks old.
+  * etnet's calendar is today-only and its news search 404s. No aggregator
+    publishes a historical table.
+So the batch is an **accumulating cache**: a captured value is never
+re-fetched and never overwritten, because a re-fetch after the headline has
+scrolled away can only ever LOSE data. `grey-market` is a stage in both
+`ipo.py refresh` and the desk bundle. Run the weekly routine and the archive
+builds itself; skip it for a month and that month is gone for good.
+
+Two derived columns, because the raw close is not the interesting part:
+`grey_to_day1_pct` measures the day-1 close FROM the grey close (how much of
+the evening move survived the night), and `grey_called_it` is Y/N on whether
+the grey market got the direction right. A deal with no headline on file
+carries `grey_note` saying so — an explained absence, not a silent blank.
+
 ## THE WEEKLY EMAIL (v26.3) — one command, Monday morning
 
 ```

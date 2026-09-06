@@ -292,6 +292,11 @@ def _build(weeks=2, asof=None, show=None):
                       + (f"; cornerstones {x['cornerstone_pct']:.0f}% of the offer"
                          if x.get("cornerstone_pct") else ""))
             T.append(demand)
+            if x.get("grey_pct") is not None:
+                T.append(f"      Grey mkt: closed {pct(x['grey_pct'])} vs offer"
+                         + (f" at {x['grey_close']}" if x.get("grey_close") else "")
+                         + (f" — day-1 then {pct(x.get('grey_to_day1_pct'))} from there"
+                            if x.get("grey_to_day1_pct") is not None else ""))
             T.append(f"      Tape: opened {pct(x.get('day1_open_pop_pct'))}, "
                      f"day-1 close {pct(x.get('first_day_return_pct'))}, "
                      f"now {pct(x.get('since_ipo_pct'))} vs offer"
@@ -368,7 +373,7 @@ def _build(weeks=2, asof=None, show=None):
             cd = x.get("code")
             H.append('<table cellpadding="6" cellspacing="0" style="border-collapse:collapse;'
                      'font-size:13px;width:100%;margin:0 0 10px">')
-            H.append(f'<tr style="background:#f2f4f7"><td colspan="4" style="border:1px solid #d9dde3">'
+            H.append(f'<tr style="background:#f2f4f7"><td colspan="5" style="border:1px solid #d9dde3">'
                      f'<b>{esc(x.get("name") or "?")}</b> <span style="color:#666">{esc(cd)}</span>'
                      f' &nbsp;·&nbsp; listed {ddmmm(x.get("ipo_date"))} at HK${x.get("final_price"):,.2f}'
                      + (f' &nbsp;·&nbsp; {hkd(x.get("deal_size_hkdm"), 0)}' if x.get("deal_size_hkdm") else "")
@@ -377,6 +382,11 @@ def _build(weeks=2, asof=None, show=None):
                      f'<td style="border:1px solid #d9dde3">Book<br><b>{x_(x.get("oversub_public_mult"))}'
                      f'</b> public / <b>{x_(x.get("oversub_intl_mult"))}</b> instl'
                      + (f'<br>cornerstones {x["cornerstone_pct"]:.0f}%' if x.get("cornerstone_pct") else "")
+                     + '</td>'
+                     f'<td style="border:1px solid #d9dde3">Grey mkt<br>'
+                     + (f'<b style="color:{sgn(x.get("grey_pct"))}">{pct(x.get("grey_pct"))}</b>'
+                        f'{" at " + str(x["grey_close"]) if x.get("grey_close") else ""}'
+                        if x.get("grey_pct") is not None else '<span style="color:#666">not on file</span>')
                      + '</td>'
                      f'<td style="border:1px solid #d9dde3">Day 1<br>'
                      f'open <b style="color:{sgn(x.get("day1_open_pop_pct"))}">{pct(x.get("day1_open_pop_pct"))}</b>, '
@@ -389,7 +399,7 @@ def _build(weeks=2, asof=None, show=None):
                      f'<td style="border:1px solid #d9dde3">Shoe<br>{esc(shoe_line(x, today))}</td></tr>')
             n = notes.get(str(cd), {})
             if isinstance(n, dict) and n.get("colour"):
-                H.append(f'<tr><td colspan="4" style="border:1px solid #d9dde3;'
+                H.append(f'<tr><td colspan="5" style="border:1px solid #d9dde3;'
                          f'background:#fbfbfd;color:#444">{esc(n["colour"])}</td></tr>')
             H.append("</table>")
 

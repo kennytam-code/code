@@ -32,6 +32,9 @@ KEEP = ["code", "name", "name_cn", "sector", "subsector", "ipo_date",
         "alpha_1m_expop_pct", "bench_1m_expop_pct", "day1_open_close_pct",
         "day1_open_pop_pct", "pct_of_cap", "a_premium_ipo_pct", "pe_now",
         "pe_ipo_bbg", "ps_now", "stabilization_end_date", "bench_1m_pct",
+        # the evening session before listing, and how it related to day 1
+        "grey_pct", "grey_close", "grey_to_day1_pct", "grey_called_it",
+        "grey_date",
         "cornerstone_investors", "cornerstone_keys", "sponsors_cn", "industry_en", "sponsors_en",
         "sponsors_display", "bookrunners_display", "price_asof",
         # v13 alignment: everything the Excel Database shows now travels to the
@@ -1475,6 +1478,10 @@ const METRICS = [
   ["Greenshoe size", "greenshoe_pct", v => v == null ? "—" : v.toFixed(0) + "%"],
   ["Greenshoe outcome", "greenshoe_exercised_final", v => v || "—"],
   ["Shoe ends (filed)", "stabilization_end_date", v => v || "—"],
+  // the night before: last price before the exchange opened
+  ["Grey mkt vs offer", "grey_pct", v => fmt.pct(v)],
+  ["Grey mkt close", "grey_close", v => v == null ? "—" : v.toFixed(3)],
+  ["Grey → day-1", "grey_to_day1_pct", v => fmt.pct(v)],
   ["PERFORMANCE (vs offer)", null, null],
   ["Day-1", "first_day_return_pct", v => fmt.pct(v)],
   ["1-week", "ret_1w_pct", v => fmt.pct(v)],
@@ -2396,6 +2403,8 @@ const AXES = [
   ["aftermkt_3m_pct",     "3-month excluding the day-1 pop", "%", false],
   ["day1_open_pop_pct",   "day-1 open pop (offer\u2192open)", "%", false],
   ["day1_open_close_pct", "day-1 open\u2192close (intraday)", "%", false],
+  ["grey_pct",            "grey market close vs offer (\u6697\u76e4)", "%", false],
+  ["grey_to_day1_pct",    "grey market \u2192 day-1 close", "%", false],
   ["alpha_1m_pct",        "1-month alpha vs sector index", "%", false],
   ["alpha_1m_expop_pct",  "1-month alpha ex-pop (matched window)", "%", false],
   ["alpha_3m_pct",        "3-month alpha vs sector index", "%", false],
@@ -2538,6 +2547,7 @@ function drawTable() {
   <td class="num">${fmt.px(d.final_price)}</td>
   <td class="num">${d.oversub_public_mult == null ? "—" : fmt.x(d.oversub_public_mult)}</td>
   <td class="num">${d.cornerstone_pct == null ? "—" : d.cornerstone_pct.toFixed(0) + "%"}</td>
+  ${retCell(d.grey_pct)}
   ${retCell(d.first_day_return_pct)}${retCell(d.ret_1m_pct)}${retCell(d.ret_3m_pct)}${retCell(d.since_ipo_pct)}
   <td class="num">${d.pe_ipo == null ? (d.profitable_at_ipo === "N" ? "n/m" : "—") : fmt.x(d.pe_ipo)}</td>
   <td class="mono" title="${d.a_share_code || ""}">${(d.a_share_code || "—").split(".")[0]}</td>
@@ -2978,6 +2988,7 @@ HTML = """<!doctype html>
   <th data-k="ipo_date">IPO date</th>
   <th class="num" data-k="deal_size_hkdm">Size</th><th class="num" data-k="final_price">Offer</th>
   <th class="num" data-k="oversub_public_mult">Sub</th><th class="num" data-k="cornerstone_pct">CS%</th>
+  <th class="num" data-k="grey_pct" title="Grey market (暗盤) close vs the offer price — the evening session before listing">Grey</th>
   <th class="num" data-k="first_day_return_pct">Day-1</th><th class="num" data-k="ret_1m_pct">1m</th>
   <th class="num" data-k="ret_3m_pct">3m</th><th class="num" data-k="since_ipo_pct">Since</th>
   <th class="num" data-k="pe_ipo">P/E</th>
