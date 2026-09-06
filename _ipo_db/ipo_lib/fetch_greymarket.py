@@ -111,6 +111,15 @@ def main():
     if a.codes:
         keep = {c.strip().zfill(4) for c in a.codes.split(",")}
         want = [d for d in want if d["code"] in keep]
+    # codes carrying a hand-verified print are left alone entirely: the manual
+    # file is the higher authority and the scrape must never contradict it
+    manual = set()
+    pM = ROOT / "data" / "grey_market_manual.json"
+    if pM.exists():
+        manual = {r["code"] for r in
+                  json.loads(pM.read_text(encoding="utf-8")).get("deals", [])
+                  if r.get("grey_close") is not None}
+    want = [d for d in want if d["code"] not in manual]
     if not a.refresh_all:
         # a captured value is permanent — the headline scrolls off page one
         # within days, so re-fetching can only ever LOSE data

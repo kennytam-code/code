@@ -1,0 +1,14 @@
+{
+  "_note": "HAND-VERIFIED grey-market closes for deals the AAStocks scrape cannot reach (its per-stock news page holds only ~21 recent articles, so anything older than roughly a month has scrolled away). Append to this file; it is never regenerated and never overwritten by fetch_greymarket.py, which skips any code present here. EVERY entry must satisfy the identity close/offer_price - 1 == pct, and the merge REJECTS any that does not — that check is what makes a hand-sourced number as safe as a scraped one. Record the venue: Phillip (輝立) and Futu print different closes for the same session (SHEIN 42.20 vs 42.12), so they must never be mixed.",
+  "_fields": "code, grey_close, grey_pct (signed vs offer), grey_date (the EVENING session, i.e. the trading day before listing), grey_venue, src",
+  "deals": [
+    {
+      "code": "3308",
+      "grey_close": 969.5,
+      "grey_pct": -1.1,
+      "grey_date": "2026-07-29",
+      "grey_venue": "Phillip (輝立)",
+      "src": "AASTOCKS news, syndicated on Yahoo HK Finance: 《新股》中際旭創(03308.HK)暗盤收報969.5元 低上市價1.1% — offer HK$980.00, so 969.5/980-1 = -1.07% which rounds to the published -1.1%. Futu's own print for the same session was 971.0 (-0.9%); the Phillip figure is recorded to match the scrape's venue."
+    }
+  ]
+}

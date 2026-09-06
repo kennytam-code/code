@@ -363,7 +363,32 @@ def main():
             for f in ("grey_close", "grey_pct", "grey_date", "grey_venue"):
                 put(c, f, r.get(f), f"aastocks:{r.get('grey_src', 'grey-market headline')}", 45)
             n_gm += 1
-        print(f"  grey-market close on {n_gm} deals")
+        # HAND-VERIFIED entries for deals the scrape cannot reach. Each is
+        # accepted only if it satisfies close/offer - 1 == pct: a grey close
+        # that does not reconcile against the filed offer price is a wrong
+        # number or a wrong deal, and either way must not enter the book.
+        pM = ROOT / "data" / "grey_market_manual.json"
+        n_man = n_rej = 0
+        if pM.exists():
+            for r in json.loads(pM.read_text()).get("deals", []):
+                c, gc, gp = r.get("code"), r.get("grey_close"), r.get("grey_pct")
+                x0 = deals.get(c)
+                if not x0 or gc is None or gp is None:
+                    continue
+                px0 = x0.get("final_price")
+                if px0:
+                    implied = 100 * (gc / px0 - 1)
+                    if abs(implied - gp) > 0.55:
+                        print(f"    REJECTED manual grey for {c}: {gc}/{px0} implies "
+                              f"{implied:+.2f}% but the entry says {gp:+.2f}%")
+                        n_rej += 1
+                        continue
+                for f in ("grey_close", "grey_pct", "grey_date", "grey_venue"):
+                    put(c, f, r.get(f), f"press:{r.get('src', 'hand-verified')}", 70,
+                        status="xchecked")
+                n_man += 1
+        print(f"  grey-market close on {n_gm} deals (+{n_man} hand-verified"
+              + (f", {n_rej} REJECTED on the offer-price identity" if n_rej else "") + ")")
 
     # --- who ran the stabilisation (the bank holding the shoe and the bid) ---
     d = load("stabilizing_managers.json")
@@ -1891,11 +1916,21 @@ def main():
             x["grey_called_it"] = ("Y" if (gp > 0) == (d1v > 0) or
                                    (abs(gp) < 0.05 and abs(d1v) < 0.05) else "N")
         if x.get("grey_close") is None and not x.get("grey_note"):
+            # Say WHY, measured, not vaguely. AAStocks publishes a headline for
+            # every listing, but a stock's news page holds only its ~21 most
+            # recent articles with no pagination, no date query and no offset,
+            # so the headline is unreachable roughly a month after the debut.
+            # Coverage by listing year is the fingerprint of exactly that:
+            # 2026 67%, 2025 35%, 2024 17%, 2021-23 zero.
             x["grey_note"] = (
-                "no grey-market headline on file for this deal — AAStocks "
-                "publishes one per listing but keeps only recent items on the "
-                "stock's news page, and no public archive of past evening "
-                "sessions exists; captured from this run onward")
+                "grey-market close not recoverable for this deal: AAStocks "
+                "published one but its per-stock news page keeps only ~21 "
+                "recent articles (no pagination, no date query), and no public "
+                "archive of past evening sessions exists on AAStocks, etnet, "
+                "Futu or Yahoo. Add it by hand to data/grey_market_manual.json "
+                "if you have the print — the merge checks it against the offer "
+                "price before accepting. Deals listing from now on are captured "
+                "automatically by the weekly run.")
         # No prospectus hyperlink: the per-stock HKEX search returned no
         # listing document for this code. Mostly older listings whose
         # prospectus was filed in a form the doc feed does not expose; the
