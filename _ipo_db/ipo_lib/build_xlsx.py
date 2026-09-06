@@ -277,6 +277,7 @@ DB_COLS = [
     ("DEMAND", "Grey mkt close", "grey_close", "0.000", 12),
     ("DEMAND", "Grey → day-1", "grey_to_day1_pct", '+0.0"%";-0.0"%"', 12),
     ("DEMAND", "Grey called day-1", "grey_called_it", None, 13),
+    ("DEMAND", "Grey mkt date", "grey_date", None, 12),
     ("DEMAND", "Shoe outcome (final)", "greenshoe_exercised_final", None, 17),
     # the date the stabilisation mandate dies, from the filing's own sentence —
     # the aftermarket desk plans around this, so it belongs on the row
