@@ -82,10 +82,14 @@ def parse(html):
         signed = 0.0
     else:
         signed = float(pct) * (1 if updown == "高" else -1)
-    # the dated stamp nearest the headline: scan the slice before it
-    head = html[:m.start()]
-    dts = RE_DT.findall(head)
-    gdate = dts[-1].replace("/", "-") if dts else None
+    # AAStocks writes the timestamp AFTER its headline:
+    #   《新股》…暗盤收報42.2元 低上市價13.1%  AASTOCKS新聞
+    #   document.write(ConvertToLocalTime({dt:'2026/08/31 18:35'}))
+    # so the stamp for THIS article is the first one FOLLOWING the match.
+    # Reading backwards picks up the PREVIOUS article's date, which put
+    # SHEIN's evening session on its listing day instead of the night before.
+    m2 = RE_DT.search(html, m.end())
+    gdate = m2.group(1).replace("/", "-") if m2 else None
     return close, signed, gdate, name.strip()
 
 
