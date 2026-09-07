@@ -361,6 +361,8 @@ def main():
                     help="how far back the 'just listed' section reaches")
     em.add_argument("--asof", default=None, help="pretend today is this ISO date")
     em.set_defaults(fn=cmd_email)
+    sub.add_parser("grey-note", help="regenerate the grey-market vs day-1 note (docx)").set_defaults(
+        fn=lambda a: run("ipo_lib/make_grey_note.py"))
     ex = sub.add_parser("export", help="bundle what another machine needs")
     ex.add_argument("--force", action="store_true",
                     help="skip the gate battery (emergencies only)")

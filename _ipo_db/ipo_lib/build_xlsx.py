@@ -269,15 +269,6 @@ DB_COLS = [
     ("DEMAND", "Cornerstone investors", "cornerstone_investors", None, 46),
     ("DEMAND", "CS keys", "cornerstone_keys", None, 16),
     ("DEMAND", "Greenshoe size (%)", "greenshoe_pct", '0.0"%"', 9),
-    # THE GREY MARKET — the evening session before listing. Sits in DEMAND
-    # because that is what it measures: what the book was worth once the
-    # allocations were out and anyone could leave. Feeds the screener comp
-    # table automatically (COMP_COLS is built from DB_COLS).
-    ("DEMAND", "Grey mkt % vs offer", "grey_pct", '+0.0"%";-0.0"%"', 14),
-    ("DEMAND", "Grey mkt close", "grey_close", "0.000", 12),
-    ("DEMAND", "Grey → day-1", "grey_to_day1_pct", '+0.0"%";-0.0"%"', 12),
-    ("DEMAND", "Grey called day-1", "grey_called_it", None, 13),
-    ("DEMAND", "Grey mkt date", "grey_date", None, 12),
     ("DEMAND", "Shoe outcome (final)", "greenshoe_exercised_final", None, 17),
     # the date the stabilisation mandate dies, from the filing's own sentence —
     # the aftermarket desk plans around this, so it belongs on the row
@@ -288,7 +279,18 @@ DB_COLS = [
     # the bank-family key the SM League groups on — same treatment as CS keys,
     # visible so the grouping is never a black box
     ("DEMAND", "SM key", "stabilizing_manager_key", None, 14),
+    # THE GREY MARKET — the evening session before listing — opens the
+    # PERFORMANCE band so it sits directly beside Day-1, where the reader
+    # looking at the tape actually is. It measures demand (what the book was
+    # worth once allocations were out and anyone could leave), but it IS the
+    # opening print, and the desk asked for it next to the day-1 columns.
+    # Feeds the screener comp table automatically (COMP_COLS <- DB_COLS).
+    ("PERFORMANCE", "Grey mkt % vs offer", "grey_pct", '+0.0"%";-0.0"%"', 14),
+    ("PERFORMANCE", "Grey mkt close", "grey_close", "0.000", 12),
     ("PERFORMANCE", "Day-1", "first_day_return_pct", '+0.0"%";-0.0"%"', 9),
+    ("PERFORMANCE", "Grey → day-1", "grey_to_day1_pct", '+0.0"%";-0.0"%"', 12),
+    ("PERFORMANCE", "Grey called day-1", "grey_called_it", None, 13),
+    ("PERFORMANCE", "Grey mkt date", "grey_date", None, 12),
     ("PERFORMANCE", "Day-1 open pop", "day1_open_pop_pct", '+0.0"%";-0.0"%"', 10),
     ("PERFORMANCE", "Day-1 open→close", "day1_open_close_pct", '+0.0"%";-0.0"%"', 11),
     ("PERFORMANCE", "1-week", "ret_1w_pct", '+0.0"%";-0.0"%"', 9),

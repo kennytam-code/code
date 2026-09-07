@@ -9,6 +9,62 @@
       "grey_date": "2026-07-29",
       "grey_venue": "Phillip (輝立)",
       "src": "AASTOCKS news, syndicated on Yahoo HK Finance: 《新股》中際旭創(03308.HK)暗盤收報969.5元 低上市價1.1% — offer HK$980.00, so 969.5/980-1 = -1.07% which rounds to the published -1.1%. Futu's own print for the same session was 971.0 (-0.9%); the Phillip figure is recorded to match the scrape's venue."
+    },
+    {
+      "code": "2475",
+      "grey_close": 60.15,
+      "grey_pct": -4.9,
+      "grey_date": "2026-07-08",
+      "grey_venue": "press (bastillepost) — venue not stated",
+      "src": "bastillepost.com, via search: '立訊精密…暗盤收報60.15元，較招股價低4.9%' — offer HK$63.28, 60.15/63.28-1 = -4.95%, rounds to the published -4.9%."
+    },
+    {
+      "code": "9980",
+      "grey_close": 250.0,
+      "grey_pct": 0.8,
+      "grey_date": "2026-02-02",
+      "grey_venue": "Phillip (輝立)",
+      "src": "Ming Pao 2026-02-03 '東鵬飲料3暗盤表現一般': 富途 247.8 (-0.08%), 輝立 250 (+0.8%), 耀才 249.2 (+0.5%) — offer HK$248.00; the Phillip print is recorded to match the scrape's venue. 250/248-1 = +0.81%."
+    },
+    {
+      "code": "6951",
+      "grey_close": 96.0,
+      "grey_pct": -4.29,
+      "grey_date": "2026-07-08",
+      "grey_venue": "Livermore (利弗莫爾) — NOT Phillip; the only published print found",
+      "src": "Zhitong via cn.investing.com '三环集团(06951)暗盘收跌超4%…利弗莫尔证券暗盘交易显示报价96港元，较招股价100.3港元下跌4.29%' — 96/100.3-1 = -4.29% exactly."
+    },
+    {
+      "code": "6082",
+      "grey_close": 35.08,
+      "grey_pct": 79.0,
+      "grey_date": "2025-12-31",
+      "grey_venue": "Phillip (輝立), as published by AAStocks",
+      "src": "AASTOCKS headline on Yahoo HK: '壁仞科技暗盤收報35.08元 高上市價79%' — offer HK$19.60, 35.08/19.6-1 = +78.98%. Grey high/low 38.8/19.6."
+    },
+    {
+      "code": "0470",
+      "grey_close": 46.66,
+      "grey_pct": 1.9,
+      "grey_date": "2026-02-10",
+      "grey_venue": "Phillip (輝立), as published by AAStocks",
+      "src": "AASTOCKS NOW.1502421: '先導智能(00470.HK)暗盤收報46.66元 高上市價1.9%' — 根據輝立交易平台; offer HK$45.80, 46.66/45.8-1 = +1.88%."
+    },
+    {
+      "code": "0100",
+      "grey_close": 205.6,
+      "grey_pct": 24.6,
+      "grey_date": "2026-01-08",
+      "grey_venue": "AAStocks headline figure (search summary attributes it to Futu; a second platform printed 209.2 / +26.8%)",
+      "src": "AASTOCKS headline on Yahoo HK: 'MiniMax-WP(00100.HK)暗盤收報205.6元 高上市價24.6%' — offer HK$165.00, 205.6/165-1 = +24.61%."
+    },
+    {
+      "code": "0501",
+      "grey_close": 104.5,
+      "grey_pct": -0.3,
+      "grey_date": "2026-01-09",
+      "grey_venue": "press (HKET) — venue not stated",
+      "src": "HKET via search: '豪威集團暗盤昨日收104.5元，低上市價0.3%' — offer HK$104.80, 104.5/104.8-1 = -0.29%. Day-1 opened 108 (+3.1%)."
     }
   ]
 }
