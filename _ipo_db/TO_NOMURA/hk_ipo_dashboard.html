@@ -937,9 +937,14 @@ function similarityScore(t, d, W, idx) {
   // unknown on either side scores 0 — mirrors the Excel IF(OR(blank),0,...) rule
   const prof = (d.profitable_at_ipo != null && t.profitable != null
                 && (d.profitable_at_ipo === "Y") === (!!t.profitable)) ? 1 : 0;
-  const dh = d.is_h_share, th = t.is_h;
-  const ah = (dh != null && th != null
-              && (dh === true || dh === "Y") === (!!th)) ? 1 : 0;
+  // is_h_share is only ever SET where an A line was found, so an unset flag
+  // is the answer "no pair" — the workbook writes it as "N" on both the
+  // Database and Pipeline tabs and scores it. Treating null as unknown here
+  // silently dropped the A/H term for the ~450 non-A/H deals (Excel gave a
+  // non-A/H target's non-A/H comps +W_AH, this page gave 0).
+  const dh = (d.is_h_share === true || d.is_h_share === "Y");
+  const th = (t.is_h === true || t.is_h === "Y");
+  const ah = dh === th ? 1 : 0;
   let rec = 0;
   if (d.ipo_date) {
     const days = (new Date(t.ref_date) - new Date(d.ipo_date)) / 86400000;

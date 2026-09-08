@@ -41,8 +41,12 @@ def python_reference(target, deals, cfg):
         # unknown on either side scores 0 — never a free "match"
         dp, tp = d.get("profitable_at_ipo"), target.get("profitable")
         prof = 1 if (dp is not None and tp is not None and (dp == "Y") == bool(tp)) else 0
-        dh, th = d.get("is_h_share"), target.get("is_h")
-        ah = 1 if (dh is not None and th is not None and bool(dh) == bool(th)) else 0
+        # is_h_share is only ever SET where an A line was found, so an unset
+        # flag is the answer "no pair" and the workbook writes it as "N" (see
+        # build_xlsx) — it is not an unknown. Mirror that, or every non-A/H
+        # comp is under-scored by W_AH against the sheet.
+        dh, th = d.get("is_h_share") in (True, "Y"), target.get("is_h")
+        ah = 1 if (th is not None and dh == bool(th)) else 0
         rec = 0.0
         if d.get("ipo_date") and target.get("ref_date"):
             days = (date.fromisoformat(target["ref_date"])
@@ -58,7 +62,52 @@ def python_reference(target, deals, cfg):
                 + W["size_proximity"] * size + W["profitability_match"] * prof
                 + W["h_share_match"] * ah + W["recency"] * rec
                 + W.get("pe_proximity", 0) * pe)
-    return sorted(deals, key=lambda d: -score(d))
+    # The sheet adds ROW()/1e6 so MATCH(LARGE(...,k)) never returns one comp
+    # twice; the HTML scorer adds (row index)/1e6 for the same reason. That
+    # epsilon is also the tie policy — LATER row (more recent listing) wins —
+    # and a size-less PHIP target ties every same-subsector comp at the gate,
+    # so the reference must carry it too or a stable sort picks the earliest.
+    return [d for _s, d in sorted(((score(d) + (i + 1) / 1e6, d)
+                                   for i, d in enumerate(deals)),
+                                  key=lambda t: -t[0])]
+
+
+def js_reference(target, n):
+    """Comp #1 from the DASHBOARD's own similarityScore on the same slice.
+
+    Three implementations rank comps (Excel formulas, this file's Python, the
+    page's JS). Excel-vs-Python parity alone let the JS drift once: it scored an
+    unset A/H flag as unknown (0) where the sheet writes "N" and scores it, so
+    the page ignored the A/H term for ~450 deals. Returns None when the
+    dashboard is not built or playwright is unavailable — reported, not hidden.
+    """
+    html = ROOT / "out" / "hk_ipo_dashboard.html"
+    if not html.exists():
+        return None
+    try:
+        from playwright.sync_api import sync_playwright
+    except Exception:
+        return None
+    with sync_playwright() as p:
+        b = p.chromium.launch()
+        pg = b.new_page()
+        pg.goto(html.as_uri())
+        res = pg.evaluate("""([t, n]) => {
+            const pool = deals.slice(0, n);
+            const r = pool.map((d, i) => ({ d, s: similarityScore(t, d, CFGW, i + 1) }))
+                          .sort((a, b) => b.s - a.s);
+            // the A/H rule on its own: an UNSET flag is "no pair", so against
+            // an unset-flag target the unset comp must beat the A/H comp by
+            // exactly W_AH (what the sheet's IF(db=D11,1,0) does with "N"="N")
+            const t0 = { name: "_t", sector: "_s", subsector: "_b", size: 0,
+                         profitable: null, is_h: null, ref_date: t.ref_date, pe: 0 };
+            const un = { name: "_u", sector: "_s", subsector: "_b", is_h_share: null };
+            const ah = { name: "_a", sector: "_s", subsector: "_b", is_h_share: true };
+            return { top: r[0].d.name,
+                     ah_gap: similarityScore(t0, un, CFGW, 1) - similarityScore(t0, ah, CFGW, 1),
+                     w_ah: CFGW.ah }; }""", [target, n])
+        b.close()
+    return res
 
 
 def main():
@@ -135,6 +184,21 @@ def main():
     print(f"  python ref  : {expect}")
     ok = (str(comp1).strip() == str(expect).strip())
     print("  PARITY      :", "MATCH" if ok else "MISMATCH")
+    # third implementation: the page's JS on the same slice and target
+    js_top = js_reference({"name": target_name, "sector": tgt["sector"],
+                           "subsector": sub, "size": tgt["size"] or 0,
+                           "profitable": tgt["profitable"], "is_h": tgt["is_h"],
+                           "ref_date": ref_date, "pe": tgt["pe"] or 0}, N)
+    if js_top is None:
+        print("  JS parity   : dashboard not built or playwright missing — NOT checked")
+    else:
+        js_ok = str(js_top["top"]).strip() == str(expect).strip()
+        print(f"  JS ref      : {js_top['top']}  ->", "MATCH" if js_ok else "MISMATCH")
+        ah_ok = abs(js_top["ah_gap"] - js_top["w_ah"]) < 1e-6
+        print(f"  JS A/H rule : unset-vs-A/H comp gap {js_top['ah_gap']:g} "
+              f"(W_AH {js_top['w_ah']}) [{'OK' if ah_ok else 'FAIL — unset flag scored as unknown'}]")
+        if not (js_ok and ah_ok):
+            ok = False
 
     # The gate itself, not just the top name: same-subsector comps must carry
     # the "same subsector" label. A variable clobber once wrote the correct

@@ -1360,6 +1360,31 @@ carries `grey_note` saying so — an explained absence, not a silent blank.
 - The scoring-parity gate needs the `formulas` package in whichever venv runs
   it; a missing package reads as a red gate, which is what happened once.
 
+**v27.6 — the scoring gate went red on a TIE, and the fix found a second gap.**
+The `test_screener_formulas` gate compares Excel's comp #1 against a Python
+reference scorer. It went red the day Xiaohongshu became the screener's
+default pick: a PHIP applicant with no size, no P/E and no profitability
+flag ties every same-subsector comp at the gate (1,000 + the A/H point). The
+sheet adds `ROW()/1e6` to every score so `MATCH(LARGE(...,k))` never returns
+the same comp twice — and that epsilon is also the tie policy: the later
+Database row (more recent listing) wins, so Excel said TRIP.COM (Apr 2021)
+while the reference's stable sort said Kuaishou (Feb 2021). The HTML scorer
+already carried the same epsilon; the reference now does too. Nothing in the
+shipped workbook was wrong; the test's oracle was incomplete.
+
+Dumping the Calc rows to find that exposed a REAL divergence: `is_h_share` is
+only ever set where an A line was found, so the workbook writes an unset flag
+as "N" on both the Database and Pipeline tabs and scores it ("N"="N" → +W_AH).
+The dashboard's JS treated null as UNKNOWN and scored 0 — so for a non-A/H
+target the page never gave its non-A/H comps the 50-point match Excel gave
+them, and the two products could rank a near-tied A/H vs non-A/H pair
+differently. The JS now reads unset as "no pair", same as the sheet. The gate
+gained a third leg: it drives the built dashboard with playwright, ranks the
+same 40-deal slice with the page's own `similarityScore`, requires the same
+comp #1, and scores a synthetic unset-vs-A/H pair requiring a gap of exactly
+W_AH. Run against the pre-fix page it fails (gap 0); against the rebuilt page
+it passes (gap 50). Three implementations, one answer, checked every ship.
+
 ## THE WEEKLY EMAIL (v26.3) — one command, Monday morning
 
 ```
