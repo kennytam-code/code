@@ -285,12 +285,11 @@ DB_COLS = [
     # worth once allocations were out and anyone could leave), but it IS the
     # opening print, and the desk asked for it next to the day-1 columns.
     # Feeds the screener comp table automatically (COMP_COLS <- DB_COLS).
+    # the desk wants ONE grey column on the row: the % vs offer. The close,
+    # the date and the derived grey->day-1 legs stay in deals.json for the
+    # note (make_grey_note.py) but do not ship as columns.
     ("PERFORMANCE", "Grey mkt % vs offer", "grey_pct", '+0.0"%";-0.0"%"', 14),
-    ("PERFORMANCE", "Grey mkt close", "grey_close", "0.000", 12),
     ("PERFORMANCE", "Day-1", "first_day_return_pct", '+0.0"%";-0.0"%"', 9),
-    ("PERFORMANCE", "Grey → day-1", "grey_to_day1_pct", '+0.0"%";-0.0"%"', 12),
-    ("PERFORMANCE", "Grey called day-1", "grey_called_it", None, 13),
-    ("PERFORMANCE", "Grey mkt date", "grey_date", None, 12),
     ("PERFORMANCE", "Day-1 open pop", "day1_open_pop_pct", '+0.0"%";-0.0"%"', 10),
     ("PERFORMANCE", "Day-1 open→close", "day1_open_close_pct", '+0.0"%";-0.0"%"', 11),
     ("PERFORMANCE", "1-week", "ret_1w_pct", '+0.0"%";-0.0"%"', 9),

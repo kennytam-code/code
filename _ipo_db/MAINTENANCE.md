@@ -1337,6 +1337,29 @@ the evening move survived the night), and `grey_called_it` is Y/N on whether
 the grey market got the direction right. A deal with no headline on file
 carries `grey_note` saying so — an explained absence, not a silent blank.
 
+
+**v27.5 — three desk questions, answered from the data, not assumed:**
+- *"A lot of 3-month returns are missing."* 43 of 514 at 8 Sep: 40 are listings
+  from the last three months whose 63-session window has not elapsed (the book
+  carries 103 deals from 2026, many from June onward), each with `ret_3m_note`
+  saying so; the other 3 (Lung Fung, Dajin, Longbio, all listed 5 June) crossed
+  their 63rd bar AFTER the last price fetch and fill on the next `h-paths` run.
+  A blank 3m on a young listing is correct; a blank on an old one means the
+  price path is stale — refresh, do not patch.
+- *"Why is one stock's price-in-range negative?"* Global New Materials (6616):
+  offer HK$3.25 against a HK$3.52–4.22 range, struck via HK's Downward Offer
+  Price Adjustment (up to 10% below the floor). (3.25−3.52)/(4.22−3.52) =
+  −38.6% of the range-width below the floor. The negative is the honest
+  figure and the row's `range_note` says why; clamping to 0 would hide a real
+  pricing event. It is the only such row.
+- *"I only need grey market % vs offer."* The Database and screener now carry
+  ONE grey column, in PERFORMANCE beside Day-1. `grey_close`, `grey_date`,
+  `grey_to_day1_pct` and `grey_called_it` stay in `deals.json` (the analysis
+  note and the email read them) but no longer ship as columns. Field parity
+  between Excel and HTML re-verified with only `grey_pct` on both sides.
+- The scoring-parity gate needs the `formulas` package in whichever venv runs
+  it; a missing package reads as a red gate, which is what happened once.
+
 ## THE WEEKLY EMAIL (v26.3) — one command, Monday morning
 
 ```
