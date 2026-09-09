@@ -913,7 +913,7 @@ came back, one confirming and one refuting.
   indicative low is legal in HK (Downward Offer Price Adjustment) and is annotated,
   not flagged (Global New Material).
 - **Every column is a value or a stated reason.** merge writes *_note fields for
-  each remaining blank; the Database's "Why anything is blank" column shows them.
+  each remaining blank; the Database's "Notes on blanks" column shows them.
 - `price_asof` dates the since-IPO column (prices refresh weekly, so the number is
   never more than a few sessions old — this was the only "mismatch" left in the
   independent audit).
@@ -925,7 +925,7 @@ came back, one confirming and one refuting.
   A pre-revenue 18A issuer is the exception — its tiny revenue is real, so the
   revenue stands and only the meaningless P/S is withheld as `n/m`. Every case
   writes its own reason into `fin_check` / `pe_note` / `ps_note`, which surface in
-  the Database's "Why anything is blank" column. This removed 92 impossible
+  the Database's "Notes on blanks" column. This removed 92 impossible
   multiples (Li Auto read 307,800x P/S, Zijin Gold 39,145x P/E).
 - **Three extraction bugs the gate exposed, now fixed at source:**
   a *year header row* under a "Revenue" label was being read as money
@@ -1384,6 +1384,63 @@ same 40-deal slice with the page's own `similarityScore`, requires the same
 comp #1, and scores a synthetic unset-vs-A/H pair requiring a gap of exactly
 W_AH. Run against the pre-fix page it fails (gap 0); against the rebuilt page
 it passes (gap 50). Three implementations, one answer, checked every ship.
+
+## v28 (2026-09-09) — the workbook reads like a desk file, not a generator
+
+The desk's read: the Screener's sections could not be told apart (every bar
+was the same navy), the tabs carried too many footnotes, and the whole file
+read as machine-written. What changed, and where to keep it that way:
+
+**Screener section colours.** Each block has its own bar: TARGET navy, RANK
+AND FILTER green, the comp table's band row in the same per-band tints as the
+Database (deal terms green, demand gold, performance teal, fundamentals grey,
+A/H burgundy, scoring grey), TARGET VS CLOSEST COMP slate, the two A-share
+panels burgundy (the A/H colour), the side panels grey. Palette constants are
+`F_SEC_*` and `BAND_TINT` at the top of `build_xlsx.py`; the `section()`
+helper writes a bar. A new block gets its own `F_SEC_*`, never a reuse.
+
+**Footnotes.** Rule: a label says what a cell takes; a note is for something
+the label cannot carry. The Screener lost every hint beside its controls (the
+gate, "drives demand-similar first", the rank-mode glossary, the live-panel
+side notes, the cornerstone how-to block), the median-row footnote and the
+"what it does" column. Tab intro lines are one sentence. The SM League intro
+was a 20-line paragraph; it is three sentences. The Notes tab is the one place
+for explanation and it was rewritten plainly.
+
+**Wording.** No em-dashes, arrows or middle dots in cell text; no ALL-CAPS
+emphasis inside sentences; titles are nouns ("STABILISING MANAGER LEAGUE",
+not "STABILISING-MANAGER LEAGUE — how deals each bank defended traded").
+Research inputs typed with dashes (`pipeline.json` statuses, A/H commentary)
+are normalised at render time by `plain()` in `build_xlsx.py`, prose fields
+only, never names. Column headers: "Notes on blanks" (was "Why anything is
+blank"), "Day-1 open to close", "Index, IPO to 1m".
+
+**Per-row notes (merge_batches.py).** Every explained-absence note was
+rewritten as the reason alone, without the defence of the reason: "no
+over-allotment option" (was "... in the offer structure, so no stabilising
+manager is appointed"), "maximum offer price only, no floor published" (was a
+sentence about what the filing publishes), "no archived print; add to
+data/grey_market_manual.json" (was a five-line paragraph on 384 rows). The
+"no A-share listing" note no longer renders in the notes column because the
+A/H cells already read N/A; it stays in `deals.json`. One real bug surfaced:
+the proxy A/H note printed a Python dict (`{'code': ..., 'name': ...}`) into
+the cell; it now prints the proxy's name and code. Mean notes-cell length
+351 to 292 characters. `Verify (BBG)` section D filters on "below the net
+proceeds" (the note text changed with the rest).
+
+**Stale legend fixed.** The Database intro and the Notes tab promised green
+(cross-checked) and amber (judgment) fills that the Database has not painted
+since the single-fill rule; the legend now says what is there: orange =
+sources disagree, grey = calculated, blue = input. The Calc tab intro said
+the Screener ranks on column H; it is K (`H_SCORE`), now read from the constant.
+
+**Gates unchanged** and all nine green: label contracts are prefix-matched
+(`audit_formulas.CARD_EXPECT`, the test's `row_of`), so "Subsector (ranks
+first)" and "Force-include codes (9888, 2015)" still satisfy them. Off the
+desk, look at a tab before shipping it: `python ipo_lib/render_xlsx.py --tab
+"SM League"` renders the tab to out/render/ as HTML and, with playwright, a
+PNG (fills, fonts, merges, widths; no conditional formats, no cached formula
+values).
 
 ## THE WEEKLY EMAIL (v26.3) — one command, Monday morning
 

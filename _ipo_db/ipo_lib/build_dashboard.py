@@ -165,7 +165,7 @@ def _phip_as_pipeline(root, existing_names):
             "name": nm,
             "name_cn": cn,
             "sector": p.get("sector"), "subsector": p.get("subsector"),
-            "status": "PHIP — hearing cleared",
+            "status": "PHIP (hearing cleared)",
             "expected_timing": f"PHIP {a.get('latest_submission') or ''}",
             "rev_latest": p.get("rev_latest"), "ni_latest": p.get("ni_latest"),
             "profitable_at_ipo": p.get("profitable_at_ipo"),

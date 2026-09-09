@@ -133,9 +133,8 @@ def main():
                     rec["stabilization_dt"] = r.get("DATE_TIME")
                     if not resolved:
                         rec["stabilization_note"] = (
-                            "notice located and linked; its outcome wording is "
-                            "not one of the recognised forms, so the over-allotment "
-                            "result is left blank rather than guessed")
+                            "notice linked; outcome wording not recognised, "
+                            "result left blank")
                     break
         if len(rec) > 1:
             out.append(rec)

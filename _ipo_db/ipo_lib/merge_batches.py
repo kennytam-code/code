@@ -289,9 +289,8 @@ def main():
                     r"exceed|at\s+least|not\s+less\s+than|minimum|as\s+required\s+by|"
                     r"Rule\s+8\.05|Rule\s+8A\.06|requirement", _lead, re.I):
                 deals[c]["mktcap_note"] = (
-                    f"prospectus 'market capitalisation' line rejected — it is the "
-                    f"listing-rule threshold, not the issuer's figure "
-                    f"(\"{msnip.strip()[:110]}\")")
+                    f"prospectus 'market capitalisation' line is the listing-rule "
+                    f"threshold, not the issuer's figure; rejected")
                 stated = None
             put(c, "mktcap_stated_hkdm", stated, src, 40)
             # The statement is anchored to a price — usually the maximum of the
@@ -411,9 +410,7 @@ def main():
                 # the generic "not named in a form the parser reads" note the
                 # blank would otherwise get further down
                 deals[c]["stabmgr_note"] = (
-                    "the filing states no stabilising manager will be "
-                    "appointed — a filed fact, not an extraction gap "
-                    f"({r.get('src', '')})")
+                    f"filing states none appointed ({r.get('src', '')})")
                 prov[c]["stabmgr_note"] = {"src": f"hkex-pdf:{r.get('src','')}",
                                            "prio": 60, "status": "single"}
             n_sm += 1
@@ -440,9 +437,8 @@ def main():
                     aged = 0
                 if aged > 30 and not deals[c].get("price_note"):
                     deals[c]["price_note"] = (
-                        f"no trading print since {ld} — the line is suspended or "
-                        f"delisted; last_close and since-IPO are measured to the "
-                        f"final traded session, not to today")
+                        f"no trade since {ld} (suspended or delisted); last close "
+                        f"and since-IPO measured to the final traded session")
             # a heuristic listing date (allot-date+1d) is CONFIRMED when the
             # first traded bar landed on exactly that day — that is the
             # exchange's own record of when dealings began
@@ -628,9 +624,8 @@ def main():
                     n_sh = None
                 if n_sh and deals[c].get("greenshoe_exercised_final") == "lapsed":
                     deals[c]["shoe_note"] = (
-                        f"CONFLICT: our notice-parse read 'lapsed' but Bloomberg "
-                        f"records {n_sh:,.0f} over-allotment shares exercised — "
-                        f"verify the stabilisation notice by hand")
+                        f"conflict: notice read 'lapsed' but Bloomberg records "
+                        f"{n_sh:,.0f} shares exercised; check the notice")
             if r.get("a_pe_at_hipo") is not None and 0 < r["a_pe_at_hipo"] < 5000:
                 put(c, "a_pe_at_hipo", round(r["a_pe_at_hipo"], 2),
                     f"bloomberg:BDH PE_RATIO A-line at H-IPO (desk paste {asof})", 95)
@@ -833,10 +828,8 @@ def main():
         # thing discarded.
         if derived and gross and net and max(gross, net) < derived * 0.25:
             x["size_note"] = (f"stated gross HK${gross:,.1f}m / net HK${net:,.1f}m "
-                              f"rejected — the filing's own {sh:,.0f} offer shares "
-                              f"at HK${fp:,.2f} come to HK${derived:,.1f}m, so both "
-                              f"figures describe the over-allotment option, not "
-                              f"the offering")
+                              f"rejected; {sh:,.0f} offer shares at HK${fp:,.2f} = "
+                              f"HK${derived:,.1f}m (stated figures are the shoe)")
             for _f in ("gross_proceeds_hkdm", "net_proceeds_hkdm"):
                 x.pop(_f, None)
                 prov[c].pop(_f, None)
@@ -868,9 +861,8 @@ def main():
         # An impossible pair means the gross parse is wrong, so it is dropped
         # and the size falls through to shares x price, then to net.
         if gross and net and gross < net * 0.99:
-            x["size_note"] = (f"stated gross HK${gross:,.1f}m rejected — below "
-                              f"the deal's own net proceeds HK${net:,.1f}m, "
-                              f"which cannot happen")
+            x["size_note"] = (f"stated gross HK${gross:,.1f}m rejected, below the "
+                              f"net proceeds of HK${net:,.1f}m")
             x.pop("gross_proceeds_hkdm", None)
             prov[c].pop("gross_proceeds_hkdm", None)
             gross = None
@@ -881,10 +873,8 @@ def main():
         # filing's own header, so where the two disagree by more than 2x the
         # arithmetic wins and the stated figure is retired with a reason.
         if gross and derived and gross < derived * 0.5:
-            x["size_note"] = (f"stated gross HK${gross:,.1f}m rejected — the "
-                              f"filing's own {sh:,.0f} offer shares at "
-                              f"HK${fp:,.2f} come to HK${derived:,.1f}m, so the "
-                              f"stated figure is a tranche or the greenshoe")
+            x["size_note"] = (f"stated gross HK${gross:,.1f}m rejected; {sh:,.0f} "
+                              f"offer shares at HK${fp:,.2f} = HK${derived:,.1f}m")
             x.pop("gross_proceeds_hkdm", None)
             prov[c].pop("gross_proceeds_hkdm", None)
             gross = None
@@ -937,8 +927,8 @@ def main():
                 x["mktcap_ipo_hkdm"] = round(x["mktcap_stated_hkdm"] * fp / _sp, 1)
                 x["mktcap_note"] = ((x.get("mktcap_note") + " | ") if x.get("mktcap_note")
                                     else "") + (
-                    f"prospectus states HK${x['mktcap_stated_hkdm']:,.0f}m at "
-                    f"HK${_sp:,.2f}; rescaled to the struck HK${fp:,.2f}")
+                    f"prospectus cap HK${x['mktcap_stated_hkdm']:,.0f}m at "
+                    f"HK${_sp:,.2f}, rescaled to HK${fp:,.2f}")
                 prov[c]["mktcap_ipo_hkdm"] = {
                     "src": "prospectus:stated market capitalisation, rescaled to the offer price",
                     "prio": 48, "status": "single"}
@@ -966,11 +956,9 @@ def main():
                 "prio": 45, "status": "estimated"}
             # the count is TODAY's, so a bonus issue since listing would
             # inflate it — say so rather than present a proxy as a filing
-            x["mktcap_note"] = ("no share count or stated cap in the filings — "
-                                "company cap proxied by today's A-line total "
-                                "share capital x the H offer price; a "
-                                "capitalisation issue since listing would "
-                                "overstate it")
+            x["mktcap_note"] = ("no share count or stated cap in the filings; "
+                                "proxied by today's A-line share capital x the "
+                                "H offer price")
         elif x.get("mktcap_aastocks_hkdm"):
             x["mktcap_ipo_hkdm"] = x["mktcap_aastocks_hkdm"]
             prov[c]["mktcap_ipo_hkdm"] = {"src": "aastocks:listed mktcap (midpoint)",
@@ -993,9 +981,8 @@ def main():
                     # whole company (all share classes x price). Not a
                     # disagreement about the same quantity — keep the derived
                     # value, explain, no orange.
-                    x["mktcap_note"] = (f"AAStocks HK${aa:,.0f}m is the H-listing "
-                                        f"value only; company-wide cap derived from "
-                                        f"the filing is kept")
+                    x["mktcap_note"] = (f"AAStocks HK${aa:,.0f}m is the H tranche only; "
+                                        f"company-wide cap from the filing kept")
                     prov[c]["mktcap_ipo_hkdm"]["status"] = "single"
                 elif "shares upon listing" not in x["mktcap_basis"]:
                     # ADJUDICATED: the derivation was an ESTIMATE (deal size /
@@ -1004,10 +991,8 @@ def main():
                     # (8x both ways in the worst cases = the % was misread).
                     # The published figure wins; the estimate is retired.
                     x["mktcap_ipo_hkdm"] = aa
-                    x["mktcap_note"] = ("estimate from "
-                                        f"{x['mktcap_basis'].split(':')[-1]} disagreed "
-                                        f"with the published listing cap — published "
-                                        f"figure adopted")
+                    x["mktcap_note"] = ("published listing cap used; the estimate from "
+                                        f"{x['mktcap_basis'].split(':')[-1]} disagreed")
                     prov[c]["mktcap_ipo_hkdm"] = {
                         "src": "aastocks:上市市值 at the struck price", "prio": 43,
                         "status": "single"}
@@ -1019,7 +1004,7 @@ def main():
                     prov[c]["mktcap_ipo_hkdm"]["status"] = "single"
                     x["mktcap_note"] = (f"AAStocks lists HK${aa:,.0f}m at listing vs "
                                         f"HK${x['mktcap_ipo_hkdm']:,.0f}m from price x filed "
-                                        f"share count — the filed count is kept")
+                                        f"share count; the filed count kept")
         # --- A/H market-cap adjudication (before P/E-P/S derive off the cap).
         # Independent yardstick for A+H issuers: the A-line's total share
         # capital (which already includes the new H shares) x the H offer
@@ -1049,15 +1034,14 @@ def main():
                 x["mktcap_note"] = ((x.get("mktcap_note") + " | ") if x.get("mktcap_note")
                                     else "") + (
                     f"today's A-line share count implies HK${alt:,.0f}m, {gap:.0%} "
-                    f"above the filed count at listing — a capitalisation issue "
-                    f"after listing; the filed count is kept")
+                    f"above the filed count (capitalisation issue since); filed count kept")
             else:
                 ah_cap_fixed.append((c, mc0, alt, gap))
                 x["mktcap_ipo_hkdm"] = round(alt, 1)
                 x["mktcap_basis"] = "derived:A-line total share capital x H offer price"
                 x["mktcap_note"] = (f"parsed cap HK${mc0:,.0f}m "
                                     f"({basis0.split(':')[-1]}) was {gap:.0%} off "
-                                    f"the A-line share-capital figure — A-line adopted")
+                                    f"the A-line figure; A-line used")
                 prov[c]["mktcap_ipo_hkdm"] = {
                     "src": "derived:A-line total share capital x H offer price",
                     "prio": 55, "status": "xchecked"}
@@ -1107,14 +1091,11 @@ def main():
                 # BELOW the income line — NI above income is genuine there
                 # (Tian Tu FY2022: total income RMB423m, NI RMB749m), so the
                 # pair stands and the note says why it looks odd
-                x["fin_check"] = ("net income exceeds total income via "
-                                  "equity-method investment gains — normal for "
-                                  "an investment firm; both figures are as filed")
+                x["fin_check"] = ("net income above total income (equity-method "
+                                  "gains, investment firm); both as filed")
             else:
-                x["fin_check"] = (f"latest-FY net income (HK${ni:,.1f}m) exceeds revenue "
-                                  f"(HK${rev:,.1f}m) — the extracted pair is inconsistent, "
-                                  f"so both figures and the multiples derived from them "
-                                  f"are withheld")
+                x["fin_check"] = (f"net income HK${ni:,.1f}m exceeds revenue "
+                                  f"HK${rev:,.1f}m; both withheld with their multiples")
                 for k in ("rev_latest", "ni_latest", "pe_ipo", "ps_ipo"):
                     x.pop(k, None)
                 rev = ni = None
@@ -1127,19 +1108,17 @@ def main():
             bbg_pe = x.get("pe_ipo_bbg")
             if bbg_pe and x["pe_ipo"] <= 1000 \
                     and abs(x["pe_ipo"] / bbg_pe - 1) <= 0.25:
-                x["pe_note"] = (f"extreme but REAL — trailing multiple at the offer; "
-                                f"Bloomberg prints {bbg_pe:,.0f}x at listing")
+                x["pe_note"] = (f"extreme but real: trailing multiple at the offer, "
+                                f"Bloomberg prints {bbg_pe:,.0f}x")
                 prov[c]["pe_ipo"] = {"src": "derived:mktcap / latest FY NI",
                                      "prio": 50, "status": "xchecked",
                                      "src2": "bloomberg:P/E at listing"}
             else:
-                x["pe_note"] = (f"withheld — mktcap / net income gives {x['pe_ipo']:,.0f}x, "
-                                f"which fails the {MULT_CAP}x plausibility check"
-                                + (f"; Bloomberg prints {bbg_pe:,.0f}x — the two agree, "
-                                   f"which at this level reads as a shared data artifact"
+                x["pe_note"] = (f"withheld: {x['pe_ipo']:,.0f}x fails the {MULT_CAP}x "
+                                f"plausibility cap"
+                                + (f" (Bloomberg agrees at {bbg_pe:,.0f}x)"
                                    if bbg_pe and abs(x["pe_ipo"] / bbg_pe - 1) <= 0.25
-                                   else f"; the extracted net income (HK${ni:,.1f}m) "
-                                        f"is not trustworthy"))
+                                   else f"; extracted net income HK${ni:,.1f}m suspect"))
                 x.pop("pe_ipo", None)
                 if not prerev:
                     x.pop("ni_latest", None)
@@ -1151,13 +1130,11 @@ def main():
                 # desk asked for no deal blank on both P/E and P/S — a
                 # pre-revenue biotech is n/m on P/E (loss-maker), so P/S
                 # stays VISIBLE with its scale explained rather than blank.
-                x["ps_note"] = (f"{x['ps_ipo']:,.0f}x on HK${rev:,.1f}m revenue "
-                                f"— effectively pre-revenue; the multiple is "
-                                f"shown for completeness, not comparability")
+                x["ps_note"] = (f"{x['ps_ipo']:,.0f}x on HK${rev:,.1f}m revenue, "
+                                f"effectively pre-revenue; not comparable")
             else:
-                x["ps_note"] = (f"withheld — mktcap / revenue gives {x['ps_ipo']:,.0f}x, "
-                                f"which fails the {MULT_CAP}x plausibility check; the "
-                                f"extracted revenue (HK${rev:,.1f}m) is not trustworthy")
+                x["ps_note"] = (f"withheld: {x['ps_ipo']:,.0f}x fails the {MULT_CAP}x "
+                                f"plausibility cap; extracted revenue HK${rev:,.1f}m suspect")
                 x.pop("ps_ipo", None)
                 x.pop("rev_latest", None)
                 rev = None
@@ -1254,16 +1231,14 @@ def main():
                     "src": f"cross-check repair: {how}", "prio": 55,
                     "status": "single"}
                 x["cornerstone_note"] = (
-                    f"table parse read {bad_pct:.0f}% but the institutional "
-                    f"total implies {implied:.0f}% — parse rejected, "
-                    f"{how} used ({x['cornerstone_pct']}%)")
+                    f"table parse {bad_pct:.0f}% rejected (institutional total "
+                    f"implies {implied:.0f}%); {how} used")
             else:
                 if prov[c].get("cornerstone_pct", {}).get("status") == "conflict":
                     prov[c]["cornerstone_pct"]["status"] = "single"
                 if implied > x["cornerstone_pct"] + 20:
-                    x["cornerstone_note"] = ("AAStocks institutional table includes "
-                                             "non-cornerstone orders (superset) — "
-                                             "cornerstone % is from the prospectus")
+                    x["cornerstone_note"] = ("% from the prospectus; AAStocks table "
+                                             "includes non-cornerstone orders")
     # ONE spelling per investor across the whole book. The same house reaches us
     # from three sources (prospectus table, prospectus prose, AAStocks EN) and
     # spells itself differently in each — "GIC Private Li" vs "GIC Private
@@ -1308,16 +1283,13 @@ def main():
         tot, size = x.get("cornerstone_aa_total_hkdm"), x.get("deal_size_hkdm")
         if tot and size and 0 < tot / size <= 1.2:
             x["cornerstone_pct"] = round(min(100.0, 100 * tot / size), 1)
-            x["cornerstone_pct_note"] = (
-                "AAStocks institutional-order total / deal size — an upper "
-                "bound; the table can include non-cornerstone orders")
+            x["cornerstone_pct_note"] = ("upper bound: AAStocks institutional total "
+                                         "/ deal size")
             prov[c]["cornerstone_pct"] = {"src": "aastocks:機構性投資者 total",
                                           "prio": 40, "status": "single"}
             n_pct_fill += 1
         elif not x.get("cornerstone_pct_note"):
-            x["cornerstone_pct_note"] = ("% not stated in the extractable "
-                                         "allotment/prospectus text; list is "
-                                         "from the prospectus")
+            x["cornerstone_pct_note"] = "% not stated in the filing; names from the prospectus"
     print(f"  cornerstone %% filled from AAStocks totals: {n_pct_fill}")
 
     # --- returns measured on the COMPLETE session list ----------------------
@@ -1352,9 +1324,8 @@ def main():
         ipo_s = (x.get("ipo_date") or "")[:10]
         if ipo_s in CLOSED and rows[0][0] > ipo_s:
             x["ipo_date"] = rows[0][0]
-            x["ipo_date_note"] = (f"scheduled for {ipo_s}, but the exchange did "
-                                  f"not open that day — first dealings "
-                                  f"{rows[0][0]}")
+            x["ipo_date_note"] = (f"scheduled {ipo_s}, exchange closed that day; "
+                                  f"first dealings {rows[0][0]}")
             prov[c]["ipo_date"] = {"src": "price feed: first real session",
                                    "prio": 47, "status": "single"}
             ipo_s = rows[0][0]
@@ -1388,9 +1359,8 @@ def main():
             x.pop("day1_open_close_pct", None)
             # day1_oc_note is the book's existing slot for day-1-open problems
             x["day1_oc_note"] = (
-                "listing was postponed off a closed day after this price path "
-                "was cached, so the cached day-1 open belongs to the exchange's "
-                "placeholder bar — it refreshes on the next h-paths fetch")
+                "listing postponed after the price path was cached; the open "
+                "refreshes on the next h-paths fetch")
         for h, nb in HOR:
             if len(raw) <= nb:
                 continue
@@ -1432,8 +1402,8 @@ def main():
                 f *= float(e.get("factor") or 1)
             evtxt = "; ".join(f"{e['date']} {e['event']}" for e in evs)
             x["ret_note"] = ((x.get("ret_note") + " | ") if x.get("ret_note") else "") + (
-                f"price returns exclude the entitlement value of: {evtxt} — "
-                f"Bloomberg's back-adjusted history divides by x{f:.4g}")
+                f"returns exclude the entitlement value of {evtxt}; Bloomberg "
+                f"back-adjusts by x{f:.4g}")
     # --- market-cap plausibility ------------------------------------------
     # HK$m units: the largest listing in the book is ~HK$713bn (713,000). A
     # value far above that came from a bad price or a share-count parse
@@ -1495,9 +1465,7 @@ def main():
                 "src": "derived: offer shares x (1 - cornerstone%)",
                 "prio": 50, "status": "single"}
         elif cs is not None:
-            x["eff_ff_shares_note"] = (
-                "share count unavailable or rejected as implausible — the money "
-                "figure (eff_free_float_hkdm) is still exact")
+            x["eff_ff_shares_note"] = "share count unavailable; the HK$m figure is exact"
         if size and mc and cs is not None:
             x["eff_free_float_pct"] = round(100 * size * (1 - cs / 100) / mc, 2)
             prov[c]["eff_free_float_pct"] = {
@@ -1508,7 +1476,7 @@ def main():
             why = ("cornerstone % unknown" if (size and mc) else
                    "market cap not derivable" if size else
                    "deal size not available")
-            x["eff_ff_note"] = f"not computable as a % of cap — {why}"
+            x["eff_ff_note"] = f"% of cap not computable: {why}"
     print(f"  effective free float: {n_abs} absolute (HK$m/shares), "
           f"{n_eff} as a % of market cap")
 
@@ -1535,14 +1503,13 @@ def main():
             # HKEX allotment table is the authoritative print; AAStocks' 超額倍數
             # rounds and uses the odd basis — within 15% it is the same fact
             if kept and abs(kept - dropped) / kept <= 0.15:
-                _clear(c, f, "AAStocks rounds the same figure — HKEX table kept")
+                _clear(c, f, "AAStocks rounds the same figure; HKEX table kept")
             else:
                 # a basis difference is not an unresolved conflict: the HKEX
                 # allotment table is the filing of record, so it is kept and
                 # BOTH readings are named in the note
-                _clear(c, f, f"HKEX allotment table reads {kept:g}x, AAStocks "
-                             f"超額倍數 reads {dropped:g}x on its own basis — "
-                             f"the filing table kept", status="single")
+                _clear(c, f, f"HKEX table {kept:g}x kept; AAStocks 超額倍數 "
+                             f"{dropped:g}x on its own basis", status="single")
         elif f == "final_price" and isinstance(kept, (int, float)):
             # an OFFER PRICE lives in a narrow band. 54,382,183 is a share
             # count the allotment parse read as a price (BAIGE) — and it had
@@ -1587,8 +1554,7 @@ def main():
                 else:
                     deals[c].pop("final_price", None)
                     deals[c]["price_note"] = (
-                        f"offer price not extractable — the filing parse "
-                        f"returned {kept:,.0f}, which is not a price")
+                        f"offer price not extractable (parse returned {kept:,.0f})")
                     _clear(c, f, "no plausible offer price from either source",
                            status="single")
             else:
@@ -1751,14 +1717,14 @@ def main():
             # than an explained blank)
             x.pop("price_range_hi", None)
             prov[c].pop("price_range_hi", None)
-            x["range_note"] = (f"struck at HK${fp}, above the parsed maximum "
-                               f"HK${hi} — the cap parse is rejected for this deal")
+            x["range_note"] = (f"priced HK${fp}, above the parsed maximum HK${hi}; "
+                               f"cap parse rejected")
             x.pop("pct_of_cap", None)
             x.pop("priced_at_cap", None)
             n_cap_bad += 1
         elif lo and fp < lo * 0.999:
-            x["range_note"] = (f"struck at HK${fp}, below the indicative low HK${lo} "
-                               f"— Downward Offer Price Adjustment mechanism")
+            x["range_note"] = (f"priced HK${fp}, below the HK${lo} floor "
+                               f"(downward offer price adjustment)")
             n_down += 1
     print(f"  price-vs-range: {n_cap_bad} caps withdrawn as untrustworthy, "
           f"{n_down} downward-adjusted deals annotated")
@@ -1783,10 +1749,8 @@ def main():
             # is hidden.
             x.pop("oversub_intl_mult", None)
             prov[c].setdefault("oversub_intl_mult", {})["status"] = "single"
-            x["intl_note"] = (f"parsed {i:g}x rejected — implausible for a deal struck "
-                              f"at the cap with the public tranche {p:,.0f}x "
-                              f"subscribed (a percentage read as a multiple); "
-                              f"BBG Verify CP037 fills this on the terminal")
+            x["intl_note"] = (f"parsed {i:g}x rejected (implausible against a "
+                              f"{p:,.0f}x public book); BBG Verify CP037 fills it")
             n_flag += 1
     print(f"  institutional subscription flagged as implausible: {n_flag}")
 
@@ -1837,15 +1801,13 @@ def main():
             except Exception:
                 main._open_disputes = set()
         if c in main._open_disputes:
-            x["day1_oc_note"] = ("sources disagree on the day-1 OPENING print "
-                                 f"by {'>2%'} (auction vs first trade); all "
-                                 "close-based figures agree exactly")
+            x["day1_oc_note"] = ("sources disagree on the day-1 open by >2% "
+                                 "(auction vs first trade); closes agree")
         # v14: Tencent kline rows carry a REAL open (row[1]) — the old blanket
         # "tencent has no true open" rule would now throw away good data
         if pop is None and d1 is not None:
             x.pop("day1_open_pop_pct", None)
-            x["day1_oc_note"] = ("intraday open not available — price series "
-                                 "is a raw close line (Tencent)")
+            x["day1_oc_note"] = "no intraday open in the price series"
         elif pop is not None:
             x["day1_open_close_pct"] = round(
                 100 * ((1 + d1 / 100) / (1 + pop / 100) - 1), 2)
@@ -1888,19 +1850,19 @@ def main():
                                         "prio": 20, "status": "single"}
         if x.get("oversub_intl_mult") is None:
             if x.get("intl_tranche_absent"):
-                x["intl_note"] = "no international tranche (public-offer-only structure)"
+                x["intl_note"] = "no international tranche"
             elif not x.get("intl_note"):
                 # never overwrite a REJECTION reason with "not stated" — the
                 # filing did state a figure; we refused it and must say so
-                x["intl_note"] = "subscription level not stated in the filing"
+                x["intl_note"] = "not stated in the filing"
         if not x.get("greenshoe_exercised_final"):
             d0 = x.get("ipo_date")
             if d0 and _date.fromisoformat(d0[:10]) > today - _td(days=40):
-                x["shoe_note"] = "stabilisation window still open (listed <40 days ago)"
+                x["shoe_note"] = "stabilisation window still open"
             elif not x.get("greenshoe_pct"):
-                x["shoe_note"] = "no over-allotment option in the offer structure"
+                x["shoe_note"] = "no over-allotment option"
             else:
-                x["shoe_note"] = "end-of-stabilisation notice not located"
+                x["shoe_note"] = "end-of-stabilisation notice not found"
         # A RESOLVED shoe still leaves the expiry column blank on older deals
         # whose announcement never spelled the date out, and that blank needs
         # its own reason — the outcome is already known, so the date is moot.
@@ -1922,30 +1884,20 @@ def main():
             # so the headline is unreachable roughly a month after the debut.
             # Coverage by listing year is the fingerprint of exactly that:
             # 2026 67%, 2025 35%, 2024 17%, 2021-23 zero.
-            x["grey_note"] = (
-                "grey-market close not recoverable for this deal: AAStocks "
-                "published one but its per-stock news page keeps only ~21 "
-                "recent articles (no pagination, no date query), and no public "
-                "archive of past evening sessions exists on AAStocks, etnet, "
-                "Futu or Yahoo. Add it by hand to data/grey_market_manual.json "
-                "if you have the print — the merge checks it against the offer "
-                "price before accepting. Deals listing from now on are captured "
-                "automatically by the weekly run.")
+            # (the full reason — AAStocks keeps ~21 articles per stock and no
+            # venue archives past sessions — is in MAINTENANCE.md; the cell
+            # says what is missing and how to add it, nothing more)
+            x["grey_note"] = "no archived print; add to data/grey_market_manual.json"
         # No prospectus hyperlink: the per-stock HKEX search returned no
         # listing document for this code. Mostly older listings whose
         # prospectus was filed in a form the doc feed does not expose; the
         # allotment announcement IS on file and is linked beside it, so say
         # which document is missing rather than leaving an empty cell.
         if not x.get("prospectus_link") and not x.get("doc_note"):
-            x["doc_note"] = (
-                "no prospectus document returned by the HKEX per-stock search "
-                "for this code" + (" — the allotment announcement is linked "
-                                   "beside it" if x.get("allotment_link") else ""))
+            x["doc_note"] = ("prospectus not on the HKEX per-stock search"
+                             + ("; allotment notice linked" if x.get("allotment_link") else ""))
         if not x.get("stabilization_end_date") and not x.get("shoe_note"):
-            x["shoe_note"] = (
-                "over-allotment outcome already published, and the allotment "
-                "announcement does not state the stabilisation expiry in a "
-                "parsable form — the expiry no longer matters once resolved")
+            x["shoe_note"] = "outcome published; expiry date not in the notice"
         # Bloomberg fills the main P/E where the filings gave nothing: the
         # planned v12 fill stored pe_ipo_bbg but never promoted it, so 14
         # deals sat blank while the answer was on file. Basis note included —
@@ -1955,70 +1907,67 @@ def main():
             x["pe_ipo"] = x["pe_ipo_bbg"]
             prov[c]["pe_ipo"] = {"src": "bloomberg:P/E at listing (desk paste)",
                                  "prio": 40, "status": "single"}
-            x["pe_note"] = ("from Bloomberg (trailing-12m EPS at listing) — the "
-                            "prospectus-FY multiple was not derivable")
+            x["pe_note"] = "Bloomberg trailing-12m basis (prospectus-year multiple not derivable)"
         if x.get("pe_ipo") is None and not x.get("pe_note"):
             if x.get("profitable_at_ipo") == "N":
-                x["pe_note"] = "n/m — loss-making at IPO (use P/S)"
+                x["pe_note"] = "loss-making at IPO, use P/S"
             elif x.get("ni_latest") is None:
-                x["pe_note"] = "net income not stated in extractable form"
+                x["pe_note"] = "net income not extractable"
             elif x.get("mktcap_ipo_hkdm") is None:
                 x["pe_note"] = "market cap not derivable (no share count disclosed)"
         # A/H: "no A line" is an ANSWER, not a missing value. The workbook shows
         # N/A for these rather than a zero that reads as a zero premium.
         if not x.get("a_share_code"):
-            x["ah_note"] = ("no A-share listing" if not x.get("a_share_proxy")
-                            else f"no A line; closest listed proxy {x['a_share_proxy']}")
+            px = x.get("a_share_proxy")
+            if isinstance(px, dict) and px.get("name"):
+                x["ah_note"] = (f"no A-share listing; nearest A proxy {px['name']}"
+                                + (f" ({px['code']})" if px.get("code") else ""))
+            else:
+                x["ah_note"] = "no A-share listing"
         elif x.get("ah_discount_ipo_pct") is None:
-            x["ah_note"] = (f"A-share {x['a_share_code'].split('.')[0]} listed "
-                            "AFTER the H IPO — no A price existed on the H "
-                            "pricing date, so an at-IPO premium cannot exist; "
-                            "the today premium is live")
+            x["ah_note"] = (f"A-share {x['a_share_code'].split('.')[0]} listed after "
+                            "the H IPO, so there is no at-IPO premium; today's is live")
         # returns: a blank is either a window that has not elapsed or a line
         # Yahoo has no history for — say which
         if x.get("first_day_return_pct") is None:
-            x["ret_note"] = x.get("price_note") or "listing-day price unavailable"
+            x["ret_note"] = x.get("price_note") or "no listing-day price"
         else:
             for h, days in (("1w", 7), ("1m", 31), ("3m", 92)):
                 if x.get(f"ret_{h}_pct") is None and x.get("ipo_date"):
                     if _date.fromisoformat(x["ipo_date"][:10]) > today - _td(days=days):
                         x[f"ret_{h}_note"] = f"listed less than {h} ago"
                     else:
-                        x[f"ret_{h}_note"] = "price history incomplete for this window"
+                        x[f"ret_{h}_note"] = "price history incomplete"
         # --- the remaining blanks, each given its reason so no column is ever
         # silently empty (the census counts value-or-reason as resolved) ---
         if x.get("price_range_lo") is None:
-            x["range_lo_note"] = ("cap-only pricing — the filing publishes a Maximum "
-                                  "Offer Price and no indicative floor")
+            x["range_lo_note"] = "maximum offer price only, no floor published"
         if not x.get("cornerstone_investors"):
             x["cornerstone_list_note"] = (
-                "no cornerstone tranche in this deal" if x.get("cornerstone_none")
+                "no cornerstone tranche" if x.get("cornerstone_none")
                 or x.get("cornerstone_pct") == 0 else
                 # a tranche % without names means the AGGREGATE sentence parsed
                 # but the per-investor table is a damaged PDF grid — the names
                 # exist only in the filing itself
-                ("tranche parsed ({}% locked) but the per-investor table did not "
-                 "machine-parse — names are in the prospectus Cornerstone "
-                 "section (link on this row)".format(x["cornerstone_pct"])
+                ("{}% locked; investor table not extractable, names are in the "
+                 "prospectus".format(x["cornerstone_pct"])
                  if x.get("cornerstone_pct") else
-                 "cornerstone section not machine-extractable — see the prospectus link"))
+                 "names not extractable, see the prospectus"))
         if x.get("cornerstone_pct") is None:
             x["cornerstone_pct_note"] = (
-                "no cornerstone tranche in this deal" if x.get("cornerstone_none")
-                else "cornerstone aggregate not stated in the filing")
+                "no cornerstone tranche" if x.get("cornerstone_none")
+                else "aggregate not stated in the filing")
         if x.get("greenshoe_pct") is None:
-            x["greenshoe_note"] = ("no over-allotment option in the offer structure"
+            x["greenshoe_note"] = ("no over-allotment option"
                                    if not x.get("overallot_shares") else
                                    "over-allocated shares stated without an offer-share base")
         if x.get("ps_ipo") is None and not x.get("ps_note"):
             if x.get("rev_latest") == 0:
-                x["ps_note"] = ("no revenue line in the filed P&L (pre-revenue "
-                                "issuer) — no sales multiple can exist; the "
-                                "cell reads pre-rev, not blank")
+                x["ps_note"] = "pre-revenue issuer, no sales multiple"
             elif not x.get("rev_latest"):
                 x["ps_note"] = "revenue not extractable"
             else:
-                x["ps_note"] = "market cap not derivable — P/S cannot be formed"
+                x["ps_note"] = "market cap not derivable"
         # position INSIDE the indicative range: 0% = priced at the floor,
         # 100% = at the cap. Only meaningful when a true lo<hi range exists;
         # fixed-price and cap-only offers carry their own range notes.
@@ -2029,33 +1978,28 @@ def main():
                                        "prio": 50, "status": "single"}
         if x.get("pct_in_range") is None and not x.get("range_note") \
                 and not x.get("range_lo_note"):
-            x["range_note"] = "no usable lo<hi range to position the final price in"
+            x["range_note"] = "no usable price range"
         if x.get("mktcap_ipo_hkdm") == 0:
             x.pop("mktcap_ipo_hkdm", None)
-            x["mktcap_note"] = ("stated market-cap line parsed as ZERO — "
-                                "treated as a failed extraction, not a value")
+            x["mktcap_note"] = "stated market cap parsed as zero, treated as missing"
         if x.get("mktcap_ipo_hkdm") is None:
             x["mktcap_note"] = x.get("mktcap_note") or (
-                "no share count, offer-%-of-capital or published listing cap available")
+                "no share count, offer % of capital or published listing cap")
         if (x.get("rev_latest") is None or x.get("ni_latest") is None) \
                 and not x.get("fin_check"):
-            x["fin_note"] = ("financial tables not machine-extractable and the "
-                             "pre-IPO year is outside AAStocks' 5-year window")
+            x["fin_note"] = "not extractable; pre-IPO year outside the AAStocks window"
         if x.get("deal_size_hkdm") is None:
-            x["size_note"] = "no proceeds figure stated in any filing"
+            x["size_note"] = "no proceeds figure in any filing"
         # A missing stabilising manager has two different meanings and the
         # column must say which: no shoe at all, or a shoe whose announcement
         # never names the bank in the phrasing the parser reads.
         if not x.get("stabilizing_manager") and not x.get("stabmgr_note"):
             x["stabmgr_note"] = (
-                "no over-allotment option in the offer structure, so no "
-                "stabilising manager is appointed"
+                "no over-allotment option, so none appointed"
                 if not x.get("greenshoe_pct") and not x.get("greenshoe_exercised_final")
-                else "neither the allotment announcement's cover sentence nor "
-                     "the prospectus definitions glossary names one in a form "
-                     "the parser reads — not inferred from the sponsor")
+                else "not named in the allotment notice or prospectus glossary")
         if not x.get("size_basis") and x.get("deal_size_hkdm") is None:
-            x["size_basis_note"] = "no size, so no basis to describe"
+            x["size_basis_note"] = "no size on file"
         # A DEAL LISTED THIS WEEK has no 1-week return yet, and a blank with no
         # reason is a defect by the explained-absence contract. Ingenic (listed
         # 2026-08-25) was the first row young enough to hit this. Calendar days
@@ -2071,33 +2015,27 @@ def main():
             except ValueError:
                 continue
             if aged < _days:
-                x[f"ret_{_h}_note"] = (
-                    f"listed {ipo_d}, {aged} days ago — the {_h} window has not "
-                    f"elapsed, so there is no {_h} return to publish yet")
+                x[f"ret_{_h}_note"] = f"listed {aged} days ago, {_h} window not elapsed"
         # an alpha needs BOTH legs: no horizon return (window not elapsed) or no
         # index bar means no alpha — say which
         for _h in ("1w", "1m", "3m"):
             if x.get(f"alpha_{_h}_pct") is None and not x.get("alpha_note"):
                 if x.get(f"ret_{_h}_pct") is None:
-                    x["alpha_note"] = (f"{_h} alpha needs the {_h} return first — "
-                                       f"window has not elapsed yet")
+                    x["alpha_note"] = f"{_h} window not elapsed"
                 else:
-                    x["alpha_note"] = (f"{_h} return is on file but the sector index "
-                                       f"had no bar for that window")
+                    x["alpha_note"] = f"sector index has no bar for the {_h} window"
         if x.get("oversub_public_mult") is None and not x.get("oversub_public_mult_note"):
             x["oversub_public_mult_note"] = (
-                "Hong Kong public-offer subscription level not stated in the "
-                "allotment results (BBG Verify column C fills it on the terminal)")
+                "not stated in the allotment results; BBG Verify col C fills it")
         if not x.get("industry_en") and not x.get("sponsors_en"):
-            x["aastocks_note"] = ("no AAStocks IPO page for this code — typically a "
-                                  "listing by introduction or a transfer, which runs "
-                                  "no public offer")
+            x["aastocks_note"] = ("no AAStocks IPO page (listing by introduction or "
+                                  "transfer, no public offer)")
         if x.get("pct_of_cap") is None and x.get("range_note"):
-            x["pct_of_cap_note"] = "withheld with the price range — see the range note"
+            x["pct_of_cap_note"] = "see the price range note"
         if not x.get("sponsors") and x.get("sponsors_cn"):
-            x["sponsor_note"] = "English name not in the filing text; AAStocks 保薦人 shown"
+            x["sponsor_note"] = "English name not in the filing; AAStocks 保薦人 shown"
         elif not x.get("sponsors"):
-            x["sponsor_note"] = "sponsor not stated in the extractable filing text"
+            x["sponsor_note"] = "not stated in the filing text"
 
     # --- LAST WORD: the derived legs are re-derived after every source has
     # landed. Computing alpha next to the return that produced it left one

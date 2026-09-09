@@ -41,6 +41,19 @@ F_ZEBRA = PatternFill("solid", fgColor="00F7F9FB")  # even-row wash, display onl
 F_GRN  = PatternFill("solid", fgColor="00C6EFCE")   # xchecked
 F_AMB  = PatternFill("solid", fgColor="00FFE699")   # judgment / estimated
 F_OVR  = PatternFill("solid", fgColor="00FFC000")   # conflict
+# One tint per column band, shared by the Database band row and the Screener's
+# comp table so the two grids read the same way.
+BAND_TINT = {"IDENTITY": "00203864", "DEAL TERMS": "00274E13", "DEMAND": "007A5C00",
+             "PERFORMANCE": "00134F4A", "FUNDAMENTALS": "00434343",
+             "A / H": "00742323", "BANKS & DOCS": "00274E63", "NOTES": "00434343",
+             "SCORING": "00595959"}
+# Screener section bars: a different colour per block. With every bar navy the
+# desk could not see where one section ended and the next began.
+F_SEC_TARGET = PatternFill("solid", fgColor="001F3864")   # navy
+F_SEC_RANK   = PatternFill("solid", fgColor="00375623")   # green
+F_SEC_SUMM   = PatternFill("solid", fgColor="0044546A")   # slate
+F_SEC_ASHARE = PatternFill("solid", fgColor="00742323")   # burgundy, as the A/H band
+F_SEC_PANEL  = PatternFill("solid", fgColor="00595959")   # grey side panels
 _t = Side(style="thin")
 BOX = Border(left=_t, right=_t, top=_t, bottom=_t)
 C_HDR = Alignment(horizontal="center", vertical="center", wrap_text=True)
@@ -70,6 +83,18 @@ def put(ws, coord, value, font=BODY, fill=None, fmt=None, border=None, align=Non
 
 def hdr(ws, coord, text, fill=F_HDR):
     put(ws, coord, text, font=HDRF, fill=fill, border=BOX, align=C_HDR)
+
+
+def section(ws, coord, text, fill, span=1):
+    """A section bar: white bold text on the section's own colour, merged
+    across `span` columns, left-aligned so it reads as a heading not a cell."""
+    put(ws, coord, text, font=HDRF, fill=fill, border=BOX,
+        align=Alignment(horizontal="left", vertical="center", indent=1))
+    if span > 1:
+        c = ws[coord]
+        ws.merge_cells(start_row=c.row, start_column=c.column,
+                       end_row=c.row, end_column=c.column + span - 1)
+    ws.row_dimensions[ws[coord].row].height = 18
 
 
 def inp(ws, coord, value, fmt=None):
@@ -197,7 +222,7 @@ def _phip_as_pipeline(root, existing_names):
             "name": nm,
             "name_cn": cn,
             "sector": p.get("sector"), "subsector": p.get("subsector"),
-            "status": "PHIP — hearing cleared",
+            "status": "PHIP (hearing cleared)",
             "expected_timing": f"PHIP {a.get('latest_submission') or ''}",
             "rev_latest": p.get("rev_latest"), "ni_latest": p.get("ni_latest"),
             "profitable_at_ipo": ("Y" if prof else "N") if prof is not None else None,
@@ -210,7 +235,7 @@ def _phip_as_pipeline(root, existing_names):
             "valuation_notes": "; ".join(filter(None, [
                 p.get("a_share_note"),
                 f"subsector via {p['subsector_src']}" if p.get("subsector_src") else None,
-                "expected size not yet public (PHIP stage) — type it in the blue cell "
+                "expected size not yet public; type it in the blue cell "
                 "to rank comps on size" if not p.get("expected_shares") else None])) or None,
             "sponsors": "; ".join((p.get("sponsors") or [])
                                    or (p.get("coordinators") or [])) or None,
@@ -291,7 +316,7 @@ DB_COLS = [
     ("PERFORMANCE", "Grey mkt % vs offer", "grey_pct", '+0.0"%";-0.0"%"', 14),
     ("PERFORMANCE", "Day-1", "first_day_return_pct", '+0.0"%";-0.0"%"', 9),
     ("PERFORMANCE", "Day-1 open pop", "day1_open_pop_pct", '+0.0"%";-0.0"%"', 10),
-    ("PERFORMANCE", "Day-1 open→close", "day1_open_close_pct", '+0.0"%";-0.0"%"', 11),
+    ("PERFORMANCE", "Day-1 open to close", "day1_open_close_pct", '+0.0"%";-0.0"%"', 11),
     ("PERFORMANCE", "1-week", "ret_1w_pct", '+0.0"%";-0.0"%"', 9),
     ("PERFORMANCE", "1-month", "ret_1m_pct", '+0.0"%";-0.0"%"', 9),
     ("PERFORMANCE", "3-month", "ret_3m_pct", '+0.0"%";-0.0"%"', 9),
@@ -302,8 +327,8 @@ DB_COLS = [
     ("PERFORMANCE", "Alpha 1m vs index", "alpha_1m_pct", '+0.0"%";-0.0"%"', 10),
     ("PERFORMANCE", "Alpha 3m vs index", "alpha_3m_pct", '+0.0"%";-0.0"%"', 10),
     ("PERFORMANCE", "Alpha 1m ex-pop", "alpha_1m_expop_pct", '+0.0"%";-0.0"%"', 10),
-    ("PERFORMANCE", "Index, IPO→1m", "bench_1m_pct", '+0.0"%";-0.0"%"', 11),
-    ("PERFORMANCE", "Index, d1→1m", "bench_1m_expop_pct", '+0.0"%";-0.0"%"', 11),
+    ("PERFORMANCE", "Index, IPO to 1m", "bench_1m_pct", '+0.0"%";-0.0"%"', 11),
+    ("PERFORMANCE", "Index, day-1 to 1m", "bench_1m_expop_pct", '+0.0"%";-0.0"%"', 11),
     ("PERFORMANCE", "Benchmark", "benchmark", None, 22),
     ("PERFORMANCE", "Since IPO", "since_ipo_pct", '+0.0"%";-0.0"%"', 10),
     ("PERFORMANCE", "Prices as of", "price_asof", DATEF, 11),
@@ -340,7 +365,7 @@ DB_COLS = [
     ("NOTES", "Valuation notes", "valuation_notes", None, 40),
     # replaces the old always-empty "Valuation notes": every explained absence
     # collected into one readable cell, so a blank on this row is never a mystery
-    ("NOTES", "Why anything is blank", "_blank_notes", None, 64),
+    ("NOTES", "Notes on blanks", "_blank_notes", None, 64),
 ]
 # the *_note fields merge_batches writes, in the order they read best
 NOTE_FIELDS = [("intl_note", "intl sub"), ("pe_note", "P/E"), ("shoe_note", "greenshoe"),
@@ -381,7 +406,7 @@ BBG_FALLBACK = {"oversub_intl_mult": "E", "oversub_public_mult": "C",
                 # no public source exists for either: a live P/S, and the A
                 # line's cap TODAY where the Tencent snapshot had none
                 "ps_now": "S", "a_mktcap_now_hkdm": "T"}
-BBG_BLANK_TEXT = "not filed — run on terminal"
+BBG_BLANK_TEXT = "not filed; run on terminal"
 # A/H columns that read N/A (not blank, never 0) when there is no A line
 AH_FIELDS = {"a_premium_ipo_pct", "a_close_hkd", "a_premium_now",
              "a_mktcap_now_hkdm"}
@@ -398,16 +423,21 @@ def listify(v):
     return "; ".join(v) if isinstance(v, list) else v
 
 
+def plain(v):
+    """Prose fields only: research inputs are typed with ' — ' and arrows, the
+    sheet reads them as plain punctuation. Names and codes never pass here."""
+    if not isinstance(v, str):
+        return v
+    return v.replace(" — ", "; ").replace("—", "-").replace("→", " to ")
+
+
 def sheet_database(wb, deals, n):
     ws = wb.create_sheet("Database")
-    put(ws, "A1", "HK IPO DATABASE — Main Board IPOs 2021–2026", TITLE)
-    put(ws, "A2", "one row per deal · money HK$m · % in percent units · sign: Day-1 + = closed above offer  ·  "
-                  "fill legend: green=cross-checked  amber=judgment/estimated  orange=source conflict  grey=derived", SUB)
+    put(ws, "A1", "HK IPO DATABASE, Main Board 2021-2026", TITLE)
+    put(ws, "A2", "One row per deal. Money in HK$m, returns in %. Day-1 + = closed above the offer. "
+                  "Orange = sources disagree; grey = calculated; blue = input.", SUB)
     # band row (row 3): merged section titles so groups read as one unit
     from itertools import groupby
-    BAND_TINT = {"IDENTITY": "00203864", "DEAL TERMS": "00274E13", "DEMAND": "007A5C00",
-                 "PERFORMANCE": "00203864", "FUNDAMENTALS": "00434343",
-                 "A / H": "00742323", "BANKS & DOCS": "00274E63", "NOTES": "00434343"}
     col = 1
     for band, grp in groupby(DB_COLS, key=lambda c: c[0]):
         width = len(list(grp))
@@ -427,7 +457,7 @@ def sheet_database(wb, deals, n):
         colx += 1
     F_EXPOP_HDR = PatternFill("solid", fgColor="001F7A6D")   # teal = ex-pop family
     for j, (_b, h, *_rest) in enumerate(DB_COLS, 1):
-        expop = "ex-pop" in h or "open→close" in h
+        expop = "ex-pop" in h or "open to close" in h
         hdr(ws, f"{get_column_letter(j)}4", h,
             fill=F_EXPOP_HDR if expop else PatternFill("solid", fgColor="00305496"))
         ws.column_dimensions[get_column_letter(j)].width = DB_COLS[j - 1][4]
@@ -448,7 +478,12 @@ def sheet_database(wb, deals, n):
                     put(ws, c2, "N/A")
                 continue
             if f == "_blank_notes":
-                v = " · ".join(f"{lbl}: {d[k]}" for k, lbl in NOTE_FIELDS if d.get(k))
+                # "no A-share listing" is already what the A/H cells say (N/A),
+                # so repeating it on 440 rows is noise; other A/H notes stay
+                v = plain("; ".join(f"{lbl}: {d[k]}" for k, lbl in NOTE_FIELDS
+                                    if d.get(k) and not (k == "ah_note" and d[k] == "no A-share listing")))
+            elif f == "valuation_notes":
+                v = plain(listify(d.get(f)))
             else:
                 v = listify(d.get(f))
             # the flag is set only where an A line was found, so an empty cell
@@ -575,9 +610,8 @@ def sheet_scores(wb, n, npipe):
     """The scoring engine, on its own visibly-named sheet — fully inspectable."""
     ws_db = wb.create_sheet("Calc (scoring engine)")
     put(ws_db, "A1", "SCORING ENGINE", TITLE)
-    put(ws_db, "A2", "One row per Database deal. The Screener ranks by column H "
-                     "(comp score vs the Screener target). "
-                     "Weights are named cells on the Notes tab.", SUB)
+    put(ws_db, "A2", f"One row per Database deal. The Screener ranks on the SCORE column "
+                     f"({H_SCORE}). Weights are named cells on the Notes tab.", SUB)
     for j, h in enumerate(["Deal", "Subsector =", "Sector =", "Size pts", "Profit =",
                            "A/H =", "Recency", "Cornerstone", "P/E prox",
                            "Demand prox", "SCORE"], 1):
@@ -590,7 +624,7 @@ def sheet_scores(wb, n, npipe):
     # column and silently killed every comp formula; never share columns.
     inv_rng = db_range("cornerstone_keys", n)
     nm_rng = db_range("name", n)
-    put(ws_db, "S1", "target cornerstone split →", NOTE)
+    put(ws_db, "S1", "target cornerstone split", NOTE)
     ws_db["T1"] = f'=IFERROR(INDEX({inv_rng},MATCH(Screener!$B$5,{nm_rng},0))&"","")'
     for k, first in enumerate("UVWXY"):
         row_src = f"$T${k+1}"
@@ -744,9 +778,8 @@ COMP_RET_COLS = {h for h in COMP_COLS
 def sheet_screener(wb, deals, pipe, cfg, n):
     ws = wb.create_sheet("Screener")
     put(ws, "A1", "COMPS SCREENER", TITLE)
-    put(ws, "A2", "Pick a deal (blue). Comps are ranked SUBSECTOR FIRST — a same-subsector deal always "
-                  "beats a same-sector one. The score for every comp is shown in full on the right, so "
-                  "nothing is hidden.", SUB)
+    put(ws, "A2", "Pick a deal in the blue cell, or type your own terms in the override column. "
+                  "Comps rank same-subsector first. Blue = input, grey = calculated.", SUB)
 
     # Combined pick-list (pipeline + every listed deal) lives on the VISIBLE
     # Calc sheet, columns K:Q — not on the Screener. v4 died when data columns
@@ -800,25 +833,27 @@ def sheet_screener(wb, deals, pipe, cfg, n):
     #   rows 15-18 HOW TO RANK       B = you type (there is no "from the pick")
     # Row numbers are named below; every formula elsewhere refers to them, so a
     # future re-layout is a one-line change, not a hunt through 45 addresses.
-    put(ws, "A4", "TARGET — pick it, or type your own terms", HDRF, F_HDR,
-        border=BOX, align=C_MID)
-    ws.merge_cells("A4:E4")
+    # Section bars carry their own colour each (F_SEC_*): the desk asked to be
+    # able to tell the blocks apart at a glance. Hints beside the controls are
+    # gone; the labels say what the cell takes.
+    section(ws, "A4", "TARGET", F_SEC_TARGET, span=5)
     put(ws, "A5", "Pick a deal (pipeline or listed)", BODY, border=BOX)
     inp(ws, "B5", pipe[0].get("name") if pipe else deals[-1].get("name"))
     dv = DataValidation(type="list", formula1="=AllDeals", allow_blank=True)
     ws.add_data_validation(dv)
     dv.add(ws["B5"])
 
-    hdr(ws, "A6", "TARGET ATTRIBUTE"); hdr(ws, "B6", "From the pick")
-    hdr(ws, "C6", "TYPE TO OVERRIDE"); hdr(ws, "D6", "Engine uses"); hdr(ws, "E6", "what it does")
-    # (label, Calc mirror column, number format, hint)
-    attrs = [("Sector", "AB", None, ""),
-             ("Subsector", "AC", None, "THE GATE — same-subsector comps rank first"),
-             ("Size (HK$m)", "AD", MONEY, ""),
-             ("Profitable (Y/N)", "AE", None, ""),
-             ("H-share (Y/N)", "AF", None, ""),
+    hdr(ws, "A6", "Attribute", F_SEC_TARGET); hdr(ws, "B6", "From the pick", F_SEC_TARGET)
+    hdr(ws, "C6", "Override (type)", F_SEC_TARGET); hdr(ws, "D6", "Used", F_SEC_TARGET)
+    hdr(ws, "E6", "", F_SEC_TARGET)
+    # (label, Calc mirror column, number format)
+    attrs = [("Sector", "AB", None),
+             ("Subsector (ranks first)", "AC", None),
+             ("Size (HK$m)", "AD", MONEY),
+             ("Profitable (Y/N)", "AE", None),
+             ("H-share (Y/N)", "AF", None),
              ]
-    for k, (label, col, fmt, hint) in enumerate(attrs):
+    for k, (label, col, fmt) in enumerate(attrs):
         r = 7 + k
         put(ws, f"A{r}", label, BODY, border=BOX)
         calc(ws, f"B{r}", f'=IFERROR(INDEX({CALC}!${col}${MIR0}:${col}${last},'
@@ -826,8 +861,6 @@ def sheet_screener(wb, deals, pipe, cfg, n):
         inp(ws, f"C{r}", None, fmt)
         # the effective value: typed beats picked, always
         calc(ws, f"D{r}", f'=IF($C{r}<>"",$C{r},$B{r})', fmt)
-        if hint:
-            put(ws, f"E{r}", hint, NOTE)
     put(ws, "A12", "IPO / expected date", BODY, border=BOX)
     calc(ws, "B12", f'=IFERROR(INDEX({CALC}!$AG${MIR0}:$AG${last},'
                     f'MATCH($B$5,AllDeals,0)),"")', DATEF)
@@ -838,17 +871,16 @@ def sheet_screener(wb, deals, pipe, cfg, n):
                     f'MATCH($B$5,AllDeals,0)),"")', "0.0")
     inp(ws, "C13", None, "0.0")
     calc(ws, "D13", '=IF($C13<>"",$C13,$B13)', "0.0")
-    put(ws, "E13", "comps near this multiple rank higher", NOTE)
     put(ws, "A14", "Public sub (x), expected", BODY, border=BOX)
     calc(ws, "B14", f'=IFERROR(INDEX({db_range("oversub_public_mult", n)},'
                     f'MATCH($B$5,{db_range("name", n)},0)),"")', "#,##0.0")
     inp(ws, "C14", None, "#,##0.0")
     calc(ws, "D14", '=IF($C14<>"",$C14,$B14)', "#,##0.0")
-    put(ws, "E14", "drives 'demand-similar first'", NOTE)
 
     # ---- rows 15-18: pure controls. B is ALWAYS yours to type here ----------
-    hdr(ws, "A15", "HOW TO RANK & FILTER"); hdr(ws, "B15", "You choose")
-    hdr(ws, "C15", ""); hdr(ws, "D15", ""); hdr(ws, "E15", "what it does")
+    hdr(ws, "A15", "RANK AND FILTER", F_SEC_RANK); hdr(ws, "B15", "Setting", F_SEC_RANK)
+    hdr(ws, "C15", "", F_SEC_RANK); hdr(ws, "D15", "", F_SEC_RANK); hdr(ws, "E15", "", F_SEC_RANK)
+    ws["A15"].alignment = Alignment(horizontal="left", vertical="center", indent=1)
     put(ws, "A16", "Rank by", BODY, border=BOX)
     inp(ws, "B16", "standard")
     dvm = DataValidation(type="list",
@@ -856,39 +888,31 @@ def sheet_screener(wb, deals, pipe, cfg, n):
                          allow_blank=False)
     ws.add_data_validation(dvm)
     dvm.add(ws["B16"])
-    put(ws, "E16", "standard = subsector-first · the other two are explained below", NOTE)
-    put(ws, "A17", "Cornerstone investor to match", BODY, border=BOX)
+    put(ws, "A17", "Cornerstone investor to match (e.g. hillhouse)", BODY, border=BOX)
     inp(ws, "B17", None)
-    put(ws, "E17", "type e.g. hillhouse — adds one key to 'Shared CS'", NOTE)
     put(ws, "A18", "A-share filter", BODY, border=BOX)
     inp(ws, "B18", "All")
     dva = DataValidation(type="list", formula1='"All,With A-share,Without A-share"',
                          allow_blank=False)
     ws.add_data_validation(dva)
     dva.add(ws["B18"])
-    put(ws, "C18", "Comps to show", BODY, border=BOX)
+    put(ws, "C18", "Comps to show (3-15)", BODY, border=BOX)
     inp(ws, "D18", 10, "0")
-    put(ws, "E18", "screen A+H only / non-A only · 3-15 comps", NOTE)
     # NB: row 19 is the comp table's BAND row — a control written there is
     # silently overwritten. The card's second control column (C/D) is free on
     # row 17, and audit_formulas now asserts this label so it cannot drift.
-    put(ws, "C17", "Force-include", BODY, border=BOX)
+    put(ws, "C17", "Force-include codes (9888, 2015)", BODY, border=BOX)
     inp(ws, "D17", None)
-    put(ws, "F17", "codes as in the Database, comma-separated (9888, 2015) — pinned "
-                   "to the top of the comps, past every filter", NOTE)
 
     # what the engine is actually using, in words
     calc(ws, "G5", '=IF(AND($D$8="",N($D$9)<=0),'
-                   '"Ranking on profile and recency only — no subsector, no size. '
-                   'Type either one in the TYPE TO OVERRIDE column and the comps re-rank as you type.",'
-                   'IF($D$8="","No subsector — ranking on size, profile and recency. '
-                   'Pick one in the override column to rank subsector-first.",'
-                   'IF(N($D$9)<=0,"No deal size yet (normal for a PHIP-stage applicant) — '
-                   'ranking on subsector, profile and recency. Type the expected HK$m size in the '
-                   'override column to add size proximity.",'
-                   '"Ranking subsector-first on "&$D$8&", size HK$"&TEXT($D$9,"#,##0")&"m.")))')
+                   '"No subsector or size set: ranking on profile and recency only.",'
+                   'IF($D$8="","No subsector set: ranking on size, profile and recency.",'
+                   'IF(N($D$9)<=0,"No deal size yet: ranking on subsector, profile and recency. '
+                   'Type an expected size to add size proximity.",'
+                   '"Ranking on "&$D$8&", size HK$"&TEXT($D$9,"#,##0")&"m.")))')
 
-    put(ws, "G7", "SIZE BENCHMARK", SECT)
+    section(ws, "G7", "SIZE BENCHMARK", F_SEC_PANEL, span=2)
     put(ws, "G8", "Percentile vs 2021-26 deals", BODY, border=BOX)
     calc(ws, "H8", f'=IF(N($D$9)<=0,"n/a",COUNTIF({db_range("deal_size_hkdm", n)},"<"&$D$9)'
                    f'/COUNT({db_range("deal_size_hkdm", n)}))', "0%")
@@ -899,7 +923,7 @@ def sheet_screener(wb, deals, pipe, cfg, n):
                    f"IF($D$9>={bkts[2]['min']},\"{bkts[2]['label']}\",\"{bkts[3]['label']}\"))))")
 
     # ------------------------------------- 2. what the book knows about it ----
-    put(ws, "G11", "WHAT THE DATABASE HOLDS ON THIS DEAL", SECT)
+    section(ws, "G11", "ON FILE FOR THIS DEAL", F_SEC_PANEL, span=2)
     known = [("Day-1", "first_day_return_pct", '+0.0"%";-0.0"%"'),
              ("1-month", "ret_1m_pct", '+0.0"%";-0.0"%"'),
              ("Public sub (x)", "oversub_public_mult", "#,##0.0"),
@@ -918,7 +942,9 @@ def sheet_screener(wb, deals, pipe, cfg, n):
     # band row generated with the columns — same bands as the Database itself
     col0 = 1
     for band, width in COMP_BANDS_GEN:
-        put(ws, f"{get_column_letter(col0)}19", band, HDRF, F_HDR, border=BOX, align=C_HDR)
+        put(ws, f"{get_column_letter(col0)}19", band, HDRF,
+            PatternFill("solid", fgColor=BAND_TINT.get(band, "001F3864")),
+            border=BOX, align=C_HDR)
         if width > 1:
             ws.merge_cells(start_row=19, start_column=col0, end_row=19,
                            end_column=col0 + width - 1)
@@ -1008,7 +1034,11 @@ def sheet_screener(wb, deals, pipe, cfg, n):
             f"{L}{R_COMP}:{L}{R_COMP + MAXCOMP - 1}",
             DataBarRule(start_type="min", end_type="max", color="004472C4", showValue=True))
     mr = R_COMP + MAXCOMP + 1
-    put(ws, f"A{mr}", "MEDIAN of shown comps", BOLD, border=BOX)
+    # a totals-style row: bold on a light slate wash, top-ruled
+    F_MED = PatternFill("solid", fgColor="00E4E7EC")
+    put(ws, f"A{mr}", "Median of shown comps", BOLD, F_MED, border=BOX)
+    for j in range(2, len(comp_cols) + 1):
+        put(ws, f"{get_column_letter(j)}{mr}", None, BOLD, F_MED, border=BOX)
     # MEDIAN over every numeric column, derived from the shared contract —
     # dates and text columns are excluded by their own formats
     for h in comp_cols[2:-4]:
@@ -1016,18 +1046,16 @@ def sheet_screener(wb, deals, pipe, cfg, n):
         if not fmtv or fmtv == DATEF or fmtv == "@":
             continue
         col = get_column_letter(comp_cols.index(h) + 1)
-        calc(ws, f"{col}{mr}",
-             f'=IFERROR(MEDIAN({col}{R_COMP}:{col}{R_COMP+MAXCOMP-1}),"")', fmtv)
-    put(ws, f"A{mr+1}", "P/E shows n/m for loss-makers (use P/S). P/E now + P/S now = live BDP on the "
-                        "terminal, else the desk's pasted Bloomberg value. A-premium = A over H "
-                        "(+ = A trades above H). Ex-pop columns start at the day-1 close. "
-                        "A/H columns show N/A when the issuer has no A line; '—' = not on file. "
-                        "Shared CS = cornerstone investors in common with the target.", NOTE)
+        put(ws, f"{col}{mr}",
+            f'=IFERROR(MEDIAN({col}{R_COMP}:{col}{R_COMP+MAXCOMP-1}),"")',
+            BOLD, F_MED, fmtv, BOX)
 
     # ---------------------------------------- 4. target vs comp #1, in words --
     r0 = mr + 3
-    put(ws, f"A{r0}", "TARGET vs CLOSEST COMP", SECT)
-    hdr(ws, f"B{r0+1}", "Target"); hdr(ws, f"C{r0+1}", "Comp #1"); hdr(ws, f"D{r0+1}", "Median of shown")
+    section(ws, f"A{r0}", "TARGET VS CLOSEST COMP", F_SEC_SUMM, span=4)
+    hdr(ws, f"A{r0+1}", "", F_SEC_SUMM)
+    hdr(ws, f"B{r0+1}", "Target", F_SEC_SUMM); hdr(ws, f"C{r0+1}", "Comp #1", F_SEC_SUMM)
+    hdr(ws, f"D{r0+1}", "Median of shown", F_SEC_SUMM)
 
     def _cc(h):
         return get_column_letter(comp_cols.index(h) + 1)
@@ -1053,7 +1081,7 @@ def sheet_screener(wb, deals, pipe, cfg, n):
     # deal has an A line, a BDH spill pulls its last month of closes and the
     # line chart below draws it. Off the terminal the block explains itself.
     R_BDH = r0 + 2 + len(card) + 2
-    put(ws, f"F{R_BDH}", "A-SHARE, LAST MONTH — live Bloomberg (fills on the terminal)", SECT)
+    section(ws, f"F{R_BDH}", "A-SHARE CLOSE, LAST MONTH (fills on the terminal)", F_SEC_ASHARE, span=2)
     ahc_rng = db_range("a_share_code", n)
     nm_rng2 = db_range("name", n)
     # pipeline lookups for the same pick: a NEW deal (Ingenic) is not a
@@ -1064,14 +1092,14 @@ def sheet_screener(wb, deals, pipe, cfg, n):
     calc(ws, f"F{R_BDH+1}",
          f'=IFERROR(INDEX({ahc_rng},MATCH($B$5,{nm_rng2},0)),'
          f'IFERROR(INDEX({p_rng("a_share_code")},MATCH($B$5,{p_name},0)),""))')
-    put(ws, f"G{R_BDH+1}", "← A-share code of the pick — Database first, then the "
-                           "Pipeline tab (so an offering-window deal resolves too)", NOTE)
+    put(ws, f"G{R_BDH+1}", "A-share code of the pick", NOTE)
     # Bloomberg ticker: 300223.SZ -> "300223 CH Equity"
     # IFERROR wrap: FIND on a code with no venue suffix must fail to "" —
     # and the offline evaluator computes both IF branches eagerly
     calc(ws, f"F{R_BDH+2}",
          f'=IFERROR(IF(F{R_BDH+1}="","",LEFT(F{R_BDH+1},FIND(".",F{R_BDH+1})-1)&" CH Equity"),"")')
-    hdr(ws, f"F{R_BDH+3}", "Date"); hdr(ws, f"G{R_BDH+3}", "Close (CNY)")
+    put(ws, f"G{R_BDH+2}", "Bloomberg ticker", NOTE)
+    hdr(ws, f"F{R_BDH+3}", "Date", F_SEC_ASHARE); hdr(ws, f"G{R_BDH+3}", "Close (CNY)", F_SEC_ASHARE)
     put(ws, f"F{R_BDH+4}",
         f'=IF($F${R_BDH+2}="","no A-share for this pick",'
         f'BDH($F${R_BDH+2},"PX_LAST",TEXT(TODAY()-31,"yyyymmdd"),TEXT(TODAY(),"yyyymmdd")))',
@@ -1080,7 +1108,8 @@ def sheet_screener(wb, deals, pipe, cfg, n):
     # Live BDP on the terminal; off the terminal every row falls back to the
     # desk-scraped Tencent quote captured in the Pipeline tab, so the panel is
     # never blank and never fake. A-premium convention: + = A above H.
-    put(ws, f"A{R_BDH}", "A-SHARE LIVE PANEL — live BDP on the terminal, scraped quote off it", SECT)
+    section(ws, f"A{R_BDH}", "A-SHARE PANEL (live on the terminal; scraped quote off it)",
+            F_SEC_ASHARE, span=4)
     tick = f"$F${R_BDH+2}"
     h_terms = (f'IFERROR(INDEX({db_range("final_price", n)},MATCH($B$5,{nm_rng2},0)),'
                f'IFERROR(INDEX({p_rng("range_hi")},MATCH($B$5,{p_name},0)),""))')
@@ -1094,7 +1123,7 @@ def sheet_screener(wb, deals, pipe, cfg, n):
          f'=IF({tick}="","no A line",IFERROR(BDP({tick},"PX_LAST"),'
          f'IFERROR(INDEX({p_rng("a_price_now")},MATCH($B$5,{p_name},0)),"run on terminal")))',
          "0.00", ""),
-        ("CNY→HKD", '=IFERROR(BDP("CNYHKD Curncy","PX_LAST"),1.10)', "0.0000", ""),
+        ("CNY to HKD", '=IFERROR(BDP("CNYHKD Curncy","PX_LAST"),1.10)', "0.0000", ""),
         ("A price (HK$)",
          '=IF(OR(NOT(ISNUMBER(A_PX)),N(A_FX)<=0),"n/a",A_PX*A_FX)', "0.00", ""),
         ("A P/E (TTM)",
@@ -1102,18 +1131,18 @@ def sheet_screener(wb, deals, pipe, cfg, n):
          f'IFERROR(INDEX({p_rng("a_pe_ttm")},MATCH($B$5,{p_name},0)),"run on terminal")))',
          "0.0", ""),
         ("H offer / cap (HK$)", f'={h_terms}', "0.00", ""),
-        ("A premium vs H", '=IFERROR(IF(OR(N(A_HKD)<=0,N(H_TRM)<=0),"n/a",A_HKD/H_TRM-1),"n/a")',
-         "+0.0%;-0.0%", "+ = A above the H terms"),
+        ("A premium vs H (+ = A above)", '=IFERROR(IF(OR(N(A_HKD)<=0,N(H_TRM)<=0),"n/a",A_HKD/H_TRM-1),"n/a")',
+         "+0.0%;-0.0%", ""),
         # the PICK's own H line, live: the comp table carries P/E now and P/S
         # now per comp, but the desk reads the target here — so it needs both
         ("H P/E now (TTM)",
          f'=IF({h_tick}="","n/a",IFERROR(BDP({h_tick},"PE_RATIO"),'
          f'IFERROR(INDEX({db_range("pe_now", n)},MATCH($B$5,{nm_rng2},0)),"run on terminal")))',
-         "0.0", "live BDP; falls back to the desk paste"),
+         "0.0", ""),
         ("H P/S now",
          f'=IF({h_tick}="","n/a",IFERROR(BDP({h_tick},"PX_TO_SALES_RATIO"),'
          f'IFERROR(INDEX({db_range("ps_ipo", n)},MATCH($B$5,{nm_rng2},0)),"run on terminal")))',
-         "0.0", "live BDP; falls back to P/S at IPO"),
+         "0.0", ""),
         # the WHOLE COMPANY on the A line, not just the H tranche: Luxshare's
         # H slice is HK$24bn while the issuer is ~HK$490bn, and reading the
         # tranche as the company is the mistake this row exists to stop
@@ -1122,7 +1151,7 @@ def sheet_screener(wb, deals, pipe, cfg, n):
          f'IF(N(A_FX)>0,A_FX,1.10)/1000000,'
          f'IFERROR(INDEX({db_range("a_mktcap_now_hkdm", n)},MATCH($B$5,{nm_rng2},0)),'
          f'"run on terminal")))',
-         "#,##0", "all share classes x the A price; scraped fallback"),
+         "#,##0", ""),
     ]
     for k, (lab, f_, fmt_, note_) in enumerate(rows_live):
         rr_ = R_BDH + 1 + k
@@ -1182,33 +1211,6 @@ def sheet_screener(wb, deals, pipe, cfg, n):
     for rr in range(5, 19):
         ws.row_dimensions[rr].height = 16
 
-    # ---- HOW CORNERSTONE MATCHING WORKS — live, not a black box (pt 2) -----
-    # Shows the ACTUAL keys the engine is comparing for the current pick, so
-    # the mechanism explains itself with the user's own target. Sits under the
-    # A-share live panel (rows 19+ belong to the comp table).
-    # DERIVED, never a literal: this block used to start at a hardcoded
-    # R_BDH+8 and silently ate the last live row when the panel grew (first
-    # H P/S now, and it would have eaten the A-line cap row too) — the same
-    # collision class that ate the force-include control. One row of air
-    # after however many rows the panel actually has.
-    csr = R_BDH + 1 + len(rows_live) + 1
-    put(ws, f"A{csr}", "HOW CORNERSTONE MATCHING WORKS", SECT)
-    put(ws, f"A{csr+1}", "Investor names are normalised to a key ('GIC Private Limited' → gic), "
-                         "a comp scores +1 per key it shares, and 'Shared CS' shows the count.", NOTE)
-    put(ws, f"A{csr+2}", "This pick's top-5 keys:", NOTE)
-    calc(ws, f"D{csr+2}",
-         f'=TRIM({CALC}!$U$1&" "&{CALC}!$V$1&" "&{CALC}!$W$1&" "&'
-         f'{CALC}!$X$1&" "&{CALC}!$Y$1)')
-    put(ws, f"A{csr+3}", "RANK MODES — standard: subsector first · cornerstone overlap first: "
-                         "shared investors dominate · demand-similar first: closest "
-                         "public-subscription level (the best debut predictor).", NOTE)
-    for rr in range(csr, csr + 4):
-        for cc in range(1, 6):
-            c0 = ws.cell(row=rr, column=cc)
-            c0.border = Border(left=thin if cc == 1 else c0.border.left,
-                               right=thin if cc == 5 else c0.border.right,
-                               top=thin if rr == csr else c0.border.top,
-                               bottom=thin if rr == csr + 3 else c0.border.bottom)
     ws.row_dimensions[1].height = 26
     _heat_first(ws)
     ws.freeze_panes = "C21"
@@ -1243,8 +1245,9 @@ PIPE_COLS = [("Code", "expected_code", None, 8), ("Name", "name", None, 24),
 
 def sheet_pipeline(wb, pipe):
     ws = wb.create_sheet("Pipeline")
-    put(ws, "A1", "ACTIVE PIPELINE", TITLE)
-    put(ws, "A2", "expected size/timing are INPUT-BLUE — update as terms firm up; screener reads columns D/E/F/J/K/L", SUB)
+    put(ws, "A1", "PIPELINE", TITLE)
+    put(ws, "A2", "Blue cells are inputs. The Screener reads expected size and subsector live. "
+                  "HK$ size = US$ range midpoint x 7.8 where not reported.", SUB)
     put(ws, "A4", "", BODY)
     for j, (h, *_rest) in enumerate(PIPE_COLS, 1):
         hdr(ws, f"{get_column_letter(j)}5", h)
@@ -1258,6 +1261,8 @@ def sheet_pipeline(wb, pipe):
             d["expected_size_hkdm"] = round(mid * fx)
         for j, (_h, f, fmt, _w) in enumerate(PIPE_COLS, 1):
             v = listify(d.get(f))
+            if f in ("status", "valuation_notes", "expected_size_basis", "business_desc"):
+                v = plain(v)
             if isinstance(v, bool):
                 v = "Y" if v else "N"
             cell = f"{get_column_letter(j)}{r}"
@@ -1284,17 +1289,13 @@ def sheet_pipeline(wb, pipe):
     dvp = DataValidation(type="list", formula1="=SubsectorList", allow_blank=True)
     ws.add_data_validation(dvp)
     dvp.add(f"E6:E{5 + len(pipe)}")
-    put(ws, f"A{7 + len(pipe)}",
-        f"BLUE = yours to edit. Type/adjust EXPECTED SIZE (HK$m) and SUBSECTOR here — "
-        f"the Screener reads these cells LIVE, so comps re-rank the moment you type. "
-        f"HKD size = midpoint of US$ range × {fx} where not explicitly reported.", NOTE)
 
     # ---- the LIVE HKEX application queue (auto-refreshed, not hand-picked) ----
     import json as _json
     r0 = 9 + len(pipe)
-    put(ws, f"A{r0}", "LIVE HKEX APPLICATION QUEUE (from the exchange's own AP & PHIP feed)", SECT)
-    put(ws, f"A{r0+1}", "PHIP posted = listing hearing CLEARED, typically days-to-weeks from launch. "
-                        "Refreshed every time you run refresh.", SUB)
+    put(ws, f"A{r0}", "HKEX APPLICATION QUEUE", SECT)
+    put(ws, f"A{r0+1}", "PHIP posted = hearing cleared, usually days to weeks from launch. "
+                        "Refreshed on every run.", SUB)
     try:
         phip = _json.loads((ROOT / "data" / "batches" / "phip_pipeline.json").read_text())
         apps = phip.get("applications", [])
@@ -1321,8 +1322,8 @@ def sheet_pipeline(wb, pipe):
             put(ws, f"F{r}", f'=HYPERLINK("{a["doc_link"]}","open filing")',
                 font=Font(name=ARIAL, size=10, color="000000FF", underline="single"))
     put(ws, f"A{r0 + 4 + len(shown)}",
-        f"{len([a for a in apps if a.get('has_phip')])} PHIP-stage of {len(apps)} live applications; "
-        f"showing PHIPs plus the 30 most recent Application Proofs.", NOTE)
+        f"{len([a for a in apps if a.get('has_phip')])} PHIP-stage applications of {len(apps)} live; "
+        f"PHIPs plus the 30 most recent application proofs shown.", NOTE)
     return ws
 
 
@@ -1331,9 +1332,8 @@ def sheet_ah(wb, deals, snap_date):
     ws = wb.create_sheet("AH")
     pairs = [d for d in deals if d.get("a_share_code")]
     put(ws, "A1", "A/H SPREAD MONITOR", TITLE)
-    put(ws, "A2", "A premium = (A×CNY→HKD) ÷ H − 1 · + = A trades ABOVE H · LIVE columns are Bloomberg BDP "
-                  "(work on the terminal only — mnemonics await terminal verify) · BLUE overrides beat live · "
-                  f"snapshot column as of {snap_date}", SUB)
+    put(ws, "A2", "A premium = A price in HK$ / H price - 1; + = A above H. Live columns are Bloomberg "
+                  f"(terminal only); blue overrides beat live. Snapshot column as of {snap_date}.", SUB)
     put(ws, "A4", "CNYHKD", BOLD, border=BOX)
     put(ws, "B4", '=IFERROR(BDP("CNYHKD Curncy","PX_LAST"),"")', BODY, fill=F_CALC, border=BOX)
     inp(ws, "C4", None)
@@ -1361,12 +1361,12 @@ def sheet_ah(wb, deals, snap_date):
         calc(ws, f"J{r}", f'=IF($I{r}<>"",$I{r},$H{r})', PX)
         calc(ws, f"K{r}", f'=IF(OR(N($F{r})<=0,N($J{r})<=0,N($D$4)<=0),"",($J{r}*$D$4)/$F{r}-1)', "+0.0%;-0.0%")
         put(ws, f"L{r}", d.get("a_premium_now"), fmt="+0.0%;-0.0%", border=BOX)
-        put(ws, f"M{r}", d.get("ah_note"), NOTE)
+        put(ws, f"M{r}", plain(d.get("ah_note")), NOTE)
     if pairs:
         rng = f"K7:K{6 + len(pairs)}"
         ws.conditional_formatting.add(rng, FormulaRule(formula=["ABS(K7)>0.3"], fill=F_AMB))
     r0 = 9 + len(pairs)
-    put(ws, f"A{r0}", "NO A-SHARE LINE — closest pure-A proxies", SECT)
+    put(ws, f"A{r0}", "NO A-SHARE LINE: CLOSEST A-SHARE PROXIES", SECT)
     proxies = [d for d in deals if d.get("a_share_proxy")]
     for j, h in enumerate(["H code", "Name", "Proxy A code", "Proxy name", "Rationale"], 1):
         hdr(ws, f"{get_column_letter(j)}{r0 + 1}", h)
@@ -1377,7 +1377,7 @@ def sheet_ah(wb, deals, snap_date):
         put(ws, f"B{r}", d.get("name"), border=BOX)
         put(ws, f"C{r}", px.get("code") if isinstance(px, dict) else px, border=BOX)
         put(ws, f"D{r}", px.get("name") if isinstance(px, dict) else "", border=BOX)
-        put(ws, f"E{r}", px.get("rationale") if isinstance(px, dict) else d.get("ah_note"), NOTE)
+        put(ws, f"E{r}", plain(px.get("rationale") if isinstance(px, dict) else d.get("ah_note")), NOTE)
     for c, w in (("A", 8), ("B", 24), ("C", 20), ("D", 11), ("E", 10), ("F", 9),
                  ("G", 11), ("H", 10), ("I", 10), ("J", 9), ("K", 11), ("L", 11), ("M", 34)):
         ws.column_dimensions[c].width = w
@@ -1407,11 +1407,9 @@ def sheet_verify_changes(wb, deals, n):
         # price-scale actions AND the entitlement (TERP) adjustments
         return bbg_factor(code, acts0, ent0)
 
-    put(ws, "A1", "VERIFY ON THE TERMINAL — every value the v20/v21 audits changed", TITLE)
-    put(ws, "A2", "Open on Bloomberg and let the BDP/BDH columns resolve. VERDICT says MATCH when "
-                  "Bloomberg agrees, CHECK when it does not — with both numbers side by side. "
-                  "Off-terminal every Bloomberg cell reads 'run on terminal', never an error. "
-                  "Grey rows = mnemonic still AWAITING first-use verification.", SUB)
+    put(ws, "A1", "VERIFY ON THE TERMINAL", TITLE)
+    put(ws, "A2", "Values the audits changed, each with a Bloomberg call beside it. Open on Bloomberg "
+                  "and Verdict reads MATCH or CHECK; off the terminal the cells read 'run on terminal'.", SUB)
     r = 4
 
     # ---- A. listing date + day-1, measured on the local session list -------
@@ -1422,8 +1420,8 @@ def sheet_verify_changes(wb, deals, n):
                for x in _j.loads(p.read_text())["deals"] if isinstance(x, dict)}
     changed_date = [d for d in deals
                     if est.get(d["code"]) and est[d["code"]] != (d.get("ipo_date") or "")[:10]]
-    put(ws, f"A{r}", f"A · LISTING DATE + DAY-1 CLOSE  ({len(changed_date)} deals — the stored date "
-                     f"was the allotment-announcement day, usually a Saturday)", SECT)
+    put(ws, f"A{r}", f"A. LISTING DATE AND DAY-1 CLOSE ({len(changed_date)} deals whose stored date "
+                     f"was the allotment day)", SECT)
     r += 1
     for j, h in enumerate(["Code", "Name", "Our listing date", "Our day-1 close",
                            "Our day-1 %", "BBG close that day", "VERDICT",
@@ -1446,11 +1444,10 @@ def sheet_verify_changes(wb, deals, n):
         exp_ref = f"$D{r}/{cumf}" if abs(cumf - 1) > 1e-9 else f"$D{r}"
         calc(ws, f"G{r}", f'=IF(NOT(ISNUMBER($F{r})),"run on terminal",'
                           f'IF(ABS($F{r}/({exp_ref})-1)<0.005,"MATCH",'
-                          f'"CHECK — BBG "&TEXT($F{r},"0.000")))')
+                          f'"CHECK: BBG "&TEXT($F{r},"0.000")))')
         put(ws, f"H{r}", f"AAStocks listing date (was {est.get(c)}); close from the "
-                         f"local kline session list"
-                         + (f"; BBG basis = raw ÷ {cumf:g} (later corporate "
-                            f"actions back-adjust its history)" if abs(cumf - 1) > 1e-9 else ""),
+                         f"local session list"
+                         + (f"; Bloomberg basis = raw / {cumf:g}" if abs(cumf - 1) > 1e-9 else ""),
             NOTE, border=BOX)
         r += 1
     r += 1
@@ -1469,9 +1466,8 @@ def sheet_verify_changes(wb, deals, n):
                 continue
             v = x.get(key)
             if v is not None and x.get("code") in by_code:
-                ruled.append((x["code"], v, (x.get("src") or x.get("note") or "")[:150]))
-    put(ws, f"A{r}", f"B · OFFER PRICE  ({len(ruled)} deals — the filing parse had returned the "
-                     f"MAXIMUM offer price, or a figure that was not a price at all)", SECT)
+                ruled.append((x["code"], v, plain((x.get("src") or x.get("note") or "")[:150])))
+    put(ws, f"A{r}", f"B. OFFER PRICE ({len(ruled)} deals ruled against the filing parse)", SECT)
     r += 1
     for j, h in enumerate(["Code", "Name", "Our offer price", "", "",
                            "BBG offer price", "VERDICT", "What we relied on"], 1):
@@ -1482,13 +1478,10 @@ def sheet_verify_changes(wb, deals, n):
         put(ws, f"A{r}", c, fmt="@", border=BOX)
         put(ws, f"B{r}", d.get("name"), border=BOX)
         put(ws, f"C{r}", d.get("final_price"), fmt=PX, border=BOX)
-        put(ws, f"F{r}", "no BDP field (EQY_INIT_PO_SH_PRC rejected on the "
-                         "desk terminal 2026-08-26) — check the DES/IPO screen",
-            NOTE, border=BOX)
+        put(ws, f"F{r}", "no BDP field; check the DES IPO screen", NOTE, border=BOX)
         calc(ws, f"G{r}", f'=IF(ISNUMBER($F{r}),IF(ABS($F{r}/$C{r}-1)<0.005,'
-                          f'"MATCH","CHECK"),"verified via section A: the day-1 '
-                          f'close matched Bloomberg and the day-1 % is '
-                          f'consistent only with this price")')
+                          f'"MATCH","CHECK"),"see section A: day-1 close matches '
+                          f'Bloomberg at this price")')
         put(ws, f"H{r}", src, NOTE, border=BOX)
         r += 1
     r += 1
@@ -1497,9 +1490,8 @@ def sheet_verify_changes(wb, deals, n):
     acts = dict(acts0)
     for c_ in ent0:                  # entitlement-only deals belong here too
         acts.setdefault(c_, [])
-    put(ws, f"A{r}", f"C · CORPORATE ACTIONS  ({len(acts)} deals — Bloomberg's history is "
-                     f"ADJUSTED, ours is raw-plus-correction, so our day-1 close divided by the "
-                     f"cumulative factor must equal Bloomberg's print for that day)", SECT)
+    put(ws, f"A{r}", f"C. CORPORATE ACTIONS ({len(acts)} deals; our day-1 close / cumulative "
+                     f"factor should equal Bloomberg's adjusted print)", SECT)
     r += 1
     for j, h in enumerate(["Code", "Name", "Listing date", "Our day-1 close",
                            "÷ factor = expected", "BBG close that day", "VERDICT",
@@ -1521,20 +1513,19 @@ def sheet_verify_changes(wb, deals, n):
                          f'$C{r},$C{r}),"run on terminal")', BODY, F_CALC, PX, BOX)
         calc(ws, f"G{r}", f'=IF(NOT(ISNUMBER($F{r})),"run on terminal",'
                           f'IF(ABS($F{r}/$E{r}-1)<0.02,"MATCH",'
-                          f'"CHECK — BBG "&TEXT($F{r},"0.000")))')
+                          f'"CHECK: BBG "&TEXT($F{r},"0.000")))')
         parts = [f"{e['date']} x{e['ratio']:g}" for e in evs]
         parts += [f"{e['date']} {e.get('event','entitlement')} (BBG-only x{e['factor']:g})"
                   for e in ent0.get(c, [])]
-        put(ws, f"H{r}", "; ".join(parts) + f"  (BBG basis x{cum:g})",
+        put(ws, f"H{r}", "; ".join(parts) + f" (Bloomberg basis x{cum:g})",
             NOTE, border=BOX)
         r += 1
     r += 1
 
     # ---- D. deal sizes rebuilt after an impossible gross -------------------
     sized = [d for d in deals if d.get("size_note")
-             and "below the deal" in str(d.get("size_note"))]
-    put(ws, f"A{r}", f"D · DEAL SIZE  ({len(sized)} deals — the stated gross was smaller than "
-                     f"the deal's own net proceeds, which cannot happen)", SECT)
+             and "below the net proceeds" in str(d.get("size_note"))]
+    put(ws, f"A{r}", f"D. DEAL SIZE ({len(sized)} deals whose stated gross was below net proceeds)", SECT)
     r += 1
     for j, h in enumerate(["Code", "Name", "Our deal size (HK$m)", "Basis", "",
                            "BBG offering size", "VERDICT", "What we relied on"], 1):
@@ -1546,13 +1537,8 @@ def sheet_verify_changes(wb, deals, n):
         put(ws, f"B{r}", d.get("name"), border=BOX)
         put(ws, f"C{r}", d.get("deal_size_hkdm"), fmt=MONEY, border=BOX)
         put(ws, f"D{r}", d.get("size_basis"), NOTE, border=BOX)
-        put(ws, f"F{r}", "no BDP field for offering size (EQUITY_OFFERINGS "
-                         "is a BDS order-book function) — check CACS / the "
-                         "IPO screen",
-            NOTE, border=BOX)
-        calc(ws, f"G{r}", '"check on CACS — the stated gross was arithmetically '
-                          'impossible (below net), so the rebuilt figure is '
-                          'shares x price or net proceeds"')
+        put(ws, f"F{r}", "no BDP field; check CACS", NOTE, border=BOX)
+        calc(ws, f"G{r}", '"check on CACS; rebuilt as shares x price or net proceeds"')
         put(ws, f"H{r}", str(d.get("size_note"))[:150], NOTE, border=BOX)
         r += 1
 
@@ -1570,19 +1556,17 @@ def sheet_cs_league(wb, deals):
     from clean_names import cs_league
     rows = cs_league(deals)
     ws = wb.create_sheet("CS League")
-    put(ws, "A1", "CORNERSTONE LEAGUE — how deals anchored by each investor traded", TITLE)
-    put(ws, "A2", "One row per investor (grouped on the Screener's normalized key, so long/short "
-                  "forms of one house count once). Averages are simple means across their deals: "
-                  "day-1 pop = offer→close; ex-pop legs strip the pop (day-1 close→1w/1m/3m). "
-                  "Hit = share of their deals closing day-1 above offer. Use the filter arrows "
-                  "to cut by deal count.", SUB)
+    put(ws, "A1", "CORNERSTONE LEAGUE", TITLE)
+    put(ws, "A2", "One row per investor; long and short forms of one house count once. Simple "
+                  "averages across their deals. Hit = share closing day 1 above the offer. "
+                  "Ex-pop legs run from the day-1 close.", SUB)
     # band row: WITH POP (vs offer) | EX-POP (from the day-1 close)
-    put(ws, "D3", "WITH POP — vs offer", BOLD)
-    put(ws, "H3", "EX-POP — from day-1 close", BOLD)
+    put(ws, "D3", "VS OFFER (WITH POP)", BOLD)
+    put(ws, "H3", "FROM DAY-1 CLOSE (EX-POP)", BOLD)
     heads = ["Investor", "Deals", "Day-1 hit",
              "Avg day-1 pop", "Avg 1w", "Avg 1m", "Avg 3m",
              "Avg 1w ex-pop", "Avg 1m ex-pop", "Avg 3m ex-pop",
-             "Their deals (code · name)"]
+             "Their deals"]
     for j, h in enumerate(heads, 1):
         hdr(ws, f"{get_column_letter(j)}4", h)
     PCT = '+0.0"%";-0.0"%"'
@@ -1620,39 +1604,23 @@ def sheet_stab_league(wb, deals):
     from clean_names import stab_league
     rows = stab_league(deals)
     ws = wb.create_sheet("SM League")
-    put(ws, "A1", "STABILISING-MANAGER LEAGUE — how deals each bank defended traded", TITLE)
-    put(ws, "A2", "One row per stabilising manager (grouped on the bank family, so "
-                  "'Goldman Sachs (Asia) L.L.C.' and 'Goldman Sachs International' count once). "
-                  "The stabilising manager holds the greenshoe and the after-market bid, so this "
-                  "is a different question from the sponsor league: not who sold the deal, but "
-                  "who defended it. Averages are simple means. THE DAY-1 BLOCK splits the session "
-                  "the manager actually defended: 'open vs issue' is the pop (where it opened "
-                  "against the price the bank sold at), 'close vs issue' is the day-1 return, and "
-                  "'open→close' is whether that open was HELD or given back — a negative there "
-                  "with a positive close means the bank spent the day supporting a fading stock. "
-                  "Ex-pop legs strip the pop (day-1 close→1w/1m/3m). Hit = share closing day-1 above "
-                  "offer. Shoe full/lapsed = of the deals whose outcome is known — a shoe "
-                  "exercised in full never needed support; a lapsed one was bought back in. "
-                  "READ THIS AS DEAL MIX, NOT A SKILL RANKING: the banks at the bottom lead the "
-                  "large international deals — bigger books, institutionally priced, less left on "
-                  "the table — while the top of the table sits on smaller HK retail-driven "
-                  "offerings where pops are structurally larger. A low median means 'defended a "
-                  "tightly-priced deal', not 'defended it badly'; compare a bank against deals of "
-                  "its own size and regime.", SUB)
-    put(ws, "D3", "WITH POP — vs offer", BOLD)
-    put(ws, "H3", "EX-POP — from day-1 close", BOLD)
-    put(ws, "K3", "SHOE OUTCOME", BOLD)
-    put(ws, "D3", "DAY 1 — the session the manager actually defended", BOLD)
-    put(ws, "H3", "WITH POP — vs offer", BOLD)
-    put(ws, "K3", "EX-POP — from day-1 close", BOLD)
+    put(ws, "A1", "STABILISING MANAGER LEAGUE", TITLE)
+    put(ws, "A2", "One row per stabilising manager, grouped by bank family. Day 1: open vs issue is "
+                  "the pop, close vs issue the day-1 return, open to close whether the open held. "
+                  "Shoe full / lapsed are shares of deals with a known outcome. Read as deal mix, "
+                  "not skill: the banks at the bottom lead the large institutional deals, the top "
+                  "sit on small retail-driven ones.", SUB)
+    put(ws, "D3", "DAY 1", BOLD)
+    put(ws, "H3", "VS OFFER (WITH POP)", BOLD)
+    put(ws, "K3", "FROM DAY-1 CLOSE (EX-POP)", BOLD)
     put(ws, "N3", "SHOE OUTCOME", BOLD)
     heads = ["Stabilising manager", "Deals", "Day-1 hit",
-             "Day-1 open vs issue", "Day-1 close vs issue", "Day-1 open→close",
+             "Day-1 open vs issue", "Day-1 close vs issue", "Day-1 open to close",
              "Day-1 known",
              "Avg 1w", "Avg 1m", "Avg 3m",
              "Avg 1w ex-pop", "Avg 1m ex-pop", "Avg 3m ex-pop",
              "Shoe full %", "Shoe lapsed %", "Outcome known",
-             "Avg deal size (HK$m)", "Their deals (code · name)"]
+             "Avg deal size (HK$m)", "Their deals"]
     for j, h in enumerate(heads, 1):
         hdr(ws, f"{get_column_letter(j)}4", h)
     PCT = '+0.0"%";-0.0"%"'
@@ -1698,7 +1666,7 @@ def sheet_stab_league(wb, deals):
 def sheet_sizebench(wb, deals, cfg, n):
     ws = wb.create_sheet("SizeBench")
     put(ws, "A1", "SIZE BENCHMARKS", TITLE)
-    put(ws, "A2", "bucket thresholds are INPUT-BLUE (README weights section explains) — counts recompute", SUB)
+    put(ws, "A2", "Blue thresholds are inputs; the counts recompute.", SUB)
     bkts = cfg["size_buckets_hkdm"]
     put(ws, "A4", "Bucket", BOLD); put(ws, "B4", "Min HK$m", BOLD)
     for i, b in enumerate(bkts):
@@ -1723,7 +1691,7 @@ def sheet_sizebench(wb, deals, cfg, n):
         calc(ws, f"{get_column_letter(5 + len(bkts))}{r}",
              f"=SUMIFS({size_rng},{date_rng},\">=\"&DATE({y},1,1),{date_rng},\"<=\"&DATE({y},12,31))/1000",
              "#,##0.0")
-    put(ws, "A12", "MEGA-DEAL PRECEDENTS (top 15 by proceeds)", SECT)
+    put(ws, "A12", "LARGEST DEALS (top 15 by proceeds)", SECT)
     top = sorted([d for d in deals if d.get("deal_size_hkdm")],
                  key=lambda d: -d["deal_size_hkdm"])[:15]
     for j, h in enumerate(["Code", "Name", "IPO date", "HK$m", "Subsector"], 1):
@@ -1744,7 +1712,7 @@ def sheet_sizebench(wb, deals, cfg, n):
 def sheet_taxonomy(wb, tax):
     ws = wb.create_sheet("Taxonomy")
     put(ws, "A1", "SECTOR / SUBSECTOR TAXONOMY", TITLE)
-    put(ws, "A2", "single source: data/taxonomy.json — edit there and rebuild; screener gates on subsector first", SUB)
+    put(ws, "A2", "Source: data/taxonomy.json. Edit there and rebuild.", SUB)
     # column E: flat label list for dropdowns. An INLINE DataValidation list is
     # silently truncated at 255 characters by Excel, so dropdowns MUST point at
     # a range, never a joined string.
@@ -1764,12 +1732,12 @@ def sheet_taxonomy(wb, tax):
     hdr(ws, "A3", "Sector / subsector")
     hdr(ws, "B3", "")
     hdr(ws, "C3", "Comp note")
-    hdr(ws, "D3", "Alpha benchmark (ticker — name)")
+    hdr(ws, "D3", "Alpha benchmark")
     r = 4
     for sec, subs in tax["sectors"].items():
         put(ws, f"A{r}", sec, SECT, F_CALC)
         bt, blabel = BENCH.get(sec, DEFAULT_BENCH)
-        put(ws, f"D{r}", f"{bt} — {blabel}", BODY, F_CALC)
+        put(ws, f"D{r}", f"{bt} ({blabel})", BODY, F_CALC)
         r += 1
         for s in subs:
             put(ws, f"B{r}", s["label"], BODY)
@@ -1784,9 +1752,9 @@ def sheet_taxonomy(wb, tax):
 
 def sheet_verification(wb, deals, counts, n):
     ws = wb.create_sheet("Verification")
-    put(ws, "A1", "VERIFICATION — book vs official HKEX statistics", TITLE)
-    put(ws, "A2", "book counts are IPOs with a public offer (allotment results filed); official totals include "
-                  "listings by introduction / transfers — the Delta column is expected to be small and positive", SUB)
+    put(ws, "A1", "BOOK VS HKEX OFFICIAL STATISTICS", TITLE)
+    put(ws, "A2", "Book counts are IPOs with a public offer; official totals also include listings by "
+                  "introduction and transfers, so Delta should be small and positive.", SUB)
     for j, h in enumerate(["Year", "Deals in book", "Official new listings", "Delta",
                            "Book proceeds HK$bn", "Official IPO funds HK$bn", "Diff %"], 1):
         hdr(ws, f"{get_column_letter(j)}4", h)
@@ -1835,10 +1803,10 @@ def sheet_verification(wb, deals, counts, n):
 def sheet_verification_excl(ws, deals, r0):
     """Answer 'is anyone missing?' by SHOWING what was excluded and why."""
     import json as _json
-    put(ws, f"A{r0}", "WHAT IS EXCLUDED FROM THE BOOK (and why)", SECT)
+    put(ws, f"A{r0}", "EXCLUDED FROM THE BOOK", SECT)
     put(ws, f"A{r0+1}", "Inclusion rule: a Main Board listing that filed an Allotment Results "
-                        "announcement, i.e. an IPO with a public offering. Everything below "
-                        "appeared in the aggregator's listing table but is NOT an IPO by that rule.", NOTE)
+                        "announcement. Everything below was in the aggregator's table but is not "
+                        "an IPO by that rule.", NOTE)
     have = {d["code"] for d in deals}
     try:
         roster = _json.loads((ROOT / "data" / "batches" / "bulk_roster.json").read_text())["deals"]
@@ -1857,17 +1825,15 @@ def sheet_verification_excl(ws, deals, r0):
     for a in gem:
         r += 1
         for j, v in enumerate([a["code"], a["stock_name_short"], a["ipo_date_est"],
-                               "GEM board — Main Board only by design"], 1):
+                               "GEM board (Main Board only)"], 1):
             put(ws, f"{get_column_letter(j)}{r}", v, border=BOX)
     for x in extra:
         r += 1
         for j, v in enumerate([x["code"], x.get("name"), x.get("ipo_date"),
-                               "no Allotment Results filed — listing by introduction / "
-                               "transfer / not an IPO"], 1):
+                               "no allotment results filed (introduction, transfer "
+                               "or not an IPO)"], 1):
             put(ws, f"{get_column_letter(j)}{r}", v, border=BOX)
-    put(ws, f"A{r+2}", f"{len(gem)} GEM listings + {len(extra)} non-IPO listings excluded. "
-                       f"Anything not on this list and not in the Database is a genuine gap — "
-                       f"tell the builder.", NOTE)
+    put(ws, f"A{r+2}", f"{len(gem)} GEM listings and {len(extra)} non-IPO listings excluded.", NOTE)
     return r + 3
 
 
@@ -1877,11 +1843,10 @@ def sheet_bbg(wb, deals, n):
     columns reference THAT id (B{r}), exactly like =BDP(A1&" Action","CP036").
     Only computes on a terminal; inert and clearly labelled elsewhere."""
     ws = wb.create_sheet("BBG Verify")
-    put(ws, "A1", "BLOOMBERG CROSS-CHECK — terminal only", TITLE)
-    put(ws, "A2", "Column B pulls each deal's Bloomberg IPO order ID (EQUITY_OFFERINGS); "
-                  "the columns after it feed off that ID. Compare against the scraped "
-                  "columns pulled in from the Database. 511 BDS calls are heavy — let it "
-                  "run once, then Paste-Special values if you want it static.", SUB)
+    put(ws, "A1", "BLOOMBERG CROSS-CHECK (terminal only)", TITLE)
+    put(ws, "A2", "Column B pulls each deal's Bloomberg IPO order ID; the columns after it feed off "
+                  "that ID and sit beside the scraped values. The BDS calls are heavy: let it run "
+                  "once, then paste values if you want it static.", SUB)
     heads = ["Code / Name", "BBG IPO order ID", "Retail o/sub CP036", "Scraped public sub",
              "Instn o/sub CP037", "Scraped intl sub", "Greenshoe facility",
              "Shoe exercised (BBG)", "Shoe outcome (scraped)", "Current P/E (BBG)",
@@ -1968,9 +1933,7 @@ def sheet_bbg(wb, deals, n):
                                  f'ABS({a}{DB_R0}-{b}{DB_R0})>0.25*ABS({b}{DB_R0}))'],
                         fill=F_OVR))
     put(ws, f"A{DB_R0 + n + 1}",
-        "Orange = Bloomberg and the scraped value differ by more than 25%. "
-        "A blank scraped cell beside a Bloomberg value is a gap this file could not "
-        "fill from public filings — take Bloomberg's.", NOTE)
+        "Orange = Bloomberg and the scraped value differ by more than 25%.", NOTE)
     ws.freeze_panes = "B5"
     return ws
 
@@ -1981,70 +1944,37 @@ def sheet_readme(wb, cfg, as_of, deals):
     ws = wb.create_sheet("Notes")
     w = cfg["weights"]
     put(ws, "A1", "HK IPO DATABASE", TITLE)
-    put(ws, "A2", f"{len(deals)} Main Board IPOs 2021-2026 + pipeline · data as of {as_of}", SUB)
+    put(ws, "A2", f"{len(deals)} Main Board IPOs 2021-2026 plus the pipeline. Data as of {as_of}.", SUB)
     lines = [
         ("", ""),
-        ("Blue cells", "you type these. Everything else calculates."),
-        ("Start here", "Screener tab — pick a deal OR type your own terms; comps rank instantly."),
-        ("Screener", "pick any past or pipeline deal, get its closest comps."),
-        ("CS League", "one row per cornerstone investor: every deal they anchored, average "
-                      "day-1 pop and 1w/1m/3m ex-pop. Same grouping key as the Screener."),
-        ("SM League", "the same table for STABILISING MANAGERS — the bank holding the "
-                      "greenshoe and the after-market bid. Read it against CS League: one "
-                      "says who anchored the deal, the other who defended it. The shoe "
-                      "columns are the tell — exercised in full means the price never "
-                      "needed support; lapsed means stock was bought back in."),
-        ("Eff. free float", "deal size x (1 - cornerstone %) / market cap - the slice of the "
-                            "company that can actually trade on day 1 (cornerstones are locked "
-                            "6 months)."),
-        ("Analogs", "the raw subscription-bucket history behind the Screener read-out."),
-        ("Green / amber", "cross-checked / single-source or judgment."),
-        ("Money", "HK$ millions. Day-1 + = closed above offer. A premium + = A trades ABOVE H."),
-        ("Subscription", "filing basis: 10x = ten times the shares on offer. Bloomberg CP036/CP037 "
-                         "override the scrape wherever the desk paste carries them."),
-        ("Ex-pop columns", "TEAL headers. 1w/1m/3m ex-pop start at the day-1 CLOSE (standard "
-                           "aftermarket basis); Alpha 1m ex-pop nets the index over the identical "
-                           "window. The TRADEABLE-entry view — buy at the day-1 OPEN — is the "
-                           "Day-1 open→close column here plus the open-rebased charts in the "
-                           "dashboard."),
-        ("P/E & P/S basis", "ALL at-IPO multiples are TRAILING, never forward: market cap at the "
-                            "final offer price ÷ the last FULL pre-IPO fiscal year's net income "
-                            "(P/E) or revenue (P/S), as filed in the prospectus. One basis for "
-                            "every deal AND the pipeline's expected multiples, so they compare. "
-                            "Loss-makers show n/m P/E — use P/S; an 18A pre-revenue biotech's "
-                            "huge P/S is shown with its scale explained rather than left blank."),
-        ("P/E, two readings — WHICH TO USE",
-         "There are two AT-IPO P/E columns and they are both right, on different "
-         "bases. 'P/E at IPO' = final mktcap ÷ last PRE-IPO fiscal-year net income, "
-         "the prospectus basis — the SAME basis for all 514 rows, with both inputs "
-         "visible as columns beside it. 'P/E at IPO (BBG)' = price ÷ trailing-12m "
-         "EPS at listing, Bloomberg's own basis. They diverge most for 2021-23 "
-         "vintages (median BBG/ours ~0.5) because earnings grew between the covered "
-         "FY and listing and BBG uses weighted pre-deal shares. USE OURS to compare "
-         "deals against each other — it is the only one computed identically for "
-         "every row, and you can audit it. USE BLOOMBERG'S when quoting a number "
-         "someone will check on a terminal, because that is what they will see. "
-         "The book already treats BBG as the referee: where our derived multiple "
-         "breaks the plausibility cap, a BBG print within 25% restores it as real "
-         "(CALB at ~549x), and agreement at an absurd level is read as a shared "
-         "data artifact rather than a confirmation."),
-        ("P/E today / P/S today", "'P/E today (BBG)' is the desk paste; 'P/S today "
-                                  "(BBG)' has no public source at all, so every row "
-                                  "resolves off BBG Verify col S on the terminal and "
-                                  "says 'run on terminal' off it. Both sit in "
-                                  "FUNDAMENTALS beside the at-IPO multiples so the "
-                                  "then-vs-now comparison is one glance."),
-        ("P/S now (Screener)", "live BDP PX_TO_SALES_RATIO beside P/E now — resolves on the "
-                               "terminal; off-terminal it falls back to the at-IPO P/S."),
-        ("A-share mkt cap now", "the Tencent snapshot fills it for A/H pairs; where it "
-                                "cannot, the cell resolves off BBG Verify col T "
-                                "(CUR_MKT_CAP on the A ticker). Non-A/H rows read N/A."),
-        ("Force-include (D17)", "type codes comma-separated (e.g. 9888, 2015) and those deals pin "
-                                "to the top of the comps, past every filter. Same control exists "
-                                "in the dashboard's Screener."),
-        ("", ""),
-        ("Not captured", "underwriting fee splits (never public per deal)."),
-        ("Judgment call", "sector and subsector are analyst-assigned, shown amber."),
+        ("Blue cells", "Inputs. Everything else calculates."),
+        ("Screener", "Pick a deal, or type your own terms; comps rank same-subsector first."),
+        ("Database", "One row per deal. The last column says why any cell is blank."),
+        ("CS League, SM League", "One row per cornerstone investor or stabilising manager, with how "
+                                 "their deals traded. Read together: who anchored the deal, who defended it."),
+        ("Analogs", "Day-1 history by subscription bucket, subsector and year."),
+        ("Eff. free float", "Deal size x (1 - cornerstone %) / market cap: what can trade on day 1 "
+                            "while cornerstones are locked up."),
+        ("Money and signs", "HK$ millions. Day-1 + = closed above the offer. A premium + = A above H."),
+        ("Subscription", "Filing basis: 10x = ten times the shares on offer. Bloomberg CP036/CP037 "
+                         "override the scrape where the desk paste has them."),
+        ("Ex-pop columns", "Teal headers. 1w/1m/3m ex-pop run from the day-1 close; alpha 1m ex-pop "
+                           "nets the index over the same window."),
+        ("P/E and P/S at IPO", "Trailing, never forward: market cap at the offer price over the last "
+                               "full pre-IPO fiscal year's net income or revenue. Loss-makers read n/m "
+                               "on P/E; use P/S."),
+        ("Two at-IPO P/E columns", "'P/E at IPO' is the prospectus basis, computed the same way for "
+                                   "every row: use it to compare deals. 'P/E at IPO (BBG)' is price over "
+                                   "trailing-12m EPS at listing, Bloomberg's basis: use it when quoting "
+                                   "a number someone will check on a terminal. They diverge most for "
+                                   "2021-23 deals."),
+        ("P/E today, P/S today", "Bloomberg. P/E today is the desk paste; P/S today resolves on the "
+                                 "terminal and reads 'run on terminal' elsewhere."),
+        ("A-share mkt cap now", "From the A-share quote for A/H pairs, Bloomberg on the terminal where "
+                                "the quote had none. Non-A/H rows read N/A."),
+        ("Force-include", "Type codes, comma-separated, on the Screener; those deals pin to the top."),
+        ("Not captured", "Underwriting fee splits."),
+        ("Judgment", "Sector and subsector are analyst-assigned."),
     ]
     r = 3
     for a, b in lines:
@@ -2053,16 +1983,15 @@ def sheet_readme(wb, cfg, as_of, deals):
         put(ws, f"B{r}", b, BODY)
     r += 2
     put(ws, f"A{r}", "SCREENER WEIGHTS (edit to re-tune)", SECT)
-    for name, val, desc in [("W_SUB", w["subsector_match"], "same subsector — dominant by design"),
-                            ("W_SEC", w["sector_match_fallback"], "same sector fallback"),
+    for name, val, desc in [("W_SUB", w["subsector_match"], "same subsector"),
+                            ("W_SEC", w["sector_match_fallback"], "same sector"),
                             ("W_SIZE", w["size_proximity"], "size proximity"),
                             ("W_PROF", w["profitability_match"], "profitability match"),
                             ("W_AH", w["h_share_match"], "H-share match"),
                             ("W_REC", w["recency"], "recency"),
                             ("W_CS", w.get("shared_cornerstone", 12),
                              "shares a cornerstone investor with the target"),
-                            ("W_PE", w.get("pe_proximity", 150),
-                             "P/E proximity — closer multiples rank higher (beats profitability)"),
+                            ("W_PE", w.get("pe_proximity", 150), "P/E proximity"),
                             ("W_PEHW", cfg.get("pe_proximity_log10_halfwidth", 0.6),
                              "P/E log half-width"),
                             ("W_SIZEHW", cfg["size_proximity_log10_halfwidth"], "size log half-width"),
@@ -2074,19 +2003,13 @@ def sheet_readme(wb, cfg, as_of, deals):
         define(wb, name, f"Notes!$B${r}")
 
     r += 2
-    put(ws, f"A{r}", "WHY THESE WEIGHTS (measured, not assumed)", SECT)
+    put(ws, f"A{r}", "WHY THESE WEIGHTS", SECT)
     for line in (
-        "Tested on 24,090 deal pairs: how close were two deals' day-1 returns when they",
-        "matched on each factor, versus two random deals (median gap 27.5pp)?",
-        "  both A+H .................. 14.2pp  (+49% better than random)",
-        "  subscription within 2x .... 18.6pp  (+32% better)",
-        "  same sector ............... 26.3pp  (+4% better)",
-        "  same subsector ............ 29.2pp  (no better than random)",
-        "  size / P/E / cornerstone .. 29-33pp (no better than random)",
-        "So subsector-first still decides WHICH companies are comparable (a chip maker is",
-        "valued against chip makers), but it does NOT predict the debut. When the question",
-        "is 'how will it trade', switch Rank by -> 'demand-similar first', and read the",
-        "Analogs tab, where subscription buckets carry the real signal.",
+        "Measured on 24,090 deal pairs. Median day-1 gap between two random deals: 27.5pp. "
+        "Both A+H: 14.2pp. Subscription within 2x: 18.6pp. Same sector: 26.3pp. Same subsector: 29.2pp. "
+        "Size, P/E, cornerstone: 29-33pp.",
+        "Subsector decides which companies are comparable; it does not predict the debut. For "
+        "'how will it trade', rank demand-similar first and read the Analogs tab.",
     ):
         r += 1
         put(ws, f"A{r}", line, NOTE)
@@ -2113,53 +2036,42 @@ def sheet_readme(wb, cfg, as_of, deals):
 # this number come from" is the first question asked of any figure that goes
 # into a trade, and the answer must not live only in the builder's head.
 COLUMN_SOURCES = [
-    ("Code / Name / date", "HKEX Allotment Results announcement — every IPO must file one, so the "
-                           "roster is enumerated from the filings themselves, not from a list."),
-    ("Name (CN)", "HKEX bilingual securities feed (activestock/inactivestock _c.json)."),
+    ("Code / Name / date", "HKEX Allotment Results announcement. Every IPO files one, so the "
+                           "roster comes from the filings themselves."),
+    ("Name (CN)", "HKEX bilingual securities feed."),
     ("Sector / Subsector", "Analyst-assigned against data/taxonomy.json. New deals get a "
-                           "provisional keyword label (~49% exact) shown amber until relabelled."),
-    ("Deal size", "Ladder, and the basis is printed beside it: stated gross proceeds > "
-                  "final price x offer shares > net proceeds. From the final-price announcement "
-                  "and the prospectus."),
-    ("Range low / Max-cap", "Prospectus indicative range; the cap is the 'Maximum Offer Price'. "
+                           "provisional keyword label until relabelled."),
+    ("Deal size", "Stated gross proceeds, else final price x offer shares, else net proceeds; "
+                  "the basis is printed beside it. From the final-price announcement and the prospectus."),
+    ("Range low / Max-cap", "Prospectus indicative range; the cap is the maximum offer price. "
                             "A fixed-price offer has no range and is labelled as such."),
     ("Final px", "Allotment Results announcement (the struck price)."),
-    ("% of cap", "final price / cap. Fixed-price offers are 100% by definition."),
-    ("Mkt cap at IPO", "Ladder, printed in 'Mkt cap basis': final price x shares on listing > "
-                       "deal size / offer % of enlarged capital > issuer-stated expected market "
-                       "cap > AAStocks 上市市值 scaled to the struck price. Cross-checked against "
-                       "AAStocks; >25% disagreement is flagged orange."),
-    ("Public / Intl sub", "Allotment Results — the subscription section, read per tranche. "
-                          "Under-subscription (<1x) is captured as data, not dropped."),
-    ("Cornerstone % / investors", "Prospectus cornerstone section (names cleaned of PDF table "
-                                  "damage), filled from AAStocks 機構性投資者 where the filing "
-                                  "text did not survive extraction."),
-    ("Greenshoe size", "over-allocated shares / offer shares, from the prospectus."),
-    ("Shoe outcome", "The END OF STABILISATION notice filed ~30 days after listing — the "
-                     "allotment-day wording can only ever say 'not yet'."),
-    ("Day-1", "Listing-day close vs the struck offer price (Yahoo). Where Yahoo has no session "
-              "at the listing date the value comes from AAStocks instead — it is never measured "
-              "off a later session."),
-    ("1-week / 1-month / 3-month", "Close 5 / 21 / 63 trading bars after the debut, all vs the "
-                                   "OFFER price."),
-    ("1m ex-pop", "Same horizon measured from the day-1 CLOSE instead — strips the debut pop and "
-                  "answers whether it held."),
-    ("Alpha / Index", "The deal's own sector index over the identical window, anchored at the "
-                      "index close BEFORE the listing (the moment the subscription money was "
-                      "committed). Index named per row; map on the Taxonomy tab."),
+    ("% of cap", "Final price / cap. Fixed-price offers are 100% by definition."),
+    ("Mkt cap at IPO", "Final price x shares on listing, else deal size / offer % of enlarged capital, "
+                       "else the issuer's stated cap, else AAStocks scaled to the struck price; the basis "
+                       "is printed beside it. Cross-checked against AAStocks; a >25% gap is flagged orange."),
+    ("Public / Intl sub", "Allotment Results, subscription section, per tranche. Under-subscription "
+                          "is kept as data."),
+    ("Cornerstone % / investors", "Prospectus cornerstone section, filled from AAStocks where the "
+                                  "filing text did not survive extraction."),
+    ("Greenshoe size", "Over-allocated shares / offer shares, from the prospectus."),
+    ("Shoe outcome", "The end-of-stabilisation notice filed about 30 days after listing."),
+    ("Day-1", "Listing-day close vs the offer price, from the local session list; AAStocks where "
+              "the price feed has no listing-day bar."),
+    ("1-week / 1-month / 3-month", "Close 5 / 21 / 63 trading days after the debut, vs the offer price."),
+    ("1m ex-pop", "Same horizon measured from the day-1 close, so the debut pop is stripped out."),
+    ("Alpha / Index", "The sector index over the same window, anchored at the close before the "
+                      "listing. Index named per row; map on the Taxonomy tab."),
     ("Since IPO", "Latest close vs the offer price."),
-    ("Revenue / NI", "Prospectus Financial Information section, latest full year, converted to "
-                     "HK$ at a fixed rate stated in the file."),
-    ("P/E at IPO", "market cap / latest FY net income. Loss-makers read n/m — a negative P/E is "
-                   "meaningless — and carry P/S instead."),
-    ("H disc vs A at IPO", "H offer price vs the A-share close on the last session BEFORE the H "
-                           "listing, converted at that day's CNYHKD. Negative = H struck below "
-                           "the A line. Verified by hand on CATL (-6.7%)."),
-    ("A/H premium (today)", "Latest A and H closes, same conversion."),
-    ("Sponsors / Bookrunners", "Prospectus cover page. The AAStocks columns beside them are 保薦人 "
-                               "and 包銷商 from the deal's AAStocks page — a second, independent "
-                               "print of the same fact."),
-    ("Prospectus / Allotment / Stabilisation", "Direct HKEX filing URLs, resolved per stock code."),
+    ("Revenue / NI", "Prospectus financial information, latest full year, converted to HK$ at a "
+                     "fixed rate."),
+    ("P/E at IPO", "Market cap / latest FY net income. Loss-makers read n/m and carry P/S instead."),
+    ("A prem vs H at IPO", "A-share close on the last session before the H listing, in HK$ at that "
+                           "day's rate, over the H offer price, minus 1. Checked by hand on CATL."),
+    ("A premium (today)", "Latest A and H closes, same conversion."),
+    ("Sponsors / Bookrunners", "Prospectus cover page. The AAStocks columns beside them are the "
+                               "same facts from the deal's AAStocks page."),
+    ("Prospectus / Allotment / Stabilisation", "HKEX filing links, resolved per stock code."),
 ]
 
 
@@ -2352,9 +2264,9 @@ def build_analogs(deals):
 
 def sheet_analogs(wb, deals, an):
     ws = wb.create_sheet("Analogs")
-    put(ws, "A1", "DAY-1 ANALOGS — what deals like this actually did", TITLE)
-    put(ws, "A2", f"built from {an['pool_n']} deals with a listing-day price, {', '.join(an['years'])}. "
-                  "'Hit-rate' = % that closed above the offer price. Read n before trusting a cell.", SUB)
+    put(ws, "A1", "DAY-1 ANALOGS", TITLE)
+    put(ws, "A2", f"{an['pool_n']} deals with a listing-day price, {an['years'][0]}-{an['years'][-1]}. "
+                  "Hit-rate = share that closed above the offer. Check n before trusting a cell.", SUB)
     r = 4
     put(ws, f"A{r}", "BY SUBSCRIPTION LEVEL (all deals)", SECT); r += 1
     for j, h in enumerate(["Subscription", "n", "Median day-1", "Hit-rate", "P25", "P75"], 1):
@@ -2404,7 +2316,7 @@ def sheet_analogs(wb, deals, an):
         put(ws, f"H{r}", vm.get("n_ps"), fmt="0", border=BOX)
     last_s = r
     r += 2
-    put(ws, f"A{r}", "BY YEAR x SUBSCRIPTION — does the edge survive a bad tape?", SECT); r += 1
+    put(ws, f"A{r}", "BY YEAR x SUBSCRIPTION", SECT); r += 1
     for j, h in enumerate(["Year", "Subscription", "n", "Median day-1", "Hit-rate"], 1):
         hdr(ws, f"{get_column_letter(j)}{r}", h)
     for (y, label), st in sorted(an["year_bucket"].items()):
