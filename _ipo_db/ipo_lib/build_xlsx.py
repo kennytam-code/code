@@ -43,7 +43,7 @@ F_AMB  = PatternFill("solid", fgColor="00FFE699")   # judgment / estimated
 F_OVR  = PatternFill("solid", fgColor="00FFC000")   # conflict
 # One tint per column band, shared by the Database band row and the Screener's
 # comp table so the two grids read the same way.
-BAND_TINT = {"IDENTITY": "00203864", "DEAL TERMS": "00274E13", "DEMAND": "007A5C00",
+BAND_TINT = {"IDENTITY": "001F4E79", "DEAL TERMS": "00274E13", "DEMAND": "007A5C00",
              "PERFORMANCE": "00134F4A", "FUNDAMENTALS": "00434343",
              "A / H": "00742323", "BANKS & DOCS": "00274E63", "NOTES": "00434343",
              "SCORING": "00595959"}
