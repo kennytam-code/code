@@ -234,15 +234,27 @@ def _phip_as_pipeline(root, existing_names):
             "a_share_code": p.get("a_share_code"),
             "valuation_notes": "; ".join(filter(None, [
                 p.get("a_share_note"),
-                f"subsector via {p['subsector_src']}" if p.get("subsector_src") else None,
-                "expected size not yet public; type it in the blue cell "
-                "to rank comps on size" if not p.get("expected_shares") else None])) or None,
+                "expected size not yet public" if not p.get("expected_shares") else None])) or None,
             "sponsors": "; ".join((p.get("sponsors") or [])
                                    or (p.get("coordinators") or [])) or None,
             "expected_size_hkdm": press.get("expected_size_hkdm"),
             "expected_size_basis": press.get("basis"),
         })
     return out
+
+
+def _stage(p):
+    """(label, sort order) from the row's status text and its terms."""
+    st = str(p.get("status") or "").upper()
+    if p.get("withdrawn") or st.startswith("WITHDRAWN"):
+        return "Withdrawn", 4
+    if "OFFERING" in st or p.get("range_hi") or p.get("offer_period"):
+        return "Offering", 1
+    if "PHIP" in st or str(p.get("expected_timing") or "").startswith("PHIP"):
+        return "PHIP posted", 2
+    if "A1" in st or "FILED" in st:
+        return "A1 filed", 3
+    return "Reported", 3
 
 
 def load():
@@ -254,6 +266,13 @@ def load():
     pipe = pipe + _phip_as_pipeline(ROOT, [str(x.get("name")) for x in pipe])
     from pipeline_dedupe import merge_pipeline
     pipe = merge_pipeline(pipe)      # one row per company (the SHEIN split)
+    # One stage per row, and the rows sorted by it: what is in its offering
+    # window comes first, then hearing-cleared, then filed or reported, then
+    # withdrawn. The Screener mirrors these rows by position, so the order
+    # is fixed HERE, once, for every sheet that reads the list.
+    for p in pipe:
+        p["stage"], p["stage_order"] = _stage(p)
+    pipe.sort(key=lambda p: (p["stage_order"], str(p.get("expected_timing") or "~")))
     counts_p = ROOT / "data" / "official_counts.json"
     counts = json.loads(counts_p.read_text()) if counts_p.exists() else {}
     return deals, tax, cfg, pipe, counts
@@ -1219,83 +1238,183 @@ def sheet_screener(wb, deals, pipe, cfg, n):
 
 
 # ---------------------------------------------------------------- Pipeline ---
-PIPE_COLS = [("Code", "expected_code", None, 8), ("Name", "name", None, 24),
-             ("Name (CN)", "name_cn", None, 12), ("Sector", "sector", None, 12),
-             ("Subsector", "subsector", None, 22),
-             ("Expected size (HK$m)", "expected_size_hkdm", MONEY, 13),
-             ("Size lo (US$m)", "expected_size_lo_usdm", MONEY, 10),
-             ("Size hi (US$m)", "expected_size_hi_usdm", MONEY, 10),
-             ("Size basis", "expected_size_basis", None, 26),
+# (header, field, fmt, width). The Screener resolves Pipeline column letters
+# from this list by FIELD, so columns can move; the fields it reads must stay:
+# name, sector, subsector, expected_size_hkdm, profitable_at_ipo, is_h_share,
+# expected_timing, pe_expected_mid, a_share_code, a_price_now, a_pe_ttm,
+# range_hi, expected_code.
+PIPE_COLS = [("Code", "expected_code", None, 7), ("Name", "name", None, 26),
+             ("Name (CN)", "name_cn", None, 13),
+             ("Stage", "stage", None, 13),
+             ("Listing / timing", "expected_timing", None, 20),
+             ("Sector", "sector", None, 11),
+             ("Subsector", "subsector", None, 24),
+             ("Expected size (HK$m)", "expected_size_hkdm", MONEY, 11),
+             ("Size basis", "expected_size_basis", None, 15),
+             ("Press size (US$m)", "_press_size_usdm", None, 11),
              ("Range lo (HK$)", "range_lo", PX, 9),
              ("Max/cap (HK$)", "range_hi", PX, 9),
-             ("Expected P/E", "pe_expected_mid", "0.0", 10),
-             ("Cornerstone %", "cornerstone_pct", '0.0"%"', 11),
-             ("Offer period", "offer_period", None, 20),
-             ("Status", "status", None, 11), ("Expected timing", "expected_timing", None, 11),
+             ("Expected P/E", "pe_expected_mid", "0.0", 9),
+             ("Cornerstone %", "cornerstone_pct", '0.0"%"', 10),
+             ("Offer period", "offer_period", None, 22),
              ("Profitable", "profitable_at_ipo", None, 8), ("H-share", "is_h_share", None, 7),
              ("A-share code", "a_share_code", None, 11),
              ("A px now", "a_price_now", PX, 9),
              ("A P/E (TTM)", "a_pe_ttm", "0.0", 9),
              ("H cap vs A", "h_cap_vs_a_pct", '+0.0"%";-0.0"%"', 10),
-             ("A prem vs H cap", "a_prem_vs_hcap_pct", '+0.0"%";-0.0"%"', 12),
-             ("Sponsors", "sponsors", None, 26),
-             ("Prospectus", "doc_link", None, 11),
-             ("Business", "business_desc", None, 46), ("Valuation notes", "valuation_notes", None, 40)]
+             ("A prem vs H cap", "a_prem_vs_hcap_pct", '+0.0"%";-0.0"%"', 11),
+             ("Sponsors", "sponsors", None, 30),
+             ("Prospectus", "doc_link", None, 10),
+             ("Business", "business_desc", None, 58),
+             ("Valuation notes", "valuation_notes", None, 58)]
+PIPE_BANDS = [("DEAL", 7), ("TERMS", 8), ("PROFILE", 3), ("A-SHARE (A+H only)", 4),
+              ("BANKS & DOCS", 2), ("NOTES", 2)]
+assert sum(w for _b, w in PIPE_BANDS) == len(PIPE_COLS)
+PIPE_BAND_TINT = {"DEAL": "001F4E79", "TERMS": "00274E13", "PROFILE": "00434343",
+                  "A-SHARE (A+H only)": "00742323", "BANKS & DOCS": "00274E63",
+                  "NOTES": "00434343"}
+PIPE_WRAP = {"business_desc", "valuation_notes", "sponsors", "expected_timing"}
+STAGE_FILL = {"Offering": PatternFill("solid", fgColor="00FDE9D9"),
+              "PHIP posted": PatternFill("solid", fgColor="00E2F0D9"),
+              "Withdrawn": PatternFill("solid", fgColor="00EDEDED")}
+
+
+def _short_basis(v):
+    """The size-basis sentence as a label; the full text rides in a comment."""
+    if not v:
+        return None
+    v = str(v)
+    low = v.lower()
+    if low.startswith("prospectus"):
+        return "prospectus" + (", net at max price" if "net" in low else "")
+    if "press" in low or low.startswith("estimated"):
+        return "press estimate"
+    if "hkex" in low or "filing" in low:
+        return "filing"
+    return v.split(":")[0][:28]
+
+
+def _lead(v, n=2, cap=280):
+    """The first n sentences (at most cap characters) of a long description."""
+    if not v:
+        return None
+    import re as _re
+    parts = _re.split(r"(?<=[.!?])\s+", str(v).strip())
+    out = " ".join(parts[:n])
+    if len(out) > cap:
+        out = out[:cap].rsplit(" ", 1)[0] + " ..."
+    return out
+
+
+def _offer_dates(v):
+    """'2026-08-31 09:00 to 2026-09-03 12:00' -> '2026-08-31 to 2026-09-03'."""
+    if not v:
+        return None
+    import re as _re
+    ds = _re.findall(r"20\d\d-\d\d-\d\d", str(v))
+    return " to ".join(ds[:2]) if ds else str(v)
 
 
 def sheet_pipeline(wb, pipe):
+    from openpyxl.comments import Comment
     ws = wb.create_sheet("Pipeline")
     put(ws, "A1", "PIPELINE", TITLE)
-    put(ws, "A2", "Blue cells are inputs. The Screener reads expected size and subsector live. "
-                  "HK$ size = US$ range midpoint x 7.8 where not reported.", SUB)
-    put(ws, "A4", "", BODY)
+    put(ws, "A2", "Rows are grouped by stage: in its offering window, hearing cleared (PHIP), "
+                  "filed or reported, withdrawn. Blue cells are inputs; the Screener reads expected "
+                  "size and subsector live. HK$ size = US$ range midpoint x 7.8 where not reported.", SUB)
+    # band row 4, header row 5, data from row 6 (the Screener mirrors rows 6+)
+    col = 1
+    for band, width in PIPE_BANDS:
+        put(ws, f"{get_column_letter(col)}4", band, HDRF,
+            PatternFill("solid", fgColor=PIPE_BAND_TINT[band]), border=BOX, align=C_HDR)
+        if width > 1:
+            ws.merge_cells(start_row=4, start_column=col, end_row=4, end_column=col + width - 1)
+        col += width
+    ws.row_dimensions[4].height = 18
+    ws.row_dimensions[5].height = 30
+    band_starts = set()
+    col = 1
+    for _b, width in PIPE_BANDS:
+        band_starts.add(col)
+        col += width
     for j, (h, *_rest) in enumerate(PIPE_COLS, 1):
         hdr(ws, f"{get_column_letter(j)}5", h)
         ws.column_dimensions[get_column_letter(j)].width = PIPE_COLS[j - 1][3]
     fx = 7.8
+    wrap_top = Alignment(wrap_text=True, vertical="top")
+    top = Alignment(vertical="top")
+    prev_stage = None
     for i, d in enumerate(pipe):
         r = 6 + i
         if not d.get("expected_size_hkdm") and d.get("expected_size_hi_usdm"):
             mid = (d.get("expected_size_lo_usdm", d["expected_size_hi_usdm"]) +
                    d["expected_size_hi_usdm"]) / 2
             d["expected_size_hkdm"] = round(mid * fx)
+        lo_u, hi_u = d.get("expected_size_lo_usdm"), d.get("expected_size_hi_usdm")
+        if hi_u:
+            d["_press_size_usdm"] = (f"{lo_u:,.0f}-{hi_u:,.0f}" if lo_u and lo_u != hi_u
+                                     else f"{hi_u:,.0f}")
+        fill = STAGE_FILL.get(d.get("stage"))
         for j, (_h, f, fmt, _w) in enumerate(PIPE_COLS, 1):
             v = listify(d.get(f))
-            if f in ("status", "valuation_notes", "expected_size_basis", "business_desc"):
+            if f in ("valuation_notes", "business_desc"):
                 v = plain(v)
+            full = v
+            if f == "business_desc":
+                v = _lead(v)
+            if f == "offer_period":
+                v = _offer_dates(v)
             if isinstance(v, bool):
                 v = "Y" if v else "N"
             cell = f"{get_column_letter(j)}{r}"
             if f == "doc_link" and v:
                 put(ws, cell, f'=HYPERLINK("{v}","filing")',
-                    font=Font(name=ARIAL, size=10, color="000000FF", underline="single"))
-            elif f in ("expected_size_hkdm", "expected_size_lo_usdm",
-                       "expected_size_hi_usdm", "expected_timing", "status",
-                       "subsector"):
+                    font=Font(name=ARIAL, size=10, color="000000FF", underline="single"),
+                    fill=fill, border=BOX, align=top)
+            elif f in ("expected_size_hkdm", "expected_timing", "subsector"):
                 inp(ws, cell, v, fmt)
+                ws[cell].alignment = wrap_top if f in PIPE_WRAP else top
+            elif f == "expected_size_basis":
+                put(ws, cell, _short_basis(v), NOTE, fill=fill, border=BOX, align=top)
+                if v and _short_basis(v) != v:
+                    ws[cell].comment = Comment(str(v), "ipo.py")
             else:
-                put(ws, cell, v, fmt=fmt)
-    # zebra + live-offering tint, same language as the Database
-    _prettify(ws, f"A6:{get_column_letter(len(PIPE_COLS))}{5 + len(pipe)}")
-    F_HOT = PatternFill("solid", fgColor="00FDE9D9")
-    st_col = next(i for i, (_h, f, *_x) in enumerate(PIPE_COLS, 1) if f == "status")
-    for i, d in enumerate(pipe):
-        if "OFFERING" in str(d.get("status") or ""):
-            for cc in range(1, len(PIPE_COLS) + 1):
-                c0 = ws.cell(row=6 + i, column=cc)
-                if c0.fill.start_color.rgb in (None, "00000000"):
-                    c0.fill = F_HOT
-        ws.row_dimensions[6 + i].height = 15
+                font = NOTE if f in ("business_desc", "valuation_notes") else BODY
+                if d.get("stage") == "Withdrawn":
+                    font = Font(name=ARIAL, size=font.size, italic=font.italic, color="00808080")
+                put(ws, cell, v, font, fill=fill, fmt=fmt, border=BOX,
+                    align=wrap_top if f in PIPE_WRAP else top)
+                if f == "business_desc" and full and v != full:
+                    ws[cell].comment = Comment(str(full), "ipo.py")
+                    ws[cell].comment.width, ws[cell].comment.height = 420, 220
+            if j in band_starts and j > 1:
+                cc = ws[cell]
+                cc.border = Border(left=Side(style="medium", color="00305496"),
+                                   right=cc.border.right, top=cc.border.top,
+                                   bottom=cc.border.bottom)
+        # a rule line where the stage changes, so the groups read as groups
+        if prev_stage is not None and d.get("stage") != prev_stage:
+            for j in range(1, len(PIPE_COLS) + 1):
+                cc = ws.cell(row=r, column=j)
+                cc.border = Border(left=cc.border.left, right=cc.border.right,
+                                   top=Side(style="medium", color="00305496"),
+                                   bottom=cc.border.bottom)
+        prev_stage = d.get("stage")
+        # no fixed height: the wrapped note columns set it when Excel opens
+    ws.sheet_view.showGridLines = False
     dvp = DataValidation(type="list", formula1="=SubsectorList", allow_blank=True)
     ws.add_data_validation(dvp)
-    dvp.add(f"E6:E{5 + len(pipe)}")
+    sub_col = get_column_letter(next(i for i, (_h, f, *_x) in enumerate(PIPE_COLS, 1)
+                                     if f == "subsector"))
+    dvp.add(f"{sub_col}6:{sub_col}{5 + len(pipe)}")
+    ws.freeze_panes = "C6"
 
     # ---- the LIVE HKEX application queue (auto-refreshed, not hand-picked) ----
     import json as _json
     r0 = 9 + len(pipe)
     put(ws, f"A{r0}", "HKEX APPLICATION QUEUE", SECT)
-    put(ws, f"A{r0+1}", "PHIP posted = hearing cleared, usually days to weeks from launch. "
-                        "Refreshed on every run.", SUB)
+    put(ws, f"A{r0+1}", "PHIP posted = hearing cleared, usually days to weeks from launch; those rows "
+                        "are also in the table above. Refreshed on every run.", SUB)
     try:
         phip = _json.loads((ROOT / "data" / "batches" / "phip_pipeline.json").read_text())
         apps = phip.get("applications", [])
@@ -1304,15 +1423,15 @@ def sheet_pipeline(wb, pipe):
     for j, h in enumerate(["Applicant", "Stage", "First filed", "Latest filing",
                            "Days in process", "Document"], 1):
         hdr(ws, f"{get_column_letter(j)}{r0+2}", h)
-    shown = [a for a in apps if a.get("has_phip")] +             [a for a in apps if not a.get("has_phip")][:30]
+    shown = [a for a in apps if a.get("has_phip")] + [a for a in apps if not a.get("has_phip")][:30]
     for i, a in enumerate(shown):
         r = r0 + 3 + i
         stage = a.get("stage", "")
         if a.get("sponsor_terminated"):
-            stage += "  [SPONSOR TERMINATED]"
+            stage += "  [sponsor terminated]"
         put(ws, f"A{r}", a.get("applicant"), border=BOX,
             font=BOLD if a.get("has_phip") else BODY,
-            fill=F_GRN if a.get("has_phip") else None)
+            fill=STAGE_FILL["PHIP posted"] if a.get("has_phip") else None)
         put(ws, f"B{r}", stage, border=BOX,
             font=WARN if a.get("sponsor_terminated") else BODY)
         put(ws, f"C{r}", a.get("first_filing"), border=BOX)

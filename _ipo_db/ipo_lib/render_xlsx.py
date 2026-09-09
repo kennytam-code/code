@@ -132,7 +132,7 @@ def main():
     if a.tab not in wb.sheetnames:
         sys.exit(f"no tab {a.tab!r}; tabs: {', '.join(wb.sheetnames)}")
     page, width = render(wb[a.tab], a.row0, a.rows, a.col0, a.cols)
-    outdir = Path(a.out)
+    outdir = Path(a.out).resolve()
     outdir.mkdir(parents=True, exist_ok=True)
     stem = re.sub(r"[^A-Za-z0-9]+", "_", a.tab).strip("_")
     hpath = outdir / f"{stem}.html"

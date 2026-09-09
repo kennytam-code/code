@@ -49,7 +49,8 @@ RISKY = re.compile(r"cannot assure|no assurance|we may not|may be materially|adv
                    # and "We are a company incorporated under the laws of…", which the
                    # business-description candidates match but which describe no business
                    r"subject to PRC tax|PRC tax resident|withholding tax|"
-                   r"incorporated under the laws|effect service of process|"
+                   r"incorporated under the laws|established under the laws|"
+                   r"assets are located in|reside in the PRC|effect service of process|"
                    r"enforce judgments|judgments obtained", re.I)
 SUMMARY_HDR = re.compile(r"\n\s*SUMMARY\s*\n")
 

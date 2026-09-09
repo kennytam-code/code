@@ -1442,6 +1442,51 @@ desk, look at a tab before shipping it: `python ipo_lib/render_xlsx.py --tab
 PNG (fills, fonts, merges, widths; no conditional formats, no cached formula
 values).
 
+## v28.1 (2026-09-09) — the Pipeline tab, rebuilt as a stage table
+
+The desk's read: "very ugly and unclear". What it was: 27 columns, most
+blank for most rows; four populations (press rumours, PHIP applicants, live
+offerings, a withdrawn deal) in one unordered list; 15-high rows with
+prospectus prose spilling across neighbours; two applicants with no sector.
+
+What it is now (`sheet_pipeline` in `build_xlsx.py`):
+- **One stage per row, rows sorted by stage** in `load()`: Offering, PHIP
+  posted, A1 filed, Reported, Withdrawn (`_stage()` reads the status text
+  and the terms). Each stage has a row tint (`STAGE_FILL`) and a rule line
+  where the stage changes. The order is fixed in `load()` because the
+  Screener mirrors Pipeline rows BY POSITION (rows 6+); sort nowhere else.
+- **Columns banded** like the Database (`PIPE_BANDS`, `PIPE_BAND_TINT`):
+  DEAL, TERMS, PROFILE, A-SHARE (A+H only), BANKS & DOCS, NOTES. The US$
+  lo/hi pair collapsed into one "Press size (US$m)" text column; "Status
+  detail" dropped (Stage, the range and the offer period already say it).
+- **Prose**: Business shows its first two sentences (`_lead`, 280 chars)
+  with the full text in a cell comment; Valuation notes wrap in a 58-wide
+  column; Size basis shows a label ("prospectus, net at max price", "press
+  estimate") with the sentence in a comment. No fixed row heights, so Excel
+  sizes rows to the wrapped text. Offer period shows dates only.
+- **Contract kept**: the Screener resolves Pipeline column letters from
+  `PIPE_COLS` by field, so columns can move; the fields it reads (name,
+  sector, subsector, expected_size_hkdm, profitable_at_ipo, is_h_share,
+  expected_timing, pe_expected_mid, a_share_code, a_price_now, a_pe_ttm,
+  range_hi, expected_code) must stay in the list. `assert sum(PIPE_BANDS)
+  == len(PIPE_COLS)` catches a band/column drift at build time.
+
+**Wrong-paragraph business text.** Transwarp's "business" was the PRC
+service-of-process boilerplate ("We are a company established under the laws
+of the PRC and substantially all of our assets are located in the PRC...").
+`extract_profiles.RISKY` now rejects "established under the laws", "assets
+are located in" and "reside in the PRC"; both the PHIP parser and the
+offering-window parser use `find_overview`, so one fix covers both. The PHIP
+rows' generated instruction ("type it in the blue cell to rank comps on
+size") is gone from the notes column.
+
+**Listed deals leave the pipeline only via the routine.** Medcaptain (2041),
+Longsys (9976) and Excelland (3231) sat as "Offering" after they had
+listed because the book had not been refreshed; `pipeline_dedupe` drops a
+row the moment its code is in the Database, and the Database only gains a
+row from `ipo.py refresh` (allotment results) + `merge`. When a deal has
+listed and still shows in the pipeline, run THE ROUTINE; do not hand-edit.
+
 ## THE WEEKLY EMAIL (v26.3) — one command, Monday morning
 
 ```
