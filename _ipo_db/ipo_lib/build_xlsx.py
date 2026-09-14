@@ -234,7 +234,12 @@ def _phip_as_pipeline(root, existing_names):
             "a_share_code": p.get("a_share_code"),
             "valuation_notes": "; ".join(filter(None, [
                 p.get("a_share_note"),
-                "expected size not yet public" if not p.get("expected_shares") else None])) or None,
+                "expected size not yet public" if not p.get("expected_shares") else None,
+                # a blank subsector is a real gap the desk can close in one
+                # keystroke (the cell is blue), so say so rather than leaving
+                # the row looking half-built
+                "subsector not auto-classified; type one in the blue cell"
+                if not p.get("subsector") else None])) or None,
             "sponsors": "; ".join((p.get("sponsors") or [])
                                    or (p.get("coordinators") or [])) or None,
             "expected_size_hkdm": press.get("expected_size_hkdm"),

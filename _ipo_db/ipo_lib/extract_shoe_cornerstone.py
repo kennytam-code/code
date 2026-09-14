@@ -36,7 +36,12 @@ CORNER_PCT = re.compile(
 def main():
     src = json.loads(SRC.read_text())
     out = []
-    for i, rec in enumerate(src["deals"]):
+    import incremental
+    only = incremental.wanted(OUT, [r.get("code") for r in src["deals"]])
+    rows = [r for r in src["deals"] if only is None or str(r.get("code")) in only]
+    if only is not None:
+        print(f"  incremental: {len(rows)} deal(s) to parse")
+    for i, rec in enumerate(rows):
         txt = ""
         for f in rec.get("files", []):
             p = CACHE / f
@@ -72,6 +77,7 @@ def main():
             out.append(rec_out)
         if (i + 1) % 100 == 0:
             print(f"{i+1}/{len(src['deals'])}", flush=True)
+    out = incremental.merge(OUT, out, only)
     OUT.write_text(json.dumps(
         {"batch": "extracted_shoe_cornerstone",
          "extracted_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),

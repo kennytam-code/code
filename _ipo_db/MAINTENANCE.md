@@ -64,8 +64,13 @@ any new pipeline, refreshes every return, and checks itself. Order matters.
 ```
 # 1. everything HKEX + AAStocks + PHIP + offering-window prospectuses
 python ipo.py refresh
+#   If the machine is evicting the PDF cache (ls -lO scrape/pdf_cache | grep -c
+#   dataless), skip the parse group and run the extractors incrementally on the
+#   new codes instead — see v29:  python ipo.py refresh --skip parse
 
 # 2. prices (returns incl. ex-pop family), daily H paths, A/H daily paths
+#    fetch_prices reads deals.json, so a BRAND-NEW listing needs merge -> prices
+#    -> merge again, or its day-1 comes off the AAStocks table (see v29)
 python ipo_lib/fetch_prices.py
 python ipo_lib/fetch_h_paths.py
 python ipo_lib/fetch_ah_paths.py
@@ -1486,6 +1491,64 @@ listed because the book had not been refreshed; `pipeline_dedupe` drops a
 row the moment its code is in the Database, and the Database only gains a
 row from `ipo.py refresh` (allotment results) + `merge`. When a deal has
 listed and still shows in the pipeline, run THE ROUTINE; do not hand-edit.
+
+## v29 (2026-09-14) — incremental parsing, and the eviction that made it necessary
+
+**What broke.** `ipo.py refresh` ran for two hours and never reached the merge.
+Cause: iCloud had evicted the whole PDF cache (3,328 of 3,328 dataless, disk
+at 91%), and every extractor re-reads EVERY deal's PDFs on every run. Each
+evicted file costs seconds to materialise, so a 527-deal parse that used to
+take minutes takes hours — and warming the cache first does not help, because
+the volume evicts again while the pass is still running.
+
+**The fix is incremental parsing, not a bigger cache.** `ipo_lib/incremental.py`
+gives every extractor `--only 2041,9976` and `--new`: it parses those deals and
+carries every other record forward from the existing batch, so the output is
+identical in shape and nothing downstream knows the difference. Wired into
+extract_prospectus (both kinds), extract_deep, extract_profiles,
+extract_financials, extract_stabmgr, extract_shoe_cornerstone and fix_oversub.
+
+```
+# a normal week: the roster names three new codes
+python ipo_lib/extract_prospectus.py allotments --only 2041,9976,3231
+python ipo_lib/extract_prospectus.py prospectus --only 2041,9976,3231
+python ipo_lib/extract_deep.py --only 2041,9976,3231     # etc.
+python ipo_lib/extract_profiles.py --new                 # or: whatever the batch lacks
+```
+Three deals parsed in seconds against 527 carried forward, all counts intact.
+THE ROUTINE still runs everything when the cache is warm; use `--only` when
+the machine is evicting or when you know exactly what changed.
+
+**FETCH ORDER MATTERS: prices read deals.json.** The three new listings first
+merged with a day-1 from the AAStocks listed-IPO table, because `fetch_prices`
+had run before the merge put them in the book and so never fetched them. Run
+prices AFTER the first merge of a new listing, then merge again; the second
+pass replaced all three with kline/Yahoo series and independently confirmed
+the AAStocks figures (Medcaptain -42.93%, Longsys -1.02%, Excelland +153.84%).
+
+**Business text: four more boilerplate paragraphs rejected.** The overview
+extractor was quoting, as the business description, whatever paragraph opened
+with "We are/We operate". Now rejected (`extract_profiles.RISKY`): PRC
+service-of-process boilerplate; accounting-presentation prose ("our financial
+statements are presented in RMB" — that was Forms Syntron); production
+footprint with no product in it ("We produce and assemble our products at our
+manufacturing facilities" — Medcaptain); and risk-factor openers ("market
+acceptance remains uncertain", "we compete against a large number of
+established competitors"). Net: 2041, 6700, 6727 gained real descriptions;
+3231 lost its only candidate and now reads blank, which is honest — its
+scanned pages carry no business sentence.
+
+**Classifier vocabulary, from the filings' own words.** Optical interconnect
+(transceiver / communication / network terminal) -> Smart hardware, the label
+Innolight already carries; AI-and-big-data INFRASTRUCTURE software, data
+warehouse, database, banking IT -> SaaS / enterprise software; hospital
+equipment (infusion and syringe pumps, enteral feeding, anaesthesia,
+endoscope, patient monitor, ventilator) -> Medical devices. That filled
+9856 Ligent, 6727 Transwarp, 6700 Forms Syntron and 2041 Medcaptain without a
+single per-deal hardcode. Where nothing matches (Zhejiang Taotao: e-bikes,
+golf carts, ATVs — the taxonomy has no powersports home and the book has no
+precedent), the row now SAYS "subsector not auto-classified; type one in the
+blue cell" rather than showing a bare blank. Do not invent a label to fill it.
 
 ## THE WEEKLY EMAIL (v26.3) — one command, Monday morning
 

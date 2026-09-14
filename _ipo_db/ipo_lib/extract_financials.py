@@ -203,7 +203,12 @@ def currency_of(txt):
 
 
 def main():
+    import incremental
     links = json.loads(LINKS.read_text())["deals"]
+    only = incremental.wanted(OUT, [e["code"] for e in links])
+    if only is not None:
+        links = [e for e in links if str(e["code"]) in only]
+        print(f"  incremental: {len(links)} deal(s) to parse")
     recs, hits = [], 0
     for i, e in enumerate(links):
         parts = e.get("parts") or []
@@ -257,6 +262,7 @@ def main():
         hits += 1
         if (i + 1) % 50 == 0:
             print(f"{i+1}/{len(links)} scanned, {hits} with financials", flush=True)
+    recs = incremental.merge(OUT, recs, only)
     OUT.write_text(json.dumps(
         {"batch": "extracted_financials",
          "extracted_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),

@@ -277,10 +277,16 @@ def extract_common(txt):
 
 
 def run(kind):
+    import incremental
     manifest_file = ("hkex_allotment_files.json" if kind == "allotments"
                      else "hkex_prospectus_links.json")
     data = json.loads((BATCHES / manifest_file).read_text())
     entries = data.get("manifest") or data.get("deals")
+    out_path = BATCHES / f"extracted_{kind}.json"
+    only = incremental.wanted(out_path, [e["code"] for e in entries])
+    if only is not None:
+        entries = [e for e in entries if str(e["code"]) in only]
+        print(f"  incremental: {len(entries)} deal(s) to parse, the rest carried forward")
     results, missing = [], 0
     for i, e in enumerate(entries):
         # A deal with no parts is skipped. Where the per-stock search came up
@@ -305,6 +311,7 @@ def run(kind):
         if (i + 1) % 50 == 0:
             print(f"{i+1}/{len(entries)} parsed")
     out = BATCHES / f"extracted_{kind}.json"
+    results = incremental.merge(out, results, only)
     got_price = sum(1 for r in results if r.get("final_price"))
     out.write_text(json.dumps(
         {"batch": f"extracted_{kind}",
@@ -316,4 +323,5 @@ def run(kind):
 
 
 if __name__ == "__main__":
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
     run(sys.argv[1])

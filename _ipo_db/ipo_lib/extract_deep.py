@@ -458,9 +458,15 @@ def parse_shares_on_listing(txt):
 
 # --------------------------------------------------------------------- main --
 def main():
+    import incremental
     TEXT.mkdir(exist_ok=True)
     links = json.loads((ROOT / "data" / "batches" / "hkex_prospectus_links.json").read_text())["deals"]
     allot = json.loads((ROOT / "data" / "batches" / "hkex_allotment_files.json").read_text())["manifest"]
+    only = incremental.wanted(OUT, [e["code"] for e in links] + [e["code"] for e in allot])
+    if only is not None:
+        links = [e for e in links if str(e["code"]) in only]
+        allot = [e for e in allot if str(e["code"]) in only]
+        print(f"  incremental: {len(only)} code(s) to parse")
 
     # ALL prospectus parts per deal, in filing order. A split filing spreads the
     # summary / parties / cornerstone / financial sections across separate part
@@ -556,6 +562,7 @@ def main():
         if len(rec) > 1:
             recs.append(rec)
 
+    recs = incremental.merge(OUT, recs, only)
     n = len(recs)
     OUT.write_text(json.dumps(
         {"batch": "extracted_deep",

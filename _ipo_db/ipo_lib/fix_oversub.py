@@ -76,9 +76,17 @@ def section_value(txt, sec_re, other_re):
 
 
 def main():
+    import incremental
     data = json.loads(TARGET.read_text())
+    # --only/--new: re-read just these deals' PDFs, leave every other record
+    # exactly as it is (this one patches the batch in place, so "carry
+    # forward" is simply "do not touch")
+    only = incremental.wanted(TARGET, [r.get("code") for r in data["deals"]])
+    rows = [r for r in data["deals"] if only is None or str(r.get("code")) in only]
+    if only is not None:
+        print(f"  incremental: {len(rows)} deal(s) to re-read")
     tbl = prose = 0
-    for i, rec in enumerate(data["deals"]):
+    for i, rec in enumerate(rows):
         txt = ""
         for f in rec.get("files", []):
             p = CACHE / f

@@ -32,19 +32,32 @@ RULES = [
                          r"virtual bank|crypto|blockchain|digital asset"),
     ("Media / advertising", r"mobile game|game develop|game publish|esports"),
     ("SaaS / enterprise software", r"SaaS|enterprise software|ERP\b|CRM\b|software-as-a-service|"
-                                   r"cloud-based (?:software|solution|platform for enterprise)"),
+                                   r"cloud-based (?:software|solution|platform for enterprise)|"
+                                   # data / AI INFRASTRUCTURE software sold to
+                                   # enterprises and government, the layer under
+                                   # the applications (Transwarp-class)
+                                   r"infrastructure software|big data|data warehouse|data lake|"
+                                   r"database (?:software|product|management system)|"
+                                   r"banking (?:IT|software)|financial (?:IT|software) solution"),
     ("Internet platform / e-commerce", r"e-commerce|online marketplace|online platform|online retail|"
                                        r"livestream|short video|social (?:media|commerce)|content community|"
                                        r"online travel|ride-?hailing|food delivery|recruitment platform"),
     ("Smart hardware / consumer electronics", r"consumer electronics|smart (?:device|hardware|home|wearable)|"
                                               r"smartphone|IoT device|acoustic|optical module|display module|"
-                                              r"printed circuit|PCB\b|connector|camera module|e-?paper"),
+                                              r"printed circuit|PCB\b|connector|camera module|e-?paper|"
+                                              # optical interconnect (Innolight-class): the
+                                              # filings say transceiver / communication /
+                                              # network terminal, never "module"
+                                              r"optical (?:transceiver|communication|network|interconnect)"),
     ("Biotech pre-revenue (18A)", r"clinical[- ]stage|pre-?clinical|pipeline of (?:drug|product) candidates|"
                                   r"investigational|IND\b|Phase (?:I|II|III)\b.{0,60}(?:trial|study)"),
     ("CXO / pharma services", r"\bCRO\b|\bCDMO\b|\bCMO\b|contract (?:research|development|manufactur)|"
                               r"peptide.{0,40}(?:development|production) service"),
     ("Medical devices", r"medical device|surgical|stent|catheter|orthop|imaging equipment|"
-                        r"in.?vitro diagnostic|IVD\b|dental (?:implant|device)"),
+                        r"in.?vitro diagnostic|IVD\b|dental (?:implant|device)|"
+                        # hospital equipment vocabulary the filings actually use
+                        r"infusion pump|syringe pump|enteral feeding|an(?:a)?esthesia|"
+                        r"endoscop|patient monitor|ventilator|life support"),
     ("Biopharma commercial", r"pharmaceutical|biopharma|vaccine|drug (?:manufactur|commercial)|"
                              r"generic drug|API\b.{0,40}(?:manufactur|production)"),
     ("Digital health", r"online health|digital health|internet hospital|telemedicine|"

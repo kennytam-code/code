@@ -211,9 +211,15 @@ def main():
             continue
         (allot if m.group(1) == "allot" else prosp)[m.group(2)].append(p)
 
+    import incremental
+    only = incremental.wanted(OUT, sorted(set(allot) | set(prosp)))
+    codes = sorted(set(allot) | set(prosp))
+    if only is not None:
+        codes = [c for c in codes if c in only]
+        print(f"  incremental: {len(codes)} code(s) to parse")
     out, misses, filed_none = [], [], 0
     n_end = 0
-    for code in sorted(set(allot) | set(prosp)):
+    for code in codes:
         name, how, doc, none_doc = None, None, None, None
         end_date = None
         # PASS 1 — the allotment announcement. Post-pricing and authoritative,
@@ -283,6 +289,7 @@ def main():
             misses.append(code)
         else:
             misses.append(code)
+    out = incremental.merge(OUT, out, only)
 
     OUT.write_text(json.dumps(
         {"batch": "stabilizing_managers",

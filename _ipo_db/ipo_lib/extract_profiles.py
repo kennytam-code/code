@@ -44,14 +44,29 @@ CANDIDATES = [
                r"specialise|specialize)\b.{60,700})", re.S),
 ]
 RISKY = re.compile(r"cannot assure|no assurance|we may not|may be materially|adversely affect|"
-                   r"highly competitive industry|are paid by our customers|risk factors|"
+                   r"highly competitive (?:industry|market)|compete against|market entrants|"
+                   r"are paid by our customers|risk factors|"
+                   # "market acceptance ... remains uncertain" is a risk
+                   # factor opener, not a description of the business
+                   r"market acceptance|remains uncertain|no operating history|"
                    # tax and jurisdiction boilerplate opens "We are a PRC enterprise…"
                    # and "We are a company incorporated under the laws of…", which the
                    # business-description candidates match but which describe no business
                    r"subject to PRC tax|PRC tax resident|withholding tax|"
                    r"incorporated under the laws|established under the laws|"
                    r"assets are located in|reside in the PRC|effect service of process|"
-                   r"enforce judgments|judgments obtained", re.I)
+                   r"enforce judgments|judgments obtained|"
+                   # accounting-presentation boilerplate reads like a business
+                   # description and says nothing about the business: "We are a
+                   # PRC-based company with our principal operations in Chinese
+                   # Mainland... our financial statements are presented in RMB"
+                   r"financial statements are (?:presented|prepared)|reporting currency|"
+                   r"presented in (?:RMB|Renminbi|HK\$|US\$)|"
+                   # production-footprint prose ("We produce and assemble our
+                   # products primarily at our manufacturing facilities...")
+                   # matches the "We produce" candidate and names no product
+                   r"manufacturing (?:facilit|centre|center|plant|base)|"
+                   r"production (?:facilit|base|line)s? (?:are|is|located)", re.I)
 SUMMARY_HDR = re.compile(r"\n\s*SUMMARY\s*\n")
 
 
@@ -109,7 +124,12 @@ def find_overview(txt):
 
 
 def main():
+    import incremental
     links = json.loads(LINKS.read_text())["deals"]
+    only = incremental.wanted(OUT, [e["code"] for e in links])
+    if only is not None:
+        links = [e for e in links if str(e["code"]) in only]
+        print(f"  incremental: {len(links)} deal(s) to parse")
     recs, done = [], 0
     for e in links:
         parts = e.get("parts") or []
@@ -133,6 +153,7 @@ def main():
         done += 1
         if done % 50 == 0:
             print(f"{done} profiles", flush=True)
+    recs = incremental.merge(OUT, recs, only)
     OUT.write_text(json.dumps(
         {"batch": "extracted_profiles",
          "extracted_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
