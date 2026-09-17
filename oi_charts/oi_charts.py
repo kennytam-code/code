@@ -27,7 +27,8 @@ PRODUCTS = [
     ('KM',  'KOSPI2'),
     ('XP',  'AS51'),
     ('FT',  'TWSE'),
-    ('TWT', 'FTSE TW'),
+    ('TWT', 'FTSE TW'),         # SGX FTSE Taiwan (TWTU6 ...)
+    ('MTW', 'MTW'),             # Taiwan futures, MTWU6 ... (tab named after the root - rename here if wanted)
     ('FPO', 'FPO'),
     ('HJA', 'TAMSCI'),          # the request note's "MSCI - HJAU6" row is this same root
     ('QZ',  'SIMSCI'),
@@ -1273,11 +1274,11 @@ def test_helpers():
     dt_row.getElementAsString = lambda key: 'garbage'          # text form unusable -> datetime fallback
     check('row_date: text form first, datetime form as fallback',
           row_date(text_row) == dt.date(2026, 1, 28) and row_date(dt_row) == dt.date(2026, 1, 28))
-    check('10 real products, distinct legal tab names',
-          len({n for _, n in PRODUCTS}) == len(PRODUCTS) == 10
+    check('11 real products, distinct legal tab names',
+          len({n for _, n in PRODUCTS}) == len(PRODUCTS) == 11
           and all(safe_sheet_name(n) == n for _, n in PRODUCTS))
-    check('real roots match the request note',
-          [p[0] for p in PRODUCTS] == ['HI', 'HC', 'HCT', 'KM', 'XP', 'FT', 'TWT', 'FPO', 'HJA', 'QZ'])
+    check('real roots match the request note (+ MTW added 18 Sep)',
+          [p[0] for p in PRODUCTS] == ['HI', 'HC', 'HCT', 'KM', 'XP', 'FT', 'TWT', 'MTW', 'FPO', 'HJA', 'QZ'])
     check('optional yellow key: third item in PRODUCTS',
           candidate_tickers('CL', 2026, 1, 'Comdty') == ('CLF6 Comdty', 'CLF26 Comdty')
           and product_rows([('HI', 'HSI'), ('CL', 'WTI', 'Comdty')]) == [('HI', 'HSI', 'Index'), ('CL', 'WTI', 'Comdty')]
