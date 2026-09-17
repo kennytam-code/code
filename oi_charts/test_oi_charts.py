@@ -20,6 +20,8 @@ import tempfile
 import zipfile
 from contextlib import redirect_stdout
 
+os.environ.setdefault('MPLBACKEND', 'Agg')      # matplotlib, if present, must not open windows
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import oi_charts as M                                    # noqa: E402
@@ -435,7 +437,24 @@ def test_helpers():
           len({n for _, n in M.PRODUCTS}) == len(M.PRODUCTS) == 10
           and all(M.safe_sheet_name(n) == n for _, n in M.PRODUCTS))
     check('real roots match the request note',
-          [r for r, _ in M.PRODUCTS] == ['HI', 'HC', 'HCT', 'KM', 'XP', 'FT', 'TWT', 'FPO', 'HJA', 'QZ'])
+          [p[0] for p in M.PRODUCTS] == ['HI', 'HC', 'HCT', 'KM', 'XP', 'FT', 'TWT', 'FPO', 'HJA', 'QZ'])
+    check('optional yellow key: third item in PRODUCTS',
+          M.candidate_tickers('CL', 2026, 1, 'Comdty') == ('CLF6 Comdty', 'CLF26 Comdty')
+          and M.product_rows([('HI', 'HSI'), ('CL', 'WTI', 'Comdty')]) == [('HI', 'HSI', 'Index'), ('CL', 'WTI', 'Comdty')]
+          and M.build_contracts([('CL', 'WTI', 'Comdty')], [(2026, 1)])[0][1][0].ticker_2 == 'CLF26 Comdty')
+    jan, jun, dec = (M.series_color(2024, m, 2024) for m in (1, 6, 12))
+    lum = lambda h: sum(int(h[i:i + 2], 16) for i in (0, 2, 4))
+    check('series colours: 6-hex, Jan lighter than Jun lighter than Dec, year changes the hue, 5-year cycle',
+          all(len(h) == 6 and int(h, 16) >= 0 for h in (jan, jun, dec)) and lum(jan) > lum(jun) > lum(dec)
+          and M.series_color(2025, 12, 2024) != dec and M.series_color(2029, 1, 2024) == jan)
+    import builtins
+    plain = M.in_ipython()
+    builtins.get_ipython = lambda: object()
+    try:
+        faked = M.in_ipython()
+    finally:
+        del builtins.get_ipython
+    check('in_ipython: False under plain python, True when IPython injects get_ipython', plain is False and faked is True)
 
 
 def test_resolution():
@@ -603,11 +622,14 @@ def test_workbook(results):
             col = get_column_letter(k + 2)
             want = ("'%s'!%s2" % (name, col), "'%s'!$%s$3:$%s$%d" % (name, col, col, N + 2), "'%s'!$A$3:$A$%d" % (name, N + 2))
             got = (s.tx.strRef.f, s.val.numRef.f, s.cat.numRef.f)
+            colour = s.graphicalProperties.line.solidFill.srgbClr
             if got != want or s.smooth is not False or s.marker.symbol is not None \
-                    or s.graphicalProperties.line.width != 12700:
-                ok_series, why = False, (got, want)
+                    or s.graphicalProperties.line.width != 12700 \
+                    or colour != M.series_color(found[k].year, found[k].month, 2024):
+                ok_series, why = False, (got, want, colour)
                 break
-        check('%s: series titles from row 2, values rows 3..%d, dates as categories' % (name, N + 2), ok_series, why)
+        check('%s: series titles from row 2, values rows 3..%d, dates as categories, year/month colours' % (name, N + 2),
+              ok_series, why)
         check('%s: chart anchored one column right of the data' % name,
               ch.anchor._from.col == n + 2 and ch.anchor._from.row == 1, (ch.anchor._from.col, ch.anchor._from.row))
         check('%s: chart 32 x 16 cm' % name, ch.anchor.ext.cx == 11520000 and ch.anchor.ext.cy == 5760000)
@@ -699,7 +721,39 @@ def test_run():
     except SystemExit as e:
         code = e.code
     check('--help exits 0', code == 0, code)
+    path2 = os.path.join(tmp, 'nb.xlsx')
+    out, text = quiet(M.notebook_main, products=FAKE_PRODUCTS, today=TEST_TODAY, blpapi_module=FakeAPI,
+                      out=path2, show_charts_=False)
+    check('notebook_main(): runs everything, returns the path', out == path2 and os.path.exists(path2) and 'Written:' in text)
+    out, text = quiet(M.notebook_main, products=FAKE_PRODUCTS, today=TEST_TODAY,
+                      blpapi_module=api_with(SilentSession), out=path2)
+    check('notebook_main(): a Bloomberg problem is one printed sentence, not a traceback',
+          out is None and 'ERROR: Bloomberg did not answer' in text and 'Traceback' not in text, text)
+    results = M.resolve_contracts(M.Bloomberg(blpapi_module=FakeAPI).connect(), FAKE_PRODUCTS,
+                                  M.contract_months(2024, 2026), TEST_TODAY)
+    bbg = M.Bloomberg(blpapi_module=FakeAPI).connect()
+    for _, cs in results:
+        for c in cs:
+            M.fetch_open_interest(bbg, c, 2, TEST_TODAY)
+    if importlib.util.find_spec('matplotlib') is None:
+        n, text = quiet(M.show_charts, results)
+        check('show_charts without matplotlib: says so in one line, draws nothing', n == 0 and 'matplotlib is not installed' in text)
+    else:
+        import warnings
+        import matplotlib.pyplot as plt
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            n, text = quiet(M.show_charts, results)
+        figs = plt.get_fignums()
+        titles = [plt.figure(i).axes[0].get_title() for i in figs]
+        n_lines = [len(plt.figure(i).axes[0].get_lines()) for i in figs]
+        plt.close('all')
+        check('show_charts with matplotlib: one figure per product with data, one line per found contract',
+              n == 3 and len(figs) == 3 and titles == ['HSI Futures Open Interest', 'AS51 Futures Open Interest',
+                                                       'SIMSCI Futures Open Interest']
+              and n_lines == [36, 12, 34], (n, titles, n_lines))
     os.remove(path)
+    os.remove(path2)
     os.rmdir(tmp)
 
 
