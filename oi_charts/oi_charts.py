@@ -10,7 +10,7 @@ underneath needs no edits.  Run the whole file at once:
 
 Self-check, no terminal needed (a fake Bloomberg inside this file drives the real code):
 
-    python oi_charts.py --test     115 checks: ticker forms, windows, cell-by-cell alignment
+    python oi_charts.py --test     self-checks: ticker forms, windows, cell-by-cell alignment, errors
     python oi_charts.py --demo     writes demo_OI_charts.xlsx from fake data (and draws it in Jupyter)
 
 Needs: blpapi and openpyxl; matplotlib only for the notebook charts.
@@ -40,8 +40,11 @@ START_YEAR, END_YEAR = 2024, 2026
 #    Bloomberg has prints - a contract listed later simply has fewer rows, never NA).
 YEARS_BACK = 2
 
-# 4. Output.  None -> OI_charts_<yyyymmdd>.xlsx in the working folder.
+# 4. Output.  The workbook is OI_charts_<yyyymmdd>.xlsx (or OUTPUT_FILE) and goes to
+#    OUTPUT_FOLDER; when that folder does not exist it goes to the current folder instead.
+#    The full path is printed at the end of every run.
 OUTPUT_FILE = None
+OUTPUT_FOLDER = '~/Downloads'
 SHOW_CHARTS = True              # in Jupyter also draw every chart inline (needs matplotlib)
 TICKERS_ONLY = False            # True -> only resolve and print the contract table (quick check)
 
@@ -60,7 +63,9 @@ BBG_HOST, BBG_PORT = 'localhost', 8194
 import argparse                                   # noqa: E402
 import dataclasses                                # noqa: E402
 import datetime as dt                             # noqa: E402
+import os                                         # noqa: E402
 import sys                                        # noqa: E402
+import traceback                                  # noqa: E402
 from typing import List, Optional, Tuple          # noqa: E402
 
 try:
@@ -80,7 +85,7 @@ MONTH_CODES = 'FGHJKMNQUVXZ'             # index 0 = January
 MONTH_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
               'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-OK, NOT_FOUND, NO_DATA = 'OK', 'NOT FOUND', 'NO DATA'
+OK, NOT_FOUND, NO_DATA, NOT_PULLED = 'OK', 'NOT FOUND', 'NO DATA', 'NOT PULLED'
 AUDIT_SHEET = 'Contracts'
 AUDIT_COLUMNS = ['Product', 'Contract', 'Ticker 1-digit', 'Ticker 2-digit', 'Ticker used',
                  'Status', 'LAST_TRADEABLE_DT', 'FUT_MONTH_YR', 'Name', 'Request start',
@@ -172,6 +177,41 @@ def in_ipython():
         return builtins.get_ipython() is not None
     except Exception:
         return False
+
+
+def output_path(out=None, today=None):
+    """Where the workbook goes: a bare file name lands in OUTPUT_FOLDER (or the current folder)."""
+    name = out or OUTPUT_FILE or 'OI_charts_%s.xlsx' % (today or dt.date.today()).strftime('%Y%m%d')
+    name = os.path.expanduser(name)
+    if os.path.dirname(name):
+        return os.path.abspath(name)
+    folder = os.path.expanduser(OUTPUT_FOLDER or '.')
+    if not os.path.isdir(folder):
+        folder = os.getcwd()
+    return os.path.join(os.path.abspath(folder), name)
+
+
+class StepError(RuntimeError):
+    """A failure tagged with the step it happened in; an unexpected cause keeps its traceback."""
+
+    def __init__(self, stage, cause, extra=''):
+        self.stage, self.cause, self.extra = stage, cause, extra
+        RuntimeError.__init__(self, 'while %s: %s%s' % (stage, cause, extra))
+
+
+def report_error(e):
+    """One clear message per problem; the full traceback only when the cause is not one of ours."""
+    if isinstance(e, StepError):
+        print('ERROR while %s:\n    %s%s' % (e.stage, e.cause, e.extra))
+        cause = e.cause
+    else:
+        print('ERROR: %s' % e)
+        cause = e
+    if isinstance(cause, PermissionError):
+        print('    (the workbook is probably open in Excel - close it and rerun)')
+    elif not isinstance(cause, RuntimeError):
+        print('Full detail for debugging:')
+        traceback.print_exception(type(cause), cause, cause.__traceback__, file=sys.stdout)
 
 
 def element_value(el):
@@ -548,7 +588,7 @@ def write_product_sheet(wb, name, contracts, base_year):
 def audit_row(c):
     return [c.product, c.label, c.ticker_1, c.ticker_2, c.ticker or None, c.status,
             c.last_trade, c.fut_month_yr or None, c.name or None, c.req_start, c.req_end,
-            c.first_dt, c.last_dt, (len(c.rows) if c.status != NOT_FOUND else None),
+            c.first_dt, c.last_dt, (len(c.rows) if c.status in (OK, NO_DATA) else None),
             c.last_oi, c.max_oi, c.note or None]
 
 
@@ -640,10 +680,10 @@ def print_summary(results, bbg, out):
     for name, cs in results:
         n_ok = sum(1 for c in cs if c.status == OK)
         print('%-8s %2d/%d contracts with data' % (name, n_ok, len(cs)))
-        for status in (NOT_FOUND, NO_DATA):
+        for status in (NOT_FOUND, NO_DATA, NOT_PULLED):
             labels = [c.label for c in cs if c.status == status]
             if labels:
-                print('         %-9s %s' % (status + ':', ', '.join(labels)))
+                print('         %-11s %s' % (status + ':', ', '.join(labels)))
     if bbg.field_errors:
         print('Bloomberg rejected these fields: ' + ', '.join(
             '%s (%s)' % kv for kv in sorted(bbg.field_errors.items())))
@@ -668,49 +708,85 @@ def run(products=None, start_year=None, end_year=None, years_back_n=None, out=No
         show_charts_ = SHOW_CHARTS and in_ipython()
     today = today or dt.date.today()
     months = contract_months(start_year, end_year)
-    bbg = Bloomberg(host, port, blpapi_module=blpapi_module).connect()
+    out = output_path(out, today)
+    print('OI charts | %d products | contracts %s .. %s | %d years back per contract | today %s'
+          % (len(products), month_label(*months[0]), month_label(*months[-1]), years_back_n,
+             today.isoformat()))
+    try:
+        bbg = Bloomberg(host, port, blpapi_module=blpapi_module).connect()
+    except Exception as e:
+        raise StepError('connecting to Bloomberg', e)
+    pull_error = None
     try:
         print('Resolving %d contracts for %d products (%d candidate tickers) ...'
               % (len(months) * len(products), len(products), 2 * len(months) * len(products)))
-        results = resolve_contracts(bbg, products, months, today)
+        try:
+            results = resolve_contracts(bbg, products, months, today)
+        except Exception as e:
+            raise StepError('resolving the tickers', e)
         if tickers_only:
             print_contract_table(results)
             print_summary(results, bbg, None)
             return ''
         for name, cs in results:
             n_ok = sum(1 for c in cs if c.status == OK)
-            print('%-8s pulling %s for %d/%d contracts ' % (name, HIST_FIELD, n_ok, len(cs)),
-                  end='', flush=True)
+            if pull_error is not None:
+                print('%-8s skipped - the pull stopped earlier' % name)
+            else:
+                print('%-8s pulling %s for %d/%d contracts ' % (name, HIST_FIELD, n_ok, len(cs)),
+                      end='', flush=True)
             for c in cs:
-                if c.status == OK:
+                if c.status != OK:
+                    continue
+                if pull_error is not None:
+                    c.status, c.note = NOT_PULLED, 'not requested - the pull stopped at %s' % pull_error[0].ticker
+                    continue
+                try:
                     fetch_open_interest(bbg, c, years_back_n, today)
                     print('.', end='', flush=True)
-            print()
+                except Exception as e:                 # keep what we have, say where it stopped
+                    pull_error = (c, e)
+                    c.status, c.note = NOT_PULLED, 'the pull failed here: %s' % e
+                    print(' x', flush=True)
+            if pull_error is None:
+                print()
     finally:
         bbg.close()
-    out = out or OUTPUT_FILE or 'OI_charts_%s.xlsx' % today.strftime('%Y%m%d')
-    write_workbook(out, results, base_year=start_year)
+    try:
+        write_workbook(out, results, base_year=start_year)
+    except Exception as e:
+        raise StepError('writing the workbook %s' % out, e)
     print_summary(results, bbg, out)
     if show_charts_:
-        show_charts(results, base_year=start_year)
+        try:
+            show_charts(results, base_year=start_year)
+        except Exception as e:
+            raise StepError('drawing the charts (the workbook is already written: %s)' % out, e)
+    if pull_error is not None:
+        c, e = pull_error
+        n_done = sum(1 for _, cs in results for x in cs if x.status in (OK, NO_DATA))
+        n_all = n_done + sum(1 for _, cs in results for x in cs if x.status == NOT_PULLED)
+        raise StepError('pulling %s for %s (%s %s)' % (HIST_FIELD, c.ticker, c.product, c.label), e,
+                        '\n    The workbook was still written with the %d of %d resolved contracts '
+                        'pulled before that; the rest are marked %s in the %s tab:\n    %s'
+                        % (n_done, n_all, NOT_PULLED, AUDIT_SHEET, out))
     return out
 
 
 def notebook_main(**kw):
-    """What %run / a pasted cell does: run everything; a problem is one printed sentence."""
+    """What %run / a pasted cell does: run everything; a problem is a clear message, not a traceback."""
     try:
         return run(**kw)
-    except PermissionError as e:
-        print('ERROR: cannot write the workbook - close it in Excel and rerun (%s)' % e)
-    except RuntimeError as e:
-        print('ERROR: %s' % e)
-    return None
+    except Exception as e:
+        report_error(e)
+        return None
 
 
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument('--out', default=OUTPUT_FILE, help='output workbook (default OI_charts_<yyyymmdd>.xlsx)')
+    p.add_argument('--out', default=OUTPUT_FILE,
+                   help='output workbook; a bare name goes to OUTPUT_FOLDER (default OI_charts_<yyyymmdd>.xlsx)')
     p.add_argument('--start-year', type=int, default=START_YEAR, help='first contract year (default %(default)s)')
     p.add_argument('--end-year', type=int, default=END_YEAR, help='last contract year (default %(default)s)')
     p.add_argument('--years-back', type=int, default=YEARS_BACK,
@@ -732,11 +808,8 @@ def main(argv=None):
         run(start_year=a.start_year, end_year=a.end_year, years_back_n=a.years_back,
             out=a.out, today=today, tickers_only=a.tickers_only, show_charts_=False)
         return 0
-    except PermissionError as e:
-        print('ERROR: cannot write the workbook - close it in Excel and rerun (%s)' % e)
-        return 1
-    except RuntimeError as e:
-        print('ERROR: %s' % e)
+    except Exception as e:
+        report_error(e)
         return 1
 
 
@@ -750,7 +823,6 @@ def main(argv=None):
 # ticker, a quarterly-only product and a contract that resolves but has no prints yet.
 import importlib.util                             # noqa: E402
 import io                                         # noqa: E402
-import os                                         # noqa: E402
 import tempfile                                   # noqa: E402
 import zipfile                                    # noqa: E402
 from contextlib import redirect_stdout            # noqa: E402
@@ -866,7 +938,13 @@ class FakeMessage:
         return self._root.getElement(key)
 
     def toString(self):
-        return '<fake message %s>' % self._root.name()
+        def dump(el):
+            if el._children is not None:
+                return '%s = { %s }' % (el._name, ' '.join(dump(e) for _, e in el._children))
+            if el._array is not None:
+                return '%s[] = { %s }' % (el._name, ' '.join(dump(e) for e in el._array))
+            return '%s = %s' % (el._name, el._value)
+        return dump(self._root)
 
 
 class FakeRequest:
@@ -1436,8 +1514,8 @@ def test_run():
     out, text = quiet(run, products=FAKE_PRODUCTS, today=TEST_TODAY, blpapi_module=FakeAPI, out=path)
     check('run(): returns the path and writes the file', out == path and os.path.exists(path))
     check('run(): per-product counts, NOT FOUND months, NO DATA months, output path printed',
-          ('%-8s %2d/%d' % ('AS51', 12, 36)) in text and 'NOT FOUND: Jan 24' in text
-          and 'NO DATA:  Oct 26' in text and ('Written: %s' % path) in text, text[-800:])
+          ('%-8s %2d/%d' % ('AS51', 12, 36)) in text and ('%-11s Jan 24' % 'NOT FOUND:') in text
+          and ('%-11s Oct 26' % 'NO DATA:') in text and ('Written: %s' % path) in text, text[-800:])
     check('run(): session closed', FakeSession.instances and FakeSession.instances[-1].stopped)
     FakeSession.instances.clear()
     out, text = quiet(run, products=FAKE_PRODUCTS, today=TEST_TODAY, blpapi_module=FakeAPI, tickers_only=True)
@@ -1457,8 +1535,9 @@ def test_run():
     check('notebook_main(): runs everything, returns the path', out == path2 and os.path.exists(path2) and 'Written:' in text)
     out, text = quiet(notebook_main, products=FAKE_PRODUCTS, today=TEST_TODAY,
                       blpapi_module=api_with(SilentSession), out=path2)
-    check('notebook_main(): a Bloomberg problem is one printed sentence, not a traceback',
-          out is None and 'ERROR: Bloomberg did not answer' in text and 'Traceback' not in text, text)
+    check('notebook_main(): a Bloomberg problem is one clear message with the step, no traceback',
+          out is None and 'ERROR while resolving the tickers:' in text and 'Bloomberg did not answer' in text
+          and 'Traceback' not in text, text)
     results = resolve_contracts(Bloomberg(blpapi_module=FakeAPI).connect(), FAKE_PRODUCTS,
                                   contract_months(2024, 2026), TEST_TODAY)
     bbg = Bloomberg(blpapi_module=FakeAPI).connect()
@@ -1487,6 +1566,80 @@ def test_run():
     os.rmdir(tmp)
 
 
+class DeadTerminalSession(FakeSession):
+    def start(self):
+        return False
+
+
+class StopsMidPullSession(FakeSession):
+    """The 5th HistoricalDataRequest is rejected (the shape of a data-limit hit)."""
+    def sendRequest(self, request):
+        n_hist = sum(1 for e in self.log if e['op'] == 'HistoricalDataRequest')
+        if request.operation == 'HistoricalDataRequest' and n_hist == 4:
+            self.log.append(dict(op=request.operation, securities=list(request.securities),
+                                 fields=list(request.fields), settings=dict(request.settings)))
+            root = FakeElement('RequestFailure', children=[
+                ('reason', fake_complex('reason', [('description', 'Daily capacity reached')]))])
+            self._queue = [FakeEvent([FakeMessage(root)], FakeEvent.REQUEST_STATUS)]
+            return
+        FakeSession.sendRequest(self, request)
+
+
+class BuggyHistorySession(FakeSession):
+    """A history response that makes the parser blow up with a non-Bloomberg error."""
+    def _hist_events(self, request):
+        raise TypeError('unexpected element shape')
+
+
+def test_failures():
+    tmp = tempfile.mkdtemp()
+    # output_path: bare names go to OUTPUT_FOLDER, missing folder -> current folder, paths untouched
+    global OUTPUT_FOLDER
+    saved = OUTPUT_FOLDER
+    try:
+        OUTPUT_FOLDER = tmp
+        p1 = output_path(None, dt.date(2026, 9, 17))
+        OUTPUT_FOLDER = os.path.join(tmp, 'does-not-exist')
+        p2 = output_path('x.xlsx')
+        p3 = output_path(os.path.join(tmp, 'sub', 'y.xlsx'))
+    finally:
+        OUTPUT_FOLDER = saved
+    check('output_path: default name in OUTPUT_FOLDER, missing folder -> cwd, explicit path kept',
+          p1 == os.path.join(tmp, 'OI_charts_20260917.xlsx') and p2 == os.path.join(os.getcwd(), 'x.xlsx')
+          and p3 == os.path.join(tmp, 'sub', 'y.xlsx'), (p1, p2, p3))
+    # terminal not running
+    out, text = quiet(notebook_main, products=FAKE_PRODUCTS, today=TEST_TODAY,
+                      blpapi_module=api_with(DeadTerminalSession), out=os.path.join(tmp, 'a.xlsx'))
+    check('terminal not running -> "ERROR while connecting to Bloomberg" + what to check',
+          out is None and 'ERROR while connecting to Bloomberg' in text and 'logged in' in text
+          and 'Traceback' not in text, text)
+    # a data-limit style failure in the middle of the pull: keep what was pulled, say where it stopped
+    path = os.path.join(tmp, 'partial.xlsx')
+    out, text = quiet(notebook_main, products=FAKE_PRODUCTS, today=TEST_TODAY,
+                      blpapi_module=api_with(StopsMidPullSession), out=path, show_charts_=False)
+    wb = load_workbook(path) if os.path.exists(path) else None
+    statuses = [r[5] for r in wb[AUDIT_SHEET].iter_rows(min_row=2, values_only=True)] if wb else []
+    check('pull stops at contract 5: workbook still written with the 4 pulled, rest NOT PULLED, message says so',
+          out is None and wb is not None and 'ERROR while pulling OPEN_INT for HIK24 Index (HSI May 24)' in text
+          and 'Daily capacity reached' in text and 'still written with the 4 of 83' in text and path in text
+          and wb['HSI'].max_column == 5 and statuses.count(NOT_PULLED) == 79 and statuses.count(OK) == 4
+          and 'HSI      pulling' in text and 'AS51     skipped' in text and 'NOT PULLED:' in text
+          and 'Traceback' not in text, text[-900:])
+    # an unexpected (non-Bloomberg) error: the message names the step AND the traceback follows
+    out, text = quiet(notebook_main, products=FAKE_PRODUCTS, today=TEST_TODAY,
+                      blpapi_module=api_with(BuggyHistorySession), out=os.path.join(tmp, 'b.xlsx'), show_charts_=False)
+    check('unexpected error -> step named, "Full detail for debugging" and the traceback shown',
+          out is None and 'ERROR while pulling OPEN_INT for HIF24 Index (HSI Jan 24)' in text
+          and 'Full detail for debugging' in text and 'TypeError: unexpected element shape' in text
+          and 'Traceback' in text, text[-600:])
+    # the command line reports the same way and exits 1
+    rc, text = quiet(main, ['--out', os.path.join(tmp, 'c.xlsx')]) if importlib.util.find_spec('blpapi') is None else (1, 'ERROR while connecting')
+    check('command line: same message, exit code 1', rc == 1 and 'ERROR while connecting to Bloomberg' in text, text)
+    for f in os.listdir(tmp):
+        os.remove(os.path.join(tmp, f))
+    os.rmdir(tmp)
+
+
 def demo(out=None):
     """The whole pipeline on fake data: a workbook to open in Excel, charts inline in Jupyter."""
     out = out or os.path.join(os.getcwd(), 'demo_OI_charts.xlsx')
@@ -1506,6 +1659,7 @@ def run_tests():
     test_workbook(results)
     test_guards()
     test_run()
+    test_failures()
     print('\n%d checks, %d failed' % (COUNT[0], len(FAILS)))
     for f in FAILS:
         print('  FAIL  ' + f)
