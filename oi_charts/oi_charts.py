@@ -285,7 +285,9 @@ class Bloomberg:
         self.session = None
         self.services = {}
         self.field_errors = {}               # mnemonic -> Bloomberg's message (first seen)
+        self.field_error_secs = {}           # mnemonic -> set of securities it was refused for
         self.bad_securities = {}             # security -> message
+        self.n_ref_securities = 0            # securities sent through ref(), for the summary
 
     def connect(self):
         if self.blpapi is None:
@@ -356,7 +358,7 @@ class Bloomberg:
     def _error_text(err):
         return err.getElementAsString('message') if err.hasElement('message') else 'security error'
 
-    def _note_field_exceptions(self, sd):
+    def _note_field_exceptions(self, sd, sec=''):
         if not sd.hasElement('fieldExceptions'):
             return
         fe = sd.getElement('fieldExceptions')
@@ -370,12 +372,14 @@ class Bloomberg:
                          if info.hasElement(k)]
                 text = ' / '.join(p for p in parts if p) or text
             self.field_errors.setdefault(fid, text)
+            self.field_error_secs.setdefault(fid, set()).add(sec)
 
     def ref(self, securities, fields):
         """ReferenceDataRequest -> {security: {field: value}}; unknown securities are skipped."""
         out = {}
         svc = self.service('//blp/refdata')
         securities = list(securities)
+        self.n_ref_securities += len(securities)
 
         def take(msg):
             self._check_response_error(msg)
@@ -386,7 +390,7 @@ class Bloomberg:
                 if sd.hasElement('securityError'):
                     self.bad_securities[sec] = self._error_text(sd.getElement('securityError'))
                     continue
-                self._note_field_exceptions(sd)
+                self._note_field_exceptions(sd, sec)
                 row = {}
                 if sd.hasElement('fieldData'):
                     fd = sd.getElement('fieldData')
@@ -426,7 +430,7 @@ class Bloomberg:
                 if sd.hasElement('securityError'):
                     self.bad_securities[sec] = self._error_text(sd.getElement('securityError'))
                     continue
-                self._note_field_exceptions(sd)
+                self._note_field_exceptions(sd, sec)
                 if not sd.hasElement('fieldData'):
                     continue
                 fd = sd.getElement('fieldData')
@@ -460,26 +464,30 @@ def build_contracts(products, months):
 
 
 def pick_ticker(c, ref, bad_securities, today):
-    """Choose the form whose LAST_TRADEABLE_DT is in the contract month; mark NOT FOUND otherwise."""
-    seen, valid = [], []
+    """Choose the form whose LAST_TRADEABLE_DT is in the contract month; mark NOT FOUND otherwise.
+
+    The note says, per ticker form, what Bloomberg answered - that is the 'why' of a NOT FOUND.
+    """
+    valid, why = [], []
     for t in (c.ticker_1, c.ticker_2):
+        if t in bad_securities:
+            why.append('%s -> %s' % (t, bad_securities[t]))
+            continue
         row = ref.get(t)
-        if not row:
+        if row is None:
+            why.append('%s -> no answer from Bloomberg' % t)
             continue
         ltd = as_date(row.get('LAST_TRADEABLE_DT'))
         if ltd is None:
+            why.append('%s -> not a futures contract (no LAST_TRADEABLE_DT%s)'
+                       % (t, '; name: %s' % row['NAME'] if row.get('NAME') else ''))
             continue
-        seen.append((t, ltd))
         if (ltd.year, ltd.month) == (c.year, c.month):
             valid.append((t, ltd, row))
-    if not valid:
-        c.status = NOT_FOUND
-        if seen:
-            c.note = 'LAST_TRADEABLE_DT outside the contract month: ' + ', '.join(
-                '%s -> %s' % (t, d.isoformat()) for t, d in seen)
         else:
-            errs = [bad_securities[t] for t in (c.ticker_1, c.ticker_2) if t in bad_securities]
-            c.note = errs[0] if errs else 'no LAST_TRADEABLE_DT returned for either form'
+            why.append('%s -> last trade %s, outside the month' % (t, ltd.isoformat()))
+    if not valid:
+        c.status, c.note = NOT_FOUND, '; '.join(why)
         return
     if len(valid) == 2:
         # both forms resolve: use the one the desk would type (expired -> two digits)
@@ -516,7 +524,9 @@ def fetch_open_interest(bbg, c, years_back_n, today):
     c.rows = bbg.history(c.ticker, HIST_FIELD, c.req_start, c.req_end)
     if not c.rows:
         c.status = NO_DATA
-        c.note = bbg.bad_securities.get(c.ticker) or ('no %s rows returned' % HIST_FIELD)
+        c.note = bbg.bad_securities.get(c.ticker) or (
+            'contract exists, but no %s prints between %s and %s'
+            % (HIST_FIELD, c.req_start.isoformat(), c.req_end.isoformat()))
 
 
 def align_product(contracts):
@@ -684,9 +694,21 @@ def print_summary(results, bbg, out):
             labels = [c.label for c in cs if c.status == status]
             if labels:
                 print('         %-11s %s' % (status + ':', ', '.join(labels)))
-    if bbg.field_errors:
-        print('Bloomberg rejected these fields: ' + ', '.join(
-            '%s (%s)' % kv for kv in sorted(bbg.field_errors.items())))
+    for fid, text in sorted(bbg.field_errors.items()):
+        secs = sorted(bbg.field_error_secs.get(fid, ()))
+        if 'NOT_APPLICABLE' in text and secs and len(secs) < bbg.n_ref_securities:
+            print('%s not applicable to %d of %d candidate tickers - those are not futures contracts '
+                  'and count as NOT FOUND (e.g. %s; the %s tab names each one)'
+                  % (fid, len(secs), bbg.n_ref_securities, secs[0], AUDIT_SHEET))
+        else:
+            print('Bloomberg refused the field %s for %d securities: %s' % (fid, len(secs), text))
+    seen_status = {c.status for _, cs in results for c in cs}
+    if NOT_FOUND in seen_status:
+        print('NOT FOUND = neither ticker form is a futures contract with its last trade in that month '
+              '(the Note column of the %s tab says what each form was)' % AUDIT_SHEET)
+    if NO_DATA in seen_status:
+        print('NO DATA   = the contract exists on Bloomberg but has no %s prints in its window '
+              '(not traded yet, or never)' % HIST_FIELD)
     if out:
         print('Written: %s' % out)
 
@@ -1035,6 +1057,11 @@ def build_universe():
 
 
 UNIVERSE = build_universe()
+# a fourth root, used only by test_not_a_future(): NFH4 exists but is not a future (NFH24 is);
+# NFJ4 is not a future and NFJ24 is unknown -> Apr 24 has no futures contract at all
+UNIVERSE['NFH4 Index'] = spec(2024, 3, not_future=True)
+UNIVERSE['NFH24 Index'] = spec(2024, 3)
+UNIVERSE['NFJ4 Index'] = spec(2024, 4, not_future=True)
 TICKER_ID = {t: i for i, t in enumerate(sorted(UNIVERSE))}
 
 
@@ -1118,9 +1145,14 @@ class FakeSession:
         if s is None:
             return security_error(sec)
         mon = MONTH_ABBR[s['month'] - 1]
-        known = {'LAST_TRADEABLE_DT': s['last_trade'],
-                 'FUT_MONTH_YR': '%s %02d' % (mon.upper(), s['year'] % 100),
-                 'NAME': 'FAKE %s FUT %s%02d' % (sec.split()[0], mon, s['year'] % 100)}
+        if s.get('not_future'):                     # a ticker that exists but is not a future
+            known = {'NAME': 'FAKE %s SOMETHING ELSE' % sec.split()[0]}
+            refusal = ('NOT_APPLICABLE_TO_REF_DATA', 'Field not applicable to security')
+        else:
+            known = {'LAST_TRADEABLE_DT': s['last_trade'],
+                     'FUT_MONTH_YR': '%s %02d' % (mon.upper(), s['year'] % 100),
+                     'NAME': 'FAKE %s FUT %s%02d' % (sec.split()[0], mon, s['year'] % 100)}
+            refusal = ('BAD_FLD', 'Invalid Field')
         kids = [('security', sec),
                 ('fieldData', fake_complex('fieldData', [(k, known[k]) for k in wanted if k in known]))]
         bad = [f for f in wanted if f not in known]
@@ -1129,7 +1161,7 @@ class FakeSession:
                 fake_complex('fieldExceptions', [
                     ('fieldId', f),
                     ('errorInfo', fake_complex('errorInfo', [
-                        ('subcategory', 'BAD_FLD'), ('message', 'Invalid Field')])),
+                        ('subcategory', refusal[0]), ('message', refusal[1])])),
                 ]) for f in bad])))
         return fake_complex('securityData', kids)
 
@@ -1296,8 +1328,13 @@ def test_resolution():
     check('(v)   quarterly-only product: 24 NOT FOUND, 12 OK',
           len(nf) == 24 and sum(c.status == OK for c in as51) == 12, [c.label for c in nf])
     check('(v)   the NOT FOUND months are exactly the serial months', all(c.month not in QUARTERLY for c in nf))
-    check('(v)   NOT FOUND note carries Bloomberg\'s message', 'Unknown/Invalid' in by[('AS51', 'Jan 24')].note,
-          by[('AS51', 'Jan 24')].note)
+    note = by[('AS51', 'Jan 24')].note
+    check('(v)   NOT FOUND note says what each form was',
+          note.startswith('XPF4 Index -> Unknown/Invalid') and '; XPF24 Index -> Unknown/Invalid' in note, note)
+    note = by[('SIMSCI', 'Feb 26')].note
+    check('(iv)  wrong-decade note names the date seen and the unknown form',
+          'QZG6 Index -> last trade 2036-02' in note and 'outside the month' in note
+          and 'QZG26 Index -> Unknown/Invalid' in note, note)
     check('(vii) unknown tickers collected, not raised',
           'HIU5 Index' in bbg.bad_securities and 'HIU25 Index' not in bbg.bad_securities)
     check('no field errors on the reference pass', not bbg.field_errors, bbg.field_errors)
@@ -1337,7 +1374,9 @@ def test_history(bbg, results):
     check('request window = [last trade - 2y, min(last trade, today)] as YYYYMMDD', not bad, bad[:3])
     c = by[('SIMSCI', 'Oct 26')]
     check('(vi)  resolves but no prints -> NO DATA, no rows, window kept for the audit',
-          c.status == NO_DATA and c.rows == [] and c.req_start is not None and 'no OPEN_INT rows' in c.note, c)
+          c.status == NO_DATA and c.rows == [] and c.req_start is not None
+          and c.note == 'contract exists, but no OPEN_INT prints between %s and %s'
+          % (c.req_start.isoformat(), c.req_end.isoformat()), c)
     ok = [c for c in resolved if c.status == OK]
     check('every OK contract has rows', all(c.rows for c in ok))
     check('rows sorted, strictly increasing dates',
@@ -1591,6 +1630,28 @@ class BuggyHistorySession(FakeSession):
         raise TypeError('unexpected element shape')
 
 
+def test_not_a_future():
+    bbg = Bloomberg(blpapi_module=FakeAPI).connect()
+    results = resolve_contracts(bbg, [('NF', 'NOTFUT')], [(2024, 3), (2024, 4)], TEST_TODAY)
+    mar, apr = results[0][1]
+    check('a ticker that exists but is not a future is skipped, the real form is used',
+          mar.status == OK and mar.ticker == 'NFH24 Index', mar)
+    check('no futures contract at all -> NOT FOUND, note explains both forms',
+          apr.status == NOT_FOUND and apr.note == 'NFJ4 Index -> not a futures contract (no LAST_TRADEABLE_DT; '
+          'name: FAKE NFJ4 SOMETHING ELSE); NFJ24 Index -> Unknown/Invalid Security [nid:1234]', apr.note)
+    check('field refusals remembered per security',
+          bbg.field_error_secs.get('LAST_TRADEABLE_DT') == {'NFH4 Index', 'NFJ4 Index'} and bbg.n_ref_securities == 4)
+    _, text = quiet(print_summary, results, bbg, None)
+    check('summary explains the refusal instead of calling the field invalid',
+          'LAST_TRADEABLE_DT not applicable to 2 of 4 candidate tickers' in text and 'e.g. NFH4 Index' in text
+          and 'NOT FOUND = neither ticker form' in text and 'refused' not in text, text)
+    bbg = Bloomberg(blpapi_module=FakeAPI).connect()
+    bbg.ref(['HIU25 Index'], ['NOT_A_FIELD'])
+    _, text = quiet(print_summary, [('HSI', [])], bbg, None)
+    check('a mnemonic refused for every security is reported as refused',
+          'Bloomberg refused the field NOT_A_FIELD for 1 securities: BAD_FLD / Invalid Field' in text, text)
+
+
 def test_failures():
     tmp = tempfile.mkdtemp()
     # output_path: bare names go to OUTPUT_FOLDER, missing folder -> current folder, paths untouched
@@ -1659,6 +1720,7 @@ def run_tests():
     test_workbook(results)
     test_guards()
     test_run()
+    test_not_a_future()
     test_failures()
     print('\n%d checks, %d failed' % (COUNT[0], len(FAILS)))
     for f in FAILS:
