@@ -126,6 +126,18 @@ FX_TICKER = 'USD{ccy} Curncy'
 FX_OVERRIDES = {}
 INDEX_FIELD = 'PX_LAST'         # daily last price of the index and of the FX rate
 MULTIPLIER_FIELD = 'FUT_VAL_PT' # value of one index point, in the contract's currency
+# 8. Sanity check only - what the exchanges publish as (contract currency, value of one index
+#    point).  Bloomberg's FUT_VAL_PT is what the notional uses; a disagreement with this table is
+#    printed as a WARNING so it gets looked at, never silently overridden.  Roots not listed here
+#    (MTW, HJA, VHO) are simply not checked.
+EXPECTED_CONTRACT = {
+    'HI': ('HKD', 50), 'HC': ('HKD', 50), 'HCT': ('HKD', 50),      # HKEX: HK$50 x index
+    'KM': ('KRW', 250000),                                         # KRX KOSPI 200: KRW 250,000 x index
+    'XP': ('AUD', 25),                                             # ASX SPI 200: A$25 x index
+    'FT': ('TWD', 200),                                            # TAIFEX TX: NT$200 x index
+    'TWT': ('USD', 40), 'FPO': ('USD', 1), 'QZ': ('SGD', 100),     # SGX FTSE Taiwan / FTSE China A50 / MSCI Singapore
+    'VG': ('EUR', 10), 'ES': ('USD', 50),                          # Eurex Euro Stoxx 50 / CME E-mini S&P 500
+}
 # ===========================================================================
 
 
@@ -1078,10 +1090,11 @@ def add_stacked_chart(ws, name, series, dates, measure='oi', title=None, skip_mo
     ch.add_data(Reference(ws, min_col=2, max_col=1 + n_series, min_row=2, max_row=last_row),
                 titles_from_data=True)          # row 2 = the 'Jan 24' labels
     ch.set_categories(Reference(ws, min_col=1, min_row=3, max_row=last_row))
-    for s, colour, (mode, k, _h, _b) in zip(ch.series, colors, labels):
+    top = max(totals) if totals else 1.0
+    for s, colour, (mode, k, h, _b) in zip(ch.series, colors, labels):
         s.graphicalProperties.solidFill = colour
         s.graphicalProperties.line.noFill = True
-        if mode is not None:                   # alive on the last day -> named there; tall -> named at its peak
+        if mode == 'peak' or (mode == 'last' and h >= LABEL_MIN_HEIGHT * top):
             s.dLbls = series_labels([point_label(k, show_name=True, color=text_on(colour))])
     ln = LineChart()                           # the total, on the same axes (same axis ids)
     ln.add_data(Reference(ws, min_col=total_col, max_col=total_col, min_row=2, max_row=last_row), titles_from_data=True)
@@ -1092,8 +1105,7 @@ def add_stacked_chart(ws, name, series, dates, measure='oi', title=None, skip_mo
     t.smooth = False
     t.graphicalProperties.line.solidFill = TOTAL_COLOR
     t.graphicalProperties.line.width = 15875   # 1.25 pt
-    t.dLbls = series_labels([point_label(n_rows - 1, show_name=True, show_value=True, num_fmt=fmt,
-                                         pos='t', size=850, color=TOTAL_COLOR)])
+    t.dLbls = series_labels([point_label(n_rows - 1, show_name=True, pos='t', size=850, color=TOTAL_COLOR)])
     ch += ln
     ws.add_chart(ch, '%s2' % get_column_letter(total_col + 2))
 
@@ -1115,10 +1127,10 @@ def write_product_sheet(wb, name, contracts, measure='oi', kind=None, ix=None, s
     for j, c in enumerate(found, start=2):
         ws.cell(row=1, column=j, value=c.ticker)
         ws.cell(row=2, column=j, value=c.label)
+        ws.column_dimensions[get_column_letter(j)].width = 14 if used == 'notional' else 9
     total_col = len(found) + 2
-    ws.cell(row=1, column=total_col, value=TOTAL_LABEL)
-    ws.cell(row=2, column=total_col, value=TOTAL_LABEL)
     lookups = [dict(rows) for _, rows in series]
+    last_total = 0.0
     for i, d in enumerate(dates, start=3):
         ws.cell(row=i, column=1, value=d).number_format = 'yyyy-mm-dd'
         total, any_value = 0.0, False
@@ -1129,6 +1141,11 @@ def write_product_sheet(wb, name, contracts, measure='oi', kind=None, ix=None, s
                 total, any_value = total + v, True
         if any_value:                               # a day without one print stays a hole
             ws.cell(row=i, column=total_col, value=total).number_format = '#,##0'
+            last_total = total
+    _u, _f, div = axis_unit(max((ws.cell(row=i, column=total_col).value or 0) for i in range(3, len(dates) + 3)), used)
+    ws.cell(row=1, column=total_col, value=TOTAL_LABEL)
+    ws.cell(row=2, column=total_col, value='%s %s' % (TOTAL_LABEL, money(last_total, div, _u)))   # the chart's label
+    ws.column_dimensions[get_column_letter(total_col)].width = 16 if used == 'notional' else 12
     ws.freeze_panes = 'B3'
     title = FALLBACK_TITLE.format(name=name) if (measure == 'notional' and used == 'oi') else None
     if kind == 'stacked':
@@ -1232,9 +1249,10 @@ def _bands(series, dates):
 
 def band_labels(series, dates):
     """Which point of each band carries its name: ('last', idx) for a band alive on the last day
-    (the MAX_END_LABELS largest ones); ('peak', idx) for another band, at the tallest day of the
-    band where a label fits - tall enough (LABEL_MIN_HEIGHT of the plot) and not on top of a
-    label already placed (LABEL_BOX); None when no day qualifies.
+    (the MAX_END_LABELS largest ones); ('peak', idx) for another band - the middle of the days
+    where it stands at 60% of its peak or more, else its tallest day - where a label fits: tall
+    enough (LABEL_MIN_HEIGHT of the plot) and not on top of a label already placed (LABEL_BOX);
+    None when no day qualifies.
     Returns ([(mode, idx, band height at idx, bottom of the band at idx)] in series order, totals)."""
     n = len(dates)
     bands = _bands(series, dates)              # (values, bottoms) per band
@@ -1251,7 +1269,11 @@ def band_labels(series, dates):
             out.append(('last', k, y[k], base[k]))
             continue
         chosen = None
-        for k in sorted((j for j in range(n) if y[j] > 0), key=lambda j: -y[j]):
+        peak = max(y) if y else 0.0
+        plateau = [j for j in range(n) if y[j] >= 0.6 * peak > 0]
+        candidates = ([plateau[len(plateau) // 2]] if plateau else []) + \
+            sorted((j for j in range(n) if y[j] > 0), key=lambda j: -y[j])
+        for k in candidates:                   # the middle of the plateau first, then the tallest days
             if y[k] < LABEL_MIN_HEIGHT * top:
                 break                          # everything after is shorter still
             x, yc = k / max(1, n - 1), (base[k] + y[k] / 2.0) / top
@@ -1294,6 +1316,7 @@ def stacked_axes(ax, series, dates, used, skip_months=None):
     tall bands, a label rail in the right margin for the contracts alive on the last day, and
     the total at the top of the rail.  Returns (labels placed, axis title, formatter)."""
     import numpy as np
+    import matplotlib.patheffects as pe
     n = len(dates)
     x = np.arange(n)
     pos = {d: i for i, d in enumerate(dates)}
@@ -1316,8 +1339,9 @@ def stacked_axes(ax, series, dates, used, skip_months=None):
         if mode == 'last':
             rail.append((b + h / 2.0, c.label, colour))
         elif mode == 'peak':
+            ha = 'left' if k < 0.03 * n else ('right' if k > 0.97 * n else 'center')
             ax.text(k, b + h / 2.0, c.label, fontsize=7.5, fontweight='bold', color='#' + text_on(colour),
-                    ha='center', va='center')
+                    ha=ha, va='center', path_effects=[pe.withStroke(linewidth=2.2, foreground='#' + colour)])
             placed += 1
     line = [t if any(y > 0 for y in col) else float('nan') for t, col in zip(totals, zip(*[b[0] for b in _bands(series, dates)]))] \
         if series else []
@@ -1424,13 +1448,34 @@ def show_charts(results, measure=None, kind=None, indices=None, skip_months=None
 
 # --------------------------------------------------------------- console ---
 def print_contract_table(results):
-    print('%-8s %-7s %-14s %-9s %-11s %s' % ('Product', 'Month', 'Ticker', 'Status', 'Last trade', 'Note'))
+    print('%-8s %-7s %-14s %-9s %-11s %-9s %-4s %s' % ('Product', 'Month', 'Ticker', 'Status', 'Last trade',
+                                                        MULTIPLIER_FIELD, 'Ccy', 'Note'))
     for name, cs in results:
         for c in cs:
-            print('%-8s %-7s %-14s %-9s %-11s %s' % (
+            print('%-8s %-7s %-14s %-9s %-11s %-9s %-4s %s' % (
                 name, c.label, c.ticker or '-', c.status,
-                c.last_trade.isoformat() if c.last_trade else '-', c.note))
+                c.last_trade.isoformat() if c.last_trade else '-',
+                ('%g' % c.multiplier) if c.multiplier is not None else '-', c.currency or '-', c.note))
     print()
+
+
+def contract_warnings(cs, ix):
+    """Sentences for a product whose Bloomberg multiplier or working currency disagrees with
+    EXPECTED_CONTRACT (empty when it agrees or the root is not in the table)."""
+    out = []
+    for root in sorted({c.root for c in cs}):
+        if root not in EXPECTED_CONTRACT:
+            continue
+        ccy, mult = EXPECTED_CONTRACT[root]
+        seen = sorted({c.multiplier for c in cs if c.status == OK and c.multiplier is not None})
+        if seen and any(abs(m - mult) > 1e-9 for m in seen):
+            out.append('%s for %s is %s on Bloomberg; the exchange multiplier is %s %g - check before using the notional'
+                       % (MULTIPLIER_FIELD, root, ' / '.join('%g' % m for m in seen), ccy, mult))
+        if ix is not None and ix.status == OK and ix.fut_currency and ix.fut_currency != ccy:
+            out.append('the notional converts %s from %s (%s) but the %s contract is denominated in %s - '
+                       'set CONTRACT_CURRENCY or INDEX_TICKERS for it'
+                       % (root, ix.fut_currency, ix.ccy_source, root, ccy))
+    return out
 
 
 def worked_example(contracts, ix):
@@ -1477,6 +1522,8 @@ def print_summary(results, bbg, out, indices=None, used=None):
                     ix.fut_currency, ix.ccy_source))
                 if ix.note:
                     print('         WARNING:    %s' % ix.note)
+                for w in contract_warnings(cs, ix):
+                    print('         WARNING:    %s' % w)
                 print('         %s' % worked_example(cs, ix))
             else:
                 print('         index:      %s %s%s' % (ix.ticker, ix.status, (' - ' + ix.note) if ix.note else ''))
@@ -1672,6 +1719,7 @@ def main(argv=None):
 # ticker, a quarterly-only product and a contract that resolves but has no prints yet.
 import importlib.util                             # noqa: E402
 import io                                         # noqa: E402
+import math                                       # noqa: E402
 import tempfile                                   # noqa: E402
 import zipfile                                    # noqa: E402
 from contextlib import redirect_stdout            # noqa: E402
@@ -1921,17 +1969,28 @@ for _t in FAKE_FX:
 TICKER_ID = {t: i for i, t in enumerate(sorted(UNIVERSE))}
 
 
+FAKE_PEAK = {'dec': 60000.0, 'quarter': 130000.0, 'serial': 18000.0}    # contracts at the top of the build-up
+FAKE_CENTRE = {'dec': 0.70, 'quarter': 0.60, 'serial': 0.50}              # where in its life a contract is half built
+
+
 def fake_oi(ticker, d):
-    """Deterministic, distinct per ticker, rising with time - a misaligned cell cannot match.
-    FX rates are small numbers (7.7 .. 7.8) that move every day."""
+    """Deterministic prints that look like the real thing, distinct per ticker and day (the
+    ticker's id sits in the third decimal, so a misaligned cell cannot match): an index level
+    that drifts up, an FX rate that moves a little every day, and open interest that builds up
+    over a contract's life along a logistic curve - quarterlies largest, Decembers long and mid-
+    sized, serial months small - with a small daily wobble."""
     s = UNIVERSE[ticker]
     days = (d - s['listing']).days
     if s.get('kind') == 'fx':                         # realistic rate, moves every day
-        base = FAKE_LEVELS[ticker]
-        return base * (1 + (days % 10) * 0.001)
+        return FAKE_LEVELS[ticker] * (1 + (days % 10) * 0.001)
     if s.get('kind') == 'index':                      # realistic level, drifts up, wobbles
         return FAKE_LEVELS[ticker] * (1 + days / 5000.0 + (days % 7) * 0.002)
-    return float(TICKER_ID[ticker] * 100000 + days * 3 + 100)
+    fam = band_family(s['month'])
+    t = days / float(max(1, (s['last_trade'] - s['listing']).days))
+    size = FAKE_PEAK[fam] * (0.8 + 0.4 * ((TICKER_ID[ticker] * 7) % 11) / 10.0)
+    build = 1.0 / (1.0 + math.exp(-(t - FAKE_CENTRE[fam]) * 12.0))
+    wobble = 1.0 + 0.03 * math.sin(days * 0.9 + TICKER_ID[ticker])
+    return round(size * build * wobble) + TICKER_ID[ticker] * 0.001
 
 
 def is_session(d, kind=None):
@@ -2501,9 +2560,11 @@ def test_workbook(results):
               [ws.cell(1, j).value for j in range(2, n + 2)] == [c.ticker for c in found]
               and [ws.cell(2, j).value for j in range(2, n + 2)] == [c.label for c in found]
               and ws['A1'].value == 'Ticker' and ws['A2'].value == 'Date')
-        check('%s: Total column right after the %d found contracts, nothing beyond' % (name, n),
-              ws.max_column == n + 2 and ws.cell(1, n + 2).value == TOTAL_LABEL and ws.cell(2, n + 2).value == TOTAL_LABEL,
-              ws.max_column)
+        check('%s: Total column right after the %d found contracts (row 2 carries the last total), nothing beyond' % (name, n),
+              ws.max_column == n + 2 and ws.cell(1, n + 2).value == TOTAL_LABEL
+              and ws.cell(2, n + 2).value == '%s %s' % (TOTAL_LABEL, format(int(round(ws.cell(N + 2, n + 2).value)), ','))
+              and ws.column_dimensions[get_column_letter(n + 2)].width == 12,
+              (ws.max_column, ws.cell(2, n + 2).value))
         sums_ok = all(abs((ws.cell(i, n + 2).value or 0) - sum((ws.cell(i, j).value or 0) for j in range(2, n + 2))) < 1e-6
                       for i in range(3, N + 3))
         check('%s: Total = sum of the contracts on each date' % name, sums_ok)
@@ -2727,7 +2788,8 @@ def _test_notional():
     rows = {(r[0], r[1]): r for r in ws.iter_rows(min_row=2, values_only=True)}
     c, r = [x for x in results[0][1] if x.label == 'Sep 25'][0], rows[('HSI', 'Sep 25')]
     check('Contracts tab: multiplier, ccy, last and max notional',
-          r[16] == 50.0 and r[17] == 'HKD' and abs(r[18] - c.last_notional) < 1e-6 and abs(r[19] - c.max_notional) < 1e-6, r[16:20])
+          r[16] == 50.0 and r[17] == 'HKD' and abs(r[18] - c.last_notional) < 1e-9 * c.last_notional
+          and abs(r[19] - c.max_notional) < 1e-9 * c.max_notional, r[16:20])
     ws = wb[INDEX_SHEET]
     rows = {r[0]: r for r in ws.iter_rows(min_row=2, values_only=True)}
     r, ix = rows['HSI'], indices['HSI']
@@ -2824,6 +2886,25 @@ def _test_notional():
           and 'says USD - ignored' in r[17], r)
     check('KOSPI2 summary shows the worked example for the last day',
           'check:' in text and 'USDKRW' in text.split('check:')[1].split('\n')[0], text[-600:])
+    check('KOSPI2: FUT_VAL_PT 250,000 KRW agrees with the exchange table -> no multiplier / currency warning',
+          'the exchange multiplier' not in text and 'is denominated in' not in text)
+    cs_hi = results[0][1]
+    warn = contract_warnings(cs_hi, indices['HSI'])
+    check('EXPECTED_CONTRACT: HSI at HKD 50 agrees -> nothing to say', warn == [], warn)
+    c0 = [c for c in cs_hi if c.status == OK][0]
+    saved_m = c0.multiplier
+    c0.multiplier = 10.0
+    warn = contract_warnings(cs_hi, indices['HSI'])
+    c0.multiplier = saved_m
+    check('a multiplier that disagrees with the exchange is a WARNING naming the root and both numbers',
+          len(warn) == 1 and warn[0].startswith('FUT_VAL_PT for HI is 10 / 50 on Bloomberg; the exchange multiplier is HKD 50'), warn)
+    ix_wrong = IndexSeries(product='HSI', ticker='HSI Index', status=OK, fut_currency='USD', ccy_source='CONTRACT_CURRENCY')
+    warn = contract_warnings(cs_hi, ix_wrong)
+    check('a working currency that disagrees with the exchange is a WARNING pointing at the CONFIG knobs',
+          len(warn) == 1 and 'converts HI from USD (CONTRACT_CURRENCY) but the HI contract is denominated in HKD' in warn[0], warn)
+    check('roots outside the table are not judged',
+          contract_warnings([Contract(product='x', root='MTW', year=2025, month=1, label='', ticker_1='', ticker_2='',
+                                      status=OK, multiplier=7.0)], None) == [])
     if importlib.util.find_spec('matplotlib') is not None:
         import warnings
         import matplotlib.pyplot as plt
@@ -2878,14 +2959,15 @@ def test_stacked():
               (ch.grouping, ch.overlap, ch.gapWidth, len(ch.series)))
         labels, totals = band_labels(series, dates)
         colors = band_colors([c for c, _ in series])
+        top = max(totals)
         good = all(s.graphicalProperties.solidFill.srgbClr == colour
                    and s.graphicalProperties.line.noFill is True
-                   and ((mode is None and s.dLbls is None) or
+                   and (((mode is None or (mode == 'last' and h < LABEL_MIN_HEIGHT * top)) and s.dLbls is None) or
                         (len(s.dLbls.dLbl) == 1 and s.dLbls.dLbl[0].idx == k and s.dLbls.dLbl[0].spPr is None
                          and s.dLbls.dLbl[0].showSerName is True and s.dLbls.dLbl[0].showVal is False
                          and s.dLbls.showVal is False and s.dLbls.showSerName is False
                          and s.dLbls.dLbl[0].txPr.p[0].pPr.defRPr.solidFill.srgbClr == text_on(colour)))
-                   for s, colour, (mode, k, _h, _b) in zip(ch.series, colors, labels))
+                   for s, colour, (mode, k, h, _b) in zip(ch.series, colors, labels))
         live = [c.label for (c, rows) in series if rows[-1][0] == dates[-1]]
         modes = [m for m, _, _, _ in labels]
         check('%s: family colours; live bands named at the last day (max %d), tall ones at their peak, plain text'
@@ -2899,8 +2981,8 @@ def test_stacked():
               t.tx.strRef.f == "'%s'!%s2" % (name, tl) and t.val.numRef.f == "'%s'!$%s$3:$%s$%d" % (name, tl, tl, N + 2)
               and t.graphicalProperties.line.solidFill.srgbClr == TOTAL_COLOR and t.marker.symbol is None
               and t.graphicalProperties.line.width == 15875
-              and len(t.dLbls.dLbl) == 1 and t.dLbls.dLbl[0].idx == N - 1 and t.dLbls.dLbl[0].showVal is True
-              and t.dLbls.dLbl[0].showSerName is True and t.dLbls.dLbl[0].numFmt == '#,##0', t.tx.strRef.f)
+              and len(t.dLbls.dLbl) == 1 and t.dLbls.dLbl[0].idx == N - 1 and t.dLbls.dLbl[0].showVal is False
+              and t.dLbls.dLbl[0].showSerName is True and t.dLbls.dLbl[0].numFmt is None, t.tx.strRef.f)
         check('%s: category axis with mmm-yy labels ~monthly, no legend, chart after the Total column, 30 x 15 cm' % name,
               ch.x_axis.number_format.formatCode == 'mmm-yy' and ch.x_axis.tickLblSkip == max(1, N // 12)
               and ch.legend is None and ch.anchor._from.col == n + 3 and ch.y_axis.majorGridlines is not None
@@ -3035,9 +3117,11 @@ def test_run():
     FakeSession.instances.clear()
     out, text = quiet(run, products=FAKE_PRODUCTS, today=TEST_TODAY, blpapi_module=FakeAPI, tickers_only=True, **TEST_KW)
     sess = FakeSession.instances[-1]
-    check('run(tickers_only): no historical request, table printed, returns ""',
+    check('run(tickers_only): no historical request, table with multiplier and currency printed, returns ""',
           out == '' and not any(e['op'] == 'HistoricalDataRequest' for e in sess.log)
-          and 'HIU25 Index' in text and 'NOT FOUND' in text)
+          and 'HIU25 Index' in text and 'NOT FOUND' in text and 'FUT_VAL_PT Ccy' in text
+          and any(line.split()[:2] == ['HSI', 'Sep'] and ' 50 ' in line and 'HKD' in line for line in text.splitlines()),
+          text[:400])
     try:
         quiet(main, ['--help'])
         code = None
