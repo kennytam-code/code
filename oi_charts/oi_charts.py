@@ -90,29 +90,32 @@ Y_AXIS_TITLE = {'notional': 'USD bn', 'oi': 'Contracts'}   # a small product is 
 CHART_KIND = 'stacked'
 
 # 5c. Band colours: every contract gets its own, in expiry order down this list (it wraps after
-#     20, so two bands of one colour are 20 expiries apart and never next to each other).  Muted,
-#     distinct tones - research-note colours, nothing primary - alternating warm and cool.  Hex, no '#'.
+#     20, so two bands of one colour are 20 expiries apart and never next to each other).  The
+#     Nomura deck family: Nomura red (Pantone 186 C) with its burgundy and rose, the greys from
+#     charcoal to light, navy and steel blues, gold and taupe - ordered so neighbours differ in
+#     both hue and depth.  Hex, no '#'.
+NOMURA_RED = 'C8102E'
 BAND_COLORS = [
-    '1F3A5F',   # deep navy
-    'B3785A',   # terracotta
-    '4E7F86',   # teal grey
-    '8B6C8F',   # dusty plum
-    'B59B4D',   # old gold
-    '5E8C61',   # sage
-    'C08A8A',   # dusty rose
-    '5A6FA3',   # denim
-    '8E8F5A',   # olive
-    'A46D9A',   # mauve
-    '6FA0B8',   # cadet blue
-    '9C7A55',   # taupe
-    '4F8F87',   # sea green
-    'B79A6B',   # sand
-    '7B8DAF',   # slate blue
-    'A56E58',   # clay
-    '8F86B5',   # lavender grey
-    '4B6E5C',   # forest grey
-    '7A8792',   # steel grey
-    'C29B5E',   # ochre
+    NOMURA_RED, # Nomura red
+    '3A3A3A',   # charcoal
+    'A6ACB2',   # silver grey
+    '1F2A44',   # navy black
+    'C9A24B',   # old gold
+    '7A1E2B',   # burgundy
+    '6B7A8F',   # steel
+    'D9C6B0',   # sand
+    '4F6D8F',   # slate blue
+    'E48A94',   # rose
+    '7F7F7F',   # mid grey
+    'A47C48',   # bronze
+    '8FA3B7',   # light steel
+    'A63D40',   # brick
+    '2E4A6B',   # deep blue
+    'CFCFCF',   # light grey
+    '8B6F5E',   # taupe brown
+    'C67B85',   # dusty red
+    '708090',   # slate grey
+    'D8B45A',   # mustard gold
 ]
 CHART_FONT = 'Arial'
 
@@ -2995,9 +2998,10 @@ def test_stacked():
         r, g, b = (int(hexcol[i:i + 2], 16) / 255.0 for i in (0, 2, 4))
         mx, mn = max(r, g, b), min(r, g, b)
         return (0 if mx == 0 else (mx - mn) / mx), mx
-    check('BAND_COLORS: muted - saturation x brightness at most 0.45, nothing brighter than 0.8',
-          all(sat * val <= 0.45 and val <= 0.8 for sat, val in map(hsv, BAND_COLORS)),
-          [tuple(round(x, 2) for x in hsv(h)) for h in BAND_COLORS])
+    strong = [h for h in BAND_COLORS if hsv(h)[0] > 0.6 and hsv(h)[1] > 0.6]
+    check('BAND_COLORS: the Nomura family - Nomura red first, greys, navy / steel, gold; at most three strong tones',
+          BAND_COLORS[0] == NOMURA_RED == 'C8102E' and {'3A3A3A', '1F2A44', '7A1E2B'} <= set(BAND_COLORS)
+          and len(strong) <= 3 and len(set(BAND_COLORS)) == 20, strong)
     bbg = Bloomberg(blpapi_module=FakeAPI).connect()
     results = resolve_contracts(bbg, FAKE_PRODUCTS, TEST_MONTHS, TEST_TODAY)
     for _, cs in results:
