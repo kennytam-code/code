@@ -1,17 +1,23 @@
 #!/usr/bin/env python3
-"""Daily open interest of index futures from Bloomberg -> one Excel tab + chart per product.
+"""Daily open interest of index futures from Bloomberg, as USD notional -> one Excel tab + chart per product.
 
 Everything you may want to change is in the CONFIG block right below.  The engine
 underneath needs no edits.  Run the whole file at once:
 
     Jupyter       %run oi_charts.py      (or paste the file into a cell and run it)
                   -> pulls the data, writes the workbook, draws every chart in the notebook
-    Command line  python oi_charts.py [--tickers-only] [--out FILE] [--years-back N]
+    Command line  python oi_charts.py [--tickers-only] [--out FILE] [--years-back N] [--skip-months N]
+                                     [--measure oi|notional] [--chart stacked|lines]
 
 Self-check, no terminal needed (a fake Bloomberg inside this file drives the real code):
 
     python oi_charts.py --test     self-checks: ticker forms, windows, cell-by-cell alignment, errors
     python oi_charts.py --demo     writes demo_OI_charts.xlsx from fake data (and draws it in Jupyter)
+
+Each contract's line is its USD notional: open interest x FUT_VAL_PT (value of one index point in
+the contract's currency) x the underlying index's daily last price, converted to USD at the
+contract currency's rate.  The index (not the futures price) is used so every expiry is scaled
+the same way.  Set MEASURE = 'oi' for plain contract counts.
 
 Needs: blpapi and openpyxl; matplotlib only for the notebook charts.
 """
@@ -39,7 +45,12 @@ START_YEAR, END_YEAR = 2024, 2026
 
 # 3. History per contract: from its last trade date back this many years (or as far as
 #    Bloomberg has prints - a contract listed later simply has fewer rows, never NA).
-YEARS_BACK = 2
+YEARS_BACK = 3
+
+# 3b. Months dropped at the end of every contract's history: the contract month itself and
+#     the SKIP_MONTHS - 1 months before it.  2 -> Jun 24 gets data up to 30 Apr 24 (no May 24,
+#     no Jun 24).  0 -> keep everything up to the last trade date, as before.
+SKIP_MONTHS = 2
 
 # 4. Output.  The workbook is OI_charts_<yyyymmdd>.xlsx (or OUTPUT_FILE) and goes to
 #    OUTPUT_FOLDER; when that folder does not exist it goes to the current folder instead.
@@ -49,19 +60,78 @@ OUTPUT_FOLDER = '~/Downloads'
 SHOW_CHARTS = True              # in Jupyter also draw every chart inline (needs matplotlib)
 TICKERS_ONLY = False            # True -> only resolve and print the contract table (quick check)
 
-# 5. Chart text.  {name} is the tab name.
-CHART_TITLE = '{name} Futures Open Interest'
-Y_AXIS_TITLE = 'OI'
+# 5. What each line is.  'notional': open interest x FUT_VAL_PT x index level, in USD (a product
+#    whose index or multiplier cannot be found falls back to plain OI, and the chart title and the
+#    summary say so).  'oi': open interest in contracts.  {name} in the text is the tab name.
+MEASURE = 'notional'
+CHART_TITLE = {'notional': '{name} Futures Open Interest, USD notional',
+               'oi': '{name} Futures Open Interest'}
+FALLBACK_TITLE = '{name} Futures Open Interest, contracts (USD notional unavailable)'
+Y_AXIS_TITLE = {'notional': 'Notional (USD m)', 'oi': 'Open interest (contracts)'}
+Y_NUMBER_FORMAT = {'notional': '#,##0,,"m"', 'oi': '#,##0'}   # cells hold the full USD amount
+
+# 5b. Chart type.  'stacked': the contracts stacked as daily columns (earliest expiry at the
+#     bottom, no gap between days), so the top edge of the stack is the product total - traced
+#     by a black Total line - and each contract is named in a small box at the end of its own
+#     band.  'lines': one line per contract.
+CHART_KIND = 'stacked'
+
+# 5c. Band colours: one per contract month, restrained and desaturated.  The quarterlies, which
+#     carry most of the open interest, get the four strongest tones (navy, steel blue, burgundy,
+#     slate teal); the serial months sit in greys, sand and sage so they read as secondary.  A
+#     contract one year older than the newest in the workbook is drawn 22% lighter, two years
+#     older 44% lighter.  Edit freely - hex, no '#'.
+MONTH_COLORS = {
+    1: '9BA7B4',    # Jan  light slate
+    2: 'C9B18C',    # Feb  sand
+    3: '3E6E9C',    # Mar  steel blue
+    4: '8A9A88',    # Apr  sage grey
+    5: 'A9A39D',    # May  warm grey
+    6: '8C2F3C',    # Jun  burgundy
+    7: '6F8AA3',    # Jul  dusty blue
+    8: 'B39B72',    # Aug  khaki
+    9: '3F7C78',    # Sep  slate teal
+    10: '8E7F87',   # Oct  mauve grey
+    11: '7C8D99',   # Nov  blue grey
+    12: '1F3652',   # Dec  navy
+}
+YEAR_FADE = 0.22    # share of white mixed in per year of age, capped at two years
 
 # 6. Bloomberg.
 HIST_FIELD = 'OPEN_INT'         # daily open interest of one contract
 YELLOW_KEY = 'Index'            # default yellow key for the roots above
 BBG_HOST, BBG_PORT = 'localhost', 8194
+
+# 7. Underlying index, for the notional.  The index ticker defaults to '<tab name> Index'
+#    (HSI Index, KOSPI2 Index, AS51 Index ...); INDEX_TICKERS lists the exceptions.  Notional =
+#    OI x FUT_VAL_PT x index level (in index points), an amount in the contract's currency, turned
+#    into USD with FX_TICKER (local per USD, so divide).  FX_OVERRIDES swaps in another pair, e.g.
+#    {'AUD': ('AUDUSD Curncy', 'multiply')}.
+#    The contract currency is CONTRACT_CURRENCY[tab] if listed, else the INDEX's own currency
+#    (its CRNCY: KOSPI2 -> KRW, HSI -> HKD, AS51 -> AUD, TWSE -> TWD).  Bloomberg's CRNCY field
+#    on the futures is NOT used for this - it comes back as USD for KRW contracts such as KM -
+#    it is only reported, and a disagreement is flagged in the summary and the Indices tab.
+#    List the genuinely USD-denominated contracts here (SGX's dollar contracts); a USD contract
+#    needs no rate: OI x FUT_VAL_PT (in USD) x index points is already USD.
+CONTRACT_CURRENCY = {
+    'FPO': 'USD',       # SGX FTSE China A50: USD 1 x index   <- CHECK on the terminal
+    'FTSE TW': 'USD',   # SGX FTSE Taiwan: USD 40 x index     <- CHECK on the terminal
+}
+INDEX_TICKERS = {
+    'FTSE TW': 'TWSE Index',    # <- CHECK on the terminal: the FTSE Taiwan (RIC capped) index the TWT future settles on
+    'MTW': 'TWSE Index',        # <- CHECK on the terminal: whatever the MTW future settles on
+    'FPO': 'XIN9I Index',       # FTSE China A50
+}
+FX_TICKER = 'USD{ccy} Curncy'
+FX_OVERRIDES = {}
+INDEX_FIELD = 'PX_LAST'         # daily last price of the index and of the FX rate
+MULTIPLIER_FIELD = 'FUT_VAL_PT' # value of one index point, in the contract's currency
 # ===========================================================================
 
 
 # ================================================================ ENGINE ===
 import argparse                                   # noqa: E402
+import bisect                                     # noqa: E402
 import dataclasses                                # noqa: E402
 import datetime as dt                             # noqa: E402
 import os                                         # noqa: E402
@@ -71,14 +141,21 @@ from typing import List, Optional, Tuple          # noqa: E402
 
 try:
     from openpyxl import Workbook, load_workbook          # noqa: E402
-    from openpyxl.chart import LineChart, Reference       # noqa: E402
+    from openpyxl.chart import BarChart, LineChart, Reference   # noqa: E402
+    from openpyxl.chart.label import DataLabel, DataLabelList   # noqa: E402
     from openpyxl.chart.axis import DateAxis              # noqa: E402
+    from openpyxl.chart.shapes import GraphicalProperties  # noqa: E402
+    from openpyxl.chart.text import RichText, Text        # noqa: E402
+    from openpyxl.chart.title import Title                # noqa: E402
+    from openpyxl.drawing.line import LineProperties      # noqa: E402
+    from openpyxl.drawing.text import (CharacterProperties, Paragraph, ParagraphProperties,   # noqa: E402
+                                       RegularTextRun, RichTextProperties)
     from openpyxl.utils import get_column_letter          # noqa: E402
 except ImportError:
     print('openpyxl is not installed in this Python - run:  pip install openpyxl')
     raise
 
-REF_FIELDS = ['LAST_TRADEABLE_DT', 'FUT_MONTH_YR', 'NAME']
+REF_FIELDS = ['LAST_TRADEABLE_DT', 'FUT_MONTH_YR', 'NAME', 'CRNCY', MULTIPLIER_FIELD]
 EVENT_SPINS = 240                        # 500 ms each: ~2 min per request, then it is an error
 REF_CHUNK = 100                          # securities per ReferenceDataRequest
 
@@ -88,10 +165,18 @@ MONTH_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
 
 OK, NOT_FOUND, NO_DATA, NOT_PULLED = 'OK', 'NOT FOUND', 'NO DATA', 'NOT PULLED'
 AUDIT_SHEET = 'Contracts'
+INDEX_SHEET = 'Indices'
+INDEX_REF_FIELDS = ['CRNCY', 'NAME']
+INDEX_COLUMNS = ['Product', 'Index ticker', 'Name', 'Index ccy', 'Contract ccy used', 'Ccy source',
+                 'Futures CRNCY (Bloomberg)', 'FX ticker', 'Status', 'Request start', 'Request end',
+                 'First date', 'Last date', 'Rows', 'Last index', 'Last FX', 'Last index (USD)', 'Note']
+# chart look: dark grey text, light grey axis lines, no gridlines, no borders, black total line
+CHART_TEXT, CHART_LINE, TOTAL_COLOR = '404040', 'BFBFBF', '1A1A1A'
+TOTAL_LABEL = 'Total'
 AUDIT_COLUMNS = ['Product', 'Contract', 'Ticker 1-digit', 'Ticker 2-digit', 'Ticker used',
                  'Status', 'LAST_TRADEABLE_DT', 'FUT_MONTH_YR', 'Name', 'Request start',
                  'Request end', 'First OI date', 'Last OI date', 'Rows', 'Last OI', 'Max OI',
-                 'Note']
+                 'Multiplier', 'Ccy', 'Last notional (USD)', 'Max notional (USD)', 'Note']
 
 # Line colours: one hue per contract year, light (Jan) to dark (Dec) within the year, so
 # 36 lines read as three families instead of a repeating six-colour cycle.
@@ -138,6 +223,31 @@ def years_back(d, n):
         return d.replace(year=d.year - n, day=28)
 
 
+def month_end(year, month):
+    """Last calendar day of (year, month)."""
+    if month == 12:
+        return dt.date(year, 12, 31)
+    return dt.date(year, month + 1, 1) - dt.timedelta(days=1)
+
+
+def history_cutoff(year, month, skip_months):
+    """Last day the history of the (year, month) contract may reach: end of the month
+    skip_months before the contract month.  (2024, 6, 2) -> 30 Apr 2024.  0 -> None (no cutoff)."""
+    if not skip_months:
+        return None
+    idx = year * 12 + (month - 1) - skip_months
+    return month_end(idx // 12, idx % 12 + 1)
+
+
+def as_float(v):
+    """A positive float, or None (NaN, None, text that is not a number)."""
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return None
+    return f if f == f and f > 0 else None
+
+
 def as_date(v):
     """A date from whatever blpapi hands back: datetime, date, or 'YYYY-MM-DD...' text."""
     if v is None:
@@ -168,6 +278,16 @@ def series_color(year, month, base_year):
     light, dark = HUES[(year - base_year) % len(HUES)]
     t = 0.2 + 0.8 * (month - 1) / 11.0
     rgb = [round(int(light[i:i + 2], 16) * (1 - t) + int(dark[i:i + 2], 16) * t) for i in (0, 2, 4)]
+    return '%02x%02x%02x' % tuple(rgb)
+
+
+def stack_color(year, month, last_year):
+    """Hex colour (no '#') for one contract's band in the stack: MONTH_COLORS[month], faded
+    towards white by YEAR_FADE per year of age (last_year = the newest contract year in the
+    workbook, capped at two years)."""
+    base = MONTH_COLORS[month]
+    t = YEAR_FADE * max(0, min(2, last_year - year))
+    rgb = [round(int(base[i:i + 2], 16) * (1 - t) + 255 * t) for i in (0, 2, 4)]
     return '%02x%02x%02x' % tuple(rgb)
 
 
@@ -250,10 +370,21 @@ class Contract:
     last_trade: Optional[dt.date] = None
     fut_month_yr: str = ''
     name: str = ''
+    currency: str = ''               # CRNCY of the future
+    multiplier: Optional[float] = None   # FUT_VAL_PT
     req_start: Optional[dt.date] = None
     req_end: Optional[dt.date] = None
-    rows: List[Tuple[dt.date, float]] = dataclasses.field(default_factory=list)  # sorted
+    rows: List[Tuple[dt.date, float]] = dataclasses.field(default_factory=list)  # OI, sorted
+    notional: List[Tuple[dt.date, float]] = dataclasses.field(default_factory=list)  # USD, sorted
     note: str = ''
+
+    @property
+    def last_notional(self):
+        return self.notional[-1][1] if self.notional else None
+
+    @property
+    def max_notional(self):
+        return max(v for _, v in self.notional) if self.notional else None
 
     @property
     def first_dt(self):
@@ -270,6 +401,55 @@ class Contract:
     @property
     def max_oi(self):
         return max(v for _, v in self.rows) if self.rows else None
+
+
+@dataclasses.dataclass
+class IndexSeries:
+    """One product's underlying index and the USD rate of the product's contract currency.
+
+    rows = index points / rate: multiplied by FUT_VAL_PT and the open interest it is the USD notional.
+    """
+    product: str                     # tab name
+    ticker: str                      # 'KOSPI2 Index'
+    currency: str = ''               # CRNCY of the index (for the audit)
+    name: str = ''
+    fut_currency: str = ''           # currency of FUT_VAL_PT actually used (config, else the index's)
+    bbg_fut_currency: str = ''       # what Bloomberg's CRNCY on the futures said (reported only)
+    ccy_source: str = ''             # 'CONTRACT_CURRENCY' | 'index CRNCY'
+    fx_ticker: str = ''              # 'USDKRW Curncy' ('' for a USD-denominated future)
+    fx_mode: str = 'divide'          # amount / rate, or 'multiply'
+    status: str = NOT_FOUND
+    req_start: Optional[dt.date] = None
+    req_end: Optional[dt.date] = None
+    index_rows: List[Tuple[dt.date, float]] = dataclasses.field(default_factory=list)  # index points
+    fx_rows: List[Tuple[dt.date, float]] = dataclasses.field(default_factory=list)
+    rows: List[Tuple[dt.date, float]] = dataclasses.field(default_factory=list)        # points / rate
+    note: str = ''
+
+    @property
+    def label(self):
+        return self.ticker.split()[0]
+
+    @property
+    def first_dt(self):
+        return self.rows[0][0] if self.rows else None
+
+    @property
+    def last_dt(self):
+        return self.rows[-1][0] if self.rows else None
+
+    @property
+    def last_index(self):
+        return self.index_rows[-1][1] if self.index_rows else None
+
+    @property
+    def last_fx(self):
+        return self.fx_rows[-1][1] if self.fx_rows else None
+
+    @property
+    def last_usd(self):
+        """The last index level in USD terms (points / rate); the multiplier is not in it."""
+        return self.rows[-1][1] if self.rows else None
 
 
 # ------------------------------------------------------------- bloomberg ---
@@ -500,6 +680,8 @@ def pick_ticker(c, ref, bad_securities, today):
     c.ticker, c.last_trade, c.status = t, ltd, OK
     c.fut_month_yr = str(row.get('FUT_MONTH_YR') or '')
     c.name = str(row.get('NAME') or '')
+    c.currency = str(row.get('CRNCY') or '').strip().upper()
+    c.multiplier = as_float(row.get(MULTIPLIER_FIELD))
 
 
 def resolve_contracts(bbg, products, months, today):
@@ -513,14 +695,19 @@ def resolve_contracts(bbg, products, months, today):
     return results
 
 
-def fetch_open_interest(bbg, c, years_back_n, today):
-    """Fill c.rows with daily OPEN_INT from last trade - years_back_n to min(last trade, today)."""
+def fetch_open_interest(bbg, c, years_back_n, today, skip_months=None):
+    """Fill c.rows with daily OPEN_INT from last trade - years_back_n up to the earliest of the
+    last trade date, today, and the end of the month skip_months before the contract month."""
     if c.status != OK:
         return
+    skip_months = SKIP_MONTHS if skip_months is None else skip_months
     c.req_start = years_back(c.last_trade, years_back_n)
     c.req_end = min(c.last_trade, today)
+    cutoff = history_cutoff(c.year, c.month, skip_months)
+    if cutoff is not None:
+        c.req_end = min(c.req_end, cutoff)
     if c.req_start > c.req_end:
-        c.status, c.note = NO_DATA, 'window starts after today'
+        c.status, c.note = NO_DATA, 'window starts after its end'
         return
     c.rows = bbg.history(c.ticker, HIST_FIELD, c.req_start, c.req_end)
     if not c.rows:
@@ -528,6 +715,174 @@ def fetch_open_interest(bbg, c, years_back_n, today):
         c.note = bbg.bad_securities.get(c.ticker) or (
             'contract exists, but no %s prints between %s and %s'
             % (HIST_FIELD, c.req_start.isoformat(), c.req_end.isoformat()))
+
+
+def index_ticker(name):
+    """The index behind a product tab: INDEX_TICKERS, else '<tab name> Index'."""
+    return INDEX_TICKERS.get(name) or '%s Index' % name
+
+
+def fx_for(currency):
+    """(FX ticker, 'divide' | 'multiply') that turns an amount in `currency` into USD.
+    ('', 'divide') for USD itself - the amount is used as is.  An empty currency is refused: it
+    must never silently mean 'no conversion'."""
+    ccy = (currency or '').strip().upper()
+    if not ccy:
+        raise ValueError('fx_for: no currency given')
+    if ccy == 'USD':
+        return '', 'divide'
+    if ccy in FX_OVERRIDES:
+        t, mode = FX_OVERRIDES[ccy]
+        return t, mode
+    return FX_TICKER.format(ccy=ccy), 'divide'
+
+
+def product_currency(contracts):
+    """The contract currency of a product: what its resolved contracts say (the most common one)."""
+    seen = {}
+    for c in contracts:
+        if c.status == OK and c.currency:
+            seen[c.currency] = seen.get(c.currency, 0) + 1
+    return max(seen, key=seen.get) if seen else ''
+
+
+def resolve_indices(bbg, results):
+    """One reference pass (CRNCY, NAME) over every product's index -> {tab name: IndexSeries}.
+
+    The FX pair is chosen by the contract currency: CONTRACT_CURRENCY[tab] if listed, else the
+    index's own CRNCY.  Bloomberg's CRNCY on the futures is recorded for the audit only.
+    """
+    out = {name: IndexSeries(product=name, ticker=index_ticker(name), bbg_fut_currency=product_currency(cs))
+           for name, cs in results}
+    ref = bbg.ref(sorted({ix.ticker for ix in out.values()}), INDEX_REF_FIELDS)
+    for ix in out.values():
+        if ix.ticker in bbg.bad_securities:
+            ix.note = '%s -> %s' % (ix.ticker, bbg.bad_securities[ix.ticker])
+            continue
+        row = ref.get(ix.ticker)
+        if row is None:
+            ix.note = '%s -> no answer from Bloomberg' % ix.ticker
+            continue
+        ix.currency = str(row.get('CRNCY') or '').strip().upper()
+        ix.name = str(row.get('NAME') or '')
+        configured = (CONTRACT_CURRENCY.get(ix.product) or '').strip().upper()
+        if configured:
+            ix.fut_currency, ix.ccy_source = configured, 'CONTRACT_CURRENCY'
+        elif ix.currency:
+            ix.fut_currency, ix.ccy_source = ix.currency, 'index CRNCY'
+        else:
+            ix.note = ('%s has no CRNCY and %s is not in CONTRACT_CURRENCY, so the contract currency is unknown'
+                       % (ix.ticker, ix.product))
+            continue
+        if ix.bbg_fut_currency and ix.bbg_fut_currency != ix.fut_currency:
+            ix.note = ('Bloomberg CRNCY on the futures says %s - ignored, %s used (%s)'
+                       % (ix.bbg_fut_currency, ix.fut_currency, ix.ccy_source))
+        ix.fx_ticker, ix.fx_mode = fx_for(ix.fut_currency)
+        ix.status = OK
+    return out
+
+
+def to_usd(index_rows, fx_rows, mode='divide'):
+    """[(date, USD level)]: each index day uses the last FX print on or before it (rates are carried
+    forward over the index market's own holidays).  Index days before the first FX print are dropped."""
+    if not fx_rows:
+        return list(index_rows)
+    fx_dates = [d for d, _ in fx_rows]
+    out = []
+    for d, level in index_rows:
+        i = bisect.bisect_right(fx_dates, d) - 1
+        if i < 0:
+            continue
+        rate = fx_rows[i][1]
+        if not rate:
+            continue
+        out.append((d, level * rate if mode == 'multiply' else level / rate))
+    return out
+
+
+def fetch_index(bbg, ix, contracts, today):
+    """Pull the index (and the contract currency's rate) over the span of the product's contract
+    windows; ix.rows = index points / rate."""
+    if ix.status != OK:
+        return
+    windows = [(c.req_start, c.req_end) for c in contracts if c.status == OK and c.rows]
+    if not windows:
+        ix.status, ix.note = NO_DATA, 'no contract of this product has data, so there is no window'
+        return
+    ix.req_start = min(s for s, _ in windows)
+    ix.req_end = min(max(e for _, e in windows), today)
+    ix.index_rows = bbg.history(ix.ticker, INDEX_FIELD, ix.req_start, ix.req_end)
+    if not ix.index_rows:
+        ix.status = NO_DATA
+        ix.note = bbg.bad_securities.get(ix.ticker) or (
+            'no %s prints between %s and %s' % (INDEX_FIELD, ix.req_start.isoformat(), ix.req_end.isoformat()))
+        return
+    if ix.fx_ticker:                                # start the rate a little earlier for the first index days
+        ix.fx_rows = bbg.history(ix.fx_ticker, INDEX_FIELD, ix.req_start - dt.timedelta(days=10), ix.req_end)
+        if not ix.fx_rows:
+            ix.status = NO_DATA
+            ix.note = bbg.bad_securities.get(ix.fx_ticker) or (
+                'no %s prints for %s between %s and %s' % (INDEX_FIELD, ix.fx_ticker, ix.req_start.isoformat(),
+                                                           ix.req_end.isoformat()))
+            return
+    ix.rows = to_usd(ix.index_rows, ix.fx_rows, ix.fx_mode)
+    if not ix.rows:
+        ix.status, ix.note = NO_DATA, 'no index day has an FX rate'
+        return
+    dropped = len(ix.index_rows) - len(ix.rows)
+    if dropped:
+        ix.note = (ix.note + '; ' if ix.note else '') + '%d index day(s) before the first FX print dropped' % dropped
+
+
+def compute_notional(contracts, ix):
+    """c.notional = OI x FUT_VAL_PT x (index points / rate) for every OI day, using the last index
+    print on or before that day.  Contracts without a multiplier, or products without an index,
+    keep an empty notional and say why in the note."""
+    have_index = ix is not None and ix.status == OK and ix.rows
+    ix_dates = [d for d, _ in ix.rows] if have_index else []
+    for c in contracts:
+        c.notional = []
+        if c.status != OK or not c.rows:
+            continue
+        if not have_index:
+            c.note = (c.note + '; ' if c.note else '') + 'no USD notional: %s' % (
+                ix.note if ix is not None and ix.note else 'index %s' % (ix.status if ix else 'not requested'))
+            continue
+        if c.multiplier is None:
+            c.note = (c.note + '; ' if c.note else '') + 'no USD notional: %s missing' % MULTIPLIER_FIELD
+            continue
+        out = []
+        for d, oi in c.rows:
+            i = bisect.bisect_right(ix_dates, d) - 1
+            if i >= 0:
+                out.append((d, oi * c.multiplier * ix.rows[i][1]))
+        c.notional = out
+        if len(out) < len(c.rows):
+            c.note = (c.note + '; ' if c.note else '') + '%d OI day(s) before the first index print have no notional' % (
+                len(c.rows) - len(out))
+
+
+def product_series(contracts, measure):
+    """What one tab shows: (measure used, [(contract, rows)], sorted union of dates, note).
+
+    'notional' falls back to 'oi' for a product where no contract has a notional.
+    """
+    ok = [c for c in contracts if c.status == OK and c.rows]
+    used, note = measure, ''
+    if measure == 'notional':
+        with_n = [c for c in ok if c.notional]
+        if with_n:
+            skipped = [c.label for c in ok if not c.notional]
+            if skipped:
+                note = 'no notional for %s' % ', '.join(skipped)
+            ok = with_n
+        else:
+            used = 'oi'
+            reasons = sorted({c.note.split('no USD notional: ', 1)[1] for c in ok if 'no USD notional: ' in c.note})
+            note = 'USD notional unavailable' + (' - ' + '; '.join(reasons) if reasons else '')
+    series = [(c, c.notional if used == 'notional' else c.rows) for c in ok]
+    dates = sorted({d for _, rows in series for d, _ in rows})
+    return used, series, dates, note
 
 
 def align_product(contracts):
@@ -544,22 +899,37 @@ def safe_sheet_name(name):
     return name.strip()[:31]
 
 
-def add_oi_chart(ws, name, found, n_rows, base_year):
-    """One line per contract; blanks are gaps, so each line spans only its own data."""
+def chart_text(size, bold=False, color=CHART_TEXT):
+    """Text properties for an axis, legend or title: Calibri-ish size (in 1/100 pt), colour."""
+    cp = CharacterProperties(sz=size, b=bold, solidFill=color)
+    return RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp), endParaRPr=cp)])
+
+
+def chart_title(text, size=1300):
+    cp = CharacterProperties(sz=size, b=True, solidFill=CHART_TEXT)
+    return Title(tx=Text(rich=RichText(bodyPr=RichTextProperties(), p=[Paragraph(
+        pPr=ParagraphProperties(defRPr=cp), r=[RegularTextRun(rPr=cp, t=text)])])), overlay=False)
+
+
+def axis_title(text):
+    return chart_title(text, size=900)
+
+
+def add_oi_chart(ws, name, found, n_rows, base_year, measure='oi', title=None):
+    """One line per contract; blanks are gaps, so each line spans only its own data.  Clean look:
+    no gridlines, no borders, grey hairline axes, dark grey text, legend along the bottom."""
     n_series = len(found)
     ch = LineChart()
-    ch.title = CHART_TITLE.format(name=name)
-    ch.y_axis.title = Y_AXIS_TITLE
+    ch.title = chart_title(title or CHART_TITLE[measure].format(name=name))
     ch.display_blanks = 'gap'
     ch.x_axis = DateAxis(crossAx=100)          # axId 500; the value axis must cross it
     ch.x_axis.number_format = 'mmm-yy'
     ch.x_axis.majorTimeUnit = 'months'
     ch.y_axis.crossAx = 500
-    ch.y_axis.number_format = '#,##0'
-    ch.x_axis.delete = False                   # newer Excel hides axes when this is absent
-    ch.y_axis.delete = False
+    style_axes(ch, measure)
     ch.legend.position = 'b'
-    ch.width, ch.height = 32, 16               # cm
+    ch.legend.txPr = chart_text(800)
+    ch.width, ch.height = 34, 17               # cm
     last_row = 2 + n_rows
     ch.add_data(Reference(ws, min_col=2, max_col=1 + n_series, min_row=2, max_row=last_row),
                 titles_from_data=True)          # row 2 = the 'Jan 24' labels
@@ -569,38 +939,139 @@ def add_oi_chart(ws, name, found, n_rows, base_year):
         s.smooth = False
         s.graphicalProperties.line.width = 12700   # EMU: 1 pt
         s.graphicalProperties.line.solidFill = series_color(c.year, c.month, base_year)
-    ws.add_chart(ch, '%s2' % get_column_letter(n_series + 3))
+    ws.add_chart(ch, '%s2' % get_column_letter(n_series + 4))   # after the Total column
 
 
-def write_product_sheet(wb, name, contracts, base_year):
+def style_axes(ch, measure):
+    """The shared clean look: no gridlines, grey hairline axes, grey text, no borders."""
+    ch.y_axis.delete = False
+    ch.x_axis.delete = False
+    ch.y_axis.title = axis_title(Y_AXIS_TITLE[measure])
+    ch.y_axis.number_format = Y_NUMBER_FORMAT[measure]
+    ch.y_axis.majorGridlines = None
+    ch.x_axis.majorGridlines = None
+    for ax in (ch.x_axis, ch.y_axis):
+        ax.txPr = chart_text(900)
+        ax.graphicalProperties = GraphicalProperties(ln=LineProperties(solidFill=CHART_LINE, w=6350))
+        ax.majorTickMark = 'out'
+        ax.minorTickMark = 'none'
+    ch.x_axis.tickLblPos = 'low'
+    ch.graphical_properties = GraphicalProperties(ln=LineProperties(noFill=True))   # no chart border
+    ch.plot_area.graphicalProperties = GraphicalProperties(noFill=True, ln=LineProperties(noFill=True))
+
+
+def point_label(idx, show_name=False, show_value=False, num_fmt=None, pos='ctr', size=700, boxed=True):
+    """A data label on one point of a series (all other points stay unlabelled)."""
+    lbl = DataLabel(idx=idx, showSerName=show_name, showVal=show_value, showCatName=False, showLegendKey=False,
+                    showPercent=False, showBubbleSize=False, dLblPos=pos,
+                    txPr=chart_text(size, bold=True))
+    if num_fmt:
+        lbl.numFmt = num_fmt
+    if boxed:                                  # white box with a grey hairline, so it reads over the bands
+        lbl.spPr = GraphicalProperties(solidFill='FFFFFF', ln=LineProperties(solidFill=CHART_LINE, w=6350))
+    return lbl
+
+
+def series_labels(labels):
+    """dLbls for a series: only the listed points carry a label."""
+    return DataLabelList(dLbl=labels, showSerName=False, showVal=False, showCatName=False, showLegendKey=False,
+                         showPercent=False, showBubbleSize=False)
+
+
+def add_stacked_chart(ws, name, series, dates, last_year, measure='oi', title=None):
+    """Stacked daily columns, one band per contract in expiry order (earliest at the bottom), no gap
+    between days, so the top of the stack is the product total; a black Total line (column after
+    the contracts) traces it and carries the last value.  A contract alive on the last date is
+    named in a small box at the end of its band; another band tall enough is named at its peak;
+    the legend on the right (in stack order) covers the rest."""
+    n_series, n_rows = len(series), len(dates)
+    last_row = 2 + n_rows
+    total_col = n_series + 2
+    ch = BarChart()
+    ch.type = 'col'
+    ch.grouping = 'stacked'
+    ch.overlap = 100
+    ch.gapWidth = 0
+    ch.title = chart_title(title or CHART_TITLE[measure].format(name=name))
+    ch.display_blanks = 'gap'
+    style_axes(ch, measure)
+    ch.x_axis.number_format = 'mmm-yy'
+    skip = max(1, n_rows // 12)                # about 12 date labels along the axis
+    ch.x_axis.tickLblSkip = skip
+    ch.x_axis.tickMarkSkip = skip
+    ch.x_axis.noMultiLvlLbl = True
+    ch.legend.position = 'r'
+    ch.legend.txPr = chart_text(750)
+    ch.width, ch.height = 36, 18               # cm
+    ch.add_data(Reference(ws, min_col=2, max_col=1 + n_series, min_row=2, max_row=last_row),
+                titles_from_data=True)          # row 2 = the 'Jan 24' labels
+    ch.set_categories(Reference(ws, min_col=1, min_row=3, max_row=last_row))
+    labels, _ = band_labels(series, dates)
+    for s, (c, rows), (mode, k, _h, _b) in zip(ch.series, series, labels):
+        s.graphicalProperties.solidFill = stack_color(c.year, c.month, last_year)
+        s.graphicalProperties.line.noFill = True
+        if mode is not None:                   # alive on the last date -> named there; tall -> named at its peak
+            s.dLbls = series_labels([point_label(k, show_name=True)])
+    ln = LineChart()                           # the total, on the same axes (same axis ids)
+    ln.add_data(Reference(ws, min_col=total_col, max_col=total_col, min_row=2, max_row=last_row), titles_from_data=True)
+    ln.set_categories(Reference(ws, min_col=1, min_row=3, max_row=last_row))
+    ln.display_blanks = 'gap'
+    t = ln.series[0]
+    t.marker.symbol = 'none'
+    t.smooth = False
+    t.graphicalProperties.line.solidFill = TOTAL_COLOR
+    t.graphicalProperties.line.width = 12700   # 1 pt
+    t.dLbls = series_labels([point_label(n_rows - 1, show_name=True, show_value=True,
+                                         num_fmt=Y_NUMBER_FORMAT[measure], pos='t', size=800)])
+    ch += ln
+    ws.add_chart(ch, '%s2' % get_column_letter(total_col + 2))
+
+
+def write_product_sheet(wb, name, contracts, base_year, measure='oi', kind=None):
+    """Row 1 tickers, row 2 labels, then one row per date; the cells are the USD notional (or the
+    OI when measure == 'oi' or the notional is unavailable), then a Total column.
+    Returns (sheet, measure used, note)."""
+    kind = CHART_KIND if kind is None else kind
     ws = wb.create_sheet(title=safe_sheet_name(name))
-    dates, found = align_product(contracts)
+    used, series, dates, note = product_series(contracts, measure)
+    found = [c for c, _ in series]
     ws['A1'] = 'Ticker'
     ws['A2'] = 'Date'
     ws.column_dimensions['A'].width = 12
     if not found:
         ws['B1'] = 'No contract returned open-interest data - see the %s tab' % AUDIT_SHEET
-        return ws
+        return ws, used, note
     for j, c in enumerate(found, start=2):
         ws.cell(row=1, column=j, value=c.ticker)
         ws.cell(row=2, column=j, value=c.label)
-    lookups = [dict(c.rows) for c in found]
+    total_col = len(found) + 2
+    ws.cell(row=1, column=total_col, value=TOTAL_LABEL)
+    ws.cell(row=2, column=total_col, value=TOTAL_LABEL)
+    lookups = [dict(rows) for _, rows in series]
     for i, d in enumerate(dates, start=3):
         ws.cell(row=i, column=1, value=d).number_format = 'yyyy-mm-dd'
+        total = 0.0
         for j, lk in enumerate(lookups, start=2):
             v = lk.get(d)
             if v is not None:                       # a missing print stays an empty cell
                 ws.cell(row=i, column=j, value=v).number_format = '#,##0'
+                total += v
+        ws.cell(row=i, column=total_col, value=total).number_format = '#,##0'
     ws.freeze_panes = 'B3'
-    add_oi_chart(ws, name, found, len(dates), base_year)
-    return ws
+    title = FALLBACK_TITLE.format(name=name) if (measure == 'notional' and used == 'oi') else None
+    if kind == 'stacked':
+        add_stacked_chart(ws, name, series, dates, max(c.year for c in found), used, title)
+    else:
+        add_oi_chart(ws, name, found, len(dates), base_year, used, title)
+    return ws, used, note
 
 
 def audit_row(c):
     return [c.product, c.label, c.ticker_1, c.ticker_2, c.ticker or None, c.status,
             c.last_trade, c.fut_month_yr or None, c.name or None, c.req_start, c.req_end,
             c.first_dt, c.last_dt, (len(c.rows) if c.status in (OK, NO_DATA) else None),
-            c.last_oi, c.max_oi, c.note or None]
+            c.last_oi, c.max_oi, c.multiplier, c.currency or None, c.last_notional, c.max_notional,
+            c.note or None]
 
 
 def write_contracts_sheet(wb, results):
@@ -620,25 +1091,162 @@ def write_contracts_sheet(wb, results):
                 elif isinstance(v, float):
                     cell.number_format = '#,##0'
     ws.freeze_panes = 'A2'
-    for j, w in enumerate([10, 9, 15, 15, 15, 11, 18, 13, 26, 13, 13, 13, 13, 7, 10, 10, 60], start=1):
+    for j, w in enumerate([10, 9, 15, 15, 15, 11, 18, 13, 26, 13, 13, 13, 13, 7, 10, 10, 10, 6, 18, 18, 60], start=1):
         ws.column_dimensions[get_column_letter(j)].width = w
     return ws
 
 
-def write_workbook(path, results, base_year=None):
+def index_row(ix):
+    return [ix.product, ix.ticker, ix.name or None, ix.currency or None, ix.fut_currency or None,
+            ix.ccy_source or None, ix.bbg_fut_currency or None,
+            ix.fx_ticker or None, ix.status, ix.req_start, ix.req_end, ix.first_dt, ix.last_dt,
+            (len(ix.rows) if ix.status in (OK, NO_DATA) else None), ix.last_index, ix.last_fx, ix.last_usd,
+            ix.note or None]
+
+
+def write_indices_sheet(wb, indices):
+    ws = wb.create_sheet(title=INDEX_SHEET)
+    for j, h in enumerate(INDEX_COLUMNS, start=1):
+        ws.cell(row=1, column=j, value=h)
+    for r, ix in enumerate(indices.values(), start=2):
+        for j, v in enumerate(index_row(ix), start=1):
+            if v is None:
+                continue
+            cell = ws.cell(row=r, column=j, value=v)
+            if isinstance(v, dt.date):
+                cell.number_format = 'yyyy-mm-dd'
+            elif isinstance(v, float):
+                cell.number_format = '#,##0.00'
+    ws.freeze_panes = 'A2'
+    for j, w in enumerate([10, 16, 30, 9, 10, 18, 12, 16, 11, 13, 13, 13, 13, 7, 12, 10, 14, 70], start=1):
+        ws.column_dimensions[get_column_letter(j)].width = w
+    return ws
+
+
+def write_workbook(path, results, base_year=None, indices=None, measure=None, kind=None):
+    """measure: 'notional' (default MEASURE) or 'oi'; kind: 'stacked' (default CHART_KIND) or
+    'lines'.  indices: {tab name: IndexSeries} for the Indices audit tab (None -> no tab).
+    Returns {tab name: (measure used, note)}."""
+    measure = MEASURE if measure is None else measure
+    kind = CHART_KIND if kind is None else kind
     if base_year is None:
         base_year = min([c.year for _, cs in results for c in cs] or [START_YEAR])
     wb = Workbook()
     wb.remove(wb.active)
+    used = {}
     for name, cs in results:
-        write_product_sheet(wb, name, cs, base_year)
+        _, m, note = write_product_sheet(wb, name, cs, base_year, measure, kind)
+        used[name] = (m, note)
     write_contracts_sheet(wb, results)
+    if indices is not None:
+        write_indices_sheet(wb, indices)
     wb.save(path)
-    return path
+    return used
 
 
 # ------------------------------------------------------- notebook charts ---
-def show_charts(results, base_year=None):
+LABEL_MIN_HEIGHT = 0.04      # a band gets a label inside it at its peak when it is at least this share of the axis there
+LABEL_BOX = (0.05, 0.035)    # width, height of one in-band label as a share of the plot: two labels closer than this collide
+
+
+def band_labels(series, dates):
+    """Which point of each band carries its name: ('last', idx) for a band alive on the last date;
+    ('peak', idx) for another band, at the tallest day of the band where a label fits - tall
+    enough (LABEL_MIN_HEIGHT of the plot) and not on top of a label already placed (LABEL_BOX);
+    None when no day qualifies (legend only).
+    Returns ([(mode, idx, band height at idx, bottom of the band at idx)] in series order, totals)."""
+    pos = {d: i for i, d in enumerate(dates)}
+    n = len(dates)
+    bottom = [0.0] * n
+    bands = []                                 # (values, bottoms) per band
+    for _, rows in series:
+        y = [0.0] * n
+        for d, v in rows:
+            y[pos[d]] = v
+        bands.append((y, list(bottom)))
+        bottom = [b + v for b, v in zip(bottom, y)]
+    top = max(bottom) if bottom else 1.0
+    placed = []                                # (x, y) of the peak labels kept, as shares of the plot
+    out = []
+    for (_, rows), (y, base) in zip(series, bands):
+        if rows[-1][0] == dates[-1]:
+            k = n - 1
+            out.append(('last', k, y[k], base[k]))
+            continue
+        chosen = None
+        for k in sorted((i for i in range(n) if y[i] > 0), key=lambda i: -y[i]):
+            if y[k] < LABEL_MIN_HEIGHT * top:
+                break                          # everything after is shorter still
+            x, yc = k / max(1, n - 1), (base[k] + y[k] / 2.0) / top
+            if not any(abs(x - px) < LABEL_BOX[0] and abs(yc - py) < LABEL_BOX[1] for px, py in placed):
+                chosen = k
+                placed.append((x, yc))
+                break
+        if chosen is None:
+            k = max(range(n), key=lambda i: y[i])
+            out.append((None, k, y[k], base[k]))
+        else:
+            out.append(('peak', chosen, y[chosen], base[chosen]))
+    return out, bottom
+
+
+def stacked_axes(ax, series, dates, last_year, used):
+    """Draw the stack on a matplotlib axes: one column per contract-day (no weekend gaps - the
+    x axis is the trading-day index), the black Total line, in-band labels for tall bands, leader-
+    line labels in the right margin for the contracts alive on the last date, the total at the
+    end, and a small legend for everything.  Returns the number of labels placed."""
+    import matplotlib.dates as mdates
+    import numpy as np
+    n = len(dates)
+    x = np.arange(n)
+    pos = {d: i for i, d in enumerate(dates)}
+    labels, totals = band_labels(series, dates)
+    bottom = np.zeros(n)
+    top = max(totals) if totals else 1.0
+    ax.set_ylim(0, top * 1.12)
+    ax.set_xlim(-0.5, n - 0.5 + n * 0.09)
+    placed = 0
+    right = []                                 # (y anchor, label, colour) for the right-margin labels
+    for (c, rows), (mode, k, h, b) in zip(series, labels):
+        y = np.zeros(n)
+        for d, v in rows:
+            y[pos[d]] = v
+        colour = '#' + stack_color(c.year, c.month, last_year)
+        ax.bar(x, y, bottom=bottom, width=1.0, color=colour, linewidth=0, align='center', label=c.label)
+        bottom = bottom + y
+        if mode == 'last':
+            right.append((b + h / 2.0, c.label, colour))
+        elif mode == 'peak':
+            ax.text(k, b + h / 2.0, c.label, fontsize=6.5, color='#' + CHART_TEXT, ha='center', va='center',
+                    bbox=dict(boxstyle='square,pad=0.25', fc='white', ec=colour, lw=0.6, alpha=0.95))
+            placed += 1
+    ax.plot(x, totals, color='#' + TOTAL_COLOR, linewidth=0.9, label=TOTAL_LABEL)
+    # right-margin labels, bottom-up, each at least a step above the previous one
+    gap = top * 1.12 * 0.032
+    y_prev = -gap
+    x_text = n - 1 + n * 0.02
+    for y_anchor, label, colour in sorted(right):
+        y_text = max(y_anchor, y_prev + gap)
+        y_prev = y_text
+        ax.annotate(label, xy=(n - 0.5, y_anchor), xytext=(x_text, y_text), fontsize=6.5, color='#' + CHART_TEXT,
+                    ha='left', va='center',
+                    bbox=dict(boxstyle='square,pad=0.25', fc='white', ec=colour, lw=0.6),
+                    arrowprops=dict(arrowstyle='-', color=colour, lw=0.6, shrinkA=0, shrinkB=0))
+        placed += 1
+    last_total = float(totals[-1])
+    value = (format(int(round(last_total / 1e6)), ',') + 'm') if used == 'notional' else format(int(round(last_total)), ',')
+    ax.annotate('%s %s' % (TOTAL_LABEL, value), xy=(n - 1, last_total), xytext=(x_text, max(y_prev + gap, last_total + gap)),
+                fontsize=7.5, fontweight='bold', color='#' + TOTAL_COLOR, ha='left', va='center',
+                bbox=dict(boxstyle='square,pad=0.25', fc='white', ec='#' + TOTAL_COLOR, lw=0.6),
+                arrowprops=dict(arrowstyle='-', color='#' + TOTAL_COLOR, lw=0.6, shrinkA=0, shrinkB=0))
+    step = max(1, n // 12)                     # about 12 date ticks
+    ticks = list(range(0, n, step))
+    ax.set_xticks(ticks)
+    ax.set_xticklabels([dates[i].strftime('%b-%y') for i in ticks])
+    return placed + 1
+
+
+def show_charts(results, base_year=None, measure=None, kind=None):
     """Draw every product chart with matplotlib (inline in Jupyter). Returns the figure count."""
     try:
         import matplotlib.pyplot as plt
@@ -650,25 +1258,38 @@ def show_charts(results, base_year=None):
         return 0
     if base_year is None:
         base_year = min([c.year for _, cs in results for c in cs] or [START_YEAR])
+    measure = MEASURE if measure is None else measure
+    kind = CHART_KIND if kind is None else kind
     n_fig = 0
     for name, cs in results:
-        dates, found = align_product(cs)
-        if not found:
+        used, series, dates, note = product_series(cs, measure)
+        if not series:
             continue
-        fig, ax = plt.subplots(figsize=(13, 6.5))
-        for c in found:
-            ax.plot([d for d, _ in c.rows], [v for _, v in c.rows], linewidth=1.2,
-                    color='#' + series_color(c.year, c.month, base_year), label=c.label)
-        ax.set_title(CHART_TITLE.format(name=name), fontweight='bold')
-        ax.set_ylabel(Y_AXIS_TITLE)
-        ax.xaxis.set_major_formatter(mdates.DateFormatter('%b-%y'))
-        ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _pos: format(int(v), ',')))
-        ax.grid(True, axis='y', alpha=0.3)
+        fig, ax = plt.subplots(figsize=(14, 7.5))
+        if kind == 'stacked':
+            stacked_axes(ax, series, dates, max(c.year for c, _ in series), used)
+        else:
+            for c, rows in series:
+                ax.plot([d for d, _ in rows], [v for _, v in rows], linewidth=1.1,
+                        color='#' + series_color(c.year, c.month, base_year), label=c.label)
+        title = FALLBACK_TITLE if (measure == 'notional' and used == 'oi') else CHART_TITLE[used]
+        ax.set_title(title.format(name=name), fontweight='bold', color='#' + CHART_TEXT)
+        ax.set_ylabel(Y_AXIS_TITLE[used], color='#' + CHART_TEXT)
+        if kind != 'stacked':
+            ax.xaxis.set_major_formatter(mdates.DateFormatter('%b-%y'))
+        if used == 'notional':
+            ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _pos: format(int(round(v / 1e6)), ',') + 'm'))
+        else:
+            ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _pos: format(int(v), ',')))
+        ax.grid(False)
+        ax.tick_params(colors='#' + CHART_TEXT, labelsize=8)
         for side in ('top', 'right'):
             ax.spines[side].set_visible(False)
+        for side in ('left', 'bottom'):
+            ax.spines[side].set_color('#' + CHART_LINE)
         fig.autofmt_xdate()
-        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.14), ncol=12, fontsize=7,
-                  frameon=False, handlelength=1.6)
+        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.14), ncol=13, fontsize=6.5,
+                  frameon=False, handlelength=1.4, columnspacing=1.0)
         fig.tight_layout()
         plt.show()
         n_fig += 1
@@ -686,15 +1307,53 @@ def print_contract_table(results):
     print()
 
 
-def print_summary(results, bbg, out):
+def worked_example(contracts, ix):
+    """'check: Sep 26 on 2026-09-17: 312,000 x 250000 x 412.50 / 1352.10 = USD 23,801m' - the
+    latest notional print of the product, rebuilt from its parts so it can be checked by eye."""
+    latest = [c for c in contracts if c.notional]
+    if not latest:
+        return 'check: no notional computed'
+    c = max(latest, key=lambda c: (c.notional[-1][0], c.max_notional))
+    d, usd = c.notional[-1]
+    oi = dict(c.rows)[d]
+    i = bisect.bisect_right([x for x, _ in ix.index_rows], d) - 1
+    level = ix.index_rows[i][1]
+    if ix.fx_ticker:
+        k = bisect.bisect_right([x for x, _ in ix.fx_rows], d) - 1
+        rate = ix.fx_rows[k][1]
+        fx = ' %s %.4f (%s)' % ('x' if ix.fx_mode == 'multiply' else '/', rate, ix.fx_ticker.split()[0])
+    else:
+        fx = ' (USD-denominated, no FX)'
+    return 'check: %s on %s: %s x %g x %.2f%s = USD %sm' % (
+        c.label, d.isoformat(), format(int(oi), ','), c.multiplier, level, fx, format(int(round(usd / 1e6)), ','))
+
+
+def print_summary(results, bbg, out, indices=None, used=None):
     print()
     for name, cs in results:
         n_ok = sum(1 for c in cs if c.status == OK)
-        print('%-8s %2d/%d contracts with data' % (name, n_ok, len(cs)))
+        m, note = (used or {}).get(name, (None, ''))
+        shown = {'notional': 'USD notional', 'oi': 'OI in contracts'}.get(m, '')
+        print('%-8s %2d/%d contracts with data%s' % (name, n_ok, len(cs), (' - showing ' + shown) if shown else ''))
+        if note:
+            print('         %s' % note)
         for status in (NOT_FOUND, NO_DATA, NOT_PULLED):
             labels = [c.label for c in cs if c.status == status]
             if labels:
                 print('         %-11s %s' % (status + ':', ', '.join(labels)))
+        ix = (indices or {}).get(name)
+        if ix is not None:
+            mult = sorted({c.multiplier for c in cs if c.status == OK and c.multiplier is not None})
+            if ix.status == OK:
+                print('         notional:   OI x %s x %s (%d rows)%s   [contract ccy %s from %s]' % (
+                    ' / '.join('%g' % m for m in mult) if mult else '%s ?' % MULTIPLIER_FIELD, ix.ticker,
+                    len(ix.rows), (' / %s' % ix.fx_ticker) if ix.fx_ticker else ' (USD-denominated, no FX)',
+                    ix.fut_currency, ix.ccy_source))
+                if ix.note:
+                    print('         WARNING:    %s' % ix.note)
+                print('         %s' % worked_example(cs, ix))
+            else:
+                print('         index:      %s %s%s' % (ix.ticker, ix.status, (' - ' + ix.note) if ix.note else ''))
     for fid, text in sorted(bbg.field_errors.items()):
         secs = sorted(bbg.field_error_secs.get(fid, ()))
         if 'NOT_APPLICABLE' in text and secs and len(secs) < bbg.n_ref_securities:
@@ -717,7 +1376,7 @@ def print_summary(results, bbg, out):
 # ------------------------------------------------------------------- run ---
 def run(products=None, start_year=None, end_year=None, years_back_n=None, out=None,
         today=None, blpapi_module=None, tickers_only=None, show_charts_=None,
-        host=BBG_HOST, port=BBG_PORT):
+        host=BBG_HOST, port=BBG_PORT, skip_months=None, measure=None, kind=None):
     """Resolve every contract, pull its open interest, write the workbook; returns the path.
 
     Every argument defaults to the CONFIG value at the top of the file.
@@ -726,15 +1385,23 @@ def run(products=None, start_year=None, end_year=None, years_back_n=None, out=No
     start_year = START_YEAR if start_year is None else start_year
     end_year = END_YEAR if end_year is None else end_year
     years_back_n = YEARS_BACK if years_back_n is None else years_back_n
+    skip_months = SKIP_MONTHS if skip_months is None else skip_months
+    measure = MEASURE if measure is None else measure
+    if measure not in ('notional', 'oi'):
+        raise ValueError("measure must be 'notional' or 'oi', not %r" % (measure,))
+    kind = CHART_KIND if kind is None else kind
+    if kind not in ('stacked', 'lines'):
+        raise ValueError("kind must be 'stacked' or 'lines', not %r" % (kind,))
     tickers_only = TICKERS_ONLY if tickers_only is None else tickers_only
     if show_charts_ is None:
         show_charts_ = SHOW_CHARTS and in_ipython()
     today = today or dt.date.today()
     months = contract_months(start_year, end_year)
     out = output_path(out, today)
-    print('OI charts | %d products | contracts %s .. %s | %d years back per contract | today %s'
+    print('OI charts | %d products | contracts %s .. %s | %d years back per contract | '
+          'last %d month(s) before expiry dropped | %s | today %s'
           % (len(products), month_label(*months[0]), month_label(*months[-1]), years_back_n,
-             today.isoformat()))
+             skip_months, 'USD notional' if measure == 'notional' else 'OI in contracts', today.isoformat()))
     try:
         bbg = Bloomberg(host, port, blpapi_module=blpapi_module).connect()
     except Exception as e:
@@ -747,9 +1414,15 @@ def run(products=None, start_year=None, end_year=None, years_back_n=None, out=No
             results = resolve_contracts(bbg, products, months, today)
         except Exception as e:
             raise StepError('resolving the tickers', e)
+        indices = None
+        if measure == 'notional':
+            try:
+                indices = resolve_indices(bbg, results)
+            except Exception as e:
+                raise StepError('resolving the index tickers', e)
         if tickers_only:
             print_contract_table(results)
-            print_summary(results, bbg, None)
+            print_summary(results, bbg, None, indices)
             return ''
         for name, cs in results:
             n_ok = sum(1 for c in cs if c.status == OK)
@@ -765,31 +1438,46 @@ def run(products=None, start_year=None, end_year=None, years_back_n=None, out=No
                     c.status, c.note = NOT_PULLED, 'not requested - the pull stopped at %s' % pull_error[0].ticker
                     continue
                 try:
-                    fetch_open_interest(bbg, c, years_back_n, today)
+                    fetch_open_interest(bbg, c, years_back_n, today, skip_months)
                     print('.', end='', flush=True)
                 except Exception as e:                 # keep what we have, say where it stopped
                     pull_error = (c, e)
                     c.status, c.note = NOT_PULLED, 'the pull failed here: %s' % e
                     print(' x', flush=True)
+            ix = (indices or {}).get(name)
+            if ix is not None and ix.status == OK:
+                if pull_error is not None:
+                    ix.status, ix.note = NOT_PULLED, 'not requested - the pull stopped at %s' % pull_error[0].ticker
+                else:
+                    try:
+                        fetch_index(bbg, ix, cs, today)
+                        print(' + %s' % ix.ticker, end='', flush=True)
+                    except Exception as e:
+                        pull_error = (ix, e)
+                        ix.status, ix.note = NOT_PULLED, 'the pull failed here: %s' % e
+                        print(' x', flush=True)
+            if indices is not None:
+                compute_notional(cs, ix)
             if pull_error is None:
                 print()
     finally:
         bbg.close()
     try:
-        write_workbook(out, results, base_year=start_year)
+        used = write_workbook(out, results, base_year=start_year, indices=indices, measure=measure, kind=kind)
     except Exception as e:
         raise StepError('writing the workbook %s' % out, e)
-    print_summary(results, bbg, out)
+    print_summary(results, bbg, out, indices, used)
     if show_charts_:
         try:
-            show_charts(results, base_year=start_year)
+            show_charts(results, base_year=start_year, measure=measure, kind=kind)
         except Exception as e:
             raise StepError('drawing the charts (the workbook is already written: %s)' % out, e)
     if pull_error is not None:
         c, e = pull_error
         n_done = sum(1 for _, cs in results for x in cs if x.status in (OK, NO_DATA))
         n_all = n_done + sum(1 for _, cs in results for x in cs if x.status == NOT_PULLED)
-        raise StepError('pulling %s for %s (%s %s)' % (HIST_FIELD, c.ticker, c.product, c.label), e,
+        field = INDEX_FIELD if isinstance(c, IndexSeries) else HIST_FIELD
+        raise StepError('pulling %s for %s (%s %s)' % (field, c.ticker, c.product, c.label), e,
                         '\n    The workbook was still written with the %d of %d resolved contracts '
                         'pulled before that; the rest are marked %s in the %s tab:\n    %s'
                         % (n_done, n_all, NOT_PULLED, AUDIT_SHEET, out))
@@ -814,6 +1502,12 @@ def main(argv=None):
     p.add_argument('--end-year', type=int, default=END_YEAR, help='last contract year (default %(default)s)')
     p.add_argument('--years-back', type=int, default=YEARS_BACK,
                    help='history per contract, back from its last trade date (default %(default)s)')
+    p.add_argument('--skip-months', type=int, default=SKIP_MONTHS,
+                   help='drop the contract month and the months before it from each history (default %(default)s)')
+    p.add_argument('--measure', choices=('notional', 'oi'), default=MEASURE,
+                   help='what is plotted: USD notional or contracts (default %(default)s)')
+    p.add_argument('--chart', choices=('stacked', 'lines'), default=CHART_KIND,
+                   help='stacked columns with a total, or one line per contract (default %(default)s)')
     p.add_argument('--tickers-only', action='store_true', default=TICKERS_ONLY,
                    help='resolve and print the contract table, no history')
     p.add_argument('--asof', help='treat this date (YYYY-MM-DD) as today')
@@ -829,7 +1523,8 @@ def main(argv=None):
     today = dt.date.fromisoformat(a.asof) if a.asof else None
     try:
         run(start_year=a.start_year, end_year=a.end_year, years_back_n=a.years_back,
-            out=a.out, today=today, tickers_only=a.tickers_only, show_charts_=False)
+            out=a.out, today=today, tickers_only=a.tickers_only, show_charts_=False,
+            skip_months=a.skip_months, measure=a.measure, kind=a.chart)
         return 0
     except Exception as e:
         report_error(e)
@@ -852,6 +1547,7 @@ from contextlib import redirect_stdout            # noqa: E402
 
 TEST_TODAY = dt.date(2026, 9, 17)
 FAKE_PRODUCTS = [('HI', 'HSI'), ('XP', 'AS51'), ('QZ', 'SIMSCI')]
+FAKE_KRW_PRODUCTS = [('KM', 'KOSPI2')]        # a KRW product with a big multiplier, for the USD check
 QUARTERLY = (3, 6, 9, 12)
 HOLIDAYS = {(1, 1), (4, 4), (12, 25)}
 DAY = dt.timedelta(days=1)
@@ -1037,7 +1733,7 @@ def spec(y, m, **over):
 def build_universe():
     """ticker -> contract spec.  Which forms exist follows the real Bloomberg behaviour."""
     u = {}
-    for root, _ in FAKE_PRODUCTS:
+    for root, _ in FAKE_PRODUCTS + FAKE_KRW_PRODUCTS:
         for y, m in contract_months(2024, 2026):
             if root == 'XP' and m not in QUARTERLY:
                 continue                                            # (v)  quarterly-only product
@@ -1063,13 +1759,32 @@ UNIVERSE = build_universe()
 UNIVERSE['NFH4 Index'] = spec(2024, 3, not_future=True)
 UNIVERSE['NFH24 Index'] = spec(2024, 3)
 UNIVERSE['NFJ4 Index'] = spec(2024, 4, not_future=True)
+# the underlying indices (kind 'index', with a currency) and their USD rates (kind 'fx')
+FAKE_INDICES = {'HSI Index': 'HKD', 'AS51 Index': 'AUD', 'SIMSCI Index': 'SGD', 'KOSPI2 Index': 'KRW'}
+FAKE_FUT = {'HI': ('HKD', 50.0), 'XP': ('AUD', 25.0), 'QZ': ('USD', 100.0), 'NF': ('USD', 1.0),
+            'KM': ('USD', 250000.0)}   # root -> (CRNCY as Bloomberg reports it, FUT_VAL_PT); KM says USD like the real terminal
+FAKE_FX = ['USDHKD Curncy', 'USDAUD Curncy', 'USDSGD Curncy', 'USDKRW Curncy']
+FAKE_LEVELS = {'HSI Index': 20000.0, 'AS51 Index': 8000.0, 'SIMSCI Index': 350.0, 'KOSPI2 Index': 400.0,
+               'USDHKD Curncy': 7.8, 'USDAUD Curncy': 1.5, 'USDSGD Curncy': 1.35, 'USDKRW Curncy': 1350.0}
+for _t, _ccy in FAKE_INDICES.items():
+    UNIVERSE[_t] = dict(kind='index', currency=_ccy, year=2099, month=12,
+                        listing=dt.date(2015, 1, 1), last_trade=dt.date(2099, 12, 31))
+for _t in FAKE_FX:
+    UNIVERSE[_t] = dict(kind='fx', year=2099, month=12, listing=dt.date(2015, 1, 1), last_trade=dt.date(2099, 12, 31))
 TICKER_ID = {t: i for i, t in enumerate(sorted(UNIVERSE))}
 
 
 def fake_oi(ticker, d):
-    """Deterministic, distinct per ticker, rising with time - a misaligned cell cannot match."""
+    """Deterministic, distinct per ticker, rising with time - a misaligned cell cannot match.
+    FX rates are small numbers (7.7 .. 7.8) that move every day."""
     s = UNIVERSE[ticker]
-    return float(TICKER_ID[ticker] * 100000 + (d - s['listing']).days * 3 + 100)
+    days = (d - s['listing']).days
+    if s.get('kind') == 'fx':                         # realistic rate, moves every day
+        base = FAKE_LEVELS[ticker]
+        return base * (1 + (days % 10) * 0.001)
+    if s.get('kind') == 'index':                      # realistic level, drifts up, wobbles
+        return FAKE_LEVELS[ticker] * (1 + days / 5000.0 + (days % 7) * 0.002)
+    return float(TICKER_ID[ticker] * 100000 + days * 3 + 100)
 
 
 def is_session(d):
@@ -1146,13 +1861,20 @@ class FakeSession:
         if s is None:
             return security_error(sec)
         mon = MONTH_ABBR[s['month'] - 1]
-        if s.get('not_future'):                     # a ticker that exists but is not a future
+        if s.get('kind') in ('index', 'fx'):        # an index / FX rate: NAME, CRNCY, no futures fields
+            known = {'NAME': 'FAKE %s' % sec}
+            if s['kind'] == 'index':
+                known['CRNCY'] = s['currency']
+            refusal = ('NOT_APPLICABLE_TO_REF_DATA', 'Field not applicable to security')
+        elif s.get('not_future'):                   # a ticker that exists but is not a future
             known = {'NAME': 'FAKE %s SOMETHING ELSE' % sec.split()[0]}
             refusal = ('NOT_APPLICABLE_TO_REF_DATA', 'Field not applicable to security')
         else:
+            ccy, mult = FAKE_FUT[sec[:2]]
             known = {'LAST_TRADEABLE_DT': s['last_trade'],
                      'FUT_MONTH_YR': '%s %02d' % (mon.upper(), s['year'] % 100),
-                     'NAME': 'FAKE %s FUT %s%02d' % (sec.split()[0], mon, s['year'] % 100)}
+                     'NAME': 'FAKE %s FUT %s%02d' % (sec.split()[0], mon, s['year'] % 100),
+                     'CRNCY': ccy, 'FUT_VAL_PT': mult}
             refusal = ('BAD_FLD', 'Invalid Field')
         kids = [('security', sec),
                 ('fieldData', fake_complex('fieldData', [(k, known[k]) for k in wanted if k in known]))]
@@ -1265,6 +1987,60 @@ def test_helpers():
     check('labels', month_label(2024, 1) == 'Jan 24' and month_label(2026, 12) == 'Dec 26')
     check('years_back clips 29 Feb', years_back(dt.date(2024, 2, 29), 2) == dt.date(2022, 2, 28))
     check('years_back plain', years_back(dt.date(2026, 9, 28), 2) == dt.date(2024, 9, 28))
+    check('month_end', month_end(2024, 2) == dt.date(2024, 2, 29) and month_end(2025, 12) == dt.date(2025, 12, 31))
+    check('history_cutoff: Jun 24 -> 30 Apr 24, Jan 26 -> 30 Nov 25, 0 -> no cutoff',
+          history_cutoff(2024, 6, 2) == dt.date(2024, 4, 30) and history_cutoff(2026, 1, 2) == dt.date(2025, 11, 30)
+          and history_cutoff(2024, 6, 0) is None)
+    check('CONFIG: 3 years back, last 2 months dropped, USD notional; KOSPI2 / HSI / AS51 / TWSE not listed as USD contracts',
+          YEARS_BACK == 3 and SKIP_MONTHS == 2 and MEASURE == 'notional'
+          and not {'KOSPI2', 'HSI', 'HSCEI', 'HSTECH', 'AS51', 'TWSE'} & set(CONTRACT_CURRENCY))
+    check('as_float', as_float(50) == 50.0 and as_float('12.5') == 12.5 and as_float(None) is None
+          and as_float(float('nan')) is None and as_float(0) is None and as_float('n.a.') is None)
+    check('index ticker: <tab> Index by default, INDEX_TICKERS for the exceptions',
+          index_ticker('KOSPI2') == 'KOSPI2 Index' and index_ticker('FPO') == 'XIN9I Index')
+    try:
+        fx_for('')
+        empty = 'no error'
+    except ValueError as e:
+        empty = str(e)
+    check('fx_for: USDxxx / divide, USD -> no conversion, empty currency refused',
+          fx_for('KRW') == ('USDKRW Curncy', 'divide') and fx_for('USD') == ('', 'divide') and 'no currency' in empty, empty)
+    global FX_OVERRIDES
+    saved = FX_OVERRIDES
+    FX_OVERRIDES = {'AUD': ('AUDUSD Curncy', 'multiply')}
+    try:
+        ov = fx_for('aud')
+    finally:
+        FX_OVERRIDES = saved
+    check('fx_for: override', ov == ('AUDUSD Curncy', 'multiply'), ov)
+    d0, d1, d2, d3 = (dt.date(2024, 1, k) for k in (1, 2, 3, 4))
+    check('to_usd: divide, FX carried forward, days before the first FX print dropped, multiply, USD index as is',
+          to_usd([(d1, 100.0), (d2, 200.0)], [(d0, 2.0)]) == [(d1, 50.0), (d2, 100.0)]
+          and to_usd([(d0, 100.0), (d2, 200.0)], [(d1, 4.0), (d3, 8.0)]) == [(d2, 50.0)]
+          and to_usd([(d1, 100.0)], [(d1, 0.5)], 'multiply') == [(d1, 50.0)]
+          and to_usd([(d1, 100.0)], []) == [(d1, 100.0)])
+    ix = IndexSeries(product='KOSPI2', ticker='KOSPI2 Index', status=OK, rows=[(d1, 10.0), (d3, 20.0)])
+    c = Contract(product='KOSPI2', root='KM', year=2024, month=1, label='Jan 24', ticker_1='a', ticker_2='b',
+                 ticker='a', status=OK, multiplier=250000.0, rows=[(d0, 3.0), (d1, 4.0), (d2, 5.0), (d3, 6.0)])
+    compute_notional([c], ix)
+    check('compute_notional: OI x FUT_VAL_PT x index (carried forward), no notional before the first index print',
+          c.notional == [(d1, 4 * 250000 * 10.0), (d2, 5 * 250000 * 10.0), (d3, 6 * 250000 * 20.0)]
+          and '1 OI day(s) before the first index print' in c.note, (c.notional, c.note))
+    c.multiplier, c.note = None, ''
+    compute_notional([c], ix)
+    check('compute_notional: no multiplier -> no notional, note says so', c.notional == [] and 'FUT_VAL_PT missing' in c.note)
+    c.multiplier, c.note = 1.0, ''
+    compute_notional([c], IndexSeries(product='KOSPI2', ticker='KOSPI2 Index', note='KOSPI2 Index -> Unknown'))
+    check('compute_notional: index NOT FOUND -> no notional, note carries the reason', c.notional == [] and 'Unknown' in c.note)
+    used, series, dates, note = product_series([c], 'notional')
+    check('product_series: notional unavailable -> falls back to OI with a note',
+          used == 'oi' and series == [(c, c.rows)] and dates == [d0, d1, d2, d3] and note.startswith('USD notional unavailable'), note)
+    used, series, dates, note = product_series([c], 'oi')
+    check('product_series: oi', used == 'oi' and note == '')
+    check('product_currency: the most common CRNCY of the resolved contracts',
+          product_currency([Contract(product='x', root='x', year=1, month=1, label='', ticker_1='', ticker_2='',
+                                     status=OK, currency=k) for k in ('HKD', 'HKD', 'USD')]) == 'HKD'
+          and product_currency([]) == '')
     check('as_date datetime', as_date(dt.datetime(2026, 1, 28, 0, 0)) == dt.date(2026, 1, 28))
     check('as_date date', as_date(dt.date(2026, 1, 28)) == dt.date(2026, 1, 28))
     check('as_date text', as_date('2026-01-28T00:00:00') == dt.date(2026, 1, 28))
@@ -1344,7 +2120,9 @@ def test_resolution():
           all(isinstance(c.last_trade, dt.date) and (c.last_trade.year, c.last_trade.month) == (c.year, c.month)
               for c in ok))
     c = by[('HSI', 'Sep 25')]
-    check('FUT_MONTH_YR / NAME captured', c.fut_month_yr == 'SEP 25' and c.name.startswith('FAKE HIU25'), (c.fut_month_yr, c.name))
+    check('FUT_MONTH_YR / NAME / CRNCY / FUT_VAL_PT captured',
+          c.fut_month_yr == 'SEP 25' and c.name.startswith('FAKE HIU25') and c.currency == 'HKD' and c.multiplier == 50.0,
+          (c.fut_month_yr, c.name, c.currency, c.multiplier))
     counts = [(n, sum(c.status == OK for c in cs)) for n, cs in results]
     check('resolution counts HSI 36 / AS51 12 / SIMSCI 35', counts == [('HSI', 36), ('AS51', 12), ('SIMSCI', 35)], counts)
     return bbg, results
@@ -1353,7 +2131,7 @@ def test_resolution():
 def test_history(bbg, results):
     for _, cs in results:
         for c in cs:
-            fetch_open_interest(bbg, c, 2, TEST_TODAY)
+            fetch_open_interest(bbg, c, 3, TEST_TODAY, 2)
     by = {(n, c.label): c for n, cs in results for c in cs}
     hist = [e for e in bbg.session.log if e['op'] == 'HistoricalDataRequest']
     resolved = [c for _, cs in results for c in cs if c.status in (OK, NO_DATA)]
@@ -1368,11 +2146,16 @@ def test_history(bbg, results):
     bad = []
     for e in hist:
         c = by_ticker[e['securities'][0]]
-        exp = (years_back(c.last_trade, 2).strftime('%Y%m%d'), min(c.last_trade, TEST_TODAY).strftime('%Y%m%d'))
+        exp = (years_back(c.last_trade, 3).strftime('%Y%m%d'),
+               min(c.last_trade, TEST_TODAY, history_cutoff(c.year, c.month, 2)).strftime('%Y%m%d'))
         got = (e['settings']['startDate'], e['settings']['endDate'])
         if got != exp:
             bad.append((c.ticker, got, exp))
-    check('request window = [last trade - 2y, min(last trade, today)] as YYYYMMDD', not bad, bad[:3])
+    check('request window = [last trade - 3y, min(last trade, today, end of month-2)] as YYYYMMDD', not bad, bad[:3])
+    c = by[('HSI', 'Jun 24')]
+    check('Jun 24: no May 24 or Jun 24 rows, last row in Apr 24',
+          c.req_end == dt.date(2024, 4, 30) and c.rows[-1][0] == last_session_on_or_before(dt.date(2024, 4, 30))
+          and all((d.year, d.month) not in ((2024, 5), (2024, 6)) for d, _ in c.rows), (c.req_end, c.rows[-1]))
     c = by[('SIMSCI', 'Oct 26')]
     check('(vi)  resolves but no prints -> NO DATA, no rows, window kept for the audit',
           c.status == NO_DATA and c.rows == [] and c.req_start is not None
@@ -1393,17 +2176,26 @@ def test_history(bbg, results):
           c.rows[0][0] == first_session_on_or_after(UNIVERSE[c.ticker]['listing'])
           and (c.rows[-1][0] - c.rows[0][0]).days < 100, (c.rows[0], c.rows[-1]))
     c = by[('HSI', 'Dec 25')]
-    check('Dec contract listed 3y out: clipped to the 2-year window',
-          c.rows[0][0] == first_session_on_or_after(c.req_start) and c.req_start == years_back(c.last_trade, 2),
+    check('Dec contract listed 3y out: starts at the 3-year window (listing is ~3y out, so on or after)',
+          c.rows[0][0] >= first_session_on_or_after(c.req_start) and c.req_start == years_back(c.last_trade, 3),
           (c.rows[0], c.req_start))
     c = by[('HSI', 'Jun 25')]
-    check('expired contract: ends on its last trade date', c.rows[-1][0] == last_session_on_or_before(c.last_trade))
+    check('expired contract: ends at the end of the month two before expiry (30 Apr 25)',
+          c.req_end == dt.date(2025, 4, 30) and c.rows[-1][0] == last_session_on_or_before(dt.date(2025, 4, 30)))
     c = by[('HSI', 'Dec 26')]
-    check('live contract: ends today', c.rows[-1][0] == last_session_on_or_before(TEST_TODAY))
+    check('live contract whose cutoff is after today: ends today', c.rows[-1][0] == last_session_on_or_before(TEST_TODAY))
+    c = by[('HSI', 'Oct 26')]
+    check('live contract whose cutoff is before today: ends 31 Aug 26',
+          c.req_end == dt.date(2026, 8, 31) and c.rows[-1][0] == last_session_on_or_before(dt.date(2026, 8, 31)))
+    c0 = Contract(**{k: getattr(by[('HSI', 'Jun 25')], k) for k in
+                        ('product', 'root', 'year', 'month', 'label', 'ticker_1', 'ticker_2', 'ticker', 'status', 'last_trade')})
+    fetch_open_interest(bbg, c0, 3, TEST_TODAY, 0)
+    check('--skip-months 0: history runs to the last trade date, as before',
+          c0.req_end == c0.last_trade and c0.rows[-1][0] == last_session_on_or_before(c0.last_trade))
     c3 = Contract(**{k: getattr(by[('HSI', 'Dec 25')], k) for k in
                         ('product', 'root', 'year', 'month', 'label', 'ticker_1', 'ticker_2', 'ticker', 'status', 'last_trade')})
-    fetch_open_interest(bbg, c3, 3, TEST_TODAY)
-    check('--years-back 3 widens the window', c3.req_start == years_back(c3.last_trade, 3)
+    fetch_open_interest(bbg, c3, 4, TEST_TODAY)
+    check('--years-back 4 widens the window', c3.req_start == years_back(c3.last_trade, 4)
           and bbg.session.log[-1]['settings']['startDate'] == c3.req_start.strftime('%Y%m%d'))
     return results
 
@@ -1412,18 +2204,20 @@ def test_workbook(results):
     by = {(n, c.label): c for n, cs in results for c in cs}
     tmp = tempfile.mkdtemp()
     path = os.path.join(tmp, 'test_OI.xlsx')
-    write_workbook(path, results)
+    used = write_workbook(path, results, measure='oi', kind='lines')
     wb = load_workbook(path)
     check('tabs: products in order, then Contracts', wb.sheetnames == ['HSI', 'AS51', 'SIMSCI', AUDIT_SHEET], wb.sheetnames)
+    check('write_workbook returns the measure used per tab', used == {n: ('oi', '') for n, _ in results}, used)
     with zipfile.ZipFile(path) as z:
         chart_xml = {n: z.read(n) for n in z.namelist() if n.startswith('xl/charts/chart')}
         sheet_xml = {n: z.read(n) for n in z.namelist() if n.startswith('xl/worksheets/sheet')}
     check('no empty <v></v> cells anywhere (the Excel "repair" trigger)',
           all(b'<v></v>' not in x and b'<v/>' not in x for x in sheet_xml.values()))
     check('one chart part per product tab', len(chart_xml) == 3, len(chart_xml))
-    check('chart XML: gaps, date axis, no markers, straight lines',
+    check('chart XML: gaps, date axis, no markers, straight lines, no gridlines, grey axes, no border',
           all(b'dispBlanksAs val="gap"' in x and b'<dateAx>' in x and b'symbol val="none"' in x
-              and b'smooth val="0"' in x for x in chart_xml.values()))
+              and b'smooth val="0"' in x and b'majorGridlines' not in x and x.count(b'noFill') >= 2
+              and x.count(b'srgbClr val="BFBFBF"') == 2 for x in chart_xml.values()))
     for name, cs in results:
         ws = wb[name]
         dates, found = align_product(cs)
@@ -1432,7 +2226,12 @@ def test_workbook(results):
               [ws.cell(1, j).value for j in range(2, n + 2)] == [c.ticker for c in found]
               and [ws.cell(2, j).value for j in range(2, n + 2)] == [c.label for c in found]
               and ws['A1'].value == 'Ticker' and ws['A2'].value == 'Date')
-        check('%s: no column beyond the %d found contracts' % (name, n), ws.max_column == n + 1, ws.max_column)
+        check('%s: Total column right after the %d found contracts, nothing beyond' % (name, n),
+              ws.max_column == n + 2 and ws.cell(1, n + 2).value == TOTAL_LABEL and ws.cell(2, n + 2).value == TOTAL_LABEL,
+              ws.max_column)
+        sums_ok = all(abs((ws.cell(i, n + 2).value or 0) - sum((ws.cell(i, j).value or 0) for j in range(2, n + 2))) < 1e-6
+                      for i in range(3, N + 3))
+        check('%s: Total = sum of the contracts on each date' % name, sums_ok)
         col_a = [ws.cell(i, 1).value for i in range(3, N + 3)]
         col_a = [v.date() if isinstance(v, dt.datetime) else v for v in col_a]
         check('%s: column A = sorted union of dates, nothing below' % name,
@@ -1462,8 +2261,10 @@ def test_workbook(results):
               and ch.y_axis.axId == 100 and ch.y_axis.crossAx == 500)
         title = ch.title.tx.rich.p[0].r[0].t
         ytitle = ch.y_axis.title.tx.rich.p[0].r[0].t
-        check('%s: chart title and OI axis title' % name,
-              title == '%s Futures Open Interest' % name and ytitle == 'OI', (title, ytitle))
+        check('%s: chart title and OI axis title, contracts number format' % name,
+              title == CHART_TITLE['oi'].format(name=name) and ytitle == Y_AXIS_TITLE['oi']
+              and ch.y_axis.number_format.formatCode == Y_NUMBER_FORMAT['oi'] and ch.y_axis.majorGridlines is None
+              and ch.x_axis.txPr is not None and ch.legend.txPr is not None, (title, ytitle))
         check('%s: legend at the bottom' % name, ch.legend is not None and ch.legend.position == 'b')
         ok_series, why = True, ''
         for k, s in enumerate(ch.series):
@@ -1479,8 +2280,9 @@ def test_workbook(results):
         check('%s: series titles from row 2, values rows 3..%d, dates as categories, year/month colours' % (name, N + 2),
               ok_series, why)
         check('%s: chart anchored one column right of the data' % name,
-              ch.anchor._from.col == n + 2 and ch.anchor._from.row == 1, (ch.anchor._from.col, ch.anchor._from.row))
-        check('%s: chart 32 x 16 cm' % name, ch.anchor.ext.cx == 11520000 and ch.anchor.ext.cy == 5760000)
+              ch.anchor._from.col == n + 3 and ch.anchor._from.row == 1, (ch.anchor._from.col, ch.anchor._from.row))
+        check('%s: chart 34 x 17 cm' % name, ch.anchor.ext.cx == 12240000 and ch.anchor.ext.cy == 6120000,
+              (ch.anchor.ext.cx, ch.anchor.ext.cy))
     ws = wb[AUDIT_SHEET]
     total = sum(len(cs) for _, cs in results)
     check('Contracts: header + one row per contract', ws.max_row == total + 1 and [c.value for c in ws[1]] == AUDIT_COLUMNS,
@@ -1488,7 +2290,7 @@ def test_workbook(results):
     rows = {(r[0], r[1]): r for r in ws.iter_rows(min_row=2, values_only=True)}
     r = rows[('SIMSCI', 'Feb 26')]
     check('Contracts: NOT FOUND row - no ticker, no window, no rows, a note',
-          r[5] == NOT_FOUND and r[4] is None and r[9] is None and r[13] is None and r[16], r)
+          r[5] == NOT_FOUND and r[4] is None and r[9] is None and r[13] is None and r[16] is None and r[20], r)
     r = rows[('SIMSCI', 'Oct 26')]
     check('Contracts: NO DATA row - ticker, window, Rows == 0',
           r[5] == NO_DATA and r[4] == 'QZV6 Index' and r[9] is not None and r[13] == 0, r)
@@ -1497,18 +2299,400 @@ def test_workbook(results):
           r[2] == 'HIU5 Index' and r[3] == 'HIU25 Index' and r[4] == c.ticker and r[5] == OK
           and r[6].date() == c.last_trade and r[7] == 'SEP 25' and r[9].date() == c.req_start
           and r[10].date() == c.req_end and r[11].date() == c.first_dt and r[12].date() == c.last_dt
-          and r[13] == len(c.rows) and r[14] == c.last_oi and r[15] == c.max_oi, r)
+          and r[13] == len(c.rows) and r[14] == c.last_oi and r[15] == c.max_oi
+          and r[16] == 50.0 and r[17] == 'HKD' and r[18] is None and r[19] is None, r)
     check('Contracts: frozen header', ws.freeze_panes == 'A2')
     empty = [Contract(product='EMPTY', root='ZZ', year=2024, month=m, label=month_label(2024, m),
                         ticker_1='a', ticker_2='b') for m in range(1, 13)]
     p2 = os.path.join(tmp, 'empty.xlsx')
-    write_workbook(p2, [('EMPTY', empty)])
+    write_workbook(p2, [('EMPTY', empty)], measure='oi', kind='lines')
     wb2 = load_workbook(p2)
     check('product with nothing found: note in the tab, no chart, no crash',
           wb2.sheetnames == ['EMPTY', AUDIT_SHEET] and len(wb2['EMPTY']._charts) == 0
           and 'No contract' in str(wb2['EMPTY']['B1'].value))
     for p in (path, p2):
         os.remove(p)
+    os.rmdir(tmp)
+
+
+def test_notional():
+    global CONTRACT_CURRENCY
+    saved_ccy = CONTRACT_CURRENCY
+    CONTRACT_CURRENCY = {'SIMSCI': 'USD'}          # the fixture's one USD-denominated contract
+    try:
+        _test_notional()
+    finally:
+        CONTRACT_CURRENCY = saved_ccy
+
+
+def _test_notional():
+    global CONTRACT_CURRENCY
+    bbg = Bloomberg(blpapi_module=FakeAPI).connect()
+    results = resolve_contracts(bbg, FAKE_PRODUCTS, contract_months(2024, 2026), TEST_TODAY)
+    for _, cs in results:
+        for c in cs:
+            fetch_open_interest(bbg, c, 3, TEST_TODAY)
+    n0 = len(bbg.session.log)
+    indices = resolve_indices(bbg, results)
+    refs = [e for e in bbg.session.log[n0:] if e['op'] == 'ReferenceDataRequest']
+    check('indices: one per product in order, one reference pass for CRNCY / NAME',
+          list(indices) == ['HSI', 'AS51', 'SIMSCI'] and len(refs) == 1 and refs[0]['fields'] == INDEX_REF_FIELDS
+          and sorted(refs[0]['securities']) == ['AS51 Index', 'HSI Index', 'SIMSCI Index'], refs)
+    ix = indices['HSI']
+    check('index resolved: contract ccy = the index CRNCY (HKD), FX pair from it, Bloomberg futures CRNCY agrees, OK',
+          ix.status == OK and ix.currency == 'HKD' and ix.fut_currency == 'HKD' and ix.ccy_source == 'index CRNCY'
+          and ix.bbg_fut_currency == 'HKD' and ix.fx_ticker == 'USDHKD Curncy' and ix.fx_mode == 'divide'
+          and ix.name == 'FAKE HSI Index' and ix.note == '', ix)
+    qz = indices['SIMSCI']
+    check('CONTRACT_CURRENCY = USD: no FX, index used in points, source recorded',
+          qz.status == OK and qz.currency == 'SGD' and qz.fut_currency == 'USD' and qz.ccy_source == 'CONTRACT_CURRENCY'
+          and qz.fx_ticker == '', qz)
+    kr = resolve_indices(bbg, resolve_contracts(bbg, FAKE_KRW_PRODUCTS, contract_months(2025, 2025), TEST_TODAY))['KOSPI2']
+    check('KOSPI2: futures CRNCY says USD (as on the real terminal) but the index says KRW -> KRW used, USDKRW, warning',
+          kr.status == OK and kr.bbg_fut_currency == 'USD' and kr.fut_currency == 'KRW' and kr.ccy_source == 'index CRNCY'
+          and kr.fx_ticker == 'USDKRW Curncy' and 'says USD - ignored, KRW used' in kr.note, kr)
+    nc = IndexSeries(product='X', ticker='X Index')
+    saved = CONTRACT_CURRENCY
+    try:
+        CONTRACT_CURRENCY = {}
+        ref_none = {'X Index': {'NAME': 'x'}}
+        bbg2 = Bloomberg(blpapi_module=FakeAPI).connect()
+        bbg2.ref = lambda secs, fields: ref_none
+        nc = resolve_indices(bbg2, [('X', [])])['X']
+    finally:
+        CONTRACT_CURRENCY = saved
+    check('index without CRNCY and no CONTRACT_CURRENCY entry -> NOT FOUND, never silently unconverted',
+          nc.status == NOT_FOUND and 'contract currency is unknown' in nc.note, nc.note)
+    check('no field errors on the index pass', not bbg.field_errors, bbg.field_errors)
+    bad = resolve_indices(bbg, [('NOPE', [])])['NOPE']
+    check('unknown index -> NOT FOUND with the reason', bad.status == NOT_FOUND and 'Unknown/Invalid' in bad.note, bad.note)
+    for name, cs in results:
+        fetch_index(bbg, indices[name], cs, TEST_TODAY)
+        compute_notional(cs, indices[name])
+    hist = [e for e in bbg.session.log[n0:] if e['op'] == 'HistoricalDataRequest']
+    check('PX_LAST of the index, then of the FX rate (started 10 days earlier); none for the USD future',
+          len(hist) == 5 and [e['securities'][0] for e in hist] == ['HSI Index', 'USDHKD Curncy', 'AS51 Index',
+                                                                     'USDAUD Curncy', 'SIMSCI Index']
+          and all(e['fields'] == [INDEX_FIELD] for e in hist)
+          and hist[0]['settings']['startDate'] == ix.req_start.strftime('%Y%m%d')
+          and hist[1]['settings']['startDate'] == (ix.req_start - dt.timedelta(days=10)).strftime('%Y%m%d')
+          and hist[0]['settings']['endDate'] == hist[1]['settings']['endDate'] == ix.req_end.strftime('%Y%m%d'),
+          [(e['securities'], e['settings']['startDate'], e['settings']['endDate']) for e in hist])
+    cs = results[0][1]
+    check('index window = earliest contract start .. latest contract end, capped at today',
+          ix.req_start == min(c.req_start for c in cs if c.rows)
+          and ix.req_end == min(max(c.req_end for c in cs if c.rows), TEST_TODAY) == TEST_TODAY, (ix.req_start, ix.req_end))
+    fx = dict(ix.fx_rows)
+    check('ix.rows: one per index day, points / same-day FX where the rate printed that day, sorted',
+          ix.status == OK and len(ix.rows) == len(ix.index_rows) > 0 and ix.note == ''
+          and all(abs(v - lvl / fx[d]) < 1e-9 for (d, v), (_, lvl) in zip(ix.rows, ix.index_rows) if d in fx)
+          and all(a[0] < b[0] for a, b in zip(ix.rows, ix.rows[1:])), (len(ix.rows), len(ix.index_rows), ix.note))
+    check('USD future: ix.rows == index points', qz.rows == qz.index_rows and qz.fx_rows == [])
+    ok = [c for c in cs if c.status == OK and c.rows]
+    lk = dict(ix.rows)
+    check('HSI notional: every OI day, OI x 50 x (HSI / USDHKD) of that day, sorted',
+          all(len(c.notional) == len(c.rows) and c.note in ('', 'both forms valid')
+              and all(abs(nv - oi * 50.0 * lk[d]) < 1e-6 for (d, oi), (_, nv) in zip(c.rows, c.notional))
+              for c in ok), [(c.label, len(c.rows), len(c.notional), c.note) for c in ok if len(c.notional) != len(c.rows)][:3])
+    qz_ok = [c for c in results[2][1] if c.status == OK and c.rows]
+    lk = dict(qz.rows)
+    check('SIMSCI notional: OI x 100 x index points (no FX)',
+          all(all(abs(nv - oi * 100.0 * lk[d]) < 1e-6 for (d, oi), (_, nv) in zip(c.rows, c.notional)) for c in qz_ok))
+    tmp = tempfile.mkdtemp()
+    path = os.path.join(tmp, 'notional.xlsx')
+    used = write_workbook(path, results, indices=indices)
+    wb = load_workbook(path)
+    check('tabs: products, Contracts, Indices; every tab shows the notional',
+          wb.sheetnames == ['HSI', 'AS51', 'SIMSCI', AUDIT_SHEET, INDEX_SHEET] and used == {n: ('notional', '') for n, _ in results},
+          (wb.sheetnames, used))
+    with zipfile.ZipFile(path) as z:
+        chart_xml = {n: z.read(n) for n in z.namelist() if n.startswith('xl/charts/chart')}
+    for name, cs in results:
+        ws = wb[name]
+        _, series, dates, _ = product_series(cs, 'notional')
+        n, N = len(series), len(dates)
+        check('%s: one column per contract + Total, dates = union of notional dates' % name,
+              ws.max_column == n + 2 and ws.max_row == N + 2
+              and [ws.cell(1, j).value for j in range(2, n + 2)] == [c.ticker for c, _ in series], (ws.max_column, n))
+        good, why = True, ''
+        for j, (c, rows) in enumerate(series, start=2):
+            lk = dict(rows)
+            for i, d in enumerate(dates, start=3):
+                v, exp = ws.cell(i, j).value, lk.get(d)
+                if (exp is None) != (v is None) or (exp is not None and abs(v - exp) > 1e-9 * abs(exp)):
+                    good, why = False, (c.ticker, d, v, exp)
+                    break
+            if not good:
+                break
+        check('%s: every cell is that contract\'s USD notional of that day, blank elsewhere' % name, good, why)
+        ch = ws._charts[0]
+        title = ch.title.tx.rich.p[0].r[0].t
+        check('%s: stacked chart + total line, notional title, USD m axis format, no gridlines' % name,
+              isinstance(ch, BarChart) and len(ch._charts) == 2 and len(ch.series) == n
+              and title == CHART_TITLE['notional'].format(name=name)
+              and ch.y_axis.title.tx.rich.p[0].r[0].t == Y_AXIS_TITLE['notional']
+              and ch.y_axis.number_format.formatCode == Y_NUMBER_FORMAT['notional'] and ch.y_axis.majorGridlines is None
+              and ch.anchor._from.col == n + 3, (title, ch.anchor._from.col))
+    check('chart XML: one bar chart + one line chart on one category + one value axis, no gridlines, USD m format',
+          all(x.count(b'<barChart>') == 1 and x.count(b'<lineChart>') == 1 and x.count(b'<catAx>') == 1
+              and x.count(b'<valAx>') == 1 and b'majorGridlines' not in x and b'#,##0,,&quot;m&quot;' in x
+              for x in chart_xml.values()) and len(chart_xml) == 3)
+    ws = wb[AUDIT_SHEET]
+    rows = {(r[0], r[1]): r for r in ws.iter_rows(min_row=2, values_only=True)}
+    c, r = [x for x in results[0][1] if x.label == 'Sep 25'][0], rows[('HSI', 'Sep 25')]
+    check('Contracts tab: multiplier, ccy, last and max notional',
+          r[16] == 50.0 and r[17] == 'HKD' and abs(r[18] - c.last_notional) < 1e-6 and abs(r[19] - c.max_notional) < 1e-6, r[16:20])
+    ws = wb[INDEX_SHEET]
+    rows = {r[0]: r for r in ws.iter_rows(min_row=2, values_only=True)}
+    r, ix = rows['HSI'], indices['HSI']
+    check('Indices tab: header + one row per product, HSI row complete',
+          [c.value for c in ws[1]] == INDEX_COLUMNS and ws.max_row == 4 and ws.freeze_panes == 'A2'
+          and r[1] == 'HSI Index' and r[3] == 'HKD' and r[4] == 'HKD' and r[5] == 'index CRNCY' and r[6] == 'HKD'
+          and r[7] == 'USDHKD Curncy' and r[8] == OK
+          and r[9].date() == ix.req_start and r[10].date() == ix.req_end and r[11].date() == ix.first_dt
+          and r[12].date() == ix.last_dt and r[13] == len(ix.rows) and abs(r[14] - ix.last_index) < 1e-6
+          and abs(r[15] - ix.last_fx) < 1e-9 and abs(r[16] - ix.last_usd) < 1e-9, r)
+    r = rows['SIMSCI']
+    check('Indices tab: USD-denominated row - source CONTRACT_CURRENCY, no FX ticker / rate, index used as is',
+          r[4] == 'USD' and r[5] == 'CONTRACT_CURRENCY' and r[7] is None and r[15] is None and r[16] == r[14], r)
+    # one product without an index: that tab falls back to OI and says so
+    indices2 = dict(indices)
+    indices2['HSI'] = IndexSeries(product='HSI', ticker='XX Index', note='XX Index -> Unknown/Invalid Security')
+    compute_notional(results[0][1], indices2['HSI'])
+    path3 = os.path.join(tmp, 'partial.xlsx')
+    used = write_workbook(path3, results, indices=indices2)
+    wb3 = load_workbook(path3)
+    t = wb3['HSI']._charts[0].title.tx.rich.p[0].r[0].t
+    check('index NOT FOUND for one product: OI shown there with the fallback title, notional elsewhere',
+          used['HSI'][0] == 'oi' and 'Unknown/Invalid' in used['HSI'][1] and used['AS51'] == ('notional', '')
+          and t == FALLBACK_TITLE.format(name='HSI') and wb3['HSI'].max_column == 38
+          and wb3['HSI']['B3'].value == dict(results[0][1][0].rows).get(wb3['HSI']['A3'].value.date()), (used, t))
+    compute_notional(results[0][1], indices['HSI'])          # restore
+    # a contract without a multiplier is left out of a notional tab, with a note
+    c = results[0][1][5]
+    saved = c.multiplier, c.notional, c.note
+    c.multiplier, c.note = None, ''
+    compute_notional(results[0][1], indices['HSI'])
+    used, series, _, note = product_series(results[0][1], 'notional')
+    check('contract without FUT_VAL_PT: left out of the notional tab, named in the note',
+          used == 'notional' and len(series) == 35 and note == 'no notional for %s' % c.label, note)
+    c.multiplier, c.notional, c.note = saved
+    compute_notional(results[0][1], indices['HSI'])
+    # run() end to end: notional by default, plain OI on request
+    FakeSession.instances.clear()
+    path4 = os.path.join(tmp, 'run.xlsx')
+    out, text = quiet(run, products=FAKE_PRODUCTS, today=TEST_TODAY, blpapi_module=FakeAPI, out=path4)
+    sess = FakeSession.instances[-1]
+    wb4 = load_workbook(path4)
+    check('run(): USD notional by default - index pulled per product, summary explains the formula, Indices tab',
+          out == path4 and 'USD notional' in text and 'notional:   OI x 50 x HSI Index' in text and '/ USDHKD Curncy' in text
+          and 'OI x 100 x SIMSCI Index' in text and '(USD-denominated, no FX)' in text and 'showing USD notional' in text
+          and '[contract ccy HKD from index CRNCY]' in text and '[contract ccy USD from CONTRACT_CURRENCY]' in text
+          and INDEX_SHEET in wb4.sheetnames
+          and wb4['HSI']._charts[0].title.tx.rich.p[0].r[0].t == CHART_TITLE['notional'].format(name='HSI')
+          and sum(1 for e in sess.log if e['op'] == 'HistoricalDataRequest') == 83 + 5, text[-900:])
+    out, text = quiet(run, products=FAKE_PRODUCTS, today=TEST_TODAY, blpapi_module=FakeAPI, out=path4, measure='oi')
+    wb5 = load_workbook(path4)
+    check('run(measure="oi") / --measure oi: contracts, no index requests, no Indices tab',
+          INDEX_SHEET not in wb5.sheetnames and 'showing OI in contracts' in text and 'notional:' not in text
+          and wb5['HSI']._charts[0].title.tx.rich.p[0].r[0].t == CHART_TITLE['oi'].format(name='HSI'))
+    try:
+        run(products=FAKE_PRODUCTS, today=TEST_TODAY, blpapi_module=FakeAPI, out=path4, measure='usd')
+        raised = ''
+    except ValueError as e:
+        raised = str(e)
+    check('run(measure=?) is refused', "'notional' or 'oi'" in raised, raised)
+    # ---- the USD check, on a KRW product with a realistic multiplier: KOSPI2 ----
+    FakeSession.instances.clear()
+    path5 = os.path.join(tmp, 'krw.xlsx')
+    out, text = quiet(run, products=FAKE_KRW_PRODUCTS, today=TEST_TODAY, blpapi_module=FakeAPI, out=path5)
+    sess = FakeSession.instances[-1]
+    hist = [e for e in sess.log if e['op'] == 'HistoricalDataRequest']
+    wb6 = load_workbook(path5)
+    ws = wb6['KOSPI2']
+    check('KOSPI2: KRW from the index, USDKRW pulled after the contracts, Bloomberg futures CRNCY=USD flagged and ignored',
+          [e['securities'][0] for e in hist[-2:]] == ['KOSPI2 Index', 'USDKRW Curncy']
+          and 'notional:   OI x 250000 x KOSPI2 Index' in text and '/ USDKRW Curncy' in text
+          and '[contract ccy KRW from index CRNCY]' in text and 'WARNING:    Bloomberg CRNCY on the futures says USD' in text
+          and 'no FX' not in text, text[-700:])
+    # rebuild the expected value of one cell by hand from the fake prints
+    i, j = 3, 2                                        # first date row, first contract column
+    while ws.cell(i, j).value is None:
+        i += 1
+    d = ws.cell(i, 1).value.date()
+    tk = ws.cell(1, j).value
+    oi = fake_oi(tk, d)
+    fx_d = d
+    while not is_session(fx_d):
+        fx_d -= DAY
+    by_hand = oi * 250000.0 * fake_oi('KOSPI2 Index', d) / fake_oi('USDKRW Curncy', fx_d)
+    krw = oi * 250000.0 * fake_oi('KOSPI2 Index', d)
+    cell = ws.cell(i, j).value
+    check('KOSPI2 cell = OI x 250,000 x KOSPI2 / USDKRW, by hand, and is ~1,350x smaller than the KRW amount',
+          abs(cell - by_hand) < 1e-6 * by_hand and 1300 < krw / cell < 1400, (tk, d, oi, cell, by_hand, krw))
+    ws = wb6[INDEX_SHEET]
+    r = [x for x in ws.iter_rows(min_row=2, values_only=True)][0]
+    check('KOSPI2 Indices row: index KRW, used KRW, Bloomberg futures USD, USDKRW Curncy, last index in USD = index / FX',
+          r[3] == 'KRW' and r[4] == 'KRW' and r[5] == 'index CRNCY' and r[6] == 'USD' and r[7] == 'USDKRW Curncy'
+          and r[8] == OK and 380 < r[14] < 900 and 1300 < r[15] < 1400 and abs(r[16] - r[14] / r[15]) < 1e-9
+          and 'says USD - ignored' in r[17], r)
+    check('KOSPI2 summary shows the worked example for the last day',
+          'check:' in text and 'USDKRW' in text.split('check:')[1].split('\n')[0], text[-600:])
+    if importlib.util.find_spec('matplotlib') is not None:
+        import warnings
+        import matplotlib.pyplot as plt
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            n_fig, _ = quiet(show_charts, results, kind='lines')
+        fig = plt.figure(plt.get_fignums()[0])
+        ax = fig.axes[0]
+        ylab, title, n_lines, ticks = ax.get_ylabel(), ax.get_title(), len(ax.get_lines()), ax.get_yticklabels()
+        grid = any(l.get_visible() for l in ax.get_ygridlines())
+        plt.close('all')
+        check('show_charts (lines): notional title and axis, USD m tick labels, no gridlines, one line per contract',
+              n_fig == 3 and len(fig.axes) == 1 and ylab == Y_AXIS_TITLE['notional']
+              and title == CHART_TITLE['notional'].format(name='HSI') and n_lines == 36 and not grid,
+              (n_fig, ylab, title, n_lines, grid))
+    for f in os.listdir(tmp):
+        os.remove(os.path.join(tmp, f))
+    os.rmdir(tmp)
+
+
+def test_stacked():
+    check('CONFIG: stacked columns by default', CHART_KIND == 'stacked')
+    cols = [stack_color(2026, m, 2026) for m in range(1, 13)]
+    check('stack_color: the 12 configured month colours for the newest year, older years faded to white, capped',
+          cols == [MONTH_COLORS[m].lower() for m in range(1, 13)] and len(set(cols)) == 12
+          and stack_color(2025, 12, 2026) == '506278' and stack_color(2024, 12, 2026) == '828e9e'
+          and stack_color(2020, 12, 2026) == stack_color(2024, 12, 2026), cols)
+    def sat(hexcol):
+        r, g, b = (int(hexcol[i:i + 2], 16) / 255.0 for i in (0, 2, 4))
+        mx, mn = max(r, g, b), min(r, g, b)
+        return 0 if mx == 0 else (mx - mn) / mx
+    check('MONTH_COLORS: no colour is fully saturated or neon (max HSV saturation 0.75), no pure primaries',
+          all(sat(c) <= 0.75 for c in MONTH_COLORS.values()), {m: round(sat(c), 2) for m, c in MONTH_COLORS.items()})
+    bbg = Bloomberg(blpapi_module=FakeAPI).connect()
+    results = resolve_contracts(bbg, FAKE_PRODUCTS, contract_months(2024, 2026), TEST_TODAY)
+    for _, cs in results:
+        for c in cs:
+            fetch_open_interest(bbg, c, 3, TEST_TODAY)
+    tmp = tempfile.mkdtemp()
+    path = os.path.join(tmp, 'stacked.xlsx')
+    write_workbook(path, results, measure='oi')            # default kind
+    wb = load_workbook(path)
+    with zipfile.ZipFile(path) as z:
+        chart_xml = {n: z.read(n) for n in z.namelist() if n.startswith('xl/charts/chart')}
+    for name, cs in results:
+        ws = wb[name]
+        used, series, dates, _ = product_series(cs, 'oi')
+        n, N = len(series), len(dates)
+        ch = ws._charts[0]
+        check('%s: stacked column chart, no gap, overlap 100, %d bands in expiry order + Total line' % (name, n),
+              isinstance(ch, BarChart) and ch.grouping == 'stacked' and ch.overlap == 100 and ch.gapWidth == 0
+              and ch.type == 'col' and len(ch.series) == n and len(ch._charts) == 2
+              and isinstance(ch._charts[1], LineChart) and len(ch._charts[1].series) == 1
+              and [s.tx.strRef.f for s in ch.series] == ["'%s'!%s2" % (name, get_column_letter(j)) for j in range(2, n + 2)],
+              (ch.grouping, ch.overlap, ch.gapWidth, len(ch.series)))
+        pos = {d: i for i, d in enumerate(dates)}
+        last_year = max(c.year for c, _ in series)
+        labels, totals = band_labels(series, dates)
+        good = all(s.graphicalProperties.solidFill.srgbClr == stack_color(c.year, c.month, last_year)
+                   and s.graphicalProperties.line.noFill is True
+                   and ((mode is None and s.dLbls is None) or
+                        (len(s.dLbls.dLbl) == 1 and s.dLbls.dLbl[0].idx == k
+                         and s.dLbls.dLbl[0].showSerName is True and s.dLbls.dLbl[0].showVal is False
+                         and s.dLbls.showVal is False and s.dLbls.showSerName is False))
+                   for s, (c, rows), (mode, k, _h, _b) in zip(ch.series, series, labels))
+        live = [c.label for (c, rows) in series if rows[-1][0] == dates[-1]]
+        modes = [m for m, _, _, _ in labels]
+        check('%s: bands coloured by month/year; live bands named at the last day, tall ones at their peak, rest legend only'
+              % name, good and modes.count('last') == len(live) and 0 < modes.count('peak')
+              and all(k == N - 1 for m, k, _, _ in labels if m == 'last')
+              and all(h >= LABEL_MIN_HEIGHT * max(totals) for m, k, h, _ in labels if m == 'peak'),
+              (modes.count('last'), len(live), modes.count('peak'), modes.count(None)))
+        t = ch._charts[1].series[0]
+        tl = get_column_letter(n + 2)
+        check('%s: Total line from the Total column, black 1 pt, labelled with name + value at the last day' % name,
+              t.tx.strRef.f == "'%s'!%s2" % (name, tl) and t.val.numRef.f == "'%s'!$%s$3:$%s$%d" % (name, tl, tl, N + 2)
+              and t.graphicalProperties.line.solidFill.srgbClr == TOTAL_COLOR and t.marker.symbol is None
+              and len(t.dLbls.dLbl) == 1 and t.dLbls.dLbl[0].idx == N - 1 and t.dLbls.dLbl[0].showVal is True
+              and t.dLbls.dLbl[0].showSerName is True and t.dLbls.dLbl[0].numFmt == Y_NUMBER_FORMAT['oi'], t.tx.strRef.f)
+        check('%s: category axis with mmm-yy labels ~quarterly, legend on the right, chart after the Total column' % name,
+              ch.x_axis.number_format.formatCode == 'mmm-yy' and ch.x_axis.tickLblSkip == max(1, N // 12)
+              and ch.legend.position == 'r' and ch.anchor._from.col == n + 3 and ch.y_axis.majorGridlines is None,
+              (ch.x_axis.tickLblSkip, ch.anchor._from.col))
+    check('chart XML: barChart stacked + lineChart sharing one catAx and one valAx, data labels present, no gridlines',
+          all(x.count(b'<barChart>') == 1 and x.count(b'<lineChart>') == 1 and x.count(b'<catAx>') == 1
+              and x.count(b'<valAx>') == 1 and b'grouping val="stacked"' in x and b'overlap val="100"' in x
+              and b'gapWidth val="0"' in x and b'<dLbl>' in x and b'showSerName val="1"' in x
+              and b'majorGridlines' not in x for x in chart_xml.values()) and len(chart_xml) == 3,
+          {k: (x.count(b'<barChart>'), x.count(b'<catAx>'), x.count(b'<valAx>')) for k, x in chart_xml.items()})
+    xml = chart_xml['xl/charts/chart1.xml']
+    _, series, dates, _ = product_series(results[0][1], 'oi')
+    n_lbl = sum(1 for m, _, _, _ in band_labels(series, dates)[0] if m)
+    check('chart XML: HSI has one label per named band + the total label', xml.count(b'<dLbl>') == n_lbl + 1,
+          (xml.count(b'<dLbl>'), n_lbl))
+    d = [dt.date(2024, 1, k) for k in (1, 2, 3, 4)]
+    ca = Contract(product='x', root='x', year=2024, month=1, label='A', ticker_1='', ticker_2='', status=OK,
+                  rows=[(d[0], 10.0), (d[1], 50.0), (d[2], 10.0)])
+    cb = Contract(product='x', root='x', year=2024, month=2, label='B', ticker_1='', ticker_2='', status=OK,
+                  rows=[(d[1], 1.0), (d[2], 1.0), (d[3], 1.0)])
+    cc = Contract(product='x', root='x', year=2024, month=3, label='C', ticker_1='', ticker_2='', status=OK,
+                  rows=[(d[0], 1.0), (d[1], 1.0)])
+    lbls, tot = band_labels([(ca, ca.rows), (cb, cb.rows), (cc, cc.rows)], d)
+    check('band_labels: A expired + tall -> peak at its max day; B alive on the last day -> last; C tiny -> none; totals',
+          lbls[0] == ('peak', 1, 50.0, 0.0) and lbls[1] == ('last', 3, 1.0, 0.0) and lbls[2][0] is None
+          and tot == [11.0, 52.0, 11.0, 1.0], (lbls, tot))
+    days = [dt.date(2024, 1, 1) + dt.timedelta(days=k) for k in range(41)]
+    ra = [(x, 100.0 if k == 20 else 1.0) for k, x in enumerate(days[:-1])]          # peak on day 20, expired
+    rd = [(x, 100.0 if k == 21 else 1.0) for k, x in enumerate(days[:-1])]          # peak next day, same height
+    lbls, _ = band_labels(
+        [(Contract(product='x', root='x', year=2024, month=1, label='A', ticker_1='', ticker_2='', status=OK), ra),
+         (Contract(product='x', root='x', year=2024, month=4, label='D', ticker_1='', ticker_2='', status=OK), rd)], days)
+    check('band_labels: a label that would sit on an earlier one (next day, same height) moves to the band\'s next-best day, or is dropped',
+          lbls[0] == ('peak', 20, 100.0, 0.0) and lbls[1][0] is None, lbls)
+    rd = [(x, {21: 100.0, 5: 60.0}.get(k, 1.0)) for k, x in enumerate(days[:-1])]
+    lbls, _ = band_labels(
+        [(Contract(product='x', root='x', year=2024, month=1, label='A', ticker_1='', ticker_2='', status=OK), ra),
+         (Contract(product='x', root='x', year=2024, month=4, label='D', ticker_1='', ticker_2='', status=OK), rd)], days)
+    check('band_labels: blocked at its tallest day, a band is labelled at its next tallest day that fits',
+          lbls[1] == ('peak', 5, 60.0, 1.0), lbls)
+    rd = [(x, 100.0 if k == 30 else 1.0) for k, x in enumerate(days[:-1])]
+    lbls, _ = band_labels(
+        [(Contract(product='x', root='x', year=2024, month=1, label='A', ticker_1='', ticker_2='', status=OK), ra),
+         (Contract(product='x', root='x', year=2024, month=4, label='D', ticker_1='', ticker_2='', status=OK), rd)], days)
+    check('band_labels: a peak elsewhere in the plot is kept', lbls[0][0] == 'peak' and lbls[1] == ('peak', 30, 100.0, 1.0), lbls)
+    try:
+        run(products=FAKE_PRODUCTS, today=TEST_TODAY, blpapi_module=FakeAPI, out=path, kind='pie')
+        raised = ''
+    except ValueError as e:
+        raised = str(e)
+    check('run(kind=?) is refused', "'stacked' or 'lines'" in raised, raised)
+    if importlib.util.find_spec('matplotlib') is not None:
+        import warnings
+        import matplotlib.pyplot as plt
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            n_fig, _ = quiet(show_charts, results, measure='oi')
+        fig = plt.figure(plt.get_fignums()[0])
+        ax = fig.axes[0]
+        _, series, dates, _ = product_series(results[0][1], 'oi')
+        n_bars = len(ax.patches)
+        n_lines = len(ax.get_lines())
+        texts = [t for t in ax.texts]
+        labels = sorted(t.get_text() for t in texts)
+        ylim = ax.get_ylim()
+        plt.close('all')
+        lbls, totals = band_labels(series, dates)
+        exp_labels = sorted([c.label for (c, _), (m, _, _, _) in zip(series, lbls) if m]
+                            + ['%s %s' % (TOTAL_LABEL, format(int(round(totals[-1])), ','))])
+        check('show_charts (stacked): one bar per contract-day, the Total line, boxed labels for the named bands + total, legend',
+              n_fig == 3 and n_bars == 36 * len(dates) and n_lines == 1 and labels == exp_labels
+              and all(t.get_bbox_patch() is not None for t in texts) and ax.get_legend() is not None
+              and len(ax.get_legend().get_texts()) == 37 and ylim[0] == 0,
+              (n_fig, n_bars, n_lines, len(texts), labels[:3], exp_labels[:3]))
+    for f in os.listdir(tmp):
+        os.remove(os.path.join(tmp, f))
     os.rmdir(tmp)
 
 
@@ -1583,16 +2767,16 @@ def test_run():
     bbg = Bloomberg(blpapi_module=FakeAPI).connect()
     for _, cs in results:
         for c in cs:
-            fetch_open_interest(bbg, c, 2, TEST_TODAY)
+            fetch_open_interest(bbg, c, 3, TEST_TODAY)
     if importlib.util.find_spec('matplotlib') is None:
-        n, text = quiet(show_charts, results)
+        n, text = quiet(show_charts, results, measure='oi', kind='lines')
         check('show_charts without matplotlib: says so in one line, draws nothing', n == 0 and 'matplotlib is not installed' in text)
     else:
         import warnings
         import matplotlib.pyplot as plt
         with warnings.catch_warnings():
             warnings.simplefilter('ignore')
-            n, text = quiet(show_charts, results)
+            n, text = quiet(show_charts, results, measure='oi', kind='lines')
         figs = plt.get_fignums()
         titles = [plt.figure(i).axes[0].get_title() for i in figs]
         n_lines = [len(plt.figure(i).axes[0].get_lines()) for i in figs]
@@ -1684,7 +2868,7 @@ def test_failures():
     check('pull stops at contract 5: workbook still written with the 4 pulled, rest NOT PULLED, message says so',
           out is None and wb is not None and 'ERROR while pulling OPEN_INT for HIK24 Index (HSI May 24)' in text
           and 'Daily capacity reached' in text and 'still written with the 4 of 83' in text and path in text
-          and wb['HSI'].max_column == 5 and statuses.count(NOT_PULLED) == 79 and statuses.count(OK) == 4
+          and wb['HSI'].max_column == 6 and statuses.count(NOT_PULLED) == 79 and statuses.count(OK) == 4
           and 'HSI      pulling' in text and 'AS51     skipped' in text and 'NOT PULLED:' in text
           and 'Traceback' not in text, text[-900:])
     # an unexpected (non-Bloomberg) error: the message names the step AND the traceback follows
@@ -1719,6 +2903,8 @@ def run_tests():
     bbg, results = test_resolution()
     test_history(bbg, results)
     test_workbook(results)
+    test_notional()
+    test_stacked()
     test_guards()
     test_run()
     test_not_a_future()
