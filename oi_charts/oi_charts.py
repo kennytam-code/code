@@ -11,7 +11,7 @@ underneath needs no edits.  Run the whole file at once:
 
 Self-check, no terminal needed (a fake Bloomberg inside this file drives the real code):
 
-    python oi_charts.py --test     self-checks: ticker forms, windows, cell-by-cell alignment, errors
+    python oi_charts.py --test     self-checks: ticker forms, windows, cell-by-cell alignment, charts, errors
     python oi_charts.py --demo     writes demo_OI_charts.xlsx from fake data (and draws it in Jupyter)
 
 Each contract's line is its USD notional: open interest x FUT_VAL_PT (value of one index point in
@@ -24,8 +24,10 @@ Needs: blpapi and openpyxl; matplotlib only for the notebook charts.
 
 # ================================================================ CONFIG ===
 # 1. Products: (Bloomberg root, tab name).  One line per future - add a line to add a
-#    product.  Tickers are built as <root><month code><year> Index (HIU6, HIU25 ...).
-#    For a non-Index yellow key add it as a third item, e.g. ('CL', 'WTI', 'Comdty').
+#    product.  The tab name is the underlying index ticker (HSI -> 'HSI Index'): that is the
+#    index the USD notional is built on; INDEX_TICKERS below overrides it where the two differ.
+#    Tickers are built as <root><month code><year> Index (HIU6, HIU25 ...).  For a non-Index
+#    yellow key add it as a third item, e.g. ('CL', 'WTI', 'Comdty').
 PRODUCTS = [
     ('HI',  'HSI'),
     ('HC',  'HSCEI'),
@@ -38,19 +40,26 @@ PRODUCTS = [
     ('FPO', 'FPO'),
     ('HJA', 'TAMSCI'),          # the request note's "MSCI - HJAU6" row is this same root
     ('QZ',  'SIMSCI'),
+    ('VG',  'SX5E'),            # Eurex Euro Stoxx 50 futures (EUR)
+    ('VHO', 'SX5T'),            # Eurex Euro Stoxx 50 total return futures (EUR)
+    ('ES',  'SPX'),             # CME E-mini S&P 500 futures (USD)
 ]
 
-# 2. Contract months: every month from Jan START_YEAR to Dec END_YEAR (36 for 2024-2026).
-START_YEAR, END_YEAR = 2024, 2026
+# 2. Time frame: every trading day from DATA_START to today is on the charts.
+DATA_START = '2021-01-01'
 
-# 3. History per contract: from its last trade date back this many years (or as far as
-#    Bloomberg has prints - a contract listed later simply has fewer rows, never NA).
-YEARS_BACK = 3
+# 2b. Which expiries to look for.  Every month from DATA_START (+ SKIP_MONTHS: earlier
+#     contracts end before the window) up to ALL_MONTHS_AHEAD months after today, then
+#     Mar/Jun/Sep/Dec up to QUARTERLY_AHEAD months after today, then December only up to
+#     LAST_EXPIRY_YEAR.  A month an exchange never listed comes back NOT FOUND, nothing else.
+ALL_MONTHS_AHEAD, QUARTERLY_AHEAD, LAST_EXPIRY_YEAR = 15, 36, 2036
 
-# 3b. Months dropped at the end of every contract's history: the contract month itself and
-#     the SKIP_MONTHS - 1 months before it.  2 -> Jun 24 gets data up to 30 Apr 24 (no May 24,
-#     no Jun 24).  0 -> keep everything up to the last trade date, as before.
-SKIP_MONTHS = 2
+# 3. Contracts expiring within the next SKIP_MONTHS calendar months are left out on every date.
+#    4 -> on any day of March the Mar, Apr, May and Jun contracts are hidden and July is the
+#    first one shown; July disappears on 1 April.  (Each contract's history is cut at the end of
+#    the calendar month SKIP_MONTHS before its expiry month, so the expiry day - mid-month or
+#    end-month - makes no difference.)  0 -> keep everything up to the last trade date.
+SKIP_MONTHS = 4
 
 # 4. Output.  The workbook is OI_charts_<yyyymmdd>.xlsx (or OUTPUT_FILE) and goes to
 #    OUTPUT_FOLDER; when that folder does not exist it goes to the current folder instead.
@@ -60,42 +69,33 @@ OUTPUT_FOLDER = '~/Downloads'
 SHOW_CHARTS = True              # in Jupyter also draw every chart inline (needs matplotlib)
 TICKERS_ONLY = False            # True -> only resolve and print the contract table (quick check)
 
-# 5. What each line is.  'notional': open interest x FUT_VAL_PT x index level, in USD (a product
+# 5. What each band is.  'notional': open interest x FUT_VAL_PT x index level, in USD (a product
 #    whose index or multiplier cannot be found falls back to plain OI, and the chart title and the
 #    summary say so).  'oi': open interest in contracts.  {name} in the text is the tab name.
 MEASURE = 'notional'
-CHART_TITLE = {'notional': '{name} Futures Open Interest, USD notional',
-               'oi': '{name} Futures Open Interest'}
-FALLBACK_TITLE = '{name} Futures Open Interest, contracts (USD notional unavailable)'
-Y_AXIS_TITLE = {'notional': 'Notional (USD m)', 'oi': 'Open interest (contracts)'}
-Y_NUMBER_FORMAT = {'notional': '#,##0,,"m"', 'oi': '#,##0'}   # cells hold the full USD amount
+CHART_TITLE = {'notional': '{name} futures open interest, USD notional',
+               'oi': '{name} futures open interest, contracts'}
+FALLBACK_TITLE = '{name} futures open interest, contracts (USD notional unavailable)'
+SUBTITLE = ('Contracts expiring within {skip} months excluded   |   navy = December, blue = Mar/Jun/Sep, '
+            'grey = other months   |   Source: Bloomberg, Nomura')
+Y_AXIS_TITLE = {'notional': 'USD bn', 'oi': 'Contracts'}   # a small product is shown in USD m instead
 
 # 5b. Chart type.  'stacked': the contracts stacked as daily columns (earliest expiry at the
-#     bottom, no gap between days), so the top edge of the stack is the product total - traced
-#     by a black Total line - and each contract is named in a small box at the end of its own
-#     band.  'lines': one line per contract.
+#     bottom, no gap between days), so the top edge of the stack is the product total, traced by
+#     the Total line; the contracts alive on the last day are named at the right edge, the other
+#     big bands at their peak.  'lines': one line per contract.
 CHART_KIND = 'stacked'
 
-# 5c. Band colours: one per contract month, restrained and desaturated.  The quarterlies, which
-#     carry most of the open interest, get the four strongest tones (navy, steel blue, burgundy,
-#     slate teal); the serial months sit in greys, sand and sage so they read as secondary.  A
-#     contract one year older than the newest in the workbook is drawn 22% lighter, two years
-#     older 44% lighter.  Edit freely - hex, no '#'.
-MONTH_COLORS = {
-    1: '9BA7B4',    # Jan  light slate
-    2: 'C9B18C',    # Feb  sand
-    3: '3E6E9C',    # Mar  steel blue
-    4: '8A9A88',    # Apr  sage grey
-    5: 'A9A39D',    # May  warm grey
-    6: '8C2F3C',    # Jun  burgundy
-    7: '6F8AA3',    # Jul  dusty blue
-    8: 'B39B72',    # Aug  khaki
-    9: '3F7C78',    # Sep  slate teal
-    10: '8E7F87',   # Oct  mauve grey
-    11: '7C8D99',   # Nov  blue grey
-    12: '1F3652',   # Dec  navy
+# 5c. Colours, by tenor: December contracts (the long-dated ones), the other quarterlies, and
+#     the serial months.  Neighbouring bands of one family alternate between the two shades so
+#     every band has an edge.  Hex, no '#'.
+FAMILY_COLORS = {
+    'dec':     ('0B2E59', '2A5D9F'),   # deep navy / royal blue
+    'quarter': ('0E8A9E', '5FB9C6'),   # teal / aqua
+    'serial':  ('9AA5B1', 'C7CFD8'),   # cool greys
 }
-YEAR_FADE = 0.22    # share of white mixed in per year of age, capped at two years
+TOTAL_COLOR = 'C8102E'          # the Total line: Nomura red, the one accent on the page
+CHART_FONT = 'Arial'
 
 # 6. Bloomberg.
 HIST_FIELD = 'OPEN_INT'         # daily open interest of one contract
@@ -143,12 +143,13 @@ try:
     from openpyxl import Workbook, load_workbook          # noqa: E402
     from openpyxl.chart import BarChart, LineChart, Reference   # noqa: E402
     from openpyxl.chart.label import DataLabel, DataLabelList   # noqa: E402
-    from openpyxl.chart.axis import DateAxis              # noqa: E402
+    from openpyxl.chart.axis import ChartLines, DateAxis  # noqa: E402
+    from openpyxl.chart.layout import Layout, ManualLayout   # noqa: E402
     from openpyxl.chart.shapes import GraphicalProperties  # noqa: E402
     from openpyxl.chart.text import RichText, Text        # noqa: E402
     from openpyxl.chart.title import Title                # noqa: E402
     from openpyxl.drawing.line import LineProperties      # noqa: E402
-    from openpyxl.drawing.text import (CharacterProperties, Paragraph, ParagraphProperties,   # noqa: E402
+    from openpyxl.drawing.text import (CharacterProperties, Font, Paragraph, ParagraphProperties,   # noqa: E402
                                        RegularTextRun, RichTextProperties)
     from openpyxl.utils import get_column_letter          # noqa: E402
 except ImportError:
@@ -170,21 +171,16 @@ INDEX_REF_FIELDS = ['CRNCY', 'NAME']
 INDEX_COLUMNS = ['Product', 'Index ticker', 'Name', 'Index ccy', 'Contract ccy used', 'Ccy source',
                  'Futures CRNCY (Bloomberg)', 'FX ticker', 'Status', 'Request start', 'Request end',
                  'First date', 'Last date', 'Rows', 'Last index', 'Last FX', 'Last index (USD)', 'Note']
-# chart look: dark grey text, light grey axis lines, no gridlines, no borders, black total line
-CHART_TEXT, CHART_LINE, TOTAL_COLOR = '404040', 'BFBFBF', '1A1A1A'
+# chart look: dark grey text, light grey axis line and gridlines, grey subtitle, no borders
+CHART_TEXT, CHART_LINE, GRID_COLOR, SUBTITLE_COLOR = '404040', 'BFBFBF', 'E6E6E6', '6E6E6E'
 TOTAL_LABEL = 'Total'
+LABEL_MIN_HEIGHT = 0.06      # a band is named at its peak when it is at least this share of the axis there
+LABEL_BOX = (0.05, 0.035)    # width, height of one in-band label as a share of the plot: two labels closer than this collide
+MAX_END_LABELS = 10          # at most this many contracts named at the right edge (the largest ones)
 AUDIT_COLUMNS = ['Product', 'Contract', 'Ticker 1-digit', 'Ticker 2-digit', 'Ticker used',
                  'Status', 'LAST_TRADEABLE_DT', 'FUT_MONTH_YR', 'Name', 'Request start',
                  'Request end', 'First OI date', 'Last OI date', 'Rows', 'Last OI', 'Max OI',
                  'Multiplier', 'Ccy', 'Last notional (USD)', 'Max notional (USD)', 'Note']
-
-# Line colours: one hue per contract year, light (Jan) to dark (Dec) within the year, so
-# 36 lines read as three families instead of a repeating six-colour cycle.
-HUES = [('c6dbef', '08306b'),            # blues
-        ('fdd0a2', '7f2704'),            # oranges
-        ('c7e9c0', '00441b'),            # greens
-        ('dadaeb', '3f007d'),            # purples
-        ('d9d9d9', '252525')]            # greys
 
 
 # --------------------------------------------------------------- helpers ---
@@ -215,12 +211,33 @@ def candidate_tickers(root, year, month, key=YELLOW_KEY):
             '%s%s%02d %s' % (root, code, year % 100, key))
 
 
-def years_back(d, n):
-    """Same calendar day n years earlier; 29 Feb falls back to 28 Feb."""
-    try:
-        return d.replace(year=d.year - n)
-    except ValueError:
-        return d.replace(year=d.year - n, day=28)
+def add_months(year, month, n):
+    """(year, month) shifted by n months."""
+    idx = year * 12 + (month - 1) + n
+    return idx // 12, idx % 12 + 1
+
+
+def expiry_months(data_start, today, skip_months, all_ahead, quarterly_ahead, last_year):
+    """The expiry months worth asking Bloomberg for, in order: every month from data_start
+    (+ skip_months - earlier contracts end before the window) up to all_ahead months after
+    today, Mar/Jun/Sep/Dec up to quarterly_ahead months after today, then December only up to
+    last_year."""
+    all_to = add_months(today.year, today.month, all_ahead)
+    q_to = add_months(today.year, today.month, quarterly_ahead)
+    tail = max(all_to, q_to)
+    out = []
+    y, m = add_months(data_start.year, data_start.month, skip_months)
+    while (y, m) <= all_to:
+        out.append((y, m))
+        y, m = add_months(y, m, 1)
+    while (y, m) <= q_to:
+        if m in (3, 6, 9, 12):
+            out.append((y, m))
+        y, m = add_months(y, m, 1)
+    for yy in range(y, last_year + 1):
+        if (yy, 12) > tail:
+            out.append((yy, 12))
+    return out
 
 
 def month_end(year, month):
@@ -273,22 +290,45 @@ def row_date(pt):
     return d
 
 
-def series_color(year, month, base_year):
-    """Hex colour (no '#') for one contract line: hue by year, shade by month."""
-    light, dark = HUES[(year - base_year) % len(HUES)]
-    t = 0.2 + 0.8 * (month - 1) / 11.0
-    rgb = [round(int(light[i:i + 2], 16) * (1 - t) + int(dark[i:i + 2], 16) * t) for i in (0, 2, 4)]
-    return '%02x%02x%02x' % tuple(rgb)
+def band_family(month):
+    """'dec' | 'quarter' | 'serial' - the tenor family a contract month belongs to."""
+    return 'dec' if month == 12 else ('quarter' if month in (3, 6, 9) else 'serial')
 
 
-def stack_color(year, month, last_year):
-    """Hex colour (no '#') for one contract's band in the stack: MONTH_COLORS[month], faded
-    towards white by YEAR_FADE per year of age (last_year = the newest contract year in the
-    workbook, capped at two years)."""
-    base = MONTH_COLORS[month]
-    t = YEAR_FADE * max(0, min(2, last_year - year))
-    rgb = [round(int(base[i:i + 2], 16) * (1 - t) + 255 * t) for i in (0, 2, 4)]
-    return '%02x%02x%02x' % tuple(rgb)
+def band_colors(contracts):
+    """One hex colour per contract (same order): the family's shade, alternating along the
+    family so two neighbouring bands of one family never share a colour."""
+    seen, out = {}, []
+    for c in contracts:
+        fam = band_family(c.month)
+        k = seen.get(fam, 0)
+        seen[fam] = k + 1
+        out.append(FAMILY_COLORS[fam][k % 2])
+    return out
+
+
+def luminance(hexcol):
+    r, g, b = (int(hexcol[i:i + 2], 16) / 255.0 for i in (0, 2, 4))
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+
+def text_on(hexcol):
+    """White text on a dark band, dark grey on a light one."""
+    return 'FFFFFF' if luminance(hexcol) < 0.5 else CHART_TEXT
+
+
+def axis_unit(max_value, measure):
+    """(axis title, Excel number format, divisor) for the y axis: USD bn, or USD m for a small
+    product; contracts as they are."""
+    if measure != 'notional':
+        return Y_AXIS_TITLE['oi'], '#,##0', 1.0
+    if max_value >= 1e9:
+        return Y_AXIS_TITLE['notional'], '#,##0.0,,,', 1e9
+    return 'USD m', '#,##0,,', 1e6
+
+
+def subtitle_text(skip_months=None):
+    return SUBTITLE.format(skip=SKIP_MONTHS if skip_months is None else skip_months)
 
 
 def in_ipython():
@@ -684,30 +724,45 @@ def pick_ticker(c, ref, bad_securities, today):
     c.multiplier = as_float(row.get(MULTIPLIER_FIELD))
 
 
+def expected_form(c, today):
+    """The form the desk would type: two digits once the contract month has passed, else one."""
+    return c.ticker_2 if (c.year, c.month) < (today.year, today.month) else c.ticker_1
+
+
+def other_form(c, today):
+    return c.ticker_1 if expected_form(c, today) == c.ticker_2 else c.ticker_2
+
+
 def resolve_contracts(bbg, products, months, today):
-    """One batched reference pass over both ticker forms of every contract."""
+    """Two reference passes: the expected ticker form of every contract, then the other form
+    for the contracts that did not resolve.  pick_ticker validates each form on LAST_TRADEABLE_DT,
+    so a one-digit code that Bloomberg maps to another decade is caught and the other form tried."""
     results = build_contracts(products, months)
-    candidates = [t for _, cs in results for c in cs for t in (c.ticker_1, c.ticker_2)]
-    ref = bbg.ref(candidates, REF_FIELDS)
-    for _, cs in results:
-        for c in cs:
+    allc = [c for _, cs in results for c in cs]
+    ref = dict(bbg.ref([expected_form(c, today) for c in allc], REF_FIELDS))
+    for c in allc:
+        pick_ticker(c, ref, bbg.bad_securities, today)
+    missing = [c for c in allc if c.status != OK]
+    if missing:
+        ref.update(bbg.ref([other_form(c, today) for c in missing], REF_FIELDS))
+        for c in missing:
             pick_ticker(c, ref, bbg.bad_securities, today)
     return results
 
 
-def fetch_open_interest(bbg, c, years_back_n, today, skip_months=None):
-    """Fill c.rows with daily OPEN_INT from last trade - years_back_n up to the earliest of the
-    last trade date, today, and the end of the month skip_months before the contract month."""
+def fetch_open_interest(bbg, c, data_start, today, skip_months=None):
+    """Fill c.rows with daily OPEN_INT from data_start up to the earliest of the last trade date,
+    today, and the end of the calendar month skip_months before the contract month."""
     if c.status != OK:
         return
     skip_months = SKIP_MONTHS if skip_months is None else skip_months
-    c.req_start = years_back(c.last_trade, years_back_n)
+    c.req_start = data_start
     c.req_end = min(c.last_trade, today)
     cutoff = history_cutoff(c.year, c.month, skip_months)
     if cutoff is not None:
         c.req_end = min(c.req_end, cutoff)
     if c.req_start > c.req_end:
-        c.status, c.note = NO_DATA, 'window starts after its end'
+        c.status, c.note = NO_DATA, 'its window ends %s, before DATA_START' % c.req_end.isoformat()
         return
     c.rows = bbg.history(c.ticker, HIST_FIELD, c.req_start, c.req_end)
     if not c.rows:
@@ -862,9 +917,12 @@ def compute_notional(contracts, ix):
                 len(c.rows) - len(out))
 
 
-def product_series(contracts, measure):
-    """What one tab shows: (measure used, [(contract, rows)], sorted union of dates, note).
+def product_series(contracts, measure, ix=None):
+    """What one tab shows: (measure used, [(contract, rows)], dates, note).
 
+    dates run from the first to the last day any contract has a value; inside that span every
+    trading day of the index (ix.rows, when given) is a row too, so a day without a single print
+    stays visible as a hole instead of being squeezed out of a category axis.
     'notional' falls back to 'oi' for a product where no contract has a notional.
     """
     ok = [c for c in contracts if c.status == OK and c.rows]
@@ -881,15 +939,11 @@ def product_series(contracts, measure):
             reasons = sorted({c.note.split('no USD notional: ', 1)[1] for c in ok if 'no USD notional: ' in c.note})
             note = 'USD notional unavailable' + (' - ' + '; '.join(reasons) if reasons else '')
     series = [(c, c.notional if used == 'notional' else c.rows) for c in ok]
-    dates = sorted({d for _, rows in series for d, _ in rows})
-    return used, series, dates, note
-
-
-def align_product(contracts):
-    """(sorted union of dates, contracts that have data) - the shape of one product tab."""
-    found = [c for c in contracts if c.status == OK and c.rows]
-    dates = sorted({d for c in found for d, _ in c.rows})
-    return dates, found
+    value_dates = {d for _, rows in series for d, _ in rows}
+    if value_dates and ix is not None and ix.rows:
+        lo, hi = min(value_dates), max(value_dates)
+        value_dates.update(d for d, _ in ix.rows if lo <= d <= hi)
+    return used, series, sorted(value_dates), note
 
 
 # -------------------------------------------------------------- workbook ---
@@ -899,76 +953,64 @@ def safe_sheet_name(name):
     return name.strip()[:31]
 
 
-def chart_text(size, bold=False, color=CHART_TEXT):
-    """Text properties for an axis, legend or title: Calibri-ish size (in 1/100 pt), colour."""
-    cp = CharacterProperties(sz=size, b=bold, solidFill=color)
+def font_props(size, bold=False, color=None):
+    """Character properties: size in 1/100 pt, CHART_FONT, colour (hex, no '#')."""
+    return CharacterProperties(sz=size, b=bold, solidFill=color or CHART_TEXT, latin=Font(typeface=CHART_FONT))
+
+
+def chart_text(size, bold=False, color=None):
+    """Text properties for an axis or a label."""
+    cp = font_props(size, bold, color)
     return RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp), endParaRPr=cp)])
 
 
-def chart_title(text, size=1300):
-    cp = CharacterProperties(sz=size, b=True, solidFill=CHART_TEXT)
+def chart_title(text, subtitle=None):
+    """The title (12 pt bold) with the grey subtitle under it, both at the top left."""
+    t = font_props(1200, True)
+    paras = [Paragraph(pPr=ParagraphProperties(defRPr=t, algn='l'), r=[RegularTextRun(rPr=t, t=text)])]
+    if subtitle:
+        u = font_props(850, False, SUBTITLE_COLOR)
+        paras.append(Paragraph(pPr=ParagraphProperties(defRPr=u, algn='l'), r=[RegularTextRun(rPr=u, t=subtitle)]))
+    title = Title(tx=Text(rich=RichText(bodyPr=RichTextProperties(), p=paras)), overlay=False)
+    title.layout = Layout(manualLayout=ManualLayout(x=0.01, y=0.01, xMode='edge', yMode='edge'))
+    return title
+
+
+def axis_title(text):
+    cp = font_props(850, False, SUBTITLE_COLOR)
     return Title(tx=Text(rich=RichText(bodyPr=RichTextProperties(), p=[Paragraph(
         pPr=ParagraphProperties(defRPr=cp), r=[RegularTextRun(rPr=cp, t=text)])])), overlay=False)
 
 
-def axis_title(text):
-    return chart_title(text, size=900)
-
-
-def add_oi_chart(ws, name, found, n_rows, base_year, measure='oi', title=None):
-    """One line per contract; blanks are gaps, so each line spans only its own data.  Clean look:
-    no gridlines, no borders, grey hairline axes, dark grey text, legend along the bottom."""
-    n_series = len(found)
-    ch = LineChart()
-    ch.title = chart_title(title or CHART_TITLE[measure].format(name=name))
-    ch.display_blanks = 'gap'
-    ch.x_axis = DateAxis(crossAx=100)          # axId 500; the value axis must cross it
-    ch.x_axis.number_format = 'mmm-yy'
-    ch.x_axis.majorTimeUnit = 'months'
-    ch.y_axis.crossAx = 500
-    style_axes(ch, measure)
-    ch.legend.position = 'b'
-    ch.legend.txPr = chart_text(800)
-    ch.width, ch.height = 34, 17               # cm
-    last_row = 2 + n_rows
-    ch.add_data(Reference(ws, min_col=2, max_col=1 + n_series, min_row=2, max_row=last_row),
-                titles_from_data=True)          # row 2 = the 'Jan 24' labels
-    ch.set_categories(Reference(ws, min_col=1, min_row=3, max_row=last_row))
-    for s, c in zip(ch.series, found):
-        s.marker.symbol = 'none'
-        s.smooth = False
-        s.graphicalProperties.line.width = 12700   # EMU: 1 pt
-        s.graphicalProperties.line.solidFill = series_color(c.year, c.month, base_year)
-    ws.add_chart(ch, '%s2' % get_column_letter(n_series + 4))   # after the Total column
-
-
-def style_axes(ch, measure):
-    """The shared clean look: no gridlines, grey hairline axes, grey text, no borders."""
+def style_axes(ch, unit_title, number_format):
+    """The shared deck look: light horizontal gridlines, no y axis line, a hairline x axis, grey
+    8 pt tick labels, no legend, no borders."""
     ch.y_axis.delete = False
     ch.x_axis.delete = False
-    ch.y_axis.title = axis_title(Y_AXIS_TITLE[measure])
-    ch.y_axis.number_format = Y_NUMBER_FORMAT[measure]
-    ch.y_axis.majorGridlines = None
+    ch.y_axis.title = axis_title(unit_title)
+    ch.y_axis.number_format = number_format
+    ch.y_axis.majorGridlines = ChartLines(spPr=GraphicalProperties(ln=LineProperties(solidFill=GRID_COLOR, w=6350)))
     ch.x_axis.majorGridlines = None
     for ax in (ch.x_axis, ch.y_axis):
-        ax.txPr = chart_text(900)
-        ax.graphicalProperties = GraphicalProperties(ln=LineProperties(solidFill=CHART_LINE, w=6350))
-        ax.majorTickMark = 'out'
+        ax.txPr = chart_text(800)
         ax.minorTickMark = 'none'
+    ch.y_axis.graphicalProperties = GraphicalProperties(ln=LineProperties(noFill=True))
+    ch.y_axis.majorTickMark = 'none'
+    ch.x_axis.graphicalProperties = GraphicalProperties(ln=LineProperties(solidFill=CHART_LINE, w=6350))
+    ch.x_axis.majorTickMark = 'out'
     ch.x_axis.tickLblPos = 'low'
+    ch.legend = None
     ch.graphical_properties = GraphicalProperties(ln=LineProperties(noFill=True))   # no chart border
     ch.plot_area.graphicalProperties = GraphicalProperties(noFill=True, ln=LineProperties(noFill=True))
 
 
-def point_label(idx, show_name=False, show_value=False, num_fmt=None, pos='ctr', size=700, boxed=True):
-    """A data label on one point of a series (all other points stay unlabelled)."""
+def point_label(idx, show_name=False, show_value=False, num_fmt=None, pos='ctr', size=750, color=None, bold=True):
+    """A data label on one point of a series (all other points stay unlabelled), plain text."""
     lbl = DataLabel(idx=idx, showSerName=show_name, showVal=show_value, showCatName=False, showLegendKey=False,
                     showPercent=False, showBubbleSize=False, dLblPos=pos,
-                    txPr=chart_text(size, bold=True))
+                    txPr=chart_text(size, bold=bold, color=color))
     if num_fmt:
         lbl.numFmt = num_fmt
-    if boxed:                                  # white box with a grey hairline, so it reads over the bands
-        lbl.spPr = GraphicalProperties(solidFill='FFFFFF', ln=LineProperties(solidFill=CHART_LINE, w=6350))
     return lbl
 
 
@@ -978,40 +1020,69 @@ def series_labels(labels):
                          showPercent=False, showBubbleSize=False)
 
 
-def add_stacked_chart(ws, name, series, dates, last_year, measure='oi', title=None):
-    """Stacked daily columns, one band per contract in expiry order (earliest at the bottom), no gap
-    between days, so the top of the stack is the product total; a black Total line (column after
-    the contracts) traces it and carries the last value.  A contract alive on the last date is
-    named in a small box at the end of its band; another band tall enough is named at its peak;
-    the legend on the right (in stack order) covers the rest."""
+def add_oi_chart(ws, name, series, dates, measure='oi', title=None, skip_months=None):
+    """'lines': one line per contract on a date axis; blanks are gaps, so each line spans only
+    its own data.  A contract alive on the last day is named there, another big one at its peak."""
+    n_series, n_rows = len(series), len(dates)
+    labels, totals = band_labels(series, dates)
+    unit_title, fmt, _div = axis_unit(max((v for _, rows in series for _, v in rows), default=0), measure)
+    colors = band_colors([c for c, _ in series])
+    ch = LineChart()
+    ch.title = chart_title(title or CHART_TITLE[measure].format(name=name), subtitle_text(skip_months))
+    ch.display_blanks = 'gap'
+    ch.x_axis = DateAxis(crossAx=100)          # axId 500; the value axis must cross it
+    ch.x_axis.number_format = 'mmm-yy'
+    ch.x_axis.majorTimeUnit = 'months'
+    ch.y_axis.crossAx = 500
+    style_axes(ch, unit_title, fmt)
+    ch.width, ch.height = 30, 15               # cm
+    last_row = 2 + n_rows
+    ch.add_data(Reference(ws, min_col=2, max_col=1 + n_series, min_row=2, max_row=last_row),
+                titles_from_data=True)          # row 2 = the 'Jan 24' labels
+    ch.set_categories(Reference(ws, min_col=1, min_row=3, max_row=last_row))
+    for s, colour, (mode, k, _h, _b) in zip(ch.series, colors, labels):
+        s.marker.symbol = 'none'
+        s.smooth = False
+        s.graphicalProperties.line.width = 12700   # EMU: 1 pt
+        s.graphicalProperties.line.solidFill = colour
+        if mode is not None:
+            s.dLbls = series_labels([point_label(k, show_name=True, pos='r' if mode == 'last' else 't')])
+    ws.add_chart(ch, '%s2' % get_column_letter(n_series + 4))   # after the Total column
+
+
+def add_stacked_chart(ws, name, series, dates, measure='oi', title=None, skip_months=None):
+    """Stacked daily columns, one band per contract in expiry order (earliest at the bottom), no
+    gap between days, so the top of the stack is the product total; the Total line (column after
+    the contracts) traces it and carries the last value.  A contract alive on the last day is
+    named at the end of its band, another band tall enough at its peak; no legend."""
     n_series, n_rows = len(series), len(dates)
     last_row = 2 + n_rows
     total_col = n_series + 2
+    labels, totals = band_labels(series, dates)
+    unit_title, fmt, _div = axis_unit(max(totals) if totals else 0, measure)
+    colors = band_colors([c for c, _ in series])
     ch = BarChart()
     ch.type = 'col'
     ch.grouping = 'stacked'
     ch.overlap = 100
     ch.gapWidth = 0
-    ch.title = chart_title(title or CHART_TITLE[measure].format(name=name))
+    ch.title = chart_title(title or CHART_TITLE[measure].format(name=name), subtitle_text(skip_months))
     ch.display_blanks = 'gap'
-    style_axes(ch, measure)
+    style_axes(ch, unit_title, fmt)
     ch.x_axis.number_format = 'mmm-yy'
     skip = max(1, n_rows // 12)                # about 12 date labels along the axis
     ch.x_axis.tickLblSkip = skip
     ch.x_axis.tickMarkSkip = skip
     ch.x_axis.noMultiLvlLbl = True
-    ch.legend.position = 'r'
-    ch.legend.txPr = chart_text(750)
-    ch.width, ch.height = 36, 18               # cm
+    ch.width, ch.height = 30, 15               # cm
     ch.add_data(Reference(ws, min_col=2, max_col=1 + n_series, min_row=2, max_row=last_row),
                 titles_from_data=True)          # row 2 = the 'Jan 24' labels
     ch.set_categories(Reference(ws, min_col=1, min_row=3, max_row=last_row))
-    labels, _ = band_labels(series, dates)
-    for s, (c, rows), (mode, k, _h, _b) in zip(ch.series, series, labels):
-        s.graphicalProperties.solidFill = stack_color(c.year, c.month, last_year)
+    for s, colour, (mode, k, _h, _b) in zip(ch.series, colors, labels):
+        s.graphicalProperties.solidFill = colour
         s.graphicalProperties.line.noFill = True
-        if mode is not None:                   # alive on the last date -> named there; tall -> named at its peak
-            s.dLbls = series_labels([point_label(k, show_name=True)])
+        if mode is not None:                   # alive on the last day -> named there; tall -> named at its peak
+            s.dLbls = series_labels([point_label(k, show_name=True, color=text_on(colour))])
     ln = LineChart()                           # the total, on the same axes (same axis ids)
     ln.add_data(Reference(ws, min_col=total_col, max_col=total_col, min_row=2, max_row=last_row), titles_from_data=True)
     ln.set_categories(Reference(ws, min_col=1, min_row=3, max_row=last_row))
@@ -1020,20 +1091,20 @@ def add_stacked_chart(ws, name, series, dates, last_year, measure='oi', title=No
     t.marker.symbol = 'none'
     t.smooth = False
     t.graphicalProperties.line.solidFill = TOTAL_COLOR
-    t.graphicalProperties.line.width = 12700   # 1 pt
-    t.dLbls = series_labels([point_label(n_rows - 1, show_name=True, show_value=True,
-                                         num_fmt=Y_NUMBER_FORMAT[measure], pos='t', size=800)])
+    t.graphicalProperties.line.width = 15875   # 1.25 pt
+    t.dLbls = series_labels([point_label(n_rows - 1, show_name=True, show_value=True, num_fmt=fmt,
+                                         pos='t', size=850, color=TOTAL_COLOR)])
     ch += ln
     ws.add_chart(ch, '%s2' % get_column_letter(total_col + 2))
 
 
-def write_product_sheet(wb, name, contracts, base_year, measure='oi', kind=None):
+def write_product_sheet(wb, name, contracts, measure='oi', kind=None, ix=None, skip_months=None):
     """Row 1 tickers, row 2 labels, then one row per date; the cells are the USD notional (or the
-    OI when measure == 'oi' or the notional is unavailable), then a Total column.
-    Returns (sheet, measure used, note)."""
+    OI when measure == 'oi' or the notional is unavailable), then a Total column (blank on a day
+    without a single print).  Returns (sheet, measure used, note)."""
     kind = CHART_KIND if kind is None else kind
     ws = wb.create_sheet(title=safe_sheet_name(name))
-    used, series, dates, note = product_series(contracts, measure)
+    used, series, dates, note = product_series(contracts, measure, ix)
     found = [c for c, _ in series]
     ws['A1'] = 'Ticker'
     ws['A2'] = 'Date'
@@ -1050,19 +1121,20 @@ def write_product_sheet(wb, name, contracts, base_year, measure='oi', kind=None)
     lookups = [dict(rows) for _, rows in series]
     for i, d in enumerate(dates, start=3):
         ws.cell(row=i, column=1, value=d).number_format = 'yyyy-mm-dd'
-        total = 0.0
+        total, any_value = 0.0, False
         for j, lk in enumerate(lookups, start=2):
             v = lk.get(d)
             if v is not None:                       # a missing print stays an empty cell
                 ws.cell(row=i, column=j, value=v).number_format = '#,##0'
-                total += v
-        ws.cell(row=i, column=total_col, value=total).number_format = '#,##0'
+                total, any_value = total + v, True
+        if any_value:                               # a day without one print stays a hole
+            ws.cell(row=i, column=total_col, value=total).number_format = '#,##0'
     ws.freeze_panes = 'B3'
     title = FALLBACK_TITLE.format(name=name) if (measure == 'notional' and used == 'oi') else None
     if kind == 'stacked':
-        add_stacked_chart(ws, name, series, dates, max(c.year for c in found), used, title)
+        add_stacked_chart(ws, name, series, dates, used, title, skip_months)
     else:
-        add_oi_chart(ws, name, found, len(dates), base_year, used, title)
+        add_oi_chart(ws, name, series, dates, used, title, skip_months)
     return ws, used, note
 
 
@@ -1123,19 +1195,17 @@ def write_indices_sheet(wb, indices):
     return ws
 
 
-def write_workbook(path, results, base_year=None, indices=None, measure=None, kind=None):
+def write_workbook(path, results, indices=None, measure=None, kind=None, skip_months=None):
     """measure: 'notional' (default MEASURE) or 'oi'; kind: 'stacked' (default CHART_KIND) or
-    'lines'.  indices: {tab name: IndexSeries} for the Indices audit tab (None -> no tab).
-    Returns {tab name: (measure used, note)}."""
+    'lines'.  indices: {tab name: IndexSeries} - the trading calendar behind each tab and the
+    Indices audit tab (None -> neither).  Returns {tab name: (measure used, note)}."""
     measure = MEASURE if measure is None else measure
     kind = CHART_KIND if kind is None else kind
-    if base_year is None:
-        base_year = min([c.year for _, cs in results for c in cs] or [START_YEAR])
     wb = Workbook()
     wb.remove(wb.active)
     used = {}
     for name, cs in results:
-        _, m, note = write_product_sheet(wb, name, cs, base_year, measure, kind)
+        _, m, note = write_product_sheet(wb, name, cs, measure, kind, (indices or {}).get(name), skip_months)
         used[name] = (m, note)
     write_contracts_sheet(wb, results)
     if indices is not None:
@@ -1145,36 +1215,43 @@ def write_workbook(path, results, base_year=None, indices=None, measure=None, ki
 
 
 # ------------------------------------------------------- notebook charts ---
-LABEL_MIN_HEIGHT = 0.04      # a band gets a label inside it at its peak when it is at least this share of the axis there
-LABEL_BOX = (0.05, 0.035)    # width, height of one in-band label as a share of the plot: two labels closer than this collide
-
-
-def band_labels(series, dates):
-    """Which point of each band carries its name: ('last', idx) for a band alive on the last date;
-    ('peak', idx) for another band, at the tallest day of the band where a label fits - tall
-    enough (LABEL_MIN_HEIGHT of the plot) and not on top of a label already placed (LABEL_BOX);
-    None when no day qualifies (legend only).
-    Returns ([(mode, idx, band height at idx, bottom of the band at idx)] in series order, totals)."""
+def _bands(series, dates):
+    """[(values per date, bottoms per date)] per band, in series order."""
     pos = {d: i for i, d in enumerate(dates)}
     n = len(dates)
     bottom = [0.0] * n
-    bands = []                                 # (values, bottoms) per band
+    out = []
     for _, rows in series:
         y = [0.0] * n
         for d, v in rows:
             y[pos[d]] = v
-        bands.append((y, list(bottom)))
+        out.append((y, list(bottom)))
         bottom = [b + v for b, v in zip(bottom, y)]
+    return out
+
+
+def band_labels(series, dates):
+    """Which point of each band carries its name: ('last', idx) for a band alive on the last day
+    (the MAX_END_LABELS largest ones); ('peak', idx) for another band, at the tallest day of the
+    band where a label fits - tall enough (LABEL_MIN_HEIGHT of the plot) and not on top of a
+    label already placed (LABEL_BOX); None when no day qualifies.
+    Returns ([(mode, idx, band height at idx, bottom of the band at idx)] in series order, totals)."""
+    n = len(dates)
+    bands = _bands(series, dates)              # (values, bottoms) per band
+    bottom = [b + v for v, b in zip(bands[-1][0], bands[-1][1])] if bands else [0.0] * n
     top = max(bottom) if bottom else 1.0
+    live = [(i, y[n - 1]) for i, ((_, rows), (y, _)) in enumerate(zip(series, bands))
+            if rows and rows[-1][0] == dates[-1]]
+    named_last = {i for i, _ in sorted(live, key=lambda t: -t[1])[:MAX_END_LABELS]}
     placed = []                                # (x, y) of the peak labels kept, as shares of the plot
     out = []
-    for (_, rows), (y, base) in zip(series, bands):
-        if rows[-1][0] == dates[-1]:
+    for i, ((_, rows), (y, base)) in enumerate(zip(series, bands)):
+        if i in named_last:
             k = n - 1
             out.append(('last', k, y[k], base[k]))
             continue
         chosen = None
-        for k in sorted((i for i in range(n) if y[i] > 0), key=lambda i: -y[i]):
+        for k in sorted((j for j in range(n) if y[j] > 0), key=lambda j: -y[j]):
             if y[k] < LABEL_MIN_HEIGHT * top:
                 break                          # everything after is shorter still
             x, yc = k / max(1, n - 1), (base[k] + y[k] / 2.0) / top
@@ -1183,113 +1260,162 @@ def band_labels(series, dates):
                 placed.append((x, yc))
                 break
         if chosen is None:
-            k = max(range(n), key=lambda i: y[i])
+            k = max(range(n), key=lambda j: y[j])
             out.append((None, k, y[k], base[k]))
         else:
             out.append(('peak', chosen, y[chosen], base[chosen]))
     return out, bottom
 
 
-def stacked_axes(ax, series, dates, last_year, used):
-    """Draw the stack on a matplotlib axes: one column per contract-day (no weekend gaps - the
-    x axis is the trading-day index), the black Total line, in-band labels for tall bands, leader-
-    line labels in the right margin for the contracts alive on the last date, the total at the
-    end, and a small legend for everything.  Returns the number of labels placed."""
-    import matplotlib.dates as mdates
+def money(value, div, unit_title):
+    """'12.3bn' / '1,234bn' / '850m' / '1,234' for an axis divisor."""
+    if div >= 1e9:
+        v = value / 1e9
+        return ('{:,.0f}bn' if v >= 100 else '{:,.1f}bn').format(v)
+    if div >= 1e6:
+        return '{:,.0f}m'.format(value / 1e6)
+    return format(int(round(value)), ',')
+
+
+def axis_formatter(div, top):
+    """matplotlib tick formatter for the y axis: billions with one decimal while the axis is
+    small, whole numbers with separators once it is not; contracts as they are."""
+    if div >= 1e9:
+        decimals = 1 if top / 1e9 < 100 else 0
+        return lambda v, _pos: ('{:,.%df}' % decimals).format(v / 1e9)
+    if div >= 1e6:
+        return lambda v, _pos: '{:,.0f}'.format(v / 1e6)
+    return lambda v, _pos: format(int(round(v)), ',')
+
+
+def stacked_axes(ax, series, dates, used, skip_months=None):
+    """Draw the stack on a matplotlib axes: one column per day (the x axis is the trading-day
+    index, so a day without a print is a visible hole), the Total line, in-band names for the
+    tall bands, a label rail in the right margin for the contracts alive on the last day, and
+    the total at the top of the rail.  Returns (labels placed, axis title, formatter)."""
     import numpy as np
     n = len(dates)
     x = np.arange(n)
     pos = {d: i for i, d in enumerate(dates)}
     labels, totals = band_labels(series, dates)
+    colors = band_colors([c for c, _ in series])
+    unit_title, _fmt, div = axis_unit(max(totals) if totals else 0, used)
     bottom = np.zeros(n)
     top = max(totals) if totals else 1.0
-    ax.set_ylim(0, top * 1.12)
-    ax.set_xlim(-0.5, n - 0.5 + n * 0.09)
+    ax.set_ylim(0, top * 1.10)
+    rail_x = n - 1 + n * 0.025                 # the rail sits just right of the last column
+    ax.set_xlim(-0.5, n - 0.5 + n * 0.13)
     placed = 0
-    right = []                                 # (y anchor, label, colour) for the right-margin labels
-    for (c, rows), (mode, k, h, b) in zip(series, labels):
+    rail = []                                  # (y anchor, label, colour) for the right-margin labels
+    for (c, rows), (mode, k, h, b), colour in zip(series, labels, colors):
         y = np.zeros(n)
         for d, v in rows:
             y[pos[d]] = v
-        colour = '#' + stack_color(c.year, c.month, last_year)
-        ax.bar(x, y, bottom=bottom, width=1.0, color=colour, linewidth=0, align='center', label=c.label)
+        ax.bar(x, y, bottom=bottom, width=1.0, color='#' + colour, linewidth=0, align='center')
         bottom = bottom + y
         if mode == 'last':
-            right.append((b + h / 2.0, c.label, colour))
+            rail.append((b + h / 2.0, c.label, colour))
         elif mode == 'peak':
-            ax.text(k, b + h / 2.0, c.label, fontsize=6.5, color='#' + CHART_TEXT, ha='center', va='center',
-                    bbox=dict(boxstyle='square,pad=0.25', fc='white', ec=colour, lw=0.6, alpha=0.95))
+            ax.text(k, b + h / 2.0, c.label, fontsize=7.5, fontweight='bold', color='#' + text_on(colour),
+                    ha='center', va='center')
             placed += 1
-    ax.plot(x, totals, color='#' + TOTAL_COLOR, linewidth=0.9, label=TOTAL_LABEL)
-    # right-margin labels, bottom-up, each at least a step above the previous one
-    gap = top * 1.12 * 0.032
+    line = [t if any(y > 0 for y in col) else float('nan') for t, col in zip(totals, zip(*[b[0] for b in _bands(series, dates)]))] \
+        if series else []
+    ax.plot(x, line, color='#' + TOTAL_COLOR, linewidth=1.3, solid_capstyle='round')
+    # the rail: labels bottom-up, each at least one step above the previous, a light connector to the band
+    gap = top * 1.10 * 0.045
     y_prev = -gap
-    x_text = n - 1 + n * 0.02
-    for y_anchor, label, colour in sorted(right):
+    for y_anchor, label, colour in sorted(rail):
         y_text = max(y_anchor, y_prev + gap)
         y_prev = y_text
-        ax.annotate(label, xy=(n - 0.5, y_anchor), xytext=(x_text, y_text), fontsize=6.5, color='#' + CHART_TEXT,
-                    ha='left', va='center',
-                    bbox=dict(boxstyle='square,pad=0.25', fc='white', ec=colour, lw=0.6),
-                    arrowprops=dict(arrowstyle='-', color=colour, lw=0.6, shrinkA=0, shrinkB=0))
+        ax.plot([n - 0.5, rail_x - n * 0.005], [y_anchor, y_text], color='#' + CHART_LINE, linewidth=0.7,
+                solid_capstyle='round')
+        ax.text(rail_x, y_text, label, fontsize=8, color='#' + CHART_TEXT, ha='left', va='center')
         placed += 1
-    last_total = float(totals[-1])
-    value = (format(int(round(last_total / 1e6)), ',') + 'm') if used == 'notional' else format(int(round(last_total)), ',')
-    ax.annotate('%s %s' % (TOTAL_LABEL, value), xy=(n - 1, last_total), xytext=(x_text, max(y_prev + gap, last_total + gap)),
-                fontsize=7.5, fontweight='bold', color='#' + TOTAL_COLOR, ha='left', va='center',
-                bbox=dict(boxstyle='square,pad=0.25', fc='white', ec='#' + TOTAL_COLOR, lw=0.6),
-                arrowprops=dict(arrowstyle='-', color='#' + TOTAL_COLOR, lw=0.6, shrinkA=0, shrinkB=0))
+    last_total = float(totals[-1]) if totals else 0.0
+    y_total = max(y_prev + gap, last_total + gap * 0.6, top * 0.98)
+    ax.text(rail_x, y_total, '%s %s' % (TOTAL_LABEL, money(last_total, div, unit_title)), fontsize=8.5,
+            fontweight='bold', color='#' + TOTAL_COLOR, ha='left', va='center')
     step = max(1, n // 12)                     # about 12 date ticks
     ticks = list(range(0, n, step))
     ax.set_xticks(ticks)
     ax.set_xticklabels([dates[i].strftime('%b-%y') for i in ticks])
-    return placed + 1
+    return placed + 1, unit_title, div
 
 
-def show_charts(results, base_year=None, measure=None, kind=None):
+def lines_axes(ax, series, dates, used):
+    """'lines' on matplotlib: one line per contract on a real date axis, named at its end when
+    alive on the last day, else at its peak when tall enough.  Returns (labels, axis title, divisor)."""
+    import matplotlib.dates as mdates
+    labels, _ = band_labels(series, dates)
+    colors = band_colors([c for c, _ in series])
+    unit_title, _fmt, div = axis_unit(max((v for _, rows in series for _, v in rows), default=0), used)
+    placed = 0
+    for (c, rows), (mode, k, _h, _b), colour in zip(series, labels, colors):
+        ax.plot([d for d, _ in rows], [v for _, v in rows], linewidth=1.1, color='#' + colour)
+        if mode == 'last':
+            ax.annotate(' ' + c.label, xy=rows[-1], fontsize=7.5, color='#' + CHART_TEXT, ha='left', va='center')
+            placed += 1
+        elif mode == 'peak':
+            d, v = dates[k], dict(rows).get(dates[k], 0.0)
+            ax.annotate(c.label, xy=(d, v), xytext=(0, 4), textcoords='offset points', fontsize=7.5,
+                        color='#' + CHART_TEXT, ha='center', va='bottom')
+            placed += 1
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%b-%y'))
+    return placed, unit_title, div
+
+
+def use_chart_font(plt):
+    """CHART_FONT when the machine has it (Windows and Mac do), the default sans otherwise."""
+    try:
+        from matplotlib import font_manager
+        font_manager.findfont(font_manager.FontProperties(family=CHART_FONT), fallback_to_default=False)
+    except Exception:
+        return
+    plt.rcParams['font.family'] = 'sans-serif'
+    plt.rcParams['font.sans-serif'] = [CHART_FONT] + [f for f in plt.rcParams['font.sans-serif'] if f != CHART_FONT]
+
+
+def show_charts(results, measure=None, kind=None, indices=None, skip_months=None):
     """Draw every product chart with matplotlib (inline in Jupyter). Returns the figure count."""
     try:
         import matplotlib.pyplot as plt
-        import matplotlib.dates as mdates
         from matplotlib.ticker import FuncFormatter
     except ImportError:
         print('matplotlib is not installed, so no charts here - they are in the workbook '
               '(pip install matplotlib)')
         return 0
-    if base_year is None:
-        base_year = min([c.year for _, cs in results for c in cs] or [START_YEAR])
+    use_chart_font(plt)
     measure = MEASURE if measure is None else measure
     kind = CHART_KIND if kind is None else kind
     n_fig = 0
     for name, cs in results:
-        used, series, dates, note = product_series(cs, measure)
+        used, series, dates, note = product_series(cs, measure, (indices or {}).get(name))
         if not series:
             continue
-        fig, ax = plt.subplots(figsize=(14, 7.5))
+        fig, ax = plt.subplots(figsize=(13, 6.5), dpi=110)
         if kind == 'stacked':
-            stacked_axes(ax, series, dates, max(c.year for c, _ in series), used)
+            _n, unit_title, div = stacked_axes(ax, series, dates, used, skip_months)
         else:
-            for c, rows in series:
-                ax.plot([d for d, _ in rows], [v for _, v in rows], linewidth=1.1,
-                        color='#' + series_color(c.year, c.month, base_year), label=c.label)
+            _n, unit_title, div = lines_axes(ax, series, dates, used)
         title = FALLBACK_TITLE if (measure == 'notional' and used == 'oi') else CHART_TITLE[used]
-        ax.set_title(title.format(name=name), fontweight='bold', color='#' + CHART_TEXT)
-        ax.set_ylabel(Y_AXIS_TITLE[used], color='#' + CHART_TEXT)
-        if kind != 'stacked':
-            ax.xaxis.set_major_formatter(mdates.DateFormatter('%b-%y'))
-        if used == 'notional':
-            ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _pos: format(int(round(v / 1e6)), ',') + 'm'))
-        else:
-            ax.yaxis.set_major_formatter(FuncFormatter(lambda v, _pos: format(int(v), ',')))
-        ax.grid(False)
-        ax.tick_params(colors='#' + CHART_TEXT, labelsize=8)
-        for side in ('top', 'right'):
+        ax.set_title(title.format(name=name), loc='left', fontsize=12, fontweight='bold', color='#' + CHART_TEXT,
+                     pad=24)
+        ax.text(0, 1.035, subtitle_text(skip_months), transform=ax.transAxes, fontsize=8.5,
+                color='#' + SUBTITLE_COLOR, ha='left', va='bottom')
+        ax.set_ylabel(unit_title, color='#' + SUBTITLE_COLOR, fontsize=8.5)
+        ax.yaxis.set_major_formatter(FuncFormatter(axis_formatter(div, ax.get_ylim()[1])))
+        ax.yaxis.grid(True, color='#' + GRID_COLOR, linewidth=0.8)
+        ax.xaxis.grid(False)
+        ax.set_axisbelow(True)
+        ax.tick_params(colors='#' + CHART_TEXT, labelsize=8, length=3, width=0.6)
+        ax.tick_params(axis='y', length=0)
+        for side in ('top', 'right', 'left'):
             ax.spines[side].set_visible(False)
-        for side in ('left', 'bottom'):
-            ax.spines[side].set_color('#' + CHART_LINE)
-        fig.autofmt_xdate()
-        ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.14), ncol=13, fontsize=6.5,
-                  frameon=False, handlelength=1.4, columnspacing=1.0)
+        ax.spines['bottom'].set_color('#' + CHART_LINE)
+        ax.spines['bottom'].set_linewidth(0.6)
+        if kind != 'stacked':
+            fig.autofmt_xdate()
         fig.tight_layout()
         plt.show()
         n_fig += 1
@@ -1374,18 +1500,21 @@ def print_summary(results, bbg, out, indices=None, used=None):
 
 
 # ------------------------------------------------------------------- run ---
-def run(products=None, start_year=None, end_year=None, years_back_n=None, out=None,
-        today=None, blpapi_module=None, tickers_only=None, show_charts_=None,
-        host=BBG_HOST, port=BBG_PORT, skip_months=None, measure=None, kind=None):
+def run(products=None, data_start=None, out=None, today=None, blpapi_module=None, tickers_only=None,
+        show_charts_=None, host=BBG_HOST, port=BBG_PORT, skip_months=None, measure=None, kind=None,
+        all_ahead=None, quarterly_ahead=None, last_expiry_year=None):
     """Resolve every contract, pull its open interest, write the workbook; returns the path.
 
     Every argument defaults to the CONFIG value at the top of the file.
     """
     products = list(PRODUCTS if products is None else products)
-    start_year = START_YEAR if start_year is None else start_year
-    end_year = END_YEAR if end_year is None else end_year
-    years_back_n = YEARS_BACK if years_back_n is None else years_back_n
+    data_start = as_date(DATA_START if data_start is None else data_start)
+    if data_start is None:
+        raise ValueError('DATA_START must be a date, YYYY-MM-DD')
     skip_months = SKIP_MONTHS if skip_months is None else skip_months
+    all_ahead = ALL_MONTHS_AHEAD if all_ahead is None else all_ahead
+    quarterly_ahead = QUARTERLY_AHEAD if quarterly_ahead is None else quarterly_ahead
+    last_expiry_year = LAST_EXPIRY_YEAR if last_expiry_year is None else last_expiry_year
     measure = MEASURE if measure is None else measure
     if measure not in ('notional', 'oi'):
         raise ValueError("measure must be 'notional' or 'oi', not %r" % (measure,))
@@ -1396,20 +1525,22 @@ def run(products=None, start_year=None, end_year=None, years_back_n=None, out=No
     if show_charts_ is None:
         show_charts_ = SHOW_CHARTS and in_ipython()
     today = today or dt.date.today()
-    months = contract_months(start_year, end_year)
+    months = expiry_months(data_start, today, skip_months, all_ahead, quarterly_ahead, last_expiry_year)
+    if not months:
+        raise ValueError('no expiry month to look for - check DATA_START / LAST_EXPIRY_YEAR')
     out = output_path(out, today)
-    print('OI charts | %d products | contracts %s .. %s | %d years back per contract | '
-          'last %d month(s) before expiry dropped | %s | today %s'
-          % (len(products), month_label(*months[0]), month_label(*months[-1]), years_back_n,
-             skip_months, 'USD notional' if measure == 'notional' else 'OI in contracts', today.isoformat()))
+    print('OI charts | %d products | window %s .. %s | expiries %s .. %s (%d) | '
+          'contracts expiring within %d months excluded | %s'
+          % (len(products), data_start.isoformat(), today.isoformat(), month_label(*months[0]),
+             month_label(*months[-1]), len(months), skip_months,
+             'USD notional' if measure == 'notional' else 'OI in contracts'))
     try:
         bbg = Bloomberg(host, port, blpapi_module=blpapi_module).connect()
     except Exception as e:
         raise StepError('connecting to Bloomberg', e)
     pull_error = None
     try:
-        print('Resolving %d contracts for %d products (%d candidate tickers) ...'
-              % (len(months) * len(products), len(products), 2 * len(months) * len(products)))
+        print('Resolving %d contracts for %d products ...' % (len(months) * len(products), len(products)))
         try:
             results = resolve_contracts(bbg, products, months, today)
         except Exception as e:
@@ -1438,7 +1569,7 @@ def run(products=None, start_year=None, end_year=None, years_back_n=None, out=No
                     c.status, c.note = NOT_PULLED, 'not requested - the pull stopped at %s' % pull_error[0].ticker
                     continue
                 try:
-                    fetch_open_interest(bbg, c, years_back_n, today, skip_months)
+                    fetch_open_interest(bbg, c, data_start, today, skip_months)
                     print('.', end='', flush=True)
                 except Exception as e:                 # keep what we have, say where it stopped
                     pull_error = (c, e)
@@ -1463,13 +1594,13 @@ def run(products=None, start_year=None, end_year=None, years_back_n=None, out=No
     finally:
         bbg.close()
     try:
-        used = write_workbook(out, results, base_year=start_year, indices=indices, measure=measure, kind=kind)
+        used = write_workbook(out, results, indices=indices, measure=measure, kind=kind, skip_months=skip_months)
     except Exception as e:
         raise StepError('writing the workbook %s' % out, e)
     print_summary(results, bbg, out, indices, used)
     if show_charts_:
         try:
-            show_charts(results, base_year=start_year, measure=measure, kind=kind)
+            show_charts(results, measure=measure, kind=kind, indices=indices, skip_months=skip_months)
         except Exception as e:
             raise StepError('drawing the charts (the workbook is already written: %s)' % out, e)
     if pull_error is not None:
@@ -1498,12 +1629,12 @@ def main(argv=None):
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('--out', default=OUTPUT_FILE,
                    help='output workbook; a bare name goes to OUTPUT_FOLDER (default OI_charts_<yyyymmdd>.xlsx)')
-    p.add_argument('--start-year', type=int, default=START_YEAR, help='first contract year (default %(default)s)')
-    p.add_argument('--end-year', type=int, default=END_YEAR, help='last contract year (default %(default)s)')
-    p.add_argument('--years-back', type=int, default=YEARS_BACK,
-                   help='history per contract, back from its last trade date (default %(default)s)')
+    p.add_argument('--start', default=DATA_START, metavar='YYYY-MM-DD',
+                   help='first day of the time frame (default %(default)s)')
+    p.add_argument('--last-expiry-year', type=int, default=LAST_EXPIRY_YEAR,
+                   help='look for December contracts up to this year (default %(default)s)')
     p.add_argument('--skip-months', type=int, default=SKIP_MONTHS,
-                   help='drop the contract month and the months before it from each history (default %(default)s)')
+                   help='hide the contracts expiring within this many months on every date (default %(default)s)')
     p.add_argument('--measure', choices=('notional', 'oi'), default=MEASURE,
                    help='what is plotted: USD notional or contracts (default %(default)s)')
     p.add_argument('--chart', choices=('stacked', 'lines'), default=CHART_KIND,
@@ -1522,9 +1653,9 @@ def main(argv=None):
         return 0
     today = dt.date.fromisoformat(a.asof) if a.asof else None
     try:
-        run(start_year=a.start_year, end_year=a.end_year, years_back_n=a.years_back,
-            out=a.out, today=today, tickers_only=a.tickers_only, show_charts_=False,
-            skip_months=a.skip_months, measure=a.measure, kind=a.chart)
+        run(data_start=a.start, last_expiry_year=a.last_expiry_year, out=a.out, today=today,
+            tickers_only=a.tickers_only, show_charts_=False, skip_months=a.skip_months,
+            measure=a.measure, kind=a.chart)
         return 0
     except Exception as e:
         report_error(e)
@@ -1548,9 +1679,14 @@ from contextlib import redirect_stdout            # noqa: E402
 TEST_TODAY = dt.date(2026, 9, 17)
 FAKE_PRODUCTS = [('HI', 'HSI'), ('XP', 'AS51'), ('QZ', 'SIMSCI')]
 FAKE_KRW_PRODUCTS = [('KM', 'KOSPI2')]        # a KRW product with a big multiplier, for the USD check
+FAKE_MID_PRODUCTS = [('MM', 'MIDMONTH')]     # a product whose contracts expire on the 12th, for the front-month rule
 QUARTERLY = (3, 6, 9, 12)
-HOLIDAYS = {(1, 1), (4, 4), (12, 25)}
+HOLIDAYS = {(1, 1), (4, 4), (12, 25)}          # the futures' holidays ...
+INDEX_HOLIDAYS = {(1, 1), (12, 25)}            # ... the index prints on 4 Apr too: a day without a single contract print
 DAY = dt.timedelta(days=1)
+TEST_START = dt.date(2023, 9, 1)               # + 4 skipped months -> the universe's first expiry, Jan 24
+TEST_KW = dict(data_start=TEST_START, skip_months=4, all_ahead=3, quarterly_ahead=3, last_expiry_year=2026)
+TEST_MONTHS = expiry_months(TEST_START, TEST_TODAY, 4, 3, 3, 2026)      # Jan 24 .. Dec 26, like the universe
 
 
 # ========================================================== FAKE BLPAPI ===
@@ -1720,7 +1856,7 @@ def last_trade(y, m):
 
 
 def listing(y, m):
-    days = 1100 if m == 12 else (400 if m in QUARTERLY else 90)   # Dec listed 3y out, serials 3m
+    days = 1100 if m == 12 else (400 if m in QUARTERLY else 200)   # Dec listed 3y out, serials ~6.5m
     return last_trade(y, m) - dt.timedelta(days=days)
 
 
@@ -1730,15 +1866,21 @@ def spec(y, m, **over):
     return s
 
 
+def mid_spec(y, m):
+    """A contract expiring on the 12th (KOSPI / TAIFEX style), listed 400 days before."""
+    lt = weekday_on_or_before(dt.date(y, m, 12))
+    return dict(year=y, month=m, last_trade=lt, listing=lt - dt.timedelta(days=400))
+
+
 def build_universe():
     """ticker -> contract spec.  Which forms exist follows the real Bloomberg behaviour."""
     u = {}
-    for root, _ in FAKE_PRODUCTS + FAKE_KRW_PRODUCTS:
+    for root, _ in FAKE_PRODUCTS + FAKE_KRW_PRODUCTS + FAKE_MID_PRODUCTS:
         for y, m in contract_months(2024, 2026):
             if root == 'XP' and m not in QUARTERLY:
                 continue                                            # (v)  quarterly-only product
             t1, t2 = candidate_tickers(root, y, m)
-            s = spec(y, m)
+            s = mid_spec(y, m) if root == 'MM' else spec(y, m)
             expired = s['last_trade'] < TEST_TODAY
             if root == 'HI' and (y, m) == (2026, 1):                # (iv) one-digit form is the 2036 contract
                 u[t1], u[t2] = spec(2036, 1), s
@@ -1759,10 +1901,15 @@ UNIVERSE = build_universe()
 UNIVERSE['NFH4 Index'] = spec(2024, 3, not_future=True)
 UNIVERSE['NFH24 Index'] = spec(2024, 3)
 UNIVERSE['NFJ4 Index'] = spec(2024, 4, not_future=True)
+# long-dated HSI Decembers: Dec 27 and Dec 30 live as one-digit codes; Dec 36 only as HIZ36, because
+# HIZ6 *is* Dec 26 - the one-digit form has to be rejected on its last trade date and HIZ36 tried
+UNIVERSE['HIZ7 Index'] = spec(2027, 12, listing=dt.date(2024, 12, 2))
+UNIVERSE['HIZ0 Index'] = spec(2030, 12, listing=dt.date(2025, 12, 1))
+UNIVERSE['HIZ36 Index'] = spec(2036, 12, listing=dt.date(2026, 6, 1))
 # the underlying indices (kind 'index', with a currency) and their USD rates (kind 'fx')
 FAKE_INDICES = {'HSI Index': 'HKD', 'AS51 Index': 'AUD', 'SIMSCI Index': 'SGD', 'KOSPI2 Index': 'KRW'}
 FAKE_FUT = {'HI': ('HKD', 50.0), 'XP': ('AUD', 25.0), 'QZ': ('USD', 100.0), 'NF': ('USD', 1.0),
-            'KM': ('USD', 250000.0)}   # root -> (CRNCY as Bloomberg reports it, FUT_VAL_PT); KM says USD like the real terminal
+            'KM': ('USD', 250000.0), 'MM': ('USD', 1.0)}   # root -> (CRNCY as Bloomberg reports it, FUT_VAL_PT); KM says USD like the real terminal
 FAKE_FX = ['USDHKD Curncy', 'USDAUD Curncy', 'USDSGD Curncy', 'USDKRW Curncy']
 FAKE_LEVELS = {'HSI Index': 20000.0, 'AS51 Index': 8000.0, 'SIMSCI Index': 350.0, 'KOSPI2 Index': 400.0,
                'USDHKD Curncy': 7.8, 'USDAUD Curncy': 1.5, 'USDSGD Curncy': 1.35, 'USDKRW Curncy': 1350.0}
@@ -1787,8 +1934,8 @@ def fake_oi(ticker, d):
     return float(TICKER_ID[ticker] * 100000 + days * 3 + 100)
 
 
-def is_session(d):
-    return d.weekday() < 5 and (d.month, d.day) not in HOLIDAYS
+def is_session(d, kind=None):
+    return d.weekday() < 5 and (d.month, d.day) not in (INDEX_HOLIDAYS if kind in ('index', 'fx') else HOLIDAYS)
 
 
 def first_session_on_or_after(d):
@@ -1809,7 +1956,7 @@ def fake_rows(ticker, start, end):
         return []
     d, hi, out = max(s['listing'], start), min(s['last_trade'], end), []
     while d <= hi:
-        if is_session(d):
+        if is_session(d, s.get('kind')):
             out.append((d, fake_oi(ticker, d)))
         d += DAY
     return out
@@ -1985,19 +2132,39 @@ def test_helpers():
     check('candidate forms HCT Jan 26', candidate_tickers('HCT', 2026, 1) == ('HCTF6 Index', 'HCTF26 Index'))
     check('candidate forms TWT Dec 25', candidate_tickers('TWT', 2025, 12) == ('TWTZ5 Index', 'TWTZ25 Index'))
     check('labels', month_label(2024, 1) == 'Jan 24' and month_label(2026, 12) == 'Dec 26')
-    check('years_back clips 29 Feb', years_back(dt.date(2024, 2, 29), 2) == dt.date(2022, 2, 28))
-    check('years_back plain', years_back(dt.date(2026, 9, 28), 2) == dt.date(2024, 9, 28))
+    check('add_months', add_months(2024, 11, 3) == (2025, 2) and add_months(2024, 1, -1) == (2023, 12)
+          and add_months(2023, 9, 4) == (2024, 1))
     check('month_end', month_end(2024, 2) == dt.date(2024, 2, 29) and month_end(2025, 12) == dt.date(2025, 12, 31))
-    check('history_cutoff: Jun 24 -> 30 Apr 24, Jan 26 -> 30 Nov 25, 0 -> no cutoff',
+    check('history_cutoff: Jun 24 / 2 -> 30 Apr 24, Jan 26 / 2 -> 30 Nov 25, 0 -> no cutoff',
           history_cutoff(2024, 6, 2) == dt.date(2024, 4, 30) and history_cutoff(2026, 1, 2) == dt.date(2025, 11, 30)
           and history_cutoff(2024, 6, 0) is None)
-    check('CONFIG: 3 years back, last 2 months dropped, USD notional; KOSPI2 / HSI / AS51 / TWSE not listed as USD contracts',
-          YEARS_BACK == 3 and SKIP_MONTHS == 2 and MEASURE == 'notional'
+    ends = {m: history_cutoff(2025, m, 4) for m in range(3, 9)}
+    check('the March rule with 4: Mar-Jun 25 end before March, Jul 25 ends 31 Mar (all of March), Aug 25 ends 30 Apr',
+          all(ends[m] < dt.date(2025, 3, 1) for m in (3, 4, 5, 6)) and ends[7] == dt.date(2025, 3, 31)
+          and ends[8] == dt.date(2025, 4, 30), ends)
+    check('CONFIG: 2021-01-01 .. today, expiries to 2036 (15 / 36 months ahead), 4 front months hidden, USD notional; '
+          'KOSPI2 / HSI / AS51 / TWSE not listed as USD contracts',
+          as_date(DATA_START) == dt.date(2021, 1, 1) and (ALL_MONTHS_AHEAD, QUARTERLY_AHEAD, LAST_EXPIRY_YEAR) == (15, 36, 2036)
+          and SKIP_MONTHS == 4 and MEASURE == 'notional'
           and not {'KOSPI2', 'HSI', 'HSCEI', 'HSTECH', 'AS51', 'TWSE'} & set(CONTRACT_CURRENCY))
+    months = expiry_months(dt.date(2021, 1, 1), TEST_TODAY, 4, 15, 36, 2036)
+    serial_after = [ym for ym in months if ym > (2027, 12) and ym[1] not in QUARTERLY]
+    nondec_after = [ym for ym in months if ym > (2029, 9) and ym[1] != 12]
+    check('expiry_months: May 21 first (Jan 21 + 4), every month to Dec 27, quarterly to Sep 29, then Decembers to 2036, ordered',
+          months[0] == (2021, 5) and months[-1] == (2036, 12) and (2027, 12) in months and (2028, 1) not in months
+          and (2028, 3) in months and (2029, 9) in months and (2029, 12) in months and (2030, 3) not in months
+          and (2030, 12) in months and not serial_after and not nondec_after
+          and all(a < b for a, b in zip(months, months[1:]))
+          and len(months) == 80 + 7 + 8 == len([ym for ym in months if ym <= (2027, 12)]) + 7 + 8, (months[:2], months[-3:], len(months)))
+    check('expiry_months for the fixture: Jan 24 .. Dec 26, 36 months',
+          TEST_MONTHS == contract_months(2024, 2026) and expiry_months(TEST_START, TEST_TODAY, 4, 3, 3, 2036)
+          == contract_months(2024, 2026) + [(y, 12) for y in range(2027, 2037)])
     check('as_float', as_float(50) == 50.0 and as_float('12.5') == 12.5 and as_float(None) is None
           and as_float(float('nan')) is None and as_float(0) is None and as_float('n.a.') is None)
-    check('index ticker: <tab> Index by default, INDEX_TICKERS for the exceptions',
-          index_ticker('KOSPI2') == 'KOSPI2 Index' and index_ticker('FPO') == 'XIN9I Index')
+    check('index ticker: <tab> Index by default (SX5E, SX5T, SPX included), INDEX_TICKERS for the exceptions',
+          index_ticker('KOSPI2') == 'KOSPI2 Index' and index_ticker('FPO') == 'XIN9I Index'
+          and index_ticker('SX5T') == 'SX5T Index' and index_ticker('SPX') == 'SPX Index'
+          and fx_for('EUR') == ('USDEUR Curncy', 'divide'))
     try:
         fx_for('')
         empty = 'no error'
@@ -2037,6 +2204,14 @@ def test_helpers():
           used == 'oi' and series == [(c, c.rows)] and dates == [d0, d1, d2, d3] and note.startswith('USD notional unavailable'), note)
     used, series, dates, note = product_series([c], 'oi')
     check('product_series: oi', used == 'oi' and note == '')
+    d5, d6 = dt.date(2024, 1, 5), dt.date(2024, 1, 8)
+    ix2 = IndexSeries(product='K', ticker='K Index', status=OK, rows=[(dt.date(2023, 12, 29), 1.0), (d0, 1.0), (d2, 1.0),
+                                                                        (d5, 1.0), (d6, 1.0), (dt.date(2024, 1, 9), 1.0)])
+    c2 = Contract(product='K', root='K', year=2024, month=1, label='Jan 24', ticker_1='a', ticker_2='b', ticker='a',
+                  status=OK, rows=[(d1, 4.0), (d6, 6.0)])
+    _, _, dates, _ = product_series([c2], 'oi', ix2)
+    check('product_series with the index calendar: first to last value date, index days inside are rows too',
+          dates == [d1, d2, d5, d6], dates)
     check('product_currency: the most common CRNCY of the resolved contracts',
           product_currency([Contract(product='x', root='x', year=1, month=1, label='', ticker_1='', ticker_2='',
                                      status=OK, currency=k) for k in ('HKD', 'HKD', 'USD')]) == 'HKD'
@@ -2050,20 +2225,38 @@ def test_helpers():
     dt_row.getElementAsString = lambda key: 'garbage'          # text form unusable -> datetime fallback
     check('row_date: text form first, datetime form as fallback',
           row_date(text_row) == dt.date(2026, 1, 28) and row_date(dt_row) == dt.date(2026, 1, 28))
-    check('11 real products, distinct legal tab names',
-          len({n for _, n in PRODUCTS}) == len(PRODUCTS) == 11
+    check('14 real products, distinct legal tab names',
+          len({n for _, n in PRODUCTS}) == len(PRODUCTS) == 14
           and all(safe_sheet_name(n) == n for _, n in PRODUCTS))
-    check('real roots match the request note (+ MTW added 18 Sep)',
-          [p[0] for p in PRODUCTS] == ['HI', 'HC', 'HCT', 'KM', 'XP', 'FT', 'TWT', 'MTW', 'FPO', 'HJA', 'QZ'])
+    check('real roots: the request note + MTW + VG / VHO / ES, tabs named after the underlying index',
+          [p[0] for p in PRODUCTS] == ['HI', 'HC', 'HCT', 'KM', 'XP', 'FT', 'TWT', 'MTW', 'FPO', 'HJA', 'QZ', 'VG', 'VHO', 'ES']
+          and [p[1] for p in PRODUCTS][-3:] == ['SX5E', 'SX5T', 'SPX'])
     check('optional yellow key: third item in PRODUCTS',
           candidate_tickers('CL', 2026, 1, 'Comdty') == ('CLF6 Comdty', 'CLF26 Comdty')
           and product_rows([('HI', 'HSI'), ('CL', 'WTI', 'Comdty')]) == [('HI', 'HSI', 'Index'), ('CL', 'WTI', 'Comdty')]
           and build_contracts([('CL', 'WTI', 'Comdty')], [(2026, 1)])[0][1][0].ticker_2 == 'CLF26 Comdty')
-    jan, jun, dec = (series_color(2024, m, 2024) for m in (1, 6, 12))
-    lum = lambda h: sum(int(h[i:i + 2], 16) for i in (0, 2, 4))
-    check('series colours: 6-hex, Jan lighter than Jun lighter than Dec, year changes the hue, 5-year cycle',
-          all(len(h) == 6 and int(h, 16) >= 0 for h in (jan, jun, dec)) and lum(jan) > lum(jun) > lum(dec)
-          and series_color(2025, 12, 2024) != dec and series_color(2029, 1, 2024) == jan)
+    cs = [Contract(product='x', root='x', year=2025, month=m, label='', ticker_1='', ticker_2='') for m in
+          (1, 2, 3, 4, 6, 12, 9, 12)]
+    cols = band_colors(cs)
+    check('band colours: family by tenor, alternating along each family, 6-hex, alternate shade lighter',
+          [band_family(m) for m in (1, 3, 12, 7)] == ['serial', 'quarter', 'dec', 'serial']
+          and cols == [FAMILY_COLORS['serial'][0], FAMILY_COLORS['serial'][1], FAMILY_COLORS['quarter'][0],
+                       FAMILY_COLORS['serial'][0], FAMILY_COLORS['quarter'][1], FAMILY_COLORS['dec'][0],
+                       FAMILY_COLORS['quarter'][0], FAMILY_COLORS['dec'][1]]
+          and all(len(h) == 6 and int(h, 16) >= 0 for pair in FAMILY_COLORS.values() for h in pair)
+          and all(luminance(a) < luminance(b) for a, b in FAMILY_COLORS.values())
+          and len({h for pair in FAMILY_COLORS.values() for h in pair}) == 6, cols)
+    check('text_on: white on the dark shades, dark grey on the light ones',
+          text_on(FAMILY_COLORS['dec'][0]) == 'FFFFFF' and text_on(FAMILY_COLORS['quarter'][0]) == 'FFFFFF'
+          and text_on(FAMILY_COLORS['serial'][1]) == CHART_TEXT)
+    check('axis_unit / money: bn for a big product, m for a small one, contracts as they are',
+          axis_unit(5e10, 'notional') == ('USD bn', '#,##0.0,,,', 1e9) and axis_unit(4e8, 'notional') == ('USD m', '#,##0,,', 1e6)
+          and axis_unit(12345, 'oi') == ('Contracts', '#,##0', 1.0)
+          and money(12.34e9, 1e9, '') == '12.3bn' and money(2788.2e9, 1e9, '') == '2,788bn' and money(850e6, 1e6, '') == '850m'
+          and money(1234.6, 1.0, '') == '1,235' and axis_formatter(1e9, 60e9)(12.34e9, 0) == '12.3'
+          and axis_formatter(1e9, 6000e9)(2500e9, 0) == '2,500' and axis_formatter(1.0, 5)(1234.0, 0) == '1,234')
+    check('subtitle names the rule and the source', subtitle_text(4).startswith('Contracts expiring within 4 months excluded')
+          and 'Source: Bloomberg, Nomura' in subtitle_text() and 'navy = December' in subtitle_text())
     import builtins
     plain = in_ipython()
     builtins.get_ipython = lambda: object()
@@ -2076,27 +2269,38 @@ def test_helpers():
 
 def test_resolution():
     bbg = Bloomberg(blpapi_module=FakeAPI).connect()
-    months = contract_months(2024, 2026)
+    months = TEST_MONTHS
     results = resolve_contracts(bbg, FAKE_PRODUCTS, months, TEST_TODAY)
     by = {(n, c.label): c for n, cs in results for c in cs}
     refs = [e for e in bbg.session.log if e['op'] == 'ReferenceDataRequest']
-    cands = [t for _, cs in results for c in cs for t in (c.ticker_1, c.ticker_2)]
-    requested = [s for e in refs for s in e['securities']]
-    check('one reference pass, chunked at REF_CHUNK',
-          len(refs) == -(-len(cands) // REF_CHUNK) and all(len(e['securities']) <= REF_CHUNK for e in refs),
-          len(refs))
-    check('every candidate requested exactly once', sorted(requested) == sorted(cands))
+    allc = [c for _, cs in results for c in cs]
+    expected = [expected_form(c, TEST_TODAY) for c in allc]
+    n1 = -(-len(expected) // REF_CHUNK)
+    pass1 = [s for e in refs[:n1] for s in e['securities']]
+    pass2 = [s for e in refs[n1:] for s in e['securities']]
+    misses = [c for c in allc if expected_form(c, TEST_TODAY) in bbg.bad_securities
+              or (c.status == NOT_FOUND)]
+    check('pass 1: the expected form of every contract, once, chunked at REF_CHUNK',
+          pass1 == expected and all(len(e['securities']) <= REF_CHUNK for e in refs), (len(pass1), len(expected)))
+    check('pass 2: only the other form of the contracts pass 1 could not resolve',
+          sorted(pass2) == sorted(other_form(c, TEST_TODAY) for c in misses) and 0 < len(pass2) < len(pass1),
+          (len(pass2), len(misses)))
     check('reference fields as configured', all(e['fields'] == REF_FIELDS for e in refs))
+    check('expected_form: two digits once the month has passed, one digit while live',
+          expected_form(by[('HSI', 'Sep 25')], TEST_TODAY) == 'HIU25 Index'
+          and expected_form(by[('HSI', 'Sep 26')], TEST_TODAY) == 'HIU6 Index'
+          and expected_form(by[('HSI', 'Aug 26')], TEST_TODAY) == 'HIQ26 Index')
     c = by[('HSI', 'Sep 25')]
     check('(i)   expired -> two-digit form', c.ticker == 'HIU25 Index' and c.status == OK, c)
     check('(ii)  live -> one-digit form',
           by[('HSI', 'Oct 26')].ticker == 'HIV6 Index' and by[('HSI', 'Sep 26')].ticker == 'HIU6 Index')
     c = by[('HSI', 'Aug 26')]
-    check('(iii) both forms valid, expired -> two-digit', c.ticker == 'HIQ26 Index' and c.note == 'both forms valid', c)
+    check('(iii) both forms valid, expired: the two-digit form resolves in pass 1, the other is never asked for',
+          c.ticker == 'HIQ26 Index' and c.note == '' and 'HIQ6 Index' not in pass1 + pass2, c)
     check('(iii) both forms valid, live -> one-digit', by[('HSI', 'Dec 26')].ticker == 'HIZ6 Index')
     c = by[('HSI', 'Jan 26')]
-    check('(iv)  wrong-decade one-digit rejected, two-digit used',
-          c.ticker == 'HIF26 Index' and c.status == OK and c.last_trade.year == 2026, c)
+    check('(iv)  expired 2026 contract: two-digit form first, so the wrong-decade one-digit code is never asked for',
+          c.ticker == 'HIF26 Index' and c.status == OK and c.last_trade.year == 2026 and 'HIF6 Index' not in pass1 + pass2, c)
     c = by[('SIMSCI', 'Feb 26')]
     check('(iv)  only a wrong-decade form -> NOT FOUND, note shows the date seen',
           c.status == NOT_FOUND and c.ticker == '' and c.last_trade is None and '2036' in c.note, c.note)
@@ -2112,8 +2316,9 @@ def test_resolution():
     check('(iv)  wrong-decade note names the date seen and the unknown form',
           'QZG6 Index -> last trade 2036-02' in note and 'outside the month' in note
           and 'QZG26 Index -> Unknown/Invalid' in note, note)
-    check('(vii) unknown tickers collected, not raised',
-          'HIU5 Index' in bbg.bad_securities and 'HIU25 Index' not in bbg.bad_securities)
+    check('(vii) unknown tickers collected, not raised; a form that resolved in pass 1 is never a bad security',
+          'XPF24 Index' in bbg.bad_securities and 'HIU25 Index' not in bbg.bad_securities
+          and 'HIU5 Index' not in bbg.bad_securities)
     check('no field errors on the reference pass', not bbg.field_errors, bbg.field_errors)
     ok = [c for _, cs in results for c in cs if c.status == OK]
     check('LAST_TRADEABLE_DT kept as a date, inside the contract month',
@@ -2131,7 +2336,7 @@ def test_resolution():
 def test_history(bbg, results):
     for _, cs in results:
         for c in cs:
-            fetch_open_interest(bbg, c, 3, TEST_TODAY, 2)
+            fetch_open_interest(bbg, c, TEST_START, TEST_TODAY, 4)
     by = {(n, c.label): c for n, cs in results for c in cs}
     hist = [e for e in bbg.session.log if e['op'] == 'HistoricalDataRequest']
     resolved = [c for _, cs in results for c in cs if c.status in (OK, NO_DATA)]
@@ -2146,16 +2351,17 @@ def test_history(bbg, results):
     bad = []
     for e in hist:
         c = by_ticker[e['securities'][0]]
-        exp = (years_back(c.last_trade, 3).strftime('%Y%m%d'),
-               min(c.last_trade, TEST_TODAY, history_cutoff(c.year, c.month, 2)).strftime('%Y%m%d'))
+        exp = (TEST_START.strftime('%Y%m%d'),
+               min(c.last_trade, TEST_TODAY, history_cutoff(c.year, c.month, 4)).strftime('%Y%m%d'))
         got = (e['settings']['startDate'], e['settings']['endDate'])
         if got != exp:
             bad.append((c.ticker, got, exp))
-    check('request window = [last trade - 3y, min(last trade, today, end of month-2)] as YYYYMMDD', not bad, bad[:3])
+    check('request window = [DATA_START, min(last trade, today, end of month-4)] as YYYYMMDD', not bad, bad[:3])
     c = by[('HSI', 'Jun 24')]
-    check('Jun 24: no May 24 or Jun 24 rows, last row in Apr 24',
-          c.req_end == dt.date(2024, 4, 30) and c.rows[-1][0] == last_session_on_or_before(dt.date(2024, 4, 30))
-          and all((d.year, d.month) not in ((2024, 5), (2024, 6)) for d, _ in c.rows), (c.req_end, c.rows[-1]))
+    check('Jun 24: no Mar-Jun 24 rows, last row in Feb 24',
+          c.req_end == dt.date(2024, 2, 29) and c.rows[-1][0] == last_session_on_or_before(dt.date(2024, 2, 29))
+          and all((d.year, d.month) not in ((2024, 3), (2024, 4), (2024, 5), (2024, 6)) for d, _ in c.rows),
+          (c.req_end, c.rows[-1]))
     c = by[('SIMSCI', 'Oct 26')]
     check('(vi)  resolves but no prints -> NO DATA, no rows, window kept for the audit',
           c.status == NO_DATA and c.rows == [] and c.req_start is not None
@@ -2172,32 +2378,99 @@ def test_history(bbg, results):
     check('two messages of one history are accumulated, not overwritten',
           all(len(c.rows) == len(fake_rows(c.ticker, c.req_start, c.req_end)) for c in ok))
     c = by[('HSI', 'Feb 25')]
-    check('serial contract: starts on its listing day, ~3 months long',
+    check('serial contract: starts on its listing day, ends 4 months before expiry (~2-3 months of rows)',
           c.rows[0][0] == first_session_on_or_after(UNIVERSE[c.ticker]['listing'])
-          and (c.rows[-1][0] - c.rows[0][0]).days < 100, (c.rows[0], c.rows[-1]))
+          and c.rows[-1][0] == last_session_on_or_before(dt.date(2024, 10, 31))
+          and 40 < len(c.rows) < 80, (c.rows[0], c.rows[-1], len(c.rows)))
     c = by[('HSI', 'Dec 25')]
-    check('Dec contract listed 3y out: starts at the 3-year window (listing is ~3y out, so on or after)',
-          c.rows[0][0] >= first_session_on_or_after(c.req_start) and c.req_start == years_back(c.last_trade, 3),
-          (c.rows[0], c.req_start))
+    check('Dec contract listed 3y out: starts at DATA_START (2023-09-01)',
+          c.rows[0][0] == first_session_on_or_after(TEST_START) and c.req_start == TEST_START, (c.rows[0], c.req_start))
     c = by[('HSI', 'Jun 25')]
-    check('expired contract: ends at the end of the month two before expiry (30 Apr 25)',
-          c.req_end == dt.date(2025, 4, 30) and c.rows[-1][0] == last_session_on_or_before(dt.date(2025, 4, 30)))
+    check('expired contract: ends at the end of the month four before expiry (28 Feb 25)',
+          c.req_end == dt.date(2025, 2, 28) and c.rows[-1][0] == last_session_on_or_before(dt.date(2025, 2, 28)))
     c = by[('HSI', 'Dec 26')]
-    check('live contract whose cutoff is after today: ends today', c.rows[-1][0] == last_session_on_or_before(TEST_TODAY))
-    c = by[('HSI', 'Oct 26')]
-    check('live contract whose cutoff is before today: ends 31 Aug 26',
+    check('live contract: ends 31 Aug 26 (four months before December), not today',
           c.req_end == dt.date(2026, 8, 31) and c.rows[-1][0] == last_session_on_or_before(dt.date(2026, 8, 31)))
     c0 = Contract(**{k: getattr(by[('HSI', 'Jun 25')], k) for k in
                         ('product', 'root', 'year', 'month', 'label', 'ticker_1', 'ticker_2', 'ticker', 'status', 'last_trade')})
-    fetch_open_interest(bbg, c0, 3, TEST_TODAY, 0)
-    check('--skip-months 0: history runs to the last trade date, as before',
+    fetch_open_interest(bbg, c0, TEST_START, TEST_TODAY, 0)
+    check('--skip-months 0: history runs to the last trade date',
           c0.req_end == c0.last_trade and c0.rows[-1][0] == last_session_on_or_before(c0.last_trade))
     c3 = Contract(**{k: getattr(by[('HSI', 'Dec 25')], k) for k in
                         ('product', 'root', 'year', 'month', 'label', 'ticker_1', 'ticker_2', 'ticker', 'status', 'last_trade')})
-    fetch_open_interest(bbg, c3, 4, TEST_TODAY)
-    check('--years-back 4 widens the window', c3.req_start == years_back(c3.last_trade, 4)
-          and bbg.session.log[-1]['settings']['startDate'] == c3.req_start.strftime('%Y%m%d'))
+    fetch_open_interest(bbg, c3, dt.date(2024, 6, 3), TEST_TODAY, 4)
+    check('a later DATA_START narrows the window', c3.req_start == dt.date(2024, 6, 3)
+          and bbg.session.log[-1]['settings']['startDate'] == '20240603' and c3.rows[0][0] == dt.date(2024, 6, 3))
+    c4 = Contract(product='HSI', root='HI', year=2024, month=1, label='Jan 24', ticker_1='HIF4 Index',
+                  ticker_2='HIF24 Index', ticker='HIF24 Index', status=OK, last_trade=dt.date(2024, 1, 30))
+    fetch_open_interest(bbg, c4, dt.date(2023, 10, 2), TEST_TODAY, 4)
+    check('a contract whose window ends before DATA_START is NO DATA with a reason, not a request',
+          c4.status == NO_DATA and 'before DATA_START' in c4.note and bbg.session.log[-1]['securities'] != ['HIF24 Index'], c4.note)
     return results
+
+
+def test_visibility():
+    """The front-month rule, on a product that expires mid-month: every day of March shows the
+    same set - nothing expiring Mar-Jun, July onwards."""
+    bbg = Bloomberg(blpapi_module=FakeAPI).connect()
+    results = resolve_contracts(bbg, FAKE_MID_PRODUCTS, TEST_MONTHS, TEST_TODAY)
+    cs = results[0][1]
+    for c in cs:
+        fetch_open_interest(bbg, c, TEST_START, TEST_TODAY, 4)
+    check('mid-month product: 36 contracts resolved, expiring on the 12th or the weekday before',
+          all(c.status == OK and 8 <= c.last_trade.day <= 12 for c in cs), [(c.label, c.last_trade) for c in cs[:3]])
+
+    def visible(day):
+        return {c.label for c in cs if day in dict(c.rows)}
+    d_first, d_mid, d_last, d_april = dt.date(2025, 3, 3), dt.date(2025, 3, 14), dt.date(2025, 3, 31), dt.date(2025, 4, 1)
+    hidden = {'Mar 25', 'Apr 25', 'May 25', 'Jun 25'}
+    check('on 3, 14 and 31 March 2025: no Mar/Apr/May/Jun 25 contract, Jul 25 present on all three days',
+          all(not (visible(d) & hidden) and 'Jul 25' in visible(d) for d in (d_first, d_mid, d_last)),
+          {d.isoformat(): sorted(visible(d))[:6] for d in (d_first, d_mid, d_last)})
+    check('14 March is after the Mar 25 contract expired (12 Mar) and the set is still the same rule',
+          d_mid > [c for c in cs if c.label == 'Mar 25'][0].last_trade and 'Jul 25' in visible(d_mid))
+    check('on 1 April 2025 Jul 25 is gone and Aug 25 is the first contract shown',
+          'Jul 25' not in visible(d_april) and 'Aug 25' in visible(d_april) and min(
+              (c.year, c.month) for c in cs if c.label in visible(d_april)) == (2025, 8), sorted(visible(d_april))[:4])
+    check('the nearest contract shown is always 4 months out: Feb 25 shows in Oct 24, not in Nov 24',
+          'Feb 25' in visible(dt.date(2024, 10, 31)) and 'Feb 25' not in visible(dt.date(2024, 11, 1)))
+
+
+def test_long_dated():
+    """Expiries to 2036: the Decembers that exist resolve (Dec 36 only via its two-digit code), the
+    rest are NOT FOUND, and a contract listed in June 2026 simply has three months of rows."""
+    bbg = Bloomberg(blpapi_module=FakeAPI).connect()
+    months = expiry_months(TEST_START, TEST_TODAY, 4, 3, 3, 2036)
+    results = resolve_contracts(bbg, [('HI', 'HSI')], months, TEST_TODAY)
+    cs = results[0][1]
+    by = {c.label: c for c in cs}
+    check('46 expiries: 36 months + Dec 27 .. Dec 36', len(cs) == 46 and cs[-1].label == 'Dec 36')
+    check('Dec 27 and Dec 30 resolve on their one-digit codes',
+          by['Dec 27'].ticker == 'HIZ7 Index' and by['Dec 30'].ticker == 'HIZ0 Index')
+    c = by['Dec 36']
+    check('Dec 36: HIZ6 is Dec 26 (last trade outside the month) -> rejected, HIZ36 used in pass 2',
+          c.status == OK and c.ticker == 'HIZ36 Index' and c.last_trade.year == 2036, c)
+    nf = [c.label for c in cs if c.status == NOT_FOUND]
+    check('unlisted Decembers are NOT FOUND with both forms explained',
+          nf == ['Dec 28', 'Dec 29', 'Dec 31', 'Dec 32', 'Dec 33', 'Dec 34', 'Dec 35']
+          and by['Dec 28'].note == 'HIZ8 Index -> Unknown/Invalid Security [nid:1234]; HIZ28 Index -> Unknown/Invalid Security [nid:1234]',
+          (nf, by['Dec 28'].note))
+    for c in cs:
+        fetch_open_interest(bbg, c, TEST_START, TEST_TODAY, 4)
+    check('Dec 36 listed June 2026: rows from its listing day to today, nothing invented before',
+          c.rows[0][0] == first_session_on_or_after(dt.date(2026, 6, 1)) and c.rows[-1][0] == last_session_on_or_before(TEST_TODAY)
+          and by['Dec 27'].rows[0][0] == first_session_on_or_after(dt.date(2024, 12, 2)), (c.rows[0], c.rows[-1]))
+    tmp = tempfile.mkdtemp()
+    path = os.path.join(tmp, 'long.xlsx')
+    write_workbook(path, results, measure='oi')
+    wb = load_workbook(path)
+    ws = wb['HSI']
+    _, series, dates, _ = product_series(cs, 'oi')
+    check('workbook: the live Decembers are the last columns and the dates run to today',
+          [ws.cell(2, j).value for j in range(2, len(series) + 2)][-3:] == ['Dec 27', 'Dec 30', 'Dec 36']
+          and dates[-1] == last_session_on_or_before(TEST_TODAY) and ws.max_row == len(dates) + 2)
+    os.remove(path)
+    os.rmdir(tmp)
 
 
 def test_workbook(results):
@@ -2214,13 +2487,15 @@ def test_workbook(results):
     check('no empty <v></v> cells anywhere (the Excel "repair" trigger)',
           all(b'<v></v>' not in x and b'<v/>' not in x for x in sheet_xml.values()))
     check('one chart part per product tab', len(chart_xml) == 3, len(chart_xml))
-    check('chart XML: gaps, date axis, no markers, straight lines, no gridlines, grey axes, no border',
+    check('chart XML: gaps, date axis, no markers, straight lines, light gridlines, grey x axis, no legend, no border',
           all(b'dispBlanksAs val="gap"' in x and b'<dateAx>' in x and b'symbol val="none"' in x
-              and b'smooth val="0"' in x and b'majorGridlines' not in x and x.count(b'noFill') >= 2
-              and x.count(b'srgbClr val="BFBFBF"') == 2 for x in chart_xml.values()))
+              and b'smooth val="0"' in x and b'majorGridlines' in x and x.count(b'noFill') >= 3
+              and x.count(b'srgbClr val="BFBFBF"') == 1 and b'srgbClr val="E6E6E6"' in x and b'<c:legend>' not in x
+              and b'<legend>' not in x and b'latin typeface="Arial"' in x for x in chart_xml.values()))
     for name, cs in results:
         ws = wb[name]
-        dates, found = align_product(cs)
+        _, series, dates, _ = product_series(cs, 'oi')
+        found = [c for c, _ in series]
         n, N = len(found), len(dates)
         check('%s: row 1 tickers, row 2 labels, expiry order' % name,
               [ws.cell(1, j).value for j in range(2, n + 2)] == [c.ticker for c in found]
@@ -2260,28 +2535,34 @@ def test_workbook(results):
               and ch.x_axis.axId == 500 and ch.x_axis.crossAx == 100
               and ch.y_axis.axId == 100 and ch.y_axis.crossAx == 500)
         title = ch.title.tx.rich.p[0].r[0].t
+        subtitle = ch.title.tx.rich.p[1].r[0].t
         ytitle = ch.y_axis.title.tx.rich.p[0].r[0].t
-        check('%s: chart title and OI axis title, contracts number format' % name,
-              title == CHART_TITLE['oi'].format(name=name) and ytitle == Y_AXIS_TITLE['oi']
-              and ch.y_axis.number_format.formatCode == Y_NUMBER_FORMAT['oi'] and ch.y_axis.majorGridlines is None
-              and ch.x_axis.txPr is not None and ch.legend.txPr is not None, (title, ytitle))
-        check('%s: legend at the bottom' % name, ch.legend is not None and ch.legend.position == 'b')
+        check('%s: title + subtitle, Contracts axis title and number format, gridlines, no legend' % name,
+              title == CHART_TITLE['oi'].format(name=name) and subtitle == subtitle_text()
+              and ytitle == Y_AXIS_TITLE['oi'] and ch.y_axis.number_format.formatCode == '#,##0'
+              and ch.y_axis.majorGridlines is not None and ch.x_axis.txPr is not None and ch.legend is None,
+              (title, subtitle, ytitle))
+        colors = band_colors(found)
+        labels, _ = band_labels(series, dates)
         ok_series, why = True, ''
         for k, s in enumerate(ch.series):
             col = get_column_letter(k + 2)
             want = ("'%s'!%s2" % (name, col), "'%s'!$%s$3:$%s$%d" % (name, col, col, N + 2), "'%s'!$A$3:$A$%d" % (name, N + 2))
             got = (s.tx.strRef.f, s.val.numRef.f, s.cat.numRef.f)
             colour = s.graphicalProperties.line.solidFill.srgbClr
+            mode, kk = labels[k][0], labels[k][1]
+            named = (s.dLbls is not None and len(s.dLbls.dLbl) == 1 and s.dLbls.dLbl[0].idx == kk
+                     and s.dLbls.dLbl[0].showSerName is True and s.dLbls.dLbl[0].spPr is None)
             if got != want or s.smooth is not False or s.marker.symbol is not None \
-                    or s.graphicalProperties.line.width != 12700 \
-                    or colour != series_color(found[k].year, found[k].month, 2024):
-                ok_series, why = False, (got, want, colour)
+                    or s.graphicalProperties.line.width != 12700 or colour != colors[k] \
+                    or (mode is None) == named:
+                ok_series, why = False, (got, want, colour, mode, named)
                 break
-        check('%s: series titles from row 2, values rows 3..%d, dates as categories, year/month colours' % (name, N + 2),
+        check('%s: series titles from row 2, values rows 3..%d, dates as categories, family colours, named lines' % (name, N + 2),
               ok_series, why)
         check('%s: chart anchored one column right of the data' % name,
               ch.anchor._from.col == n + 3 and ch.anchor._from.row == 1, (ch.anchor._from.col, ch.anchor._from.row))
-        check('%s: chart 34 x 17 cm' % name, ch.anchor.ext.cx == 12240000 and ch.anchor.ext.cy == 6120000,
+        check('%s: chart 30 x 15 cm' % name, ch.anchor.ext.cx == 10800000 and ch.anchor.ext.cy == 5400000,
               (ch.anchor.ext.cx, ch.anchor.ext.cy))
     ws = wb[AUDIT_SHEET]
     total = sum(len(cs) for _, cs in results)
@@ -2328,10 +2609,10 @@ def test_notional():
 def _test_notional():
     global CONTRACT_CURRENCY
     bbg = Bloomberg(blpapi_module=FakeAPI).connect()
-    results = resolve_contracts(bbg, FAKE_PRODUCTS, contract_months(2024, 2026), TEST_TODAY)
+    results = resolve_contracts(bbg, FAKE_PRODUCTS, TEST_MONTHS, TEST_TODAY)
     for _, cs in results:
         for c in cs:
-            fetch_open_interest(bbg, c, 3, TEST_TODAY)
+            fetch_open_interest(bbg, c, TEST_START, TEST_TODAY, 4)
     n0 = len(bbg.session.log)
     indices = resolve_indices(bbg, results)
     refs = [e for e in bbg.session.log[n0:] if e['op'] == 'ReferenceDataRequest']
@@ -2347,7 +2628,7 @@ def _test_notional():
     check('CONTRACT_CURRENCY = USD: no FX, index used in points, source recorded',
           qz.status == OK and qz.currency == 'SGD' and qz.fut_currency == 'USD' and qz.ccy_source == 'CONTRACT_CURRENCY'
           and qz.fx_ticker == '', qz)
-    kr = resolve_indices(bbg, resolve_contracts(bbg, FAKE_KRW_PRODUCTS, contract_months(2025, 2025), TEST_TODAY))['KOSPI2']
+    kr = resolve_indices(bbg, resolve_contracts(bbg, FAKE_KRW_PRODUCTS, [(2025, m) for m in range(1, 13)], TEST_TODAY))['KOSPI2']
     check('KOSPI2: futures CRNCY says USD (as on the real terminal) but the index says KRW -> KRW used, USDKRW, warning',
           kr.status == OK and kr.bbg_fut_currency == 'USD' and kr.fut_currency == 'KRW' and kr.ccy_source == 'index CRNCY'
           and kr.fx_ticker == 'USDKRW Curncy' and 'says USD - ignored, KRW used' in kr.note, kr)
@@ -2379,9 +2660,9 @@ def _test_notional():
           and hist[0]['settings']['endDate'] == hist[1]['settings']['endDate'] == ix.req_end.strftime('%Y%m%d'),
           [(e['securities'], e['settings']['startDate'], e['settings']['endDate']) for e in hist])
     cs = results[0][1]
-    check('index window = earliest contract start .. latest contract end, capped at today',
-          ix.req_start == min(c.req_start for c in cs if c.rows)
-          and ix.req_end == min(max(c.req_end for c in cs if c.rows), TEST_TODAY) == TEST_TODAY, (ix.req_start, ix.req_end))
+    check('index window = DATA_START .. latest contract end (31 Aug 26: four months before Dec 26)',
+          ix.req_start == TEST_START == min(c.req_start for c in cs if c.rows)
+          and ix.req_end == max(c.req_end for c in cs if c.rows) == dt.date(2026, 8, 31), (ix.req_start, ix.req_end))
     fx = dict(ix.fx_rows)
     check('ix.rows: one per index day, points / same-day FX where the rate printed that day, sorted',
           ix.status == OK and len(ix.rows) == len(ix.index_rows) > 0 and ix.note == ''
@@ -2409,11 +2690,16 @@ def _test_notional():
         chart_xml = {n: z.read(n) for n in z.namelist() if n.startswith('xl/charts/chart')}
     for name, cs in results:
         ws = wb[name]
-        _, series, dates, _ = product_series(cs, 'notional')
+        _, series, dates, _ = product_series(cs, 'notional', indices[name])
         n, N = len(series), len(dates)
-        check('%s: one column per contract + Total, dates = union of notional dates' % name,
+        check('%s: one column per contract + Total, rows = first..last notional date on the index calendar' % name,
               ws.max_column == n + 2 and ws.max_row == N + 2
               and [ws.cell(1, j).value for j in range(2, n + 2)] == [c.ticker for c, _ in series], (ws.max_column, n))
+        gaps = [i for i, d in enumerate(dates, start=3) if (d.month, d.day) == (4, 4)]
+        check('%s: 4 April is a row (index day, no contract print) with every cell and the Total blank - a visible hole' % name,
+              len(gaps) == 2 and all(ws.cell(i, j).value is None for i in gaps for j in range(2, n + 3))
+              and dates[0] == min(d for _, rows in series for d, _ in rows)
+              and dates[-1] == max(d for _, rows in series for d, _ in rows), (gaps, len(dates)))
         good, why = True, ''
         for j, (c, rows) in enumerate(series, start=2):
             lk = dict(rows)
@@ -2427,15 +2713,15 @@ def _test_notional():
         check('%s: every cell is that contract\'s USD notional of that day, blank elsewhere' % name, good, why)
         ch = ws._charts[0]
         title = ch.title.tx.rich.p[0].r[0].t
-        check('%s: stacked chart + total line, notional title, USD m axis format, no gridlines' % name,
+        check('%s: stacked chart + total line, notional title, USD bn axis, light gridlines, no legend' % name,
               isinstance(ch, BarChart) and len(ch._charts) == 2 and len(ch.series) == n
               and title == CHART_TITLE['notional'].format(name=name)
               and ch.y_axis.title.tx.rich.p[0].r[0].t == Y_AXIS_TITLE['notional']
-              and ch.y_axis.number_format.formatCode == Y_NUMBER_FORMAT['notional'] and ch.y_axis.majorGridlines is None
-              and ch.anchor._from.col == n + 3, (title, ch.anchor._from.col))
-    check('chart XML: one bar chart + one line chart on one category + one value axis, no gridlines, USD m format',
+              and ch.y_axis.number_format.formatCode == '#,##0.0,,,' and ch.y_axis.majorGridlines is not None
+              and ch.legend is None and ch.anchor._from.col == n + 3, (title, ch.anchor._from.col))
+    check('chart XML: one bar chart + one line chart on one category + one value axis, gridlines, USD bn format, no legend',
           all(x.count(b'<barChart>') == 1 and x.count(b'<lineChart>') == 1 and x.count(b'<catAx>') == 1
-              and x.count(b'<valAx>') == 1 and b'majorGridlines' not in x and b'#,##0,,&quot;m&quot;' in x
+              and x.count(b'<valAx>') == 1 and b'majorGridlines' in x and b'#,##0.0,,,' in x and b'<legend>' not in x
               for x in chart_xml.values()) and len(chart_xml) == 3)
     ws = wb[AUDIT_SHEET]
     rows = {(r[0], r[1]): r for r in ws.iter_rows(min_row=2, values_only=True)}
@@ -2481,7 +2767,7 @@ def _test_notional():
     # run() end to end: notional by default, plain OI on request
     FakeSession.instances.clear()
     path4 = os.path.join(tmp, 'run.xlsx')
-    out, text = quiet(run, products=FAKE_PRODUCTS, today=TEST_TODAY, blpapi_module=FakeAPI, out=path4)
+    out, text = quiet(run, products=FAKE_PRODUCTS, today=TEST_TODAY, blpapi_module=FakeAPI, out=path4, **TEST_KW)
     sess = FakeSession.instances[-1]
     wb4 = load_workbook(path4)
     check('run(): USD notional by default - index pulled per product, summary explains the formula, Indices tab',
@@ -2491,13 +2777,13 @@ def _test_notional():
           and INDEX_SHEET in wb4.sheetnames
           and wb4['HSI']._charts[0].title.tx.rich.p[0].r[0].t == CHART_TITLE['notional'].format(name='HSI')
           and sum(1 for e in sess.log if e['op'] == 'HistoricalDataRequest') == 83 + 5, text[-900:])
-    out, text = quiet(run, products=FAKE_PRODUCTS, today=TEST_TODAY, blpapi_module=FakeAPI, out=path4, measure='oi')
+    out, text = quiet(run, products=FAKE_PRODUCTS, today=TEST_TODAY, blpapi_module=FakeAPI, out=path4, measure='oi', **TEST_KW)
     wb5 = load_workbook(path4)
     check('run(measure="oi") / --measure oi: contracts, no index requests, no Indices tab',
           INDEX_SHEET not in wb5.sheetnames and 'showing OI in contracts' in text and 'notional:' not in text
           and wb5['HSI']._charts[0].title.tx.rich.p[0].r[0].t == CHART_TITLE['oi'].format(name='HSI'))
     try:
-        run(products=FAKE_PRODUCTS, today=TEST_TODAY, blpapi_module=FakeAPI, out=path4, measure='usd')
+        run(products=FAKE_PRODUCTS, today=TEST_TODAY, blpapi_module=FakeAPI, out=path4, measure='usd', **TEST_KW)
         raised = ''
     except ValueError as e:
         raised = str(e)
@@ -2505,7 +2791,7 @@ def _test_notional():
     # ---- the USD check, on a KRW product with a realistic multiplier: KOSPI2 ----
     FakeSession.instances.clear()
     path5 = os.path.join(tmp, 'krw.xlsx')
-    out, text = quiet(run, products=FAKE_KRW_PRODUCTS, today=TEST_TODAY, blpapi_module=FakeAPI, out=path5)
+    out, text = quiet(run, products=FAKE_KRW_PRODUCTS, today=TEST_TODAY, blpapi_module=FakeAPI, out=path5, **TEST_KW)
     sess = FakeSession.instances[-1]
     hist = [e for e in sess.log if e['op'] == 'HistoricalDataRequest']
     wb6 = load_workbook(path5)
@@ -2546,36 +2832,33 @@ def _test_notional():
             n_fig, _ = quiet(show_charts, results, kind='lines')
         fig = plt.figure(plt.get_fignums()[0])
         ax = fig.axes[0]
-        ylab, title, n_lines, ticks = ax.get_ylabel(), ax.get_title(), len(ax.get_lines()), ax.get_yticklabels()
+        ylab, title, n_lines = ax.get_ylabel(), ax.get_title(loc='left'), len(ax.get_lines())
         grid = any(l.get_visible() for l in ax.get_ygridlines())
+        subtitle = [t.get_text() for t in ax.texts if t.get_text().startswith('Contracts expiring')]
         plt.close('all')
-        check('show_charts (lines): notional title and axis, USD m tick labels, no gridlines, one line per contract',
+        check('show_charts (lines): title left + subtitle, USD bn axis, light gridlines, one line per contract',
               n_fig == 3 and len(fig.axes) == 1 and ylab == Y_AXIS_TITLE['notional']
-              and title == CHART_TITLE['notional'].format(name='HSI') and n_lines == 36 and not grid,
-              (n_fig, ylab, title, n_lines, grid))
+              and title == CHART_TITLE['notional'].format(name='HSI') and n_lines == 36 and grid
+              and subtitle == [subtitle_text()], (n_fig, ylab, title, n_lines, grid, subtitle))
     for f in os.listdir(tmp):
         os.remove(os.path.join(tmp, f))
     os.rmdir(tmp)
 
 
 def test_stacked():
-    check('CONFIG: stacked columns by default', CHART_KIND == 'stacked')
-    cols = [stack_color(2026, m, 2026) for m in range(1, 13)]
-    check('stack_color: the 12 configured month colours for the newest year, older years faded to white, capped',
-          cols == [MONTH_COLORS[m].lower() for m in range(1, 13)] and len(set(cols)) == 12
-          and stack_color(2025, 12, 2026) == '506278' and stack_color(2024, 12, 2026) == '828e9e'
-          and stack_color(2020, 12, 2026) == stack_color(2024, 12, 2026), cols)
-    def sat(hexcol):
+    check('CONFIG: stacked columns by default, Nomura red total', CHART_KIND == 'stacked' and TOTAL_COLOR == 'C8102E')
+    def hsv(hexcol):
         r, g, b = (int(hexcol[i:i + 2], 16) / 255.0 for i in (0, 2, 4))
         mx, mn = max(r, g, b), min(r, g, b)
-        return 0 if mx == 0 else (mx - mn) / mx
-    check('MONTH_COLORS: no colour is fully saturated or neon (max HSV saturation 0.75), no pure primaries',
-          all(sat(c) <= 0.75 for c in MONTH_COLORS.values()), {m: round(sat(c), 2) for m, c in MONTH_COLORS.items()})
+        return (0 if mx == 0 else (mx - mn) / mx), mx
+    check('FAMILY_COLORS: sharp but not neon - nothing both fully saturated and bright',
+          all(not (sat > 0.85 and val > 0.85) for pair in FAMILY_COLORS.values() for sat, val in map(hsv, pair)),
+          {k: [tuple(round(x, 2) for x in hsv(c)) for c in pair] for k, pair in FAMILY_COLORS.items()})
     bbg = Bloomberg(blpapi_module=FakeAPI).connect()
-    results = resolve_contracts(bbg, FAKE_PRODUCTS, contract_months(2024, 2026), TEST_TODAY)
+    results = resolve_contracts(bbg, FAKE_PRODUCTS, TEST_MONTHS, TEST_TODAY)
     for _, cs in results:
         for c in cs:
-            fetch_open_interest(bbg, c, 3, TEST_TODAY)
+            fetch_open_interest(bbg, c, TEST_START, TEST_TODAY, 4)
     tmp = tempfile.mkdtemp()
     path = os.path.join(tmp, 'stacked.xlsx')
     write_workbook(path, results, measure='oi')            # default kind
@@ -2593,39 +2876,42 @@ def test_stacked():
               and isinstance(ch._charts[1], LineChart) and len(ch._charts[1].series) == 1
               and [s.tx.strRef.f for s in ch.series] == ["'%s'!%s2" % (name, get_column_letter(j)) for j in range(2, n + 2)],
               (ch.grouping, ch.overlap, ch.gapWidth, len(ch.series)))
-        pos = {d: i for i, d in enumerate(dates)}
-        last_year = max(c.year for c, _ in series)
         labels, totals = band_labels(series, dates)
-        good = all(s.graphicalProperties.solidFill.srgbClr == stack_color(c.year, c.month, last_year)
+        colors = band_colors([c for c, _ in series])
+        good = all(s.graphicalProperties.solidFill.srgbClr == colour
                    and s.graphicalProperties.line.noFill is True
                    and ((mode is None and s.dLbls is None) or
-                        (len(s.dLbls.dLbl) == 1 and s.dLbls.dLbl[0].idx == k
+                        (len(s.dLbls.dLbl) == 1 and s.dLbls.dLbl[0].idx == k and s.dLbls.dLbl[0].spPr is None
                          and s.dLbls.dLbl[0].showSerName is True and s.dLbls.dLbl[0].showVal is False
-                         and s.dLbls.showVal is False and s.dLbls.showSerName is False))
-                   for s, (c, rows), (mode, k, _h, _b) in zip(ch.series, series, labels))
+                         and s.dLbls.showVal is False and s.dLbls.showSerName is False
+                         and s.dLbls.dLbl[0].txPr.p[0].pPr.defRPr.solidFill.srgbClr == text_on(colour)))
+                   for s, colour, (mode, k, _h, _b) in zip(ch.series, colors, labels))
         live = [c.label for (c, rows) in series if rows[-1][0] == dates[-1]]
         modes = [m for m, _, _, _ in labels]
-        check('%s: bands coloured by month/year; live bands named at the last day, tall ones at their peak, rest legend only'
-              % name, good and modes.count('last') == len(live) and 0 < modes.count('peak')
+        check('%s: family colours; live bands named at the last day (max %d), tall ones at their peak, plain text'
+              % (name, MAX_END_LABELS), good and modes.count('last') == min(len(live), MAX_END_LABELS) and 0 < modes.count('peak')
               and all(k == N - 1 for m, k, _, _ in labels if m == 'last')
               and all(h >= LABEL_MIN_HEIGHT * max(totals) for m, k, h, _ in labels if m == 'peak'),
               (modes.count('last'), len(live), modes.count('peak'), modes.count(None)))
         t = ch._charts[1].series[0]
         tl = get_column_letter(n + 2)
-        check('%s: Total line from the Total column, black 1 pt, labelled with name + value at the last day' % name,
+        check('%s: Total line from the Total column, red 1.25 pt, labelled with name + value at the last day' % name,
               t.tx.strRef.f == "'%s'!%s2" % (name, tl) and t.val.numRef.f == "'%s'!$%s$3:$%s$%d" % (name, tl, tl, N + 2)
               and t.graphicalProperties.line.solidFill.srgbClr == TOTAL_COLOR and t.marker.symbol is None
+              and t.graphicalProperties.line.width == 15875
               and len(t.dLbls.dLbl) == 1 and t.dLbls.dLbl[0].idx == N - 1 and t.dLbls.dLbl[0].showVal is True
-              and t.dLbls.dLbl[0].showSerName is True and t.dLbls.dLbl[0].numFmt == Y_NUMBER_FORMAT['oi'], t.tx.strRef.f)
-        check('%s: category axis with mmm-yy labels ~quarterly, legend on the right, chart after the Total column' % name,
+              and t.dLbls.dLbl[0].showSerName is True and t.dLbls.dLbl[0].numFmt == '#,##0', t.tx.strRef.f)
+        check('%s: category axis with mmm-yy labels ~monthly, no legend, chart after the Total column, 30 x 15 cm' % name,
               ch.x_axis.number_format.formatCode == 'mmm-yy' and ch.x_axis.tickLblSkip == max(1, N // 12)
-              and ch.legend.position == 'r' and ch.anchor._from.col == n + 3 and ch.y_axis.majorGridlines is None,
+              and ch.legend is None and ch.anchor._from.col == n + 3 and ch.y_axis.majorGridlines is not None
+              and ch.anchor.ext.cx == 10800000 and ch.anchor.ext.cy == 5400000,
               (ch.x_axis.tickLblSkip, ch.anchor._from.col))
-    check('chart XML: barChart stacked + lineChart sharing one catAx and one valAx, data labels present, no gridlines',
+    check('chart XML: barChart stacked + lineChart sharing one catAx and one valAx, data labels, gridlines, no legend, Arial',
           all(x.count(b'<barChart>') == 1 and x.count(b'<lineChart>') == 1 and x.count(b'<catAx>') == 1
               and x.count(b'<valAx>') == 1 and b'grouping val="stacked"' in x and b'overlap val="100"' in x
               and b'gapWidth val="0"' in x and b'<dLbl>' in x and b'showSerName val="1"' in x
-              and b'majorGridlines' not in x for x in chart_xml.values()) and len(chart_xml) == 3,
+              and b'majorGridlines' in x and b'<legend>' not in x and b'latin typeface="Arial"' in x
+              for x in chart_xml.values()) and len(chart_xml) == 3,
           {k: (x.count(b'<barChart>'), x.count(b'<catAx>'), x.count(b'<valAx>')) for k, x in chart_xml.items()})
     xml = chart_xml['xl/charts/chart1.xml']
     _, series, dates, _ = product_series(results[0][1], 'oi')
@@ -2663,7 +2949,7 @@ def test_stacked():
          (Contract(product='x', root='x', year=2024, month=4, label='D', ticker_1='', ticker_2='', status=OK), rd)], days)
     check('band_labels: a peak elsewhere in the plot is kept', lbls[0][0] == 'peak' and lbls[1] == ('peak', 30, 100.0, 1.0), lbls)
     try:
-        run(products=FAKE_PRODUCTS, today=TEST_TODAY, blpapi_module=FakeAPI, out=path, kind='pie')
+        run(products=FAKE_PRODUCTS, today=TEST_TODAY, blpapi_module=FakeAPI, out=path, kind='pie', **TEST_KW)
         raised = ''
     except ValueError as e:
         raised = str(e)
@@ -2679,18 +2965,20 @@ def test_stacked():
         _, series, dates, _ = product_series(results[0][1], 'oi')
         n_bars = len(ax.patches)
         n_lines = len(ax.get_lines())
-        texts = [t for t in ax.texts]
+        texts = [t for t in ax.texts if not t.get_text().startswith('Contracts expiring')]
         labels = sorted(t.get_text() for t in texts)
         ylim = ax.get_ylim()
+        red = [l for l in ax.get_lines() if l.get_color() == '#' + TOTAL_COLOR]
         plt.close('all')
         lbls, totals = band_labels(series, dates)
+        n_last = sum(1 for m, _, _, _ in lbls if m == 'last')
         exp_labels = sorted([c.label for (c, _), (m, _, _, _) in zip(series, lbls) if m]
                             + ['%s %s' % (TOTAL_LABEL, format(int(round(totals[-1])), ','))])
-        check('show_charts (stacked): one bar per contract-day, the Total line, boxed labels for the named bands + total, legend',
-              n_fig == 3 and n_bars == 36 * len(dates) and n_lines == 1 and labels == exp_labels
-              and all(t.get_bbox_patch() is not None for t in texts) and ax.get_legend() is not None
-              and len(ax.get_legend().get_texts()) == 37 and ylim[0] == 0,
-              (n_fig, n_bars, n_lines, len(texts), labels[:3], exp_labels[:3]))
+        check('show_charts (stacked): one bar per contract-day, the red Total line + one connector per rail label, '
+              'plain-text names, no legend',
+              n_fig == 3 and n_bars == 36 * len(dates) and n_lines == 1 + n_last and len(red) == 1 and labels == exp_labels
+              and all(t.get_bbox_patch() is None for t in texts) and ax.get_legend() is None and ylim[0] == 0,
+              (n_fig, n_bars, n_lines, n_last, len(texts), labels[:3], exp_labels[:3]))
     for f in os.listdir(tmp):
         os.remove(os.path.join(tmp, f))
     os.rmdir(tmp)
@@ -2735,14 +3023,17 @@ def test_run():
     tmp = tempfile.mkdtemp()
     path = os.path.join(tmp, 'run.xlsx')
     FakeSession.instances.clear()
-    out, text = quiet(run, products=FAKE_PRODUCTS, today=TEST_TODAY, blpapi_module=FakeAPI, out=path)
+    out, text = quiet(run, products=FAKE_PRODUCTS, today=TEST_TODAY, blpapi_module=FakeAPI, out=path, **TEST_KW)
     check('run(): returns the path and writes the file', out == path and os.path.exists(path))
+    check('run(): banner states the window, the expiries and the rule',
+          'window 2023-09-01 .. 2026-09-17 | expiries Jan 24 .. Dec 26 (36) | contracts expiring within 4 months excluded'
+          in text, text[:300])
     check('run(): per-product counts, NOT FOUND months, NO DATA months, output path printed',
           ('%-8s %2d/%d' % ('AS51', 12, 36)) in text and ('%-11s Jan 24' % 'NOT FOUND:') in text
           and ('%-11s Oct 26' % 'NO DATA:') in text and ('Written: %s' % path) in text, text[-800:])
     check('run(): session closed', FakeSession.instances and FakeSession.instances[-1].stopped)
     FakeSession.instances.clear()
-    out, text = quiet(run, products=FAKE_PRODUCTS, today=TEST_TODAY, blpapi_module=FakeAPI, tickers_only=True)
+    out, text = quiet(run, products=FAKE_PRODUCTS, today=TEST_TODAY, blpapi_module=FakeAPI, tickers_only=True, **TEST_KW)
     sess = FakeSession.instances[-1]
     check('run(tickers_only): no historical request, table printed, returns ""',
           out == '' and not any(e['op'] == 'HistoricalDataRequest' for e in sess.log)
@@ -2755,19 +3046,18 @@ def test_run():
     check('--help exits 0', code == 0, code)
     path2 = os.path.join(tmp, 'nb.xlsx')
     out, text = quiet(notebook_main, products=FAKE_PRODUCTS, today=TEST_TODAY, blpapi_module=FakeAPI,
-                      out=path2, show_charts_=False)
+                      out=path2, show_charts_=False, **TEST_KW)
     check('notebook_main(): runs everything, returns the path', out == path2 and os.path.exists(path2) and 'Written:' in text)
     out, text = quiet(notebook_main, products=FAKE_PRODUCTS, today=TEST_TODAY,
-                      blpapi_module=api_with(SilentSession), out=path2)
+                      blpapi_module=api_with(SilentSession), out=path2, **TEST_KW)
     check('notebook_main(): a Bloomberg problem is one clear message with the step, no traceback',
           out is None and 'ERROR while resolving the tickers:' in text and 'Bloomberg did not answer' in text
           and 'Traceback' not in text, text)
-    results = resolve_contracts(Bloomberg(blpapi_module=FakeAPI).connect(), FAKE_PRODUCTS,
-                                  contract_months(2024, 2026), TEST_TODAY)
+    results = resolve_contracts(Bloomberg(blpapi_module=FakeAPI).connect(), FAKE_PRODUCTS, TEST_MONTHS, TEST_TODAY)
     bbg = Bloomberg(blpapi_module=FakeAPI).connect()
     for _, cs in results:
         for c in cs:
-            fetch_open_interest(bbg, c, 3, TEST_TODAY)
+            fetch_open_interest(bbg, c, TEST_START, TEST_TODAY, 4)
     if importlib.util.find_spec('matplotlib') is None:
         n, text = quiet(show_charts, results, measure='oi', kind='lines')
         check('show_charts without matplotlib: says so in one line, draws nothing', n == 0 and 'matplotlib is not installed' in text)
@@ -2778,12 +3068,11 @@ def test_run():
             warnings.simplefilter('ignore')
             n, text = quiet(show_charts, results, measure='oi', kind='lines')
         figs = plt.get_fignums()
-        titles = [plt.figure(i).axes[0].get_title() for i in figs]
+        titles = [plt.figure(i).axes[0].get_title(loc='left') for i in figs]
         n_lines = [len(plt.figure(i).axes[0].get_lines()) for i in figs]
         plt.close('all')
         check('show_charts with matplotlib: one figure per product with data, one line per found contract',
-              n == 3 and len(figs) == 3 and titles == ['HSI Futures Open Interest', 'AS51 Futures Open Interest',
-                                                       'SIMSCI Futures Open Interest']
+              n == 3 and len(figs) == 3 and titles == [CHART_TITLE['oi'].format(name=x) for x in ('HSI', 'AS51', 'SIMSCI')]
               and n_lines == [36, 12, 34], (n, titles, n_lines))
     os.remove(path)
     os.remove(path2)
@@ -2824,11 +3113,11 @@ def test_not_a_future():
     check('no futures contract at all -> NOT FOUND, note explains both forms',
           apr.status == NOT_FOUND and apr.note == 'NFJ4 Index -> not a futures contract (no LAST_TRADEABLE_DT; '
           'name: FAKE NFJ4 SOMETHING ELSE); NFJ24 Index -> Unknown/Invalid Security [nid:1234]', apr.note)
-    check('field refusals remembered per security',
-          bbg.field_error_secs.get('LAST_TRADEABLE_DT') == {'NFH4 Index', 'NFJ4 Index'} and bbg.n_ref_securities == 4)
+    check('field refusals remembered per security (NFH4 was never asked for: NFH24 resolved in pass 1)',
+          bbg.field_error_secs.get('LAST_TRADEABLE_DT') == {'NFJ4 Index'} and bbg.n_ref_securities == 3)
     _, text = quiet(print_summary, results, bbg, None)
     check('summary explains the refusal instead of calling the field invalid',
-          'LAST_TRADEABLE_DT not applicable to 2 of 4 candidate tickers' in text and 'e.g. NFH4 Index' in text
+          'LAST_TRADEABLE_DT not applicable to 1 of 3 candidate tickers' in text and 'e.g. NFJ4 Index' in text
           and 'NOT FOUND = neither ticker form' in text and 'refused' not in text, text)
     bbg = Bloomberg(blpapi_module=FakeAPI).connect()
     bbg.ref(['HIU25 Index'], ['NOT_A_FIELD'])
@@ -2855,14 +3144,14 @@ def test_failures():
           and p3 == os.path.join(tmp, 'sub', 'y.xlsx'), (p1, p2, p3))
     # terminal not running
     out, text = quiet(notebook_main, products=FAKE_PRODUCTS, today=TEST_TODAY,
-                      blpapi_module=api_with(DeadTerminalSession), out=os.path.join(tmp, 'a.xlsx'))
+                      blpapi_module=api_with(DeadTerminalSession), out=os.path.join(tmp, 'a.xlsx'), **TEST_KW)
     check('terminal not running -> "ERROR while connecting to Bloomberg" + what to check',
           out is None and 'ERROR while connecting to Bloomberg' in text and 'logged in' in text
           and 'Traceback' not in text, text)
     # a data-limit style failure in the middle of the pull: keep what was pulled, say where it stopped
     path = os.path.join(tmp, 'partial.xlsx')
     out, text = quiet(notebook_main, products=FAKE_PRODUCTS, today=TEST_TODAY,
-                      blpapi_module=api_with(StopsMidPullSession), out=path, show_charts_=False)
+                      blpapi_module=api_with(StopsMidPullSession), out=path, show_charts_=False, **TEST_KW)
     wb = load_workbook(path) if os.path.exists(path) else None
     statuses = [r[5] for r in wb[AUDIT_SHEET].iter_rows(min_row=2, values_only=True)] if wb else []
     check('pull stops at contract 5: workbook still written with the 4 pulled, rest NOT PULLED, message says so',
@@ -2873,7 +3162,8 @@ def test_failures():
           and 'Traceback' not in text, text[-900:])
     # an unexpected (non-Bloomberg) error: the message names the step AND the traceback follows
     out, text = quiet(notebook_main, products=FAKE_PRODUCTS, today=TEST_TODAY,
-                      blpapi_module=api_with(BuggyHistorySession), out=os.path.join(tmp, 'b.xlsx'), show_charts_=False)
+                      blpapi_module=api_with(BuggyHistorySession), out=os.path.join(tmp, 'b.xlsx'), show_charts_=False,
+                      **TEST_KW)
     check('unexpected error -> step named, "Full detail for debugging" and the traceback shown',
           out is None and 'ERROR while pulling OPEN_INT for HIF24 Index (HSI Jan 24)' in text
           and 'Full detail for debugging' in text and 'TypeError: unexpected element shape' in text
@@ -2889,7 +3179,7 @@ def test_failures():
 def demo(out=None):
     """The whole pipeline on fake data: a workbook to open in Excel, charts inline in Jupyter."""
     out = out or os.path.join(os.getcwd(), 'demo_OI_charts.xlsx')
-    run(products=FAKE_PRODUCTS, today=TEST_TODAY, blpapi_module=FakeAPI, out=out)
+    run(products=FAKE_PRODUCTS, today=TEST_TODAY, blpapi_module=FakeAPI, out=out, **dict(TEST_KW, last_expiry_year=2036))
     print('open it in Excel: 3 product tabs with a chart each, plus Contracts')
 
 
@@ -2902,6 +3192,8 @@ def run_tests():
     test_helpers()
     bbg, results = test_resolution()
     test_history(bbg, results)
+    test_visibility()
+    test_long_dated()
     test_workbook(results)
     test_notional()
     test_stacked()
