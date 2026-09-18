@@ -76,8 +76,7 @@ MEASURE = 'notional'
 CHART_TITLE = {'notional': '{name} futures open interest, USD notional',
                'oi': '{name} futures open interest, contracts'}
 FALLBACK_TITLE = '{name} futures open interest, contracts (USD notional unavailable)'
-SUBTITLE = ('Contracts expiring within {skip} months excluded   |   navy = December, blue = Mar/Jun/Sep, '
-            'grey = other months   |   Source: Bloomberg, Nomura')
+SUBTITLE = 'Contracts expiring within {skip} months excluded   |   {key}   |   Source: Bloomberg, Nomura'
 Y_AXIS_TITLE = {'notional': 'USD bn', 'oi': 'Contracts'}   # a small product is shown in USD m instead
 
 # 5b. Chart type.  'stacked': the contracts stacked as daily columns (earliest expiry at the
@@ -86,13 +85,23 @@ Y_AXIS_TITLE = {'notional': 'USD bn', 'oi': 'Contracts'}   # a small product is 
 #     big bands at their peak.  'lines': one line per contract.
 CHART_KIND = 'stacked'
 
-# 5c. Colours, by tenor: December contracts (the long-dated ones), the other quarterlies, and
-#     the serial months.  Neighbouring bands of one family alternate between the two shades so
-#     every band has an edge.  Hex, no '#'.
-FAMILY_COLORS = {
-    'dec':     ('0B2E59', '2A5D9F'),   # deep navy / royal blue
-    'quarter': ('0E8A9E', '5FB9C6'),   # teal / aqua
-    'serial':  ('9AA5B1', 'C7CFD8'),   # cool greys
+# 5c. Band colours: one per contract month, the same every year (a Dec band is always navy),
+#     and two bands of one month are never neighbours in the stack.  The quarterlies carry the
+#     four strongest hues; the serial months are muted so the quarterlies read first.
+#     (hex without '#', and the name the chart subtitle uses)
+MONTH_COLORS = {
+    1:  ('93A3B8', 'steel'),
+    2:  ('C4AD7D', 'sand'),
+    3:  ('2E6DB4', 'blue'),
+    4:  ('8FA88A', 'sage'),
+    5:  ('A88F9C', 'mauve'),
+    6:  ('E08A2E', 'amber'),
+    7:  ('6FA3C0', 'sky'),
+    8:  ('B76E79', 'rose'),
+    9:  ('1E9E86', 'green'),
+    10: ('A0805B', 'bronze'),
+    11: ('7A7FB8', 'periwinkle'),
+    12: ('0B2E59', 'navy'),
 }
 TOTAL_COLOR = 'C8102E'          # the Total line: Nomura red, the one accent on the page
 CHART_FONT = 'Arial'
@@ -308,15 +317,13 @@ def band_family(month):
 
 
 def band_colors(contracts):
-    """One hex colour per contract (same order): the family's shade, alternating along the
-    family so two neighbouring bands of one family never share a colour."""
-    seen, out = {}, []
-    for c in contracts:
-        fam = band_family(c.month)
-        k = seen.get(fam, 0)
-        seen[fam] = k + 1
-        out.append(FAMILY_COLORS[fam][k % 2])
-    return out
+    """One hex colour per contract (same order): MONTH_COLORS of its contract month."""
+    return [MONTH_COLORS[c.month][0] for c in contracts]
+
+
+def color_key():
+    """'Dec navy, Mar blue, Jun amber, Sep green, other months muted' - from MONTH_COLORS."""
+    return ', '.join('%s %s' % (MONTH_ABBR[m - 1], MONTH_COLORS[m][1]) for m in (12, 3, 6, 9)) + ', other months muted'
 
 
 def luminance(hexcol):
@@ -340,7 +347,7 @@ def axis_unit(max_value, measure):
 
 
 def subtitle_text(skip_months=None):
-    return SUBTITLE.format(skip=SKIP_MONTHS if skip_months is None else skip_months)
+    return SUBTITLE.format(skip=SKIP_MONTHS if skip_months is None else skip_months, key=color_key())
 
 
 def in_ipython():
@@ -1969,28 +1976,34 @@ for _t in FAKE_FX:
 TICKER_ID = {t: i for i, t in enumerate(sorted(UNIVERSE))}
 
 
-FAKE_PEAK = {'dec': 60000.0, 'quarter': 130000.0, 'serial': 18000.0}    # contracts at the top of the build-up
-FAKE_CENTRE = {'dec': 0.70, 'quarter': 0.60, 'serial': 0.50}              # where in its life a contract is half built
+FAKE_SCALE = {'HI': 1.0, 'XP': 0.7, 'QZ': 1.3, 'KM': 1.0, 'NF': 1.0, 'MM': 1.0}   # per root, in contracts
 
 
 def fake_oi(ticker, d):
-    """Deterministic prints that look like the real thing, distinct per ticker and day (the
-    ticker's id sits in the third decimal, so a misaligned cell cannot match): an index level
-    that drifts up, an FX rate that moves a little every day, and open interest that builds up
-    over a contract's life along a logistic curve - quarterlies largest, Decembers long and mid-
-    sized, serial months small - with a small daily wobble."""
+    """Deterministic prints that behave like real open interest, distinct per ticker and day (the
+    ticker's id sits in the third decimal, so a misaligned cell cannot match).  Index levels drift
+    up; FX rates move a little every day.  A December contract carries a sizeable, slowly growing
+    structural position; another quarterly is small far out, grows as it becomes the second
+    contract and only jumps in the roll, inside the last five weeks; a serial month stays small."""
     s = UNIVERSE[ticker]
     days = (d - s['listing']).days
     if s.get('kind') == 'fx':                         # realistic rate, moves every day
         return FAKE_LEVELS[ticker] * (1 + (days % 10) * 0.001)
     if s.get('kind') == 'index':                      # realistic level, drifts up, wobbles
         return FAKE_LEVELS[ticker] * (1 + days / 5000.0 + (days % 7) * 0.002)
+    k = TICKER_ID[ticker]
+    dte = (s['last_trade'] - d).days                  # days to expiry
+    life = float(max(1, (s['last_trade'] - s['listing']).days))
     fam = band_family(s['month'])
-    t = days / float(max(1, (s['last_trade'] - s['listing']).days))
-    size = FAKE_PEAK[fam] * (0.8 + 0.4 * ((TICKER_ID[ticker] * 7) % 11) / 10.0)
-    build = 1.0 / (1.0 + math.exp(-(t - FAKE_CENTRE[fam]) * 12.0))
-    wobble = 1.0 + 0.03 * math.sin(days * 0.9 + TICKER_ID[ticker])
-    return round(size * build * wobble) + TICKER_ID[ticker] * 0.001
+    if fam == 'dec':
+        base = 26000.0 + 9000.0 * (1.0 - dte / life)
+    elif fam == 'quarter':
+        base = 6000.0 + 9000.0 / (1.0 + math.exp((dte - 150) / 22.0)) + 45000.0 / (1.0 + math.exp((dte - 35) / 6.0))
+    else:
+        base = 2500.0 + 1500.0 / (1.0 + math.exp((dte - 60) / 10.0))
+    scale = FAKE_SCALE.get(ticker[:2], 1.0) * (0.9 + 0.2 * ((k * 7) % 11) / 10.0)
+    drift = 1.0 + 0.004 * math.sin(days / 9.0 + k)   # gentle day-to-day movement
+    return round(base * scale * drift) + k * 0.001
 
 
 def is_session(d, kind=None):
@@ -2297,25 +2310,26 @@ def test_helpers():
     cs = [Contract(product='x', root='x', year=2025, month=m, label='', ticker_1='', ticker_2='') for m in
           (1, 2, 3, 4, 6, 12, 9, 12)]
     cols = band_colors(cs)
-    check('band colours: family by tenor, alternating along each family, 6-hex, alternate shade lighter',
+    check('band colours: one per contract month, the same every year, 12 distinct 6-hex values, quarterlies distinct',
           [band_family(m) for m in (1, 3, 12, 7)] == ['serial', 'quarter', 'dec', 'serial']
-          and cols == [FAMILY_COLORS['serial'][0], FAMILY_COLORS['serial'][1], FAMILY_COLORS['quarter'][0],
-                       FAMILY_COLORS['serial'][0], FAMILY_COLORS['quarter'][1], FAMILY_COLORS['dec'][0],
-                       FAMILY_COLORS['quarter'][0], FAMILY_COLORS['dec'][1]]
-          and all(len(h) == 6 and int(h, 16) >= 0 for pair in FAMILY_COLORS.values() for h in pair)
-          and all(luminance(a) < luminance(b) for a, b in FAMILY_COLORS.values())
-          and len({h for pair in FAMILY_COLORS.values() for h in pair}) == 6, cols)
-    check('text_on: white on the dark shades, dark grey on the light ones',
-          text_on(FAMILY_COLORS['dec'][0]) == 'FFFFFF' and text_on(FAMILY_COLORS['quarter'][0]) == 'FFFFFF'
-          and text_on(FAMILY_COLORS['serial'][1]) == CHART_TEXT)
+          and cols == [MONTH_COLORS[m][0] for m in (1, 2, 3, 4, 6, 12, 9, 12)]
+          and sorted(MONTH_COLORS) == list(range(1, 13))
+          and all(len(h) == 6 and int(h, 16) >= 0 and name for h, name in MONTH_COLORS.values())
+          and len({h for h, _ in MONTH_COLORS.values()}) == 12
+          and len({MONTH_COLORS[m][0] for m in (3, 6, 9, 12)}) == 4, cols)
+    check('text_on: white on navy and blue, dark grey on sand and amber',
+          text_on(MONTH_COLORS[12][0]) == 'FFFFFF' and text_on(MONTH_COLORS[3][0]) == 'FFFFFF'
+          and text_on(MONTH_COLORS[2][0]) == CHART_TEXT and text_on(MONTH_COLORS[6][0]) == CHART_TEXT)
     check('axis_unit / money: bn for a big product, m for a small one, contracts as they are',
           axis_unit(5e10, 'notional') == ('USD bn', '#,##0.0,,,', 1e9) and axis_unit(4e8, 'notional') == ('USD m', '#,##0,,', 1e6)
           and axis_unit(12345, 'oi') == ('Contracts', '#,##0', 1.0)
           and money(12.34e9, 1e9, '') == '12.3bn' and money(2788.2e9, 1e9, '') == '2,788bn' and money(850e6, 1e6, '') == '850m'
           and money(1234.6, 1.0, '') == '1,235' and axis_formatter(1e9, 60e9)(12.34e9, 0) == '12.3'
           and axis_formatter(1e9, 6000e9)(2500e9, 0) == '2,500' and axis_formatter(1.0, 5)(1234.0, 0) == '1,234')
-    check('subtitle names the rule and the source', subtitle_text(4).startswith('Contracts expiring within 4 months excluded')
-          and 'Source: Bloomberg, Nomura' in subtitle_text() and 'navy = December' in subtitle_text())
+    check('subtitle names the rule, the colour key and the source',
+          subtitle_text(4).startswith('Contracts expiring within 4 months excluded')
+          and 'Source: Bloomberg, Nomura' in subtitle_text() and 'Dec navy, Mar blue, Jun amber, Sep green' in subtitle_text()
+          and color_key().endswith('other months muted'))
     import builtins
     plain = in_ipython()
     builtins.get_ipython = lambda: object()
@@ -2932,9 +2946,9 @@ def test_stacked():
         r, g, b = (int(hexcol[i:i + 2], 16) / 255.0 for i in (0, 2, 4))
         mx, mn = max(r, g, b), min(r, g, b)
         return (0 if mx == 0 else (mx - mn) / mx), mx
-    check('FAMILY_COLORS: sharp but not neon - nothing both fully saturated and bright',
-          all(not (sat > 0.85 and val > 0.85) for pair in FAMILY_COLORS.values() for sat, val in map(hsv, pair)),
-          {k: [tuple(round(x, 2) for x in hsv(c)) for c in pair] for k, pair in FAMILY_COLORS.items()})
+    check('MONTH_COLORS: sharp but not neon - nothing both fully saturated and bright',
+          all(not (sat > 0.85 and val > 0.85) for sat, val in (hsv(h) for h, _ in MONTH_COLORS.values())),
+          {m: tuple(round(x, 2) for x in hsv(h)) for m, (h, _) in MONTH_COLORS.items()})
     bbg = Bloomberg(blpapi_module=FakeAPI).connect()
     results = resolve_contracts(bbg, FAKE_PRODUCTS, TEST_MONTHS, TEST_TODAY)
     for _, cs in results:
