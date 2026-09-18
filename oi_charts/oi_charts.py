@@ -95,6 +95,7 @@ CHART_KIND = 'stacked'
 #     (Pantone 186 C), cool greys, navy-to-steel blues, and warm greys from espresso to linen -
 #     dealt out so that neighbours differ in both family and depth.  Hex, no '#'.
 NOMURA_RED = 'C8102E'
+HIGHLIGHT_COLOR = '7A1E2B'      # the dark red: the contract with the largest share of a chart wears it
 BAND_COLORS = [
     NOMURA_RED, # Nomura red
     '1B2A47',   # navy
@@ -329,9 +330,25 @@ def band_family(month):
     return 'dec' if month == 12 else ('quarter' if month in (3, 6, 9) else 'serial')
 
 
-def band_colors(contracts):
-    """One hex colour per contract (same order): BAND_COLORS in expiry order, wrapping."""
-    return [BAND_COLORS[i % len(BAND_COLORS)] for i in range(len(contracts))]
+def band_colors(contracts=None, series=None):
+    """One hex colour per contract, in order.  With `series` ([(contract, rows)]) the contract
+    with the largest share of the chart (the biggest area) wears HIGHLIGHT_COLOR and the others
+    take BAND_COLORS in expiry order, skipping that colour; without it, plain BAND_COLORS in order."""
+    if series is not None:
+        contracts = [c for c, _ in series]
+        areas = [sum(v for _, v in rows) for _, rows in series]
+        big = areas.index(max(areas)) if areas and max(areas) > 0 else None
+    else:
+        big = None
+    rotation = [h for h in BAND_COLORS if h != HIGHLIGHT_COLOR] if big is not None else list(BAND_COLORS)
+    out, k = [], 0
+    for i in range(len(contracts)):
+        if i == big:
+            out.append(HIGHLIGHT_COLOR)
+        else:
+            out.append(rotation[k % len(rotation)])
+            k += 1
+    return out
 
 
 def axis_unit(max_value, measure):
@@ -1064,7 +1081,7 @@ def add_oi_chart(ws, name, series, dates, measure='oi', title=None, skip_months=
     n_series, n_rows = len(series), len(dates)
     labels, totals = band_labels(series, dates)
     unit_title, fmt, _div = axis_unit(max((v for _, rows in series for _, v in rows), default=0), measure)
-    colors = band_colors([c for c, _ in series])
+    colors = band_colors(series=series)
     ch = LineChart()
     ch.title = chart_title(title or CHART_TITLE[measure].format(name=name), subtitle_text(skip_months))
     ch.display_blanks = 'gap'
@@ -1100,7 +1117,7 @@ def add_stacked_chart(ws, name, series, dates, measure='oi', title=None, skip_mo
     month_col = month_col or (n_series + 3)
     labels, totals = band_labels(series, dates)
     unit_title, fmt, _div = axis_unit(max(totals) if totals else 0, measure)
-    colors = band_colors([c for c, _ in series])
+    colors = band_colors(series=series)
     ch = BarChart()
     ch.type = 'col'
     ch.grouping = 'stacked'
@@ -1338,7 +1355,7 @@ def stacked_axes(ax, series, dates, used, skip_months=None):
     x = np.arange(n)
     pos = {d: i for i, d in enumerate(dates)}
     labels, totals = band_labels(series, dates)
-    colors = band_colors([c for c, _ in series])
+    colors = band_colors(series=series)
     unit_title, _fmt, div = axis_unit(max(totals) if totals else 0, used)
     bottom = np.zeros(n)
     top = max(totals) if totals else 1.0
@@ -1385,7 +1402,7 @@ def lines_axes(ax, series, dates, used):
     alive on the last day, else at its peak when tall enough.  Returns (labels, axis title, divisor)."""
     import matplotlib.dates as mdates
     labels, _ = band_labels(series, dates)
-    colors = band_colors([c for c, _ in series])
+    colors = band_colors(series=series)
     unit_title, _fmt, div = axis_unit(max((v for _, rows in series for _, v in rows), default=0), used)
     placed = 0
     for (c, rows), (mode, k, _h, _b), colour in zip(series, labels, colors):
@@ -2365,6 +2382,13 @@ def test_helpers():
           [band_family(m) for m in (1, 3, 12, 7)] == ['serial', 'quarter', 'dec', 'serial']
           and cols[:20] == BAND_COLORS and cols[20:] == BAND_COLORS[:3] and len(set(BAND_COLORS)) == 20
           and all(len(h) == 6 and int(h, 16) >= 0 for h in BAND_COLORS), cols[:3])
+    d_ = [dt.date(2024, 1, k) for k in (2, 3, 4)]
+    ser = [(cs[0], [(d_[0], 1.0)]), (cs[1], [(x, 50.0) for x in d_]), (cs[2], [(d_[0], 2.0)]), (cs[3], [(d_[1], 3.0)])]
+    hl = band_colors(series=ser)
+    check('band colours with the data: the largest share wears the dark red, the others follow the rotation without it',
+          hl[1] == HIGHLIGHT_COLOR == '7A1E2B' and HIGHLIGHT_COLOR in BAND_COLORS
+          and hl[0] == BAND_COLORS[0] and hl[2] == BAND_COLORS[1] and hl[3] == BAND_COLORS[2]
+          and hl.count(HIGHLIGHT_COLOR) == 1, hl)
     d_m = [dt.date(2024, 1, 2), dt.date(2024, 1, 3), dt.date(2024, 2, 1), dt.date(2024, 2, 2), dt.date(2024, 4, 1)]
     check('month ticks: one per month start, MONTH_ABBR text',
           month_starts(d_m) == [0, 2, 4] and month_tick(dt.date(2023, 9, 4)) == 'Sep-23' and month_tick(dt.date(2026, 12, 1)) == 'Dec-26')
@@ -2667,7 +2691,7 @@ def test_workbook(results):
               and ytitle == Y_AXIS_TITLE['oi'] and ch.y_axis.number_format.formatCode == '#,##0'
               and ch.y_axis.majorGridlines is not None and ch.x_axis.txPr is not None
               and ch.legend is not None and ch.legend.position == 'b', (title, subtitle, ytitle))
-        colors = band_colors(found)
+        colors = band_colors(series=series)
         labels, _ = band_labels(series, dates)
         ok_series, why = True, ''
         for k, s in enumerate(ch.series):
@@ -3024,7 +3048,7 @@ def test_stacked():
               and [s.tx.strRef.f for s in ch.series] == ["'%s'!%s2" % (name, get_column_letter(j)) for j in range(2, n + 2)],
               (ch.grouping, ch.overlap, ch.gapWidth, len(ch.series)))
         labels, totals = band_labels(series, dates)
-        colors = band_colors([c for c, _ in series])
+        colors = band_colors(series=series)
         top = max(totals)
         good = all(s.graphicalProperties.solidFill.srgbClr == colour
                    and s.graphicalProperties.line.noFill is True
@@ -3118,6 +3142,15 @@ def test_stacked():
         exp_labels = sorted(c.label for (c, _), (m, _, _, _) in zip(series, lbls) if m)
         n_peak = sum(1 for m, _, _, _ in lbls if m == 'peak')
         boxed = sum(1 for t in texts if t.get_bbox_patch() is not None)
+        import matplotlib.colors as mcolors
+        bar_cols = [mcolors.to_hex(cont.patches[0].get_facecolor())[1:].upper() for cont in ax.containers]
+        legend_txt = [t.get_text() for t in ax.get_legend().get_texts()]
+        xl = load_workbook(path)['HSI']._charts[0]
+        xl_cols = [s.graphicalProperties.solidFill.srgbClr.upper() for s in xl.series]
+        xl_names = [load_workbook(path)['HSI'].cell(2, j).value for j in range(2, len(xl.series) + 2)]
+        check('notebook and workbook agree: same contracts in the same order with the same colours, dark red on the largest',
+              bar_cols == xl_cols == [h.upper() for h in band_colors(series=series)] and legend_txt == xl_names
+              and bar_cols.count(HIGHLIGHT_COLOR) == 1, (bar_cols[:4], xl_cols[:4]))
         check('show_charts (stacked): one bar per contract-day, no total line, connector + swatch per rail label, '
               'boxed in-band names, legend of every contract, one x label per month',
               n_fig == 3 and n_bars == 36 * len(dates) and n_lines == 2 * n_last and labels == exp_labels
