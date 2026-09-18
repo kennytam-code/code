@@ -60,6 +60,10 @@ ALL_MONTHS_AHEAD, QUARTERLY_AHEAD, LAST_EXPIRY_YEAR = 15, 36, 2036
 #    the calendar month SKIP_MONTHS before its expiry month, so the expiry day - mid-month or
 #    end-month - makes no difference.)  0 -> keep everything up to the last trade date.
 SKIP_MONTHS = 4
+#    A contract that is inside the window for fewer than MIN_DAYS_TO_CHART trading days (an
+#    exchange often lists a serial month the very day it stops being "within SKIP_MONTHS") is
+#    pulled and kept in the Contracts tab but left off the chart: a one-day sliver says nothing.
+MIN_DAYS_TO_CHART = 5
 
 # 4. Output.  The workbook is OI_charts_<yyyymmdd>.xlsx (or OUTPUT_FILE) and goes to
 #    OUTPUT_FOLDER; when that folder does not exist it goes to the current folder instead.
@@ -86,31 +90,30 @@ Y_AXIS_TITLE = {'notional': 'USD bn', 'oi': 'Contracts'}   # a small product is 
 CHART_KIND = 'stacked'
 
 # 5c. Band colours: every contract gets its own, in expiry order down this list (it wraps after
-#     20, so two bands of one colour are 20 expiries apart and never next to each other).  Deep,
-#     distinct hues that alternate warm and cool; no red, which is the Total line's.  Hex, no '#'.
+#     20, so two bands of one colour are 20 expiries apart and never next to each other).  Muted,
+#     distinct tones - research-note colours, nothing primary - alternating warm and cool.  Hex, no '#'.
 BAND_COLORS = [
-    '1F3B73',   # navy
-    'E07B39',   # orange
-    '1B8A8F',   # teal
-    '7B4B94',   # plum
-    'C9A227',   # gold
-    '3C8D40',   # green
-    'D98C7A',   # salmon
-    '4B4FA6',   # indigo
-    '8A9A2B',   # olive
-    'B5479B',   # magenta
-    '4FA3D1',   # sky
-    '8C6239',   # brown
-    '2BB3A0',   # aqua
-    'B7952C',   # mustard
-    '5B7DB1',   # steel blue
-    'B26A3D',   # copper
-    '9B8AD9',   # lavender
-    '2F6B4F',   # forest
-    '6C7A89',   # slate
-    'E0A030',   # amber
+    '1F3A5F',   # deep navy
+    'B3785A',   # terracotta
+    '4E7F86',   # teal grey
+    '8B6C8F',   # dusty plum
+    'B59B4D',   # old gold
+    '5E8C61',   # sage
+    'C08A8A',   # dusty rose
+    '5A6FA3',   # denim
+    '8E8F5A',   # olive
+    'A46D9A',   # mauve
+    '6FA0B8',   # cadet blue
+    '9C7A55',   # taupe
+    '4F8F87',   # sea green
+    'B79A6B',   # sand
+    '7B8DAF',   # slate blue
+    'A56E58',   # clay
+    '8F86B5',   # lavender grey
+    '4B6E5C',   # forest grey
+    '7A8792',   # steel grey
+    'C29B5E',   # ochre
 ]
-TOTAL_COLOR = 'C8102E'          # the Total line: Nomura red, the one accent on the page
 CHART_FONT = 'Arial'
 
 # 6. Bloomberg.
@@ -336,6 +339,16 @@ def axis_unit(max_value, measure):
     if max_value >= 1e9:
         return Y_AXIS_TITLE['notional'], '#,##0.0,,,', 1e9
     return 'USD m', '#,##0,,', 1e6
+
+
+def month_tick(d):
+    """'Sep-23' - the x-axis label of a month (MONTH_ABBR, not the locale's)."""
+    return '%s-%02d' % (MONTH_ABBR[d.month - 1], d.year % 100)
+
+
+def month_starts(dates):
+    """Indexes of the first date of each month in a sorted date list."""
+    return [i for i, d in enumerate(dates) if i == 0 or (d.year, d.month) != (dates[i - 1].year, dates[i - 1].month)]
 
 
 def subtitle_text(skip_months=None):
@@ -936,10 +949,11 @@ def product_series(contracts, measure, ix=None):
 
     dates run from the first to the last day any contract has a value; inside that span every
     trading day of the index (ix.rows, when given) is a row too, so a day without a single print
-    stays visible as a hole instead of being squeezed out of a category axis.
+    stays visible as a hole instead of being squeezed out of a category axis.  A contract with
+    fewer than MIN_DAYS_TO_CHART days in the window is left out (it stays in the Contracts tab).
     'notional' falls back to 'oi' for a product where no contract has a notional.
     """
-    ok = [c for c in contracts if c.status == OK and c.rows]
+    ok = [c for c in contracts if c.status == OK and len(c.rows) >= MIN_DAYS_TO_CHART]
     used, note = measure, ''
     if measure == 'notional':
         with_n = [c for c in ok if c.notional]
@@ -972,10 +986,11 @@ def font_props(size, bold=False, color=None):
     return CharacterProperties(sz=size, b=bold, solidFill=color or CHART_TEXT, latin=Font(typeface=CHART_FONT))
 
 
-def chart_text(size, bold=False, color=None):
-    """Text properties for an axis or a label."""
+def chart_text(size, bold=False, color=None, rot=None):
+    """Text properties for an axis or a label; rot in 1/60000 degree (-2700000 = 45 degrees up)."""
     cp = font_props(size, bold, color)
-    return RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=cp), endParaRPr=cp)])
+    body = RichTextProperties(rot=rot, vert='horz') if rot is not None else None
+    return RichText(bodyPr=body, p=[Paragraph(pPr=ParagraphProperties(defRPr=cp), endParaRPr=cp)])
 
 
 def chart_title(text, subtitle=None):
@@ -1005,13 +1020,14 @@ def style_axes(ch, unit_title, number_format):
     ch.y_axis.number_format = number_format
     ch.y_axis.majorGridlines = ChartLines(spPr=GraphicalProperties(ln=LineProperties(solidFill=GRID_COLOR, w=6350)))
     ch.x_axis.majorGridlines = None
+    ch.y_axis.txPr = chart_text(800)
+    ch.x_axis.txPr = chart_text(750, rot=-2700000)      # one label per month, 45 degrees
     for ax in (ch.x_axis, ch.y_axis):
-        ax.txPr = chart_text(800)
         ax.minorTickMark = 'none'
     ch.y_axis.graphicalProperties = GraphicalProperties(ln=LineProperties(noFill=True))
     ch.y_axis.majorTickMark = 'none'
     ch.x_axis.graphicalProperties = GraphicalProperties(ln=LineProperties(solidFill=CHART_LINE, w=6350))
-    ch.x_axis.majorTickMark = 'out'
+    ch.x_axis.majorTickMark = 'none'
     ch.x_axis.tickLblPos = 'low'
     ch.legend.position = 'b'
     ch.legend.txPr = chart_text(750)
@@ -1039,7 +1055,7 @@ def series_labels(labels):
                          showPercent=False, showBubbleSize=False)
 
 
-def add_oi_chart(ws, name, series, dates, measure='oi', title=None, skip_months=None):
+def add_oi_chart(ws, name, series, dates, measure='oi', title=None, skip_months=None, anchor_col=None):
     """'lines': one line per contract on a date axis; blanks are gaps, so each line spans only
     its own data.  A contract alive on the last day is named there, another big one at its peak."""
     n_series, n_rows = len(series), len(dates)
@@ -1052,9 +1068,10 @@ def add_oi_chart(ws, name, series, dates, measure='oi', title=None, skip_months=
     ch.x_axis = DateAxis(crossAx=100)          # axId 500; the value axis must cross it
     ch.x_axis.number_format = 'mmm-yy'
     ch.x_axis.majorTimeUnit = 'months'
+    ch.x_axis.majorUnit = 1                    # every month labelled
     ch.y_axis.crossAx = 500
     style_axes(ch, unit_title, fmt)
-    ch.width, ch.height = 30, 15               # cm
+    ch.width, ch.height = 30, 17               # cm
     last_row = 2 + n_rows
     ch.add_data(Reference(ws, min_col=2, max_col=1 + n_series, min_row=2, max_row=last_row),
                 titles_from_data=True)          # row 2 = the 'Jan 24' labels
@@ -1066,17 +1083,18 @@ def add_oi_chart(ws, name, series, dates, measure='oi', title=None, skip_months=
         s.graphicalProperties.line.solidFill = colour
         if mode is not None:
             s.dLbls = series_labels([point_label(k, show_name=True, pos='r' if mode == 'last' else 't', box=colour)])
-    ws.add_chart(ch, '%s2' % get_column_letter(n_series + 4))   # after the Total column
+    ws.add_chart(ch, '%s2' % get_column_letter(anchor_col or (n_series + 5)))   # after the Total and Month columns
 
 
-def add_stacked_chart(ws, name, series, dates, measure='oi', title=None, skip_months=None):
+def add_stacked_chart(ws, name, series, dates, measure='oi', title=None, skip_months=None, month_col=None):
     """Stacked daily columns, one band per contract in expiry order (earliest at the bottom), no
-    gap between days, so the top of the stack is the product total; the Total line (column after
-    the contracts) traces it and carries the last value.  A contract alive on the last day is
-    named at the end of its band, another band tall enough at its peak; no legend."""
+    gap between days, so the top of the stack is the product total.  A contract alive on the last
+    day is named at the end of its band, another band tall enough at its peak; the legend below
+    lists every contract.  The x axis reads the Month column: one label on the first day of
+    each month, nothing in between."""
     n_series, n_rows = len(series), len(dates)
     last_row = 2 + n_rows
-    total_col = n_series + 2
+    month_col = month_col or (n_series + 3)
     labels, totals = band_labels(series, dates)
     unit_title, fmt, _div = axis_unit(max(totals) if totals else 0, measure)
     colors = band_colors([c for c, _ in series])
@@ -1088,34 +1106,20 @@ def add_stacked_chart(ws, name, series, dates, measure='oi', title=None, skip_mo
     ch.title = chart_title(title or CHART_TITLE[measure].format(name=name), subtitle_text(skip_months))
     ch.display_blanks = 'gap'
     style_axes(ch, unit_title, fmt)
-    ch.x_axis.number_format = 'mmm-yy'
-    skip = max(1, n_rows // 12)                # about 12 date labels along the axis
-    ch.x_axis.tickLblSkip = skip
-    ch.x_axis.tickMarkSkip = skip
+    ch.x_axis.tickLblSkip = 1                  # every category label - and only month starts carry one
+    ch.x_axis.tickMarkSkip = 1
     ch.x_axis.noMultiLvlLbl = True
     ch.width, ch.height = 30, 17               # cm: room for the legend rows under the plot
     ch.add_data(Reference(ws, min_col=2, max_col=1 + n_series, min_row=2, max_row=last_row),
                 titles_from_data=True)          # row 2 = the 'Jan 24' labels
-    ch.set_categories(Reference(ws, min_col=1, min_row=3, max_row=last_row))
+    ch.set_categories(Reference(ws, min_col=month_col, min_row=3, max_row=last_row))
     top = max(totals) if totals else 1.0
     for s, colour, (mode, k, h, _b) in zip(ch.series, colors, labels):
         s.graphicalProperties.solidFill = colour
         s.graphicalProperties.line.noFill = True
         if mode == 'peak' or (mode == 'last' and h >= LABEL_MIN_HEIGHT * top):
             s.dLbls = series_labels([point_label(k, show_name=True, size=800, box=colour)])
-    ln = LineChart()                           # the total, on the same axes (same axis ids)
-    ln.add_data(Reference(ws, min_col=total_col, max_col=total_col, min_row=2, max_row=last_row), titles_from_data=True)
-    ln.set_categories(Reference(ws, min_col=1, min_row=3, max_row=last_row))
-    ln.display_blanks = 'gap'
-    t = ln.series[0]
-    t.marker.symbol = 'none'
-    t.smooth = False
-    t.graphicalProperties.line.solidFill = TOTAL_COLOR
-    t.graphicalProperties.line.width = 15875   # 1.25 pt
-    t.dLbls = series_labels([point_label(n_rows - 1, show_name=True, pos='t', size=850, color=TOTAL_COLOR,
-                                         box=TOTAL_COLOR)])
-    ch += ln
-    ws.add_chart(ch, '%s2' % get_column_letter(total_col + 2))
+    ws.add_chart(ch, '%s2' % get_column_letter(month_col + 2))
 
 
 def write_product_sheet(wb, name, contracts, measure='oi', kind=None, ix=None, skip_months=None):
@@ -1138,7 +1142,6 @@ def write_product_sheet(wb, name, contracts, measure='oi', kind=None, ix=None, s
         ws.column_dimensions[get_column_letter(j)].width = 14 if used == 'notional' else 9
     total_col = len(found) + 2
     lookups = [dict(rows) for _, rows in series]
-    last_total = 0.0
     for i, d in enumerate(dates, start=3):
         ws.cell(row=i, column=1, value=d).number_format = 'yyyy-mm-dd'
         total, any_value = 0.0, False
@@ -1149,17 +1152,21 @@ def write_product_sheet(wb, name, contracts, measure='oi', kind=None, ix=None, s
                 total, any_value = total + v, True
         if any_value:                               # a day without one print stays a hole
             ws.cell(row=i, column=total_col, value=total).number_format = '#,##0'
-            last_total = total
-    _u, _f, div = axis_unit(max((ws.cell(row=i, column=total_col).value or 0) for i in range(3, len(dates) + 3)), used)
     ws.cell(row=1, column=total_col, value=TOTAL_LABEL)
-    ws.cell(row=2, column=total_col, value='%s %s' % (TOTAL_LABEL, money(last_total, div, _u)))   # the chart's label
+    ws.cell(row=2, column=total_col, value=TOTAL_LABEL)
     ws.column_dimensions[get_column_letter(total_col)].width = 16 if used == 'notional' else 12
+    month_col = total_col + 1                      # the chart's x axis: a label on the first day of each month
+    ws.cell(row=1, column=month_col, value='Axis')
+    ws.cell(row=2, column=month_col, value='Month')
+    for i in month_starts(dates):
+        ws.cell(row=i + 3, column=month_col, value=month_tick(dates[i]))
+    ws.column_dimensions[get_column_letter(month_col)].width = 8
     ws.freeze_panes = 'B3'
     title = FALLBACK_TITLE.format(name=name) if (measure == 'notional' and used == 'oi') else None
     if kind == 'stacked':
-        add_stacked_chart(ws, name, series, dates, used, title, skip_months)
+        add_stacked_chart(ws, name, series, dates, used, title, skip_months, month_col)
     else:
-        add_oi_chart(ws, name, series, dates, used, title, skip_months)
+        add_oi_chart(ws, name, series, dates, used, title, skip_months, month_col + 2)
     return ws, used, note
 
 
@@ -1322,7 +1329,7 @@ def stacked_axes(ax, series, dates, used, skip_months=None):
     """Draw the stack on a matplotlib axes: one column per day (the x axis is the trading-day
     index, so a day without a print is a visible hole), the Total line, in-band names for the
     tall bands, a label rail in the right margin for the contracts alive on the last day, and
-    the total at the top of the rail.  Returns (labels placed, axis title, formatter)."""
+    the legend of every contract below.  Returns (labels placed, axis title, divisor)."""
     import numpy as np
     n = len(dates)
     x = np.arange(n)
@@ -1350,9 +1357,6 @@ def stacked_axes(ax, series, dates, used, skip_months=None):
             ax.text(k, b + h / 2.0, c.label, fontsize=8, fontweight='bold', color='#' + CHART_TEXT, ha=ha,
                     va='center', bbox=dict(boxstyle='round,pad=0.3', fc='white', ec='#' + colour, lw=1.0))
             placed += 1
-    line = [t if any(y > 0 for y in col) else float('nan') for t, col in zip(totals, zip(*[b[0] for b in _bands(series, dates)]))] \
-        if series else []
-    ax.plot(x, line, color='#' + TOTAL_COLOR, linewidth=1.3, solid_capstyle='round')
     # the rail: labels bottom-up, each at least one step above the previous, a light connector to the band
     gap = top * 1.10 * 0.045
     y_prev = -gap
@@ -1364,15 +1368,13 @@ def stacked_axes(ax, series, dates, used, skip_months=None):
         ax.plot([rail_x - n * 0.008], [y_text], marker='s', ms=6, color='#' + colour, linestyle='none', clip_on=False)
         ax.text(rail_x, y_text, label, fontsize=8.5, color='#' + CHART_TEXT, ha='left', va='center')
         placed += 1
-    last_total = float(totals[-1]) if totals else 0.0
-    y_total = max(y_prev + gap, last_total + gap * 0.6, top * 0.98)
-    ax.text(rail_x, y_total, '%s %s' % (TOTAL_LABEL, money(last_total, div, unit_title)), fontsize=9,
-            fontweight='bold', color='#' + TOTAL_COLOR, ha='left', va='center')
-    step = max(1, n // 12)                     # about 12 date ticks
-    ticks = list(range(0, n, step))
+    ticks = month_starts(dates)                # one tick per month
+    step = max(1, len(ticks) // 48)            # thin out only beyond four years
+    ticks = ticks[::step]
     ax.set_xticks(ticks)
-    ax.set_xticklabels([dates[i].strftime('%b-%y') for i in ticks])
-    return placed + 1, unit_title, div
+    ax.set_xticklabels([month_tick(dates[i]) for i in ticks], rotation=45, ha='right', rotation_mode='anchor',
+                       fontsize=7.5)
+    return placed, unit_title, div
 
 
 def lines_axes(ax, series, dates, used):
@@ -1394,7 +1396,9 @@ def lines_axes(ax, series, dates, used):
                         color='#' + CHART_TEXT, ha='center', va='bottom',
                         bbox=dict(boxstyle='round,pad=0.25', fc='white', ec='#' + colour, lw=0.9))
             placed += 1
+    ax.xaxis.set_major_locator(mdates.MonthLocator())
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%b-%y'))
+    ax.tick_params(axis='x', labelrotation=45, labelsize=7.5)
     return placed, unit_title, div
 
 
@@ -1451,8 +1455,6 @@ def show_charts(results, measure=None, kind=None, indices=None, skip_months=None
             ax.spines[side].set_visible(False)
         ax.spines['bottom'].set_color('#' + CHART_LINE)
         ax.spines['bottom'].set_linewidth(0.6)
-        if kind != 'stacked':
-            fig.autofmt_xdate()
         fig.tight_layout()
         plt.show()
         n_fig += 1
@@ -1525,6 +1527,9 @@ def print_summary(results, bbg, out, indices=None, used=None):
             labels = [c.label for c in cs if c.status == status]
             if labels:
                 print('         %-11s %s' % (status + ':', ', '.join(labels)))
+        thin = ['%s (%d)' % (c.label, len(c.rows)) for c in cs if c.status == OK and 0 < len(c.rows) < MIN_DAYS_TO_CHART]
+        if thin:
+            print('         not charted, under %d days in the window: %s' % (MIN_DAYS_TO_CHART, ', '.join(thin)))
         ix = (indices or {}).get(name)
         if ix is not None:
             mult = sorted({c.multiplier for c in cs if c.status == OK and c.multiplier is not None})
@@ -2299,19 +2304,35 @@ def test_helpers():
     c.multiplier, c.note = 1.0, ''
     compute_notional([c], IndexSeries(product='KOSPI2', ticker='KOSPI2 Index', note='KOSPI2 Index -> Unknown'))
     check('compute_notional: index NOT FOUND -> no notional, note carries the reason', c.notional == [] and 'Unknown' in c.note)
-    used, series, dates, note = product_series([c], 'notional')
-    check('product_series: notional unavailable -> falls back to OI with a note',
-          used == 'oi' and series == [(c, c.rows)] and dates == [d0, d1, d2, d3] and note.startswith('USD notional unavailable'), note)
-    used, series, dates, note = product_series([c], 'oi')
-    check('product_series: oi', used == 'oi' and note == '')
-    d5, d6 = dt.date(2024, 1, 5), dt.date(2024, 1, 8)
-    ix2 = IndexSeries(product='K', ticker='K Index', status=OK, rows=[(dt.date(2023, 12, 29), 1.0), (d0, 1.0), (d2, 1.0),
-                                                                        (d5, 1.0), (d6, 1.0), (dt.date(2024, 1, 9), 1.0)])
-    c2 = Contract(product='K', root='K', year=2024, month=1, label='Jan 24', ticker_1='a', ticker_2='b', ticker='a',
-                  status=OK, rows=[(d1, 4.0), (d6, 6.0)])
-    _, _, dates, _ = product_series([c2], 'oi', ix2)
-    check('product_series with the index calendar: first to last value date, index days inside are rows too',
-          dates == [d1, d2, d5, d6], dates)
+    global MIN_DAYS_TO_CHART
+    saved_min = MIN_DAYS_TO_CHART
+    MIN_DAYS_TO_CHART = 1                      # these unit checks use 2-4 day contracts
+    try:
+        used, series, dates, note = product_series([c], 'notional')
+        check('product_series: notional unavailable -> falls back to OI with a note',
+              used == 'oi' and series == [(c, c.rows)] and dates == [d0, d1, d2, d3] and note.startswith('USD notional unavailable'), note)
+        used, series, dates, note = product_series([c], 'oi')
+        check('product_series: oi', used == 'oi' and note == '')
+        d5, d6 = dt.date(2024, 1, 5), dt.date(2024, 1, 8)
+        ix2 = IndexSeries(product='K', ticker='K Index', status=OK, rows=[(dt.date(2023, 12, 29), 1.0), (d0, 1.0), (d2, 1.0),
+                                                                            (d5, 1.0), (d6, 1.0), (dt.date(2024, 1, 9), 1.0)])
+        c2 = Contract(product='K', root='K', year=2024, month=1, label='Jan 24', ticker_1='a', ticker_2='b', ticker='a',
+                      status=OK, rows=[(d1, 4.0), (d6, 6.0)])
+        _, _, dates, _ = product_series([c2], 'oi', ix2)
+        check('product_series with the index calendar: first to last value date, index days inside are rows too',
+              dates == [d1, d2, d5, d6], dates)
+    finally:
+        MIN_DAYS_TO_CHART = saved_min
+    days6 = [dt.date(2024, 1, k) for k in (2, 3, 4, 5, 8, 9)]
+    c6 = Contract(product='K', root='K', year=2024, month=1, label='Jan 24', ticker_1='a', ticker_2='b', ticker='a',
+                  status=OK, rows=[(d, 10.0) for d in days6])
+    thin = Contract(product='K', root='K', year=2024, month=2, label='Feb 24', ticker_1='a', ticker_2='b', ticker='a',
+                    status=OK, rows=[(d0, 1.0), (d1, 2.0)])
+    used, series, dates, note = product_series([c6, thin], 'oi')
+    check('product_series: a contract with fewer than MIN_DAYS_TO_CHART (5) days is left off the chart',
+          MIN_DAYS_TO_CHART == 5 and [x for x, _ in series] == [c6] and dates == days6)
+    _, text = quiet(print_summary, [('K', [c6, thin])], Bloomberg(blpapi_module=FakeAPI), None)
+    check('summary names the contracts left off for being too short', 'not charted, under 5 days in the window: Feb 24 (2)' in text, text)
     check('product_currency: the most common CRNCY of the resolved contracts',
           product_currency([Contract(product='x', root='x', year=1, month=1, label='', ticker_1='', ticker_2='',
                                      status=OK, currency=k) for k in ('HKD', 'HKD', 'USD')]) == 'HKD'
@@ -2340,7 +2361,10 @@ def test_helpers():
     check('band colours: every contract its own colour in expiry order, 20 distinct 6-hex values, wrapping after 20',
           [band_family(m) for m in (1, 3, 12, 7)] == ['serial', 'quarter', 'dec', 'serial']
           and cols[:20] == BAND_COLORS and cols[20:] == BAND_COLORS[:3] and len(set(BAND_COLORS)) == 20
-          and all(len(h) == 6 and int(h, 16) >= 0 for h in BAND_COLORS) and TOTAL_COLOR not in BAND_COLORS, cols[:3])
+          and all(len(h) == 6 and int(h, 16) >= 0 for h in BAND_COLORS), cols[:3])
+    d_m = [dt.date(2024, 1, 2), dt.date(2024, 1, 3), dt.date(2024, 2, 1), dt.date(2024, 2, 2), dt.date(2024, 4, 1)]
+    check('month ticks: one per month start, MONTH_ABBR text',
+          month_starts(d_m) == [0, 2, 4] and month_tick(dt.date(2023, 9, 4)) == 'Sep-23' and month_tick(dt.date(2026, 12, 1)) == 'Dec-26')
     check('axis_unit / money: bn for a big product, m for a small one, contracts as they are',
           axis_unit(5e10, 'notional') == ('USD bn', '#,##0.0,,,', 1e9) and axis_unit(4e8, 'notional') == ('USD m', '#,##0,,', 1e6)
           and axis_unit(12345, 'oi') == ('Contracts', '#,##0', 1.0)
@@ -2594,10 +2618,13 @@ def test_workbook(results):
               [ws.cell(1, j).value for j in range(2, n + 2)] == [c.ticker for c in found]
               and [ws.cell(2, j).value for j in range(2, n + 2)] == [c.label for c in found]
               and ws['A1'].value == 'Ticker' and ws['A2'].value == 'Date')
-        check('%s: Total column right after the %d found contracts (row 2 carries the last total), nothing beyond' % (name, n),
-              ws.max_column == n + 2 and ws.cell(1, n + 2).value == TOTAL_LABEL
-              and ws.cell(2, n + 2).value == '%s %s' % (TOTAL_LABEL, format(int(round(ws.cell(N + 2, n + 2).value)), ','))
-              and ws.column_dimensions[get_column_letter(n + 2)].width == 12,
+        starts = month_starts(dates)
+        check('%s: Total column right after the %d found contracts, then the Month axis column' % (name, n),
+              ws.max_column == n + 3 and ws.cell(1, n + 2).value == TOTAL_LABEL and ws.cell(2, n + 2).value == TOTAL_LABEL
+              and ws.column_dimensions[get_column_letter(n + 2)].width == 12
+              and ws.cell(2, n + 3).value == 'Month'
+              and [ws.cell(i + 3, n + 3).value for i in starts] == [month_tick(dates[i]) for i in starts]
+              and sum(1 for i in range(3, N + 3) if ws.cell(i, n + 3).value is not None) == len(starts),
               (ws.max_column, ws.cell(2, n + 2).value))
         sums_ok = all(abs((ws.cell(i, n + 2).value or 0) - sum((ws.cell(i, j).value or 0) for j in range(2, n + 2))) < 1e-6
                       for i in range(3, N + 3))
@@ -2656,9 +2683,10 @@ def test_workbook(results):
                 break
         check('%s: series titles from row 2, values rows 3..%d, dates as categories, family colours, named lines' % (name, N + 2),
               ok_series, why)
-        check('%s: chart anchored one column right of the data' % name,
-              ch.anchor._from.col == n + 3 and ch.anchor._from.row == 1, (ch.anchor._from.col, ch.anchor._from.row))
-        check('%s: chart 30 x 15 cm' % name, ch.anchor.ext.cx == 10800000 and ch.anchor.ext.cy == 5400000,
+        check('%s: chart anchored one column right of the data, date axis labelled every month' % name,
+              ch.anchor._from.col == n + 4 and ch.anchor._from.row == 1 and ch.x_axis.majorUnit == 1
+              and ch.x_axis.majorTimeUnit == 'months', (ch.anchor._from.col, ch.anchor._from.row))
+        check('%s: chart 30 x 17 cm' % name, ch.anchor.ext.cx == 10800000 and ch.anchor.ext.cy == 6120000,
               (ch.anchor.ext.cx, ch.anchor.ext.cy))
     ws = wb[AUDIT_SHEET]
     total = sum(len(cs) for _, cs in results)
@@ -2788,8 +2816,8 @@ def _test_notional():
         ws = wb[name]
         _, series, dates, _ = product_series(cs, 'notional', indices[name])
         n, N = len(series), len(dates)
-        check('%s: one column per contract + Total, rows = first..last notional date on the index calendar' % name,
-              ws.max_column == n + 2 and ws.max_row == N + 2
+        check('%s: one column per contract + Total + Month, rows = first..last notional date on the index calendar' % name,
+              ws.max_column == n + 3 and ws.max_row == N + 2
               and [ws.cell(1, j).value for j in range(2, n + 2)] == [c.ticker for c, _ in series], (ws.max_column, n))
         gaps = [i for i, d in enumerate(dates, start=3) if (d.month, d.day) == (4, 4)]
         check('%s: 4 April is a row (index day, no contract print) with every cell and the Total blank - a visible hole' % name,
@@ -2809,14 +2837,14 @@ def _test_notional():
         check('%s: every cell is that contract\'s USD notional of that day, blank elsewhere' % name, good, why)
         ch = ws._charts[0]
         title = ch.title.tx.rich.p[0].r[0].t
-        check('%s: stacked chart + total line, notional title, USD bn axis, light gridlines, no legend' % name,
-              isinstance(ch, BarChart) and len(ch._charts) == 2 and len(ch.series) == n
+        check('%s: stacked chart, no total line, notional title, USD bn axis, light gridlines, legend' % name,
+              isinstance(ch, BarChart) and len(ch._charts) == 1 and len(ch.series) == n
               and title == CHART_TITLE['notional'].format(name=name)
               and ch.y_axis.title.tx.rich.p[0].r[0].t == Y_AXIS_TITLE['notional']
               and ch.y_axis.number_format.formatCode == '#,##0.0,,,' and ch.y_axis.majorGridlines is not None
-              and ch.legend is not None and ch.anchor._from.col == n + 3, (title, ch.anchor._from.col))
-    check('chart XML: one bar chart + one line chart on one category + one value axis, gridlines, USD bn format, legend',
-          all(x.count(b'<barChart>') == 1 and x.count(b'<lineChart>') == 1 and x.count(b'<catAx>') == 1
+              and ch.legend is not None and ch.anchor._from.col == n + 4, (title, ch.anchor._from.col))
+    check('chart XML: one bar chart (no line chart) on one category + one value axis, gridlines, USD bn format, legend',
+          all(x.count(b'<barChart>') == 1 and x.count(b'<lineChart>') == 0 and x.count(b'<catAx>') == 1
               and x.count(b'<valAx>') == 1 and b'majorGridlines' in x and b'#,##0.0,,,' in x and b'<legend>' in x
               for x in chart_xml.values()) and len(chart_xml) == 3)
     ws = wb[AUDIT_SHEET]
@@ -2848,7 +2876,7 @@ def _test_notional():
     t = wb3['HSI']._charts[0].title.tx.rich.p[0].r[0].t
     check('index NOT FOUND for one product: OI shown there with the fallback title, notional elsewhere',
           used['HSI'][0] == 'oi' and 'Unknown/Invalid' in used['HSI'][1] and used['AS51'] == ('notional', '')
-          and t == FALLBACK_TITLE.format(name='HSI') and wb3['HSI'].max_column == 38
+          and t == FALLBACK_TITLE.format(name='HSI') and wb3['HSI'].max_column == 39
           and wb3['HSI']['B3'].value == dict(results[0][1][0].rows).get(wb3['HSI']['A3'].value.date()), (used, t))
     compute_notional(results[0][1], indices['HSI'])          # restore
     # a contract without a multiplier is left out of a notional tab, with a note
@@ -2962,13 +2990,13 @@ def _test_notional():
 
 
 def test_stacked():
-    check('CONFIG: stacked columns by default, Nomura red total', CHART_KIND == 'stacked' and TOTAL_COLOR == 'C8102E')
+    check('CONFIG: stacked columns by default', CHART_KIND == 'stacked')
     def hsv(hexcol):
         r, g, b = (int(hexcol[i:i + 2], 16) / 255.0 for i in (0, 2, 4))
         mx, mn = max(r, g, b), min(r, g, b)
         return (0 if mx == 0 else (mx - mn) / mx), mx
-    check('BAND_COLORS: sharp but not neon - nothing both fully saturated and bright',
-          all(not (sat > 0.85 and val > 0.85) for sat, val in map(hsv, BAND_COLORS)),
+    check('BAND_COLORS: muted - saturation x brightness at most 0.45, nothing brighter than 0.8',
+          all(sat * val <= 0.45 and val <= 0.8 for sat, val in map(hsv, BAND_COLORS)),
           [tuple(round(x, 2) for x in hsv(h)) for h in BAND_COLORS])
     bbg = Bloomberg(blpapi_module=FakeAPI).connect()
     results = resolve_contracts(bbg, FAKE_PRODUCTS, TEST_MONTHS, TEST_TODAY)
@@ -2986,10 +3014,9 @@ def test_stacked():
         used, series, dates, _ = product_series(cs, 'oi')
         n, N = len(series), len(dates)
         ch = ws._charts[0]
-        check('%s: stacked column chart, no gap, overlap 100, %d bands in expiry order + Total line' % (name, n),
+        check('%s: stacked column chart, no gap, overlap 100, %d bands in expiry order, nothing else on it' % (name, n),
               isinstance(ch, BarChart) and ch.grouping == 'stacked' and ch.overlap == 100 and ch.gapWidth == 0
-              and ch.type == 'col' and len(ch.series) == n and len(ch._charts) == 2
-              and isinstance(ch._charts[1], LineChart) and len(ch._charts[1].series) == 1
+              and ch.type == 'col' and len(ch.series) == n and len(ch._charts) == 1
               and [s.tx.strRef.f for s in ch.series] == ["'%s'!%s2" % (name, get_column_letter(j)) for j in range(2, n + 2)],
               (ch.grouping, ch.overlap, ch.gapWidth, len(ch.series)))
         labels, totals = band_labels(series, dates)
@@ -3012,21 +3039,15 @@ def test_stacked():
               and all(k == N - 1 for m, k, _, _ in labels if m == 'last')
               and all(h >= LABEL_MIN_HEIGHT * max(totals) for m, k, h, _ in labels if m == 'peak'),
               (modes.count('last'), len(live), modes.count('peak'), modes.count(None)))
-        t = ch._charts[1].series[0]
-        tl = get_column_letter(n + 2)
-        check('%s: Total line from the Total column, red 1.25 pt, labelled with name + value at the last day' % name,
-              t.tx.strRef.f == "'%s'!%s2" % (name, tl) and t.val.numRef.f == "'%s'!$%s$3:$%s$%d" % (name, tl, tl, N + 2)
-              and t.graphicalProperties.line.solidFill.srgbClr == TOTAL_COLOR and t.marker.symbol is None
-              and t.graphicalProperties.line.width == 15875
-              and len(t.dLbls.dLbl) == 1 and t.dLbls.dLbl[0].idx == N - 1 and t.dLbls.dLbl[0].showVal is False
-              and t.dLbls.dLbl[0].showSerName is True and t.dLbls.dLbl[0].numFmt is None, t.tx.strRef.f)
-        check('%s: category axis with mmm-yy labels ~monthly, legend along the bottom, chart after the Total column, 30 x 17 cm' % name,
-              ch.x_axis.number_format.formatCode == 'mmm-yy' and ch.x_axis.tickLblSkip == max(1, N // 12)
-              and ch.legend is not None and ch.legend.position == 'b' and ch.anchor._from.col == n + 3
+        ml = get_column_letter(n + 3)
+        check('%s: x axis = the Month column (a label per month start, 45 degrees), legend along the bottom, chart after it, 30 x 17 cm' % name,
+              all(s.cat.numRef.f == "'%s'!$%s$3:$%s$%d" % (name, ml, ml, N + 2) for s in ch.series)
+              and ch.x_axis.tickLblSkip == 1 and ch.x_axis.txPr.bodyPr.rot == -2700000
+              and ch.legend is not None and ch.legend.position == 'b' and ch.anchor._from.col == n + 4
               and ch.y_axis.majorGridlines is not None and ch.anchor.ext.cx == 10800000 and ch.anchor.ext.cy == 6120000,
               (ch.x_axis.tickLblSkip, ch.anchor._from.col))
-    check('chart XML: barChart stacked + lineChart sharing one catAx and one valAx, data labels, gridlines, no legend, Arial',
-          all(x.count(b'<barChart>') == 1 and x.count(b'<lineChart>') == 1 and x.count(b'<catAx>') == 1
+    check('chart XML: one stacked barChart on one catAx and one valAx, data labels, gridlines, legend, Arial',
+          all(x.count(b'<barChart>') == 1 and x.count(b'<lineChart>') == 0 and x.count(b'<catAx>') == 1
               and x.count(b'<valAx>') == 1 and b'grouping val="stacked"' in x and b'overlap val="100"' in x
               and b'gapWidth val="0"' in x and b'<dLbl>' in x and b'showSerName val="1"' in x
               and b'majorGridlines' in x and b'<legend>' in x and b'latin typeface="Arial"' in x
@@ -3035,8 +3056,7 @@ def test_stacked():
     xml = chart_xml['xl/charts/chart1.xml']
     _, series, dates, _ = product_series(results[0][1], 'oi')
     n_lbl = sum(1 for m, _, _, _ in band_labels(series, dates)[0] if m)
-    check('chart XML: HSI has one label per named band + the total label', xml.count(b'<dLbl>') == n_lbl + 1,
-          (xml.count(b'<dLbl>'), n_lbl))
+    check('chart XML: HSI has one label per named band', xml.count(b'<dLbl>') == n_lbl, (xml.count(b'<dLbl>'), n_lbl))
     d = [dt.date(2024, 1, k) for k in (1, 2, 3, 4)]
     ca = Contract(product='x', root='x', year=2024, month=1, label='A', ticker_1='', ticker_2='', status=OK,
                   rows=[(d[0], 10.0), (d[1], 50.0), (d[2], 10.0)])
@@ -3087,19 +3107,19 @@ def test_stacked():
         texts = [t for t in ax.texts if not t.get_text().startswith('Contracts expiring')]
         labels = sorted(t.get_text() for t in texts)
         ylim = ax.get_ylim()
-        red = [l for l in ax.get_lines() if l.get_color() == '#' + TOTAL_COLOR]
+        xt = [t.get_text() for t in ax.get_xticklabels()]
         plt.close('all')
         lbls, totals = band_labels(series, dates)
         n_last = sum(1 for m, _, _, _ in lbls if m == 'last')
-        exp_labels = sorted([c.label for (c, _), (m, _, _, _) in zip(series, lbls) if m]
-                            + ['%s %s' % (TOTAL_LABEL, format(int(round(totals[-1])), ','))])
+        exp_labels = sorted(c.label for (c, _), (m, _, _, _) in zip(series, lbls) if m)
         n_peak = sum(1 for m, _, _, _ in lbls if m == 'peak')
         boxed = sum(1 for t in texts if t.get_bbox_patch() is not None)
-        check('show_charts (stacked): one bar per contract-day, the red Total line + connector and swatch per rail label, '
-              'boxed in-band names, legend of every contract',
-              n_fig == 3 and n_bars == 36 * len(dates) and n_lines == 1 + 2 * n_last and len(red) == 1 and labels == exp_labels
-              and boxed == n_peak and ax.get_legend() is not None and len(ax.get_legend().get_texts()) == 36 and ylim[0] == 0,
-              (n_fig, n_bars, n_lines, n_last, boxed, n_peak, labels[:3], exp_labels[:3]))
+        check('show_charts (stacked): one bar per contract-day, no total line, connector + swatch per rail label, '
+              'boxed in-band names, legend of every contract, one x label per month',
+              n_fig == 3 and n_bars == 36 * len(dates) and n_lines == 2 * n_last and labels == exp_labels
+              and boxed == n_peak and ax.get_legend() is not None and len(ax.get_legend().get_texts()) == 36 and ylim[0] == 0
+              and xt == [month_tick(dates[i]) for i in month_starts(dates)],
+              (n_fig, n_bars, n_lines, n_last, boxed, n_peak, labels[:3], exp_labels[:3], xt[:3]))
     for f in os.listdir(tmp):
         os.remove(os.path.join(tmp, f))
     os.rmdir(tmp)
@@ -3280,7 +3300,7 @@ def test_failures():
     check('pull stops at contract 5: workbook still written with the 4 pulled, rest NOT PULLED, message says so',
           out is None and wb is not None and 'ERROR while pulling OPEN_INT for HIK24 Index (HSI May 24)' in text
           and 'Daily capacity reached' in text and 'still written with the 4 of 83' in text and path in text
-          and wb['HSI'].max_column == 6 and statuses.count(NOT_PULLED) == 79 and statuses.count(OK) == 4
+          and wb['HSI'].max_column == 7 and statuses.count(NOT_PULLED) == 79 and statuses.count(OK) == 4
           and 'HSI      pulling' in text and 'AS51     skipped' in text and 'NOT PULLED:' in text
           and 'Traceback' not in text, text[-900:])
     # an unexpected (non-Bloomberg) error: the message names the step AND the traceback follows
@@ -3302,7 +3322,7 @@ def test_failures():
 def demo(out=None):
     """The whole pipeline on fake data: a workbook to open in Excel, charts inline in Jupyter."""
     out = out or os.path.join(os.getcwd(), 'demo_OI_charts.xlsx')
-    rebuild_universe(100)                     # serial months listed ~3 months ahead, as on HKEX
+    rebuild_universe(118)                     # serial months listed the day the third month out opens, as on HKEX
     run(products=FAKE_PRODUCTS, today=TEST_TODAY, blpapi_module=FakeAPI, out=out, **dict(TEST_KW, last_expiry_year=2036))
     print('open it in Excel: 3 product tabs with a chart each, plus Contracts')
 
