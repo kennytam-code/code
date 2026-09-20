@@ -42,7 +42,6 @@ PRODUCTS = [
     ('XP',  'AS51'),
     ('FT',  'TWSE'),
     ('TWT', 'FTSE TW'),         # SGX FTSE Taiwan (TWTU6 ...)
-    ('MTW', 'MTW'),             # Bloomberg: "MSCI Taiwan NTR $" (SGX net-total-return) - no open interest since 2021
     ('FPO', 'FPO'),             # Bloomberg: "MSCI Taiwan", USD 100 x index (NOT the FTSE China A50)
     ('HJA', 'TAMSCI'),          # the request note's "MSCI - HJAU6" row is this same root
     ('QZ',  'SIMSCI'),
@@ -146,7 +145,6 @@ CONTRACT_CURRENCY = {
     'FTSE TW': 'USD',   # SGX FTSE Taiwan: USD 40 x index points
     'FPO': 'USD',       # "MSCI Taiwan" future: USD 100 x index points
     'TAMSCI': 'USD',    # HKEX MSCI Taiwan (USD): USD 100 x index points
-    'MTW': 'USD',       # SGX MSCI Taiwan NTR (USD)
 }
 INDEX_TICKERS = {}      # e.g. {'FTSE TW': 'TWRIC Index'} if Bloomberg's UNDL_SPOT_TICKER is empty or wrong for a product
 FX_TICKER = 'USD{ccy} Curncy'
@@ -156,7 +154,7 @@ MULTIPLIER_FIELD = 'FUT_VAL_PT' # value of one index point, in the contract's cu
 # 8. Sanity check only - what the exchanges publish as (contract currency, value of one index
 #    point).  Bloomberg's FUT_VAL_PT is what the notional uses; a disagreement with this table is
 #    printed as a WARNING so it gets looked at, never silently overridden.  Roots not listed here
-#    (MTW, HJA, VHO) are simply not checked.
+#    (FPO, HJA, VHO) are simply not checked.
 EXPECTED_CONTRACT = {
     'HI': ('HKD', 50), 'HC': ('HKD', 50), 'HCT': ('HKD', 50),      # HKEX: HK$50 x index
     'KM': ('KRW', 250000),                                         # KRX KOSPI 200: KRW 250,000 x index
@@ -2496,10 +2494,10 @@ def test_helpers():
     check('row_date: text form first, datetime form as fallback',
           row_date(text_row) == dt.date(2026, 1, 28) and row_date(dt_row) == dt.date(2026, 1, 28))
     check('14 real products, distinct legal tab names',
-          len({n for _, n in PRODUCTS}) == len(PRODUCTS) == 14
+          len({n for _, n in PRODUCTS}) == len(PRODUCTS) == 13
           and all(safe_sheet_name(n) == n for _, n in PRODUCTS))
-    check('real roots: the request note + MTW + VG / VHO / ES, tabs named after the underlying index',
-          [p[0] for p in PRODUCTS] == ['HI', 'HC', 'HCT', 'KM', 'XP', 'FT', 'TWT', 'MTW', 'FPO', 'HJA', 'QZ', 'VG', 'VHO', 'ES']
+    check('real roots: the request note + VG / VHO / ES (MTW dropped: no open interest since 2021), tabs named after the underlying index',
+          [p[0] for p in PRODUCTS] == ['HI', 'HC', 'HCT', 'KM', 'XP', 'FT', 'TWT', 'FPO', 'HJA', 'QZ', 'VG', 'VHO', 'ES']
           and [p[1] for p in PRODUCTS][-3:] == ['SX5E', 'SX5T', 'SPX'])
     check('optional yellow key: third item in PRODUCTS',
           candidate_tickers('CL', 2026, 1, 'Comdty') == ('CLF6 Comdty', 'CLF26 Comdty')
@@ -3155,7 +3153,7 @@ def _test_notional():
     check('a working currency that disagrees with the exchange is a WARNING pointing at the CONFIG knobs',
           len(warn) == 1 and 'converts HI from USD (CONTRACT_CURRENCY) but the HI contract is denominated in HKD' in warn[0], warn)
     check('roots outside the table are not judged',
-          contract_warnings([Contract(product='x', root='MTW', year=2025, month=1, label='', ticker_1='', ticker_2='',
+          contract_warnings([Contract(product='x', root='HJA', year=2025, month=1, label='', ticker_1='', ticker_2='',
                                       status=OK, multiplier=7.0)], None) == [])
     if importlib.util.find_spec('matplotlib') is not None:
         import warnings
