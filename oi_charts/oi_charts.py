@@ -23,11 +23,17 @@ Needs: blpapi and openpyxl; matplotlib only for the notebook charts.
 """
 
 # ================================================================ CONFIG ===
-# 1. Products: (Bloomberg root, tab name).  One line per future - add a line to add a
-#    product.  The tab name is the underlying index ticker (HSI -> 'HSI Index'): that is the
-#    index the USD notional is built on; INDEX_TICKERS below overrides it where the two differ.
-#    Tickers are built as <root><month code><year> Index (HIU6, HIU25 ...).  For a non-Index
-#    yellow key add it as a third item, e.g. ('CL', 'WTI', 'Comdty').
+# 1. Products: (Bloomberg root, tab name).  ONE LINE PER FUTURE - to add a product, add a
+#    line; everything else is worked out from Bloomberg:
+#      - the contracts:   <root><month code><year> Index (HIU6, HIU25 ...), both year forms tried
+#                         and validated on their last trade date (a non-Index yellow key goes in as
+#                         a third item, e.g. ('CL', 'WTI', 'Comdty'))
+#      - the identity:    every contract must carry the same Bloomberg NAME as the product's
+#                         quarterlies; a code that resolves to something else (KM's serial months
+#                         are a jet-fuel swap on Bloomberg) is reported and left out
+#      - the index:       the future's own UNDL_SPOT_TICKER (INDEX_TICKERS in section 7 overrides)
+#      - the multiplier:  FUT_VAL_PT; the currency: the index's, unless CONTRACT_CURRENCY says USD
+#    The tab name is only a label (and the fallback index ticker when Bloomberg gives none).
 PRODUCTS = [
     ('HI',  'HSI'),
     ('HC',  'HSCEI'),
@@ -36,8 +42,8 @@ PRODUCTS = [
     ('XP',  'AS51'),
     ('FT',  'TWSE'),
     ('TWT', 'FTSE TW'),         # SGX FTSE Taiwan (TWTU6 ...)
-    ('MTW', 'MTW'),             # Taiwan futures, MTWU6 ... (tab named after the root - rename here if wanted)
-    ('FPO', 'FPO'),
+    ('MTW', 'MTW'),             # Bloomberg: "MSCI Taiwan NTR $" (SGX net-total-return) - no open interest since 2021
+    ('FPO', 'FPO'),             # Bloomberg: "MSCI Taiwan", USD 100 x index (NOT the FTSE China A50)
     ('HJA', 'TAMSCI'),          # the request note's "MSCI - HJAU6" row is this same root
     ('QZ',  'SIMSCI'),
     ('VG',  'SX5E'),            # Eurex Euro Stoxx 50 futures (EUR)
@@ -125,26 +131,24 @@ HIST_FIELD = 'OPEN_INT'         # daily open interest of one contract
 YELLOW_KEY = 'Index'            # default yellow key for the roots above
 BBG_HOST, BBG_PORT = 'localhost', 8194
 
-# 7. Underlying index, for the notional.  The index ticker defaults to '<tab name> Index'
-#    (HSI Index, KOSPI2 Index, AS51 Index ...); INDEX_TICKERS lists the exceptions.  Notional =
-#    OI x FUT_VAL_PT x index level (in index points), an amount in the contract's currency, turned
-#    into USD with FX_TICKER (local per USD, so divide).  FX_OVERRIDES swaps in another pair, e.g.
-#    {'AUD': ('AUDUSD Curncy', 'multiply')}.
+# 7. Underlying index, for the notional.  Notional = OI x FUT_VAL_PT x index level (in index
+#    points) - an amount in the contract's currency - turned into USD with FX_TICKER (local per
+#    USD, so divide).  The index is the one Bloomberg names on the future itself
+#    (UNDL_SPOT_TICKER, the same for every contract of the product); INDEX_TICKERS overrides it
+#    per tab when that field is empty or wrong; '<tab name> Index' is the last resort.
 #    The contract currency is CONTRACT_CURRENCY[tab] if listed, else the INDEX's own currency
-#    (its CRNCY: KOSPI2 -> KRW, HSI -> HKD, AS51 -> AUD, TWSE -> TWD).  Bloomberg's CRNCY field
-#    on the futures is NOT used for this - it comes back as USD for KRW contracts such as KM -
-#    it is only reported, and a disagreement is flagged in the summary and the Indices tab.
-#    List the genuinely USD-denominated contracts here (SGX's dollar contracts); a USD contract
-#    needs no rate: OI x FUT_VAL_PT (in USD) x index points is already USD.
+#    (its CRNCY: KOSPI2 -> KRW, HSI -> HKD, AS51 -> AUD, TWSE -> TWD).  Bloomberg's CRNCY on the
+#    futures is not trusted for this (it says USD for KRW-denominated KOSPI 200 futures); it is
+#    reported, and a disagreement is flagged.  List the USD-denominated contracts on non-USD
+#    indices here: for them OI x FUT_VAL_PT (in USD) x index points is already USD, no rate.
+#    FX_OVERRIDES swaps in another pair, e.g. {'AUD': ('AUDUSD Curncy', 'multiply')}.
 CONTRACT_CURRENCY = {
-    'FPO': 'USD',       # SGX FTSE China A50: USD 1 x index   <- CHECK on the terminal
-    'FTSE TW': 'USD',   # SGX FTSE Taiwan: USD 40 x index     <- CHECK on the terminal
+    'FTSE TW': 'USD',   # SGX FTSE Taiwan: USD 40 x index points
+    'FPO': 'USD',       # "MSCI Taiwan" future: USD 100 x index points
+    'TAMSCI': 'USD',    # HKEX MSCI Taiwan (USD): USD 100 x index points
+    'MTW': 'USD',       # SGX MSCI Taiwan NTR (USD)
 }
-INDEX_TICKERS = {
-    'FTSE TW': 'TWSE Index',    # <- CHECK on the terminal: the FTSE Taiwan (RIC capped) index the TWT future settles on
-    'MTW': 'TWSE Index',        # <- CHECK on the terminal: whatever the MTW future settles on
-    'FPO': 'XIN9I Index',       # FTSE China A50
-}
+INDEX_TICKERS = {}      # e.g. {'FTSE TW': 'TWRIC Index'} if Bloomberg's UNDL_SPOT_TICKER is empty or wrong for a product
 FX_TICKER = 'USD{ccy} Curncy'
 FX_OVERRIDES = {}
 INDEX_FIELD = 'PX_LAST'         # daily last price of the index and of the FX rate
@@ -158,7 +162,7 @@ EXPECTED_CONTRACT = {
     'KM': ('KRW', 250000),                                         # KRX KOSPI 200: KRW 250,000 x index
     'XP': ('AUD', 25),                                             # ASX SPI 200: A$25 x index
     'FT': ('TWD', 200),                                            # TAIFEX TX: NT$200 x index
-    'TWT': ('USD', 40), 'FPO': ('USD', 1), 'QZ': ('SGD', 100),     # SGX FTSE Taiwan / FTSE China A50 / MSCI Singapore
+    'TWT': ('USD', 40), 'QZ': ('SGD', 100),                        # SGX FTSE Taiwan / MSCI Singapore
     'VG': ('EUR', 10), 'ES': ('USD', 50),                          # Eurex Euro Stoxx 50 / CME E-mini S&P 500
 }
 # ===========================================================================
@@ -170,6 +174,7 @@ import bisect                                     # noqa: E402
 import dataclasses                                # noqa: E402
 import datetime as dt                             # noqa: E402
 import os                                         # noqa: E402
+import re                                         # noqa: E402
 import sys                                        # noqa: E402
 import traceback                                  # noqa: E402
 from typing import List, Optional, Tuple          # noqa: E402
@@ -191,7 +196,7 @@ except ImportError:
     print('openpyxl is not installed in this Python - run:  pip install openpyxl')
     raise
 
-REF_FIELDS = ['LAST_TRADEABLE_DT', 'FUT_MONTH_YR', 'NAME', 'CRNCY', MULTIPLIER_FIELD]
+REF_FIELDS = ['LAST_TRADEABLE_DT', 'FUT_MONTH_YR', 'NAME', 'CRNCY', MULTIPLIER_FIELD, 'UNDL_SPOT_TICKER']
 EVENT_SPINS = 240                        # 500 ms each: ~2 min per request, then it is an error
 REF_CHUNK = 100                          # securities per ReferenceDataRequest
 
@@ -199,13 +204,14 @@ MONTH_CODES = 'FGHJKMNQUVXZ'             # index 0 = January
 MONTH_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
               'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-OK, NOT_FOUND, NO_DATA, NOT_PULLED = 'OK', 'NOT FOUND', 'NO DATA', 'NOT PULLED'
+OK, NOT_FOUND, NO_DATA, NOT_PULLED, OTHER = 'OK', 'NOT FOUND', 'NO DATA', 'NOT PULLED', 'OTHER PRODUCT'
 AUDIT_SHEET = 'Contracts'
 INDEX_SHEET = 'Indices'
 INDEX_REF_FIELDS = ['CRNCY', 'NAME']
 INDEX_COLUMNS = ['Product', 'Index ticker', 'Name', 'Index ccy', 'Contract ccy used', 'Ccy source',
                  'Futures CRNCY (Bloomberg)', 'FX ticker', 'Status', 'Request start', 'Request end',
-                 'First date', 'Last date', 'Rows', 'Last index', 'Last FX', 'Last index (USD)', 'Note']
+                 'First date', 'Last date', 'Rows', 'Last index', 'Last FX', 'Last index (USD)', 'Note',
+                 'Index source']
 # chart look: dark grey text, light grey axis line and gridlines, grey subtitle, no borders
 CHART_TEXT, CHART_LINE, GRID_COLOR, SUBTITLE_COLOR = '404040', 'BFBFBF', 'E6E6E6', '6E6E6E'
 TOTAL_LABEL = 'Total'
@@ -215,7 +221,7 @@ MAX_END_LABELS = 10          # at most this many contracts named at the right ed
 AUDIT_COLUMNS = ['Product', 'Contract', 'Ticker 1-digit', 'Ticker 2-digit', 'Ticker used',
                  'Status', 'LAST_TRADEABLE_DT', 'FUT_MONTH_YR', 'Name', 'Request start',
                  'Request end', 'First OI date', 'Last OI date', 'Rows', 'Last OI', 'Max OI',
-                 'Multiplier', 'Ccy', 'Last notional (USD)', 'Max notional (USD)', 'Note']
+                 'Multiplier', 'Ccy', 'Last notional (USD)', 'Max notional (USD)', 'Note', 'Underlying']
 
 
 # --------------------------------------------------------------- helpers ---
@@ -459,6 +465,7 @@ class Contract:
     name: str = ''
     currency: str = ''               # CRNCY of the future
     multiplier: Optional[float] = None   # FUT_VAL_PT
+    underlying: str = ''             # UNDL_SPOT_TICKER of the future
     req_start: Optional[dt.date] = None
     req_end: Optional[dt.date] = None
     rows: List[Tuple[dt.date, float]] = dataclasses.field(default_factory=list)  # OI, sorted
@@ -505,6 +512,7 @@ class IndexSeries:
     ccy_source: str = ''             # 'CONTRACT_CURRENCY' | 'index CRNCY'
     fx_ticker: str = ''              # 'USDKRW Curncy' ('' for a USD-denominated future)
     fx_mode: str = 'divide'          # amount / rate, or 'multiply'
+    index_source: str = ''           # 'UNDL_SPOT_TICKER' | 'INDEX_TICKERS' | 'tab name'
     status: str = NOT_FOUND
     req_start: Optional[dt.date] = None
     req_end: Optional[dt.date] = None
@@ -737,6 +745,7 @@ def pick_ticker(c, ref, bad_securities, today):
     The note says, per ticker form, what Bloomberg answered - that is the 'why' of a NOT FOUND.
     """
     valid, why = [], []
+    c.note = ''
     for t in (c.ticker_1, c.ticker_2):
         if t in bad_securities:
             why.append('%s -> %s' % (t, bad_securities[t]))
@@ -769,6 +778,42 @@ def pick_ticker(c, ref, bad_securities, today):
     c.name = str(row.get('NAME') or '')
     c.currency = str(row.get('CRNCY') or '').strip().upper()
     c.multiplier = as_float(row.get(MULTIPLIER_FIELD))
+    c.underlying = str(row.get('UNDL_SPOT_TICKER') or '').strip()
+
+
+def name_prefix(name):
+    """'HANG SENG IDX FUT Dec21' -> 'HANG SENG IDX FUT': the product part of a Bloomberg name."""
+    return re.sub(r'\s*[A-Za-z]{3}\s?\d{2}\s*$', '', str(name or '')).strip()
+
+
+def product_identity(cs):
+    """(NAME prefix, multiplier, currency, underlying) that defines the product: the most common
+    values among its resolved quarterly contracts (every index future has Mar/Jun/Sep/Dec), or
+    among all resolved contracts when no quarterly resolved."""
+    ok = [c for c in cs if c.status == OK]
+    base = [c for c in ok if c.month in (3, 6, 9, 12)] or ok
+    if not base:
+        return '', None, '', ''
+    def mode(values):
+        values = [v for v in values if v not in (None, '')]
+        return max(set(values), key=values.count) if values else ''
+    return (mode([name_prefix(c.name) for c in base]), mode([c.multiplier for c in base]) or None,
+            mode([c.currency for c in base]), mode([c.underlying for c in base]))
+
+
+def check_identity(results):
+    """A code can resolve to a contract that is not this product at all (KM's serial months are
+    'EURO JET NWE SWAP' on Bloomberg).  Any resolved contract whose NAME prefix differs from the
+    product's is marked OTHER PRODUCT and left out.  Returns {tab: identity}."""
+    ids = {}
+    for name, cs in results:
+        prefix, mult, ccy, undl = product_identity(cs)
+        ids[name] = (prefix, mult, ccy, undl)
+        for c in cs:
+            if c.status == OK and prefix and name_prefix(c.name) != prefix:
+                c.status = OTHER
+                c.note = "%s resolves to '%s' - not a %s contract" % (c.ticker, c.name, prefix)
+    return ids
 
 
 def expected_form(c, today):
@@ -794,22 +839,42 @@ def resolve_contracts(bbg, products, months, today):
         ref.update(bbg.ref([other_form(c, today) for c in missing], REF_FIELDS))
         for c in missing:
             pick_ticker(c, ref, bbg.bad_securities, today)
+    check_identity(results)
     return results
 
 
-def fetch_open_interest(bbg, c, data_start, today, skip_months=None):
-    """Fill c.rows with daily OPEN_INT from data_start up to the earliest of the last trade date,
-    today, and the end of the calendar month skip_months before the contract month."""
+def history_floor(c, sibling_last_trade=None):
+    """The first day this contract's own history can start.  Bloomberg reuses a futures code
+    every ten years (HIZ1 was Dec 2021, then Dec 2031) and answers a history request for the code
+    with whichever contract held it on each date - so nothing dated on or before the last trade
+    of the contract ten years earlier belongs to this one.  sibling_last_trade: that contract's
+    last trade date when it was resolved in this run, else the end of its month is used."""
+    end = sibling_last_trade or month_end(c.year - 10, c.month)
+    return end + dt.timedelta(days=1)
+
+
+def fetch_open_interest(bbg, c, data_start, today, skip_months=None, sibling_last_trade=None):
+    """Fill c.rows with daily OPEN_INT from data_start (or the day after the previous holder of
+    the ticker code expired, whichever is later) up to the earliest of the last trade date, today,
+    and the end of the calendar month skip_months before the contract month."""
     if c.status != OK:
         return
     skip_months = SKIP_MONTHS if skip_months is None else skip_months
-    c.req_start = data_start
+    floor = history_floor(c, sibling_last_trade)
+    c.req_start = max(data_start, floor)
+    if floor > data_start:
+        c.note = 'history from %s: earlier prints under this code belong to the %s contract' % (
+            c.req_start.isoformat(), month_label(c.year - 10, c.month))
     c.req_end = min(c.last_trade, today)
     cutoff = history_cutoff(c.year, c.month, skip_months)
     if cutoff is not None:
         c.req_end = min(c.req_end, cutoff)
     if c.req_start > c.req_end:
-        c.status, c.note = NO_DATA, 'its window ends %s, before DATA_START' % c.req_end.isoformat()
+        if floor > data_start:
+            c.status, c.note = NO_DATA, ('no history of its own before %s: until then the code is the %s contract\'s'
+                                         % (floor.isoformat(), month_label(c.year - 10, c.month)))
+        else:
+            c.status, c.note = NO_DATA, 'its window ends %s, before DATA_START' % c.req_end.isoformat()
         return
     c.rows = bbg.history(c.ticker, HIST_FIELD, c.req_start, c.req_end)
     if not c.rows:
@@ -819,9 +884,16 @@ def fetch_open_interest(bbg, c, data_start, today, skip_months=None):
             % (HIST_FIELD, c.req_start.isoformat(), c.req_end.isoformat()))
 
 
-def index_ticker(name):
-    """The index behind a product tab: INDEX_TICKERS, else '<tab name> Index'."""
-    return INDEX_TICKERS.get(name) or '%s Index' % name
+def index_ticker(name, contracts=None):
+    """(index ticker, source) behind a product tab: INDEX_TICKERS if listed, else the
+    UNDL_SPOT_TICKER Bloomberg puts on the product's own contracts, else '<tab name> Index'."""
+    if INDEX_TICKERS.get(name):
+        return INDEX_TICKERS[name], 'INDEX_TICKERS'
+    if contracts:
+        undl = product_identity(contracts)[3]
+        if undl:
+            return (undl if ' ' in undl else undl + ' Index'), 'UNDL_SPOT_TICKER'
+    return '%s Index' % name, 'tab name'
 
 
 def fx_for(currency):
@@ -854,8 +926,10 @@ def resolve_indices(bbg, results):
     The FX pair is chosen by the contract currency: CONTRACT_CURRENCY[tab] if listed, else the
     index's own CRNCY.  Bloomberg's CRNCY on the futures is recorded for the audit only.
     """
-    out = {name: IndexSeries(product=name, ticker=index_ticker(name), bbg_fut_currency=product_currency(cs))
-           for name, cs in results}
+    out = {}
+    for name, cs in results:
+        ticker, source = index_ticker(name, cs)
+        out[name] = IndexSeries(product=name, ticker=ticker, index_source=source, bbg_fut_currency=product_currency(cs))
     ref = bbg.ref(sorted({ix.ticker for ix in out.values()}), INDEX_REF_FIELDS)
     for ix in out.values():
         if ix.ticker in bbg.bad_securities:
@@ -1195,7 +1269,7 @@ def audit_row(c):
             c.last_trade, c.fut_month_yr or None, c.name or None, c.req_start, c.req_end,
             c.first_dt, c.last_dt, (len(c.rows) if c.status in (OK, NO_DATA) else None),
             c.last_oi, c.max_oi, c.multiplier, c.currency or None, c.last_notional, c.max_notional,
-            c.note or None]
+            c.note or None, c.underlying or None]
 
 
 def write_contracts_sheet(wb, results):
@@ -1225,7 +1299,7 @@ def index_row(ix):
             ix.ccy_source or None, ix.bbg_fut_currency or None,
             ix.fx_ticker or None, ix.status, ix.req_start, ix.req_end, ix.first_dt, ix.last_dt,
             (len(ix.rows) if ix.status in (OK, NO_DATA) else None), ix.last_index, ix.last_fx, ix.last_usd,
-            ix.note or None]
+            ix.note or None, ix.index_source or None]
 
 
 def write_indices_sheet(wb, indices):
@@ -1242,7 +1316,7 @@ def write_indices_sheet(wb, indices):
             elif isinstance(v, float):
                 cell.number_format = '#,##0.00'
     ws.freeze_panes = 'A2'
-    for j, w in enumerate([10, 16, 30, 9, 10, 18, 12, 16, 11, 13, 13, 13, 13, 7, 12, 10, 14, 70], start=1):
+    for j, w in enumerate([10, 16, 30, 9, 10, 18, 12, 16, 11, 13, 13, 13, 13, 7, 12, 10, 14, 70, 18], start=1):
         ws.column_dimensions[get_column_letter(j)].width = w
     return ws
 
@@ -1483,14 +1557,15 @@ def show_charts(results, measure=None, kind=None, indices=None, skip_months=None
 
 # --------------------------------------------------------------- console ---
 def print_contract_table(results):
-    print('%-8s %-7s %-14s %-9s %-11s %-9s %-4s %s' % ('Product', 'Month', 'Ticker', 'Status', 'Last trade',
-                                                        MULTIPLIER_FIELD, 'Ccy', 'Note'))
+    print('%-8s %-7s %-14s %-13s %-11s %-9s %-4s %-24s %-14s %s' % ('Product', 'Month', 'Ticker', 'Status', 'Last trade',
+                                                                     MULTIPLIER_FIELD, 'Ccy', 'Name', 'Underlying', 'Note'))
     for name, cs in results:
         for c in cs:
-            print('%-8s %-7s %-14s %-9s %-11s %-9s %-4s %s' % (
+            print('%-8s %-7s %-14s %-13s %-11s %-9s %-4s %-24s %-14s %s' % (
                 name, c.label, c.ticker or '-', c.status,
                 c.last_trade.isoformat() if c.last_trade else '-',
-                ('%g' % c.multiplier) if c.multiplier is not None else '-', c.currency or '-', c.note))
+                ('%g' % c.multiplier) if c.multiplier is not None else '-', c.currency or '-',
+                (c.name or '-')[:24], (c.underlying or '-')[:14], c.note))
     print()
 
 
@@ -1543,10 +1618,22 @@ def print_summary(results, bbg, out, indices=None, used=None):
         print('%-8s %2d/%d contracts with data%s' % (name, n_ok, len(cs), (' - showing ' + shown) if shown else ''))
         if note:
             print('         %s' % note)
+        prefix, mult, ccy, undl = product_identity(cs)
+        if prefix:
+            print('         contract:   %s  |  %s %s per point  |  underlying %s' % (
+                prefix, ('%g' % mult) if mult is not None else '?', ccy or '?', undl or '(none given)'))
         for status in (NOT_FOUND, NO_DATA, NOT_PULLED):
             labels = [c.label for c in cs if c.status == status]
             if labels:
                 print('         %-11s %s' % (status + ':', ', '.join(labels)))
+        others = [c for c in cs if c.status == OTHER]
+        if others:
+            print('         %-11s %s  (%s)' % (OTHER + ':', ', '.join(c.label for c in others),
+                                             '; '.join(sorted({name_prefix(c.name) for c in others}))))
+        guarded = [c for c in cs if c.status in (OK, NO_DATA) and 'earlier prints under this code' in c.note]
+        if guarded:
+            print('         ticker code reused: %s - history taken only from the day after the earlier contract expired'
+                  % ', '.join(c.label for c in guarded))
         thin = ['%s (%d)' % (c.label, len(c.rows)) for c in cs if c.status == OK and 0 < len(c.rows) < MIN_DAYS_TO_CHART]
         if thin:
             print('         not charted, under %d days in the window: %s' % (MIN_DAYS_TO_CHART, ', '.join(thin)))
@@ -1554,9 +1641,9 @@ def print_summary(results, bbg, out, indices=None, used=None):
         if ix is not None:
             mult = sorted({c.multiplier for c in cs if c.status == OK and c.multiplier is not None})
             if ix.status == OK:
-                print('         notional:   OI x %s x %s (%d rows)%s   [contract ccy %s from %s]' % (
+                print('         notional:   OI x %s x %s (%s, %d rows)%s   [contract ccy %s from %s]' % (
                     ' / '.join('%g' % m for m in mult) if mult else '%s ?' % MULTIPLIER_FIELD, ix.ticker,
-                    len(ix.rows), (' / %s' % ix.fx_ticker) if ix.fx_ticker else ' (USD-denominated, no FX)',
+                    ix.index_source, len(ix.rows), (' / %s' % ix.fx_ticker) if ix.fx_ticker else ' (USD-denominated, no FX)',
                     ix.fut_currency, ix.ccy_source))
                 if ix.note:
                     print('         WARNING:    %s' % ix.note)
@@ -1580,6 +1667,9 @@ def print_summary(results, bbg, out, indices=None, used=None):
     if NO_DATA in seen_status:
         print('NO DATA   = the contract exists on Bloomberg but has no %s prints in its window '
               '(not traded yet, or never)' % HIST_FIELD)
+    if OTHER in seen_status:
+        print('%s = the code resolves to a contract with another Bloomberg name than the product\'s quarterlies - left out'
+              % OTHER)
     if out:
         print('Written: %s' % out)
 
@@ -1630,6 +1720,7 @@ def run(products=None, data_start=None, out=None, today=None, blpapi_module=None
             results = resolve_contracts(bbg, products, months, today)
         except Exception as e:
             raise StepError('resolving the tickers', e)
+        last_trades = {(name, c.year, c.month): c.last_trade for name, cs in results for c in cs if c.last_trade}
         indices = None
         if measure == 'notional':
             try:
@@ -1654,7 +1745,8 @@ def run(products=None, data_start=None, out=None, today=None, blpapi_module=None
                     c.status, c.note = NOT_PULLED, 'not requested - the pull stopped at %s' % pull_error[0].ticker
                     continue
                 try:
-                    fetch_open_interest(bbg, c, data_start, today, skip_months)
+                    fetch_open_interest(bbg, c, data_start, today, skip_months,
+                                        last_trades.get((name, c.year - 10, c.month)))
                     print('.', end='', flush=True)
                 except Exception as e:                 # keep what we have, say where it stopped
                     pull_error = (c, e)
@@ -1970,6 +2062,8 @@ def build_universe():
                 continue                                            # (v)  quarterly-only product
             t1, t2 = candidate_tickers(root, y, m)
             s = mid_spec(y, m) if root == 'MM' else spec(y, m)
+            if root == 'KM' and m not in QUARTERLY:                 # KM's serial codes are a jet-fuel swap on Bloomberg
+                s['other'] = True
             expired = s['last_trade'] < TEST_TODAY
             if root == 'HI' and (y, m) == (2026, 1):                # (iv) one-digit form is the 2036 contract
                 u[t1], u[t2] = spec(2036, 1), s
@@ -1995,7 +2089,7 @@ def extend_universe(u):
     u['HIZ8 Index'] = spec(2028, 12, listing=dt.date(2023, 12, 1))
     u['HIZ9 Index'] = spec(2029, 12, listing=dt.date(2024, 12, 2))
     u['HIZ0 Index'] = spec(2030, 12, listing=dt.date(2025, 12, 1))
-    u['HIZ1 Index'] = spec(2031, 12, listing=dt.date(2026, 6, 1))
+    u['HIZ1 Index'] = spec(2031, 12, listing=dt.date(2026, 6, 1), ghost=(dt.date(2021, 1, 4), dt.date(2021, 12, 30)))
     u['HIZ36 Index'] = spec(2036, 12, listing=dt.date(2026, 6, 1))
     return u
 
@@ -2004,7 +2098,8 @@ UNIVERSE = extend_universe(build_universe())
 # the underlying indices (kind 'index', with a currency) and their USD rates (kind 'fx')
 FAKE_INDICES = {'HSI Index': 'HKD', 'AS51 Index': 'AUD', 'SIMSCI Index': 'SGD', 'KOSPI2 Index': 'KRW'}
 FAKE_FUT = {'HI': ('HKD', 50.0), 'XP': ('AUD', 25.0), 'QZ': ('USD', 100.0), 'NF': ('USD', 1.0),
-            'KM': ('USD', 250000.0), 'MM': ('USD', 1.0)}   # root -> (CRNCY as Bloomberg reports it, FUT_VAL_PT); KM says USD like the real terminal
+            'KM': ('USD', 250000.0), 'MM': ('USD', 1.0)}
+FAKE_UNDERLYING = {'HI': 'HSI Index', 'XP': 'AS51 Index', 'QZ': 'SIMSCI Index', 'KM': 'KOSPI2 Index', 'NF': '', 'MM': ''}   # root -> (CRNCY as Bloomberg reports it, FUT_VAL_PT); KM says USD like the real terminal
 FAKE_FX = ['USDHKD Curncy', 'USDAUD Curncy', 'USDSGD Curncy', 'USDKRW Curncy']
 FAKE_LEVELS = {'HSI Index': 20000.0, 'AS51 Index': 8000.0, 'SIMSCI Index': 350.0, 'KOSPI2 Index': 400.0,
                'USDHKD Curncy': 7.8, 'USDAUD Curncy': 1.5, 'USDSGD Curncy': 1.35, 'USDKRW Curncy': 1350.0}
@@ -2076,10 +2171,20 @@ def last_session_on_or_before(d):
 
 
 def fake_rows(ticker, start, end):
+    """The prints Bloomberg would return for a history request - including, for a code that an
+    earlier contract used ('ghost'), that contract's prints on its dates, as the real terminal does."""
     s = UNIVERSE.get(ticker)
     if s is None:
         return []
-    d, hi, out = max(s['listing'], start), min(s['last_trade'], end), []
+    out = []
+    if s.get('ghost'):
+        g0, g1 = s['ghost']
+        d, hi = max(g0, start), min(g1, end)
+        while d <= hi:
+            if is_session(d):
+                out.append((d, 120000.0 + (d - g0).days * 5.0))          # the earlier contract's big open interest
+            d += DAY
+    d, hi = max(s['listing'], start), min(s['last_trade'], end)
     while d <= hi:
         if is_session(d, s.get('kind')):
             out.append((d, fake_oi(ticker, d)))
@@ -2141,12 +2246,19 @@ class FakeSession:
         elif s.get('not_future'):                   # a ticker that exists but is not a future
             known = {'NAME': 'FAKE %s SOMETHING ELSE' % sec.split()[0]}
             refusal = ('NOT_APPLICABLE_TO_REF_DATA', 'Field not applicable to security')
-        else:
-            ccy, mult = FAKE_FUT[sec[:2]]
+        elif s.get('other'):                        # a future of another product that shares the code (KM's jet swap)
             known = {'LAST_TRADEABLE_DT': s['last_trade'],
                      'FUT_MONTH_YR': '%s %02d' % (mon.upper(), s['year'] % 100),
-                     'NAME': 'FAKE %s FUT %s%02d' % (sec.split()[0], mon, s['year'] % 100),
-                     'CRNCY': ccy, 'FUT_VAL_PT': mult}
+                     'NAME': 'EURO JET NWE SWAP %s%02d' % (mon, s['year'] % 100),
+                     'CRNCY': 'USD', 'FUT_VAL_PT': 1000.0, 'UNDL_SPOT_TICKER': ''}
+            refusal = ('BAD_FLD', 'Invalid Field')
+        else:
+            root = sec[:2]
+            ccy, mult = FAKE_FUT[root]
+            known = {'LAST_TRADEABLE_DT': s['last_trade'],
+                     'FUT_MONTH_YR': '%s %02d' % (mon.upper(), s['year'] % 100),
+                     'NAME': 'FAKE %s FUT %s%02d' % (root, mon, s['year'] % 100),
+                     'CRNCY': ccy, 'FUT_VAL_PT': mult, 'UNDL_SPOT_TICKER': FAKE_UNDERLYING.get(root, '')}
             refusal = ('BAD_FLD', 'Invalid Field')
         kids = [('security', sec),
                 ('fieldData', fake_complex('fieldData', [(k, known[k]) for k in wanted if k in known]))]
@@ -2286,10 +2398,27 @@ def test_helpers():
           == contract_months(2024, 2026) + [(y, 12) for y in range(2027, 2037)])
     check('as_float', as_float(50) == 50.0 and as_float('12.5') == 12.5 and as_float(None) is None
           and as_float(float('nan')) is None and as_float(0) is None and as_float('n.a.') is None)
-    check('index ticker: <tab> Index by default (SX5E, SX5T, SPX included), INDEX_TICKERS for the exceptions',
-          index_ticker('KOSPI2') == 'KOSPI2 Index' and index_ticker('FPO') == 'XIN9I Index'
-          and index_ticker('SX5T') == 'SX5T Index' and index_ticker('SPX') == 'SPX Index'
+    hi_cs = [Contract(product='Hang Seng', root='HI', year=2025, month=m, label='', ticker_1='', ticker_2='', status=OK,
+                      name='HANG SENG IDX FUT Mar25', underlying='HSI Index') for m in (3, 6)]
+    global INDEX_TICKERS
+    saved_it = INDEX_TICKERS
+    try:
+        INDEX_TICKERS = {'FTSE TW': 'TWRIC Index'}
+        ov = index_ticker('FTSE TW', hi_cs)
+    finally:
+        INDEX_TICKERS = saved_it
+    check('index ticker: the future\'s UNDL_SPOT_TICKER first, INDEX_TICKERS overrides, <tab> Index as the last resort',
+          index_ticker('Hang Seng', hi_cs) == ('HSI Index', 'UNDL_SPOT_TICKER') and index_ticker('KOSPI2') == ('KOSPI2 Index', 'tab name')
+          and index_ticker('SPX', []) == ('SPX Index', 'tab name') and ov == ('TWRIC Index', 'INDEX_TICKERS')
           and fx_for('EUR') == ('USDEUR Curncy', 'divide'))
+    check('name_prefix strips the month token', name_prefix('HANG SENG IDX FUT Dec21') == 'HANG SENG IDX FUT'
+          and name_prefix('MSCI Taiwan USD   Jun24') == 'MSCI Taiwan USD' and name_prefix('EURO STOXX 50     Dec25') == 'EURO STOXX 50'
+          and name_prefix('KOSPI2 INX FUT    Dec25') == 'KOSPI2 INX FUT' and name_prefix(None) == '')
+    check('history_floor: the day after the previous holder of the code expired; month end when it was not resolved',
+          history_floor(Contract(product='x', root='x', year=2031, month=12, label='', ticker_1='', ticker_2=''),
+                        dt.date(2021, 12, 30)) == dt.date(2021, 12, 31)
+          and history_floor(Contract(product='x', root='x', year=2035, month=12, label='', ticker_1='', ticker_2='')) == dt.date(2026, 1, 1)
+          and history_floor(Contract(product='x', root='x', year=2027, month=3, label='', ticker_1='', ticker_2='')) == dt.date(2017, 4, 1))
     try:
         fx_for('')
         empty = 'no error'
@@ -2470,7 +2599,7 @@ def test_resolution():
               for c in ok))
     c = by[('HSI', 'Sep 25')]
     check('FUT_MONTH_YR / NAME / CRNCY / FUT_VAL_PT captured',
-          c.fut_month_yr == 'SEP 25' and c.name.startswith('FAKE HIU25') and c.currency == 'HKD' and c.multiplier == 50.0,
+          c.fut_month_yr == 'SEP 25' and c.name == 'FAKE HI FUT Sep25' and c.currency == 'HKD' and c.multiplier == 50.0,
           (c.fut_month_yr, c.name, c.currency, c.multiplier))
     counts = [(n, sum(c.status == OK for c in cs)) for n, cs in results]
     check('resolution counts HSI 36 / AS51 12 / SIMSCI 35', counts == [('HSI', 36), ('AS51', 12), ('SIMSCI', 35)], counts)
@@ -2601,18 +2730,39 @@ def test_long_dated():
           (nf, by['Dec 32'].note))
     for c in cs:
         fetch_open_interest(bbg, c, TEST_START, TEST_TODAY, 4)
-    check('Dec 36 listed June 2026: rows from its listing day to today, nothing invented before',
-          c.rows[0][0] == first_session_on_or_after(dt.date(2026, 6, 1)) and c.rows[-1][0] == last_session_on_or_before(TEST_TODAY)
-          and by['Dec 27'].rows[0][0] == first_session_on_or_after(TEST_START), (c.rows[0], c.rows[-1]))
+    check('Dec 36 while Dec 26 still trades: NO DATA with the reason (its prints could not be told from Dec 26\'s), '
+          'Dec 27 from DATA_START',
+          c.status == NO_DATA and not c.rows and c.note == "no history of its own before 2027-01-01: until then the code is the Dec 26 contract's"
+          and by['Dec 27'].rows[0][0] == first_session_on_or_after(TEST_START), (c.status, c.note))
+    c31 = by['Dec 31']
+    raw = bbg.history('HIZ1 Index', 'OPEN_INT', dt.date(2021, 1, 1), TEST_TODAY)
+    copy31 = lambda: Contract(**{k: getattr(c31, k) for k in ('product', 'root', 'year', 'month', 'label', 'ticker_1', 'ticker_2',
+                                                              'ticker', 'status', 'last_trade')})
+    c31a = copy31()
+    fetch_open_interest(bbg, c31a, dt.date(2021, 1, 1), TEST_TODAY, 4)
+    check('Dec 31 from a 2021 start: the code HIZ1 was Dec 21 - the terminal returns Dec 21\'s 2021 prints under it, '
+          'the guard never asks for them (request from 2022-01-01, noted); a 2023 start needs no guard',
+          any(d.year == 2021 for d, _ in raw) and c31a.req_start == dt.date(2022, 1, 1)
+          and all(d >= dt.date(2026, 6, 1) for d, _ in c31a.rows) and c31a.rows
+          and c31a.note == 'history from 2022-01-01: earlier prints under this code belong to the Dec 21 contract'
+          and c31.req_start == TEST_START and c31.note == '', (c31a.req_start, c31a.rows[:1], c31a.note))
+    c31b = copy31()
+    sib = dt.date(2021, 12, 29)
+    fetch_open_interest(bbg, c31b, dt.date(2021, 1, 1), TEST_TODAY, 4, sibling_last_trade=sib)
+    check('the guard uses the earlier contract\'s actual last trade date when that contract was resolved in the run',
+          c31b.req_start == sib + dt.timedelta(days=1) and all(d > sib for d, _ in c31b.rows), c31b.req_start)
     tmp = tempfile.mkdtemp()
     path = os.path.join(tmp, 'long.xlsx')
     write_workbook(path, results, measure='oi')
     wb = load_workbook(path)
     ws = wb['HSI']
     _, series, dates, _ = product_series(cs, 'oi')
-    check('workbook: the live Decembers are the last columns and the dates run to today',
-          [ws.cell(2, j).value for j in range(2, len(series) + 2)][-6:] == ['Dec 27', 'Dec 28', 'Dec 29', 'Dec 30', 'Dec 31', 'Dec 36']
-          and dates[-1] == last_session_on_or_before(TEST_TODAY) and ws.max_row == len(dates) + 2)
+    check('workbook: the live Decembers are the last columns (no Dec 36), Dec 31 only from its own listing, dates run to today',
+          [ws.cell(2, j).value for j in range(2, len(series) + 2)][-5:] == ['Dec 27', 'Dec 28', 'Dec 29', 'Dec 30', 'Dec 31']
+          and dates[-1] == last_session_on_or_before(TEST_TODAY) and ws.max_row == len(dates) + 2
+          and dates[0] == first_session_on_or_after(TEST_START)
+          and all(ws.cell(r, len(series) + 1).value is None for r in range(3, 3 + 200)),
+          [ws.cell(2, j).value for j in range(2, len(series) + 2)][-6:])
     os.remove(path)
     os.rmdir(tmp)
 
@@ -2717,7 +2867,8 @@ def test_workbook(results):
               (ch.anchor.ext.cx, ch.anchor.ext.cy))
     ws = wb[AUDIT_SHEET]
     total = sum(len(cs) for _, cs in results)
-    check('Contracts: header + one row per contract', ws.max_row == total + 1 and [c.value for c in ws[1]] == AUDIT_COLUMNS,
+    check('Contracts: header + one row per contract, underlying recorded', ws.max_row == total + 1 and [c.value for c in ws[1]] == AUDIT_COLUMNS
+          and ws.cell(2, len(AUDIT_COLUMNS)).value == 'HSI Index',
           (ws.max_row, total))
     rows = {(r[0], r[1]): r for r in ws.iter_rows(min_row=2, values_only=True)}
     r = rows[('SIMSCI', 'Feb 26')]
@@ -2779,10 +2930,18 @@ def _test_notional():
     check('CONTRACT_CURRENCY = USD: no FX, index used in points, source recorded',
           qz.status == OK and qz.currency == 'SGD' and qz.fut_currency == 'USD' and qz.ccy_source == 'CONTRACT_CURRENCY'
           and qz.fx_ticker == '', qz)
-    kr = resolve_indices(bbg, resolve_contracts(bbg, FAKE_KRW_PRODUCTS, [(2025, m) for m in range(1, 13)], TEST_TODAY))['KOSPI2']
+    kr_res = resolve_contracts(bbg, FAKE_KRW_PRODUCTS, [(2025, m) for m in range(1, 13)], TEST_TODAY)
+    kr = resolve_indices(bbg, kr_res)['KOSPI2']
     check('KOSPI2: futures CRNCY says USD (as on the real terminal) but the index says KRW -> KRW used, USDKRW, warning',
           kr.status == OK and kr.bbg_fut_currency == 'USD' and kr.fut_currency == 'KRW' and kr.ccy_source == 'index CRNCY'
-          and kr.fx_ticker == 'USDKRW Curncy' and 'says USD - ignored, KRW used' in kr.note, kr)
+          and kr.fx_ticker == 'USDKRW Curncy' and 'says USD - ignored, KRW used' in kr.note and kr.index_source == 'UNDL_SPOT_TICKER', kr)
+    kr_cs = kr_res[0][1]
+    others = [c for c in kr_cs if c.status == OTHER]
+    check('KOSPI2: the serial codes resolve to a jet-fuel swap -> OTHER PRODUCT with the reason, the quarterlies stay',
+          len(others) == 8 and all(c.month not in QUARTERLY for c in others)
+          and others[0].note == "%s resolves to 'EURO JET NWE SWAP Jan25' - not a FAKE KM FUT contract" % others[0].ticker
+          and sum(1 for c in kr_cs if c.status == OK) == 4 and product_identity(kr_cs)[:3] == ('FAKE KM FUT', 250000.0, 'USD'),
+          [(c.label, c.status, c.note) for c in kr_cs[:2]])
     nc = IndexSeries(product='X', ticker='X Index')
     saved = CONTRACT_CURRENCY
     try:
@@ -2883,10 +3042,10 @@ def _test_notional():
     ws = wb[INDEX_SHEET]
     rows = {r[0]: r for r in ws.iter_rows(min_row=2, values_only=True)}
     r, ix = rows['HSI'], indices['HSI']
-    check('Indices tab: header + one row per product, HSI row complete',
+    check('Indices tab: header + one row per product, HSI row complete, index source recorded',
           [c.value for c in ws[1]] == INDEX_COLUMNS and ws.max_row == 4 and ws.freeze_panes == 'A2'
           and r[1] == 'HSI Index' and r[3] == 'HKD' and r[4] == 'HKD' and r[5] == 'index CRNCY' and r[6] == 'HKD'
-          and r[7] == 'USDHKD Curncy' and r[8] == OK
+          and r[7] == 'USDHKD Curncy' and r[8] == OK and r[18] == 'UNDL_SPOT_TICKER'
           and r[9].date() == ix.req_start and r[10].date() == ix.req_end and r[11].date() == ix.first_dt
           and r[12].date() == ix.last_dt and r[13] == len(ix.rows) and abs(r[14] - ix.last_index) < 1e-6
           and abs(r[15] - ix.last_fx) < 1e-9 and abs(r[16] - ix.last_usd) < 1e-9, r)
@@ -2948,11 +3107,14 @@ def _test_notional():
     hist = [e for e in sess.log if e['op'] == 'HistoricalDataRequest']
     wb6 = load_workbook(path5)
     ws = wb6['KOSPI2']
-    check('KOSPI2: KRW from the index, USDKRW pulled after the contracts, Bloomberg futures CRNCY=USD flagged and ignored',
+    check('KOSPI2: KRW from the index, USDKRW pulled after the contracts, Bloomberg futures CRNCY=USD flagged and ignored, '
+          'jet-swap serials listed as OTHER PRODUCT and never pulled',
           [e['securities'][0] for e in hist[-2:]] == ['KOSPI2 Index', 'USDKRW Curncy']
-          and 'notional:   OI x 250000 x KOSPI2 Index' in text and '/ USDKRW Curncy' in text
+          and 'notional:   OI x 250000 x KOSPI2 Index (UNDL_SPOT_TICKER' in text and '/ USDKRW Curncy' in text
           and '[contract ccy KRW from index CRNCY]' in text and 'WARNING:    Bloomberg CRNCY on the futures says USD' in text
-          and 'no FX' not in text, text[-700:])
+          and 'no FX' not in text and 'OTHER PRODUCT: Jan 24' in text and '(EURO JET NWE SWAP)' in text
+          and 'contract:   FAKE KM FUT  |  250000 USD per point  |  underlying KOSPI2 Index' in text
+          and not any(e['securities'][0].startswith('KMF') or e['securities'][0].startswith('KMG') for e in hist), text[-900:])
     # rebuild the expected value of one cell by hand from the fake prints
     i, j = 3, 2                                        # first date row, first contract column
     while ws.cell(i, j).value is None:
