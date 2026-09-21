@@ -1,47 +1,47 @@
-HK IPOs — week of 21 Sep: Transwarp Technology (Shanghai), Ligent Technologies, Inc., Shenzhen Forms Syntron Information
-========================================================================================================================
+HK IPOs — week of 28 Sep: Ligent Technologies, Inc., Shenzhen Forms Syntron Information, Shenzhen Kinwong Electronic
+====================================================================================================================
 
 Team,
 
 Coming up:
-  Transwarp Technology (Shanghai) Co., Ltd. (6727) — Tech/AI / SaaS / enterprise software
-      HK$49.00–61.00; cap 1–1bn; books close 09/16, lists 21 Sep
   Ligent Technologies, Inc. (9856) — Tech/AI / Smart hardware / consumer electronics
       range tbc; cap 4–32bn; books close 09/17, lists 22 Sep
   Shenzhen Forms Syntron Information Co., Ltd. (6700) — Tech/AI / Fintech platform
       max HK$16.00; cap 1–1bn; cornerstones ~13% of the offer; books close 09/17, lists 22 Sep
+  Shenzhen Kinwong Electronic Co., Ltd. (3228) — Tech/AI / Smart hardware / consumer electronics
+      max HK$69.88; books close 09/24, lists 29 Sep
+  Red Avenue New Materials Group Co., Ltd. (9607) — Tech/AI / AI chips & semis
+      max HK$44.00; books close 09/24, lists 29 Sep
+  Direct Drive Tech Limited (6731) — Tech/AI / Robotics & autonomous driving
+      range tbc; cap 4–15bn; books close 09/24, lists 29 Sep
+  RoboTechnik Intelligent Technology Co., Ltd. (3757) — Industrials / Solar / wind supply chain
+      max HK$436.00; cornerstones ~72% of the offer; books close 09/24, lists 29 Sep
 
-My notes and valuation work on Transwarp Technology (Shanghai) Co., Ltd., Ligent Technologies, Inc., Shenzhen Forms Syntron Information Co., Ltd. are attached.
+My notes and valuation work on Ligent Technologies, Inc., Shenzhen Forms Syntron Information Co., Ltd., Shenzhen Kinwong Electronic Co., Ltd., Red Avenue New Materials Group Co., Ltd., Direct Drive Tech, RoboTechnik Intelligent Technology Co., Ltd. are attached.
 
 Listed in the last 2 weeks:
 
+  TRANSWARP (6727) — listed 21 Sep at HK$49.00, HK$687m raised
+      Book: public 73.9x, institutional 1.4x; cornerstones 11% of the offer
+      Tape: opened +0.0%, day-1 close -9.2%, now -9.2% vs offer (px 09/21)
+      Shoe: no over-allotment option — nothing to support the price
+
   EXCELLAND ROBOT (3231) — listed 9 Sep at HK$14.45, HK$650m raised
       Book: public 140x, institutional 1.0x; cornerstones 4% of the offer
-      Tape: opened +142.2%, day-1 close +153.8%, now +165.1% vs offer (px 09/14)
+      Grey mkt: closed +105.5% vs offer at 29.7 — day-1 then +23.5% from there
+      Tape: opened +142.2%, day-1 close +153.8%, now +168.5% vs offer (px 09/21)
       Shoe: no over-allotment option — nothing to support the price
 
   LONGSYS (9976) — listed 8 Sep at HK$236.00, HK$7,078m raised
       Book: public 40.3x, institutional 40.3x; cornerstones 17% of the offer
-      Tape: opened +0.0%, day-1 close -1.0%, now -20.9% vs offer (px 09/14)
-      Shoe: CLSA Limited runs the shoe — support can run until Sat 3 Oct (19d left)
+      Grey mkt: closed -0.7% vs offer at 234.4 — day-1 then -0.3% from there
+      Tape: opened +0.0%, day-1 close -1.0%, now -18.8% vs offer (px 09/21)
+      Shoe: CLSA Limited runs the shoe — support can run until Sat 3 Oct (12d left)
 
   MEDCAPTAIN (2041) — listed 7 Sep at HK$15.42, HK$600m raised
       Book: public 436x, institutional 2.4x
-      Tape: opened -35.1%, day-1 close -42.9%, now -46.5% vs offer (px 09/14)
+      Grey mkt: closed -22.8% vs offer at 11.9 — day-1 then -26.1% from there
+      Tape: opened -35.1%, day-1 close -42.9%, now -46.9% vs offer (px 09/21)
       Shoe: no over-allotment option — nothing to support the price
-
-  SHEIN-W (0625) — listed 1 Sep at HK$48.56, HK$13,596m raised
-      Book: public 5.6x, institutional 2.6x; cornerstones 22% of the offer
-      Grey mkt: closed -13.1% vs offer at 42.2 — day-1 then +14.9% from there
-      Tape: opened +0.0%, day-1 close -0.1%, now -25.0% vs offer (px 09/14)
-      Shoe: Goldman Sachs runs the shoe — support can run until Sat 26 Sep (12d left)
-      Wires ran 'plunges 10%' and 'ends flat' on the same day and both were true: it traded to 43.72 in the first minutes and was walked back to close one tick under issue, all inside a live Goldman mandate. Watch whether the bid persists into the shoe deadline.
-
-  MECH-MIND ROBOT (9615) — listed 1 Sep at HK$101.70, HK$2,353m raised
-      Book: public 3,835x, institutional 13.4x; cornerstones 62% of the offer
-      Grey mkt: closed -1.1% vs offer at 100.6 — day-1 then -0.8% from there
-      Tape: opened +0.0%, day-1 close -1.9%, now -17.6% vs offer (px 09/14)
-      Shoe: CLSA Limited runs the shoe — support can run until Sat 26 Sep (12d left)
-      A 3,835x retail book and it still broke issue — priced at the cap, 62% of the offer locked in cornerstones, so the free float is tiny and the tape is thin. Local press flagged the break the same evening.
 
 Shout if you want the full workbook cut on any of these.

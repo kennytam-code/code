@@ -146,6 +146,14 @@ def main():
         ov = find_overview(text_of(summary, 20) if summary else text_of(files[0], 30))
         if not ov:                       # SUMMARY sits deeper in some filings
             ov = find_overview(text_of(files[0], 70))
+        if not ov:
+            # the offering-window copy of the same prospectus, downloaded by
+            # fetch_newlistings while the deal was open — often the only part
+            # on disk for a code that listed days ago
+            for nl in sorted(CACHE.glob(f"newlist_{e['code']}_*.pdf")):
+                ov = find_overview(text_of(nl, 60))
+                if ov:
+                    break
         if not en:
             en, cn2 = names_from_cover(text_of(files[0], 2))
             cn = cn or cn2

@@ -173,7 +173,9 @@ def _a_share(txt):
     out = {"is_ah_applicant": True, "a_share_venue": venue}
     # a code counts only when the sentence is about the issuer, never about
     # "a company listed on ... with stock code NNNNNN" (that is someone else)
-    for m in re.finditer(r"(?:stock\s+code|股份代碼)[:\s]*(\d{6})\b", flat, re.I):
+    # "stock code: 603228", "stock code of 603650", "stock code no. 002475"
+    for m in re.finditer(r"(?:stock\s+code|股份代碼)\s*(?:of|no\.?|number)?[:\s]*(\d{6})\b",
+                         flat, re.I):
         ctx = flat[max(0, m.start() - 260): m.start()]
         if re.search(r"a\s+company\s+listed|Huaqin|shareholding|Investment", ctx, re.I):
             continue

@@ -526,6 +526,13 @@ def main():
                 rec["greenshoe_pct_stated"] = gs
                 rec["greenshoe_pct_snip"] = gsnip
             lo, hi = parse_price_range(ptxt)
+            # A cap-only filing states one number; emitting it as BOTH ends
+            # invents a floor, and a deal that then prices below that number
+            # reads as a downward offer-price adjustment when it simply priced
+            # inside a range the prospectus never printed (Transwarp: parsed
+            # 61-61, real range 49-61, struck at the 49 floor).
+            if lo and hi and lo >= hi:
+                lo = None
             if lo:
                 rec["range_lo"] = lo
             if hi:

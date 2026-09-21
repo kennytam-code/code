@@ -66,8 +66,12 @@ def main():
     roster = json.loads((ROOT / "data" / "batches" / "hkex_allotments.json").read_text())
     ann_of = {d["code"]: d["allot_announce_dt"] for d in roster["deals"]}
 
-    need = [e for e in data["deals"] if total_text(e) < 700_000]
-    print(f"{len(need)} deals lack a full body", flush=True)
+    import incremental
+    only = incremental.wanted(LINKS, [e["code"] for e in data["deals"]])
+    need = [e for e in data["deals"] if total_text(e) < 700_000
+            and (only is None or str(e["code"]) in only)]
+    print(f"{len(need)} deals lack a full body"
+          + (" (incremental)" if only is not None else ""), flush=True)
     ids = load_stock_ids()
 
     fixed = 0

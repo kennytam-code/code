@@ -205,15 +205,41 @@ def main():
     # gate formula for ROW 5 ONLY and pointed every later row at the public-
     # subscription column — parity still MATCHED because the top comp won on
     # the sector fallback. Assert the gate column on real rows instead.
-    if sub:
-        same = [i for i, d in enumerate(deals) if d.get("subsector") == sub
-                and d.get("name") != target_name]
-        gates = [cell("CALC (SCORING ENGINE)", f"B{DB_R0_TEST + i}") for i in same[:6]]
+    # The DEFAULT pick is whatever sits first in the pipeline, and its subsector
+    # need not appear in the 40-deal slice at all (Ligent: "Smart hardware",
+    # zero peers in the first 40). An empty assertion is not a pass and not a
+    # failure, so the probe DRIVES the subsector instead of hoping for one.
+    from collections import Counter
+    def _gate_rows(sub_):
+        return [i for i, d in enumerate(deals)
+                if d.get("subsector") == sub_ and d.get("name") != target_name]
+    probe_sub, cellf = sub, cell
+    if not (sub and _gate_rows(sub)):
+        common = Counter(d.get("subsector") for d in deals if d.get("subsector"))
+        probe_sub = next((s2 for s2, _n in common.most_common() if _gate_rows(s2)), None)
+        if probe_sub:
+            solg = xl.calculate(inputs={f"'[{MINI.name}]SCREENER'!C8": probe_sub})
+
+            def cellg(sheet, ref):
+                for k, v in solg.items():
+                    if k.upper().endswith(f"'[{book}]{sheet.upper()}'!{ref}"):
+                        try:
+                            return v.value[0, 0]
+                        except Exception:
+                            return v
+                return None
+            cellf = cellg
+    if probe_sub:
+        same = _gate_rows(probe_sub)
+        gates = [cellf("CALC (SCORING ENGINE)", f"B{DB_R0_TEST + i}") for i in same[:6]]
         gate_ok = bool(gates) and all(g == 1 for g in gates)
-        print(f"  subsec gate : {len(gates)} same-subsector rows -> {gates} "
+        how = "target" if probe_sub == sub else f"override C8={probe_sub[:22]!r}"
+        print(f"  subsec gate : {len(gates)} same-subsector rows ({how}) -> {gates} "
               f"[{'OK' if gate_ok else 'FAIL — gate not reading the subsector column'}]")
         if not gate_ok:
             ok = False
+    else:
+        print("  subsec gate : no subsector has a peer inside the mini slice — skipped")
 
     # every visible cell must evaluate — no #DIV/0!, #REF!, #VALUE! anywhere,
     # which is the failure the desk actually sees

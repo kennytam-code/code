@@ -655,6 +655,25 @@ def main():
                     "hkexnews", 40)
 
     # --- greenshoe status + cornerstone take-up ---
+    # --- offering-window terms, archived while each deal was still open ------
+    # The indicative range is published only on the New Listings page; the
+    # prospectus states a MAXIMUM offer price and the allotment announcement
+    # the struck one. Without this a deal that priced inside its range (like
+    # Transwarp at HK$57.08 against HK$49.00-61.00) lands with no range at all
+    # and "% in range" reads as an explained blank instead of a number.
+    d = load("offering_terms.json")
+    if d:
+        for c, r in (d.get("deals") or {}).items():
+            c = str(c).lstrip("0").zfill(4)
+            if c not in deals:
+                continue
+            lo, hi = r.get("range_lo"), r.get("range_hi")
+            if lo and hi and hi > lo:
+                put(c, "price_range_lo", lo, "hkex:new-listings offering window", 38)
+                put(c, "price_range_hi", hi, "hkex:new-listings offering window", 38)
+            put(c, "lot_size", r.get("lot_size"), "hkex:new-listings offering window", 30)
+            put(c, "offer_period", r.get("offer_period"), "hkex:new-listings offering window", 30)
+
     d = load("extracted_shoe_cornerstone.json")
     if d:
         for r in d["deals"]:
@@ -1722,6 +1741,11 @@ def main():
             x.pop("pct_of_cap", None)
             x.pop("priced_at_cap", None)
             n_cap_bad += 1
+        elif lo and hi and lo >= hi:
+            # one number quoted as both ends is a cap, not a range
+            x.pop("price_range_lo", None)
+            prov[c].pop("price_range_lo", None)
+            x["range_lo_note"] = "maximum offer price only, no floor published"
         elif lo and fp < lo * 0.999:
             x["range_note"] = (f"priced HK${fp}, below the HK${lo} floor "
                                f"(downward offer price adjustment)")

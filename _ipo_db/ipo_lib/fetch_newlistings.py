@@ -26,6 +26,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "data" / "batches" / "newlistings.json"
+# The New Listings page shows a deal only while it is OPEN. Its indicative
+# range, lot size and offer period are published nowhere else once it
+# lists (the prospectus states a Maximum Offer Price and the allotment
+# announcement the struck price), so every row is also appended to this
+# archive, which is never pruned and which the merge reads for terms.
+ARCHIVE = ROOT / "data" / "batches" / "offering_terms.json"
 PAGE = ("https://www2.hkexnews.hk/New-Listings/New-Listing-Information/"
         "Main-Board?sc_lang=en")
 UA = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -131,6 +137,13 @@ def deep_parse(code, url):
         if series and fxm and len(series) <= 6:
             idx = 2 if len(series) >= 3 else len(series) - 1
             parsed[keyn] = round(series[idx] * fxm / 1000, 1)
+    # An A+H offering prices off a live A quote, so the A line is a TERM of
+    # the deal, not a footnote. The PHIP parser already reads it out of the
+    # filing; the offering-window prospectus states it the same way, and
+    # relying on the hand-kept press file instead left Kinwong (603228, in
+    # its own prospectus) showing no A line at all.
+    import fetch_phip as FP
+    parsed.update(FP._a_share(txt))
     ov = EP.find_overview(txt)
     if ov:
         from textclip import clip_sentence
@@ -226,10 +239,13 @@ def main():
             press = next((x for x in pj["results"] if x["match"] in low), {})
         except Exception:
             pass
-        if press.get("a_share_code"):
-            rec["a_share_code"] = press["a_share_code"]
+        # the curated press file wins where the desk has ruled; otherwise the
+        # code the prospectus itself states
+        acode = press.get("a_share_code") or rec.get("a_share_code")
+        if acode:
+            rec["a_share_code"] = acode
             try:
-                num, venue = press["a_share_code"].split(".")
+                num, venue = acode.split(".")
                 sym = ("sz" if venue == "SZ" else "sh") + num
                 q = requests.get(f"https://qt.gtimg.cn/q={sym}", headers=UA, timeout=20).text
                 f = q.split("~")
@@ -280,6 +296,27 @@ def main():
             for k, v in old.items():
                 if rec.get(k) in (None, "", []) and v not in (None, "", []):
                     rec[k] = v
+    # archive first: a deal that has just left the page must not lose its terms
+    try:
+        prev = json.loads(ARCHIVE.read_text()).get("deals", {}) if ARCHIVE.exists() else {}
+    except Exception:
+        prev = {}
+    for _r in out:
+        _c = str(_r.get("code") or "")
+        if not _c:
+            continue
+        _keep = {k: v for k, v in _r.items() if v not in (None, "", [])}
+        prev[_c] = {**prev.get(_c, {}), **_keep}
+    ARCHIVE.write_text(json.dumps(
+        {"batch": "offering_terms",
+         "note": ("Every row ever seen in the HKEX New Listings offering window, "
+                  "merged and never pruned. The indicative range and lot size are "
+                  "published only while a deal is open, so this is the only record "
+                  "of them once it lists."),
+         "updated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+         "count": len(prev), "deals": prev}, ensure_ascii=False, indent=1))
+    print(f"archived offering terms: {len(prev)} deals -> {ARCHIVE.name}")
+
     OUT.write_text(json.dumps(
         {"batch": "newlistings", "source": "www2 New Listings Main Board",
          "fetched_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),

@@ -1550,6 +1550,77 @@ golf carts, ATVs — the taxonomy has no powersports home and the book has no
 precedent), the row now SAYS "subsector not auto-classified; type one in the
 blue cell" rather than showing a bare blank. Do not invent a label to fill it.
 
+## v30 (2026-09-21) — a wrong offer price, and the identity that caught it
+
+**THE BUG, and it was in the book.** Transwarp (6727) merged at HK$57.08. Its
+allotment cover says `Final Offer Price : HK$49.00 per H Share`. The table
+pattern was `Final\s+Offer\s+Price\s+HK\$(NUM)` — no colon allowed — so it
+skipped the cover and matched the listing-expenses line, "based on Final
+Offer Price HK$57.08 million". A price read off a MILLIONS figure.
+
+Two rules now, everywhere a price is read (`extract_prospectus`): the label
+may carry a colon, and a magnitude word after the number disqualifies it.
+The magnitude guard has a trap of its own — a bare lookahead lets the engine
+shorten the number until it passes ("154.99 million" matched as "154.9" +
+"9 million"), so the digits are closed first with `(?![\d.,])`.
+
+**The check that proves a price: shares x price = gross proceeds.** 14,010,800
+x HK$49.00 = HK$686.53m, exactly the gross the same filing states. Run it
+across the book whenever a price parse changes:
+
+```python
+# every deal with all three fields; >2% is worth reading
+implied = gross_proceeds_hkdm * 1e6 / offer_shares    # vs final_price
+```
+25 of 241 fail it today; 22 are share-count problems the merge already
+adjudicates (it rejects implausible offer-share counts for 19 deals). The
+price-specific test is narrower: a price whose snippet is NOT anchored on a
+"per Share" phrase AND which fails the identity. That is 3 deals, all three
+verified correct (0999, 2521, 6831 — standardised table, gap is in shares).
+Six records carried the magnitude trap; five had been silently overridden by
+another source, so only Transwarp reached the book wrong.
+
+**A CAP IS NOT A RANGE.** `extract_deep` emitted range 61.0-61.0 for a
+cap-only filing, and the merge then read a HK$49.00 strike as a downward
+offer-price adjustment — a filed event that did not happen. Both sides now
+refuse lo >= hi: deep drops the invented floor, the merge clears it and says
+"maximum offer price only, no floor published". Only 6616 is genuinely
+downward-adjusted.
+
+**ORDER WITHIN THE PARSE CHAIN.** `fix_oversub` patches extracted_allotments
+IN PLACE, so re-running `extract_prospectus allotments` after it wipes the
+table-anchored public/international split (Transwarp briefly showed a 73.86x
+institutional book — the retail number). Always: parse-allot, then
+patch-proceeds / patch-offer-shares / parse-subscription. STAGES has this
+order; a manual `--only` run must keep it.
+
+**OFFERING TERMS ARE PUBLISHED ONLY WHILE A DEAL IS OPEN.** The indicative
+range lives on the HKEX New Listings page; the prospectus states a maximum
+and the allotment announcement the strike. `fetch_newlistings` now appends
+every row it sees to `data/batches/offering_terms.json`, never pruned, and
+the merge reads it for range / lot size / offer period at priority 38 — below
+the filing parse, so it fills gaps and never overrides. Transwarp listed
+before this existed, which is why its HK$49-61 range is not in the book.
+
+**Incremental fetching, not just parsing (v29 extended).** `fetch_hkex_filings
+allotments|prospectus` and `fetch_bodies` take `--only` / `--new` too: one
+network call per deal to read a document index is ~9 minutes across the book,
+and 527 of 528 answers are last week's. This week's run: 2 seconds each.
+
+**A+H detection on offering-window deals.** `fetch_newlistings` never ran the
+A-share detector — it took `a_share_code` only from the hand-kept press file,
+so Kinwong (603228, printed in its own prospectus) showed no A line. It now
+runs the same `_a_share` the PHIP parser uses, and the code regex accepts
+"under the stock code of 603650" (it required a colon or bare space). Four of
+this week's seven offerings resolved: Kinwong 603228.SS, Red Avenue
+603650.SS, RoboTechnik 300757.SZ, Forms Syntron 300468.SZ — each with a live
+A price, A P/E and the H-cap-vs-A discount. No existing A code changed.
+
+**A listed deal keeps its classification.** `extract_profiles` falls back to
+the offering-window copy of the prospectus (`newlist_<code>_*.pdf`) when the
+filed parts yield no overview — a brand-new code often has only that copy on
+disk, which is why Transwarp listed with no subsector until this was added.
+
 ## THE WEEKLY EMAIL (v26.3) — one command, Monday morning
 
 ```

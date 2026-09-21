@@ -183,17 +183,27 @@ def download_parts(prefix, code, parts, want, skip, max_parts=4):
 
 
 def cmd_allotments():
+    import incremental
     roster = json.loads((BATCHES / "hkex_allotments.json").read_text())
+    out_p = BATCHES / "hkex_allotment_files.json"
+    # --new / --only: one network call per deal to read its document index is
+    # ~9 minutes across the book, and 524 of 527 answers are last week's.
+    only = incremental.wanted(out_p, [d["code"] for d in roster["deals"]])
+    deals = (roster["deals"] if only is None
+             else [d for d in roster["deals"] if str(d["code"]) in only])
+    if only is not None:
+        print(f"  incremental: {len(deals)} deal(s) to fetch, the rest carried forward")
     manifest = []
-    for i, d in enumerate(roster["deals"]):
+    for i, d in enumerate(deals):
         parts = doc_parts(d["file_link"])
         # single-file announcements: take the pdf as-is
         want = WANT_ALLOT if len(parts) > 1 else None
         got = download_parts("allot", d["code"], parts, want, SKIP_PART)
         manifest.append({"code": d["code"], "parts": got})
         if (i + 1) % 25 == 0:
-            print(f"{i+1}/{roster['count']} allotment docs fetched")
-    p = BATCHES / "hkex_allotment_files.json"
+            print(f"{i+1}/{len(deals)} allotment docs fetched")
+    manifest = incremental.merge(out_p, manifest, only, key="manifest")
+    p = out_p
     p.write_text(json.dumps({"fetched_at": datetime.now(timezone.utc).isoformat(timespec='seconds'),
                              "manifest": manifest}, ensure_ascii=False, indent=1))
     n = sum(1 for m in manifest if m["parts"])
@@ -279,11 +289,20 @@ def attach_cached_newlist(links):
 
 
 def cmd_prospectus():
+    import incremental
     roster = json.loads((BATCHES / "hkex_allotments.json").read_text())
+    out_p = BATCHES / "hkex_prospectus_links.json"
+    # --new skips codes the links file already answered for, INCLUDING the ones
+    # it answered "nothing found" for; use --only to retry those deliberately.
+    only = incremental.wanted(out_p, [d["code"] for d in roster["deals"]])
+    deals = (roster["deals"] if only is None
+             else [d for d in roster["deals"] if str(d["code"]) in only])
+    if only is not None:
+        print(f"  incremental: {len(deals)} deal(s) to search, the rest carried forward")
     ids = load_stock_ids()
     print(f"stock id map: {len(ids)} codes")
     links, manifest = [], []
-    for i, d in enumerate(roster["deals"]):
+    for i, d in enumerate(deals):
         sid = ids.get(d["code"])
         rec = {"code": d["code"], "stock_id": sid, "docs": [], "parts": []}
         if sid:
@@ -302,9 +321,10 @@ def cmd_prospectus():
                     break
         links.append(rec)
         if (i + 1) % 25 == 0:
-            print(f"{i+1}/{roster['count']} prospectuses processed")
+            print(f"{i+1}/{len(deals)} prospectuses processed")
+    links = incremental.merge(out_p, links, only)
     rescued = attach_cached_newlist(links)
-    p = BATCHES / "hkex_prospectus_links.json"
+    p = out_p
     p.write_text(json.dumps({"fetched_at": datetime.now(timezone.utc).isoformat(timespec='seconds'),
                              "deals": links}, ensure_ascii=False, indent=1))
     n = sum(1 for m in links if m["parts"])

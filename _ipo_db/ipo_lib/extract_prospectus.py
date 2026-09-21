@@ -43,13 +43,14 @@ def pdf_text(path, max_pages=12):
 
 # Final price: the document repeats it many times in several phrasings, so collect
 # every candidate and take the consensus (mode) rather than trusting one phrasing.
+_MAG = r"(?![\d.,])(?!\s*(?:million|billion|mn\b|bn\b|mil\b|m\b))"
 RE_FINAL_ALL = [
-    re.compile(rf"(?:Final\s+)?Offer\s+Price\s*[::]\s*HK\$({NUM})", re.I),
-    re.compile(rf"Based\s+on\s+the\s+Offer\s+Price\s+of\s+HK\$({NUM})", re.I),
+    re.compile(rf"(?:Final\s+)?Offer\s+Price\s*[::]\s*HK\$({NUM}){_MAG}", re.I),
+    re.compile(rf"Based\s+on\s+the\s+Offer\s+Price\s+of\s+HK\$({NUM}){_MAG}", re.I),
     re.compile(rf"Offer\s+Price\s+(?:has\s+been|is|was)\s+(?:determined|fixed|set)"
-               rf"(?:\s+\w+){{0,3}}?\s+at\s+HK\$({NUM})", re.I),
+               rf"(?:\s+\w+){{0,3}}?\s+at\s+HK\$({NUM}){_MAG}", re.I),
     re.compile(rf"Offer\s+Price\s+of\s+HK\$({NUM})\s+per\s+(?:Offer|H)?\s*Share", re.I),
-    re.compile(rf"(?:Offer|Subscription)\s+Price\s+of\s+HK\$({NUM})", re.I),
+    re.compile(rf"(?:Offer|Subscription)\s+Price\s+of\s+HK\$({NUM}){_MAG}", re.I),
 ]
 RE_RANGE_ALL = [
     re.compile(rf"indicative\s+(?:Offer\s+)?Price\s+range\s+of\s+HK\$({NUM})\s*(?:to|-|and)\s*HK\$({NUM})", re.I),
@@ -184,10 +185,17 @@ def parse_listdate(s):
 
 # HKEX standardised allotment summary table (2025+ announcements): label followed
 # by the value on the same line, no colon. Authoritative — beats the prose regexes.
+# A PRICE IS PER SHARE. "based on the Final Offer Price ... HK$57.08 million"
+# is a listing-expense line, and reading it as the price put Transwarp in the
+# book at HK$57.08 when the cover said HK$49.00 (14,010,800 shares x 49.00 =
+# the HK$686.53m gross the same filing states). Two rules everywhere a price
+# is read: the label may carry a colon, and a magnitude word after the number
+# disqualifies it.
+_NOT_MAGNITUDE = r"(?![\d.,])(?!\s*(?:million|billion|mn\b|bn\b|mil\b|m\b))"
 TBL = {
-    "final_price": rf"Final\s+Offer\s+Price\s+HK\$({NUM})",
-    "price_range_hi": rf"Maximum\s+Offer\s+Price\s+HK\$({NUM})",
-    "price_range_lo_tbl": rf"Minimum\s+Offer\s+Price\s+HK\$({NUM})",
+    "final_price": rf"Final\s+Offer\s+Price\s*[::]?\s*HK\$({NUM}){_NOT_MAGNITUDE}",
+    "price_range_hi": rf"Maximum\s+Offer\s+Price\s*[::]?\s*HK\$({NUM}){_NOT_MAGNITUDE}",
+    "price_range_lo_tbl": rf"Minimum\s+Offer\s+Price\s*[::]?\s*HK\$({NUM}){_NOT_MAGNITUDE}",
     "offer_shares": rf"Number\s+of\s+Offer\s+Shares\s+({NUM})",
     "shares_outstanding": rf"Number\s+of\s+issued\s+Shares\s+upon\s+Listing\s+({NUM})",
     "overallot_shares": rf"No\.\s+of\s+Offer\s+Shares\s+over-allocated\s+({NUM})",
