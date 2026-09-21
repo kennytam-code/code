@@ -109,6 +109,16 @@ def deep_parse(code, url):
         if m:
             parsed["range_hi"] = float(m.group(1))
             parsed["range_note"] = "maximum price only (final struck at or below)"
+    if not parsed.get("range_hi"):
+        # A FIXED-PRICE OFFERING states one price and no range at all:
+        # "Offer Price : HK$32.96", "The Offer Price will be HK$21.60".
+        # Without this the deal shows no price, no size and no multiple on
+        # the day before it lists (Ligent and Direct Drive, both fixed).
+        m = re.search(r"Offer\s+Price\s*(?:will\s+be|:|of)\s*HK\$([\d,]+(?:\.\d+)?)"
+                      r"(?![\d.,])(?!\s*(?:million|billion|mn\b|bn\b|m\b))", flat, re.I)
+        if m:
+            parsed["range_hi"] = float(m.group(1).replace(",", ""))
+            parsed["range_note"] = "fixed-price offering (no indicative range)"
     m = re.search(r"(?:board\s+lot|lot\s+size)\s+of\s+([\d,]+)\s+(?:H\s+)?Shares", flat, re.I)
     if m:
         parsed["lot_size"] = int(m.group(1).replace(",", ""))
@@ -178,12 +188,48 @@ def deep_parse(code, url):
         buckets = [f"~{m.group(1)}% {clip_phrase(m.group(2), 96)}"
                    for m in UP.finditer(sec)][:4]
         if len(buckets) >= 2:
-            parsed["use_of_proceeds"] = " · ".join(buckets)
+            # the same kerning artifacts ride in this prose ("pho toresist")
+            parsed["use_of_proceeds"] = EP._mend_split_words(" · ".join(buckets), txt)
             mnp = re.search(r"net\s+proceeds\s+of\s+approximately\s+HK\$([\d,.]+)\s*million",
                             sec, re.I)
             if mnp:
                 parsed["expected_net_hkdm"] = float(mnp.group(1).replace(",", ""))
             break
+    # DEAL SIZE AT THE CAP — offer shares x maximum price, the same ladder the
+    # Database uses for a struck deal. Without it the desk reads a live
+    # offering with no size at all, which is the first thing it looks for.
+    cap_px = parsed.get("range_hi") or parsed.get("range_lo")
+    if parsed.get("offer_shares") and cap_px:
+        parsed["size_at_cap_hkdm"] = round(parsed["offer_shares"] * cap_px / 1e6, 1)
+    # A REVENUE OF ZERO BESIDE A PROFIT IS A FAILED PARSE, not a pre-revenue
+    # issuer: Red Avenue filed HK$635m of net income against "revenue 0".
+    if parsed.get("rev_latest") == 0 and (parsed.get("ni_latest") or 0) > 0:
+        parsed.pop("rev_latest", None)
+        parsed.setdefault("_rejected", []).append("rev_latest")
+        parsed["fin_note"] = "revenue line not extractable (net income is on file)"
+
+    # THE STATED MARKET CAP HAS TO SURVIVE TWO SANITY TESTS, because the
+    # phrase "market capitalisation" also appears beside listing-rule
+    # thresholds and proceeds figures:
+    #   1. a cap RANGE spanning more than 3x is not a price range;
+    #   2. a company cannot be worth less than the offering it is selling.
+    mlo0, mhi0 = parsed.get("mktcap_lo_hkdm"), parsed.get("mktcap_hi_hkdm")
+    if mlo0 and mhi0:
+        offering = ((parsed.get("offer_shares") or 0) *
+                    (parsed.get("range_hi") or parsed.get("range_lo") or 0) / 1e6)
+        why = None
+        if mhi0 / mlo0 > 3:
+            why = f"spans {mhi0 / mlo0:.0f}x, which is not a price range"
+        elif offering and mhi0 < offering * 0.99:
+            why = (f"HK${mhi0:,.0f}m is below the HK${offering:,.0f}m offering "
+                   f"itself")
+        if why:
+            for k_ in ("mktcap_lo_hkdm", "mktcap_hi_hkdm", "pe_expected_lo",
+                       "pe_expected_hi", "ps_expected_lo", "ps_expected_hi"):
+                parsed.pop(k_, None)
+                parsed.setdefault("_rejected", []).append(k_)
+            parsed["mktcap_note"] = f"stated market cap rejected: {why}"
+
     # expected P/E and P/S across the price range — the number the bet needs
     ni_v, rev_v = parsed.get("ni_latest"), parsed.get("rev_latest")
     mlo, mhi = parsed.get("mktcap_lo_hkdm"), parsed.get("mktcap_hi_hkdm")
@@ -293,7 +339,14 @@ def main():
             old = prev.get(rec.get("code") or rec.get("name"))
             if not old:
                 continue
+            # A field this run REJECTED must not come back from last run's
+            # record: the rejection is the newer, better-informed answer.
+            # (Forms Syntron's impossible market cap and Red Avenue's zero
+            # revenue both reappeared this way, note and all.)
+            rejected = set(rec.get("_rejected") or ())
             for k, v in old.items():
+                if k in rejected or k == "_rejected":
+                    continue
                 if rec.get(k) in (None, "", []) and v not in (None, "", []):
                     rec[k] = v
     # archive first: a deal that has just left the page must not lose its terms

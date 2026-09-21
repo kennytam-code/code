@@ -38,13 +38,16 @@ def fmt_val(c):
         return "f" if v.startswith("=") else v
     if isinstance(v, float):
         nf = c.number_format or ""
+        # decimals come from the format itself: "0.000" is three, not one.
+        # Reading them as one showed a HK$32.96 offer price as "33.0".
+        import re as _re
+        m = _re.search(r"0\.(0+)", nf)
+        dp = len(m.group(1)) if m else 0
         if "%" in nf:
-            return f"{v:+.1f}%" if "+" in nf else f"{v:.1f}%"
-        if "#,##0" in nf:
-            return f"{v:,.0f}"
-        if "0.0" in nf:
-            return f"{v:.1f}"
-        return f"{v:.2f}"
+            return (f"{v:+.{dp}f}%" if "+" in nf else f"{v:.{dp}f}%")
+        if "#,##" in nf:
+            return f"{v:,.{dp}f}"
+        return f"{v:.{dp}f}" if m else f"{v:,.0f}"
     return str(v)
 
 

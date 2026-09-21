@@ -100,6 +100,45 @@ def names_from_cover(txt):
     return en, cn
 
 
+def _mend_split_words(s, full):
+    """Undo pypdf's mid-word space, and only where the document proves it.
+
+    "a leading local supplier of semicondu ctor photoresists" is a kerning
+    artifact, not a typo to reproduce in a shipped file. A pair is joined ONLY
+    when the joined token appears elsewhere in the same document, so nothing
+    is invented and real two-word phrases ("end market") are left alone.
+
+    Walks EVERY adjacent pair: a regex sub consumes both words of a match, so
+    "sale reve nue" tested "sale"+"reve", failed, and never tried "reve"+"nue".
+    """
+    low = full.lower()
+    toks = re.split(r"(\s+)", s)          # keep the separators
+    out, i = [], 0
+    while i < len(toks):
+        t = toks[i]
+        if (i + 2 < len(toks) and toks[i + 1].isspace() and toks[i + 1] == " "
+                # a single stray letter is the commonest artifact of the lot
+                # ("h igh-performance", "t he"), and the joined word still has
+                # to be proven by the document before anything is merged
+                and re.fullmatch(r"[A-Za-z]+", t)
+                and re.fullmatch(r"[A-Za-z][A-Za-z\-]*[.,;:)]?", toks[i + 2])):
+            nxt = toks[i + 2]
+            tail = ""
+            if not nxt[-1].isalpha():
+                nxt, tail = nxt[:-1], nxt[-1]
+            joined = t + nxt
+            # the joined form appearing in the document IS the proof; a
+            # "but the split form also appears" guard blocks exactly the case
+            # this exists for, because the artifact repeats within the filing
+            if len(joined) >= 6 and joined.lower() in low:
+                out.append(joined + tail)
+                i += 3
+                continue
+        out.append(t)
+        i += 1
+    return "".join(out)
+
+
 def find_overview(txt):
     """Business-overview prose, preferring the SUMMARY section and rejecting risk text.
 
@@ -114,10 +153,10 @@ def find_overview(txt):
     for scope in scopes:
         m = OVERVIEW.search(scope)
         if m and not RISKY.search(m.group(1)[:200]):
-            return clip_sentence(clean(m.group(1)), 700)
+            return clip_sentence(_mend_split_words(clean(m.group(1)), txt), 700)
         for r in CANDIDATES:
             for m in r.finditer(scope):
-                cand = clean(m.group(1))
+                cand = _mend_split_words(clean(m.group(1)), txt)
                 if not RISKY.search(cand[:260]):
                     return clip_sentence(cand, 700)
     return None

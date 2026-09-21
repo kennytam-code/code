@@ -96,10 +96,12 @@ def _offering_rows(root):
         press = _press_size(root, r.get("name"))
         ni, rev = r.get("ni_latest"), r.get("rev_latest")
         pe_mid = None
-        if r.get("pe_expected_lo") and r.get("pe_expected_hi"):
-            pe_mid = round((r["pe_expected_lo"] + r["pe_expected_hi"]) / 2, 1)
-        elif r.get("pe_at_h_cap"):
+        # same rule as the workbook: for an A+H offering the A market's own
+        # multiple at the H cap beats one built on a prose-scraped market cap
+        if r.get("pe_at_h_cap"):
             pe_mid = r["pe_at_h_cap"]
+        elif r.get("pe_expected_lo") and r.get("pe_expected_hi"):
+            pe_mid = round((r["pe_expected_lo"] + r["pe_expected_hi"]) / 2, 1)
         out.append({
             "name": r.get("name"), "expected_code": r.get("code"),
             "name_cn": cn, "industry_en": r.get("industry_en") or industry,
@@ -118,7 +120,8 @@ def _offering_rows(root):
             "rev_latest": rev, "ni_latest": ni,
             "profitable_at_ipo": ("Y" if ni and ni > 0 else "N") if ni is not None else None,
             "sponsors": "; ".join(r.get("sponsors") or []) or None,
-            "expected_size_hkdm": r.get("expected_net_hkdm") or press.get("expected_size_hkdm"),
+            "expected_size_hkdm": (r.get("expected_net_hkdm") or r.get("size_at_cap_hkdm")
+                                   or press.get("expected_size_hkdm")),
             "expected_size_basis": ("prospectus: net proceeds at the maximum price"
                                     if r.get("expected_net_hkdm") else press.get("basis")),
             "business_desc": r.get("business_overview"),
@@ -135,6 +138,15 @@ def _offering_rows(root):
                                    and r["h_cap_vs_a_pct"] > -100 else None),
             "use_of_proceeds": r.get("use_of_proceeds"),
             "code": r.get("code"),
+            # Why a live offering shows no expected multiple. The A+H filings
+            # quote a market cap for the H TRANCHE, not the company, so an
+            # expected P/E built on it would be wrong by construction; where
+            # the A line exists the A-anchored multiple is used instead.
+            "valuation_notes": "; ".join(filter(None, [
+                r.get("mktcap_note"), r.get("fin_note"),
+                ("no expected P/E: no company market cap is stated in the filing"
+                 if not (r.get("pe_at_h_cap") or r.get("pe_expected_lo"))
+                 and (r.get("ni_latest") or 0) > 0 else None)])) or None,
         })
     return out
 
@@ -1142,8 +1154,14 @@ else $("#chart-bands").innerHTML = "<p class='note'>multiples pending fundamenta
 function groupBy(arr, f) { const o = {}; arr.forEach(x => { const k = f(x); (o[k] = o[k] || []).push(x); }); return o; }
 
 // 6) pipeline cards — everything the record holds, nothing hidden
+// "WITHDRAWN - offering pulled 2026-07-08" CONTAINS the word "offering", so a
+// bare /OFFERING/i test badged EKH, pulled in July, as OFFERING NOW and ranked
+// it first. Withdrawn is checked first, everywhere.
+const isPulled = p => p.withdrawn === true || /^\s*WITHDRAWN/i.test(p.status || "");
+const isOffering = p => !isPulled(p) && /OFFERING/i.test(p.status || "");
 const pipeOrder = [...DATA.pipe].sort((a, b) => {
-  const rank = p => /OFFERING/i.test(p.status || "") ? 0
+  const rank = p => isPulled(p) ? 9
+    : isOffering(p) ? 0
     : /^\d{4}-\d{2}-\d{2}$/.test(p.expected_timing || "") ? 1
     : /PHIP/i.test(p.status || "") ? 2 : 3;
   return rank(a) - rank(b) || String(a.name).localeCompare(String(b.name));
@@ -1152,7 +1170,7 @@ $("#cards").innerHTML = pipeOrder.map(p => {
   const comps = topComps({ name: p.name, sector: p.sector, subsector: p.subsector,
     size: p.expected_size_hkdm, profitable: p.profitable_at_ipo, is_h: p.is_h_share,
     ref_date: DATA.as_of }, 3);
-  const offering = /OFFERING/i.test(p.status || "");
+  const offering = isOffering(p);
   const rows = [];
   if (p.range_lo && p.range_hi) rows.push(["Price range", `HK$${p.range_lo}–${p.range_hi}`]);
   else if (p.range_hi) rows.push(["Maximum price", `HK$${p.range_hi}`]);
@@ -1213,7 +1231,7 @@ $("#cards").innerHTML = pipeOrder.map(p => {
   const ev = [];
   DATA.pipe.forEach(p => {
     if (p.offer_period) ev.push([p.offer_period.slice(-10), "offer closes", p.name]);
-    if (/OFFERING/i.test(p.status || "") && p.expected_timing &&
+    if (isOffering(p) && p.expected_timing &&
         /^\d{4}-\d{2}-\d{2}$/.test(p.expected_timing))
       ev.push([p.expected_timing, "lists", p.name]);
   });
@@ -1347,7 +1365,7 @@ function renderBrief(t, comps) {
   const med = f => median(peers.map(f).filter(v => v != null));
   const n_of = f => peers.map(f).filter(v => v != null).length;
   const tiles = [];
-  if (m.status && /OFFERING/i.test(m.status)) {
+  if (m.status && !/^\s*WITHDRAWN/i.test(m.status) && /OFFERING/i.test(m.status)) {
     tiles.push([m.status, "status", "hot"]);
     if (m.range_lo && m.range_hi) tiles.push([`HK$${m.range_lo}–${m.range_hi}`, "price range"]);
     else if (m.range_hi) tiles.push([`≤ HK$${m.range_hi}`, "maximum offer price"]);

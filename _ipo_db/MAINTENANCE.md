@@ -1621,6 +1621,67 @@ the offering-window copy of the prospectus (`newlist_<code>_*.pdf`) when the
 filed parts yield no overview — a brand-new code often has only that copy on
 disk, which is why Transwarp listed with no subsector until this was added.
 
+## v30.1 (2026-09-21) — reading the live offerings back, field by field
+
+A live offering is the part of the book with no second source to correct it:
+nothing has traded, no aggregator has published a return. Every number comes
+from one prospectus parse, so each one was read back against the filing.
+
+**A DEAL WITH NO SIZE.** All six offerings showed a blank expected size —
+the first thing the desk looks for. The size was derivable all along: every
+row carries `offer_shares`, and the cap is on the page. `size_at_cap_hkdm =
+offer shares x maximum price`, the same ladder the Database uses for a struck
+deal, labelled "offer shares x maximum price". Kinwong HK$5,097m, RoboTechnik
+HK$5,178m, Ligent HK$5,670m, Red Avenue HK$2,997m, Direct Drive HK$1,080m,
+Forms Syntron HK$943m.
+
+**A FIXED-PRICE OFFERING STATES ONE PRICE.** Ligent and Direct Drive showed
+no price the day before listing because the range patterns only knew "HK$A to
+HK$B" and "Maximum Offer Price of HK$X". Their filings say `Offer Price :
+HK$32.96` and `HK$21.60`. Added, with the same magnitude guard as the
+allotment parser, and labelled "fixed-price offering (no indicative range)".
+
+**THE A+H PROSPECTUS QUOTES THE H TRANCHE, NOT THE COMPANY.** Red Avenue:
+"Market capitalization of the H Shares following the completion of the Global
+Offering". Forms Syntron: "Market capitalization of our H Shares". An
+expected P/E built on that is wrong by construction, and it was: Forms
+Syntron read 8.7x where its own A line prices the same earnings at 15.7x at
+the H cap. Both workbook and dashboard now prefer `pe_at_h_cap` (A P/E TTM x
+the H-cap-vs-A discount) whenever an A line exists.
+
+**TWO SANITY TESTS ON ANY STATED MARKET CAP**, because the phrase also sits
+beside listing-rule thresholds and proceeds figures: a range spanning more
+than 3x is not a price range (Ligent's "HK$4bn-32.4bn", an 8x spread), and a
+company cannot be worth less than the offering it is selling (Forms Syntron's
+"HK$824m" against its own HK$943m deal). A rejected cap takes its derived
+P/E and P/S with it, and the row says why.
+
+**A REJECTION HAS TO SURVIVE THE NEXT RUN.** `fetch_newlistings` backfills
+each record from the previous batch, which quietly resurrected both the
+impossible market cap and Red Avenue's "revenue 0" — note and all. The parse
+now records `_rejected` and the backfill skips those fields. A zero revenue
+beside a positive net income is itself a failed parse, not a pre-revenue
+issuer, and is dropped with a note.
+
+**WITHDRAWN IS NOT OFFERING.** The dashboard badged EKH — pulled 2026-07-08 —
+as OFFERING NOW and ranked it first, because `/OFFERING/i` matches the word
+inside "WITHDRAWN — offering pulled 2026-07-08". One `isPulled()` helper is
+now checked first in all four places the page tests status.
+
+**pypdf SPLITS WORDS: "semicondu ctor", "pho toresist", "h igh-performance".**
+`extract_profiles._mend_split_words` rejoins a pair ONLY when the joined token
+appears elsewhere in the same document, so nothing is invented and "end
+market" stays two words. Two lessons in the implementation: a regex sub
+consumes both words of a match, so "sale reve nue" tested "sale"+"reve",
+failed, and never tried "reve"+"nue" (it walks token pairs now); and a guard
+that skipped joins when the split form also appears in the document blocked
+exactly the case it exists for, since the artifact repeats within the filing.
+
+**The off-terminal viewer was lying about prices.** `render_xlsx` read any
+format containing "0.0" as one decimal, so a HK$32.96 offer price (format
+"0.000") displayed as "33.0" and looked like a P/E. Decimals now come from
+the format string itself.
+
 ## THE WEEKLY EMAIL (v26.3) — one command, Monday morning
 
 ```
