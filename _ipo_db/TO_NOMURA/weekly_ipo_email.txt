@@ -1,11 +1,9 @@
-HK IPOs — week of 28 Sep: Ligent Technologies, Inc., Shenzhen Forms Syntron Information, Shenzhen Kinwong Electronic
-====================================================================================================================
+HK IPOs — week of 28 Sep: Shenzhen Forms Syntron Information, Shenzhen Kinwong Electronic, Red Avenue New Materials Group
+=========================================================================================================================
 
 Team,
 
 Coming up:
-  Ligent Technologies, Inc. (9856) — Tech/AI / Smart hardware / consumer electronics
-      max HK$32.96; books close 09/17, lists 22 Sep
   Shenzhen Forms Syntron Information Co., Ltd. (6700) — Tech/AI / Fintech platform
       max HK$16.00; cornerstones ~13% of the offer; books close 09/17, lists 22 Sep
   Shenzhen Kinwong Electronic Co., Ltd. (3228) — Tech/AI / Smart hardware / consumer electronics
@@ -16,10 +14,17 @@ Coming up:
       max HK$21.60; books close 09/24, lists 29 Sep
   RoboTechnik Intelligent Technology Co., Ltd. (3757) — Industrials / Solar / wind supply chain
       max HK$436.00; cornerstones ~72% of the offer; books close 09/24, lists 29 Sep
+  Shenzhen Camsense Technologies Co., Ltd. (6802) — Tech/AI / Robotics & autonomous driving
+      max HK$58.85; cornerstones ~16% of the offer; books close 09/25, lists 30 Sep
 
-My notes and valuation work on Ligent Technologies, Inc., Shenzhen Forms Syntron Information Co., Ltd., Shenzhen Kinwong Electronic Co., Ltd., Red Avenue New Materials Group Co., Ltd., Direct Drive Tech, RoboTechnik Intelligent Technology Co., Ltd. are attached.
+My notes and valuation work on Shenzhen Forms Syntron Information Co., Ltd., Shenzhen Kinwong Electronic Co., Ltd., Red Avenue New Materials Group Co., Ltd., Direct Drive Tech, RoboTechnik Intelligent Technology Co., Ltd., Shenzhen Camsense Technologies Co., Ltd. are attached.
 
 Listed in the last 2 weeks:
+
+  LIGENT (9856) — listed 22 Sep at HK$32.96, HK$5,670m raised
+      Book: public 35.2x, institutional 4.7x; cornerstones 47% of the offer
+      Tape: opened +11.0%, day-1 close +4.6%, now +8.4% vs offer (px 09/23)
+      Shoe: CLSA Limited runs the shoe — support can run until Sat 17 Oct (24d left)
 
   TRANSWARP (6727) — listed 21 Sep at HK$49.00, HK$687m raised
       Book: public 73.9x, institutional 1.4x; cornerstones 11% of the offer
@@ -30,18 +35,6 @@ Listed in the last 2 weeks:
       Book: public 140x, institutional 1.0x; cornerstones 4% of the offer
       Grey mkt: closed +105.5% vs offer at 29.7 — day-1 then +23.5% from there
       Tape: opened +142.2%, day-1 close +153.8%, now +168.5% vs offer (px 09/21)
-      Shoe: no over-allotment option — nothing to support the price
-
-  LONGSYS (9976) — listed 8 Sep at HK$236.00, HK$7,078m raised
-      Book: public 40.3x, institutional 40.3x; cornerstones 17% of the offer
-      Grey mkt: closed -0.7% vs offer at 234.4 — day-1 then -0.3% from there
-      Tape: opened +0.0%, day-1 close -1.0%, now -18.8% vs offer (px 09/21)
-      Shoe: CLSA Limited runs the shoe — support can run until Sat 3 Oct (12d left)
-
-  MEDCAPTAIN (2041) — listed 7 Sep at HK$15.42, HK$600m raised
-      Book: public 436x, institutional 2.4x
-      Grey mkt: closed -22.8% vs offer at 11.9 — day-1 then -26.1% from there
-      Tape: opened -35.1%, day-1 close -42.9%, now -46.9% vs offer (px 09/21)
       Shoe: no over-allotment option — nothing to support the price
 
 Shout if you want the full workbook cut on any of these.

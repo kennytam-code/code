@@ -55,6 +55,7 @@ DATA_FILES = [
 ]
 # every pipeline module, so the ONE file can also refresh — not just rebuild
 LIB_MODULES = [
+    "incremental", "extract_allocation", "fetch_day1_tape", "analyse_clawback", "make_clawback_note",
     "fetch_roster", "fetch_hkex_filings", "fetch_bodies", "fetch_phip",
     "fetch_newlistings", "fetch_names_cn", "fetch_ah_snapshot", "fetch_prices",
     "fetch_ah_ipo", "fetch_ah_paths", "fetch_stabilization", "fetch_aastocks",
@@ -190,10 +191,12 @@ STAGES = [
     ("parse-shoe", "extract_shoe_cornerstone", [], "parse"),
     ("stabilisation", "fetch_stabilization", [], "hkex"),
     ("grey-market", "fetch_greymarket", [], "aastocks"),
+    ("day1-tape", "fetch_day1_tape", [], "prices"),
     ("parse-profiles", "extract_profiles", [], "parse"),
     ("parse-financials", "extract_financials", [], "parse"),
     ("regimes", "derive_regime", [], "parse"),
     ("parse-stabmgr", "extract_stabmgr", [], "parse"),
+    ("parse-allocation", "extract_allocation", [], "parse"),
     ("classify", "classify", [], "parse"),
     ("classify-auto", "auto_classify", [], "parse"),
     ("ah-snapshot", "fetch_ah_snapshot", [], "aastocks"),

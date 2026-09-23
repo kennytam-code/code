@@ -44,7 +44,7 @@ CANDIDATES = [
                r"specialise|specialize)\b.{60,700})", re.S),
 ]
 RISKY = re.compile(r"cannot assure|no assurance|we may not|may be materially|adversely affect|"
-                   r"highly competitive (?:industry|market)|compete against|market entrants|"
+                   r"highly competitive(?:\s+and\s+\w+)?\s+(?:industry|market)|compete against|market entrants|"
                    r"are paid by our customers|risk factors|"
                    # "market acceptance ... remains uncertain" is a risk
                    # factor opener, not a description of the business

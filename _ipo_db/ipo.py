@@ -52,6 +52,7 @@ STAGES = [
     # who held the shoe and the after-market bid — read from the cached
     # allotment text, so it costs no network
     ("parse-stabmgr", "ipo_lib/extract_stabmgr.py", [], "parse"),
+    ("parse-allocation", "ipo_lib/extract_allocation.py", [], "parse"),
     ("classify", "ipo_lib/classify.py", [], "parse"),
     ("classify-auto", "ipo_lib/auto_classify.py", [], "parse"),
     ("pipeline-phip", "ipo_lib/fetch_phip.py", [], "hkex"),
@@ -65,6 +66,7 @@ STAGES = [
     # exists anywhere, so a value not captured near the debut is lost. The
     # batch is an accumulating cache — captured values are never re-fetched.
     ("grey-market", "ipo_lib/fetch_greymarket.py", [], "aastocks"),
+    ("day1-tape", "ipo_lib/fetch_day1_tape.py", [], "prices"),
     ("ah-snapshot", "ipo_lib/fetch_ah_snapshot.py", [], "aastocks"),
     # AAStocks per-deal pages: sponsors, the full underwriting syndicate, market
     # cap at listing and the institutional book. Needs a browser engine, so it is
@@ -363,6 +365,8 @@ def main():
     em.set_defaults(fn=cmd_email)
     sub.add_parser("grey-note", help="regenerate the grey-market vs day-1 note (docx)").set_defaults(
         fn=lambda a: run("ipo_lib/make_grey_note.py"))
+    sub.add_parser("clawback-note", help="regenerate the 套路回撥 allocation study (docx)").set_defaults(
+        fn=lambda a: run("ipo_lib/analyse_clawback.py") and run("ipo_lib/make_clawback_note.py"))
     ex = sub.add_parser("export", help="bundle what another machine needs")
     ex.add_argument("--force", action="store_true",
                     help="skip the gate battery (emergencies only)")

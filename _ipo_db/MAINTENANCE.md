@@ -1682,6 +1682,71 @@ format containing "0.0" as one decimal, so a HK$32.96 offer price (format
 "0.000") displayed as "33.0" and looked like a P/E. Decimals now come from
 the format string itself.
 
+## v31 (2026-09-23) — the allocation outcome, the listing-day tape, and the 套路回撥 study
+
+The desk asked whether 27 small deals popped on day one because the placing
+was held under 1x so retail got almost nothing. The answer is in
+`TO_NOMURA/Clawback_Study.docx` (regenerate: `python ipo.py clawback-note`);
+this entry records what the book gained and what it taught.
+
+**THE INTERNATIONAL MULTIPLE NEEDED PROVING.** For 20 of the 27 the evidence
+snippet beside `oversub_intl_mult` quoted the PUBLIC offer's table, so the
+number could not be trusted on its face. `ipo_lib/extract_allocation.py`
+reads every allotment notice's own INTERNATIONAL OFFERING section, anchored
+on the placee count, plus the final public/international split and the
+notice's "Claw-back triggered" line. Values held for 24 of 27; Midea's 0.11x
+was a threshold read off the clawback rule table (real: 8.06x, 236 placees).
+New book fields: `intl_placees`, `public_alloc_pct` (the public tranche's
+share of the offering AFTER reallocation), `clawback` (YES/NO/NA from the
+notice; derived from the split only when unambiguous, >=28% or <=12%),
+`reallocated_from_intl`. Three DEMAND columns in the workbook.
+
+**THE LISTING-DAY TAPE.** `ipo_lib/fetch_day1_tape.py` pulls the listing-day
+bar (open/high/low/close/VOLUME) from Tencent's kline for every deal, with a
+Yahoo fallback and a checkpoint every 50 (Tencent answers HTTP 501 after
+~300 rapid calls; the first pass lost nothing because the second pass filled
+the rest once the block lifted). Derived: `day1_vol_x_retail` = day-1 volume
+/ shares the public tranche received, and `day1_range_pct`. Two PERFORMANCE
+columns. This is the distribution gauge: ~1.5x means the placees held, 2.5x+
+means they sold into the open.
+
+**THE MECHANISM, AND WHERE IT IS WRITTEN.** The PN18 clawback (retail to
+30/40/50% at 15x/50x/100x public cover under the old rules) applies only "if
+the International Offering is fully subscribed or oversubscribed" (AB&B
+prospectus, Reallocation and clawback). At 0.99x it does not, and the
+coordinators reallocate the placing SHORTFALL only. Measured on 100x-plus
+public books: old rules, placing covered — retail 50.0%, median open +2.7%;
+old rules, placing 0.85-0.99x — retail 17.8%, open +53.3%; new rules
+(Mechanism B), placing covered — retail 10.0%, open +36.4%. The trick was a
+2024-25 phenomenon (14 and 9 deals) and Mechanism B made it unnecessary (2 in
+2026); the starved open it produced is now the default for every hot deal.
+`analyse_clawback.py` computes all of it; the numbers in the note are not
+typed.
+
+**GREY MARKET: 20 hand-verified prints now, 150 in total.** 12 were added
+for the desk's list from press reports of the evening session (HKET, Sina,
+163, 華盛通, StockFisher, Futu), each reconciled to its offer price. The
+manual file accepts a RANGE (`grey_close_lo`/`grey_close_hi`) where the press
+gives the three venues' spread; the merge shows the midpoint and the note
+says so. A grey OPEN is not a close and is not recorded (WK Group +144%).
+Still missing: Ruichang, Healthyway, Huaibei, Deyun — no retrievable print.
+
+**PRE-ALLOTMENT DATA EXISTS FOR THE PUBLIC TRANCHE ONLY.** Brokers publish
+running margin totals during the offer and the press aggregates them daily
+(Shougang Lanza: 36x on day two, 1,133.5x margin-only at close, 1,421.5x
+final; AB&B: 225x day one, 629x close, 4,007.6x final) — a floor at roughly
+half to four-fifths of the final. Nothing is published for the placing until
+the allotment notice, the evening before listing. The book does not capture
+the margin prints yet; `offering_terms.json` is where they would go.
+
+**Lessons for the parser (all fixed).** RISKY missed "highly competitive AND
+FRAGMENTED industry" (Ligent listed unclassified for an hour). Full-width
+colons ("Global Offering ： 97,625,000") broke the total-shares pattern;
+notices that print "% of Offer Shares under the Hong Kong Public Offer to
+the Global Offering 15.20%" are read directly now. A --only run on a batch
+another process is still writing loses the race (extract_allocation for 9856
+had to be redone after the full pass); wait for the full pass first.
+
 ## THE WEEKLY EMAIL (v26.3) — one command, Monday morning
 
 ```

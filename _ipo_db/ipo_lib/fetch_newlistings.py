@@ -203,7 +203,11 @@ def deep_parse(code, url):
         parsed["size_at_cap_hkdm"] = round(parsed["offer_shares"] * cap_px / 1e6, 1)
     # A REVENUE OF ZERO BESIDE A PROFIT IS A FAILED PARSE, not a pre-revenue
     # issuer: Red Avenue filed HK$635m of net income against "revenue 0".
-    if parsed.get("rev_latest") == 0 and (parsed.get("ni_latest") or 0) > 0:
+    # ...and a revenue of exactly zero beside ANY net income line is the same
+    # failed parse unless the issuer is a pre-revenue biotech: a filed P&L with
+    # no sales prints a dash, which series_from() reads as None, never as 0.
+    if (parsed.get("rev_latest") == 0 and parsed.get("ni_latest") is not None
+            and parsed.get("subsector") != "Biotech pre-revenue (18A)"):
         parsed.pop("rev_latest", None)
         parsed.setdefault("_rejected", []).append("rev_latest")
         parsed["fin_note"] = "revenue line not extractable (net income is on file)"

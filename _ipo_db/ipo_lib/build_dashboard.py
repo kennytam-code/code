@@ -24,6 +24,8 @@ KEEP = ["code", "name", "name_cn", "sector", "subsector", "ipo_date",
         "cornerstone_pct", "eff_free_float_pct", "eff_free_float_hkdm",
         "eff_free_float_shares", "profitable_at_ipo", "pe_ipo", "ps_ipo",
         "is_h_share", "a_share_code", "a_premium_now", "a_share_proxy",
+        "intl_placees", "public_alloc_pct", "clawback",
+        "day1_vol_x_retail", "day1_range_pct",
         "sponsors", "valuation_notes", "oversub_intl_mult", "ret_1m_pct",
         "alpha_1m_pct", "benchmark", "since_ipo_pct", "greenshoe_exercised_final",
         # v5: the explorer lets any of these be an axis, so they must ship

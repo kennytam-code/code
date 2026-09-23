@@ -1,70 +1,168 @@
 {
-  "_note": "HAND-VERIFIED grey-market closes for deals the AAStocks scrape cannot reach (its per-stock news page holds only ~21 recent articles, so anything older than roughly a month has scrolled away). Append to this file; it is never regenerated and never overwritten by fetch_greymarket.py, which skips any code present here. EVERY entry must satisfy the identity close/offer_price - 1 == pct, and the merge REJECTS any that does not — that check is what makes a hand-sourced number as safe as a scraped one. Record the venue: Phillip (輝立) and Futu print different closes for the same session (SHEIN 42.20 vs 42.12), so they must never be mixed.",
-  "_fields": "code, grey_close, grey_pct (signed vs offer), grey_date (the EVENING session, i.e. the trading day before listing), grey_venue, src",
-  "deals": [
-    {
-      "code": "3308",
-      "grey_close": 969.5,
-      "grey_pct": -1.1,
-      "grey_date": "2026-07-29",
-      "grey_venue": "Phillip (輝立)",
-      "src": "AASTOCKS news, syndicated on Yahoo HK Finance: 《新股》中際旭創(03308.HK)暗盤收報969.5元 低上市價1.1% — offer HK$980.00, so 969.5/980-1 = -1.07% which rounds to the published -1.1%. Futu's own print for the same session was 971.0 (-0.9%); the Phillip figure is recorded to match the scrape's venue."
-    },
-    {
-      "code": "2475",
-      "grey_close": 60.15,
-      "grey_pct": -4.9,
-      "grey_date": "2026-07-08",
-      "grey_venue": "press (bastillepost) — venue not stated",
-      "src": "bastillepost.com, via search: '立訊精密…暗盤收報60.15元，較招股價低4.9%' — offer HK$63.28, 60.15/63.28-1 = -4.95%, rounds to the published -4.9%."
-    },
-    {
-      "code": "9980",
-      "grey_close": 250.0,
-      "grey_pct": 0.8,
-      "grey_date": "2026-02-02",
-      "grey_venue": "Phillip (輝立)",
-      "src": "Ming Pao 2026-02-03 '東鵬飲料3暗盤表現一般': 富途 247.8 (-0.08%), 輝立 250 (+0.8%), 耀才 249.2 (+0.5%) — offer HK$248.00; the Phillip print is recorded to match the scrape's venue. 250/248-1 = +0.81%."
-    },
-    {
-      "code": "6951",
-      "grey_close": 96.0,
-      "grey_pct": -4.29,
-      "grey_date": "2026-07-08",
-      "grey_venue": "Livermore (利弗莫爾) — NOT Phillip; the only published print found",
-      "src": "Zhitong via cn.investing.com '三环集团(06951)暗盘收跌超4%…利弗莫尔证券暗盘交易显示报价96港元，较招股价100.3港元下跌4.29%' — 96/100.3-1 = -4.29% exactly."
-    },
-    {
-      "code": "6082",
-      "grey_close": 35.08,
-      "grey_pct": 79.0,
-      "grey_date": "2025-12-31",
-      "grey_venue": "Phillip (輝立), as published by AAStocks",
-      "src": "AASTOCKS headline on Yahoo HK: '壁仞科技暗盤收報35.08元 高上市價79%' — offer HK$19.60, 35.08/19.6-1 = +78.98%. Grey high/low 38.8/19.6."
-    },
-    {
-      "code": "0470",
-      "grey_close": 46.66,
-      "grey_pct": 1.9,
-      "grey_date": "2026-02-10",
-      "grey_venue": "Phillip (輝立), as published by AAStocks",
-      "src": "AASTOCKS NOW.1502421: '先導智能(00470.HK)暗盤收報46.66元 高上市價1.9%' — 根據輝立交易平台; offer HK$45.80, 46.66/45.8-1 = +1.88%."
-    },
-    {
-      "code": "0100",
-      "grey_close": 205.6,
-      "grey_pct": 24.6,
-      "grey_date": "2026-01-08",
-      "grey_venue": "AAStocks headline figure (search summary attributes it to Futu; a second platform printed 209.2 / +26.8%)",
-      "src": "AASTOCKS headline on Yahoo HK: 'MiniMax-WP(00100.HK)暗盤收報205.6元 高上市價24.6%' — offer HK$165.00, 205.6/165-1 = +24.61%."
-    },
-    {
-      "code": "0501",
-      "grey_close": 104.5,
-      "grey_pct": -0.3,
-      "grey_date": "2026-01-09",
-      "grey_venue": "press (HKET) — venue not stated",
-      "src": "HKET via search: '豪威集團暗盤昨日收104.5元，低上市價0.3%' — offer HK$104.80, 104.5/104.8-1 = -0.29%. Day-1 opened 108 (+3.1%)."
-    }
-  ]
+ "_note": "HAND-VERIFIED grey-market closes for deals the AAStocks scrape cannot reach (its per-stock news page holds only ~21 recent articles, so anything older than roughly a month has scrolled away). Append to this file; it is never regenerated and never overwritten by fetch_greymarket.py, which skips any code present here. EVERY entry must satisfy the identity close/offer_price - 1 == pct, and the merge REJECTS any that does not — that check is what makes a hand-sourced number as safe as a scraped one. Record the venue: Phillip (輝立) and Futu print different closes for the same session (SHEIN 42.20 vs 42.12), so they must never be mixed.",
+ "_fields": "code, grey_close, grey_pct (signed vs offer), grey_date (the EVENING session, i.e. the trading day before listing), grey_venue, src",
+ "deals": [
+  {
+   "code": "3308",
+   "grey_close": 969.5,
+   "grey_pct": -1.1,
+   "grey_date": "2026-07-29",
+   "grey_venue": "Phillip (輝立)",
+   "src": "AASTOCKS news, syndicated on Yahoo HK Finance: 《新股》中際旭創(03308.HK)暗盤收報969.5元 低上市價1.1% — offer HK$980.00, so 969.5/980-1 = -1.07% which rounds to the published -1.1%. Futu's own print for the same session was 971.0 (-0.9%); the Phillip figure is recorded to match the scrape's venue."
+  },
+  {
+   "code": "2475",
+   "grey_close": 60.15,
+   "grey_pct": -4.9,
+   "grey_date": "2026-07-08",
+   "grey_venue": "press (bastillepost) — venue not stated",
+   "src": "bastillepost.com, via search: '立訊精密…暗盤收報60.15元，較招股價低4.9%' — offer HK$63.28, 60.15/63.28-1 = -4.95%, rounds to the published -4.9%."
+  },
+  {
+   "code": "9980",
+   "grey_close": 250.0,
+   "grey_pct": 0.8,
+   "grey_date": "2026-02-02",
+   "grey_venue": "Phillip (輝立)",
+   "src": "Ming Pao 2026-02-03 '東鵬飲料3暗盤表現一般': 富途 247.8 (-0.08%), 輝立 250 (+0.8%), 耀才 249.2 (+0.5%) — offer HK$248.00; the Phillip print is recorded to match the scrape's venue. 250/248-1 = +0.81%."
+  },
+  {
+   "code": "6951",
+   "grey_close": 96.0,
+   "grey_pct": -4.29,
+   "grey_date": "2026-07-08",
+   "grey_venue": "Livermore (利弗莫爾) — NOT Phillip; the only published print found",
+   "src": "Zhitong via cn.investing.com '三环集团(06951)暗盘收跌超4%…利弗莫尔证券暗盘交易显示报价96港元，较招股价100.3港元下跌4.29%' — 96/100.3-1 = -4.29% exactly."
+  },
+  {
+   "code": "6082",
+   "grey_close": 35.08,
+   "grey_pct": 79.0,
+   "grey_date": "2025-12-31",
+   "grey_venue": "Phillip (輝立), as published by AAStocks",
+   "src": "AASTOCKS headline on Yahoo HK: '壁仞科技暗盤收報35.08元 高上市價79%' — offer HK$19.60, 35.08/19.6-1 = +78.98%. Grey high/low 38.8/19.6."
+  },
+  {
+   "code": "0470",
+   "grey_close": 46.66,
+   "grey_pct": 1.9,
+   "grey_date": "2026-02-10",
+   "grey_venue": "Phillip (輝立), as published by AAStocks",
+   "src": "AASTOCKS NOW.1502421: '先導智能(00470.HK)暗盤收報46.66元 高上市價1.9%' — 根據輝立交易平台; offer HK$45.80, 46.66/45.8-1 = +1.88%."
+  },
+  {
+   "code": "0100",
+   "grey_close": 205.6,
+   "grey_pct": 24.6,
+   "grey_date": "2026-01-08",
+   "grey_venue": "AAStocks headline figure (search summary attributes it to Futu; a second platform printed 209.2 / +26.8%)",
+   "src": "AASTOCKS headline on Yahoo HK: 'MiniMax-WP(00100.HK)暗盤收報205.6元 高上市價24.6%' — offer HK$165.00, 205.6/165-1 = +24.61%."
+  },
+  {
+   "code": "0501",
+   "grey_close": 104.5,
+   "grey_pct": -0.3,
+   "grey_date": "2026-01-09",
+   "grey_venue": "press (HKET) — venue not stated",
+   "src": "HKET via search: '豪威集團暗盤昨日收104.5元，低上市價0.3%' — offer HK$104.80, 104.5/104.8-1 = -0.29%. Day-1 opened 108 (+3.1%)."
+  },
+  {
+   "code": "0300",
+   "grey_close": 58.0,
+   "grey_pct": 5.8,
+   "grey_date": "2024-09-16",
+   "venue": "Bright Smart (耀才)",
+   "src": "HKET 美的上市｜美的集團0300暗盤收升逾5% (2024-09-16): 於耀才暗盤收報58元，高定價5.8%"
+  },
+  {
+   "code": "9982",
+   "grey_close": 2.58,
+   "grey_pct": -14.0,
+   "grey_date": "2021-05-28",
+   "venue": "Futu (富途)",
+   "src": "HKET 中原建業9982暗盤跌逾一成 (2021-05-28): 富途收報2.58元，較上市價3元低14%; 輝立/耀才2.60"
+  },
+  {
+   "code": "1333",
+   "grey_close": 25.8,
+   "grey_pct": 43.3,
+   "grey_date": "2025-05-06",
+   "venue": "Futu (富途)",
+   "src": "HKET 博雷頓1333暗盤收升逾四成 (2025-05-06): 富途收報25.8元 +43.3%; 耀才25.75 +43.1%; 輝立25.45 +41.4%"
+  },
+  {
+   "code": "2497",
+   "grey_close": 2.25,
+   "grey_pct": 108.33,
+   "grey_date": "2024-03-27",
+   "venue": "Futu (富途)",
+   "src": "Futu news (2024-03-27): 富景中國控股暗盤收漲108.33%，報2.25港元，成交316.64萬"
+  },
+  {
+   "code": "2477",
+   "grey_close_lo": 1.61,
+   "grey_close_hi": 1.68,
+   "grey_pct": 64.5,
+   "grey_date": "2024-01-11",
+   "venue": "three venues, range",
+   "src": "HKET 經緯天地2477 暗盤 (2024-01-11): 暗盤收報介乎1.61元至1.68元，較招股價1元高61%至68%; midpoint shown"
+  },
+  {
+   "code": "2505",
+   "grey_close": 3.21,
+   "grey_pct": 40.79,
+   "grey_date": "2024-05-27",
+   "venue": "not stated (Sina/163)",
+   "src": "163.com 上演货源归边，EDA集团控股 (2024-05): 暗盘收涨40.79%; offer 2.28 -> 3.21"
+  },
+  {
+   "code": "2443",
+   "grey_close": 14.72,
+   "grey_pct": 44.3,
+   "grey_date": "2024-05-30",
+   "venue": "Futu (富途)",
+   "src": "HKET 汽車街2443暗盤升逾4成 (2024-05-30): 富途升44.3%; 耀才收報15.26 +49.6%; 輝立 +42.7%; offer 10.20"
+  },
+  {
+   "code": "2550",
+   "grey_close": 8.3,
+   "grey_pct": 43.1,
+   "grey_date": "2024-06-06",
+   "venue": "not stated (Sina)",
+   "src": "Sina/財聯社 (2024-06-06): 宜搜科技暗盘收涨43.10%，报8.3港元，成交额307.47万; offer 5.80"
+  },
+  {
+   "code": "2585",
+   "grey_close": 12.54,
+   "grey_pct": 4.5,
+   "grey_date": "2024-11-28",
+   "venue": "not stated (華盛通)",
+   "src": "華盛通 暗盘收盘 (2024-11-28): 梦金园收涨4.5%，报12.54港元; 中金在线: 暗盘先杀跌-20%后收升"
+  },
+  {
+   "code": "2609",
+   "grey_close_lo": 5.25,
+   "grey_close_hi": 5.37,
+   "grey_pct": 25.8,
+   "grey_date": "2025-06-20",
+   "venue": "three venues, range",
+   "src": "HKET 佰澤醫療2609 (2025-06-20): 暗盤收報5.25至5.37元，升24.4%至27.3%; offer 4.22; midpoint shown"
+  },
+  {
+   "code": "2582",
+   "grey_close": 80.7,
+   "grey_pct": 24.2,
+   "grey_date": "2024-11-14",
+   "venue": "Phillip (輝立)",
+   "src": "stockfisher.com.hk (2024-11-14): 輝立暗盤收報80.7元，較上市價65元高24.2%; 富途/耀才81元 +24.6%"
+  },
+  {
+   "code": "2627",
+   "grey_close": 33.88,
+   "grey_pct": 162.6,
+   "grey_date": "2025-08-08",
+   "venue": "Phillip (輝立)",
+   "src": "HKET/Yahoo (2025-08-08): 輝立交易場收報33.88元，較上市價12.9元高逾1.62倍; 富途亦炒高接近1.6倍"
+  }
+ ]
 }

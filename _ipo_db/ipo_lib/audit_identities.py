@@ -24,6 +24,8 @@ ROOT = Path(__file__).resolve().parent.parent
 AH = {"a_premium_ipo_pct", "a_close_hkd", "is_h_share", "a_share_code",
       "a_premium_now", "a_mktcap_now_hkdm"}
 NOTEMAP = {
+    "intl_placees": "alloc_note", "public_alloc_pct": "alloc_note", "clawback": "alloc_note",
+    "day1_vol_x_retail": "tape_note", "day1_range_pct": "tape_note",
     "pe_ipo": "pe_note", "ps_ipo": "ps_note", "oversub_intl_mult": "intl_note",
     "greenshoe_exercised_final": "shoe_note", "greenshoe_pct": "greenshoe_note",
     "stabilizing_manager": "stabmgr_note",

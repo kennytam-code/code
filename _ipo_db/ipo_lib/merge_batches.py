@@ -371,6 +371,16 @@ def main():
         if pM.exists():
             for r in json.loads(pM.read_text()).get("deals", []):
                 c, gc, gp = r.get("code"), r.get("grey_close"), r.get("grey_pct")
+                # The three venues (Futu, Phillip, Bright Smart) print slightly
+                # different closes and the press often reports the RANGE. A
+                # range entry carries both ends; the midpoint is what the
+                # column shows and the note says so - sourced at both ends,
+                # nothing invented in between.
+                lo, hi = r.get("grey_close_lo"), r.get("grey_close_hi")
+                if gc is None and lo and hi:
+                    gc = round((lo + hi) / 2, 4)
+                    r = dict(r, grey_close=gc,
+                             grey_venue=(r.get("venue") or "") + f" ({lo}-{hi}, midpoint shown)")
                 x0 = deals.get(c)
                 if not x0 or gc is None or gp is None:
                     continue
@@ -383,8 +393,8 @@ def main():
                         n_rej += 1
                         continue
                 for f in ("grey_close", "grey_pct", "grey_date", "grey_venue"):
-                    put(c, f, r.get(f), f"press:{r.get('src', 'hand-verified')}", 70,
-                        status="xchecked")
+                    put(c, f, r.get(f) if f != "grey_venue" else (r.get("grey_venue") or r.get("venue")),
+                        f"press:{r.get('src', 'hand-verified')}", 70, status="xchecked")
                 n_man += 1
         print(f"  grey-market close on {n_gm} deals (+{n_man} hand-verified"
               + (f", {n_rej} REJECTED on the offer-price identity" if n_rej else "") + ")")
@@ -655,6 +665,42 @@ def main():
                     "hkexnews", 40)
 
     # --- greenshoe status + cornerstone take-up ---
+    # --- the allocation outcome: who actually got the shares ------------------
+    # Read from the INTERNATIONAL OFFERING section of each allotment notice,
+    # anchored on the placee count, so it beats the generic parse that took
+    # the public table's number for both tranches (prio 45 > 40).
+    d = load("extracted_allocation.json")
+    if d:
+        n_al = 0
+        for r in d["deals"]:
+            c = r["code"]
+            if c not in deals:
+                continue
+            if r.get("intl_x") is not None and r.get("intl_src") == "table":
+                put(c, "oversub_intl_mult", r["intl_x"], "hkex-pdf:allotment intl section", 45)
+            put(c, "intl_placees", r.get("intl_placees"), "hkex-pdf:allotment intl section", 45)
+            put(c, "public_alloc_pct", r.get("public_pct_final"), "hkex-pdf:allotment final split", 45)
+            put(c, "clawback", r.get("clawback"), "hkex-pdf:allotment", 45)
+            put(c, "reallocated_from_intl", r.get("reallocated_from_intl"), "hkex-pdf:allotment", 45)
+            put(c, "public_shares_final", r.get("public_shares_final"), "hkex-pdf:allotment final split", 45)
+            n_al += 1
+        print(f"  allocation outcome read for {n_al} deals")
+
+    # --- the listing-day tape: volume against the retail float ----------------
+    # A pop that was BOUGHT trades a fraction of the retail float; a pop that
+    # was DISTRIBUTED trades the float several times over in a wide range.
+    d = load("day1_tape.json")
+    if d:
+        n_tp = 0
+        for r in d["deals"]:
+            c = r["code"]
+            if c not in deals:
+                continue
+            for f in ("day1_volume", "day1_turnover_hkdm", "day1_range_pct", "day1_high", "day1_low"):
+                put(c, f, r.get(f), "tencent:kline listing-day bar", 50)
+            n_tp += 1
+        print(f"  listing-day tape on {n_tp} deals")
+
     # --- offering-window terms, archived while each deal was still open ------
     # The indicative range is published only on the New Listings page; the
     # prospectus states a MAXIMUM offer price and the allotment announcement
@@ -2024,6 +2070,41 @@ def main():
                 else "not named in the allotment notice or prospectus glossary")
         if not x.get("size_basis") and x.get("deal_size_hkdm") is None:
             x["size_basis_note"] = "no size on file"
+        if x.get("public_alloc_pct") is None or x.get("intl_placees") is None:
+            x["alloc_note"] = ("allocation table not in this notice's format "
+                               "(older prose announcement)")
+        # day-1 volume as a multiple of the RETAIL tranche (public share of
+        # the offer) and of the whole offering - the distribution gauge
+        v, sh, pa = x.get("day1_volume"), x.get("offer_shares"), x.get("public_alloc_pct")
+        psh = x.get("public_shares_final") or (sh * pa / 100 if (sh and pa) else None)
+        if v and sh:
+            x["day1_vol_x_offer"] = round(v / sh, 2)
+        if v and psh:
+            x["day1_vol_x_retail"] = round(v / psh, 2)
+        if x.get("day1_volume") is None:
+            x["tape_note"] = "no listing-day bar in the kline feed"
+        elif x.get("day1_vol_x_retail") is None:
+            x["tape_note"] = ("volume on file; the retail multiple needs the final "
+                              "public split, which this notice does not state")
+        if x.get("clawback") is None and x.get("public_alloc_pct") is not None:
+            # The final split is stated but the trigger line is not (pre-2025
+            # notices). Derive only where the split is unambiguous: a PN18
+            # clawback lands retail at 30/40/50% (old rules) or 15/25/35%
+            # (Mechanism A), while a placing SHORTFALL passed to retail lands
+            # it at 12-20% - so >=28% is a clawback and <=12% is none, and
+            # the band between stays unstated rather than guessed.
+            pa = x["public_alloc_pct"]
+            if pa >= 28:
+                x["clawback"] = "YES"
+            elif pa <= 12:
+                x["clawback"] = "NO"
+            if x.get("clawback"):
+                prov[c]["clawback"] = {"src": "derived:final public split", "prio": 20,
+                                       "status": "estimated"}
+            else:
+                x["alloc_note"] = (x.get("alloc_note") or
+                                   "clawback line not in this notice; a 12-28% split is "
+                                   "consistent with either a tier-1 clawback or a placing shortfall")
         # A DEAL LISTED THIS WEEK has no 1-week return yet, and a blank with no
         # reason is a defect by the explained-absence contract. Ingenic (listed
         # 2026-08-25) was the first row young enough to hit this. Calendar days

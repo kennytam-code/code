@@ -324,6 +324,12 @@ DB_COLS = [
     ("DEMAND", "Public sub (x)", "oversub_public_mult", "#,##0.0", 10),
     ("DEMAND", "Intl sub (x)", "oversub_intl_mult", "0.00", 9),
     ("DEMAND", "Cornerstone (% of offer)", "cornerstone_pct", '0.0"%";;"none"', 11),
+    # the allocation OUTCOME: placee count in the international book, the
+    # public tranche's final share of the deal, and whether the PN18 clawback
+    # fired - read from each allotment notice's own tables (v31)
+    ("DEMAND", "Intl placees", "intl_placees", "0", 8),
+    ("DEMAND", "Public alloc % (final)", "public_alloc_pct", '0.0"%"', 10),
+    ("DEMAND", "Clawback", "clawback", None, 8),
     # The float THREE ways, all off one identity: offer less the locked-up
     # cornerstone take. The money and share columns need no market cap, so they
     # survive the two deals whose cap is not derivable; the % is the same
@@ -356,7 +362,11 @@ DB_COLS = [
     ("PERFORMANCE", "Grey mkt % vs offer", "grey_pct", '+0.0"%";-0.0"%"', 14),
     ("PERFORMANCE", "Day-1", "first_day_return_pct", '+0.0"%";-0.0"%"', 9),
     ("PERFORMANCE", "Day-1 open pop", "day1_open_pop_pct", '+0.0"%";-0.0"%"', 10),
-    ("PERFORMANCE", "Day-1 open to close", "day1_open_close_pct", '+0.0"%";-0.0"%"', 11),
+    ("PERFORMANCE", "Day-1 open to close", "day1_open_close_pct", '+0.0"%";-0.0"%"', 11),    # the listing-day tape (v31): how many times the retail tranche changed
+    # hands on day one, and the intraday range - the distribution gauge
+    ("PERFORMANCE", "Day-1 vol / retail float (x)", "day1_vol_x_retail", "0.0", 10),
+    ("PERFORMANCE", "Day-1 range %", "day1_range_pct", '0.0"%"', 9),
+
     ("PERFORMANCE", "1-week", "ret_1w_pct", '+0.0"%";-0.0"%"', 9),
     ("PERFORMANCE", "1-month", "ret_1m_pct", '+0.0"%";-0.0"%"', 9),
     ("PERFORMANCE", "3-month", "ret_3m_pct", '+0.0"%";-0.0"%"', 9),
@@ -434,6 +444,7 @@ NOTE_FIELDS = [("intl_note", "intl sub"), ("pe_note", "P/E"), ("shoe_note", "gre
                ("stabilization_note", "stabilisation notice"),
                ("alpha_note", "alpha/index"), ("oversub_public_mult_note", "public sub"),
                ("aastocks_note", "AAStocks fields"), ("size_basis_note", "size basis"),
+               ("alloc_note", "allocation"), ("tape_note", "day-1 tape"),
                ("pct_of_cap_note", "% of cap")]
 LINK_FIELDS = {"prospectus_link": "prospectus",
                "allotment_link": "allotment",
