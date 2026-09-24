@@ -121,6 +121,12 @@ RE_REALLOC = re.compile(
 RE_CLAW_PROSE = re.compile(
     r"claw-?back\s+(?:mechanism|arrangement)[^.]{0,120}?(?:has\s+been\s+|was\s+)?(?:triggered|applied|not\s+triggered|will\s+not)[^.]{0,80}", re.I)
 RE_MECH = re.compile(r"Mechanism\s+([AB])\b")
+# the public tranche BEFORE reallocation: 5% of the deal is Mechanism A under
+# the Aug-2025 rules, 10%+ is the old default or Mechanism B
+RE_PUB_INITIAL = re.compile(
+    r"(?:No\.|Number)\s+of\s+Offer\s+Shares\s+initially\s+available\s+under\s+the\s+"
+    r"(?:Hong\s+Kong\s+)?Public\s+Offer(?:ing)?\s*[:：]?\s*([\d,]{5,})", re.I)
+RE_18C = re.compile(r"Rule\s+18C|Chapter\s+18C|Specialist\s+Technology\s+Compan", re.I)
 RE_PUB_X = re.compile(
     r"HONG\s+KONG\s+PUBLIC\s+OFFER(?:ING)?.{0,400}?Subscription\s+[Ll]evel\s+(" + NUM + r")\s*times", re.S)
 
@@ -197,6 +203,14 @@ def parse(flat):
     m = RE_MECH.search(flat)
     if m:
         rec["mechanism"] = m.group(1)
+    m = RE_PUB_INITIAL.search(flat)
+    if m:
+        rec["public_shares_initial"] = fnum(m.group(1))
+        tot2 = rec.get("offer_shares_total")
+        if tot2 and rec["public_shares_initial"] < tot2:
+            rec["public_pct_initial"] = round(100 * rec["public_shares_initial"] / tot2, 2)
+    if RE_18C.search(flat):
+        rec["is_18c"] = True
     return rec
 
 

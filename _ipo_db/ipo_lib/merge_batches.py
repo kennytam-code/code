@@ -366,6 +366,33 @@ def main():
         # accepted only if it satisfies close/offer - 1 == pct: a grey close
         # that does not reconcile against the filed offer price is a wrong
         # number or a wrong deal, and either way must not enter the book.
+        # etnet's per-deal page keeps all three venues' closes; the venue with
+        # the most volume is the print, and the note names it with the range.
+        # Above the AAStocks headline (45): the same evening's table with the
+        # venue stated beats a headline that names none. Below hand-verified (70).
+        dE = load("etnet_ipo.json")
+        n_et = 0
+        if dE:
+            for r in dE.get("deals", []):
+                c = r.get("code")
+                if c not in deals or r.get("grey_pct") is None:
+                    continue
+                px0 = deals[c].get("final_price")
+                if px0 and r.get("grey_close") and abs(100 * (r["grey_close"] / px0 - 1) - r["grey_pct"]) > 0.6:
+                    continue                      # fails the offer-price identity: skip
+                venue = f"{r.get('grey_venue')} (etnet; venues {r.get('grey_lo')}-{r.get('grey_hi')})"
+                put(c, "grey_close", r["grey_close"], "etnet:ipo-info 暗盤數據", 50)
+                put(c, "grey_pct", r["grey_pct"], "etnet:ipo-info 暗盤數據", 50)
+                put(c, "grey_venue", venue, "etnet:ipo-info 暗盤數據", 50)
+                put(c, "grey_date", r.get("grey_date"), "etnet:ipo-info 暗盤數據", 50)
+                n_et += 1
+            for r in dE.get("deals", []):
+                c = r.get("code")
+                if c not in deals:
+                    continue
+                put(c, "one_lot_hit_pct", r.get("one_lot_hit_pct"), "etnet:ipo-info 一手中籤率", 45)
+                put(c, "hk_pct_etnet", r.get("hk_pct_etnet"), "etnet:ipo-info split", 30)
+            print(f"  grey-market close from etnet on {n_et} deals")
         pM = ROOT / "data" / "grey_market_manual.json"
         n_man = n_rej = 0
         if pM.exists():
@@ -683,6 +710,23 @@ def main():
             put(c, "clawback", r.get("clawback"), "hkex-pdf:allotment", 45)
             put(c, "reallocated_from_intl", r.get("reallocated_from_intl"), "hkex-pdf:allotment", 45)
             put(c, "public_shares_final", r.get("public_shares_final"), "hkex-pdf:allotment final split", 45)
+            put(c, "public_pct_initial", r.get("public_pct_initial"), "hkex-pdf:allotment", 45)
+            # the allocation mechanism, from the notice: pre-reform deals ran
+            # under PN18; from Aug-2025 a 5% initial tranche is Mechanism A
+            # (clawback to 35%, conditional on a covered placing) and 10%+ with
+            # no clawback line is Mechanism B (fixed, no clawback)
+            listed = (deals[c].get("ipo_date") or r.get("listing_date") or "")[:10]
+            pi = r.get("public_pct_initial")
+            if listed and pi is not None:
+                if listed < "2025-08-04":
+                    mech = "PN18 (pre-Aug-2025)"
+                elif pi <= 6:
+                    mech = "A (5% start, clawback to 35%)"
+                else:
+                    mech = "B (fixed, no clawback)"
+                put(c, "alloc_mechanism", mech, "derived:initial public tranche vs listing date", 40)
+            if r.get("is_18c") and not deals[c].get("listing_regime_18c"):
+                put(c, "listing_regime_18c", True, "hkex-pdf:allotment cites Rule 18C", 45)
             n_al += 1
         print(f"  allocation outcome read for {n_al} deals")
 
@@ -1957,7 +2001,19 @@ def main():
             # (the full reason — AAStocks keeps ~21 articles per stock and no
             # venue archives past sessions — is in MAINTENANCE.md; the cell
             # says what is missing and how to add it, nothing more)
-            x["grey_note"] = "no archived print; add to data/grey_market_manual.json"
+            # WHY a grey print is missing, precisely: every source that keeps
+            # the evening session has a floor. etnet's per-deal 暗盤數據 table
+            # starts 2024-10-02; AAStocks keeps ~21 articles per stock and its
+            # IPO feed the latest 50; the brokers' own pages are live-only and
+            # no venue publishes an archive. So a deal listed before Oct-2024
+            # has a print only if the press wrote it up and the article is
+            # still indexed.
+            ld = (x.get("ipo_date") or "")[:10]
+            x["grey_note"] = (
+                "listed before 2024-10-02, the first date etnet's per-deal grey table "
+                "covers; no press report of the session found either"
+                if ld and ld < "2024-10-02" else
+                "no grey print on etnet or AAStocks for this deal")
         # No prospectus hyperlink: the per-stock HKEX search returned no
         # listing document for this code. Mostly older listings whose
         # prospectus was filed in a form the doc feed does not expose; the
@@ -2141,6 +2197,17 @@ def main():
             x["sponsor_note"] = "English name not in the filing; AAStocks 保薦人 shown"
         elif not x.get("sponsors"):
             x["sponsor_note"] = "not stated in the filing text"
+
+    # --- 18C from the filing beats the short-name heuristic --------------------
+    # derive_regime reads the HKEX short-name suffix (-B, -W, -P); a Specialist
+    # Technology issuer with no suffix (Excelland) read as Standard until the
+    # allotment notice's own "Rule 18C" reference was captured.
+    for c, x in deals.items():
+        if x.get("listing_regime_18c") and "18C" not in str(x.get("listing_regime") or ""):
+            base = str(x.get("listing_regime") or "").strip()
+            x["listing_regime"] = ("18C" if base in ("", "Standard") else f"{base} + 18C")
+            prov[c]["listing_regime"] = {"src": "hkex-pdf:allotment cites Rule 18C", "prio": 45,
+                                         "status": "single"}
 
     # --- LAST WORD: the derived legs are re-derived after every source has
     # landed. Computing alpha next to the return that produced it left one

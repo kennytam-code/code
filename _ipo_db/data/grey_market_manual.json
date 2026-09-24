@@ -163,6 +163,22 @@
    "grey_date": "2025-08-08",
    "venue": "Phillip (輝立)",
    "src": "HKET/Yahoo (2025-08-08): 輝立交易場收報33.88元，較上市價12.9元高逾1.62倍; 富途亦炒高接近1.6倍"
+  },
+  {
+   "code": "2533",
+   "grey_close": 22.65,
+   "grey_pct": -19.1,
+   "grey_date": "2024-08-07",
+   "venue": "AAStocks headline (venue not stated)",
+   "src": "AAStocks 《新股》黑芝麻智能國際控股有限公司(02533.HK)暗盤收報22.65元 低上市價19.1% (http://www.aastocks.com/tc/stocks/news/aafn-con/NOW.1369717/popular-news/AAFN)"
+  },
+  {
+   "code": "2507",
+   "grey_close": 26.1,
+   "grey_pct": -5.09,
+   "grey_date": "2024-07-11",
+   "venue": "not stated (etnet)",
+   "src": "etnet 《新股上市》西銳(2507)暗盤報26.1元，低招股價逾5% (2024-07-11)"
   }
  ]
 }
