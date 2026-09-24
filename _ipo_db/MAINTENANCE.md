@@ -1747,6 +1747,37 @@ the Global Offering 15.20%" are read directly now. A --only run on a batch
 another process is still writing loses the race (extract_allocation for 9856
 had to be redone after the full pass); wait for the full pass first.
 
+## GREY MARKET COVERAGE — what is reachable, measured (v31.1)
+
+261 of 519 deals carry a grey-market close. The gap is structural, not
+laziness, and these are the measured floors:
+
+| source | what it holds | floor |
+|---|---|---|
+| etnet `ipo-info.php?code=NNNNN` | 暗盤數據 table: all three brokers' close, high, low, volume | **2 October 2024** |
+| AAStocks per-stock news | 《新股》…暗盤收報… headline | ~21 recent articles, no pagination |
+| AAStocks IPO news feed (type=104) | same headlines | latest 50, no working cursor |
+| AAStocks greymarket.aspx | live quotes | today only |
+| broker pages (耀才/輝立/富途) | live quotes | today only |
+| press (HKET, Sina, 163, 華盛通...) | the session written up | whatever is still indexed |
+
+Coverage by year: 2021 1/92, 2022 0/72, 2023 0/68, 2024 41/67, 2025 111/112,
+2026 108/108. The 2024 cliff is etnet's floor; everything before it exists
+only where a journalist wrote the session up. Those were searched per deal —
+roughly one hit in five, two searches each — and what was found is in
+`data/grey_market_manual.json` with its source and venue. Every blank carries
+a `grey_note` naming which floor applies.
+
+RULES when adding by hand: the close divided by the offer price must
+reproduce the stated percentage (the merge rejects it otherwise — verified 0
+of 261 fail); a grey OPEN is not a close (WK Group's +144% was an open and was
+not recorded); where the press gives only the three-venue range, use
+`grey_close_lo`/`grey_close_hi` and the merge shows the midpoint and says so.
+
+`ipo_lib/fetch_etnet_ipo.py` also brings back the one-lot hit rate
+(一手中籤率) and etnet's own final HK/international split, which cross-checks
+the allotment parser: 229 deals have both and 1 disagrees (9615, worth a look).
+
 ## THE WEEKLY EMAIL (v26.3) — one command, Monday morning
 
 ```
