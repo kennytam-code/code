@@ -2,8 +2,9 @@
 
 Reads HKEX's list "Dividends & Other Entitlements"
     https://www3.hkexnews.hk/reports/doe/eent.htm
-keeps every entry whose Description contains RIGHT or OPTION (any case) and
-drafts an email with the page's own columns, in the page's own order:
+keeps every stock with an entry whose Description contains RIGHT or OPTION (any
+case) - with ALL of that stock's rows, as HKEX groups them - and drafts an email
+with the page's own columns, in the page's own order:
 
     Stock Short Name (Stock Code) | Description | Ex-Date | Book Closing Date
 
@@ -24,6 +25,7 @@ import email.utils
 import gzip
 import html
 import http.client
+import itertools
 import os
 import re
 import ssl
@@ -243,6 +245,18 @@ def parse(page):
     return meta, entries
 
 
+def keep(entries):
+    """Every row of every stock that has at least one row mentioning a KEYWORD.  HKEX
+    lists a stock with two entitlements on two rows (CITIC BANK: a rights issue and a
+    dividend with an RMB option) - both rows stay, even when only one of them mentions it."""
+    out = []
+    for _, rows in itertools.groupby(entries, key=lambda e: (e['name'], e['code'])):
+        rows = [dict(e, hits=mentions(e)) for e in rows]
+        if any(e['hits'] for e in rows):
+            out += rows
+    return out
+
+
 def mentions(entry):
     """The KEYWORDS its Description contains, any case.  Checked with the lines
     joined by a space and glued together, so a word HKEX wraps mid-way still counts."""
@@ -287,10 +301,11 @@ def build_email(meta, kept, fetched):
     if not kept:
         out.append(f'<p style="{para}">No entry on {list_name} mentions {words}.</p>')
     else:
-        many = len(kept) != 1
-        out.append(f'<p style="{para}">Below {"are" if many else "is"} the <b>{len(kept)}</b> '
-                   f'entr{"ies" if many else "y"} on {list_name} whose description mentions '
-                   f'{words} ({counts}).</p>')
+        stocks = len({(e['name'], e['code']) for e in kept})
+        out.append(f'<p style="{para}">Below {"are" if stocks > 1 else "is"} the <b>{stocks}</b> '
+                   f'stock{"s" if stocks > 1 else ""} with an entry mentioning {words} on {list_name} '
+                   f'&ndash; {len(kept)} row{"s" if len(kept) > 1 else ""} ({counts}), every row of '
+                   f'each stock included.</p>')
 
         th = (f'{FONT}font-size:9pt;font-weight:bold;color:#ffffff;background:{HEAD};'
               f'padding:7px 10px;text-align:left;vertical-align:bottom;')
@@ -435,11 +450,7 @@ def run():
     except Stop as e:
         print(f'Stopped: {e}.  Nothing drafted.')
         return []
-    kept = []
-    for e in entries:
-        hits = mentions(e)
-        if hits:
-            kept.append(dict(e, hits=hits))
+    kept = keep(entries)
     subject, fragment = build_email(meta, kept, fetched)
     draft = make_draft(subject, fragment, (meta['date'] or fetched).strftime('%Y%m%d'))
 
@@ -449,7 +460,7 @@ def run():
                          if updated else 'HKEX did not say'),
              ('Fetched', f'{_day(fetched)} {fetched:%H:%M} HKT  (fresh copy, no cache)'),
              ('Entries', f'{len(entries)} on the list'),
-             ('Kept', f'{len(kept)}  ({counts})'),
+             ('Kept', f'{len({(e["name"], e["code"]) for e in kept})} stocks, {len(kept)} rows  ({counts})'),
              ('Subject', subject),
              ('Draft', draft)]
     if note:
