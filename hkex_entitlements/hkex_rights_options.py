@@ -1,6 +1,6 @@
 """HKEX rights & options - press Run in Jupyter, get an Outlook draft.
 
-Reads HKEX's daily list "Dividends & Other Entitlements"
+Reads HKEX's list "Dividends & Other Entitlements"
     https://www3.hkexnews.hk/reports/doe/eent.htm
 keeps every entry whose Description contains RIGHT or OPTION (any case) and
 drafts an email with the page's own columns, in the page's own order:
@@ -14,17 +14,23 @@ How to run: paste this whole file into a Jupyter cell and press Run
     anywhere else       an .eml draft is written to OUT_DIR and opened
     in Jupyter          the email is also drawn under the cell
 
-Nothing is ever sent.  Python 3.8+, standard library only (plus pywin32 for
-the Outlook step).
+Every run pulls a fresh copy of the page (no cache on the way can serve an old
+one) and prints HKEX's own "last updated" time for it.  Nothing is ever sent.
+Python 3.8+, standard library only (plus pywin32 for the Outlook step).
 """
 
 import datetime as dt
+import email.utils
+import gzip
 import html
+import http.client
 import os
 import re
 import ssl
 import subprocess
 import sys
+import tempfile
+import time
 import urllib.request
 from email.message import EmailMessage
 from html.parser import HTMLParser
@@ -47,6 +53,10 @@ OUT_DIR = os.path.join(HERE, 'hkex_out')   # the .eml lands here when Outlook is
 HKT = dt.timezone(dt.timedelta(hours=8), 'HKT')        # Hong Kong has no daylight saving
 UA = ('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
       '(KHTML, like Gecko) Chrome/124.0 Safari/537.36')
+NO_CACHE = {'Cache-Control': 'no-cache', 'Pragma': 'no-cache'}
+DAYS = ('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')      # not %a / %b: those follow the
+MONTHS = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',            # PC's language setting
+          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
 FONT = 'font-family:Arial,Helvetica,sans-serif;'
 INK, MUTED, RULE, HEAD, BAND, FLAG = '#1f2937', '#6b7280', '#dfe4ea', '#1f3a5f', '#f3f6fa', '#c0392b'
 
@@ -57,8 +67,28 @@ class Stop(Exception):
 
 # ----------------------------------------------------------------- fetch ---
 def fetch(url=URL):
-    """(page text, note).  Certificates: the system's, then certifi's, then none -
-    this is a public read-only page, better fetched unchecked than not at all."""
+    """(page, updated, note) - always a fresh copy: a one-off query string plus
+    no-cache headers get past every cache on the way (office proxy, HKEX's CDN,
+    Windows).  `updated` is HKEX's own Last-Modified time for the page, in HKT."""
+    fresh = f'{url}{"&" if "?" in url else "?"}_={int(time.time())}'
+    try:
+        page, updated, note = _python_get(fresh)
+    except (OSError, http.client.HTTPException) as e:
+        reason = getattr(e, 'reason', e)
+        if sys.platform != 'win32':
+            raise Stop(f'could not reach HKEX ({reason}) - check the network or proxy, then run again')
+        try:    # e.g. an office proxy that wants a sign-in: go the way the browser does
+            page, updated = _windows_get(fresh)
+            note = 'fetched through Windows networking - Python could not get out directly'
+        except Exception as e2:
+            raise Stop(f'could not reach HKEX (Python: {reason}; Windows: {e2}) - '
+                       f'check the network, then run again')
+    return page, _hkt(updated), note
+
+
+def _python_get(url):
+    """Certificates: the system's, then certifi's, then none - this is a public
+    read-only page, better fetched unchecked than not at all."""
     contexts = [('', ssl.create_default_context())]
     try:
         import certifi
@@ -67,20 +97,50 @@ def fetch(url=URL):
         pass
     contexts.append(('certificate check skipped - this Python has no CA bundle',
                      ssl._create_unverified_context()))
-    request = urllib.request.Request(url, headers={'User-Agent': UA})
+    request = urllib.request.Request(url, headers=dict(NO_CACHE, **{'User-Agent': UA}))
     for note, context in contexts:
         try:
-            with urllib.request.urlopen(request, timeout=30, context=context) as response:
-                raw = response.read()
+            with urllib.request.urlopen(request, timeout=20, context=context) as response:
+                raw, updated = response.read(), response.headers.get('Last-Modified')
             break
-        except OSError as e:          # URLError, HTTPError, timeouts and SSL errors alike
-            reason = getattr(e, 'reason', e)
-            if not isinstance(reason, ssl.SSLCertVerificationError):
-                raise Stop(f'could not reach HKEX ({reason}) - check the network or proxy, then run again')
+        except OSError as e:
+            if not isinstance(getattr(e, 'reason', e), ssl.SSLCertVerificationError):
+                raise
+            refused = e
+    else:
+        raise refused                          # every certificate route refused
+    if raw[:2] == b'\x1f\x8b':              # gzipped although we did not ask (some proxies do)
+        raw = gzip.decompress(raw)
     try:
-        return raw.decode('utf-8'), note
+        return raw.decode('utf-8'), updated, note
     except UnicodeDecodeError:
-        return raw.decode('cp1252', errors='replace'), note
+        return raw.decode('cp1252', errors='replace'), updated, note
+
+
+def _windows_get(url):
+    """The page through Windows' own web stack (MSXML/WinINet): the browser's proxy
+    settings and sign-in.  Raises if that fails too."""
+    import win32com.client
+    xhr = win32com.client.Dispatch('MSXML2.XMLHTTP.6.0')
+    xhr.open('GET', url, False)
+    for name, value in NO_CACHE.items():
+        xhr.setRequestHeader(name, value)
+    xhr.send()
+    if xhr.status != 200:
+        raise OSError(f'HTTP {xhr.status}')
+    try:
+        updated = xhr.getResponseHeader('Last-Modified')
+    except Exception:
+        updated = None
+    return xhr.responseText, updated
+
+
+def _hkt(http_date):
+    """An HTTP date header as an HKT datetime; None if it is missing or odd."""
+    try:
+        return email.utils.parsedate_to_datetime(http_date).astimezone(HKT)
+    except (TypeError, ValueError):
+        return None
 
 
 # ----------------------------------------------------------------- parse ---
@@ -196,22 +256,27 @@ def _br(lines):
     return '<br>'.join(html.escape(line) for line in lines)
 
 
+def _day(d):
+    return f'{DAYS[d.weekday()]} {d:%d/%m/%Y}'
+
+
 def _listed(meta):
-    return meta['date'].strftime('%a %d/%m/%Y') if meta['date'] else 'undated'
+    return _day(meta['date']) if meta['date'] else 'undated'
 
 
 def _tally(kept):
     return ' · '.join(f"{k.title()} {sum(k in e['hits'] for e in kept)}" for k in KEYWORDS)
 
 
-def build_email(meta, entries, kept, fetched):
+def build_email(meta, kept, fetched):
     """(subject, html).  Outlook draws mail with Word, so: tables and inline styles only."""
     listed = _listed(meta)
-    subject = SUBJECT.format(date=(meta['date'] or fetched).strftime('%d %b %Y'))
+    d = meta['date'] or fetched
+    subject = SUBJECT.format(date=f'{d.day:02d} {MONTHS[d.month - 1]} {d.year}')
     words = ' or '.join(f'“{k.title()}”' for k in KEYWORDS)
     counts = _tally(kept)
     para = f'margin:0 0 12px 0;{FONT}font-size:10pt;color:{INK};'
-    note = f'margin:6px 0 0 0;{FONT}font-size:8pt;color:{MUTED};'
+    note = f'margin:10px 0 0 0;{FONT}font-size:8pt;color:{MUTED};'
 
     # one fixed-width frame, so the text wraps with the table in Outlook too
     out = ['<table cellpadding="0" cellspacing="0" border="0" width="752" style="width:752px;">'
@@ -256,15 +321,10 @@ def build_email(meta, entries, kept, fetched):
                        f'<td style="{td}white-space:nowrap;">{book}</td></tr>')
         out.append('</table>')
         if meta['flag_to'] and any(e['flag'] for e in kept):
-            out.append(f'<p style="{note}margin-top:10px;"><b style="color:{FLAG};">*</b> '
+            out.append(f'<p style="{note}"><b style="color:{FLAG};">*</b> '
                        f'HKEX flag: effective book closing date commencing up to {meta["flag_to"]}.</p>')
 
-    out.append(f'<p style="{note}">Source: <a href="{URL}" style="color:{MUTED};">HKEX Dividends '
-               f'&amp; Other Entitlements</a>, list dated {listed}, fetched '
-               f'{fetched:%a %d/%m/%Y %H:%M} HKT. Kept {len(kept)} of {len(entries)} entries: '
-               f'description contains {words}, any case. HKEX notes the list may not be '
-               f'exhaustive &ndash; check the issuer\'s announcement for terms.</p>'
-               f'</td></tr></table>')
+    out.append('</td></tr></table>')
     return subject, ''.join(out)
 
 
@@ -295,10 +355,16 @@ def outlook_draft(subject, fragment):
     return 'Outlook - saved to Drafts' + (' and opened' if OPEN_DRAFT else '')
 
 
+def _write(folder, name, data):
+    os.makedirs(folder, exist_ok=True)
+    path = os.path.join(folder, name)
+    with open(path, 'wb') as fh:
+        fh.write(data)
+    return path
+
+
 def eml_draft(subject, fragment, stamp):
-    """Write an .eml that opens as an unsent draft, and open it."""
-    os.makedirs(OUT_DIR, exist_ok=True)
-    path = os.path.join(OUT_DIR, f'hkex_rights_options_{stamp}.eml')
+    """Write an .eml that opens as an unsent draft, and open it.  (path, opened)"""
     msg = EmailMessage()
     msg['Subject'] = subject
     if TO:
@@ -307,14 +373,21 @@ def eml_draft(subject, fragment, stamp):
         msg['Cc'] = CC.replace(';', ',')
     msg['X-Unsent'] = '1'                  # Outlook opens it as an editable draft
     msg.set_content(_page(subject, fragment), subtype='html')
-    with open(path, 'wb') as fh:
-        fh.write(bytes(msg))
-    if OPEN_DRAFT:
+    name = f'hkex_rights_options_{stamp}.eml'
+    try:
+        path = _write(OUT_DIR, name, bytes(msg))
+    except OSError:                        # e.g. a read-only share
+        path = _write(tempfile.gettempdir(), name, bytes(msg))
+    if not OPEN_DRAFT:
+        return path, False
+    try:
         if sys.platform == 'win32':
             os.startfile(path)
         else:
-            subprocess.run(['open' if sys.platform == 'darwin' else 'xdg-open', path], check=False)
-    return path
+            subprocess.run(['open' if sys.platform == 'darwin' else 'xdg-open', path], check=True)
+        return path, True
+    except (OSError, subprocess.CalledProcessError):
+        return path, False                 # no mail app for .eml - the file is still there
 
 
 def make_draft(subject, fragment, stamp):
@@ -324,7 +397,8 @@ def make_draft(subject, fragment, stamp):
         why = 'pywin32 not installed' if sys.platform == 'win32' else 'Outlook automation is Windows-only'
     except Exception as e:
         why = f'Outlook not reachable: {e}'
-    return f'.eml {"written and opened" if OPEN_DRAFT else "written"} ({why}): {eml_draft(subject, fragment, stamp)}'
+    path, opened = eml_draft(subject, fragment, stamp)
+    return f'.eml {"written and opened" if opened else "written"} ({why}): {path}'
 
 
 # ------------------------------------------------------------------- run ---
@@ -356,7 +430,7 @@ def run():
     """Fetch the page, keep the RIGHT / OPTION entries, draft the email.  Returns the kept entries."""
     fetched = dt.datetime.now(HKT)
     try:
-        page, note = fetch()
+        page, updated, note = fetch()
         meta, entries = parse(page)
     except Stop as e:
         print(f'Stopped: {e}.  Nothing drafted.')
@@ -366,11 +440,14 @@ def run():
         hits = mentions(e)
         if hits:
             kept.append(dict(e, hits=hits))
-    subject, fragment = build_email(meta, entries, kept, fetched)
+    subject, fragment = build_email(meta, kept, fetched)
     draft = make_draft(subject, fragment, (meta['date'] or fetched).strftime('%Y%m%d'))
 
     counts = _tally(kept)
-    facts = [('HKEX list', f'dated {_listed(meta)}  (fetched {fetched:%a %d/%m/%Y %H:%M} HKT)'),
+    facts = [('HKEX list', f'dated {_listed(meta)}'),
+             ('Updated', f'{_day(updated)} {updated:%H:%M} HKT  (HKEX\'s own timestamp for the page)'
+                         if updated else 'HKEX did not say'),
+             ('Fetched', f'{_day(fetched)} {fetched:%H:%M} HKT  (fresh copy, no cache)'),
              ('Entries', f'{len(entries)} on the list'),
              ('Kept', f'{len(kept)}  ({counts})'),
              ('Subject', subject),
