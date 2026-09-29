@@ -1747,31 +1747,76 @@ the Global Offering 15.20%" are read directly now. A --only run on a batch
 another process is still writing loses the race (extract_allocation for 9856
 had to be redone after the full pass); wait for the full pass first.
 
-## GREY MARKET COVERAGE — what is reachable, measured (v31.1)
+## GREY MARKET COVERAGE — what is reachable, measured (v31.2)
 
-261 of 519 deals carry a grey-market close. The gap is structural, not
-laziness, and these are the measured floors:
+456 of 519 deals carry a grey-market close (261 in v31.1). By listing year:
+2021 42/92, 2022 68/72, 2023 60/68, 2024 67/67, 2025 111/112, 2026 108/108.
 
-| source | what it holds | floor |
-|---|---|---|
-| etnet `ipo-info.php?code=NNNNN` | 暗盤數據 table: all three brokers' close, high, low, volume | **2 October 2024** |
-| AAStocks per-stock news | 《新股》…暗盤收報… headline | ~21 recent articles, no pagination |
-| AAStocks IPO news feed (type=104) | same headlines | latest 50, no working cursor |
-| AAStocks greymarket.aspx | live quotes | today only |
-| broker pages (耀才/輝立/富途) | live quotes | today only |
-| press (HKET, Sina, 163, 華盛通...) | the session written up | whatever is still indexed |
+| source | what it holds | floor | prio |
+|---|---|---|---|
+| hand-verified press (`data/grey_market_manual.json`) | one print, source named | — | 70 |
+| etnet `ipo-info.php?code=NNNNN` | 暗盤數據 table: all three brokers' close + volume | **2 October 2024** | 50 |
+| **etnet news wire, by article ID** (`fetch_etnet_grey_news.py`) | the evening story, 輝立暗盤收報X元 | **January 2021** (older untested) | 48 |
+| AAStocks headline (`fetch_greymarket.py`) | 《新股》…暗盤收報… | ~21 articles per stock | 45 |
+| AAStocks greymarket.aspx, broker pages | live quotes | today only | — |
 
-Coverage by year: 2021 1/92, 2022 0/72, 2023 0/68, 2024 41/67, 2025 111/112,
-2026 108/108. The 2024 cliff is etnet's floor; everything before it exists
-only where a journalist wrote the session up. Those were searched per deal —
-roughly one hit in five, two searches each — and what was found is in
-`data/grey_market_manual.json` with its source and venue. Every blank carries
-a `grey_note` naming which floor applies.
+**The etnet news wire is the archive nobody lists.** Every etnet article
+resolves by ID at `ipo-news-article/{YYYYMMDD}{NNN}/x`, NNN = 001-999, all
+sections, back to at least January 2021. The sequence is NOT time-ordered,
+so the fetcher reads a whole day's headlines (the `<title>` sits in the first
+2 KB of a 450 KB page; it streams and stops), then reads in full only the
+暗盤 stories. Two days per deal: the grey-session evening (whole day) and the
+listing morning (001-259). ~30 s per day at 64 threads; 310 days = one hour
+with four workers. Title cache: `scrape/etnet_news/{date}.json`; the result
+is TRACKED in `data/grey_market_etnet_news.json` (the capture is the archive).
+
+    python ipo_lib/fetch_etnet_grey_news.py            # every deal without a print
+    python ipo_lib/fetch_etnet_grey_news.py 2410 9885  # named deals
+    python ipo_lib/fetch_etnet_grey_news.py --parse --refetch-empty
+
+Parsing rules, each learned from a real story:
+- The print is **Phillip's CLOSE** (收報/收市/收於). Other venues' quotes in the
+  same story are live (現報/暫報) and only context. A Futu or Bright Smart close
+  is used only when the story has no Phillip close (和譽 2256: Futu 11.56).
+- **An open is not a close.** Through mid-2021 etnet often reported only the
+  grey OPEN (開報/開市價). 33 deals: no number, the note gives the open.
+- **Every quote must reproduce the story's own percentage** (貝康 2170: the
+  body says 開報230元 for a HK$27.36 deal, the headline 40元; rejected).
+- **The deal is the code that lists next.** A spin-off story names its parent
+  first (微創醫療(00853)分拆旗下心通醫療(02160)); a wrap-up names several; each
+  quote goes to the nearest listing deal before it. "Next" = up to the next
+  HSI bar, because 13-Oct-2021 (typhoon) has none but deals listed.
+- 2021 wording splits venue and verb by a comma (據輝立交易場顯示,…收報58.25元);
+  stories carried from 《香港經濟日報》 have no wire dateline (body = after
+  the headline's last appearance).
+- The PERCENTAGE is computed at the end of the merge, after the offer price
+  is adjudicated: 玄武雲 2392 and 健世 9877 were parsed at the range top
+  (6.91, 28.80); the stories quote 6.24 and 27.80, the adjudicated prices.
+- One venue across the book: a hand entry from another venue yields to a
+  Phillip close from the wire, and the venue cell names the other print
+  (茶百道: "Phillip…; Bright Smart closed 16").
+
+Validated: every overlap matches to the cent — etnet's table (FWD 36.75,
+Anjoy 59.6, Phillip row) and the AAStocks headline (天聚地合 110.5, 泓盈 3.57).
+
+**The 63 still blank, and why** (each carries a `grey_note`):
+- 33 open-only (31 in H1-2021): etnet printed the open, never the close.
+- 7 of the first FINI deals (Dec-2023: 國鴻氫能, KCASH, 升輝, 瑞浦蘭鈞, 泛遠, 集海,
+  瀾滄): etnet ran no price stories for them. The one HKET piece it carried
+  (20231205512) says only that the first batch traded in the grey market
+  before their allotment results were out, with no prices.
+- 22 with no story at all (mostly 2021 property services, biotech -B, 保誠).
+- 1 follow-on offering with no grey session (BOSS 2076, `grey_market_na.json`).
+
+Dead ends, measured, so nobody retries them: AAStocks `NOW.{id}` before
+~2024 (0 of 160 probes resolve); HKET inews (403 / human check); Zhitong (JS
+challenge); jisilu (history is member-only); Eastmoney search API (canned
+response); Futu post IDs (~30k a day, no way to target a date); web search
+(headline only, no price to reconcile).
 
 RULES when adding by hand: the close divided by the offer price must
-reproduce the stated percentage (the merge rejects it otherwise — verified 0
-of 261 fail); a grey OPEN is not a close (WK Group's +144% was an open and was
-not recorded); where the press gives only the three-venue range, use
+reproduce the stated percentage (the merge rejects it otherwise); a grey OPEN
+is not a close; where the press gives only the three-venue range, use
 `grey_close_lo`/`grey_close_hi` and the merge shows the midpoint and says so.
 
 `ipo_lib/fetch_etnet_ipo.py` also brings back the one-lot hit rate

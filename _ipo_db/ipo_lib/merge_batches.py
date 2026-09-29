@@ -26,6 +26,7 @@ TOL_MONEY = 0.02
 deals = {}      # code -> {field: value}
 prov = {}       # code -> {field: {"src":..., "prio":..., "status":...}}
 conflicts = []
+WIRE_OFFER = {}  # code -> the offer price the etnet grey story quoted
 
 
 def put(code, field, value, src, prio, status="single"):
@@ -393,6 +394,49 @@ def main():
                 put(c, "one_lot_hit_pct", r.get("one_lot_hit_pct"), "etnet:ipo-info 一手中籤率", 45)
                 put(c, "hk_pct_etnet", r.get("hk_pct_etnet"), "etnet:ipo-info split", 30)
             print(f"  grey-market close from etnet on {n_et} deals")
+        # etnet's NEWS WIRE, read by article ID (fetch_etnet_grey_news.py):
+        # the evening story "輝立暗盤收報X元" for deals before the per-deal table
+        # existed. Below the table (50) where both exist, above the AAStocks
+        # headline (45, the same Phillip print), below hand-verified (70). The
+        # PERCENTAGE is computed at the end of the merge, after the offer
+        # price is adjudicated (玄武雲's filing parse said 6.91, the range top;
+        # the price is 6.24, which is also what the story quotes).
+        pN = ROOT / "data" / "grey_market_etnet_news.json"
+        n_nw = n_open = 0
+        if pN.exists():
+            for r in json.loads(pN.read_text()).get("deals", []):
+                c = r.get("code")
+                if c not in deals or not deals[c].get("final_price"):
+                    continue
+                px0 = deals[c]["final_price"]
+                src = f"etnet:news {r.get('src', '')}"
+                if r.get("open_only"):
+                    # an open is not a close: keep it out of the number, say it
+                    put(c, "grey_note",
+                        f"etnet's story of the session gave only the {r.get('grey_venue')} "
+                        f"{'open' if r.get('kind') == 'open' else 'mid-session quote'} "
+                        f"({r['grey_open']}, {100 * (r['grey_open'] / px0 - 1):+.1f}% vs offer) "
+                        f"on {r.get('grey_date')}; no close was published", src, 48)
+                    n_open += 1
+                    continue
+                gc = r.get("grey_close")
+                if not gc:
+                    continue
+                put(c, "grey_close", gc, src, 48)
+                put(c, "grey_pct", round(100 * (gc / px0 - 1), 2), src, 48)
+                put(c, "grey_venue", f"{r.get('grey_venue')} (etnet news story)", src, 48)
+                put(c, "grey_date", r.get("grey_date"), src, 48)
+                WIRE_OFFER[c] = r.get("art_offer")
+                n_nw += 1
+            print(f"  grey-market close from etnet's news wire on {n_nw} deals"
+                  f" ({n_open} with only an open or mid-session quote, noted)")
+        # EXPLAINED ABSENCES: a deal that never had a grey session (a follow-on
+        # offering by a stock already trading) says so instead of "not found".
+        pA = ROOT / "data" / "grey_market_na.json"
+        if pA.exists():
+            for r in json.loads(pA.read_text()).get("deals", []):
+                if r.get("code") in deals:
+                    put(r["code"], "grey_note", r.get("reason"), f"press:{r.get('src', '')}", 60)
         pM = ROOT / "data" / "grey_market_manual.json"
         n_man = n_rej = 0
         if pM.exists():
@@ -419,6 +463,17 @@ def main():
                               f"{implied:+.2f}% but the entry says {gp:+.2f}%")
                         n_rej += 1
                         continue
+                # ONE VENUE ACROSS THE BOOK: before Oct-2024 every print is
+                # Phillip's (AAStocks and the etnet wire both report it). A
+                # hand entry from another venue yields to a Phillip close from
+                # the wire, and the venue cell keeps the other print beside it.
+                pv = prov.get(c, {}).get("grey_close") or {}
+                mv = r.get("grey_venue") or r.get("venue") or ""
+                if pv.get("src", "").startswith("etnet:news") and not mv.startswith("Phillip"):
+                    other = mv.split(" (")[0].split(";")[0]
+                    other = "press, venue not named," if other.startswith("not stated") else other
+                    deals[c]["grey_venue"] = f"{deals[c].get('grey_venue')}; {other} closed {gc:g}"
+                    continue
                 for f in ("grey_close", "grey_pct", "grey_date", "grey_venue"):
                     put(c, f, r.get(f) if f != "grey_venue" else (r.get("grey_venue") or r.get("venue")),
                         f"press:{r.get('src', 'hand-verified')}", 70, status="xchecked")
@@ -1985,6 +2040,15 @@ def main():
         # not the grey close itself but how much of it survived the night:
         # grey_to_day1 is the day-1 close measured FROM the grey close, and
         # grey_called_it says whether the grey market got the direction right.
+        if x.get("grey_close") is not None:
+            x.pop("grey_note", None)       # a print outranks an "open only" note
+            fp = x.get("final_price")
+            if fp and (x.get("_prov", {}).get("grey_close") or prov.get(c, {}).get("grey_close", {})
+                       ).get("src", "").startswith("etnet:news"):
+                x["grey_pct"] = round(100 * (x["grey_close"] / fp - 1), 2)
+                ao = WIRE_OFFER.get(c)
+                if ao and abs(ao / fp - 1) > 0.005 and "story quoted" not in (x.get("grey_venue") or ""):
+                    x["grey_venue"] += f"; story quoted offer {ao:g}, filed {fp:g}"
         gp, d1v = x.get("grey_pct"), x.get("first_day_return_pct")
         if gp is not None and d1v is not None:
             x["grey_to_day1_pct"] = round(
@@ -1992,26 +2056,17 @@ def main():
             x["grey_called_it"] = ("Y" if (gp > 0) == (d1v > 0) or
                                    (abs(gp) < 0.05 and abs(d1v) < 0.05) else "N")
         if x.get("grey_close") is None and not x.get("grey_note"):
-            # Say WHY, measured, not vaguely. AAStocks publishes a headline for
-            # every listing, but a stock's news page holds only its ~21 most
-            # recent articles with no pagination, no date query and no offset,
-            # so the headline is unreachable roughly a month after the debut.
-            # Coverage by listing year is the fingerprint of exactly that:
-            # 2026 67%, 2025 35%, 2024 17%, 2021-23 zero.
-            # (the full reason — AAStocks keeps ~21 articles per stock and no
-            # venue archives past sessions — is in MAINTENANCE.md; the cell
-            # says what is missing and how to add it, nothing more)
-            # WHY a grey print is missing, precisely: every source that keeps
-            # the evening session has a floor. etnet's per-deal 暗盤數據 table
-            # starts 2024-10-02; AAStocks keeps ~21 articles per stock and its
-            # IPO feed the latest 50; the brokers' own pages are live-only and
-            # no venue publishes an archive. So a deal listed before Oct-2024
-            # has a print only if the press wrote it up and the article is
-            # still indexed.
+            # Say WHY, measured. Every source was read for this deal and none
+            # carries a close: etnet's per-deal 暗盤數據 table (from 2024-10-02),
+            # AAStocks' headline (~21 articles per stock, the IPO feed the
+            # latest 50), and etnet's news wire read article by article for
+            # the whole grey-session day and the listing morning
+            # (fetch_etnet_grey_news.py). A deal that had only an OPEN
+            # reported already carries its own note from that ingest.
             ld = (x.get("ipo_date") or "")[:10]
             x["grey_note"] = (
-                "listed before 2024-10-02, the first date etnet's per-deal grey table "
-                "covers; no press report of the session found either"
+                "no close found: etnet's news wire (every story that evening and the next "
+                "morning), etnet's grey table (from Oct-2024) and AAStocks all checked"
                 if ld and ld < "2024-10-02" else
                 "no grey print on etnet or AAStocks for this deal")
         # No prospectus hyperlink: the per-stock HKEX search returned no

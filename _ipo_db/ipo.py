@@ -257,9 +257,13 @@ def cmd_export(args):
     shutil.copy2(ROOT / "out" / "ah_peers.ipynb", dest / "ah_peers.ipynb")
     # the A/H premium study travels with the deliverables when it has been
     # built (export rmtree's this folder, so a hand-copied file would vanish)
-    study = ROOT / "out" / "AH_Premium_Study.docx"
-    if study.exists():
-        shutil.copy2(study, dest / "AH_Premium_Study.docx")
+    # every tracked deliverable must be re-copied, or the rmtree above deletes
+    # it from the repo (the weekly email vanished this way once)
+    for name in ("AH_Premium_Study.docx", "Grey_Market_vs_Day1.docx", "Clawback_Study.docx",
+                 "weekly_ipo_email.html", "weekly_ipo_email.txt"):
+        study = ROOT / "out" / name
+        if study.exists():
+            shutil.copy2(study, dest / name)
     (dest / "READ_ME_FIRST.txt").write_text(
         "HK IPO DATABASE\n"
         "===============\n\n"
@@ -270,6 +274,8 @@ def cmd_export(args):
         "  hk_ipo.py                 updates everything (Jupyter, one command)\n"
         "  ah_peers.ipynb            A/H price charts live off Bloomberg\n"
         "  AH_Premium_Study.docx     the A/H premium write-up for senior traders\n"
+        "  Grey_Market_vs_Day1.docx  the grey market against day 1, every deal\n"
+        "  Clawback_Study.docx       the 套路回撥 allocation study\n"
         "  READ_ME_FIRST.txt         this file\n\n"
         "TO JUST USE IT\n"
         "  Open the .xlsx -> SCREENER tab. Pick a deal from the dropdown, or\n"

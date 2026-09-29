@@ -1,0 +1,3445 @@
+{
+ "note": "grey-market prints read from etnet's news wire by article ID; see ipo_lib/fetch_etnet_grey_news.py",
+ "deals": [
+  {
+   "code": "0013",
+   "name": "和黃醫藥",
+   "offer": 40.1,
+   "grey_close": 50.1,
+   "grey_date": "2021-06-29",
+   "grey_venue": "Phillip",
+   "art_offer": null,
+   "title": "和黃醫藥暗盤收升25%,每手賺5000元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210629933/",
+   "others": {
+    "Futu close": 50.15
+   },
+   "grey_pct": 24.94
+  },
+  {
+   "code": "0020",
+   "name": "商湯－Ｗ",
+   "offer": 3.85,
+   "grey_close": 3.83,
+   "grey_date": "2021-12-29",
+   "grey_venue": "Phillip",
+   "art_offer": 3.85,
+   "title": "商湯集團暗盤潛水0.5%,一手蝕20元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20211229939/",
+   "others": {
+    "Futu close": 3.81
+   },
+   "grey_pct": -0.52
+  },
+  {
+   "code": "0314",
+   "name": "思派健康",
+   "offer": 18.6,
+   "open_only": true,
+   "grey_open": 20.8,
+   "grey_date": "2022-12-22",
+   "grey_venue": "Phillip",
+   "art_offer": 18.6,
+   "title": "思派健康暗盤報20.8元,高招股價近12%",
+   "kind": "live",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221222396/",
+   "grey_open_pct": 11.83
+  },
+  {
+   "code": "0606",
+   "name": "中駿商管",
+   "offer": 3.7,
+   "open_only": true,
+   "grey_open": 3.68,
+   "grey_date": "2021-06-30",
+   "grey_venue": "Phillip",
+   "art_offer": 3.7,
+   "title": "中駿商管暗盤開報3.68元,低招股價0.54%",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210630163/",
+   "grey_open_pct": -0.54
+  },
+  {
+   "code": "0917",
+   "name": "趣致集團",
+   "offer": 25.0,
+   "grey_close": 33.0,
+   "grey_date": "2024-05-24",
+   "grey_venue": "Phillip",
+   "art_offer": 25.0,
+   "title": "趣致集團暗盤收高32%,每手賺1600元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240524973/",
+   "others": {
+    "Bright Smart live": 34.9
+   },
+   "grey_pct": 32.0
+  },
+  {
+   "code": "1024",
+   "name": "快手－Ｗ",
+   "offer": 115.0,
+   "grey_close": 335.6,
+   "grey_date": "2021-02-04",
+   "grey_venue": "Bright Smart",
+   "art_offer": 115.0,
+   "title": "快手暗盤收升1.9倍,一手勁賺2.2萬",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210204606/",
+   "others": {},
+   "grey_pct": 191.83
+  },
+  {
+   "code": "1111",
+   "name": "華視集團控股",
+   "offer": 1.04,
+   "grey_close": 1.61,
+   "grey_date": "2023-11-09",
+   "grey_venue": "Phillip",
+   "art_offer": 1.04,
+   "title": "華視集團控股暗盤收高近55%,每手賺2280元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20231109368/",
+   "others": {
+    "Bright Smart live": 1.62
+   },
+   "grey_pct": 54.81
+  },
+  {
+   "code": "1204",
+   "name": "博維智慧",
+   "offer": 1.08,
+   "grey_close": 1.13,
+   "grey_date": "2022-07-14",
+   "grey_venue": "Phillip",
+   "art_offer": 1.08,
+   "title": "博維智慧暗盤收高近5%,每手賺100元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220714383/",
+   "others": {
+    "Bright Smart live": 1.12
+   },
+   "grey_pct": 4.63
+  },
+  {
+   "code": "1244",
+   "name": "思路迪醫藥股份",
+   "offer": 24.98,
+   "grey_close": 28.95,
+   "grey_date": "2022-12-14",
+   "grey_venue": "Phillip",
+   "art_offer": 24.98,
+   "title": "3D MEDICINES-B暗盤每手賺逾千元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221214419/",
+   "others": {
+    "Bright Smart live": 27.8
+   },
+   "grey_pct": 15.89
+  },
+  {
+   "code": "1274",
+   "name": "知行科技",
+   "offer": 29.65,
+   "grey_close": 30.05,
+   "grey_date": "2023-12-19",
+   "grey_venue": "Phillip",
+   "art_offer": 29.65,
+   "title": "知行汽車科技暗盤收高逾1%,每手賺40元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20231219389/",
+   "others": {
+    "Bright Smart live": 30.0
+   },
+   "grey_pct": 1.35
+  },
+  {
+   "code": "1284",
+   "name": "新傳企劃",
+   "offer": 0.92,
+   "grey_close": 0.94,
+   "grey_date": "2023-07-14",
+   "grey_venue": "Phillip",
+   "art_offer": 0.92,
+   "title": "新傳企劃暗盤收高逾2%,每手賺100元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230714305/",
+   "others": {
+    "Bright Smart live": 0.94
+   },
+   "grey_pct": 2.17
+  },
+  {
+   "code": "1334",
+   "name": "瑞昌國際控股",
+   "offer": 1.05,
+   "grey_close": 1.19,
+   "grey_date": "2024-07-09",
+   "grey_venue": "Phillip",
+   "art_offer": 1.05,
+   "title": "瑞昌國際控股暗盤收高逾13%,每手賺350元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240709412/",
+   "others": {
+    "Bright Smart live": 1.12
+   },
+   "grey_pct": 13.33
+  },
+  {
+   "code": "1405",
+   "name": "達勢股份",
+   "offer": 46.0,
+   "grey_close": 45.35,
+   "grey_date": "2023-03-27",
+   "grey_venue": "Phillip",
+   "art_offer": 46.0,
+   "title": "達勢股份(1405)暗盤潛水逾1%,每手蝕65元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230327395/",
+   "others": {
+    "Bright Smart live": 46.0
+   },
+   "grey_pct": -1.41
+  },
+  {
+   "code": "1406",
+   "name": "清晰醫療",
+   "offer": 1.6,
+   "grey_close": 1.6,
+   "grey_date": "2022-02-17",
+   "grey_venue": "Phillip",
+   "art_offer": null,
+   "title": "清晰醫療(01406)暗盤平收",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220217303/",
+   "others": {
+    "Bright Smart live": 1.61
+   },
+   "grey_pct": 0.0
+  },
+  {
+   "code": "1407",
+   "name": "交運燃氣",
+   "offer": 1.42,
+   "grey_close": 1.82,
+   "grey_date": "2022-11-15",
+   "grey_venue": "Phillip",
+   "art_offer": 1.42,
+   "title": "交運燃氣暗盤收高逾28%,每手賺800元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221115093/",
+   "others": {
+    "Bright Smart live": 1.8
+   },
+   "grey_pct": 28.17
+  },
+  {
+   "code": "1413",
+   "name": "鑄帝控股",
+   "offer": 0.54,
+   "open_only": true,
+   "grey_open": 0.6,
+   "grey_date": "2021-03-10",
+   "grey_venue": "Phillip",
+   "art_offer": 0.54,
+   "title": "廣聯工程控股暗盤開報0.6元,高招股價11.1%",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210310251/",
+   "grey_open_pct": 11.11
+  },
+  {
+   "code": "1440",
+   "name": "應星控股",
+   "offer": 0.4,
+   "open_only": true,
+   "grey_open": 0.52,
+   "grey_date": "2021-01-12",
+   "grey_venue": "Phillip",
+   "art_offer": 0.4,
+   "title": "德運控股暗盤開報0.52元,高招股價30%",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210112164/",
+   "grey_open_pct": 30.0
+  },
+  {
+   "code": "1473",
+   "name": "環聯連訊",
+   "offer": 0.56,
+   "open_only": true,
+   "grey_open": 0.68,
+   "grey_date": "2021-02-18",
+   "grey_venue": "Phillip",
+   "art_offer": 0.56,
+   "title": "環聯連訊暗盤開報0.68元,高招股價21.43%",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210218251/",
+   "grey_open_pct": 21.43
+  },
+  {
+   "code": "1489",
+   "name": "GC CONSTRUCTION",
+   "offer": 0.5,
+   "grey_close": 0.62,
+   "grey_date": "2022-10-07",
+   "grey_venue": "Phillip",
+   "art_offer": 0.5,
+   "title": "GC CONSTRUCTION暗盤每手賺600元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221007393/",
+   "others": {
+    "Bright Smart live": 0.61
+   },
+   "grey_pct": 24.0
+  },
+  {
+   "code": "1490",
+   "name": "AI X TECH",
+   "offer": 1.23,
+   "open_only": true,
+   "grey_open": 2.0,
+   "grey_date": "2021-01-14",
+   "grey_venue": "Phillip",
+   "art_offer": 1.23,
+   "title": "網上車市暗盤現報1.87元,高招股價52.03%",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210114251/",
+   "grey_open_pct": 62.6
+  },
+  {
+   "code": "1497",
+   "name": "燕之屋",
+   "offer": 9.7,
+   "grey_close": 10.6,
+   "grey_date": "2023-12-11",
+   "grey_venue": "Phillip",
+   "art_offer": 9.7,
+   "title": "燕之屋(1497)暗盤收高逾9%,每手賺360元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20231211396/",
+   "others": {
+    "Bright Smart live": 10.6
+   },
+   "grey_pct": 9.28
+  },
+  {
+   "code": "1519",
+   "name": "極兔速遞－Ｗ",
+   "offer": 12.0,
+   "grey_close": 11.86,
+   "grey_date": "2023-10-26",
+   "grey_venue": "Phillip",
+   "art_offer": 12.0,
+   "title": "極兔速遞-W暗盤潛水逾1%,每手蝕28元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20231026398/",
+   "others": {
+    "Bright Smart live": 12.0
+   },
+   "grey_pct": -1.17
+  },
+  {
+   "code": "1541",
+   "name": "宜明昂科－Ｂ",
+   "offer": 18.6,
+   "grey_close": 21.0,
+   "grey_date": "2023-09-04",
+   "grey_venue": "Phillip",
+   "art_offer": 18.6,
+   "title": "宜明昂科-B暗盤收高近13%,每手賺480元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230904979/",
+   "others": {
+    "Bright Smart live": 20.15
+   },
+   "grey_pct": 12.9
+  },
+  {
+   "code": "1643",
+   "name": "現代中藥集團",
+   "offer": 1.18,
+   "open_only": true,
+   "grey_open": 1.2,
+   "grey_date": "2021-01-14",
+   "grey_venue": "Phillip",
+   "art_offer": 1.18,
+   "title": "現代中藥暗盤開報1.2元,高招股價1.69%",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210114253/",
+   "grey_open_pct": 1.69
+  },
+  {
+   "code": "1828",
+   "name": "富衛集團",
+   "offer": 38.0,
+   "grey_close": 36.75,
+   "grey_date": "2025-07-04",
+   "grey_venue": "Phillip",
+   "art_offer": 38.0,
+   "title": "富衛集團暗盤潛水逾3%,每手蝕125元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20250704242/",
+   "others": {
+    "Bright Smart live": 36.5
+   },
+   "grey_pct": -3.29
+  },
+  {
+   "code": "1855",
+   "name": "中慶股份",
+   "offer": 2.0,
+   "open_only": true,
+   "grey_open": 2.06,
+   "grey_date": "2021-01-05",
+   "grey_venue": "Phillip",
+   "art_offer": 2.0,
+   "title": "中邦環境暗盤開報2.06元,高招股價3%",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210105220/",
+   "grey_open_pct": 3.0
+  },
+  {
+   "code": "1880",
+   "name": "中國中免",
+   "offer": 158.0,
+   "grey_close": 150.5,
+   "grey_date": "2022-08-24",
+   "grey_venue": "Phillip",
+   "art_offer": 158.0,
+   "title": "中國中免暗盤潛水近5%,每手蝕750元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220824396/",
+   "others": {
+    "Bright Smart live": 151.1
+   },
+   "grey_pct": -4.75
+  },
+  {
+   "code": "1927",
+   "name": "久久王",
+   "offer": 0.75,
+   "open_only": true,
+   "grey_open": 0.76,
+   "grey_date": "2021-03-15",
+   "grey_venue": "Phillip",
+   "art_offer": 0.75,
+   "title": "久久王暗盤0.76元,高招股價1.33%",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210315251/",
+   "grey_open_pct": 1.33
+  },
+  {
+   "code": "1947",
+   "name": "美皓集團",
+   "offer": 0.84,
+   "grey_close": 0.81,
+   "grey_date": "2022-12-13",
+   "grey_venue": "Phillip",
+   "art_offer": 0.84,
+   "title": "美皓集團暗盤潛水近4%,每手蝕150元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221213410/",
+   "others": {
+    "Bright Smart live": 0.82
+   },
+   "grey_pct": -3.57
+  },
+  {
+   "code": "1948",
+   "name": "優矩控股",
+   "offer": 6.7,
+   "open_only": true,
+   "grey_open": 6.53,
+   "grey_date": "2021-11-05",
+   "grey_venue": "Phillip",
+   "art_offer": 6.7,
+   "title": "UJU控股暗盤開報6.53元,低招股價近3%",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20211105176/",
+   "grey_open_pct": -2.54
+  },
+  {
+   "code": "1965",
+   "name": "朗詩綠色生活",
+   "offer": 3.18,
+   "grey_close": 5.3,
+   "grey_date": "2021-07-07",
+   "grey_venue": "Phillip",
+   "art_offer": 3.18,
+   "title": "朗詩綠色生活暗盤收升近67%,每手賺2120元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210707924/",
+   "others": {
+    "Futu close": 5.97
+   },
+   "grey_pct": 66.67
+  },
+  {
+   "code": "1973",
+   "name": "天圖投資",
+   "offer": 6.5,
+   "grey_close": 5.39,
+   "grey_date": "2023-10-05",
+   "grey_venue": "Phillip",
+   "art_offer": 6.5,
+   "title": "天圖投資暗盤潛水逾17%,每手蝕444元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20231005396/",
+   "others": {},
+   "grey_pct": -17.08
+  },
+  {
+   "code": "2015",
+   "name": "理想汽車－Ｗ",
+   "offer": 118.0,
+   "grey_close": 115.9,
+   "grey_date": "2021-08-11",
+   "grey_venue": "Phillip",
+   "art_offer": null,
+   "title": "理想汽車暗盤收低1.78%,一手蝕210元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210811939/",
+   "others": {
+    "Futu close": 115.1
+   },
+   "grey_pct": -1.78
+  },
+  {
+   "code": "2105",
+   "name": "來凱醫藥－Ｂ",
+   "offer": 12.41,
+   "grey_close": 13.14,
+   "grey_date": "2023-06-28",
+   "grey_venue": "Phillip",
+   "art_offer": 12.41,
+   "title": "來凱醫藥-B暗盤收高近6%,每手賺365元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230628304/",
+   "others": {
+    "Bright Smart live": 13.18
+   },
+   "grey_pct": 5.88
+  },
+  {
+   "code": "2121",
+   "name": "創新奇智",
+   "offer": 26.3,
+   "grey_close": 25.15,
+   "grey_date": "2022-01-26",
+   "grey_venue": "Phillip",
+   "art_offer": 26.3,
+   "title": "創新奇智暗盤潛水逾4%,每手蝕115元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220126395/",
+   "others": {
+    "Bright Smart live": 25.4
+   },
+   "grey_pct": -4.37
+  },
+  {
+   "code": "2125",
+   "name": "稻草熊娛樂",
+   "offer": 5.88,
+   "open_only": true,
+   "grey_open": 6.3,
+   "grey_date": "2021-01-14",
+   "grey_venue": "Phillip",
+   "art_offer": 5.88,
+   "title": "稻草熊娛樂暗盤開報6.3元,高招股價7.1%",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210114275/",
+   "grey_open_pct": 7.14
+  },
+  {
+   "code": "2129",
+   "name": "LEGION CONSO",
+   "offer": 0.4,
+   "open_only": true,
+   "grey_open": 0.6,
+   "grey_date": "2021-01-12",
+   "grey_venue": "Phillip",
+   "art_offer": 0.4,
+   "title": "LEGION暗盤開報0.6元,高招股價50%",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210112255/",
+   "grey_open_pct": 50.0
+  },
+  {
+   "code": "2137",
+   "name": "騰盛博藥－Ｂ",
+   "offer": 22.25,
+   "grey_close": 20.9,
+   "grey_date": "2021-07-12",
+   "grey_venue": "Phillip",
+   "art_offer": 22.25,
+   "title": "騰盛博藥暗盤收市潛水6%,一手蝕675元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210712535/",
+   "others": {
+    "Futu close": 22.45
+   },
+   "grey_pct": -6.07
+  },
+  {
+   "code": "2145",
+   "name": "上美股份",
+   "offer": 25.2,
+   "grey_close": 24.85,
+   "grey_date": "2022-12-21",
+   "grey_venue": "Phillip",
+   "art_offer": 25.2,
+   "title": "上美股份(2145)暗盤潛水逾1%,每手蝕35元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221221302/",
+   "others": {
+    "Bright Smart live": 24.95
+   },
+   "grey_pct": -1.39
+  },
+  {
+   "code": "2146",
+   "name": "榮萬家",
+   "offer": 13.46,
+   "open_only": true,
+   "grey_open": 13.5,
+   "grey_date": "2021-01-14",
+   "grey_venue": "Phillip",
+   "art_offer": 13.46,
+   "title": "榮萬家暗盤開報13.5元,高招股價不足1%",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210114181/",
+   "grey_open_pct": 0.3
+  },
+  {
+   "code": "2147",
+   "name": "正味集團",
+   "offer": 0.68,
+   "grey_close": 0.7,
+   "grey_date": "2023-01-12",
+   "grey_venue": "Phillip",
+   "art_offer": 0.68,
+   "title": "正味集團(2147)暗盤收高近3%,每手賺80元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230112405/",
+   "others": {
+    "Bright Smart live": 0.71
+   },
+   "grey_pct": 2.94
+  },
+  {
+   "code": "2149",
+   "name": "貝克微",
+   "offer": 27.47,
+   "grey_close": 26.35,
+   "grey_date": "2023-12-27",
+   "grey_venue": "Phillip",
+   "art_offer": 27.47,
+   "title": "貝克微(2149)暗盤潛水逾4%,每手蝕112元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20231227408/",
+   "others": {},
+   "grey_pct": -4.08
+  },
+  {
+   "code": "2150",
+   "name": "奈雪的茶",
+   "offer": 19.8,
+   "grey_close": 19.54,
+   "grey_date": "2021-06-29",
+   "grey_venue": "Phillip",
+   "art_offer": 19.8,
+   "title": "奈雪的茶暗盤收低1.3%,每手蝕130元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210629934/",
+   "others": {
+    "Futu close": 20.15
+   },
+   "grey_pct": -1.31
+  },
+  {
+   "code": "2152",
+   "name": "蘇新服務",
+   "offer": 8.6,
+   "grey_close": 8.49,
+   "grey_date": "2022-08-23",
+   "grey_venue": "Phillip",
+   "art_offer": 8.6,
+   "title": "蘇新服務(2152)暗盤潛水逾1%,每手蝕55元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220823383/",
+   "others": {
+    "Bright Smart live": 8.6
+   },
+   "grey_pct": -1.28
+  },
+  {
+   "code": "2153",
+   "name": "達豐設備",
+   "offer": 1.73,
+   "open_only": true,
+   "grey_open": 2.0,
+   "grey_date": "2021-01-12",
+   "grey_venue": "Phillip",
+   "art_offer": 1.73,
+   "title": "達豐設備暗盤開報2元,高招股價15.6%",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210112256/",
+   "grey_open_pct": 15.61
+  },
+  {
+   "code": "2157",
+   "name": "樂普生物",
+   "offer": 7.13,
+   "grey_close": 7.16,
+   "grey_date": "2022-02-22",
+   "grey_venue": "Phillip",
+   "art_offer": 7.13,
+   "title": "樂普生物-B暗盤收高少於1%,每手賺30元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220222388/",
+   "others": {
+    "Bright Smart live": 7.24
+   },
+   "grey_pct": 0.42
+  },
+  {
+   "code": "2158",
+   "name": "醫渡科技",
+   "offer": 26.3,
+   "grey_close": 58.25,
+   "grey_date": "2021-01-14",
+   "grey_venue": "Phillip",
+   "art_offer": 26.3,
+   "title": "醫渡科技輝立暗盤收升1.2倍,每手賺3195元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210114557/",
+   "others": {},
+   "grey_pct": 121.48
+  },
+  {
+   "code": "2159",
+   "name": "麥迪衛康",
+   "offer": 3.0,
+   "open_only": true,
+   "grey_open": 3.2,
+   "grey_date": "2021-01-18",
+   "grey_venue": "Phillip",
+   "art_offer": 3.0,
+   "title": "麥迪衛康暗盤開報3.2元,高招股價6.67%",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210118251/",
+   "grey_open_pct": 6.67
+  },
+  {
+   "code": "2160",
+   "name": "微創心通－Ｂ",
+   "offer": 12.2,
+   "grey_close": 20.2,
+   "grey_date": "2021-02-03",
+   "grey_venue": "Phillip",
+   "art_offer": 12.2,
+   "title": "心通醫療暗盤收報20.2元,每手賺8000元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210203534/",
+   "others": {
+    "Futu close": 21.15
+   },
+   "grey_pct": 65.57
+  },
+  {
+   "code": "2161",
+   "name": "健倍苗苗",
+   "offer": 1.2,
+   "grey_close": 1.37,
+   "grey_date": "2021-02-04",
+   "grey_venue": "Phillip",
+   "art_offer": 1.2,
+   "title": "快手暗盤太熱,個別券商疑系統故障,耀才指交易正常",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210204600/",
+   "others": {},
+   "grey_pct": 14.17
+  },
+  {
+   "code": "2162",
+   "name": "康諾亞－Ｂ",
+   "offer": 53.3,
+   "grey_close": 71.5,
+   "grey_date": "2021-07-07",
+   "grey_venue": "Phillip",
+   "art_offer": 53.3,
+   "title": "康諾亞暗盤收高34%,每手賺9100元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210707939/",
+   "others": {
+    "Futu close": 70.1
+   },
+   "grey_pct": 34.15
+  },
+  {
+   "code": "2167",
+   "name": "天潤雲",
+   "offer": 12.85,
+   "grey_close": 10.82,
+   "grey_date": "2022-06-29",
+   "grey_venue": "Phillip",
+   "art_offer": 12.85,
+   "title": "天潤雲暗盤潛水近16%,每手蝕406元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220629405/",
+   "others": {
+    "Bright Smart live": 10.7
+   },
+   "grey_pct": -15.8
+  },
+  {
+   "code": "2171",
+   "name": "科濟藥業－Ｂ",
+   "offer": 32.8,
+   "open_only": true,
+   "grey_open": 39.0,
+   "grey_date": "2021-06-17",
+   "grey_venue": "Phillip",
+   "art_offer": 32.8,
+   "title": "科濟藥業(2171)暗盤高開一成九,一手賺三千一",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210617277/",
+   "grey_open_pct": 18.9
+  },
+  {
+   "code": "2172",
+   "name": "微創腦科學",
+   "offer": 24.64,
+   "grey_close": 24.55,
+   "grey_date": "2022-07-14",
+   "grey_venue": "Phillip",
+   "art_offer": 24.64,
+   "title": "微創腦科學暗盤潛水少於1%,每手蝕90元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220714385/",
+   "others": {
+    "Bright Smart live": 24.4
+   },
+   "grey_pct": -0.37
+  },
+  {
+   "code": "2175",
+   "name": "中國通才教育",
+   "offer": 3.69,
+   "grey_close": 3.29,
+   "grey_date": "2021-07-15",
+   "grey_venue": "Phillip",
+   "art_offer": 3.69,
+   "title": "通才教育暗盤潛水逾一成,每手帳面蝕400元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210715928/",
+   "others": {
+    "Futu close": 3.31
+   },
+   "grey_pct": -10.84
+  },
+  {
+   "code": "2179",
+   "name": "瑞科生物－Ｂ",
+   "offer": 24.8,
+   "grey_close": 25.5,
+   "grey_date": "2022-03-30",
+   "grey_venue": "Phillip",
+   "art_offer": 24.8,
+   "title": "瑞科生物-B暗盤收高近3%,每手賺350元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220330212/",
+   "others": {},
+   "grey_pct": 2.82
+  },
+  {
+   "code": "2187",
+   "name": "智欣集團控股",
+   "offer": 1.5,
+   "open_only": true,
+   "grey_open": 1.46,
+   "grey_date": "2021-03-25",
+   "grey_venue": "Phillip",
+   "art_offer": 1.5,
+   "title": "智欣集團暗盤現報1.46元,低招股價近3%",
+   "kind": "live",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210325200/",
+   "grey_open_pct": -2.67
+  },
+  {
+   "code": "2190",
+   "name": "歸創通橋",
+   "offer": 42.7,
+   "grey_close": 55.6,
+   "grey_date": "2021-07-02",
+   "grey_venue": "Phillip",
+   "art_offer": 42.7,
+   "title": "歸創通橋暗盤收升三成,每手賺6450元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210702601/",
+   "others": {},
+   "grey_pct": 30.21
+  },
+  {
+   "code": "2191",
+   "name": "順豐房託",
+   "offer": 4.98,
+   "grey_close": 4.94,
+   "grey_date": "2021-05-14",
+   "grey_venue": "Phillip",
+   "art_offer": null,
+   "title": "順豐房託暗盤收報4.94元,每手蝕40元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210514609/",
+   "others": {},
+   "grey_pct": -0.8
+  },
+  {
+   "code": "2192",
+   "name": "醫脈通",
+   "offer": 27.2,
+   "grey_close": 29.0,
+   "grey_date": "2021-07-14",
+   "grey_venue": "Phillip",
+   "art_offer": 27.2,
+   "title": "醫脈通暗盤收升6.6%,每手賺900元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210714579/",
+   "others": {
+    "Futu close": 29.9
+   },
+   "grey_pct": 6.62
+  },
+  {
+   "code": "2197",
+   "name": "三葉草生物－Ｂ",
+   "offer": 13.38,
+   "open_only": true,
+   "grey_open": 12.0,
+   "grey_date": "2021-11-04",
+   "grey_venue": "Phillip",
+   "art_offer": 13.38,
+   "title": "三葉草生物暗盤開報12元,低招股價逾10%",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20211104173/",
+   "grey_open_pct": -10.31
+  },
+  {
+   "code": "2205",
+   "name": "康橋悅生活",
+   "offer": 3.68,
+   "grey_close": 3.6,
+   "grey_date": "2021-07-15",
+   "grey_venue": "Phillip",
+   "art_offer": 3.68,
+   "title": "康橋悅暗盤收低2.17%,每手蝕80元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210715926/",
+   "others": {
+    "Futu close": 3.69
+   },
+   "grey_pct": -2.17
+  },
+  {
+   "code": "2209",
+   "name": "喆麗控股",
+   "offer": 3.28,
+   "grey_close": 4.44,
+   "grey_date": "2021-07-08",
+   "grey_venue": "Phillip",
+   "art_offer": 3.28,
+   "title": "喆麗控股暗盤收升逾35%,每手賺1160元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210708927/",
+   "others": {
+    "Futu close": 4.54
+   },
+   "grey_pct": 35.37
+  },
+  {
+   "code": "2210",
+   "name": "京城佳業",
+   "offer": 8.28,
+   "grey_close": 8.2,
+   "grey_date": "2021-11-09",
+   "grey_venue": "Phillip",
+   "art_offer": 8.28,
+   "title": "京城佳業(2210)暗盤潛水1%,每手蝕32元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20211109933/",
+   "others": {
+    "Futu close": 8.21
+   },
+   "grey_pct": -0.97
+  },
+  {
+   "code": "2215",
+   "name": "德信服務集團",
+   "offer": 3.06,
+   "grey_close": 2.96,
+   "grey_date": "2021-07-14",
+   "grey_venue": "Phillip",
+   "art_offer": 3.06,
+   "title": "德信服務集團暗盤收低3.27%,每手蝕100元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210714927/",
+   "others": {},
+   "grey_pct": -3.27
+  },
+  {
+   "code": "2219",
+   "name": "朝聚眼科",
+   "offer": 10.6,
+   "grey_close": 10.82,
+   "grey_date": "2021-07-06",
+   "grey_venue": "Phillip",
+   "art_offer": 10.6,
+   "title": "朝聚眼科暗盤收報10.82元,每手賺110元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210706938/",
+   "others": {
+    "Futu close": 11.04
+   },
+   "grey_pct": 2.08
+  },
+  {
+   "code": "2228",
+   "name": "晶泰控股",
+   "offer": 5.28,
+   "grey_close": 5.39,
+   "grey_date": "2024-06-12",
+   "grey_venue": "Phillip",
+   "art_offer": 5.28,
+   "title": "QUANTUMPH-P暗盤每手賺110元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240612414/",
+   "others": {
+    "Bright Smart live": 5.37
+   },
+   "grey_pct": 2.08
+  },
+  {
+   "code": "2237",
+   "name": "中國石墨",
+   "offer": 0.325,
+   "grey_close": 0.375,
+   "grey_date": "2022-07-15",
+   "grey_venue": "Phillip",
+   "art_offer": 0.325,
+   "title": "中國石墨暗盤收高逾15%,每手賺500元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220715426/",
+   "others": {
+    "Bright Smart live": 0.385
+   },
+   "grey_pct": 15.38
+  },
+  {
+   "code": "2245",
+   "name": "力勤資源",
+   "offer": 15.8,
+   "grey_close": 15.5,
+   "grey_date": "2022-11-30",
+   "grey_venue": "Phillip",
+   "art_offer": 15.8,
+   "title": "力勤資源(2245)暗盤潛水近2%,每手蝕60元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221130194/",
+   "others": {
+    "Bright Smart live": 15.32
+   },
+   "grey_pct": -1.9
+  },
+  {
+   "code": "2246",
+   "name": "快狗打車",
+   "offer": 21.5,
+   "grey_close": 21.1,
+   "grey_date": "2022-06-23",
+   "grey_venue": "Phillip",
+   "art_offer": 21.5,
+   "title": "快狗打車(2246)暗盤潛水近2%,每手蝕80元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220623407/",
+   "others": {
+    "Bright Smart live": 21.2
+   },
+   "grey_pct": -1.86
+  },
+  {
+   "code": "2251",
+   "name": "鷹瞳科技－Ｂ",
+   "offer": 75.1,
+   "open_only": true,
+   "grey_open": 68.0,
+   "grey_date": "2021-11-04",
+   "grey_venue": "Phillip",
+   "art_offer": 75.1,
+   "title": "鷹瞳科技暗盤開報68.1元,低招股價逾8%",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20211104177/",
+   "grey_open_pct": -9.45
+  },
+  {
+   "code": "2252",
+   "name": "微創機器人－Ｂ",
+   "offer": 43.2,
+   "grey_close": 40.15,
+   "grey_date": "2021-11-01",
+   "grey_venue": "Phillip",
+   "art_offer": 43.2,
+   "title": "微創機器人暗盤潛水7.06%,每手蝕1525元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20211101938/",
+   "others": {
+    "Futu close": 40.05
+   },
+   "grey_pct": -7.06
+  },
+  {
+   "code": "2256",
+   "name": "和譽－Ｂ",
+   "offer": 12.46,
+   "grey_close": 11.56,
+   "grey_date": "2021-10-12",
+   "grey_venue": "Futu",
+   "art_offer": null,
+   "title": "和譽暗盤現報12.2元,較招股價低2%",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20211012203/",
+   "others": {
+    "Phillip live": 12.0
+   },
+   "grey_pct": -7.22
+  },
+  {
+   "code": "2257",
+   "name": "聖諾醫藥－Ｂ",
+   "offer": 65.9,
+   "open_only": true,
+   "grey_open": 60.0,
+   "grey_date": "2021-12-29",
+   "grey_venue": "Phillip",
+   "art_offer": 65.9,
+   "title": "聖諾醫藥暗盤開報60元,每手蝕118元",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20211229192/",
+   "grey_open_pct": -8.95
+  },
+  {
+   "code": "2260",
+   "name": "環龍控股",
+   "offer": 1.22,
+   "grey_close": 1.26,
+   "grey_date": "2022-01-10",
+   "grey_venue": "Phillip",
+   "art_offer": 1.22,
+   "title": "環龍控股暗盤收升3.3%,每手賺80元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220110208/",
+   "others": {
+    "Bright Smart live": 1.29
+   },
+   "grey_pct": 3.28
+  },
+  {
+   "code": "2268",
+   "name": "藥明合聯",
+   "offer": 20.6,
+   "grey_close": 25.15,
+   "grey_date": "2023-11-16",
+   "grey_venue": "Phillip",
+   "art_offer": 20.6,
+   "title": "藥明合聯暗盤收高逾22%,每手賺2275元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20231116410/",
+   "others": {
+    "Bright Smart live": 25.25
+   },
+   "grey_pct": 22.09
+  },
+  {
+   "code": "2273",
+   "name": "固生堂",
+   "offer": 29.0,
+   "open_only": true,
+   "grey_open": 29.05,
+   "grey_date": "2021-12-09",
+   "grey_venue": "Phillip",
+   "art_offer": null,
+   "title": "固生堂(2273)暗盤升一成七,每手賺505元",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20211209192/",
+   "grey_open_pct": 0.17
+  },
+  {
+   "code": "2279",
+   "name": "雍禾醫療",
+   "offer": 15.8,
+   "grey_close": 15.24,
+   "grey_date": "2021-12-10",
+   "grey_venue": "Phillip",
+   "art_offer": 15.8,
+   "title": "雍禾醫療暗盤潛水3.5%,一手蝕280元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20211210939/",
+   "others": {
+    "Futu close": 15.66
+   },
+   "grey_pct": -3.54
+  },
+  {
+   "code": "2285",
+   "name": "泉峰控股",
+   "offer": 43.6,
+   "open_only": true,
+   "grey_open": 50.85,
+   "grey_date": "2021-12-29",
+   "grey_venue": "Phillip",
+   "art_offer": 43.6,
+   "title": "泉峰(02285)暗盤升近一成七,每手賺725元",
+   "kind": "live",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20211229177/",
+   "grey_open_pct": 16.63
+  },
+  {
+   "code": "2291",
+   "name": "心泰醫療",
+   "offer": 29.15,
+   "grey_close": 29.25,
+   "grey_date": "2022-11-07",
+   "grey_venue": "Phillip",
+   "art_offer": 29.15,
+   "title": "心泰醫療暗盤收高少於1%,每手賺100元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221107197/",
+   "others": {
+    "Bright Smart live": 30.05
+   },
+   "grey_pct": 0.34
+  },
+  {
+   "code": "2297",
+   "name": "潤邁德－Ｂ",
+   "offer": 6.24,
+   "grey_close": 6.2,
+   "grey_date": "2022-07-07",
+   "grey_venue": "Phillip",
+   "art_offer": 6.24,
+   "title": "潤邁德-B暗盤潛水少於1%,每手蝕40元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220707364/",
+   "others": {
+    "Bright Smart live": 6.16
+   },
+   "grey_pct": -0.64
+  },
+  {
+   "code": "2306",
+   "name": "樂華娛樂",
+   "offer": 4.08,
+   "grey_close": 5.82,
+   "grey_date": "2023-01-18",
+   "grey_venue": "Phillip",
+   "art_offer": 4.08,
+   "title": "樂華娛樂暗盤收高近43%,每手賺5220元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230118382/",
+   "others": {
+    "Bright Smart live": 5.77
+   },
+   "grey_pct": 42.65
+  },
+  {
+   "code": "2315",
+   "name": "百奧賽圖－Ｂ",
+   "offer": 25.22,
+   "grey_close": 26.5,
+   "grey_date": "2022-08-31",
+   "grey_venue": "Phillip",
+   "art_offer": 25.22,
+   "title": "百奧賽圖-B暗盤收高逾5%,每手賺640元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220831405/",
+   "others": {
+    "Bright Smart live": 26.0
+   },
+   "grey_pct": 5.08
+  },
+  {
+   "code": "2321",
+   "name": "雙財莊",
+   "offer": 0.56,
+   "grey_close": 0.86,
+   "grey_date": "2022-08-18",
+   "grey_venue": "Phillip",
+   "art_offer": 0.56,
+   "title": "雙財莊暗盤收高近54%,每手賺1500元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220818381/",
+   "others": {
+    "Bright Smart live": 0.88
+   },
+   "grey_pct": 53.57
+  },
+  {
+   "code": "2325",
+   "name": "雲康集團",
+   "offer": 7.89,
+   "grey_close": 7.59,
+   "grey_date": "2022-05-17",
+   "grey_venue": "Phillip",
+   "art_offer": 7.89,
+   "title": "雲康集團暗盤潛水近4%,每手蝕150元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220517422/",
+   "others": {
+    "Bright Smart live": 7.31
+   },
+   "grey_pct": -3.8
+  },
+  {
+   "code": "2347",
+   "name": "友和集團",
+   "offer": 2.1,
+   "grey_close": 2.15,
+   "grey_date": "2022-06-09",
+   "grey_venue": "Phillip",
+   "art_offer": 2.1,
+   "title": "友和集團暗盤收高逾2%,每手賺100元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220609361/",
+   "others": {
+    "Bright Smart live": 2.15
+   },
+   "grey_pct": 2.38
+  },
+  {
+   "code": "2350",
+   "name": "數科集團",
+   "offer": 0.85,
+   "grey_close": 0.88,
+   "grey_date": "2022-09-23",
+   "grey_venue": "Phillip",
+   "art_offer": 0.85,
+   "title": "數科集團暗盤收高近4%,每手賺150元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220923406/",
+   "others": {
+    "Bright Smart live": 0.9
+   },
+   "grey_pct": 3.53
+  },
+  {
+   "code": "2352",
+   "name": "東原仁知服務",
+   "offer": 11.9,
+   "grey_close": 12.26,
+   "grey_date": "2022-04-28",
+   "grey_venue": "Phillip",
+   "art_offer": 11.9,
+   "title": "東原仁知服務暗盤收高逾3%,每手賺72元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220428405/",
+   "others": {
+    "Bright Smart live": 12.38
+   },
+   "grey_pct": 3.03
+  },
+  {
+   "code": "2361",
+   "name": "中康科技控股",
+   "offer": 5.36,
+   "grey_close": 4.6,
+   "grey_date": "2022-07-11",
+   "grey_venue": "Phillip",
+   "art_offer": 5.36,
+   "title": "中康控股暗盤潛水逾14%,每手蝕380元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220711404/",
+   "others": {
+    "Bright Smart live": 4.5
+   },
+   "grey_pct": -14.18
+  },
+  {
+   "code": "2367",
+   "name": "巨子生物",
+   "offer": 24.3,
+   "grey_close": 25.75,
+   "grey_date": "2022-11-03",
+   "grey_venue": "Phillip",
+   "art_offer": 24.3,
+   "title": "巨子生物暗盤收高近6%,每手賺290元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221103403/",
+   "others": {
+    "Bright Smart live": 25.95
+   },
+   "grey_pct": 5.97
+  },
+  {
+   "code": "2370",
+   "name": "力高健康生活",
+   "offer": 4.1,
+   "grey_close": 4.57,
+   "grey_date": "2022-03-30",
+   "grey_venue": "Phillip",
+   "art_offer": 4.1,
+   "title": "力高健康生活暗盤收高逾11%,每手賺235元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220330213/",
+   "others": {
+    "Bright Smart live": 4.55
+   },
+   "grey_pct": 11.46
+  },
+  {
+   "code": "2372",
+   "name": "偉立控股",
+   "offer": 0.63,
+   "grey_close": 0.65,
+   "grey_date": "2022-06-29",
+   "grey_venue": "Phillip",
+   "art_offer": 0.63,
+   "title": "偉立控股(2372)暗盤收高逾3%,每手賺80元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220629406/",
+   "others": {
+    "Bright Smart live": 0.68
+   },
+   "grey_pct": 3.17
+  },
+  {
+   "code": "2373",
+   "name": "美麗田園醫療健康",
+   "offer": 19.32,
+   "grey_close": 28.65,
+   "grey_date": "2023-01-13",
+   "grey_venue": "Phillip",
+   "art_offer": 19.32,
+   "title": "美麗田園醫療健康暗盤收高48%,每手賺4665元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230113416/",
+   "others": {
+    "Bright Smart live": 28.75
+   },
+   "grey_pct": 48.29
+  },
+  {
+   "code": "2376",
+   "name": "魯商服務",
+   "offer": 5.92,
+   "grey_close": 5.64,
+   "grey_date": "2022-07-07",
+   "grey_venue": "Phillip",
+   "art_offer": 5.92,
+   "title": "魯商服務暗盤潛水近5%,每手蝕140元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220707365/",
+   "others": {
+    "Bright Smart live": 5.55
+   },
+   "grey_pct": -4.73
+  },
+  {
+   "code": "2385",
+   "name": "讀書郎",
+   "offer": 7.6,
+   "grey_close": 7.37,
+   "grey_date": "2022-07-11",
+   "grey_venue": "Phillip",
+   "art_offer": 7.6,
+   "title": "讀書郎(02385)暗盤潛水逾3%,每手蝕92元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220711405/",
+   "others": {
+    "Bright Smart live": 7.5
+   },
+   "grey_pct": -3.03
+  },
+  {
+   "code": "2390",
+   "name": "知乎－Ｗ",
+   "offer": 32.06,
+   "grey_close": 24.8,
+   "grey_date": "2022-04-21",
+   "grey_venue": "Phillip",
+   "art_offer": 32.06,
+   "title": "知乎-W暗盤潛水近23%,每手蝕726元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220421409/",
+   "others": {
+    "Bright Smart live": 25.2
+   },
+   "grey_pct": -22.65
+  },
+  {
+   "code": "2391",
+   "name": "塗鴉智能－Ｗ",
+   "offer": 19.3,
+   "grey_close": 19.62,
+   "grey_date": "2022-07-04",
+   "grey_venue": "Phillip",
+   "art_offer": 19.3,
+   "title": "塗鴉智能-W暗盤收高近2%,每手賺64元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220704408/",
+   "others": {
+    "Bright Smart live": 19.62
+   },
+   "grey_pct": 1.66
+  },
+  {
+   "code": "2392",
+   "name": "玄武雲",
+   "offer": 6.24,
+   "grey_close": 6.2,
+   "grey_date": "2022-07-07",
+   "grey_venue": "Phillip",
+   "art_offer": 6.24,
+   "title": "玄武雲(2392)暗盤潛水少於1%,每手蝕20元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220707366/",
+   "others": {
+    "Bright Smart live": 6.05
+   },
+   "grey_pct": -0.64
+  },
+  {
+   "code": "2402",
+   "name": "億華通",
+   "offer": 60.0,
+   "grey_close": 60.05,
+   "grey_date": "2023-01-11",
+   "grey_venue": "Phillip",
+   "art_offer": 60.0,
+   "title": "億華通(02402)暗盤收高少於1%,每手賺3元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230111424/",
+   "others": {
+    "Bright Smart live": 60.0
+   },
+   "grey_pct": 0.08
+  },
+  {
+   "code": "2405",
+   "name": "力盟科技",
+   "offer": 0.7,
+   "grey_close": 0.81,
+   "grey_date": "2023-03-30",
+   "grey_venue": "Phillip",
+   "art_offer": 0.7,
+   "title": "力盟科技暗盤收高近16%,每手賺440元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230330204/",
+   "others": {
+    "Bright Smart live": 0.83
+   },
+   "grey_pct": 15.71
+  },
+  {
+   "code": "2407",
+   "name": "高視醫療",
+   "offer": 51.4,
+   "grey_close": 49.6,
+   "grey_date": "2022-12-09",
+   "grey_venue": "Phillip",
+   "art_offer": 51.4,
+   "title": "高視醫療暗盤潛水近4%,每手蝕180元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221209199/",
+   "others": {
+    "Bright Smart live": 49.25
+   },
+   "grey_pct": -3.5
+  },
+  {
+   "code": "2409",
+   "name": "洲際船務",
+   "offer": 3.27,
+   "grey_close": 3.28,
+   "grey_date": "2023-03-28",
+   "grey_venue": "Phillip",
+   "art_offer": 3.27,
+   "title": "洲際船務暗盤收高少於1%,每手賺10元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230328180/",
+   "others": {
+    "Bright Smart live": 3.27
+   },
+   "grey_pct": 0.31
+  },
+  {
+   "code": "2410",
+   "name": "同源康醫藥－Ｂ",
+   "offer": 12.1,
+   "grey_close": 13.2,
+   "grey_date": "2024-08-19",
+   "grey_venue": "Phillip",
+   "art_offer": 12.1,
+   "title": "同源康醫藥-B暗盤收高逾9%,每手賺550元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240819189/",
+   "others": {},
+   "grey_pct": 9.09
+  },
+  {
+   "code": "2411",
+   "name": "百果園集團",
+   "offer": 5.6,
+   "grey_close": 6.52,
+   "grey_date": "2023-01-13",
+   "grey_venue": "Phillip",
+   "art_offer": 5.6,
+   "title": "百果園集團暗盤收高逾16%,每手賺460元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230113414/",
+   "others": {
+    "Bright Smart live": 6.4
+   },
+   "grey_pct": 16.43
+  },
+  {
+   "code": "2415",
+   "name": "梅斯健康",
+   "offer": 9.1,
+   "grey_close": 8.85,
+   "grey_date": "2023-04-26",
+   "grey_venue": "Phillip",
+   "art_offer": 9.1,
+   "title": "梅斯健康(2415)暗盤潛水近3%,每手蝕63元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230426381/",
+   "others": {
+    "Bright Smart live": 8.85
+   },
+   "grey_pct": -2.75
+  },
+  {
+   "code": "2416",
+   "name": "易點雲",
+   "offer": 10.19,
+   "grey_close": 9.78,
+   "grey_date": "2023-05-24",
+   "grey_venue": "Phillip",
+   "art_offer": 10.19,
+   "title": "易點雲(2416)暗盤潛水逾4%,每手蝕205元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230524386/",
+   "others": {},
+   "grey_pct": -4.02
+  },
+  {
+   "code": "2418",
+   "name": "德銀天下",
+   "offer": 1.8,
+   "grey_close": 1.71,
+   "grey_date": "2022-07-14",
+   "grey_venue": "Phillip",
+   "art_offer": 1.8,
+   "title": "德銀天下(2418)暗盤潛水5%,每手蝕135元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220714384/",
+   "others": {
+    "Bright Smart live": 1.72
+   },
+   "grey_pct": -5.0
+  },
+  {
+   "code": "2419",
+   "name": "德康農牧",
+   "offer": 36.95,
+   "grey_close": 37.1,
+   "grey_date": "2023-12-05",
+   "grey_venue": "Phillip",
+   "art_offer": 36.95,
+   "title": "德康農牧暗盤收高少於1%,每手賺15元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20231205425/",
+   "others": {},
+   "grey_pct": 0.41
+  },
+  {
+   "code": "2420",
+   "name": "子不語",
+   "offer": 7.86,
+   "grey_close": 8.5,
+   "grey_date": "2022-11-10",
+   "grey_venue": "Phillip",
+   "art_offer": 7.86,
+   "title": "子不語(2420)暗盤收高逾8%,每手賺320元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221110405/",
+   "others": {
+    "Bright Smart live": 8.1
+   },
+   "grey_pct": 8.14
+  },
+  {
+   "code": "2422",
+   "name": "潤歌互動",
+   "offer": 0.64,
+   "grey_close": 0.98,
+   "grey_date": "2022-10-14",
+   "grey_venue": "Phillip",
+   "art_offer": 0.64,
+   "title": "潤歌互動暗盤收高逾53%,每手賺1360元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221014984/",
+   "others": {
+    "Bright Smart live": 0.97
+   },
+   "grey_pct": 53.12
+  },
+  {
+   "code": "2425",
+   "name": "澳亞集團",
+   "offer": 6.4,
+   "grey_close": 6.34,
+   "grey_date": "2022-12-29",
+   "grey_venue": "Phillip",
+   "art_offer": 6.4,
+   "title": "澳亞集團暗盤潛水少於1%,每手蝕60元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221229386/",
+   "others": {
+    "Bright Smart live": 6.6
+   },
+   "grey_pct": -0.94
+  },
+  {
+   "code": "2427",
+   "name": "GUANZE MEDICAL",
+   "offer": 0.53,
+   "grey_close": 1.38,
+   "grey_date": "2022-12-28",
+   "grey_venue": "Phillip",
+   "art_offer": 0.53,
+   "title": "GUANZE MEDICAL暗盤每手賺逾千元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221228423/",
+   "others": {
+    "Bright Smart live": 1.38
+   },
+   "grey_pct": 160.38
+  },
+  {
+   "code": "2429",
+   "name": "友寶在線",
+   "offer": 10.35,
+   "grey_close": 12.5,
+   "grey_date": "2023-11-02",
+   "grey_venue": "Phillip",
+   "art_offer": 10.35,
+   "title": "友寶在線暗盤收高近21%,每手賺1075元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20231102396/",
+   "others": {
+    "Bright Smart live": 12.5
+   },
+   "grey_pct": 20.77
+  },
+  {
+   "code": "2433",
+   "name": "中天湖南集團",
+   "offer": 1.18,
+   "grey_close": 2.69,
+   "grey_date": "2023-03-29",
+   "grey_venue": "Phillip",
+   "art_offer": 1.18,
+   "title": "中天湖南集團暗盤收高逾倍,每手賺3020元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230329408/",
+   "others": {
+    "Bright Smart live": 2.69
+   },
+   "grey_pct": 127.97
+  },
+  {
+   "code": "2436",
+   "name": "凌雄科技",
+   "offer": 7.6,
+   "grey_close": 7.9,
+   "grey_date": "2022-11-23",
+   "grey_venue": "Phillip",
+   "art_offer": 7.6,
+   "title": "凌雄科技(2436)暗盤收高近4%,每手賺90元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221123390/",
+   "others": {
+    "Bright Smart live": 7.95
+   },
+   "grey_pct": 3.95
+  },
+  {
+   "code": "2438",
+   "name": "出門問問",
+   "offer": 3.8,
+   "grey_close": 3.11,
+   "grey_date": "2024-04-23",
+   "grey_venue": "Phillip",
+   "art_offer": 3.8,
+   "title": "出門問問暗盤潛水逾18%,每手蝕690元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240423425/",
+   "others": {
+    "Bright Smart live": 3.15
+   },
+   "grey_pct": -18.16
+  },
+  {
+   "code": "2439",
+   "name": "中寶新材",
+   "offer": 1.05,
+   "grey_close": 0.62,
+   "grey_date": "2023-03-30",
+   "grey_venue": "Phillip",
+   "art_offer": 1.05,
+   "title": "中寶新材暗盤潛水近41%,每手蝕860元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230330205/",
+   "others": {
+    "Bright Smart live": 0.65
+   },
+   "grey_pct": -40.95
+  },
+  {
+   "code": "2440",
+   "name": "迷策略",
+   "offer": 2.73,
+   "grey_close": 2.29,
+   "grey_date": "2022-12-09",
+   "grey_venue": "Phillip",
+   "art_offer": 2.73,
+   "title": "濠暻科技暗盤潛水逾16%,每手蝕440元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221209197/",
+   "others": {
+    "Bright Smart live": 2.32
+   },
+   "grey_pct": -16.12
+  },
+  {
+   "code": "2442",
+   "name": "怡俊集團控股",
+   "offer": 1.28,
+   "grey_close": 0.9,
+   "grey_date": "2023-05-08",
+   "grey_venue": "Phillip",
+   "art_offer": 1.28,
+   "title": "怡俊集團控股暗盤潛水近30%,每手蝕760元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230508412/",
+   "others": {
+    "Bright Smart live": 0.91
+   },
+   "grey_pct": -29.69
+  },
+  {
+   "code": "2450",
+   "name": "淮北綠金股份",
+   "offer": 1.91,
+   "grey_close": 1.17,
+   "grey_date": "2023-01-19",
+   "grey_venue": "Phillip",
+   "art_offer": 1.91,
+   "title": "淮北綠金股份暗盤潛水近39%,每手蝕1110元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230119296/",
+   "others": {
+    "Bright Smart live": 1.15
+   },
+   "grey_pct": -38.74
+  },
+  {
+   "code": "2451",
+   "name": "綠源集團控股",
+   "offer": 7.37,
+   "grey_close": 7.58,
+   "grey_date": "2023-10-11",
+   "grey_venue": "Phillip",
+   "art_offer": 7.37,
+   "title": "綠源集團控股暗盤收高近3%,每手賺105元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20231011405/",
+   "others": {
+    "Bright Smart live": 7.6
+   },
+   "grey_pct": 2.85
+  },
+  {
+   "code": "2453",
+   "name": "美中嘉和",
+   "offer": 14.28,
+   "grey_close": 11.02,
+   "grey_date": "2024-01-08",
+   "grey_venue": "Phillip",
+   "art_offer": 14.28,
+   "title": "美中嘉和暗盤潛水近23%,每手蝕652元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240108406/",
+   "others": {
+    "Bright Smart live": 11.6
+   },
+   "grey_pct": -22.83
+  },
+  {
+   "code": "2455",
+   "name": "潤華服務",
+   "offer": 1.7,
+   "grey_close": 1.3,
+   "grey_date": "2023-01-16",
+   "grey_venue": "Phillip",
+   "art_offer": 1.7,
+   "title": "潤華服務暗盤潛水近24%,每手蝕800元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230116180/",
+   "others": {
+    "Bright Smart live": 1.33
+   },
+   "grey_pct": -23.53
+  },
+  {
+   "code": "2457",
+   "name": "步陽國際",
+   "offer": 0.5,
+   "grey_close": 0.4,
+   "grey_date": "2022-12-14",
+   "grey_venue": "Phillip",
+   "art_offer": 0.5,
+   "title": "步陽國際暗盤潛水20%,每手蝕500元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221214421/",
+   "others": {
+    "Bright Smart live": 0.395
+   },
+   "grey_pct": -20.0
+  },
+  {
+   "code": "2458",
+   "name": "望塵科技控股",
+   "offer": 6.5,
+   "grey_close": 5.61,
+   "grey_date": "2023-01-13",
+   "grey_venue": "Phillip",
+   "art_offer": 6.5,
+   "title": "望塵科技控股暗盤潛水近14%,每手蝕356元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230113415/",
+   "others": {
+    "Bright Smart live": 5.67
+   },
+   "grey_pct": -13.69
+  },
+  {
+   "code": "2459",
+   "name": "昇能集團",
+   "offer": 1.6,
+   "grey_close": 1.65,
+   "grey_date": "2023-01-16",
+   "grey_venue": "Phillip",
+   "art_offer": 1.6,
+   "title": "昇能集團暗盤收高逾3%,每手賺100元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230116181/",
+   "others": {
+    "Bright Smart live": 1.65
+   },
+   "grey_pct": 3.12
+  },
+  {
+   "code": "2469",
+   "name": "粉筆",
+   "offer": 9.9,
+   "grey_close": 10.4,
+   "grey_date": "2023-01-06",
+   "grey_venue": "Phillip",
+   "art_offer": 9.9,
+   "title": "粉筆(02469)暗盤收高逾5%,每手賺250元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230106424/",
+   "others": {
+    "Bright Smart live": 10.34
+   },
+   "grey_pct": 5.05
+  },
+  {
+   "code": "2473",
+   "name": "喜相逢集團",
+   "offer": 1.1,
+   "grey_close": 2.12,
+   "grey_date": "2023-11-08",
+   "grey_venue": "Phillip",
+   "art_offer": 1.1,
+   "title": "喜相逢集團暗盤收高近93%,每手賺2550元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20231108393/",
+   "others": {
+    "Bright Smart live": 2.1
+   },
+   "grey_pct": 92.73
+  },
+  {
+   "code": "2479",
+   "name": "天聚地合",
+   "offer": 83.33,
+   "grey_close": 110.5,
+   "grey_date": "2024-06-27",
+   "grey_venue": "Phillip",
+   "art_offer": 83.33,
+   "title": "天聚地合暗盤收高近33%,每手賺1359元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240627200/",
+   "others": {
+    "Bright Smart live": 110.0
+   },
+   "grey_pct": 32.61
+  },
+  {
+   "code": "2480",
+   "name": "綠竹生物－Ｂ",
+   "offer": 32.8,
+   "grey_close": 31.45,
+   "grey_date": "2023-05-05",
+   "grey_venue": "Phillip",
+   "art_offer": 32.8,
+   "title": "綠竹生物 - B暗盤潛水逾4%,每手蝕270元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230505388/",
+   "others": {
+    "Bright Smart live": 31.2
+   },
+   "grey_pct": -4.12
+  },
+  {
+   "code": "2481",
+   "name": "雙良睿能",
+   "offer": 3.6,
+   "grey_close": 3.49,
+   "grey_date": "2023-07-07",
+   "grey_venue": "Phillip",
+   "art_offer": 3.6,
+   "title": "慧居科技暗盤潛水逾3%,每手蝕110元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230707381/",
+   "others": {
+    "Bright Smart live": 3.55
+   },
+   "grey_pct": -3.06
+  },
+  {
+   "code": "2482",
+   "name": "維天運通",
+   "offer": 2.9,
+   "grey_close": 2.91,
+   "grey_date": "2023-03-08",
+   "grey_venue": "Phillip",
+   "art_offer": 2.9,
+   "title": "維天運通暗盤收高少於1%,每手賺10元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230308406/",
+   "others": {
+    "Bright Smart live": 2.84
+   },
+   "grey_pct": 0.34
+  },
+  {
+   "code": "2486",
+   "name": "普樂師集團控股",
+   "offer": 10.6,
+   "grey_close": 10.2,
+   "grey_date": "2023-05-10",
+   "grey_venue": "Phillip",
+   "art_offer": 10.6,
+   "title": "普樂師集團控股暗盤潛水近4%,每手蝕80元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230510405/",
+   "others": {},
+   "grey_pct": -3.77
+  },
+  {
+   "code": "2487",
+   "name": "科笛－Ｂ",
+   "offer": 21.85,
+   "grey_close": 21.5,
+   "grey_date": "2023-06-09",
+   "grey_venue": "Phillip",
+   "art_offer": 21.85,
+   "title": "科笛-B(2487)暗盤潛水近2%,每手蝕70元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230609306/",
+   "others": {},
+   "grey_pct": -1.6
+  },
+  {
+   "code": "2490",
+   "name": "樂艙控股",
+   "offer": 5.13,
+   "grey_close": 5.07,
+   "grey_date": "2023-09-22",
+   "grey_venue": "Phillip",
+   "art_offer": 5.13,
+   "title": "樂艙物流(2490)暗盤潛水逾1%,每手蝕60元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230922413/",
+   "others": {
+    "Bright Smart live": 4.95
+   },
+   "grey_pct": -1.17
+  },
+  {
+   "code": "2495",
+   "name": "聲通科技",
+   "offer": 152.1,
+   "grey_close": 125.0,
+   "grey_date": "2024-07-09",
+   "grey_venue": "Phillip",
+   "art_offer": 152.1,
+   "title": "聲通科技暗盤潛水近18%,每手蝕542元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240709410/",
+   "others": {
+    "Bright Smart live": 126.0
+   },
+   "grey_pct": -17.82
+  },
+  {
+   "code": "2496",
+   "name": "友芝友生物－Ｂ",
+   "offer": 16.0,
+   "grey_close": 16.6,
+   "grey_date": "2023-09-22",
+   "grey_venue": "Phillip",
+   "art_offer": 16.0,
+   "title": "友芝友生物-B暗盤收高近4%,每手賺120元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230922414/",
+   "others": {
+    "Bright Smart live": 16.6
+   },
+   "grey_pct": 3.75
+  },
+  {
+   "code": "2497",
+   "name": "富景中國控股",
+   "offer": 1.08,
+   "grey_close": 2.2,
+   "grey_date": "2024-03-27",
+   "grey_venue": "Phillip",
+   "art_offer": 1.08,
+   "title": "富景中國控股暗盤收高逾倍,每手賺2240元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240327066/",
+   "others": {
+    "Bright Smart live": 2.26
+   },
+   "grey_pct": 103.7
+  },
+  {
+   "code": "2498",
+   "name": "速騰聚創",
+   "offer": 43.0,
+   "grey_close": 42.0,
+   "grey_date": "2024-01-04",
+   "grey_venue": "Phillip",
+   "art_offer": 43.0,
+   "title": "速騰聚創暗盤潛水逾2%,每手蝕100元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240104358/",
+   "others": {
+    "Bright Smart live": 41.8
+   },
+   "grey_pct": -2.33
+  },
+  {
+   "code": "2499",
+   "name": "佛朗斯股份",
+   "offer": 14.28,
+   "grey_close": 15.5,
+   "grey_date": "2023-11-09",
+   "grey_venue": "Phillip",
+   "art_offer": 14.28,
+   "title": "廣州佛朗斯暗盤收高近9%,每手賺244元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20231109381/",
+   "others": {
+    "Bright Smart live": 15.16
+   },
+   "grey_pct": 8.54
+  },
+  {
+   "code": "2501",
+   "name": "邁越科技",
+   "offer": 1.18,
+   "grey_close": 1.42,
+   "grey_date": "2023-10-10",
+   "grey_venue": "Phillip",
+   "art_offer": 1.18,
+   "title": "邁越科技暗盤收高逾20%,每手賺480元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20231010394/",
+   "others": {
+    "Bright Smart live": 1.33
+   },
+   "grey_pct": 20.34
+  },
+  {
+   "code": "2502",
+   "name": "金源氫化",
+   "offer": 1.2,
+   "grey_close": 1.1,
+   "grey_date": "2023-12-19",
+   "grey_venue": "Phillip",
+   "art_offer": 1.2,
+   "title": "金源氫化暗盤潛水逾8%,每手蝕200元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20231219390/",
+   "others": {
+    "Bright Smart live": 1.1
+   },
+   "grey_pct": -8.33
+  },
+  {
+   "code": "2503",
+   "name": "中深建業",
+   "offer": 1.0,
+   "grey_close": 0.88,
+   "grey_date": "2024-01-08",
+   "grey_venue": "Phillip",
+   "art_offer": 1.0,
+   "title": "中深建業暗盤潛水12%,每手蝕480元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240108407/",
+   "others": {
+    "Bright Smart live": 0.83
+   },
+   "grey_pct": -12.0
+  },
+  {
+   "code": "2509",
+   "name": "荃信生物－Ｂ",
+   "offer": 19.8,
+   "grey_close": 27.35,
+   "grey_date": "2024-03-19",
+   "grey_venue": "Phillip",
+   "art_offer": 19.8,
+   "title": "荃信生物-B暗盤收高逾38%,每手賺1510元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240319367/",
+   "others": {
+    "Bright Smart live": 27.2
+   },
+   "grey_pct": 38.13
+  },
+  {
+   "code": "2511",
+   "name": "君聖泰醫藥－Ｂ",
+   "offer": 11.5,
+   "grey_close": 11.9,
+   "grey_date": "2023-12-21",
+   "grey_venue": "Phillip",
+   "art_offer": 11.5,
+   "title": "君聖泰醫藥-B暗盤收高逾3%,每手賺200元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20231221384/",
+   "others": {
+    "Bright Smart live": 11.96
+   },
+   "grey_pct": 3.48
+  },
+  {
+   "code": "2512",
+   "name": "雲工場",
+   "offer": 4.6,
+   "grey_close": 4.6,
+   "grey_date": "2024-06-13",
+   "grey_venue": "Phillip",
+   "art_offer": null,
+   "title": "雲工場(02512)暗盤平收",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240613405/",
+   "others": {
+    "Bright Smart live": 4.53
+   },
+   "grey_pct": 0.0
+  },
+  {
+   "code": "2515",
+   "name": "天津建發",
+   "offer": 2.5,
+   "grey_close": 1.86,
+   "grey_date": "2024-04-22",
+   "grey_venue": "Phillip",
+   "art_offer": 2.5,
+   "title": "天津建發暗盤潛水近26%,每手蝕1280元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240422878/",
+   "others": {
+    "Bright Smart live": 1.93
+   },
+   "grey_pct": -25.6
+  },
+  {
+   "code": "2517",
+   "name": "鍋圈",
+   "offer": 5.98,
+   "grey_close": 5.97,
+   "grey_date": "2023-11-01",
+   "grey_venue": "Phillip",
+   "art_offer": 5.98,
+   "title": "鍋圈(02517)暗盤潛水少於1%,每手蝕4元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20231101396/",
+   "others": {
+    "Bright Smart live": 6.11
+   },
+   "grey_pct": -0.17
+  },
+  {
+   "code": "2518",
+   "name": "汽車之家－Ｓ",
+   "offer": 176.3,
+   "open_only": true,
+   "grey_open": 183.3,
+   "grey_date": "2021-03-12",
+   "grey_venue": "Phillip",
+   "art_offer": 176.3,
+   "title": "汽車之家暗盤開報183.3元,高招股價3.97%",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210312254/",
+   "grey_open_pct": 3.97
+  },
+  {
+   "code": "2520",
+   "name": "山西安裝",
+   "offer": 2.18,
+   "grey_close": 2.14,
+   "grey_date": "2023-11-21",
+   "grey_venue": "Phillip",
+   "art_offer": 2.18,
+   "title": "山西安裝(2520)暗盤潛水近2%,每手蝕80元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20231121387/",
+   "others": {
+    "Bright Smart live": 2.17
+   },
+   "grey_pct": -1.83
+  },
+  {
+   "code": "2522",
+   "name": "一脈陽光",
+   "offer": 14.98,
+   "grey_close": 15.22,
+   "grey_date": "2024-06-06",
+   "grey_venue": "Phillip",
+   "art_offer": 14.98,
+   "title": "一脈陽光暗盤收高近2%,每手賺120元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240606411/",
+   "others": {
+    "Bright Smart live": 14.96
+   },
+   "grey_pct": 1.6
+  },
+  {
+   "code": "2529",
+   "name": "泓盈城市服務",
+   "offer": 3.2,
+   "grey_close": 3.57,
+   "grey_date": "2024-05-16",
+   "grey_venue": "Phillip",
+   "art_offer": 3.2,
+   "title": "泓盈城市服務暗盤收高近12%,每手賺370元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240516206/",
+   "others": {
+    "Bright Smart live": 3.54
+   },
+   "grey_pct": 11.56
+  },
+  {
+   "code": "2531",
+   "name": "廣聯科技控股",
+   "offer": 4.7,
+   "grey_close": 5.5,
+   "grey_date": "2024-07-12",
+   "grey_venue": "Phillip",
+   "art_offer": 4.7,
+   "title": "廣聯科技控股暗盤收高逾17%,每手賺400元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240712978/",
+   "others": {
+    "Bright Smart live": 5.53
+   },
+   "grey_pct": 17.02
+  },
+  {
+   "code": "2535",
+   "name": "泓基集團",
+   "offer": 0.25,
+   "grey_close": 0.66,
+   "grey_date": "2024-03-07",
+   "grey_venue": "Phillip",
+   "art_offer": 0.25,
+   "title": "泓基集團暗盤收高逾倍,每手賺4100元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240307987/",
+   "others": {
+    "Bright Smart live": 0.65
+   },
+   "grey_pct": 164.0
+  },
+  {
+   "code": "2536",
+   "name": "百樂皇宮",
+   "offer": 2.6,
+   "grey_close": 2.9,
+   "grey_date": "2024-03-25",
+   "grey_venue": "Phillip",
+   "art_offer": 2.6,
+   "title": "百樂皇宮暗盤收高近12%,每手賺300元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240325173/",
+   "others": {
+    "Bright Smart live": 2.89
+   },
+   "grey_pct": 11.54
+  },
+  {
+   "code": "2540",
+   "name": "樂思集團",
+   "offer": 1.1,
+   "grey_close": 0.92,
+   "grey_date": "2024-03-07",
+   "grey_venue": "Phillip",
+   "art_offer": 1.1,
+   "title": "樂思集團暗盤潛水逾16%,每手蝕450元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240307986/",
+   "others": {
+    "Bright Smart live": 1.03
+   },
+   "grey_pct": -16.36
+  },
+  {
+   "code": "2550",
+   "name": "宜搜科技",
+   "offer": 5.8,
+   "grey_close": 8.35,
+   "grey_date": "2024-06-06",
+   "grey_venue": "Phillip",
+   "art_offer": 5.8,
+   "title": "宜搜科技暗盤收高近44%,每手賺1275元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240606410/",
+   "others": {
+    "Bright Smart live": 8.1
+   },
+   "grey_pct": 43.97
+  },
+  {
+   "code": "2555",
+   "name": "茶百道",
+   "offer": 17.5,
+   "grey_close": 15.26,
+   "grey_date": "2024-04-22",
+   "grey_venue": "Phillip",
+   "art_offer": 17.5,
+   "title": "茶百道暗盤潛水近13%,每手蝕448元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240422431/",
+   "others": {
+    "Bright Smart live": 15.02
+   },
+   "grey_pct": -12.8
+  },
+  {
+   "code": "2556",
+   "name": "邁富時",
+   "offer": 43.6,
+   "grey_close": 46.0,
+   "grey_date": "2024-05-14",
+   "grey_venue": "Phillip",
+   "art_offer": 43.6,
+   "title": "邁富時(2556)暗盤收高近6%,每手賺240元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240514983/",
+   "others": {
+    "Bright Smart live": 45.0
+   },
+   "grey_pct": 5.5
+  },
+  {
+   "code": "2559",
+   "name": "嘀嗒出行－ＰＦ",
+   "offer": 6.0,
+   "grey_close": 5.58,
+   "grey_date": "2024-06-27",
+   "grey_venue": "Phillip",
+   "art_offer": 6.0,
+   "title": "嘀嗒出行(2559)暗盤潛水7%,每手蝕210元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240627199/",
+   "others": {
+    "Bright Smart live": 5.5
+   },
+   "grey_pct": -7.0
+  },
+  {
+   "code": "2598",
+   "name": "連連數字",
+   "offer": 10.22,
+   "grey_close": 9.88,
+   "grey_date": "2024-03-27",
+   "grey_venue": "Phillip",
+   "art_offer": 10.22,
+   "title": "連連數字暗盤潛水逾3%,每手蝕170元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240327065/",
+   "others": {
+    "Bright Smart live": 10.0
+   },
+   "grey_pct": -3.33
+  },
+  {
+   "code": "2602",
+   "name": "萬物雲",
+   "offer": 49.35,
+   "grey_close": 45.3,
+   "grey_date": "2022-09-28",
+   "grey_venue": "Phillip",
+   "art_offer": 49.35,
+   "title": "萬物雲(2602)暗盤潛水逾8%,每手蝕405元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220928174/",
+   "others": {},
+   "grey_pct": -8.21
+  },
+  {
+   "code": "2618",
+   "name": "京東物流",
+   "offer": 40.36,
+   "grey_close": 48.55,
+   "grey_date": "2021-05-27",
+   "grey_venue": "Phillip",
+   "art_offer": 40.36,
+   "title": "京東物流暗盤收報48.55元,一手帳面賺819元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210527575/",
+   "others": {
+    "Futu close": 52.35
+   },
+   "grey_pct": 20.29
+  },
+  {
+   "code": "2648",
+   "name": "安井食品",
+   "offer": 60.0,
+   "grey_close": 59.6,
+   "grey_date": "2025-07-03",
+   "grey_venue": "Phillip",
+   "art_offer": 60.0,
+   "title": "安井食品暗盤潛水少於1%,每手蝕40元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20250703277/",
+   "others": {
+    "Bright Smart live": 59.9
+   },
+   "grey_pct": -0.67
+  },
+  {
+   "code": "3650",
+   "name": "KEEP",
+   "offer": 28.92,
+   "grey_close": 29.5,
+   "grey_date": "2023-07-11",
+   "grey_venue": "Phillip",
+   "art_offer": 28.92,
+   "title": "KEEP(3650)暗盤收高逾2%,每手賺58元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230711386/",
+   "others": {
+    "Bright Smart live": 30.0
+   },
+   "grey_pct": 2.01
+  },
+  {
+   "code": "3660",
+   "name": "奇富科技－Ｓ",
+   "offer": 50.03,
+   "grey_close": 50.45,
+   "grey_date": "2022-11-28",
+   "grey_venue": "Phillip",
+   "art_offer": 50.03,
+   "title": "360數科-S暗盤收高少於1%,每手賺21元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221128383/",
+   "others": {},
+   "grey_pct": 0.84
+  },
+  {
+   "code": "3931",
+   "name": "中創新航",
+   "offer": 38.0,
+   "grey_close": 38.0,
+   "grey_date": "2022-10-05",
+   "grey_venue": "Phillip",
+   "art_offer": null,
+   "title": "中創新航(03931)暗盤平收",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221005970/",
+   "others": {
+    "Bright Smart live": 37.95
+   },
+   "grey_pct": 0.0
+  },
+  {
+   "code": "6086",
+   "name": "方舟健客",
+   "offer": 8.18,
+   "grey_close": 5.03,
+   "grey_date": "2024-07-08",
+   "grey_venue": "Phillip",
+   "art_offer": 8.18,
+   "title": "方舟健客暗盤潛水近39%,每手蝕1575元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240708428/",
+   "others": {
+    "Bright Smart live": 5.03
+   },
+   "grey_pct": -38.51
+  },
+  {
+   "code": "6127",
+   "name": "昭衍新藥",
+   "offer": 151.0,
+   "open_only": true,
+   "grey_open": 142.0,
+   "grey_date": "2021-02-25",
+   "grey_venue": "Phillip",
+   "art_offer": 151.0,
+   "title": "昭衍新藥暗盤開報142元,低招股價6%",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210225254/",
+   "grey_open_pct": -5.96
+  },
+  {
+   "code": "6181",
+   "name": "老鋪黃金",
+   "offer": 40.5,
+   "grey_close": 61.3,
+   "grey_date": "2024-06-27",
+   "grey_venue": "Phillip",
+   "art_offer": 40.5,
+   "title": "老鋪黃金暗盤收高逾51%,每手賺2080元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240627198/",
+   "others": {
+    "Bright Smart live": 61.2
+   },
+   "grey_pct": 51.36
+  },
+  {
+   "code": "6601",
+   "name": "朝雲集團",
+   "offer": 9.2,
+   "grey_close": 7.36,
+   "grey_date": "2021-03-09",
+   "grey_venue": "Phillip",
+   "art_offer": 9.2,
+   "title": "朝雲集團暗盤收報7.36元,每手蝕920元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210309537/",
+   "others": {
+    "Futu close": 8.63
+   },
+   "grey_pct": -20.0
+  },
+  {
+   "code": "6610",
+   "name": "飛天雲動",
+   "offer": 2.21,
+   "grey_close": 2.11,
+   "grey_date": "2022-10-17",
+   "grey_venue": "Phillip",
+   "art_offer": 2.21,
+   "title": "飛天雲動暗盤潛水近5%,每手蝕100元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221017404/",
+   "others": {
+    "Bright Smart live": 2.08
+   },
+   "grey_pct": -4.52
+  },
+  {
+   "code": "6611",
+   "name": "三巽集團",
+   "offer": 4.75,
+   "grey_close": 4.78,
+   "grey_date": "2021-07-16",
+   "grey_venue": "Phillip",
+   "art_offer": 4.75,
+   "title": "三巽集團暗盤收高0.6%,每手帳面賺30元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210716537/",
+   "others": {
+    "Futu close": 4.73
+   },
+   "grey_pct": 0.63
+  },
+  {
+   "code": "6616",
+   "name": "環球新材國際",
+   "offer": 3.25,
+   "grey_close": 3.95,
+   "grey_date": "2021-07-15",
+   "grey_venue": "Phillip",
+   "art_offer": 3.25,
+   "title": "環球新材暗盤收高21.5%,每手帳面賺700元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210715929/",
+   "others": {
+    "Futu close": 4.37
+   },
+   "grey_pct": 21.54
+  },
+  {
+   "code": "6622",
+   "name": "兆科眼科－Ｂ",
+   "offer": 16.8,
+   "open_only": true,
+   "grey_open": 16.68,
+   "grey_date": "2021-04-28",
+   "grey_venue": "Phillip",
+   "art_offer": 16.8,
+   "title": "兆科眼科暗盤現報16.74元,低招股價0.36%",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210428251/",
+   "grey_open_pct": -0.71
+  },
+  {
+   "code": "6628",
+   "name": "創勝集團醫藥－Ｂ",
+   "offer": 16.0,
+   "grey_close": 13.16,
+   "grey_date": "2021-09-28",
+   "grey_venue": "Phillip",
+   "art_offer": 16.0,
+   "title": "創勝集團暗盤潛水17.8%,每手帳面蝕1420元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210928589/",
+   "others": {
+    "Futu close": 13.18
+   },
+   "grey_pct": -17.75
+  },
+  {
+   "code": "6639",
+   "name": "瑞爾集團",
+   "offer": 14.62,
+   "grey_close": 13.84,
+   "grey_date": "2022-03-21",
+   "grey_venue": "Phillip",
+   "art_offer": 14.62,
+   "title": "瑞爾集團暗盤潛水逾5%,每手蝕390元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220321399/",
+   "others": {},
+   "grey_pct": -5.34
+  },
+  {
+   "code": "6657",
+   "name": "百望股份",
+   "offer": 36.0,
+   "grey_close": 34.65,
+   "grey_date": "2024-07-08",
+   "grey_venue": "Phillip",
+   "art_offer": 36.0,
+   "title": "百望股份暗盤潛水近4%,每手蝕135元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240708427/",
+   "others": {
+    "Bright Smart live": 35.0
+   },
+   "grey_pct": -3.75
+  },
+  {
+   "code": "6660",
+   "name": "艾美疫苗",
+   "offer": 16.16,
+   "grey_close": 15.98,
+   "grey_date": "2022-10-05",
+   "grey_venue": "Phillip",
+   "art_offer": 16.16,
+   "title": "艾美疫苗(6660)暗盤潛水逾1%,每手蝕36元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221005969/",
+   "others": {
+    "Bright Smart live": 15.82
+   },
+   "grey_pct": -1.11
+  },
+  {
+   "code": "6661",
+   "name": "湖州燃氣",
+   "offer": 6.08,
+   "grey_close": 5.59,
+   "grey_date": "2022-07-12",
+   "grey_venue": "Phillip",
+   "art_offer": 6.08,
+   "title": "湖州燃氣暗盤潛水逾8%,每手蝕245元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220712389/",
+   "others": {
+    "Bright Smart live": 5.65
+   },
+   "grey_pct": -8.06
+  },
+  {
+   "code": "6667",
+   "name": "美因基因",
+   "offer": 18.0,
+   "grey_close": 19.54,
+   "grey_date": "2022-06-21",
+   "grey_venue": "Phillip",
+   "art_offer": 18.0,
+   "title": "美因基因暗盤收高近9%,每手賺308元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220621404/",
+   "others": {
+    "Bright Smart live": 19.4
+   },
+   "grey_pct": 8.56
+  },
+  {
+   "code": "6668",
+   "name": "星盛商業",
+   "offer": 3.86,
+   "grey_close": 4.69,
+   "grey_date": "2021-01-25",
+   "grey_venue": "Phillip",
+   "art_offer": 3.86,
+   "title": "星盛商業暗盤收報4.69元,每手賺830元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210125939/",
+   "others": {
+    "Futu close": 4.78
+   },
+   "grey_pct": 21.5
+  },
+  {
+   "code": "6669",
+   "name": "先瑞達醫療－Ｂ",
+   "offer": 23.8,
+   "open_only": true,
+   "grey_open": 19.1,
+   "grey_date": "2021-08-23",
+   "grey_venue": "Phillip",
+   "art_offer": 23.8,
+   "title": "先瑞達醫療暗盤開報19.1元,低招股價近兩成",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210823161/",
+   "grey_open_pct": -19.75
+  },
+  {
+   "code": "6682",
+   "name": "範式智能",
+   "offer": 55.6,
+   "grey_close": 61.0,
+   "grey_date": "2023-09-27",
+   "grey_venue": "Phillip",
+   "art_offer": 55.6,
+   "title": "第四範式暗盤收高近10%,每手賺540元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230927389/",
+   "others": {
+    "Bright Smart live": 60.3
+   },
+   "grey_pct": 9.71
+  },
+  {
+   "code": "6683",
+   "name": "巨星傳奇",
+   "offer": 4.25,
+   "grey_close": 5.67,
+   "grey_date": "2023-07-12",
+   "grey_venue": "Phillip",
+   "art_offer": 4.25,
+   "title": "巨星傳奇暗盤收高逾33%,每手賺710元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230712362/",
+   "others": {
+    "Bright Smart live": 5.7
+   },
+   "grey_pct": 33.41
+  },
+  {
+   "code": "6686",
+   "name": "諾亞控股",
+   "offer": 292.0,
+   "grey_close": 275.0,
+   "grey_date": "2022-07-12",
+   "grey_venue": "Phillip",
+   "art_offer": 292.0,
+   "title": "諾亞控股-S暗盤潛水近6%,每手蝕340元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220712387/",
+   "others": {},
+   "grey_pct": -5.82
+  },
+  {
+   "code": "6696",
+   "name": "多想雲",
+   "offer": 1.96,
+   "grey_close": 2.8,
+   "grey_date": "2022-11-08",
+   "grey_venue": "Phillip",
+   "art_offer": 1.96,
+   "title": "多想雲暗盤收高近43%,每手賺1680元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221108409/",
+   "others": {
+    "Bright Smart live": 2.73
+   },
+   "grey_pct": 42.86
+  },
+  {
+   "code": "6698",
+   "name": "星空華文",
+   "offer": 26.5,
+   "grey_close": 36.4,
+   "grey_date": "2022-12-28",
+   "grey_venue": "Phillip",
+   "art_offer": 26.5,
+   "title": "星空華文暗盤收高逾37%,每手賺3960元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221228424/",
+   "others": {
+    "Bright Smart live": 35.3
+   },
+   "grey_pct": 37.36
+  },
+  {
+   "code": "6699",
+   "name": "時代天使",
+   "offer": 173.0,
+   "grey_close": 368.6,
+   "grey_date": "2021-06-15",
+   "grey_venue": "Phillip",
+   "art_offer": 173.0,
+   "title": "時代天使暗盤收升1.13倍,每手賺3.9萬元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210615939/",
+   "others": {
+    "Futu close": 368.0
+   },
+   "grey_pct": 113.06
+  },
+  {
+   "code": "6821",
+   "name": "凱萊英",
+   "offer": 388.0,
+   "open_only": true,
+   "grey_open": 392.0,
+   "grey_date": "2021-12-09",
+   "grey_venue": "Phillip",
+   "art_offer": 388.0,
+   "title": "凱萊英暗盤高開逾1%,每手賺400元",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20211209272/",
+   "grey_open_pct": 1.03
+  },
+  {
+   "code": "6909",
+   "name": "百得利控股",
+   "offer": 4.4,
+   "grey_close": 5.78,
+   "grey_date": "2021-07-14",
+   "grey_venue": "Phillip",
+   "art_offer": 4.4,
+   "title": "百得利暗盤收高逾31%,每手賺1380元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210714539/",
+   "others": {
+    "Futu close": 5.7
+   },
+   "grey_pct": 31.36
+  },
+  {
+   "code": "6913",
+   "name": "華南職業教育",
+   "offer": 1.59,
+   "grey_close": 1.49,
+   "grey_date": "2021-07-12",
+   "grey_venue": "Phillip",
+   "art_offer": 1.59,
+   "title": "華南職業教育暗盤收市潛水6.3%,每手蝕200元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210712577/",
+   "others": {
+    "Futu close": 1.51
+   },
+   "grey_pct": -6.29
+  },
+  {
+   "code": "6922",
+   "name": "康灃生物－Ｂ",
+   "offer": 18.9,
+   "grey_close": 18.04,
+   "grey_date": "2022-12-29",
+   "grey_venue": "Phillip",
+   "art_offer": 18.9,
+   "title": "康灃生物-B暗盤潛水近5%,每手蝕172元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221229388/",
+   "others": {
+    "Bright Smart live": 17.74
+   },
+   "grey_pct": -4.55
+  },
+  {
+   "code": "6929",
+   "name": "業聚醫療",
+   "offer": 8.8,
+   "open_only": true,
+   "grey_open": 8.4,
+   "grey_date": "2022-12-22",
+   "grey_venue": "Phillip",
+   "art_offer": 8.8,
+   "title": "業聚醫療暗盤報8.4元,低招股價近5%",
+   "kind": "live",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221222395/",
+   "grey_open_pct": -4.55
+  },
+  {
+   "code": "6939",
+   "name": "美佳音控股",
+   "offer": 1.26,
+   "open_only": true,
+   "grey_open": 1.25,
+   "grey_date": "2021-03-30",
+   "grey_venue": "Phillip",
+   "art_offer": 1.26,
+   "title": "美佳音控股暗盤開報1.25元,低招股價0.8%",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210330251/",
+   "grey_open_pct": -0.79
+  },
+  {
+   "code": "6955",
+   "name": "博安生物",
+   "offer": 19.8,
+   "grey_close": 19.5,
+   "grey_date": "2022-12-29",
+   "grey_venue": "Phillip",
+   "art_offer": 19.8,
+   "title": "博安生物-B暗盤潛水近2%,每手蝕60元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221229387/",
+   "others": {
+    "Bright Smart live": 20.3
+   },
+   "grey_pct": -1.52
+  },
+  {
+   "code": "6959",
+   "name": "長久股份",
+   "offer": 5.95,
+   "grey_close": 6.08,
+   "grey_date": "2024-01-08",
+   "grey_venue": "Phillip",
+   "art_offer": 5.95,
+   "title": "長久股份(6959)暗盤收高逾2%,每手賺65元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240108405/",
+   "others": {},
+   "grey_pct": 2.18
+  },
+  {
+   "code": "6963",
+   "name": "陽光保險",
+   "offer": 5.83,
+   "grey_close": 5.82,
+   "grey_date": "2022-12-08",
+   "grey_venue": "Phillip",
+   "art_offer": 5.83,
+   "title": "陽光保險(6963)暗盤潛水少於1%,每手蝕5元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221208425/",
+   "others": {
+    "Bright Smart live": 5.8
+   },
+   "grey_pct": -0.17
+  },
+  {
+   "code": "6979",
+   "name": "珍酒李渡",
+   "offer": 10.82,
+   "grey_close": 10.28,
+   "grey_date": "2023-04-26",
+   "grey_venue": "Phillip",
+   "art_offer": 10.82,
+   "title": "珍酒李渡暗盤潛水近5%,每手蝕108元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230426382/",
+   "others": {
+    "Bright Smart live": 10.5
+   },
+   "grey_pct": -4.99
+  },
+  {
+   "code": "6990",
+   "name": "科倫博泰生物",
+   "offer": 60.6,
+   "grey_close": 60.6,
+   "grey_date": "2023-07-10",
+   "grey_venue": "Phillip",
+   "art_offer": null,
+   "title": "科倫博泰生物-B(06990)暗盤平收",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230710363/",
+   "others": {},
+   "grey_pct": 0.0
+  },
+  {
+   "code": "9600",
+   "name": "新紐科技",
+   "offer": 4.36,
+   "open_only": true,
+   "grey_open": 4.9,
+   "grey_date": "2021-01-05",
+   "grey_venue": "Phillip",
+   "art_offer": 4.36,
+   "title": "新紐科技暗盤開4.9元,高招股價逾一成二",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210105262/",
+   "grey_open_pct": 12.39
+  },
+  {
+   "code": "9608",
+   "name": "宋都服務",
+   "offer": 0.25,
+   "open_only": true,
+   "grey_open": 0.255,
+   "grey_date": "2021-01-15",
+   "grey_venue": "Phillip",
+   "art_offer": 0.25,
+   "title": "宋都服務暗盤開報0.255元,高招股價2%",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210115256/",
+   "grey_open_pct": 2.0
+  },
+  {
+   "code": "9626",
+   "name": "嗶哩嗶哩－Ｗ",
+   "offer": 808.0,
+   "grey_close": 755.0,
+   "grey_date": "2021-03-26",
+   "grey_venue": "Phillip",
+   "art_offer": 808.0,
+   "title": "嗶哩嗶哩暗盤收跌6.6%,每手帳面蝕1060元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210326529/",
+   "others": {},
+   "grey_pct": -6.56
+  },
+  {
+   "code": "9636",
+   "name": "九方智投控股",
+   "offer": 17.0,
+   "grey_close": 17.7,
+   "grey_date": "2023-03-09",
+   "grey_venue": "Phillip",
+   "art_offer": 17.0,
+   "title": "九方財富暗盤收高逾4%,每手賺350元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230309388/",
+   "others": {
+    "Bright Smart live": 17.58
+   },
+   "grey_pct": 4.12
+  },
+  {
+   "code": "9638",
+   "name": "法拉帝",
+   "offer": 22.88,
+   "grey_close": 23.15,
+   "grey_date": "2022-03-30",
+   "grey_venue": "Phillip",
+   "art_offer": 22.88,
+   "title": "法拉帝(09638)暗盤收高逾1%,每手賺27元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220330211/",
+   "others": {
+    "Bright Smart live": 23.3
+   },
+   "grey_pct": 1.18
+  },
+  {
+   "code": "9669",
+   "name": "北森控股",
+   "offer": 29.7,
+   "grey_close": 29.75,
+   "grey_date": "2023-04-12",
+   "grey_venue": "Phillip",
+   "art_offer": 29.7,
+   "title": "北森控股暗盤收高少於1%,每手賺10元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230412412/",
+   "others": {
+    "Bright Smart live": 29.0
+   },
+   "grey_pct": 0.17
+  },
+  {
+   "code": "9676",
+   "name": "十月稻田",
+   "offer": 15.36,
+   "grey_close": 16.36,
+   "grey_date": "2023-10-11",
+   "grey_venue": "Phillip",
+   "art_offer": 15.36,
+   "title": "十月稻田暗盤收高近7%,每手賺300元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20231011404/",
+   "others": {
+    "Bright Smart live": 16.12
+   },
+   "grey_pct": 6.51
+  },
+  {
+   "code": "9680",
+   "name": "如祺出行",
+   "offer": 35.0,
+   "grey_close": 35.1,
+   "grey_date": "2024-07-09",
+   "grey_venue": "Phillip",
+   "art_offer": 35.0,
+   "title": "如祺出行暗盤收高少於1%,每手賺10元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240709411/",
+   "others": {
+    "Bright Smart live": 34.0
+   },
+   "grey_pct": 0.29
+  },
+  {
+   "code": "9686",
+   "name": "熙康雲醫院",
+   "offer": 4.76,
+   "grey_close": 3.61,
+   "grey_date": "2023-09-27",
+   "grey_venue": "Phillip",
+   "art_offer": 4.76,
+   "title": "東軟熙康暗盤潛水逾24%,每手蝕575元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230927387/",
+   "others": {
+    "Bright Smart live": 3.82
+   },
+   "grey_pct": -24.16
+  },
+  {
+   "code": "9690",
+   "name": "途虎－Ｗ",
+   "offer": 28.0,
+   "grey_close": 27.0,
+   "grey_date": "2023-09-25",
+   "grey_venue": "Phillip",
+   "art_offer": 28.0,
+   "title": "途虎-W暗盤潛水近4%,每手蝕100元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230925403/",
+   "others": {
+    "Bright Smart live": 26.75
+   },
+   "grey_pct": -3.57
+  },
+  {
+   "code": "9696",
+   "name": "天齊鋰業",
+   "offer": 82.0,
+   "grey_close": 75.5,
+   "grey_date": "2022-07-12",
+   "grey_venue": "Phillip",
+   "art_offer": 82.0,
+   "title": "天齊鋰業暗盤潛水近8%,每手蝕1300元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220712388/",
+   "others": {
+    "Bright Smart live": 74.7
+   },
+   "grey_pct": -7.93
+  },
+  {
+   "code": "9699",
+   "name": "順豐同城",
+   "offer": 16.42,
+   "grey_close": 16.04,
+   "grey_date": "2021-12-13",
+   "grey_venue": "Phillip",
+   "art_offer": 16.42,
+   "title": "順豐同城暗盤收跌2.3%,每手帳面蝕76元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20211213559/",
+   "others": {},
+   "grey_pct": -2.31
+  },
+  {
+   "code": "9857",
+   "name": "檸萌影視",
+   "offer": 27.75,
+   "grey_close": 27.05,
+   "grey_date": "2022-08-09",
+   "grey_venue": "Phillip",
+   "art_offer": 27.75,
+   "title": "檸萌影視(9857)暗盤潛水近3%,每手蝕70元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220809365/",
+   "others": {
+    "Bright Smart live": 27.7
+   },
+   "grey_pct": -2.52
+  },
+  {
+   "code": "9858",
+   "name": "優然牧業",
+   "offer": 6.98,
+   "open_only": true,
+   "grey_open": 6.9,
+   "grey_date": "2021-06-17",
+   "grey_venue": "Phillip",
+   "art_offer": null,
+   "title": "優然牧業暗盤開報6.9元,低招股價逾1%",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210617166/",
+   "grey_open_pct": -1.15
+  },
+  {
+   "code": "9860",
+   "name": "艾迪康控股",
+   "offer": 12.32,
+   "grey_close": 12.46,
+   "grey_date": "2023-06-29",
+   "grey_venue": "Phillip",
+   "art_offer": 12.32,
+   "title": "艾迪康控股暗盤收高逾1%,每手賺70元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230629398/",
+   "others": {
+    "Bright Smart live": 12.1
+   },
+   "grey_pct": 1.14
+  },
+  {
+   "code": "9863",
+   "name": "零跑汽車",
+   "offer": 48.0,
+   "grey_close": 41.0,
+   "grey_date": "2022-09-28",
+   "grey_venue": "Phillip",
+   "art_offer": 48.0,
+   "title": "零跑汽車暗盤潛水近15%,每手蝕700元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220928175/",
+   "others": {},
+   "grey_pct": -14.58
+  },
+  {
+   "code": "9868",
+   "name": "小鵬集團－Ｗ",
+   "offer": 165.0,
+   "grey_close": 164.3,
+   "grey_date": "2021-07-06",
+   "grey_venue": "Phillip",
+   "art_offer": null,
+   "title": "小鵬汽車暗盤收報164.3元,每手蝕70元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210706939/",
+   "others": {
+    "Futu close": 162.0
+   },
+   "grey_pct": -0.42
+  },
+  {
+   "code": "9877",
+   "name": "健世科技－Ｂ",
+   "offer": 27.8,
+   "grey_close": 28.0,
+   "grey_date": "2022-10-07",
+   "grey_venue": "Phillip",
+   "art_offer": 27.8,
+   "title": "健世科技-B暗盤收高少於1%,每手賺40元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221007394/",
+   "others": {},
+   "grey_pct": 0.72
+  },
+  {
+   "code": "9878",
+   "name": "匯通達網絡",
+   "offer": 43.0,
+   "grey_close": 45.1,
+   "grey_date": "2022-02-17",
+   "grey_venue": "Phillip",
+   "art_offer": 43.0,
+   "title": "匯通達網絡暗盤收高近5%,每手賺210元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220217302/",
+   "others": {
+    "Bright Smart live": 44.5
+   },
+   "grey_pct": 4.88
+  },
+  {
+   "code": "9879",
+   "name": "米高集團",
+   "offer": 4.08,
+   "grey_close": 4.74,
+   "grey_date": "2024-03-20",
+   "grey_venue": "Phillip",
+   "art_offer": 4.08,
+   "title": "米高集團暗盤收高逾16%,每手賺660元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240320392/",
+   "others": {
+    "Bright Smart live": 4.79
+   },
+   "grey_pct": 16.18
+  },
+  {
+   "code": "9880",
+   "name": "優必選",
+   "offer": 90.0,
+   "grey_close": 89.95,
+   "grey_date": "2023-12-28",
+   "grey_venue": "Phillip",
+   "art_offer": 90.0,
+   "title": "優必選(09880)暗盤潛水少於1%,每手蝕3元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20231228427/",
+   "others": {
+    "Bright Smart live": 89.0
+   },
+   "grey_pct": -0.06
+  },
+  {
+   "code": "9885",
+   "name": "藥師幫",
+   "offer": 20.0,
+   "grey_close": 26.0,
+   "grey_date": "2023-06-27",
+   "grey_venue": "Phillip",
+   "art_offer": 20.0,
+   "title": "藥師幫暗盤收高30%,每手賺1200元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230627388/",
+   "others": {
+    "Bright Smart live": 25.8
+   },
+   "grey_pct": 30.0
+  },
+  {
+   "code": "9886",
+   "name": "叮噹健康",
+   "offer": 12.0,
+   "grey_close": 12.1,
+   "grey_date": "2022-09-13",
+   "grey_venue": "Phillip",
+   "art_offer": 12.0,
+   "title": "叮噹健康暗盤收高少於1%,每手賺50元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220913399/",
+   "others": {
+    "Bright Smart live": 12.12
+   },
+   "grey_pct": 0.83
+  },
+  {
+   "code": "9888",
+   "name": "百度集團－Ｗ",
+   "offer": 252.0,
+   "grey_close": 254.8,
+   "grey_date": "2021-03-22",
+   "grey_venue": "Phillip",
+   "art_offer": 252.0,
+   "title": "百度暗盤收報254.8元升逾1%,每手賺140元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210322536/",
+   "others": {},
+   "grey_pct": 1.11
+  },
+  {
+   "code": "9889",
+   "name": "東莞農商銀行",
+   "offer": 7.92,
+   "grey_close": 7.5,
+   "grey_date": "2021-09-28",
+   "grey_venue": "Phillip",
+   "art_offer": 7.92,
+   "title": "東莞農商銀行暗盤潛水5.3%,每手帳面蝕420元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210928538/",
+   "others": {
+    "Futu close": 7.54
+   },
+   "grey_pct": -5.3
+  },
+  {
+   "code": "9890",
+   "name": "貪玩",
+   "offer": 14.0,
+   "grey_close": 13.9,
+   "grey_date": "2023-09-27",
+   "grey_venue": "Phillip",
+   "art_offer": 14.0,
+   "title": "中旭未來暗盤潛水少於1%,每手蝕20元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230927388/",
+   "others": {
+    "Bright Smart live": 13.9
+   },
+   "grey_pct": -0.71
+  },
+  {
+   "code": "9896",
+   "name": "名創優品",
+   "offer": 13.8,
+   "grey_close": 13.2,
+   "grey_date": "2022-07-12",
+   "grey_venue": "Phillip",
+   "art_offer": 13.8,
+   "title": "名創優品暗盤潛水逾4%,每手蝕120元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220712390/",
+   "others": {
+    "Bright Smart live": 12.98
+   },
+   "grey_pct": -4.35
+  },
+  {
+   "code": "9898",
+   "name": "微博－ＳＷ",
+   "offer": 272.8,
+   "grey_close": 256.0,
+   "grey_date": "2021-12-07",
+   "grey_venue": "Phillip",
+   "art_offer": 272.8,
+   "title": "微博(9898)暗盤潛水6.2%,一手蝕336元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20211207939/",
+   "others": {},
+   "grey_pct": -6.16
+  },
+  {
+   "code": "9899",
+   "name": "網易雲音樂",
+   "offer": 205.0,
+   "grey_close": 200.4,
+   "grey_date": "2021-12-01",
+   "grey_venue": "Phillip",
+   "art_offer": 205.0,
+   "title": "雲音樂(9899)暗盤潛水逾2%,每手蝕230元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20211201939/",
+   "others": {
+    "Futu close": 200.0
+   },
+   "grey_pct": -2.24
+  },
+  {
+   "code": "9930",
+   "name": "宏信建發",
+   "offer": 4.52,
+   "grey_close": 3.6,
+   "grey_date": "2023-05-24",
+   "grey_venue": "Phillip",
+   "art_offer": 4.52,
+   "title": "宏信建發暗盤潛水逾20%,每手蝕920元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20230524387/",
+   "others": {
+    "Bright Smart live": 3.51
+   },
+   "grey_pct": -20.35
+  },
+  {
+   "code": "9955",
+   "name": "智雲健康",
+   "offer": 30.5,
+   "grey_close": 30.4,
+   "grey_date": "2022-07-05",
+   "grey_venue": "Phillip",
+   "art_offer": 30.5,
+   "title": "智雲健康暗盤潛水少於1%,每手蝕10元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20220705393/",
+   "others": {
+    "Bright Smart live": 30.2
+   },
+   "grey_pct": -0.33
+  },
+  {
+   "code": "9959",
+   "name": "聯易融科技－Ｗ",
+   "offer": 17.58,
+   "open_only": true,
+   "grey_open": 17.7,
+   "grey_date": "2021-04-08",
+   "grey_venue": "Phillip",
+   "art_offer": 17.58,
+   "title": "聯易融暗盤開報17.7元,高招股價0.68%",
+   "kind": "open",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210408252/",
+   "grey_open_pct": 0.68
+  },
+  {
+   "code": "9960",
+   "name": "康聖環球",
+   "offer": 9.78,
+   "grey_close": 9.09,
+   "grey_date": "2021-07-15",
+   "grey_venue": "Phillip",
+   "art_offer": 9.78,
+   "title": "康聖環球暗盤低收7.05%,每手蝕345元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210715577/",
+   "others": {
+    "Futu close": 9.25
+   },
+   "grey_pct": -7.06
+  },
+  {
+   "code": "9961",
+   "name": "攜程集團－Ｓ",
+   "offer": 268.0,
+   "grey_close": 278.0,
+   "grey_date": "2021-04-16",
+   "grey_venue": "Phillip",
+   "art_offer": 268.0,
+   "title": "攜程集團暗盤收報278元,每手賺500元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20210416538/",
+   "others": {
+    "Futu close": 272.8
+   },
+   "grey_pct": 3.73
+  },
+  {
+   "code": "9985",
+   "name": "衛龍美味",
+   "offer": 10.56,
+   "grey_close": 10.34,
+   "grey_date": "2022-12-14",
+   "grey_venue": "Phillip",
+   "art_offer": 10.56,
+   "title": "衛龍(09985)暗盤潛水逾2%,每手蝕44元",
+   "src": "https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20221214420/",
+   "others": {
+    "Bright Smart live": 10.38
+   },
+   "grey_pct": -2.08
+  }
+ ]
+}

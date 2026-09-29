@@ -189,9 +189,10 @@ def main():
 
     doc.add_heading("Grey market vs day 1: what the data shows", level=1)
     p(doc, f"{date.today().strftime('%-d %b %Y')}. {n} HK IPOs with both a grey-market close and a "
-           f"day-1 close on file, out of 514 in the database. All returns are against the offer price. "
-           f"Grey = the broker-run evening session before listing (Phillip's print, as AAStocks reports "
-           f"it). Every number below is computed from the database; nothing is typed in.", size=9.5)
+           f"day-1 close on file, out of {len(deals)} in the database. All returns are against the offer "
+           f"price. Grey = the broker-run evening session before listing: Phillip's close before October "
+           f"2024, the busiest venue's after. Every number below is computed from the database; nothing is "
+           f"typed in.", size=9.5)
 
     # 1
     h(doc, "1. The grey close is the opening price")
@@ -463,12 +464,17 @@ def main():
            for x in rows], widths=[1.0, 2.2, 1.3, 1.2, 1.2, 1.2, 0.7, 1.3, 1.0, 0.9, 1.0, 4.9], font=6.5)
 
     h(doc, "Data notes")
-    p(doc, f"Coverage is {n} of 514 because no public archive of past grey-market sessions exists: AAStocks "
-           f"publishes a headline per listing but its per-stock news page holds about 21 recent articles, so "
-           f"the print is unreachable roughly a month after the debut. The archive builds forward from the "
-           f"weekly refresh. Eight prints were added by hand from press coverage and each reconciles "
-           f"against its offer price. The quoted venue is Phillip's; Futu's print for the same evening "
-           f"differs by a tick. A grey session is two hours and fifteen minutes of retail-only trading.", size=9.5)
+    src = lambda x: ((x.get("_prov") or {}).get("grey_close") or {}).get("src") or ""
+    n_tab = sum(1 for x in R if src(x).startswith("etnet:ipo-info"))
+    n_wire = sum(1 for x in R if src(x).startswith("etnet:news"))
+    p(doc, f"Where the grey prints come from. From October 2024, etnet's per-deal IPO page keeps all three "
+           f"brokers' evening sessions and the database takes the busiest venue ({n_tab} deals here). Before "
+           f"that, the print comes from etnet's news wire ({n_wire} deals): every evening etnet writes the "
+           f"session up (\"輝立暗盤收報26元\"), its articles are numbered by date, and every article on each "
+           f"grey-session evening back to January 2021 was read. The rest are AAStocks headlines and press "
+           f"reports. Every close was checked against the offer price. Where etnet reported only the grey "
+           f"OPEN (common in early 2021), no number is recorded, because an open is not a close. A grey "
+           f"session is two hours and fifteen minutes of retail-only trading.", size=9.5)
 
     OUT.parent.mkdir(exist_ok=True)
     doc.save(OUT)

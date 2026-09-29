@@ -298,8 +298,16 @@ def main():
               "of the whole event. If you can sell in the grey, that is usually the best price you will see.")
 
     head(doc, "8. How complete is the grey data, and where does it come from?", size=12)
-    para(doc, f"{len(grey_all)} of {S['n_book']} deals in the database now carry a grey close, up from 130 last week. "
-              "The coverage is not evenly spread, and the reason is worth stating plainly:")
+    def gsrc(x):
+        return (((x.get("_prov") or {}).get("grey_close") or {}).get("src") or "")
+    n_tab = sum(1 for x in grey_all if gsrc(x).startswith("etnet:ipo-info"))
+    n_wire = sum(1 for x in grey_all if gsrc(x).startswith("etnet:news"))
+    n_aa = sum(1 for x in grey_all if gsrc(x).startswith("aastocks:"))
+    n_press = len(grey_all) - n_tab - n_wire - n_aa
+    no_grey = [x for x in deals if x.get("grey_pct") is None]
+    n_open = sum(1 for x in no_grey if "no close was published" in (x.get("grey_note") or ""))
+    para(doc, f"{len(grey_all)} of {S['n_book']} deals in the database now carry a grey close (261 in the "
+              "previous version, 130 the week before). Coverage by listing year:")
     yrs = {}
     for x in deals:
         y = (x.get("ipo_date") or "")[:4]
@@ -310,25 +318,35 @@ def main():
     table(doc, ["Listing year", "Deals", "With a grey close", "Coverage"],
           [(y, v[0], v[1], f"{round(100*v[1]/v[0])}%") for y, v in sorted(yrs.items()) if y],
           widths=[3.0, 3.0, 4.0, 3.0])
-    para(doc, "Three sources were used, in this order of preference:")
-    bullet(doc, "etnet's per-deal IPO page, which keeps the evening session's table for all three brokers — "
-                "Bright Smart (耀才), Phillip (輝立) and Futu (富途) — with each one's close, high, low and volume. "
-                "The database takes the venue with the most volume and records which venue it was and the spread "
-                "across the three. This is the source for 231 deals.")
-    bullet(doc, "AAStocks' standardised headline (《新股》…暗盤收報…元 高/低上市價…%), captured automatically each week "
-                "for new listings.")
-    bullet(doc, "Press reports of the session where neither of the above has it: HKET, Sina/財聯社, 163.com, 華盛通, "
-                "StockFisher, Futu. Each one was checked against the offer price before it was recorded — the close "
-                "divided by the offer price has to reproduce the stated percentage.")
-    para(doc, "Why the older deals are missing, precisely: etnet's grey table begins on 2 October 2024. AAStocks "
-              "keeps about 21 articles per stock and its IPO feed the latest 50. The brokers publish live quotes "
-              "only. No venue and no data vendor publishes a historical grey-market archive. So a deal that listed "
-              "before October 2024 has a print only if a journalist wrote the session up and the article is still "
-              "indexed. I searched for the ones on your list individually and found 12 that way; the four still "
-              "missing are Huaibei (Jan 2023), Deyun (Jan 2021), Ruichang (Jul 2024) and WK Group (Mar 2024). For "
-              "WK Group the press reported the grey OPEN (+144%) but not the close, and an open is not a close, so "
-              "it was not recorded. Every deal without a print carries a note in the database saying which of these "
-              "reasons applies.")
+    para(doc, "Where each number comes from, in order of preference:")
+    bullet(doc, f"etnet's per-deal IPO page ({n_tab} deals). It keeps the evening session for all three brokers, "
+                "Bright Smart (耀才), Phillip (輝立) and Futu (富途), with each one's close and volume. The database "
+                "takes the venue with the most volume and records which one it was. It starts on 2 October 2024.")
+    bullet(doc, f"etnet's news wire ({n_wire} deals). Every evening etnet writes the session up: "
+                "\"藥師幫暗盤收高30%… 輝立暗盤收報26元\". Its articles are numbered by date "
+                "(e.g. 20230627388), so I read every article on each grey-session evening and the next "
+                "morning, back to January 2021, and took Phillip's close from the story. Where etnet's table "
+                "also exists the two agree to the cent (FWD 36.75, Anjoy 59.6).")
+    bullet(doc, f"AAStocks' standard headline, 《新股》…暗盤收報…元 ({n_aa} deals), captured each week for new "
+                "listings.")
+    bullet(doc, f"Press reports: HKET, Sina, 163, 華盛通, Futu and others ({n_press} deals).")
+    para(doc, "Every print was checked the same way: the close divided by the offer price has to give the "
+              "stated percentage.")
+    para(doc, f"{len(no_grey)} deals still have no grey close. The reasons:")
+    bullet(doc, f"{n_open} deals, mostly from early 2021, where etnet reported only the session's opening or "
+                "mid-session price and never the close. An open is not a close, so no number is recorded. "
+                "The database note gives the open instead.")
+    fini = [x for x in no_grey if "2023-12-05" <= (x.get("ipo_date") or "") <= "2023-12-31"
+            and "no close was published" not in (x.get("grey_note") or "")]
+    n_fu = sum(1 for x in no_grey if "follow-on" in (x.get("grey_note") or ""))
+    n_none = len(no_grey) - n_open - len(fini) - n_fu
+    bullet(doc, f"{len(fini)} of the first deals settled on HKEX's new FINI platform (December 2023). etnet "
+                "wrote no price story for their grey sessions.")
+    bullet(doc, f"{n_none} deals with no story about the session anywhere I could read, most of them 2021 "
+                "listings (property services, pre-revenue biotech).")
+    if n_fu:
+        bullet(doc, f"{n_fu} follow-on offering by a stock that was already trading, so there was no grey session.")
+    para(doc, "Every blank in the database carries a note saying which of these applies.")
 
     # -------------------------------------------------------- open to close
     head(doc, "9. Why some keep rising after the open and some give it back")
@@ -418,7 +436,9 @@ def main():
         "HKEX allotment results announcements for every deal in the book — international section, final split, "
         "claw-back line, initial retail tranche — re-read for this note. AB&B Bio-Tech prospectus, section "
         "\"Reallocation and clawback\". Excelland Robotics allotment results, 8 September 2026.",
-        "Grey market: etnet per-deal IPO pages (暗盤數據 by broker), AAStocks 《新股》…暗盤收報 headlines, and press "
+        "Grey market: etnet per-deal IPO pages (暗盤數據 by broker, from October 2024); etnet's news wire, every "
+        "article on every grey-session evening since January 2021, read by article ID (Phillip's close); "
+        "AAStocks 《新股》…暗盤收報 headlines; and press "
         "reports — HKET (Breton, Wellcell, Autostreets, Bayzed, Midea, CentralChina, AB&B), etnet news (Cirrus), "
         "AAStocks (Black Sesame), Sina/財聯社 (Easou), 163.com (EDA), 華盛通 (Mokingran), StockFisher (Guofuhee), "
         "Futu (Fujing).",

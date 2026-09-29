@@ -1,10 +1,58 @@
 [
  {
-  "code": "2536",
+  "code": "0300",
   "field": "oversub_public_mult",
-  "kept": 1.29,
+  "kept": 9.0,
   "kept_src": "hkex-pdf:allotment:table",
-  "dropped": 16.0,
+  "dropped": 5.3,
+  "dropped_src": "aastocks:listedipo(+1 to subscription-level basis)"
+ },
+ {
+  "code": "0999",
+  "field": "oversub_public_mult",
+  "kept": 1.44,
+  "kept_src": "hkex-pdf:allotment:table",
+  "dropped": 1.4,
+  "dropped_src": "aastocks:listedipo(+1 to subscription-level basis)"
+ },
+ {
+  "code": "1021",
+  "field": "oversub_public_mult",
+  "kept": 5059.4,
+  "kept_src": "aastocks:listedipo(+1 to subscription-level basis)",
+  "dropped": 16.65,
+  "dropped_src": "hkex-pdf:allotment:prose"
+ },
+ {
+  "code": "1377",
+  "field": "oversub_public_mult",
+  "kept": 354.64,
+  "kept_src": "hkex-pdf:allotment:table",
+  "dropped": 319.2,
+  "dropped_src": "aastocks:listedipo(+1 to subscription-level basis)"
+ },
+ {
+  "code": "2026",
+  "field": "oversub_public_mult",
+  "kept": 15.9,
+  "kept_src": "aastocks:listedipo(+1 to subscription-level basis)",
+  "dropped": 7.72,
+  "dropped_src": "hkex-pdf:allotment:prose"
+ },
+ {
+  "code": "2050",
+  "field": "oversub_public_mult",
+  "kept": 747.9,
+  "kept_src": "aastocks:listedipo(+1 to subscription-level basis)",
+  "dropped": 23.57,
+  "dropped_src": "hkex-pdf:allotment:prose"
+ },
+ {
+  "code": "2476",
+  "field": "oversub_public_mult",
+  "kept": 431.15,
+  "kept_src": "hkex-pdf:allotment:table",
+  "dropped": 388.0,
   "dropped_src": "aastocks:listedipo(+1 to subscription-level basis)"
  },
  {
@@ -16,17 +64,41 @@
   "dropped_src": "aastocks:listedipo(+1 to subscription-level basis)"
  },
  {
-  "code": "0300",
+  "code": "2525",
   "field": "oversub_public_mult",
-  "kept": 9.0,
+  "kept": 168.7,
+  "kept_src": "aastocks:listedipo(+1 to subscription-level basis)",
+  "dropped": 14.09,
+  "dropped_src": "hkex-pdf:allotment:prose"
+ },
+ {
+  "code": "2536",
+  "field": "oversub_public_mult",
+  "kept": 1.29,
   "kept_src": "hkex-pdf:allotment:table",
-  "dropped": 5.3,
+  "dropped": 16.0,
+  "dropped_src": "aastocks:listedipo(+1 to subscription-level basis)"
+ },
+ {
+  "code": "2570",
+  "field": "oversub_public_mult",
+  "kept": 1.55,
+  "kept_src": "hkex-pdf:allotment:table",
+  "dropped": 1.6,
   "dropped_src": "aastocks:listedipo(+1 to subscription-level basis)"
  },
  {
   "code": "2576",
   "field": "oversub_public_mult",
   "kept": 156.3,
+  "kept_src": "aastocks:listedipo(+1 to subscription-level basis)",
+  "dropped": 100.0,
+  "dropped_src": "hkex-pdf:allotment:prose"
+ },
+ {
+  "code": "2580",
+  "field": "oversub_public_mult",
+  "kept": 557.2,
   "kept_src": "aastocks:listedipo(+1 to subscription-level basis)",
   "dropped": 100.0,
   "dropped_src": "hkex-pdf:allotment:prose"
@@ -40,19 +112,19 @@
   "dropped_src": "aastocks:listedipo(+1 to subscription-level basis)"
  },
  {
-  "code": "2570",
+  "code": "2590",
   "field": "oversub_public_mult",
-  "kept": 1.55,
-  "kept_src": "hkex-pdf:allotment:table",
-  "dropped": 1.6,
-  "dropped_src": "aastocks:listedipo(+1 to subscription-level basis)"
+  "kept": 133.6,
+  "kept_src": "aastocks:listedipo(+1 to subscription-level basis)",
+  "dropped": 30.17,
+  "dropped_src": "hkex-pdf:allotment:prose"
  },
  {
-  "code": "0999",
+  "code": "2693",
   "field": "oversub_public_mult",
-  "kept": 1.44,
+  "kept": 6876.17,
   "kept_src": "hkex-pdf:allotment:table",
-  "dropped": 1.4,
+  "dropped": 8285.3,
   "dropped_src": "aastocks:listedipo(+1 to subscription-level basis)"
  },
  {
@@ -64,124 +136,20 @@
   "dropped_src": "hkex-pdf:allotment:prose"
  },
  {
-  "code": "2050",
-  "field": "oversub_public_mult",
-  "kept": 747.9,
-  "kept_src": "aastocks:listedipo(+1 to subscription-level basis)",
-  "dropped": 23.57,
-  "dropped_src": "hkex-pdf:allotment:prose"
- },
- {
-  "code": "2590",
-  "field": "oversub_public_mult",
-  "kept": 133.6,
-  "kept_src": "aastocks:listedipo(+1 to subscription-level basis)",
-  "dropped": 30.17,
-  "dropped_src": "hkex-pdf:allotment:prose"
- },
- {
-  "code": "2580",
-  "field": "oversub_public_mult",
-  "kept": 557.2,
-  "kept_src": "aastocks:listedipo(+1 to subscription-level basis)",
-  "dropped": 100.0,
-  "dropped_src": "hkex-pdf:allotment:prose"
- },
- {
-  "code": "2525",
-  "field": "oversub_public_mult",
-  "kept": 168.7,
-  "kept_src": "aastocks:listedipo(+1 to subscription-level basis)",
-  "dropped": 14.09,
-  "dropped_src": "hkex-pdf:allotment:prose"
- },
- {
-  "code": "2525",
-  "field": "final_price",
-  "kept": 154.99,
-  "kept_src": "hkex-pdf:allotment",
-  "dropped": 212.8,
-  "dropped_src": "aastocks:listedipo"
- },
- {
-  "code": "6090",
-  "field": "final_price",
-  "kept": 63.58,
-  "kept_src": "hkex-pdf:allotment",
-  "dropped": 71.2,
-  "dropped_src": "aastocks:listedipo"
- },
- {
-  "code": "2026",
-  "field": "final_price",
-  "kept": 252.25,
-  "kept_src": "hkex-pdf:allotment",
-  "dropped": 139.0,
-  "dropped_src": "aastocks:listedipo"
- },
- {
-  "code": "2693",
-  "field": "oversub_public_mult",
-  "kept": 6876.17,
-  "kept_src": "hkex-pdf:allotment:table",
-  "dropped": 8285.3,
-  "dropped_src": "aastocks:listedipo(+1 to subscription-level basis)"
- },
- {
-  "code": "1021",
-  "field": "oversub_public_mult",
-  "kept": 5059.4,
-  "kept_src": "aastocks:listedipo(+1 to subscription-level basis)",
-  "dropped": 16.65,
-  "dropped_src": "hkex-pdf:allotment:prose"
- },
- {
   "code": "6656",
-  "field": "final_price",
-  "kept": 210.8,
-  "kept_src": "hkex-pdf:allotment",
-  "dropped": 324.2,
-  "dropped_src": "aastocks:listedipo"
- },
- {
-  "code": "2476",
   "field": "oversub_public_mult",
-  "kept": 431.15,
-  "kept_src": "hkex-pdf:allotment:table",
-  "dropped": 388.0,
-  "dropped_src": "aastocks:listedipo(+1 to subscription-level basis)"
+  "kept": 1102.1,
+  "kept_src": "aastocks:listedipo(+1 to subscription-level basis)",
+  "dropped": 31.2,
+  "dropped_src": "hkex-pdf:allotment:prose"
  },
  {
   "code": "9630",
-  "field": "final_price",
-  "kept": 91.7,
-  "kept_src": "hkex-pdf:allotment",
-  "dropped": 252.73,
-  "dropped_src": "aastocks:listedipo"
- },
- {
-  "code": "2672",
-  "field": "final_price",
-  "kept": 54382183.0,
-  "kept_src": "hkex-pdf:allotment",
-  "dropped": 15.6,
-  "dropped_src": "aastocks:listedipo"
- },
- {
-  "code": "1377",
   "field": "oversub_public_mult",
-  "kept": 354.64,
-  "kept_src": "hkex-pdf:allotment:table",
-  "dropped": 319.2,
-  "dropped_src": "aastocks:listedipo(+1 to subscription-level basis)"
- },
- {
-  "code": "9600",
-  "field": "net_proceeds_hkdm",
-  "kept": 771.6,
-  "kept_src": "hkex-pdf:allotment",
-  "dropped": 520.1,
-  "dropped_src": "hkex-pdf:prospectus"
+  "kept": 1007.2,
+  "kept_src": "aastocks:listedipo(+1 to subscription-level basis)",
+  "dropped": 27.22,
+  "dropped_src": "hkex-pdf:allotment:prose"
  },
  {
   "code": "2195",
@@ -200,20 +168,20 @@
   "dropped_src": "hkex-pdf:prospectus:cap"
  },
  {
-  "code": "2260",
-  "field": "net_proceeds_hkdm",
-  "kept": 92.8,
-  "kept_src": "hkex-pdf:allotment",
-  "dropped": 90.6,
-  "dropped_src": "hkex-pdf:prospectus"
- },
- {
   "code": "2250",
   "field": "price_range_hi",
   "kept": 3.45,
   "kept_src": "hkex-pdf:prospectus",
   "dropped": 3.4,
   "dropped_src": "hkex-pdf:prospectus:cap"
+ },
+ {
+  "code": "2260",
+  "field": "net_proceeds_hkdm",
+  "kept": 92.8,
+  "kept_src": "hkex-pdf:allotment",
+  "dropped": 90.6,
+  "dropped_src": "hkex-pdf:prospectus"
  },
  {
   "code": "2372",
@@ -240,6 +208,14 @@
   "dropped_src": "hkex-pdf:prospectus:cap"
  },
  {
+  "code": "9600",
+  "field": "net_proceeds_hkdm",
+  "kept": 771.6,
+  "kept_src": "hkex-pdf:allotment",
+  "dropped": 520.1,
+  "dropped_src": "hkex-pdf:prospectus"
+ },
+ {
   "code": "2219",
   "field": "price_range_hi",
   "kept": 10.6,
@@ -254,6 +230,1286 @@
   "kept_src": "hkex-pdf:deep(allotment):cap",
   "dropped": 31.5,
   "dropped_src": "hkex-pdf:allotment"
+ },
+ {
+  "code": "2041",
+  "field": "first_day_return_pct",
+  "kept": -38.0,
+  "kept_src": "yahoo:listing-day close",
+  "dropped": -42.93,
+  "dropped_src": "aastocks:listedipo"
+ },
+ {
+  "code": "2549",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 10.26-10.44)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》卡羅特(商業)有限公司暗盤收報10.26元 高上市價77.5%"
+ },
+ {
+  "code": "2576",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 11.28-11.62)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》浙江太美醫療科技股份有限公司-H股暗盤收報11.62元 低上市價10.6%"
+ },
+ {
+  "code": "9639",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 0.55-0.59)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》榮利營造控股有限公司暗盤收報0.57元 低上市價21.9%"
+ },
+ {
+  "code": "2567",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 1.84-1.85)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》七牛智能科技有限公司暗盤收報1.84元 低上市價33.1%"
+ },
+ {
+  "code": "2519",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 13.0-13.82)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》傲基(深圳)跨境商務股份有限公司-H股暗盤收報13.82元 低上市價11.4%"
+ },
+ {
+  "code": "2560",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 2.06-2.09)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》海螺材料科技暗盤收報2.06元 低上市價31.3%"
+ },
+ {
+  "code": "2613",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 33.3-34.0)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》匯舸環保暗盤收報33.85元 高上市價6.4%"
+ },
+ {
+  "code": "2596",
+  "field": "grey_pct",
+  "kept": -1.544,
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": -1.5,
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》宜賓銀行暗盤收報2.55元 低上市價1.5%"
+ },
+ {
+  "code": "2596",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 2.54-2.59)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》宜賓銀行暗盤收報2.55元 低上市價1.5%"
+ },
+ {
+  "code": "2561",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 63.85-64.9)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》維昇藥業－Ｂ暗盤收報63.85元 低上市價7.2%"
+ },
+ {
+  "code": "2569",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 0.48-0.5)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》舒寶國際暗盤收報0.5元 低上市價2.0%"
+ },
+ {
+  "code": "2625",
+  "field": "grey_pct",
+  "kept": 28.0,
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": 28.8,
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》江蘇宏信暗盤收報3.22元 高上市價28.8%"
+ },
+ {
+  "code": "2625",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 3.2-3.31)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》江蘇宏信暗盤收報3.22元 高上市價28.8%"
+ },
+ {
+  "code": "2603",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 9.51-9.7)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》吉宏股份暗盤收報9.51元 高上市價23.8%"
+ },
+ {
+  "code": "2621",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 7.59-7.95)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》手回集團暗盤收報7.95元 低上市價1.6%"
+ },
+ {
+  "code": "9881",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 17.48-17.88)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》容大科技暗盤收報17.6元 高上市價76.0%"
+ },
+ {
+  "code": "2573",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 32.6-33.5)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》新琪安暗盤收報32.6元 高上市價72.5%"
+ },
+ {
+  "code": "2605",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 8.31-8.7)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》MetaLight暗盤收報8.31元 低上市價14.8%"
+ },
+ {
+  "code": "2619",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 2.72-2.78)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》香江電器暗盤收報2.72元 低上市價4.9%"
+ },
+ {
+  "code": "3880",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 31.15-32.0)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》泰德醫藥暗盤收報31.15元 高上市價1.8%"
+ },
+ {
+  "code": "2651",
+  "field": "grey_pct",
+  "kept": 18.25,
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": 19.0,
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》大眾口腔暗盤收報23.8元 高上市價19.0%"
+ },
+ {
+  "code": "2651",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 23.5-23.8)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》大眾口腔暗盤收報23.8元 高上市價19.0%"
+ },
+ {
+  "code": "2597",
+  "field": "grey_pct",
+  "kept": 1.697,
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": 2.6,
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》訊眾通信暗盤收報13.9元 高上市價2.6%"
+ },
+ {
+  "code": "2597",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 13.78-14.28)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》訊眾通信暗盤收報13.9元 高上市價2.6%"
+ },
+ {
+  "code": "6960",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 25.1-26.62)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》雙登股份暗盤收報25.1元 高上市價73.0%"
+ },
+ {
+  "code": "2580",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 16.6-16.7)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》奧克斯電氣暗盤收報16.7元 低上市價4.1%"
+ },
+ {
+  "code": "2543",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 68.1-78.7)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》大行科工暗盤收報68.1元 高上市價37.6%"
+ },
+ {
+  "code": "2656",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 28.9-29.02)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》健康１６０暗盤收報29.0元 高上市價143.9%"
+ },
+ {
+  "code": "2583",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 84.0-85.65)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》西普尼暗盤收報85.65元 高上市價189.4%"
+ },
+ {
+  "code": "2650",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 188.3-191.0)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》摯達科技暗盤收報188.3元 高上市價181.4%"
+ },
+ {
+  "code": "6687",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 40.92-42.0)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》聚水潭暗盤收報42.0元 高上市價37.3%"
+ },
+ {
+  "code": "0638",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 21.3-21.5)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》廣和通暗盤收報21.5元 平上市價0.0%"
+ },
+ {
+  "code": "6980",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 80.1-89.4)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》八馬茶業暗盤收報80.1元 高上市價60.2%"
+ },
+ {
+  "code": "2718",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 293.2-297.0)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》明略科技－Ｗ暗盤收報297.0元 高上市價110.6%"
+ },
+ {
+  "code": "2630",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 85.0-85.0)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》旺山旺水－Ｂ暗盤收報85.0元 高上市價154.7%"
+ },
+ {
+  "code": "2579",
+  "field": "grey_pct",
+  "kept": -2.412,
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": -1.5,
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》中偉新材暗盤收報33.5元 低上市價1.5%"
+ },
+ {
+  "code": "2579",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 33.12-33.22)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》中偉新材暗盤收報33.5元 低上市價1.5%"
+ },
+ {
+  "code": "9609",
+  "field": "grey_pct",
+  "kept": 0.49,
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": 0.5,
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》海偉股份暗盤收報14.35元 高上市價0.5%"
+ },
+ {
+  "code": "9609",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 14.35-14.66)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》海偉股份暗盤收報14.35元 高上市價0.5%"
+ },
+ {
+  "code": "2539",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 65.0-80.5)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》樂摩科技暗盤收報65.0元 高上市價62.5%"
+ },
+ {
+  "code": "2693",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 9.91-10.05)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》金岩高嶺新材暗盤收報9.91元 高上市價35.8%"
+ },
+ {
+  "code": "2408",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 6.0-6.04)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》遇見小麵暗盤收報6.04元 低上市價14.2%"
+ },
+ {
+  "code": "2658",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 49.34-49.86)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》天域半導體暗盤收報49.54元 低上市價14.6%"
+ },
+ {
+  "code": "2676",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 105.3-105.7)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》納芯微暗盤收報105.7元 低上市價8.9%"
+ },
+ {
+  "code": "2687",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 87.55-88.1)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》卓越睿新暗盤收報87.55元 高上市價29.7%"
+ },
+ {
+  "code": "2655",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 37.8-37.96)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》果下科技暗盤收報37.8元 高上市價88.1%"
+ },
+ {
+  "code": "2546",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 10.2-10.22)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》智匯礦業暗盤收報10.22元 高上市價126.6%"
+ },
+ {
+  "code": "3881",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 246.0-248.6)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》希迪智駕暗盤收報247.0元 低上市價6.1%"
+ },
+ {
+  "code": "2695",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 3.44-4.01)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》印象大紅袍暗盤收報3.44元 低上市價4.4%"
+ },
+ {
+  "code": "2396",
+  "field": "grey_pct",
+  "kept": 0.576,
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": 0.6,
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》華芢生物－Ｂ暗盤收報38.42元 高上市價0.6%"
+ },
+ {
+  "code": "2396",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 38.4-40.4)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》華芢生物－Ｂ暗盤收報38.42元 高上市價0.6%"
+ },
+ {
+  "code": "2581",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 6.97-7.1)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》明基醫院暗盤收報6.97元 低上市價25.4%"
+ },
+ {
+  "code": "2691",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 10.9-11.11)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》南華期貨股份暗盤收報11.11元 低上市價7.4%"
+ },
+ {
+  "code": "2657",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 91.65-92.35)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》林清軒暗盤收報91.65元 高上市價17.8%"
+ },
+ {
+  "code": "2671",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 8.07-8.8)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》美聯股份暗盤收報8.07元 高上市價13.7%"
+ },
+ {
+  "code": "1641",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 16.59-18.07)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》紅星冷鏈暗盤收報18.07元 高上市價47.4%"
+ },
+ {
+  "code": "2677",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 88.8-94.05)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》卓正醫療暗盤收報88.8元 高上市價48.2%"
+ },
+ {
+  "code": "2720",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 24.48-24.7)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》樂欣戶外暗盤收報24.48元 高上市價99.8%"
+ },
+ {
+  "code": "2706",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 84.0-85.2)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》海致科技集團暗盤收報84.0元 高上市價210.4%"
+ },
+ {
+  "code": "9981",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 21.0-21.08)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》沃爾核材暗盤收報21.08元 高上市價4.9%"
+ },
+ {
+  "code": "2715",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 13.9-14.2)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》埃斯頓暗盤收報14.1元 低上市價8.2%"
+ },
+ {
+  "code": "2649",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 10.9-14.0)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》優樂賽共享暗盤收報10.9元 低上市價0.9%"
+ },
+ {
+  "code": "2692",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 82.55-84.1)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》兆威機電暗盤收報82.8元 高上市價16.2%"
+ },
+ {
+  "code": "3268",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 28.9-29.4)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》美格智能暗盤收報29.4元 高上市價1.9%"
+ },
+ {
+  "code": "2701",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 11.64-11.79)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》國民技術暗盤收報11.7元 高上市價8.3%"
+ },
+ {
+  "code": "3355",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 60.1-60.9)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》飛速創新暗盤收報60.9元 高上市價46.4%"
+ },
+ {
+  "code": "2729",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 30.42-30.52)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》凱樂士科技暗盤收報30.52元 高上市價83.2%"
+ },
+ {
+  "code": "2632",
+  "field": "grey_pct",
+  "kept": 1.041,
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": 1.0,
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》澤景股份暗盤收報44.66元 高上市價1.0%"
+ },
+ {
+  "code": "2632",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 44.66-49.8)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》澤景股份暗盤收報44.66元 高上市價1.0%"
+ },
+ {
+  "code": "2726",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 104.7-105.0)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》瀚天天成暗盤收報105.0元 高上市價37.7%"
+ },
+ {
+  "code": "2526",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 192.7-199.5)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》德適－Ｂ暗盤收報199.5元 高上市價101.5%"
+ },
+ {
+  "code": "6636",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 61.55-62.2)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》極視角暗盤收報61.8元 高上市價54.5%"
+ },
+ {
+  "code": "1021",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 17.91-18.77)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》華沿機器人暗盤收報18.77元 高上市價10.4%"
+ },
+ {
+  "code": "0664",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 41.96-42.2)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》銅師傅暗盤收報41.96元 低上市價30.1%"
+ },
+ {
+  "code": "3625",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 83.5-84.6)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》傅里葉暗盤收報83.5元 高上市價108.8%"
+ },
+ {
+  "code": "3277",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 68.3-68.6)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》長光辰芯暗盤收報68.3元 高上市價71.3%"
+ },
+ {
+  "code": "2493",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 28.1-28.5)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》邁威生物－Ｂ暗盤收報28.5元 高上市價3.1%"
+ },
+ {
+  "code": "6810",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 93.0-95.0)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》商米科技－Ｗ暗盤收報95.0元 高上市價282.1%"
+ },
+ {
+  "code": "1609",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 290.0-309.2)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》天星醫療暗盤收報309.2元 高上市價213.9%"
+ },
+ {
+  "code": "1187",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 39.74-40.2)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》可孚醫療暗盤收報40.2元 高上市價2.2%"
+ },
+ {
+  "code": "1236",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 49.8-65.5)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》樂動機器人暗盤收報49.8元 高上市價88.9%"
+ },
+ {
+  "code": "7630",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 32.16-32.3)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》英派藥業－Ｂ暗盤收報32.16元 高上市價60.0%"
+ },
+ {
+  "code": "6871",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 53.55-54.65)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》翼菲科技暗盤收報54.65元 高上市價79.2%"
+ },
+ {
+  "code": "1511",
+  "field": "grey_pct",
+  "kept": -1.244,
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": -1.2,
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》馭勢科技暗盤收報59.55元 低上市價1.2%"
+ },
+ {
+  "code": "1511",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 59.3-60.35)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》馭勢科技暗盤收報59.55元 低上市價1.2%"
+ },
+ {
+  "code": "6872",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 145.6-147.5)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》丹諾醫藥－B暗盤收報147.5元 高上市價94.8%"
+ },
+ {
+  "code": "3310",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 25.08-25.36)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》雲英谷科技暗盤收報25.14元 高上市價20.8%"
+ },
+ {
+  "code": "2723",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 148.6-149.0)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》深演智能暗盤收報149.0元 高上市價168.5%"
+ },
+ {
+  "code": "0901",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 63.2-63.5)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》華曦達暗盤收報63.5元 高上市價93.6%"
+ },
+ {
+  "code": "3388",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 30.2-32.08)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》創想三維暗盤收報32.08元 高上市價70.6%"
+ },
+ {
+  "code": "2553",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 30.3-36.0)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》首鋼朗澤暗盤收報36.0元 高上市價146.6%"
+ },
+ {
+  "code": "2290",
+  "field": "grey_pct",
+  "kept": -1.544,
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": -1.5,
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》龍豐集團暗盤收報5.1元 低上市價1.5%"
+ },
+ {
+  "code": "2290",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 5.1-5.26)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》龍豐集團暗盤收報5.1元 低上市價1.5%"
+ },
+ {
+  "code": "1081",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 63.1-63.4)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》大金重工暗盤收報63.1元 低上市價5.0%"
+ },
+ {
+  "code": "1779",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 149.8-151.0)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》天辰生物－Ｂ暗盤收報150.9元 高上市價57.1%"
+ },
+ {
+  "code": "6658",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 98.1-100.0)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》溜溜梅暗盤收報99.25元 高上市價127.7%"
+ },
+ {
+  "code": "6675",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 31.4-31.58)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》Senasic暗盤收報31.4元 高上市價71.0%"
+ },
+ {
+  "code": "1392",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 26.08-26.2)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》海清智元暗盤收報26.2元 高上市價263.9%"
+ },
+ {
+  "code": "6132",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 78.0-81.8)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》華健未來－Ｂ暗盤收報81.8元 平上市價0.0%"
+ },
+ {
+  "code": "6067",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 12.6-12.68)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》星源材質暗盤收報12.64元 高上市價40.8%"
+ },
+ {
+  "code": "2335",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 35.5-35.6)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》麥科醫藥－Ｂ暗盤收報35.5元 高上市價95.1%"
+ },
+ {
+  "code": "6106",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 94.2-95.1)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》仙工智能暗盤收報94.2元 低上市價7.3%"
+ },
+ {
+  "code": "2272",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 118.0-119.9)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》科拓股份暗盤收報119.9元 高上市價203.2%"
+ },
+ {
+  "code": "1956",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 115.4-118.1)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》中科聞歌暗盤收報115.4元 高上市價90.1%"
+ },
+ {
+  "code": "3661",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 105.7-111.0)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》聖邦股份暗盤收報111.0元 高上市價30.3%"
+ },
+ {
+  "code": "1688",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 12.17-12.35)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》領益智造暗盤收報12.35元 高上市價21.3%"
+ },
+ {
+  "code": "9630",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 437.2-445.2)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》芯碁微裝暗盤收報445.2元 高上市價76.2%"
+ },
+ {
+  "code": "6228",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 25.18-26.6)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》PT Merdeka Gold-DRS暗盤收報26.6元 平上市價0.0%"
+ },
+ {
+  "code": "2672",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 58.1-59.7)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》白鴿在線暗盤收報58.1元 高上市價272.4%"
+ },
+ {
+  "code": "1191",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 204.6-213.0)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》海光芯正暗盤收報213.0元 高上市價86.8%"
+ },
+ {
+  "code": "9637",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 42.18-43.88)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》禮邦醫藥－Ｂ暗盤收報42.52元 高上市價88.1%"
+ },
+ {
+  "code": "2697",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 344.2-350.0)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》真健康醫療－Ｂ暗盤收報344.2元 高上市價172.7%"
+ },
+ {
+  "code": "6915",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 10.54-10.81)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》江西生物暗盤收報10.81元 低上市價3.5%"
+ },
+ {
+  "code": "3952",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 91.5-101.0)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》來福諧波暗盤收報101.0元 高上市價18.1%"
+ },
+ {
+  "code": "6715",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 103.5-104.5)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》鱘龍科技暗盤收報103.5元 高上市價37.1%"
+ },
+ {
+  "code": "0668",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 94.2-95.5)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》安克創新暗盤收報94.55元 低上市價4.8%"
+ },
+ {
+  "code": "2667",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 4.64-4.74)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》同仁堂醫養暗盤收報4.64元 低上市價15.6%"
+ },
+ {
+  "code": "7656",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 17.99-19.12)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》瑞為技術暗盤收報17.99元 低上市價16.9%"
+ },
+ {
+  "code": "6880",
+  "field": "grey_pct",
+  "kept": -0.338,
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": -0.3,
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》Momenta-W暗盤收報294.6元 低上市價0.3%"
+ },
+ {
+  "code": "6880",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 294.6-299.0)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》Momenta-W暗盤收報294.6元 低上市價0.3%"
+ },
+ {
+  "code": "7687",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 91.5-95.8)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》易控智駕暗盤收報91.5元 高上市價4.1%"
+ },
+ {
+  "code": "2797",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 15.5-16.11)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》齊雲山食品暗盤收報15.5元 高上市價93.8%"
+ },
+ {
+  "code": "1770",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 81.3-82.2)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》東方科脈暗盤收報81.3元 高上市價3.4%"
+ },
+ {
+  "code": "3752",
+  "field": "grey_pct",
+  "kept": -1.842,
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": -1.8,
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》珞石機器人暗盤收報37.3元 低上市價1.8%"
+ },
+ {
+  "code": "3752",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 37.3-38.02)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》珞石機器人暗盤收報37.3元 低上市價1.8%"
+ },
+ {
+  "code": "0537",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 38.0-38.08)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》普源精電暗盤收報38.0元 低上市價17.4%"
+ },
+ {
+  "code": "1377",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 340.0-345.0)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》鼎泰高科暗盤收報340.0元 低上市價10.5%"
+ },
+ {
+  "code": "6745",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 2.73-2.75)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》濱化股份暗盤收報2.73元 低上市價21.6%"
+ },
+ {
+  "code": "2261",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 16.65-16.7)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》拿森科技暗盤收報16.7元 高上市價60.3%"
+ },
+ {
+  "code": "3223",
+  "field": "grey_pct",
+  "kept": -0.25,
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": -0.3,
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》君正股份暗盤收報99.75元 低上市價0.3%"
+ },
+ {
+  "code": "3223",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 99.5-99.75)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》君正股份暗盤收報99.75元 低上市價0.3%"
+ },
+ {
+  "code": "0625",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 41.8-42.2)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》希音－Ｗ暗盤收報42.2元 低上市價13.1%"
+ },
+ {
+  "code": "9615",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 100.1-101.0)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》梅卡曼德機器人暗盤收報100.6元 低上市價1.1%"
+ },
+ {
+  "code": "2041",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 11.9-12.8)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》麥科田暗盤收報11.9元 低上市價22.8%"
+ },
+ {
+  "code": "9976",
+  "field": "grey_pct",
+  "kept": -0.678,
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": -0.7,
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》江波龍暗盤收報234.4元 低上市價0.7%"
+ },
+ {
+  "code": "9976",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 233.4-235.2)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》江波龍暗盤收報234.4元 低上市價0.7%"
+ },
+ {
+  "code": "3231",
+  "field": "grey_venue",
+  "kept": "Futu (etnet; venues 29.7-30.0)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》優地機器人暗盤收報29.7元 高上市價105.5%"
+ },
+ {
+  "code": "1828",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 36.5-36.75)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (etnet news story)",
+  "dropped_src": "etnet:news https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20250704242/"
+ },
+ {
+  "code": "2479",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet news story)",
+  "kept_src": "etnet:news https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240627200/",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》天聚地合(蘇州)科技股份有限公司-H股暗盤收報110.5元 高上市價32.6%"
+ },
+ {
+  "code": "2529",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet news story)",
+  "kept_src": "etnet:news https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20240516206/",
+  "dropped": "Phillip (輝立), as published by AAStocks",
+  "dropped_src": "aastocks:AASTOCKS news headline: 《新股》泓盈城市服務暗盤收報3.57元 高上市價11.6%"
+ },
+ {
+  "code": "2648",
+  "field": "grey_venue",
+  "kept": "Phillip (etnet; venues 59.6-59.9)",
+  "kept_src": "etnet:ipo-info 暗盤數據",
+  "dropped": "Phillip (etnet news story)",
+  "dropped_src": "etnet:news https://www.etnet.com.hk/www/tc/stocks/ipo-news-article/20250703277/"
+ },
+ {
+  "code": "3308",
+  "field": "grey_pct",
+  "kept": -1.1,
+  "kept_src": "press:AASTOCKS news, syndicated on Yahoo HK Finance: 《新股》中際旭創(03308.HK)暗盤收報969.5元 低上市價1.1% — offer HK$980.00, so 969.5/980-1 = -1.07% which rounds to the published -1.1%. Futu's own print for the same session was 971.0 (-0.9%); the Phillip figure is recorded to match the scrape's venue.",
+  "dropped": -1.071,
+  "dropped_src": "etnet:ipo-info 暗盤數據"
+ },
+ {
+  "code": "3308",
+  "field": "grey_venue",
+  "kept": "Phillip (輝立)",
+  "kept_src": "press:AASTOCKS news, syndicated on Yahoo HK Finance: 《新股》中際旭創(03308.HK)暗盤收報969.5元 低上市價1.1% — offer HK$980.00, so 969.5/980-1 = -1.07% which rounds to the published -1.1%. Futu's own print for the same session was 971.0 (-0.9%); the Phillip figure is recorded to match the scrape's venue.",
+  "dropped": "Phillip (etnet; venues 969.5-972.0)",
+  "dropped_src": "etnet:ipo-info 暗盤數據"
+ },
+ {
+  "code": "2475",
+  "field": "grey_venue",
+  "kept": "press (bastillepost) — venue not stated",
+  "kept_src": "press:bastillepost.com, via search: '立訊精密…暗盤收報60.15元，較招股價低4.9%' — offer HK$63.28, 60.15/63.28-1 = -4.95%, rounds to the published -4.9%.",
+  "dropped": "Phillip (etnet; venues 59.7-60.15)",
+  "dropped_src": "etnet:ipo-info 暗盤數據"
+ },
+ {
+  "code": "9980",
+  "field": "grey_venue",
+  "kept": "Phillip (輝立)",
+  "kept_src": "press:Ming Pao 2026-02-03 '東鵬飲料3暗盤表現一般': 富途 247.8 (-0.08%), 輝立 250 (+0.8%), 耀才 249.2 (+0.5%) — offer HK$248.00; the Phillip print is recorded to match the scrape's venue. 250/248-1 = +0.81%.",
+  "dropped": "Phillip (etnet; venues 247.8-250.0)",
+  "dropped_src": "etnet:ipo-info 暗盤數據"
+ },
+ {
+  "code": "6951",
+  "field": "grey_pct",
+  "kept": -4.29,
+  "kept_src": "press:Zhitong via cn.investing.com '三环集团(06951)暗盘收跌超4%…利弗莫尔证券暗盘交易显示报价96港元，较招股价100.3港元下跌4.29%' — 96/100.3-1 = -4.29% exactly.",
+  "dropped": -4.636,
+  "dropped_src": "etnet:ipo-info 暗盤數據"
+ },
+ {
+  "code": "6951",
+  "field": "grey_venue",
+  "kept": "Livermore (利弗莫爾) — NOT Phillip; the only published print found",
+  "kept_src": "press:Zhitong via cn.investing.com '三环集团(06951)暗盘收跌超4%…利弗莫尔证券暗盘交易显示报价96港元，较招股价100.3港元下跌4.29%' — 96/100.3-1 = -4.29% exactly.",
+  "dropped": "Futu (etnet; venues 95.05-96.0)",
+  "dropped_src": "etnet:ipo-info 暗盤數據"
+ },
+ {
+  "code": "6082",
+  "field": "grey_venue",
+  "kept": "Phillip (輝立), as published by AAStocks",
+  "kept_src": "press:AASTOCKS headline on Yahoo HK: '壁仞科技暗盤收報35.08元 高上市價79%' — offer HK$19.60, 35.08/19.6-1 = +78.98%. Grey high/low 38.8/19.6.",
+  "dropped": "Futu (etnet; venues 35.22-35.38)",
+  "dropped_src": "etnet:ipo-info 暗盤數據"
+ },
+ {
+  "code": "0470",
+  "field": "grey_venue",
+  "kept": "Phillip (輝立), as published by AAStocks",
+  "kept_src": "press:AASTOCKS NOW.1502421: '先導智能(00470.HK)暗盤收報46.66元 高上市價1.9%' — 根據輝立交易平台; offer HK$45.80, 46.66/45.8-1 = +1.88%.",
+  "dropped": "Phillip (etnet; venues 46.18-46.66)",
+  "dropped_src": "etnet:ipo-info 暗盤數據"
+ },
+ {
+  "code": "0100",
+  "field": "grey_venue",
+  "kept": "AAStocks headline figure (search summary attributes it to Futu; a second platform printed 209.2 / +26.8%)",
+  "kept_src": "press:AASTOCKS headline on Yahoo HK: 'MiniMax-WP(00100.HK)暗盤收報205.6元 高上市價24.6%' — offer HK$165.00, 205.6/165-1 = +24.61%.",
+  "dropped": "Futu (etnet; venues 205.6-212.6)",
+  "dropped_src": "etnet:ipo-info 暗盤數據"
+ },
+ {
+  "code": "0501",
+  "field": "grey_pct",
+  "kept": -0.3,
+  "kept_src": "press:HKET via search: '豪威集團暗盤昨日收104.5元，低上市價0.3%' — offer HK$104.80, 104.5/104.8-1 = -0.29%. Day-1 opened 108 (+3.1%).",
+  "dropped": -0.286,
+  "dropped_src": "etnet:ipo-info 暗盤數據"
+ },
+ {
+  "code": "0501",
+  "field": "grey_venue",
+  "kept": "press (HKET) — venue not stated",
+  "kept_src": "press:HKET via search: '豪威集團暗盤昨日收104.5元，低上市價0.3%' — offer HK$104.80, 104.5/104.8-1 = -0.29%. Day-1 opened 108 (+3.1%).",
+  "dropped": "Futu (etnet; venues 104.5-108.1)",
+  "dropped_src": "etnet:ipo-info 暗盤數據"
+ },
+ {
+  "code": "1333",
+  "field": "grey_pct",
+  "kept": 43.3,
+  "kept_src": "press:HKET 博雷頓1333暗盤收升逾四成 (2025-05-06): 富途收報25.8元 +43.3%; 耀才25.75 +43.1%; 輝立25.45 +41.4%",
+  "dropped": 41.111,
+  "dropped_src": "etnet:ipo-info 暗盤數據"
+ },
+ {
+  "code": "1333",
+  "field": "grey_venue",
+  "kept": "Futu (富途)",
+  "kept_src": "press:HKET 博雷頓1333暗盤收升逾四成 (2025-05-06): 富途收報25.8元 +43.3%; 耀才25.75 +43.1%; 輝立25.45 +41.4%",
+  "dropped": "Phillip (etnet; venues 25.4-25.8)",
+  "dropped_src": "etnet:ipo-info 暗盤數據"
+ },
+ {
+  "code": "2585",
+  "field": "grey_venue",
+  "kept": "not stated (華盛通)",
+  "kept_src": "press:華盛通 暗盘收盘 (2024-11-28): 梦金园收涨4.5%，报12.54港元; 中金在线: 暗盘先杀跌-20%后收升",
+  "dropped": "Phillip (etnet; venues 12.38-12.64)",
+  "dropped_src": "etnet:ipo-info 暗盤數據"
+ },
+ {
+  "code": "2609",
+  "field": "grey_venue",
+  "kept": "three venues, range (5.25-5.37, midpoint shown)",
+  "kept_src": "press:HKET 佰澤醫療2609 (2025-06-20): 暗盤收報5.25至5.37元，升24.4%至27.3%; offer 4.22; midpoint shown",
+  "dropped": "Phillip (etnet; venues 5.25-5.37)",
+  "dropped_src": "etnet:ipo-info 暗盤數據"
+ },
+ {
+  "code": "2582",
+  "field": "grey_venue",
+  "kept": "Phillip (輝立)",
+  "kept_src": "press:stockfisher.com.hk (2024-11-14): 輝立暗盤收報80.7元，較上市價65元高24.2%; 富途/耀才81元 +24.6%",
+  "dropped": "Phillip (etnet; venues 80.7-81.0)",
+  "dropped_src": "etnet:ipo-info 暗盤數據"
+ },
+ {
+  "code": "2627",
+  "field": "grey_pct",
+  "kept": 162.6,
+  "kept_src": "press:HKET/Yahoo (2025-08-08): 輝立交易場收報33.88元，較上市價12.9元高逾1.62倍; 富途亦炒高接近1.6倍",
+  "dropped": 158.76,
+  "dropped_src": "etnet:ipo-info 暗盤數據"
+ },
+ {
+  "code": "2627",
+  "field": "grey_venue",
+  "kept": "Phillip (輝立)",
+  "kept_src": "press:HKET/Yahoo (2025-08-08): 輝立交易場收報33.88元，較上市價12.9元高逾1.62倍; 富途亦炒高接近1.6倍",
+  "dropped": "Futu (etnet; venues 33.38-33.88)",
+  "dropped_src": "etnet:ipo-info 暗盤數據"
  },
  {
   "code": "2643",
@@ -427,54 +1683,6 @@
    "Heda"
   ],
   "dropped_src": "hkex-pdf:deep(allotment)"
- },
- {
-  "code": "2672",
-  "field": "final_price",
-  "kept": 15.6,
-  "kept_src": "press:OFFER PRICE: 10jqka 2026-06-29 + ifeng: 发行价15.6港元, 收报73港元 首日+367.95%, 全球发售3334.44万股, 募资总额5.2亿港元. The parse's 54,382,183 was the LISTING EXPENSES line (HK$54.38m), not a price.",
-  "dropped": 54382183.0,
-  "dropped_src": "hkex-pdf:allotment"
- },
- {
-  "code": "2525",
-  "field": "final_price",
-  "kept": 212.8,
-  "kept_src": "press:OFFER PRICE: STCN + HKEX allotment 2025-09-15 (2025091501458.pdf): 发行价212.80港元, 收报234港元 +9.96%, 19,550,000 offer shares incl. fully-exercised offer-size adjustment. ORIGINAL pre-subdivision price — do NOT restate to 26.60 for the 8-for-1 subdivision of 2026-07-10. | FINANCIALS (RMB x1.1): Hesai FY2024 PR: net revenues RMB2,077.2m (stored NI -112.6 HK$m = the RMB102.4m GAAP loss, kept)",
-  "dropped": 154.99,
-  "dropped_src": "hkex-pdf:allotment"
- },
- {
-  "code": "2026",
-  "field": "final_price",
-  "kept": 139.0,
-  "kept_src": "press:OFFER PRICE: Sina 2025-11-04 pricing + 2025-11-06 debut: 每股139.00港元 (22.8% below the HK$180 max), 收报126.10港元 -9.28%, 48,249,000 shares incl. full offer-size adjustment.",
-  "dropped": 252.25,
-  "dropped_src": "hkex-pdf:allotment"
- },
- {
-  "code": "6656",
-  "field": "final_price",
-  "kept": 324.2,
-  "kept_src": "press:OFFER PRICE: AAStocks debut report: opened HK$581 (+79.2%) from listing price HK$324.20, closed HK$659.5 +103.4%; 13,573,900 H shares, gross ≈HK$4.4bn (Mercom).",
-  "dropped": 210.8,
-  "dropped_src": "hkex-pdf:allotment"
- },
- {
-  "code": "9630",
-  "field": "final_price",
-  "kept": 252.73,
-  "kept_src": "press:OFFER PRICE: Sina 2026-06-26: 发行价252.73港元 (top of range), 收报515.00港元 +103.77%, 发行1283.865万股, 募资总额32.45亿港元. NOT the midday 445.8 snapshot.",
-  "dropped": 91.7,
-  "dropped_src": "hkex-pdf:allotment"
- },
- {
-  "code": "6090",
-  "field": "final_price",
-  "kept": 71.2,
-  "kept_src": "press:OFFER PRICE: Sina 2025-09-23: 发售价每股71.20港元 (top of the 62.01-71.20 range), 收报102.50港元 +43.96%, 全球发售1098.09万股.",
-  "dropped": 63.58,
-  "dropped_src": "hkex-pdf:allotment"
  },
  {
   "code": "3223",
@@ -712,19 +1920,27 @@
   "dropped_src": "hkex-pdf:allotment:table"
  },
  {
-  "code": "9630",
-  "field": "oversub_intl_mult",
-  "kept": 27.22,
-  "kept_src": "bloomberg:CP037 (desk paste 2026-08-20)",
-  "dropped": 1.0,
-  "dropped_src": "hkex-pdf:allotment:table"
- },
- {
   "code": "1377",
   "field": "oversub_intl_mult",
   "kept": 24.5,
   "kept_src": "bloomberg:CP037 (desk paste 2026-08-20)",
   "dropped": 354.64,
+  "dropped_src": "hkex-pdf:allotment:table"
+ },
+ {
+  "code": "0300",
+  "field": "oversub_intl_mult",
+  "kept": 8.06,
+  "kept_src": "hkex-pdf:allotment intl section",
+  "dropped": 0.11,
+  "dropped_src": "hkex-pdf:allotment:table"
+ },
+ {
+  "code": "9976",
+  "field": "oversub_intl_mult",
+  "kept": 3.88,
+  "kept_src": "hkex-pdf:allotment intl section",
+  "dropped": 40.32,
   "dropped_src": "hkex-pdf:allotment:table"
  },
  {
