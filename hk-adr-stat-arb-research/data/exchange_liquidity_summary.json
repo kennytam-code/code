@@ -1,0 +1,132 @@
+{
+  "as_of": "2026-10-06",
+  "HK_SSF": {
+    "report_business_date": "2026-10-05",
+    "source": "https://www.hkex.com.hk/eng/stat/dmstat/dayrpt/stock261005.htm",
+    "all_expiry_volume_lots": {
+      "ALB": 96,
+      "JDC": 25,
+      "BIU": 319,
+      "NTE": 13,
+      "TRP": 20,
+      "BLI": 0,
+      "PEN": 25
+    },
+    "ALB_front_month": {
+      "volume_lots": 82,
+      "multiplier_shares": 500,
+      "settlement_HKD": 105.55,
+      "turnover_proxy_HKD": 4327550.0
+    }
+  },
+  "HSTECH": {
+    "report_business_date": "2026-10-05",
+    "actual_after_hours_start_date": "2026-10-02",
+    "contract": "October 2026",
+    "after_hours_volume_lots": 8054,
+    "OI_after_report_business_day": 198303,
+    "source": "https://www.hkex.com.hk/eng/stat/dmstat/dayrpt/htif261005.htm"
+  },
+  "Japan_futures": {
+    "period": "September 2026",
+    "trading_days": 19,
+    "ADV_lots": {
+      "TOPIX": 134255,
+      "mini_TOPIX": 25961,
+      "TOPIX_Banks": 4455
+    },
+    "source": "https://www.jpx.co.jp/english/corporate/news/news-releases/0063/vk0khi000002j3l8-att/reference(oseandtocom).pdf",
+    "limitation": "Both sessions; may include negotiated trades. Quarterly roll month. Not US-window depth."
+  },
+  "Japan_PTS": {
+    "period": "September 2026",
+    "nights": 19,
+    "symbol": "MUFG 8306",
+    "night_turnover_JPY": 5970031830,
+    "mean_nightly_turnover_JPY": 314212201.57894737,
+    "source": "https://www.japannext.co.jp/pub_data/reports/2026/monthly/Japannext_Monthly_Statistics_2026-09.pdf"
+  },
+  "Australia_SPI": {
+    "night_report_date": "2026-10-02",
+    "contract": "December 2026 AP",
+    "volume_lots": 22813,
+    "OI": 265928,
+    "mini_AM_trades_in_sample": 0,
+    "source": "https://www.asx.com.au/data/futures/reports/EODWebMarketSummary261002SFN.htm"
+  },
+  "Taiwan_quote_snapshot": {
+    "night_report_date": "2026-10-02",
+    "limitation": "Terminal report quotes. No average spread, size, fillability or current book inferred.",
+    "contracts": [
+      {
+        "contract": "QFF",
+        "expiry": "202610",
+        "bid": 2515.0,
+        "ask": 2520.0,
+        "spread_bp": 19.860973187686195,
+        "reported_night_volume": 4873,
+        "source": "https://www.taifex.com.tw/enl/eng3/futDailyMarketReport?queryType=2&marketCode=1&queryDate=2026%2F10%2F02&commodity_id=specialid2&commodity_id2=QFF"
+      },
+      {
+        "contract": "SOF",
+        "expiry": "202610",
+        "bid": 16778.0,
+        "ask": 17499.0,
+        "spread_bp": 420.6902587741051,
+        "reported_night_volume": 19,
+        "source": "https://www.taifex.com.tw/enl/eng3/futDailyMarketReport?queryType=2&marketCode=1&queryDate=2026%2F10%2F02&commodity_id=SOF&commodity_id2="
+      },
+      {
+        "contract": "TE",
+        "expiry": "202610",
+        "bid": 3080.8,
+        "ask": 3110.0,
+        "spread_bp": 94.33352716934746,
+        "reported_night_volume": 65,
+        "source": "https://www.taifex.com.tw/enl/eng3/futDailyMarketReport?queryType=2&marketCode=1&queryDate=2026%2F10%2F02&commodity_id=TE&commodity_id2="
+      },
+      {
+        "contract": "CCF",
+        "expiry": "202610",
+        "bid": 162.5,
+        "ask": 163.0,
+        "spread_bp": 30.721966205837173,
+        "reported_night_volume": 5035,
+        "source": "https://www.taifex.com.tw/enl/eng3/futDailyMarketReport?queryType=2&marketCode=1&queryDate=2026%2F10%2F02&commodity_id=specialid2&commodity_id2=CCF"
+      },
+      {
+        "contract": "CDF",
+        "expiry": "202610",
+        "bid": 2515.0,
+        "ask": 2520.0,
+        "spread_bp": 19.860973187686195,
+        "reported_night_volume": 1448,
+        "source": "https://www.taifex.com.tw/enl/eng3/futDailyMarketReport?queryType=2&marketCode=1&queryDate=2026%2F10%2F02&commodity_id=specialid2&commodity_id2=CDF"
+      },
+      {
+        "contract": "TX",
+        "expiry": "202610",
+        "bid": 48460.0,
+        "ask": 48477.0,
+        "spread_bp": 3.50743266245087,
+        "reported_night_volume": 37554,
+        "source": "https://www.taifex.com.tw/enl/eng3/futDailyMarketReport?queryType=2&marketCode=1&queryDate=2026%2F10%2F02&commodity_id=TX&commodity_id2="
+      },
+      {
+        "contract": "MTX",
+        "expiry": "202610",
+        "bid": 48459.0,
+        "ask": 48470.0,
+        "spread_bp": 2.269702565795582,
+        "reported_night_volume": 113982,
+        "source": "https://www.taifex.com.tw/enl/eng3/futDailyMarketReport?queryType=2&marketCode=1&queryDate=2026%2F10%2F02&commodity_id=MTX&commodity_id2="
+      }
+    ]
+  },
+  "unmeasured": [
+    "Korean futures US-window depth",
+    "individual US ADR premarket and ATS depth",
+    "borrow and short route availability",
+    "net strategy P&L"
+  ]
+}

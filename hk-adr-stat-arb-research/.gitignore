@@ -1,0 +1,7 @@
+.DS_Store
+~$*.docx
+__pycache__/
+scripts/liquidity_sources/
+scripts/liquidity_US_20d.json
+scripts/liquidity_US_20d.csv
+scripts/liquidity_tw_5sessions.json

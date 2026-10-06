@@ -1,0 +1,59 @@
+group,ticker,n,from,to,avg_shares,avg_usd_proxy,median_usd_proxy,min_usd_proxy,source
+Australia,BHP,20,2026-09-04,2026-10-02,2711087.95,233744650.241,217535709.53,126922391.11999999,https://chartexchange.com/symbol/nyse-bhp/historical/
+Australia,RIO,20,2026-09-04,2026-10-02,1784474.55,172758289.479,164966314.59,107057536.24000001,https://chartexchange.com/symbol/nyse-rio/historical/
+Australia,WDS,20,2026-09-04,2026-10-02,650456.3,14894145.7285,14462588.19,9027166.5,https://chartexchange.com/symbol/nyse-wds/historical/
+HK broader,HSBC,20,2026-09-04,2026-10-02,1553407.8,157191024.81149998,140129462.89999998,87976054.32000001,https://chartexchange.com/symbol/nyse-hsbc/historical/
+HK broader,BZ,20,2026-09-04,2026-10-02,8738797.15,133002056.9945,101927528.22,51866271.72,https://chartexchange.com/symbol/nasdaq-bz/historical/
+HK broader,BEKE,20,2026-09-04,2026-10-02,5633591.7,93848061.926,90542964.71000001,40995634.68,https://chartexchange.com/symbol/nyse-beke/historical/
+HK broader,ZTO,20,2026-09-04,2026-10-02,3200125.5,63800347.0155,49160230.56,30282798.0,https://chartexchange.com/symbol/nyse-zto/historical/
+HK broader,HTHT,20,2026-09-04,2026-10-02,1399851.2,60415252.4495,57330278.33,34873936.08,https://chartexchange.com/symbol/nasdaq-htht/historical/
+HK broader,YUMC,20,2026-09-04,2026-10-02,1319542.4,54825770.9185,55378591.239999995,33352800.090000004,https://chartexchange.com/symbol/nyse-yumc/historical/
+HK broader,GDS,20,2026-09-04,2026-10-02,1326806.7,41500180.5825,36454092.129999995,17399044.0,https://chartexchange.com/symbol/nasdaq-gds/historical/
+HK broader,EDU,20,2026-09-04,2026-10-02,653169.5,36571617.385,35584628.739999995,17224535.87,https://chartexchange.com/symbol/nyse-edu/historical/
+HK broader,PONY,20,2026-09-04,2026-10-02,3986121.8,26960011.324500002,24054103.525,15192849.1,https://chartexchange.com/symbol/nasdaq-pony/historical/
+HK broader,ZLAB,20,2026-09-04,2026-10-02,836151.15,21193584.0295,21601535.935000002,7491526.98,https://chartexchange.com/symbol/nasdaq-zlab/historical/
+HK broader,HSAI,20,2026-09-04,2026-10-02,1050100.85,17739728.139,16248127.165,11386356.64,https://chartexchange.com/symbol/nasdaq-hsai/historical/
+HK broader,QFIN,20,2026-09-04,2026-10-02,2007811.65,15520695.1445,14124540.585,7364377.0200000005,https://chartexchange.com/symbol/nasdaq-qfin/historical/
+HK broader,WRD,20,2026-09-04,2026-10-02,2773965.3,15460549.3265,13482897.09,6390562.880000001,https://chartexchange.com/symbol/nasdaq-wrd/historical/
+HK broader,KC,20,2026-09-04,2026-10-02,1287009.65,12492742.6895,10662512.52,5816708.5200000005,https://chartexchange.com/symbol/nasdaq-kc/historical/
+HK broader,ATHM,20,2026-09-04,2026-10-02,497279.4,10617216.575,9789883.0,4509330.84,https://chartexchange.com/symbol/nyse-athm/historical/
+HK broader,MNSO,20,2026-09-04,2026-10-02,848591.85,7672154.4315,7687222.66,4188882.64,https://chartexchange.com/symbol/nyse-mnso/historical/
+HK broader,WB,20,2026-09-04,2026-10-02,992250.2,6502361.647,6520865.215,3528138.5599999996,https://chartexchange.com/symbol/nasdaq-wb/historical/
+HK broader,ZH,20,2026-09-04,2026-10-02,631276.05,2102966.048,1642905.91,420552.9,https://chartexchange.com/symbol/nyse-zh/historical/
+HK broader,TUYA,20,2026-09-04,2026-10-02,701870.65,1186368.0385,487447.47,256122.24,https://chartexchange.com/symbol/nyse-tuya/historical/
+HK core,BABA,20,2026-09-04,2026-10-02,8150142.25,901318577.4705,800670350.615,629510167.36,https://chartexchange.com/symbol/nyse-baba/historical/
+HK core,BIDU,20,2026-09-04,2026-10-02,2620145.7,236257839.2005,224819072.04000002,143427321.59,https://chartexchange.com/symbol/nasdaq-bidu/historical/
+HK core,TCOM,20,2026-09-04,2026-10-02,4380101.2,173946988.801,172640560.9,98512148.58,https://chartexchange.com/symbol/nasdaq-tcom/historical/
+HK core,JD,20,2026-09-04,2026-10-02,5969648.3,160485574.585,150539498.91000003,113215765.74,https://chartexchange.com/symbol/nasdaq-jd/historical/
+HK core,NIO,20,2026-09-04,2026-10-02,33529588.25,121163254.549,104722889.43,74532046.06,https://chartexchange.com/symbol/nyse-nio/historical/
+HK core,NTES,20,2026-09-04,2026-10-02,661001.75,78242938.2625,77665983.5,46342423.86,https://chartexchange.com/symbol/nasdaq-ntes/historical/
+HK core,XPEV,20,2026-09-04,2026-10-02,7010136.45,71756846.109,65838644.325,39925558.44,https://chartexchange.com/symbol/nyse-xpev/historical/
+HK core,TME,20,2026-09-04,2026-10-02,7116424.95,57241225.7965,52264182.989999995,28985208.0,https://chartexchange.com/symbol/nyse-tme/historical/
+HK core,BILI,20,2026-09-04,2026-10-02,3614896.4,55020373.3195,41069438.79,19893963.18,https://chartexchange.com/symbol/nasdaq-bili/historical/
+HK core,LI,20,2026-09-04,2026-10-02,3168034.4,37043449.353,37304884.120000005,20882158.560000002,https://chartexchange.com/symbol/nasdaq-li/historical/
+Japan,SONY,20,2026-09-04,2026-10-02,3426722.55,80974869.6935,81063688.9,51249936.8,https://chartexchange.com/symbol/nyse-sony/historical/
+Japan,MUFG,20,2026-09-04,2026-10-02,2995631.3,69763192.6395,66702658.675,47782373.96,https://chartexchange.com/symbol/nyse-mufg/historical/
+Japan,TM,20,2026-09-04,2026-10-02,307683.15,58706932.261,57495386.215,37677888.5,https://chartexchange.com/symbol/nyse-tm/historical/
+Japan,SMFG,20,2026-09-04,2026-10-02,1483782.25,39063279.5765,36451984.56999999,23955254.88,https://chartexchange.com/symbol/nyse-smfg/historical/
+Japan,MFG,20,2026-09-04,2026-10-02,3473700.95,38276886.4735,38181556.535,20245959.45,https://chartexchange.com/symbol/nyse-mfg/historical/
+Japan,HMC,20,2026-09-04,2026-10-02,885956.85,28414287.598500002,23557487.675,14170080.88,https://chartexchange.com/symbol/nyse-hmc/historical/
+Korea,SKHY,20,2026-09-04,2026-10-02,20025725.3,3742624915.4785,3067153793.855,1785873751.7,https://chartexchange.com/symbol/nasdaq-skhy/historical/
+Korea,SKM,20,2026-09-04,2026-10-02,1133741.2,41395875.917,38031241.8,23098676.58,https://chartexchange.com/symbol/nyse-skm/historical/
+Korea,KT,20,2026-09-04,2026-10-02,1346429,26158760.27,25260870.419999998,15400470.64,https://chartexchange.com/symbol/nyse-kt/historical/
+Korea,KB,20,2026-09-04,2026-10-02,151688.15,19315175.2415,18381606.08,14016289.14,https://chartexchange.com/symbol/nyse-kb/historical/
+Korea,SHG,20,2026-09-04,2026-10-02,181469.1,14618129.241,11955163.83,8072172.100000001,https://chartexchange.com/symbol/nyse-shg/historical/
+Korea,PKX,20,2026-09-04,2026-10-02,195724.15,11563957.8315,11732153.26,6497303.8,https://chartexchange.com/symbol/nyse-pkx/historical/
+Korea,KEP,20,2026-09-04,2026-10-02,903012.45,10371231.976,9150569.475,4633722.48,https://chartexchange.com/symbol/nyse-kep/historical/
+Korea,LPL,20,2026-09-04,2026-10-02,2308547.85,7040682.6255,6407230.484999999,4201850.9399999995,https://chartexchange.com/symbol/nyse-lpl/historical/
+Korea,WF,20,2026-09-04,2026-10-02,86108.35,6666636.727,5447643.140000001,3244859.0100000002,https://chartexchange.com/symbol/nyse-wf/historical/
+Taiwan,TSM,20,2026-09-04,2026-10-02,10164986.6,4471452699.85,4483928430.35,3264913968.48,https://chartexchange.com/symbol/nyse-tsm/historical/
+Taiwan,ASX,20,2026-09-04,2026-10-02,7065152.3,295385685.8535,253605170.505,155541114.88,https://chartexchange.com/symbol/nyse-asx/historical/
+Taiwan,UMC,20,2026-09-04,2026-10-02,11045230.1,261973461.901,237918605.36,154002780.35999998,https://chartexchange.com/symbol/nyse-umc/historical/
+Taiwan,CHT,20,2026-09-04,2026-10-02,264802.15,12043792.0645,11550256.02,5734986.32,https://chartexchange.com/symbol/nyse-cht/historical/
+US hedge ETFs,SMH,20,2026-09-04,2026-10-02,6478505.3,3771345795.776,3477173723.795,1991112244.6499999,https://chartexchange.com/symbol/nasdaq-smh/historical/
+US hedge ETFs,SOXX,20,2026-09-04,2026-10-02,6972159.45,3769282835.8435,3516242184.84,2548340826.24,https://chartexchange.com/symbol/nasdaq-soxx/historical/
+US hedge ETFs,EWY,20,2026-09-04,2026-10-02,13321191.2,2466003678.2845,2302378172.205,1250330168.25,https://chartexchange.com/symbol/nyse-ewy/historical/
+US hedge ETFs,EWT,20,2026-09-04,2026-10-02,4198648.75,473177214.297,401884639.74,225030071.97,https://chartexchange.com/symbol/nyse-ewt/historical/
+US hedge ETFs,EWJ,20,2026-09-04,2026-10-02,3995544.9,389692550.9345,373373330.625,232251992.55999997,https://chartexchange.com/symbol/nyse-ewj/historical/
+US hedge ETFs,KWEB,20,2026-09-04,2026-10-02,14912633.45,368581485.791,367060283.22,217228539.6,https://chartexchange.com/symbol/nyse-kweb/historical/
+US hedge ETFs,EWA,20,2026-09-04,2026-10-02,3155512.55,90902859.6315,82130401.79499999,43937984.64,https://chartexchange.com/symbol/nyse-ewa/historical/
