@@ -2,7 +2,48 @@
 
 This source and calculation log accompanies the concise analysis. Amounts are RMB unless explicitly labelled HKD or USD. Prices are closing observations, not live quotes.
 
-Revised 8 October 2026 for the H-share-focused trader briefing. Anker is added to the main H table and the closest A references. The revised Word file is published at the repository root as `Transsion_H_IPO_Trader_Brief_2026-10-08.docx`. Price observations remain dated below.
+Substantively rewritten 8 October 2026 for the H-share-focused trader briefing. The investment arguments are consolidated into good points and risks, including the business potential, AI economics, price-volume recovery, inventory trade-off and named cornerstone investors. Anker is added to the main H table and the closest A references. The revised Word file is published at the repository root as `Transsion_H_IPO_Trader_Brief_2026-10-08.docx`. Price observations remain dated below.
+
+
+## Investment conclusions after reading the H1 analyses
+
+- **Inventory judgment:** prebuying was beneficial to H1 gross profit because handset repricing preceded the recognition of higher component costs. The June stock position is now a material cash and earnings risk, conditional on future demand, prices and turnover. Raw materials account for 62% of the net increase, but memory is not separately quantified. A decline in memory prices can allow competitors to cut handset prices while Transsion still holds expensive stock; write-downs are conditional, not automatic. Stock consumed in production or sold to dealers is not the same as end-customer sell-through or collection of cash.
+- **Recovery judgment:** H1 smartphone units sold were 39.5m versus 44.5m (−11.2%); ASP was RMB713.4 versus RMB547.5 (+30.3%). This is a pricing, mix and cost-timing recovery rather than a handset volume rebound. FY2026 consensus owner profit of RMB3.557bn remains approximately 36% below the FY2024 level of RMB5.549bn; recovery is partial against the earlier earnings peak. The issuer specifically attributes the margin gain to price adjustments and historical inventory; no causal AI contribution to ASP is disclosed.
+- **Business potential:** H1 other products and services produced RMB5.683bn sales (+91.3%), 16.04% of group revenue. Their calculated A-basis gross margin is 29.09% versus 21.32% for smartphones, so continued growth could improve the earnings mix. The category includes services as well as accessories, appliances and energy products; it must not be described as pure AI, pure internet or a single energy-storage segment. Existing brands and local distribution are the route to cross-selling, subject to execution and working-capital needs.
+- **AI potential:** actual capabilities include Ella assistance, local-language voice and imaging. The plausible earnings channels are improved handset mix/retention and additional app/ad monetisation through Transsion OS. The OS already earns from app pre-installation, app distribution and advertising. The economic inference is separate from reported facts: there is no separately disclosed AI profit or proof that users will pay enough to offset R&D and inference costs. Generic Android AI features can be copied. The FY2025 internet business was only 1.44% of total revenue despite its high margin.
+- **Cornerstone interpretation:** the investor mix includes financial managers and industrial/supply-chain companies. Longsys is the largest anchor at US$30m; BYD’s GoldenLink commits RMB150m, MediaTek’s Digimoc US$9m, GIC US$17m, E Fund US$16m and Millennium US$15m. Hosin Hong Kong commits HK$40m. MediaTek’s vehicle is an existing 6.22% shareholder before the IPO, so its subscription is not wholly new external validation. Commitments give allocation certainty for 38.8% of the base offer at midpoint; they are not a price floor, wider-book demand measurement or evidence of procurement discounts.
+- **Peer interpretation:** Xiaomi remains the closest listed handset-brand business. Anker is relevant to branded non-phone products and channel expansion, with substantially different mix and distorted reported H1 margin. Huaqin and Longcheer are manufacturing references, not direct branded-handset peers. An H discount to A does not create an automatic arbitrage return.
+
+### Newly verified product margins
+
+The issuer’s H1 report, printed p.142, gives the following contract revenue and cost amounts. Calculations use the A accounting presentation, before separately presented inventory impairment.
+
+| H1 2026 category | Revenue RMB | Cost RMB | Calculated gross margin |
+|---|---:|---:|---:|
+| Smartphones | 28,177,426,146.64 | 22,168,608,097.77 | 21.3249% |
+| Other products and services | 5,683,079,514.78 | 4,029,783,950.46 | 29.0915% |
+
+Other-category sales / group revenue = 16.0397%. Other-category gross profit of RMB1.6533bn / A-basis group gross profit of RMB8.0187bn = 20.6180%. The brief uses the first ratio and the category margins; it does not assume the whole category has internet-like margins.
+
+### Newly read Xueqiu and Niuniu analyses
+
+The three articles below were read in full through their public browser pages, rather than inferred from search snippets. Media accounts and individual investors are labelled separately. Their arguments are checked against issuer filings before being included in the Word brief; they do not establish a representative retail or subscription consensus.
+
+| Author and date | Platform and article | Investment argument used | Claims not adopted |
+|---|---|---|---|
+| 36氪财经, 28 Aug 2026, media | [非洲手機之王，吃到了存儲漲價的紅利](https://q.futunn.com/feed/117172557579044) | Old-stock cost buffer, non-phone expansion, cash burden and the conditional inventory risk if prices/demand turn | Memory price forecasts and estimated IDC shipments are not substituted for issuer smartphone units sold |
+| 澄心阁闲人, 20 Aug 2026, individual investor | [传音半年报炸裂！净利大增46%，怎么看？](https://xueqiu.com/1044320424/405823503) | Prebuying can explain cost timing; H2 depends on pricing, input costs and cash conversion | Unverified supplier quotas, claimed CXMT holding/paper profit and assumptions of permanently higher handset prices are excluded |
+| 美股研究社, 18 Aug 2026, media | [低价手机越来越难做，传音开始重新计算一部手机的利润](https://xueqiu.com/3582153332/405502607) | Pricing-versus-volume tension, locally useful AI, and the need to demonstrate monetisation | No claim that AI caused the reported ASP increase or already adds a quantified earnings stream |
+
+Kaiyuan’s H1 commentary and Guolian Minsheng’s H1 commentary were also reviewed for the upgrade, AI-localisation and category/channel expansion arguments. The useful arguments are integrated into the good/bad points; broker ratings and retail tone are not presented as an additional section.
+
+New primary references:
+
+- [Transsion H1 report](https://file.finance.sina.com.cn/211.154.219.97%3A9494/MRGG/CNSESH_STOCK/2026/2026-8/2026-08-18/12497971.PDF), printed pp.8, 142–144: pricing/cost timing, product revenue/cost, R&D and FX.
+- [Issuer H1 earnings preview](https://static.cninfo.com.cn/finalpage/2026-07-20/1225431511.PDF), 20 July: handset repricing and the lagged inventory-cost effect.
+- [TECNO CAMON 50 Pro official announcement](https://www.tecno-mobile.com/pak/news/tecno-camon-50-pro-pakistan-ai-60x-zoom-flashsnap-launch/), 5 April: actual Ella and imaging capabilities, without a quantified profit contribution.
+- [Transsion June application Business chapter](https://www.hkexnews.hk/app/sehk/2026/108656/a134253/sehk26061801864.pdf), printed pp.118, 121, 135: feature-phone upgrade, localisation and app/ad monetisation. Business-description evidence only; final prospectus governs offer terms and current figures.
+- [Final prospectus](https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1007/2026100700008_c.pdf), printed pp.213–219: cornerstone amounts, investment types and MediaTek’s existing holding; p.261: smartphone units and ASP.
 
 ## Calculation conventions
 
