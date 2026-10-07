@@ -43,11 +43,13 @@
 2378,PRU,deal_size_hkdm,18806.2,Recalculated; input source confidence retained,derived:gross (price x shares),,derived:gross (price x shares),,,,18500.0
 2378,PRU,eff_free_float_hkdm,18806.2,Recalculated; input source confidence retained,derived: deal size x (1 - cornerstone%),,derived: deal size x (1 - cornerstone%),,,,18500.0
 2256,ABBISKO-B,ni_latest,-777.3029,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0930/2021093000017.pdf,496,Consolidated net income,2020,RMB,thousands,-147.3
+2235,MICROTECH MED-B,cornerstone_n,12,Recalculated; input source confidence retained,derived:len(investor list),,derived:len(investor list),,,,11
 2235,MICROTECH MED-B,ni_latest,-133.1099,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1006/2021100600007.pdf,22,Net income attributable to owners,2020,RMB,thousands,-4.5
 2235,MICROTECH MED-B,ps_ipo,138.7,Recalculated; input source confidence retained,derived:mktcap / latest FY revenue,,derived:mktcap / latest FY revenue,,,,589.0
 2235,MICROTECH MED-B,rev_latest,82.8047,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1006/2021100600007.pdf,22,Revenue,2020,RMB,thousands,19.5
 2252,MEDBOT-B,ni_latest,-229.7614,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1021/2021102100011.pdf,24,Net income attributable to owners,2020,RMB,thousands,-53.9
 2252,MEDBOT-B,rev_latest,0.0,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1021/2021102100011.pdf,287,Revenue,2020,RMB,thousands,8.8
+2251,AIRDOC-B,cornerstone_n,10,Recalculated; input source confidence retained,derived:len(investor list),,derived:len(investor list),,,,9
 2251,AIRDOC-B,ni_latest,-88.0704,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1026/9985006/2021102600017.pdf,14,Net income attributable to owners,2020,RMB,thousands,-53.7
 2251,AIRDOC-B,ps_ipo,154.4,Recalculated; input source confidence retained,derived:mktcap / latest FY revenue,,derived:mktcap / latest FY revenue,,,,1124.9
 2251,AIRDOC-B,rev_latest,52.4392,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1026/9985006/2021102600017.pdf,14,Revenue,2020,RMB,thousands,7.2
@@ -135,6 +137,7 @@
 2517,GUOQUAN,ni_latest,252.8977,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2023/1020/2023102000007.pdf,18,Net income attributable to owners,2022,RMB,thousands,365.2
 2517,GUOQUAN,pe_ipo,56.1,Recalculated; input source confidence retained,derived:mktcap / latest FY NI,,derived:mktcap / latest FY NI,,,,38.8
 9663,SINOSYNERGY,ni_latest,-300.7576,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2023/1127/2023112700007.pdf,25,Net income attributable to owners,2022,RMB,thousands,-308.2
+1497,YAN PALACE,cornerstone_n,7,Recalculated; input source confidence retained,derived:len(investor list),,derived:len(investor list),,,,6
 0666,REPT BATTERO,ni_latest,-389.5331,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2023/1208/2023120800019.pdf,18,Net income attributable to owners,2022,RMB,thousands,-495.9
 6911,LANCANG TEA,ni_latest,79.4255,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2023/1214/2023121400011.pdf,19,Net income attributable to owners,2022,RMB,thousands,77.5
 6911,LANCANG TEA,pe_ipo,11.3,Recalculated; input source confidence retained,derived:mktcap / latest FY NI,,derived:mktcap / latest FY NI,,,,11.6
@@ -193,10 +196,12 @@
 2561,VISEN PHARMA-B,ni_latest,-274.527,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0313/2025031300017.pdf,539,Net income attributable to owners,2023,RMB,thousands,-229.2
 2569,SOFT INTL,ni_latest,60.2261,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0319/2025031900013.pdf,459,Consolidated net income,2024,RMB,thousands,64.8
 2569,SOFT INTL,pe_ipo,8.5,Recalculated; input source confidence retained,derived:mktcap / latest FY NI,,derived:mktcap / latest FY NI,,,,7.9
+9606,DUALITYBIO-B,cornerstone_n,15,Recalculated; input source confidence retained,derived:len(investor list),,derived:len(investor list),,,,14
 1333,BRETON,ps_ipo,9.8,Recalculated; input source confidence retained,derived:mktcap / latest FY revenue,,derived:mktcap / latest FY revenue,,,,17.0
 1333,BRETON,rev_latest,699.0027,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0425/2025042500055.pdf,12,Revenue,2024,RMB,thousands,401.0
 2865,DRINDA,ps_ipo,0.6,Recalculated; input source confidence retained,derived:mktcap / latest FY revenue,,derived:mktcap / latest FY revenue,,,,3.2
 2865,DRINDA,rev_latest,10916.2834,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0428/2025042800051.pdf,35,Revenue,2024,RMB,thousands,2006.3
+3750,CATL,cornerstone_n,25,Recalculated; input source confidence retained,derived:len(investor list),,derived:len(investor list),,,,18
 3750,CATL,ni_latest,57236.1306,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0512/2025051200005.pdf,17,Net income attributable to owners,2024,RMB,thousands,60824.5
 3750,CATL,pe_ipo,20.8,Recalculated; input source confidence retained,derived:mktcap / latest FY NI,,derived:mktcap / latest FY NI,,,,19.6
 2603,JIHONG CO,ni_latest,200.1241,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0519/2025051900011.pdf,19,Net income attributable to owners,2024,RMB,thousands,202.9
@@ -221,6 +226,7 @@
 2597,XUNZHONG,pe_ipo,28.0,Recalculated; input source confidence retained,derived:mktcap / latest FY NI,,derived:mktcap / latest FY NI,,,,29.6
 1304,FORTIOR,ni_latest,244.5982,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0630/2025063000015.pdf,331,Net income attributable to owners,2024,RMB,thousands,156.2
 1304,FORTIOR,pe_ipo,53.4,Recalculated; input source confidence retained,derived:mktcap / latest FY NI,,derived:mktcap / latest FY NI,,,,83.7
+9887,LEADS BIOLABS-B,cornerstone_n,16,Recalculated; input source confidence retained,derived:len(investor list),,derived:len(investor list),,,,15
 9887,LEADS BIOLABS-B,ni_latest,-331.3376,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0717/2025071700005.pdf,29,Consolidated net income,2024,RMB,thousands,-95.2
 9887,LEADS BIOLABS-B,rev_latest,0.0,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0717/2025071700005.pdf,29,Revenue,2024,RMB,thousands,9.8
 2627,AB&B BIO-TECH-B,ps_ipo,17.8,Recalculated; input source confidence retained,derived:mktcap / latest FY revenue,,derived:mktcap / latest FY revenue,,,,16918.0
@@ -229,12 +235,15 @@
 2591,INNOGEN-B,rev_latest,0.0,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0807/2025080700013.pdf,27,Revenue,2024,RMB,thousands,42.0
 3858,JIAXIN INTL RES,intl_placees,149.0,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0827/2025082702293.pdf,4,,,,,6
 3858,JIAXIN INTL RES,rev_latest,0.0,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0820/2025082000021.pdf,34,Revenue,2024,HK$,thousands,126.3
+2595,GENFLEET-B,cornerstone_n,19,Recalculated; input source confidence retained,derived:len(investor list),,derived:len(investor list),,,,18
 2889,PATEO,ps_ipo,5.5,Recalculated; input source confidence retained,derived:mktcap / latest FY revenue,,derived:mktcap / latest FY revenue,,,,7.1
 2889,PATEO,rev_latest,2812.7033,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0922/2025092200011.pdf,14,Revenue,2024,RMB,thousands,2154.9
+2259,ZIJIN GOLD INTL,cornerstone_n,32,Recalculated; input source confidence retained,derived:len(investor list),,derived:len(investor list),,,,31
 2650,ZHIDA TECH,ni_latest,-262.7262,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0930/2025093000033.pdf,23,Net income attributable to owners,2024,RMB,thousands,-259.5
 2575,XUANZHUBIO-B,ps_ipo,181.5,Recalculated; input source confidence retained,derived:mktcap / latest FY revenue,,derived:mktcap / latest FY revenue,,,,341.4
 2575,XUANZHUBIO-B,rev_latest,33.1034,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1006/2025100600007.pdf,33,Revenue,2024,RMB,thousands,17.6
 2670,YUNJI,ni_latest,-203.4593,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1008/2025100800003.pdf,24,Consolidated net income,2024,RMB,thousands,-64.0
+6031,SANY HEAVY IND,cornerstone_n,21,Recalculated; input source confidence retained,derived:len(investor list),,derived:len(investor list),,,,20
 6031,SANY HEAVY IND,ni_latest,6572.9961,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1020/2025102000017.pdf,414,Net income attributable to owners,2024,RMB,thousands,6701.8
 6031,SANY HEAVY IND,pe_ipo,28.0,Recalculated; input source confidence retained,derived:mktcap / latest FY NI,,derived:mktcap / latest FY NI,,,,27.5
 2630,VIGONVITA-B,ps_ipo,429.7,Recalculated; input source confidence retained,derived:mktcap / latest FY revenue,,derived:mktcap / latest FY revenue,,,,1597.9
@@ -248,6 +257,8 @@
 2659,BAO PHARMA-B,rev_latest,6.776,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1202/2025120200034.pdf,31,Revenue,2024,RMB,thousands,1.6
 2655,GUOXIA TECH,ni_latest,54.0309,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1208/2025120800011.pdf,476,Net income attributable to owners,2024,RMB,thousands,35.0
 2655,GUOXIA TECH,pe_ipo,168.4,Recalculated; input source confidence retained,derived:mktcap / latest FY NI,,derived:mktcap / latest FY NI,,,,260.0
+2546,ZHIHUI MINING,cornerstone_n,2,Recalculated; input source confidence retained,derived:len(investor list),,derived:len(investor list),,,,3
+3881,CIDI,cornerstone_n,5,Recalculated; input source confidence retained,derived:len(investor list),,derived:len(investor list),,,,4
 2396,B&K CORP-B,ni_latest,-233.475,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1212/2025121200081.pdf,541,Net income attributable to owners,2024,RMB,thousands,-180.5
 2396,B&K CORP-B,ps_ipo,15654.8,Recalculated; input source confidence retained,derived:mktcap / latest FY revenue,,derived:mktcap / latest FY revenue,,,,14981.7
 2661,QINGSONG HEALTH,ni_latest,11.4378,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1215/2025121500031.pdf,332,Consolidated net income,2024,RMB,thousands,-0.0
@@ -276,8 +287,10 @@
 2715,ESTUN,ni_latest,-892.0219,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0227/2026022700017.pdf,24,Net income attributable to owners,2024,RMB,thousands,-664.6
 2649,ALSCO POOLING,ni_latest,44.1254,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0227/2026022700013.pdf,324,Net income attributable to owners,2024,RMB,thousands,55.8
 2649,ALSCO POOLING,pe_ipo,22.5,Recalculated; input source confidence retained,derived:mktcap / latest FY NI,,derived:mktcap / latest FY NI,,,,17.8
+1989,DELTON,cornerstone_n,15,Recalculated; input source confidence retained,derived:len(investor list),,derived:len(investor list),,,,14
 1989,DELTON,ni_latest,1117.3679,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0312/2026031200003.pdf,424,Consolidated net income,2025,RMB,thousands,743.7
 1989,DELTON,pe_ipo,30.4,Recalculated; input source confidence retained,derived:mktcap / latest FY NI,,derived:mktcap / latest FY NI,,,,45.7
+3355,FS.COM,cornerstone_n,11,Recalculated; input source confidence retained,derived:len(investor list),,derived:len(investor list),,,,12
 2729,GALAXIS TECH,ni_latest,-189.6928,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0316/2026031600013.pdf,384,Net income attributable to owners,2025,RMB,thousands,-195.9
 2632,NEW VISION CO,ni_latest,-157.6014,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0316/2026031600011.pdf,481,Net income attributable to owners,2024,RMB,thousands,-151.6
 2526,DIAGENS-B,ni_latest,-47.7125,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0320/2026032000025.pdf,313,Consolidated net income,2024,RMB,thousands,-61.7
@@ -292,29 +305,38 @@
 3277,GPIXEL,ni_latest,323.6002,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0409/2026040900047.pdf,15,Net income attributable to owners,2025,RMB,thousands,322.5
 3277,GPIXEL,pe_ipo,35.8,Recalculated; input source confidence retained,derived:mktcap / latest FY NI,,derived:mktcap / latest FY NI,,,,36.0
 2493,MABWELL-B,ni_latest,-1066.2674,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0420/2026042000011.pdf,272,Net income attributable to owners,2025,RMB,thousands,-1069.5
+1879,XIZHI TECH-P,cornerstone_n,19,Recalculated; input source confidence retained,derived:len(investor list),,derived:len(investor list),,,,18
 1879,XIZHI TECH-P,ni_latest,-1476.6136,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0420/2026042000021.pdf,27,Consolidated net income,2025,RMB,thousands,-808.8
 1187,COFOE MEDICAL,ni_latest,408.7688,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0427/2026042700013.pdf,277,Net income attributable to owners,2025,RMB,thousands,-1.5
 1236,LDROBOT,ps_ipo,9.5,Recalculated; input source confidence retained,derived:mktcap / latest FY revenue,,derived:mktcap / latest FY revenue,,,,51.6
 1236,LDROBOT,rev_latest,822.5503,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0430/2026043000099.pdf,16,Revenue,2025,RMB,thousands,150.6
+7630,IMPACT THERAP-B,cornerstone_n,9,Recalculated; input source confidence retained,derived:len(investor list),,derived:len(investor list),,,,8
 1511,UISEE TECH,ni_latest,-249.3975,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0512/2026051200147.pdf,328,Net income attributable to owners,2025,RMB,thousands,-253.2
 1511,UISEE TECH,ps_ipo,27.1,Recalculated; input source confidence retained,derived:mktcap / latest FY revenue,,derived:mktcap / latest FY revenue,,,,60.7
 1511,UISEE TECH,rev_latest,361.0827,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0512/2026051200147.pdf,20,Revenue,2025,RMB,thousands,161.3
 3388,CREALITY,ni_latest,-200.8171,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0520/2026052000023.pdf,13,Net income attributable to owners,2025,RMB,thousands,-226.9
 2553,SHOUGANG LANZA,ni_latest,-224.4286,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0526/2026052600047.pdf,250,Net income attributable to owners,2025,RMB,thousands,-357.4
+1779,LONGBIO-B,cornerstone_n,16,Recalculated; input source confidence retained,derived:len(investor list),,derived:len(investor list),,,,15
 6675,SENASIC,ni_latest,-362.8031,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0609/2026060900029.pdf,296,Net income attributable to owners,2025,RMB,thousands,-386.5
 6132,HJ SCIENCE-B,ps_ipo,421.6,Recalculated; input source confidence retained,derived:mktcap / latest FY revenue,,derived:mktcap / latest FY revenue,,,,421.0
 6067,SENIOR MATERIAL,ni_latest,116.2172,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0612/2026061200031.pdf,301,Net income attributable to owners,2025,RMB,thousands,157.4
 6067,SENIOR MATERIAL,pe_ipo,115.5,Recalculated; input source confidence retained,derived:mktcap / latest FY NI,,derived:mktcap / latest FY NI,,,,85.3
 1956,WENGE AI,ni_latest,-191.7355,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0617/2026061700025.pdf,310,Net income attributable to owners,2025,RMB,thousands,-172.8
+3661,SG MICRO,cornerstone_n,25,Recalculated; input source confidence retained,derived:len(investor list),,derived:len(investor list),,,,24
+1688,LINGYI ITECH,cornerstone_n,21,Recalculated; input source confidence retained,derived:len(investor list),,derived:len(investor list),,,,20
 1688,LINGYI ITECH,ni_latest,2516.4964,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0617/2026061700029.pdf,313,Net income attributable to owners,2025,RMB,thousands,2559.5
 1688,LINGYI ITECH,pe_ipo,32.8,Recalculated; input source confidence retained,derived:mktcap / latest FY NI,,derived:mktcap / latest FY NI,,,,32.3
+9637,ALEBUND-B,cornerstone_n,19,Recalculated; input source confidence retained,derived:len(investor list),,derived:len(investor list),,,,18
 3952,LAIFUAL,ni_latest,-187.6699,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0622/2026062200047.pdf,13,Consolidated net income,2025,RMB,thousands,-185.7
 6715,XUNLONG SCITECH,ni_latest,401.5319,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0622/2026062200025.pdf,203,Consolidated net income,2025,RMB,thousands,399.7
+0668,ANKER,cornerstone_n,14,Recalculated; input source confidence retained,derived:len(investor list),,derived:len(investor list),,,,13
 2667,TONGRENTANGCARE,ni_latest,30.2247,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0626/2026062600021.pdf,17,Net income attributable to owners,2025,RMB,thousands,37.1
 2667,TONGRENTANGCARE,pe_ipo,74.7,Recalculated; input source confidence retained,derived:mktcap / latest FY NI,,derived:mktcap / latest FY NI,,,,60.9
 9971,BASICSEMI,ni_latest,-368.7387,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0629/2026062900049.pdf,306,Net income attributable to owners,2025,RMB,thousands,-260.8
 1770,DKE,ps_ipo,2.1,Recalculated; input source confidence retained,derived:mktcap / latest FY revenue,,derived:mktcap / latest FY revenue,,,,7.0
 1770,DKE,rev_latest,1884.2791,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0629/2026062900101.pdf,19,Revenue,2025,RMB,thousands,571.6
+3752,ROKAE ROBOTICS,cornerstone_n,6,Recalculated; input source confidence retained,derived:len(investor list),,derived:len(investor list),,,,5
+2475,LUXSHARE ICT,cornerstone_n,33,Recalculated; input source confidence retained,derived:len(investor list),,derived:len(investor list),,,,32
 2475,LUXSHARE ICT,ni_latest,18259.747,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0630/2026063000097.pdf,223,Net income attributable to owners,2025,RMB,thousands,19987.3
 2475,LUXSHARE ICT,pe_ipo,26.7,Recalculated; input source confidence retained,derived:mktcap / latest FY NI,,derived:mktcap / latest FY NI,,,,24.4
 6745,BEFAR GROUP,ni_latest,259.0412,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0630/2026063000101.pdf,17,Consolidated net income,2025,RMB,thousands,918.8
@@ -328,6 +350,7 @@
 2041,MEDCAPTAIN,ni_latest,53.7746,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0828/2026082800009.pdf,14,Net income attributable to owners,2025,RMB,thousands,55.8
 2041,MEDCAPTAIN,pe_ipo,154.5,Recalculated; input source confidence retained,derived:mktcap / latest FY NI,,derived:mktcap / latest FY NI,,,,148.8
 9856,LIGENT,ni_latest,963.4559,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0914/2026091400007.pdf,328,Net income attributable to owners,2025,RMB,thousands,959.9
+3228,KINWONG,cornerstone_n,15,Recalculated; input source confidence retained,derived:len(investor list),,derived:len(investor list),,,,14
 3228,KINWONG,cornerstone_pct,47.69,Reviewed primary filing,https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0928/2026092801965.pdf,7,"Printed total 34,788,400 cornerstone shares / 47.69%; Note 2 equates H shares to base Offer Shares. Group totals counted once.",,,,47.4
 3228,KINWONG,eff_free_float_hkdm,2666.4,Recalculated; input source confidence retained,derived: deal size x (1 - cornerstone%),,derived: deal size x (1 - cornerstone%),,,,2681.18
 3228,KINWONG,eff_free_float_shares,38157163,Recalculated; input source confidence retained,derived: offer shares x (1 - cornerstone%),,derived: offer shares x (1 - cornerstone%),,,,38368702

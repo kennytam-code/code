@@ -1,14 +1,14 @@
 {
-  "reviewed_at": "2026-10-07",
+  "reviewed_at": "2026-10-08",
   "snapshot_asof": "2026-10-02",
   "stocks": 524,
   "numeric_values": 37771,
   "numeric_fields": 99,
   "status_counts": {
     "Price / benchmark audit reconciled": 14918,
-    "Retained source; not independently re-confirmed": 13735,
+    "Retained source; not independently re-confirmed": 13741,
     "Recalculated; input source confidence retained": 4621,
-    "Reviewed primary filing": 3746,
+    "Reviewed primary filing": 3740,
     "Reviewed primary filing metadata": 751
   },
   "errors": [],
@@ -1925,14 +1925,14 @@
       "source": "hkex-pdf:financial-summary(RMB)"
     }
   ],
-  "material_changes": 335,
+  "material_changes": 358,
   "subscriptions": {
     "oversub_public_mult": 524,
     "oversub_intl_mult": 521
   },
   "cornerstone": {
-    "percentage_checks": 202,
-    "unresolved_name_aliases": 265
+    "percentage_checks": 196,
+    "unresolved_name_aliases": 226
   },
   "lockups": {
     "rows": 1064,

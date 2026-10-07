@@ -13,7 +13,7 @@ THE FILES
   Clawback_Study.docx       the 套路回撥 allocation study
   READ_ME_FIRST.txt         this file
 
-MARKET TABS (7 October 2026)
+MARKET TABS (8 October 2026)
   IPO Live: all 524 IPOs; live LAST_PRICE and change vs PX_YEST_CLOSE.
   B5 selects Sector/Subsector classification; H34 chooses the sector
   for the second, subsector-average chart. The first chart stays broad.
@@ -22,6 +22,8 @@ MARKET TABS (7 October 2026)
   from listing through TODAY and appends an available live endpoint.
   Lock-up: original filed expiry schedules for all 524 stocks;
   returns use seven HK trading sessions before and after expiry.
+  Excel: B4 selects H code; E4 selects expiry event, with Auto default.
+  Both files show the IPO date and a selectable day -7 to +7 graph.
   HTML Lock-up selects a company and holder-group event to chart
   every session from day -7 to +7, rebased to the expiry reference.
   Prices through 2 October 2026. Future and
