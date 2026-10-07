@@ -1,0 +1,1941 @@
+{
+  "reviewed_at": "2026-10-07",
+  "snapshot_asof": "2026-10-02",
+  "stocks": 524,
+  "numeric_values": 37771,
+  "numeric_fields": 99,
+  "status_counts": {
+    "Price / benchmark audit reconciled": 14918,
+    "Retained source; not independently re-confirmed": 13735,
+    "Recalculated; input source confidence retained": 4621,
+    "Reviewed primary filing": 3746,
+    "Reviewed primary filing metadata": 751
+  },
+  "errors": [],
+  "unconfirmed_financials": [
+    {
+      "code": "1440",
+      "field": "ni_latest",
+      "value": 46.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2129",
+      "field": "ni_latest",
+      "value": 34.5,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (SGD x5.7): Legion Consortium (SG freight) FY2019: rev S$43.67m, NP S$6.06m (zhitongcaijing; FY2020 full year undisclosed pre-listing)"
+    },
+    {
+      "code": "2129",
+      "field": "rev_latest",
+      "value": 248.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (SGD x5.7): Legion Consortium (SG freight) FY2019: rev S$43.67m, NP S$6.06m (zhitongcaijing; FY2020 full year undisclosed pre-listing)"
+    },
+    {
+      "code": "1643",
+      "field": "rev_latest",
+      "value": 240.6,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2146",
+      "field": "ni_latest",
+      "value": 124.5,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2158",
+      "field": "rev_latest",
+      "value": 613.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "1490",
+      "field": "ni_latest",
+      "value": 52.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2159",
+      "field": "ni_latest",
+      "value": 28.6,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2159",
+      "field": "rev_latest",
+      "value": 469.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2161",
+      "field": "ni_latest",
+      "value": 44.3,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:broker factsheet (cyberquote 2161.pdf): HK$1,072.4m at HK$1.20 | FINANCIALS (HKD x1.0): JBM Healthcare FY2020 (Mar-YE) prospectus: revenue HK$381.5m, profit HK$44.3m"
+    },
+    {
+      "code": "2161",
+      "field": "rev_latest",
+      "value": 381.5,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:broker factsheet (cyberquote 2161.pdf): HK$1,072.4m at HK$1.20 | FINANCIALS (HKD x1.0): JBM Healthcare FY2020 (Mar-YE) prospectus: revenue HK$381.5m, profit HK$44.3m"
+    },
+    {
+      "code": "2170",
+      "field": "rev_latest",
+      "value": 46.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "6601",
+      "field": "ni_latest",
+      "value": 202.8,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "1413",
+      "field": "ni_latest",
+      "value": 38.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(HK$)"
+    },
+    {
+      "code": "1413",
+      "field": "rev_latest",
+      "value": 404.8,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(HK$)"
+    },
+    {
+      "code": "2518",
+      "field": "ni_latest",
+      "value": 3745.7,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:lanjinger.com/d/154659: 开盘181港元 市值913.77亿 | FINANCIALS (RMB x1.1): Autohome FY2020 PR: net revenues RMB8,658.6m, NI attributable RMB3,405.2m"
+    },
+    {
+      "code": "2518",
+      "field": "rev_latest",
+      "value": 9524.5,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:lanjinger.com/d/154659: 开盘181港元 市值913.77亿 | FINANCIALS (RMB x1.1): Autohome FY2020 PR: net revenues RMB8,658.6m, NI attributable RMB3,405.2m"
+    },
+    {
+      "code": "9888",
+      "field": "ni_latest",
+      "value": 24719.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:sina tech 2021-03-23 + STCN: 总市值7128亿港元 | FINANCIALS (RMB x1.1): Baidu FY2020 PR: total revenues RMB107,074m, NI attributable RMB22,472m"
+    },
+    {
+      "code": "9888",
+      "field": "rev_latest",
+      "value": 117781.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:sina tech 2021-03-23 + STCN: 总市值7128亿港元 | FINANCIALS (RMB x1.1): Baidu FY2020 PR: total revenues RMB107,074m, NI attributable RMB22,472m"
+    },
+    {
+      "code": "9626",
+      "field": "ni_latest",
+      "value": -3359.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "9626",
+      "field": "rev_latest",
+      "value": 13198.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:chinanews 2021-03-30: 总市值约2980.19亿港元 | FINANCIALS (RMB x1.1): Bilibili FY2020 PR/20-F: total net revenues RMB11,999.0m (stored NI is the attributable line, kept)"
+    },
+    {
+      "code": "2195",
+      "field": "ni_latest",
+      "value": 43.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(HK$)"
+    },
+    {
+      "code": "2195",
+      "field": "rev_latest",
+      "value": 302.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(HK$)"
+    },
+    {
+      "code": "9959",
+      "field": "rev_latest",
+      "value": 167.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "9961",
+      "field": "ni_latest",
+      "value": -3571.7,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (RMB x1.1): Trip.com FY2020 PR: net revenue RMB18,316m, NI attributable -RMB3,247m"
+    },
+    {
+      "code": "6622",
+      "field": "rev_latest",
+      "value": 0.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (RMB x1.1): Zhaoke Ophthalmology prospectus: NO revenue line FY2020; loss RMB727.0m"
+    },
+    {
+      "code": "2191",
+      "field": "ni_latest",
+      "value": 26.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(HK$)"
+    },
+    {
+      "code": "9982",
+      "field": "ni_latest",
+      "value": 749.1,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (RMB x1.1): Central China Mgmt FY2020: rev RMB1,152m, NP RMB681m (jiemian)"
+    },
+    {
+      "code": "9982",
+      "field": "rev_latest",
+      "value": 1267.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (RMB x1.1): Central China Mgmt FY2020: rev RMB1,152m, NP RMB681m (jiemian)"
+    },
+    {
+      "code": "2171",
+      "field": "ni_latest",
+      "value": -291.6,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2171",
+      "field": "rev_latest",
+      "value": 34.1,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "9858",
+      "field": "rev_latest",
+      "value": 12959.3,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2155",
+      "field": "ni_latest",
+      "value": 161.3,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2155",
+      "field": "rev_latest",
+      "value": 3109.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2219",
+      "field": "ni_latest",
+      "value": 132.6,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "1965",
+      "field": "rev_latest",
+      "value": 131.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2162",
+      "field": "ni_latest",
+      "value": -900.7,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (RMB x1.1): KeyMed prospectus: NO revenue line FY2020 (the '41.19m' press figure is OTHER income); loss RMB818.8m — replaces a misparsed NI"
+    },
+    {
+      "code": "2162",
+      "field": "rev_latest",
+      "value": 0.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (RMB x1.1): KeyMed prospectus: NO revenue line FY2020 (the '41.19m' press figure is OTHER income); loss RMB818.8m — replaces a misparsed NI"
+    },
+    {
+      "code": "6913",
+      "field": "ni_latest",
+      "value": 187.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (RMB x1.1): South China Vocational Education FY2020: rev RMB450m, profit RMB170m (hstong/gelonghui)"
+    },
+    {
+      "code": "2137",
+      "field": "rev_latest",
+      "value": 34.1,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2192",
+      "field": "rev_latest",
+      "value": 234.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2175",
+      "field": "ni_latest",
+      "value": 157.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2015",
+      "field": "ni_latest",
+      "value": -166.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (RMB x1.1): Li Auto SEC 6-K 2021-02-25: total revenues RMB9,456.6m, net loss RMB151.7m"
+    },
+    {
+      "code": "2015",
+      "field": "rev_latest",
+      "value": 10402.3,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (RMB x1.1): Li Auto SEC 6-K 2021-02-25: total revenues RMB9,456.6m, net loss RMB151.7m"
+    },
+    {
+      "code": "6609",
+      "field": "rev_latest",
+      "value": 0.1,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "9869",
+      "field": "ni_latest",
+      "value": 106.7,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2256",
+      "field": "rev_latest",
+      "value": 0.6,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2197",
+      "field": "rev_latest",
+      "value": 1119.8,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "1948",
+      "field": "rev_latest",
+      "value": 6996.8,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "9699",
+      "field": "ni_latest",
+      "value": -833.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2276",
+      "field": "ni_latest",
+      "value": -1.6,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "6633",
+      "field": "ni_latest",
+      "value": 124.6,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "6633",
+      "field": "rev_latest",
+      "value": 1349.6,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2270",
+      "field": "rev_latest",
+      "value": 61.3,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2185",
+      "field": "rev_latest",
+      "value": 67.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2257",
+      "field": "rev_latest",
+      "value": 0.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (USD x7.8): Sirnaomics AR2022 4-yr summary: no revenue line FY2020; loss US$46.4m"
+    },
+    {
+      "code": "0020",
+      "field": "ni_latest",
+      "value": -18854.1,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2021/12"
+    },
+    {
+      "code": "0020",
+      "field": "rev_latest",
+      "value": 5170.3,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2021/12"
+    },
+    {
+      "code": "2260",
+      "field": "ni_latest",
+      "value": 45.1,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2250",
+      "field": "ni_latest",
+      "value": 54.5,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(HK$)"
+    },
+    {
+      "code": "2250",
+      "field": "rev_latest",
+      "value": 233.5,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(HK$)"
+    },
+    {
+      "code": "2121",
+      "field": "ni_latest",
+      "value": -0.6,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "1406",
+      "field": "ni_latest",
+      "value": 30.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(HK$)"
+    },
+    {
+      "code": "2157",
+      "field": "rev_latest",
+      "value": 0.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (RMB x1.1): Lepu Bio accountant's report: NO revenue line FY2020; loss RMB613.4m"
+    },
+    {
+      "code": "2179",
+      "field": "rev_latest",
+      "value": 0.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (RMB x1.1): RecBio AR2022 FY2021 comparative: no revenue line; loss RMB657.6m"
+    },
+    {
+      "code": "2325",
+      "field": "ni_latest",
+      "value": 286.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2325",
+      "field": "rev_latest",
+      "value": 1320.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2347",
+      "field": "ni_latest",
+      "value": 33.7,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(HK$)"
+    },
+    {
+      "code": "2246",
+      "field": "ni_latest",
+      "value": -960.1,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2021/12"
+    },
+    {
+      "code": "2246",
+      "field": "rev_latest",
+      "value": 583.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2372",
+      "field": "ni_latest",
+      "value": 39.3,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2372",
+      "field": "rev_latest",
+      "value": 407.3,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2376",
+      "field": "ni_latest",
+      "value": 84.7,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2392",
+      "field": "ni_latest",
+      "value": 32.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2392",
+      "field": "rev_latest",
+      "value": 876.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "9896",
+      "field": "ni_latest",
+      "value": 702.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2022/06"
+    },
+    {
+      "code": "9896",
+      "field": "rev_latest",
+      "value": 11094.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2022/06"
+    },
+    {
+      "code": "6686",
+      "field": "rev_latest",
+      "value": 4759.3,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "1204",
+      "field": "ni_latest",
+      "value": 24.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(HK$)"
+    },
+    {
+      "code": "1204",
+      "field": "rev_latest",
+      "value": 534.3,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(HK$)"
+    },
+    {
+      "code": "2321",
+      "field": "ni_latest",
+      "value": 23.6,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(HK$)"
+    },
+    {
+      "code": "2321",
+      "field": "rev_latest",
+      "value": 668.7,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(HK$)"
+    },
+    {
+      "code": "9886",
+      "field": "ni_latest",
+      "value": -1.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "9886",
+      "field": "rev_latest",
+      "value": 2451.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2350",
+      "field": "ni_latest",
+      "value": 47.3,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(HK$)"
+    },
+    {
+      "code": "2350",
+      "field": "rev_latest",
+      "value": 631.5,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(HK$)"
+    },
+    {
+      "code": "9863",
+      "field": "rev_latest",
+      "value": 694.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "6660",
+      "field": "ni_latest",
+      "value": -667.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "3931",
+      "field": "rev_latest",
+      "value": 7498.8,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "9877",
+      "field": "rev_latest",
+      "value": 172.8,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "1489",
+      "field": "ni_latest",
+      "value": 46.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(HK$)"
+    },
+    {
+      "code": "1489",
+      "field": "rev_latest",
+      "value": 440.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(HK$)"
+    },
+    {
+      "code": "2420",
+      "field": "ni_latest",
+      "value": 89.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "1407",
+      "field": "ni_latest",
+      "value": 75.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "3660",
+      "field": "ni_latest",
+      "value": 6359.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (RMB x1.1): 360 DigiTech SEC 6-K 2022-03-11: total net revenue RMB16,635.6m, NI attributable RMB5,781.7m"
+    },
+    {
+      "code": "3660",
+      "field": "rev_latest",
+      "value": 18299.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (RMB x1.1): 360 DigiTech SEC 6-K 2022-03-11: total net revenue RMB16,635.6m, NI attributable RMB5,781.7m"
+    },
+    {
+      "code": "2145",
+      "field": "ni_latest",
+      "value": 372.7,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2145",
+      "field": "rev_latest",
+      "value": 3980.8,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2427",
+      "field": "ni_latest",
+      "value": 25.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (RMB x1.1): Guanze Medical FY2021: rev RMB211m, NP RMB23.1m (lejucaijing)"
+    },
+    {
+      "code": "6698",
+      "field": "rev_latest",
+      "value": 960.8,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2022/12"
+    },
+    {
+      "code": "2425",
+      "field": "ni_latest",
+      "value": 173.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2022/12"
+    },
+    {
+      "code": "2425",
+      "field": "rev_latest",
+      "value": 4183.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2022/12"
+    },
+    {
+      "code": "2147",
+      "field": "ni_latest",
+      "value": 53.1,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2147",
+      "field": "rev_latest",
+      "value": 376.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2458",
+      "field": "ni_latest",
+      "value": -1.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2459",
+      "field": "ni_latest",
+      "value": 32.7,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(US$)"
+    },
+    {
+      "code": "2459",
+      "field": "rev_latest",
+      "value": 846.6,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(US$)"
+    },
+    {
+      "code": "2455",
+      "field": "rev_latest",
+      "value": 661.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "1405",
+      "field": "ni_latest",
+      "value": -244.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2409",
+      "field": "rev_latest",
+      "value": 2907.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(US$)"
+    },
+    {
+      "code": "2439",
+      "field": "rev_latest",
+      "value": 282.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "9669",
+      "field": "ni_latest",
+      "value": -1034.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "9669",
+      "field": "rev_latest",
+      "value": 612.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2480",
+      "field": "ni_latest",
+      "value": -797.7,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (RMB x1.1): Luzhu prospectus: NO revenue line FY2022 (13.9m = other income); loss RMB725.2m"
+    },
+    {
+      "code": "2480",
+      "field": "rev_latest",
+      "value": 0.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (RMB x1.1): Luzhu prospectus: NO revenue line FY2022 (13.9m = other income); loss RMB725.2m"
+    },
+    {
+      "code": "2442",
+      "field": "ni_latest",
+      "value": 28.8,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(HK$)"
+    },
+    {
+      "code": "2486",
+      "field": "rev_latest",
+      "value": 679.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2416",
+      "field": "ni_latest",
+      "value": -672.8,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2487",
+      "field": "ni_latest",
+      "value": -611.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2022/12"
+    },
+    {
+      "code": "2105",
+      "field": "rev_latest",
+      "value": 0.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (RMB x1.1): Laekna accountants' report: no revenue line FY2022; loss RMB781.6m"
+    },
+    {
+      "code": "2481",
+      "field": "ni_latest",
+      "value": 154.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "3650",
+      "field": "ni_latest",
+      "value": -115.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2022/12"
+    },
+    {
+      "code": "3650",
+      "field": "rev_latest",
+      "value": 959.7,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "6683",
+      "field": "ni_latest",
+      "value": 47.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "6683",
+      "field": "rev_latest",
+      "value": 401.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2496",
+      "field": "ni_latest",
+      "value": -207.8,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2022/12"
+    },
+    {
+      "code": "2496",
+      "field": "rev_latest",
+      "value": 2.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "9690",
+      "field": "ni_latest",
+      "value": -6429.3,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "9690",
+      "field": "rev_latest",
+      "value": 12896.7,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "9686",
+      "field": "rev_latest",
+      "value": 756.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "1973",
+      "field": "ni_latest",
+      "value": 823.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (RMB x1.1): Tian Tu Capital FY2022: total income incl investment gains RMB423.2m (thepaper/PHIP). NI RMB749m EXCEEDS income (equity-method gains) — P/E deliberately not formed; P/S on total income | NI: FY2022 net profit RMB749m x1.10 = HK$823.9m (thepaper/PHIP) — exceeds total income via equity-method gains, which is genuine for a PE firm; replaces the misparsed HK$175.4m"
+    },
+    {
+      "code": "1973",
+      "field": "rev_latest",
+      "value": 465.5,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (RMB x1.1): Tian Tu Capital FY2022: total income incl investment gains RMB423.2m (thepaper/PHIP). NI RMB749m EXCEEDS income (equity-method gains) — P/E deliberately not formed; P/S on total income | NI: FY2022 net profit RMB749m x1.10 = HK$823.9m (thepaper/PHIP) — exceeds total income via equity-method gains, which is genuine for a PE firm; replaces the misparsed HK$175.4m"
+    },
+    {
+      "code": "9676",
+      "field": "ni_latest",
+      "value": -413.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2429",
+      "field": "ni_latest",
+      "value": -203.1,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2429",
+      "field": "rev_latest",
+      "value": 2943.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "1111",
+      "field": "rev_latest",
+      "value": 227.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2499",
+      "field": "ni_latest",
+      "value": 39.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2521",
+      "field": "ni_latest",
+      "value": 37.8,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2483",
+      "field": "ni_latest",
+      "value": 67.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(HK$)"
+    },
+    {
+      "code": "2483",
+      "field": "rev_latest",
+      "value": 2022.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(HK$)"
+    },
+    {
+      "code": "2419",
+      "field": "ni_latest",
+      "value": 1092.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2022/12"
+    },
+    {
+      "code": "2419",
+      "field": "rev_latest",
+      "value": 16540.7,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2022/12"
+    },
+    {
+      "code": "1497",
+      "field": "ni_latest",
+      "value": 226.5,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "0666",
+      "field": "rev_latest",
+      "value": 16112.6,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "1274",
+      "field": "rev_latest",
+      "value": 1458.5,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2516",
+      "field": "ni_latest",
+      "value": 28.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2516",
+      "field": "rev_latest",
+      "value": 1377.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2489",
+      "field": "ni_latest",
+      "value": 133.1,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2489",
+      "field": "rev_latest",
+      "value": 460.3,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2511",
+      "field": "ni_latest",
+      "value": -209.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (RMB x1.1): HighTide prospectus: 'had not generated any revenue'; loss RMB190.2m FY2022"
+    },
+    {
+      "code": "2511",
+      "field": "rev_latest",
+      "value": 0.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (RMB x1.1): HighTide prospectus: 'had not generated any revenue'; loss RMB190.2m FY2022"
+    },
+    {
+      "code": "9880",
+      "field": "rev_latest",
+      "value": 1109.1,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2503",
+      "field": "ni_latest",
+      "value": 42.1,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2477",
+      "field": "ni_latest",
+      "value": 26.7,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2477",
+      "field": "rev_latest",
+      "value": 249.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2535",
+      "field": "ni_latest",
+      "value": 39.3,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(HK$)"
+    },
+    {
+      "code": "2509",
+      "field": "rev_latest",
+      "value": 81.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "9879",
+      "field": "ni_latest",
+      "value": 436.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2536",
+      "field": "rev_latest",
+      "value": 529.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (HKD x1.0): Palasino FY2023 (Mar-YE): revenue HK$529m, NP HK$44.2m (qq/prospectus)"
+    },
+    {
+      "code": "2598",
+      "field": "rev_latest",
+      "value": 817.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2515",
+      "field": "ni_latest",
+      "value": 45.6,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2529",
+      "field": "ni_latest",
+      "value": 77.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2898",
+      "field": "ni_latest",
+      "value": 0.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2898",
+      "field": "rev_latest",
+      "value": 0.5,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2505",
+      "field": "ni_latest",
+      "value": 76.3,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2505",
+      "field": "rev_latest",
+      "value": 1330.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2443",
+      "field": "rev_latest",
+      "value": 541.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2522",
+      "field": "rev_latest",
+      "value": 1021.8,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2559",
+      "field": "rev_latest",
+      "value": 896.6,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "1354",
+      "field": "ni_latest",
+      "value": 56.1,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "6086",
+      "field": "ni_latest",
+      "value": -216.5,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2531",
+      "field": "ni_latest",
+      "value": 56.7,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2531",
+      "field": "rev_latest",
+      "value": 616.6,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2533",
+      "field": "ni_latest",
+      "value": -5340.6,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2023/12"
+    },
+    {
+      "code": "9639",
+      "field": "ni_latest",
+      "value": 76.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(HK$)"
+    },
+    {
+      "code": "9639",
+      "field": "rev_latest",
+      "value": 526.1,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(HK$)"
+    },
+    {
+      "code": "2567",
+      "field": "rev_latest",
+      "value": 1467.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2563",
+      "field": "rev_latest",
+      "value": 73.3,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2023/12"
+    },
+    {
+      "code": "2519",
+      "field": "ni_latest",
+      "value": 572.1,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2585",
+      "field": "ni_latest",
+      "value": 256.8,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2586",
+      "field": "ni_latest",
+      "value": -924.6,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2586",
+      "field": "rev_latest",
+      "value": 1743.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2593",
+      "field": "ni_latest",
+      "value": 39.5,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(HK$)"
+    },
+    {
+      "code": "2593",
+      "field": "rev_latest",
+      "value": 251.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(HK$)"
+    },
+    {
+      "code": "2587",
+      "field": "rev_latest",
+      "value": 1320.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2024/12"
+    },
+    {
+      "code": "2506",
+      "field": "ni_latest",
+      "value": -169.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (RMB x1.1): Xunfei Healthcare FY2023: rev RMB556m, net loss RMB154m (21jingji)"
+    },
+    {
+      "code": "6681",
+      "field": "ni_latest",
+      "value": -395.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "0325",
+      "field": "ni_latest",
+      "value": -441.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2024/12"
+    },
+    {
+      "code": "0325",
+      "field": "rev_latest",
+      "value": 964.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2530",
+      "field": "rev_latest",
+      "value": 469.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2596",
+      "field": "rev_latest",
+      "value": 2387.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (RMB x1.1): Yibin Bank FY2023: operating income RMB2,170m, NP RMB477m (nbd.com.cn updated prospectus; FY2024 not in the prospectus)"
+    },
+    {
+      "code": "2561",
+      "field": "rev_latest",
+      "value": 2.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2610",
+      "field": "rev_latest",
+      "value": 5286.7,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(US$)"
+    },
+    {
+      "code": "2569",
+      "field": "rev_latest",
+      "value": 720.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "3677",
+      "field": "ni_latest",
+      "value": -648.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "3677",
+      "field": "rev_latest",
+      "value": 4577.8,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "9606",
+      "field": "ni_latest",
+      "value": -1155.5,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2865",
+      "field": "ni_latest",
+      "value": -275.6,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2629",
+      "field": "ni_latest",
+      "value": -720.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2024/12"
+    },
+    {
+      "code": "2629",
+      "field": "rev_latest",
+      "value": 158.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2024/12"
+    },
+    {
+      "code": "2565",
+      "field": "rev_latest",
+      "value": 0.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (RMB x1.1): PegBio prospectus: no revenue; loss RMB283.4m FY2024"
+    },
+    {
+      "code": "9881",
+      "field": "ni_latest",
+      "value": 45.5,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "9881",
+      "field": "rev_latest",
+      "value": 385.1,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2619",
+      "field": "ni_latest",
+      "value": 154.5,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "6883",
+      "field": "ni_latest",
+      "value": 249.7,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "6883",
+      "field": "rev_latest",
+      "value": 2291.7,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "6603",
+      "field": "ni_latest",
+      "value": 259.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(US$)"
+    },
+    {
+      "code": "6603",
+      "field": "rev_latest",
+      "value": 1229.7,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(US$)"
+    },
+    {
+      "code": "2076",
+      "field": "ni_latest",
+      "value": 1743.1,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2024/12"
+    },
+    {
+      "code": "2076",
+      "field": "rev_latest",
+      "value": 8091.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2024/12"
+    },
+    {
+      "code": "1828",
+      "field": "ni_latest",
+      "value": 187.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:sina/FX168 2025-07-07: 市值483亿 ≈ US$6.15bn | FINANCIALS (USD x7.8): FWD HK prospectus p11 + FY2024 FS: INSURANCE revenue US$2,724m (no total-revenue line under IFRS 17), attributable net profit US$24m"
+    },
+    {
+      "code": "1828",
+      "field": "rev_latest",
+      "value": 21247.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:sina/FX168 2025-07-07: 市值483亿 ≈ US$6.15bn | FINANCIALS (USD x7.8): FWD HK prospectus p11 + FY2024 FS: INSURANCE revenue US$2,724m (no total-revenue line under IFRS 17), attributable net profit US$24m"
+    },
+    {
+      "code": "6613",
+      "field": "ni_latest",
+      "value": 4044.5,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2627",
+      "field": "ni_latest",
+      "value": 0.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2543",
+      "field": "ni_latest",
+      "value": 57.5,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2525",
+      "field": "ni_latest",
+      "value": -112.6,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2525",
+      "field": "rev_latest",
+      "value": 2284.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:OFFER PRICE: STCN + HKEX allotment 2025-09-15 (2025091501458.pdf): 发行价212.80港元, 收报234港元 +9.96%, 19,550,000 offer shares incl. fully-exercised offer-size adjustment. ORIGINAL pre-subdivision price — do NOT restate to 26.60 for the 8-for-1 subdivision of 2026-07-10. | FINANCIALS (RMB x1.1): Hesai FY2024 PR: net revenues RMB2,077.2m (stored NI -112.6 HK$m = the RMB102.4m GAAP loss, kept)"
+    },
+    {
+      "code": "9973",
+      "field": "ni_latest",
+      "value": 15548.5,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2024/12"
+    },
+    {
+      "code": "9973",
+      "field": "rev_latest",
+      "value": 296886.7,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2024/12"
+    },
+    {
+      "code": "2583",
+      "field": "ni_latest",
+      "value": 54.3,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2583",
+      "field": "rev_latest",
+      "value": 502.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2259",
+      "field": "rev_latest",
+      "value": 23293.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(US$)"
+    },
+    {
+      "code": "6980",
+      "field": "ni_latest",
+      "value": 246.6,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2718",
+      "field": "ni_latest",
+      "value": 352.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "9927",
+      "field": "ni_latest",
+      "value": -1527.6,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2630",
+      "field": "ni_latest",
+      "value": -81.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2579",
+      "field": "rev_latest",
+      "value": 44245.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "9609",
+      "field": "ni_latest",
+      "value": 95.1,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2693",
+      "field": "ni_latest",
+      "value": 57.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2408",
+      "field": "ni_latest",
+      "value": 82.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2658",
+      "field": "ni_latest",
+      "value": -610.1,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2687",
+      "field": "ni_latest",
+      "value": 117.3,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "7618",
+      "field": "rev_latest",
+      "value": 22437.5,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2546",
+      "field": "ni_latest",
+      "value": 69.1,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2695",
+      "field": "ni_latest",
+      "value": -2.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2691",
+      "field": "rev_latest",
+      "value": 0.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2635",
+      "field": "ni_latest",
+      "value": 126.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "3378",
+      "field": "rev_latest",
+      "value": 0.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (RMB x1.1): Hanx Bio prospectus: no revenue FY2024; loss RMB116.9m"
+    },
+    {
+      "code": "2657",
+      "field": "ni_latest",
+      "value": -0.1,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "3696",
+      "field": "ni_latest",
+      "value": -133.3,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(US$)"
+    },
+    {
+      "code": "0501",
+      "field": "ni_latest",
+      "value": 4450.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2025/12"
+    },
+    {
+      "code": "3986",
+      "field": "rev_latest",
+      "value": 8091.6,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2768",
+      "field": "rev_latest",
+      "value": 21106.3,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2714",
+      "field": "ni_latest",
+      "value": 16992.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2025/12"
+    },
+    {
+      "code": "2714",
+      "field": "rev_latest",
+      "value": 158559.5,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2025/12"
+    },
+    {
+      "code": "2726",
+      "field": "rev_latest",
+      "value": 1071.7,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "0664",
+      "field": "ni_latest",
+      "value": 86.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "0068",
+      "field": "rev_latest",
+      "value": 902.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2476",
+      "field": "ni_latest",
+      "value": 1269.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "7688",
+      "field": "rev_latest",
+      "value": 635.8,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "6872",
+      "field": "rev_latest",
+      "value": 0.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (RMB x1.1): TenNor prospectus: no revenue line FY2025; loss RMB153.2m"
+    },
+    {
+      "code": "3310",
+      "field": "rev_latest",
+      "value": 980.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2290",
+      "field": "ni_latest",
+      "value": -27.1,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(HK$)"
+    },
+    {
+      "code": "1779",
+      "field": "ni_latest",
+      "value": -151.1,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "1779",
+      "field": "rev_latest",
+      "value": 2.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "1392",
+      "field": "ni_latest",
+      "value": 32.3,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "1392",
+      "field": "rev_latest",
+      "value": 735.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "6132",
+      "field": "ni_latest",
+      "value": -148.6,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2335",
+      "field": "rev_latest",
+      "value": 2.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2272",
+      "field": "ni_latest",
+      "value": 103.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "6228",
+      "field": "ni_latest",
+      "value": -214.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (USD x7.8): Merdeka Gold FY2025 audited FS: revenue US$0.132m (pre-production; incidental rental), loss US$27.49m"
+    },
+    {
+      "code": "6228",
+      "field": "rev_latest",
+      "value": 1.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:FINANCIALS (USD x7.8): Merdeka Gold FY2025 audited FS: revenue US$0.132m (pre-production; incidental rental), loss US$27.49m"
+    },
+    {
+      "code": "6915",
+      "field": "rev_latest",
+      "value": 242.8,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "6715",
+      "field": "rev_latest",
+      "value": 845.9,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2025/12"
+    },
+    {
+      "code": "7656",
+      "field": "ni_latest",
+      "value": -75.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "6880",
+      "field": "ni_latest",
+      "value": -3803.7,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "2797",
+      "field": "ni_latest",
+      "value": 53.8,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2025/12"
+    },
+    {
+      "code": "2797",
+      "field": "rev_latest",
+      "value": 345.1,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "aastocks:損益表 FY 2025/12"
+    },
+    {
+      "code": "0537",
+      "field": "rev_latest",
+      "value": 853.4,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "0625",
+      "field": "ni_latest",
+      "value": 16099.2,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:HKEX allotment results 2026-08-31 (2026083102409.pdf): final offer price HK$48.56 against a HK$47.60-49.50 range (max HK$49.50) — priced 1.9% below the cap, a shade above the mid. Listed 2026-09-01; Class B shares, stock short name SHEIN-W (weighted voting rights). Offer 279,992,500 Class B shares, 100% primary ('Sale Shares' appears nowhere in the prospectus), gross HK$13,596.4m / net HK$13,214.1m. Shares upon Listing before the over-allotment option 4,246,202,609 (Class A + Class B). HK public 5.63x on 35,751 valid applications, international 2.59x on 106 placees; clawback NOT triggered, split held at 10/90. Cornerstones 7 investors US$383.0m = 61,890,000 shares = 22.1% of the offer, 1.5% of total issued capital. Greenshoe up to 41,998,500 (15.0%) FULLY OVER-ALLOCATED; stabilising manager Goldman Sachs (Asia) L.L.C.; stabilisation to 2026-09-26; no exercise announced as of 2026-09-02. One-lot ballot 18.42% (2,820 of 15,312, Pool A). Sponsors Goldman Sachs (Asia), Morgan Stanley Asia, J.P. Morgan Securities (Far East). FINANCIALS (US$ x7.8): FY2025 net revenues US$41,847m, net income US$2,064m (FY2024 US$38,748m / US$3,365m — earnings FELL on higher revenue); 3M-2026 was a net LOSS of US$99m vs +US$395m a year earlier. Day 1 traded down to HK$43.72 (-10.0%) before closing HK$48.50, one tick under the offer, inside a live stabilisation mandate."
+    },
+    {
+      "code": "0625",
+      "field": "rev_latest",
+      "value": 326406.6,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "press:HKEX allotment results 2026-08-31 (2026083102409.pdf): final offer price HK$48.56 against a HK$47.60-49.50 range (max HK$49.50) — priced 1.9% below the cap, a shade above the mid. Listed 2026-09-01; Class B shares, stock short name SHEIN-W (weighted voting rights). Offer 279,992,500 Class B shares, 100% primary ('Sale Shares' appears nowhere in the prospectus), gross HK$13,596.4m / net HK$13,214.1m. Shares upon Listing before the over-allotment option 4,246,202,609 (Class A + Class B). HK public 5.63x on 35,751 valid applications, international 2.59x on 106 placees; clawback NOT triggered, split held at 10/90. Cornerstones 7 investors US$383.0m = 61,890,000 shares = 22.1% of the offer, 1.5% of total issued capital. Greenshoe up to 41,998,500 (15.0%) FULLY OVER-ALLOCATED; stabilising manager Goldman Sachs (Asia) L.L.C.; stabilisation to 2026-09-26; no exercise announced as of 2026-09-02. One-lot ballot 18.42% (2,820 of 15,312, Pool A). Sponsors Goldman Sachs (Asia), Morgan Stanley Asia, J.P. Morgan Securities (Far East). FINANCIALS (US$ x7.8): FY2025 net revenues US$41,847m, net income US$2,064m (FY2024 US$38,748m / US$3,365m — earnings FELL on higher revenue); 3M-2026 was a net LOSS of US$99m vs +US$395m a year earlier. Day 1 traded down to HK$43.72 (-10.0%) before closing HK$48.50, one tick under the offer, inside a live stabilisation mandate."
+    },
+    {
+      "code": "9976",
+      "field": "rev_latest",
+      "value": 25042.8,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    },
+    {
+      "code": "3231",
+      "field": "rev_latest",
+      "value": 0.0,
+      "issue": "Retained researched figure; fresh annual filing row is missing or ambiguous",
+      "source": "hkex-pdf:financial-summary(RMB)"
+    }
+  ],
+  "material_changes": 335,
+  "subscriptions": {
+    "oversub_public_mult": 524,
+    "oversub_intl_mult": 521
+  },
+  "cornerstone": {
+    "percentage_checks": 202,
+    "unresolved_name_aliases": 265
+  },
+  "lockups": {
+    "rows": 1064,
+    "dated": 770
+  }
+}
