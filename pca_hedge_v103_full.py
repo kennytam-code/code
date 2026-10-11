@@ -1,3 +1,6 @@
+# October 2026 revision: broad basket/single search and portable setup.
+# Historical notes below describe earlier revisions; their synthetic
+# experiment claims are not validation results for this revision.
 # =============================================================================
 # PCA HEDGE FINDER — complete source, v105 (Fixes 1-123)
 # =============================================================================
@@ -210,13 +213,17 @@
 # run against a terminal.
 # =============================================================================
 
+# Revised from PCA.docx on 2026-10-11. See PCA_fix_notes.md.
 # =============================================================================
 # CELL 1: SETUP (run once)
 # =============================================================================
 
 import numpy as np
 import pandas as pd
-import blpapi
+try:
+    import blpapi
+except ImportError:
+    blpapi = None  # Cached analyses work without a Bloomberg connection.
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import RidgeCV
@@ -229,9 +236,65 @@ import re
 import html as _html
 import textwrap as _textwrap
 
-warnings.filterwarnings('ignore')
+# Keep numerical and compatibility warnings visible.
 
 RIDGE_ALPHAS = np.logspace(-4, 2, 25)
+MIN_RETURN_STD = 1e-12
+PCA_REVISION = '2026-10-11-broad-search'
+
+
+def _supported_plot_style(style, rc_params=None):
+    """Keep only settings supported by the installed Matplotlib version."""
+    params = plt.rcParams if rc_params is None else rc_params
+    return {key: value for key, value in style.items() if key in params}
+
+
+def _window_problem(frame, target, min_rows=2):
+    """Describe data failures without confusing missing observations with flat returns."""
+    if target not in frame.columns:
+        return f'{target}: column missing'
+    series = frame[target]
+    if len(series) < min_rows:
+        return f'{target}: only {len(series)} rows; need {min_rows}'
+    bad = ~np.isfinite(series.to_numpy(dtype=float))
+    if bad.any():
+        dates = ', '.join(str(d.date()) for d in series.index[bad][:5])
+        return f'{target}: {int(bad.sum())}/{len(series)} non-finite returns (dates: {dates})'
+    sd = float(series.std(ddof=0))
+    if sd <= MIN_RETURN_STD:
+        return (f'{target}: constant/nearly constant returns; std={sd:.3g}, '
+                f'{series.nunique()} distinct returns over {len(series)} rows')
+    return None
+
+
+def _decision_fields(weights, grade):
+    """Retain diagnostic weights, but provide no trade weights after a failed verdict."""
+    eligible = str(grade).startswith(('✓', '△'))
+    return {'trade_eligible': eligible,
+            'recommended_action': ('REVIEW_CANDIDATE' if eligible else 'NO_VALIDATED_HEDGE'),
+            'candidate_weights': weights.copy(),
+            'trade_weights': weights.copy() if eligible else weights.iloc[:0].copy()}
+
+
+def _trade_risk(y, spread, ann_sqrt):
+    """Risk of the coefficient-only spread versus holding the target unhedged.
+
+    An estimated regression intercept is not a traded instrument. These
+    supplementary metrics therefore use y - X @ coefficients, not predict(X).
+    Values use the existing log-return approximation and exclude trading costs.
+    """
+    y, spread = np.asarray(y, dtype=float), np.asarray(spread, dtype=float)
+    if len(y) < 2 or not np.isfinite(y).all() or not np.isfinite(spread).all():
+        return {}
+    target_sd, spread_sd = float(np.std(y)), float(np.std(spread))
+    if target_sd <= MIN_RETURN_STD:
+        return {}
+    return {'unhedged_vol_ann': target_sd * ann_sqrt,
+            'hedged_vol_ann': spread_sd * ann_sqrt,
+            'vol_reduction': 1.0 - spread_sd / target_sd,
+            'variance_reduction': 1.0 - (spread_sd / target_sd) ** 2,
+            'spread_mean_per_observation': float(np.mean(spread)),
+            'n_observations': len(y)}
 
 # ─────────────────────────────────────────────────────────────────────────────
 # INDEX MAP: (market_code, sector_keyword) → Bloomberg Index Ticker
@@ -1124,6 +1187,9 @@ def _fmt_bbg_ticker(raw):
 # Bloomberg helper functions
 # ─────────────────────────────────────────────────────────────────────────────
 def bbg_connect(host='localhost', port=8194):
+    if blpapi is None:
+        raise RuntimeError('Bloomberg blpapi is not installed in this Python environment. '
+                           'Install the Bloomberg Python API to download data, or load a saved cache.')
     opts = blpapi.SessionOptions()
     opts.setServerHost(host)
     opts.setServerPort(port)
@@ -1224,8 +1290,8 @@ def bbg_hist(session, tickers, start, end):
         req.set("periodicitySelection", "DAILY")
         req.set("startDate", start)
         req.set("endDate", end)
-        req.set("nonTradingDayFillOption", "NON_TRADING_WEEKDAYS")
-        req.set("nonTradingDayFillMethod", "PREVIOUS_VALUE")
+        req.set("nonTradingDayFillOption", "ACTIVE_DAYS_ONLY")
+        # Do not ask Bloomberg to manufacture repeated prices on inactive days.
         # [Fix 58] Make the price adjustment EXPLICIT. Without these three
         # lines HistoricalDataRequest inherits whatever DPDF the local
         # terminal happens to be set to — on most desks that is split-
@@ -1629,13 +1695,13 @@ import glob as _glob
 import re as _re
 import json as _json
 
-HEDGE_CACHE_DIR = _os.path.join(_os.getcwd(), 'hedge_data_cache')
+HEDGE_CACHE_DIR = _os.environ.get('HEDGE_CACHE_DIR', _os.path.join(_os.getcwd(), 'hedge_data_cache'))
 
 # [Fix 103] Where exported hedge reports go. Set once here, or override per
 # call / in the form's Export folder box. If the drive is not mapped on the
 # machine running the notebook, the exporter falls back to a local folder and
 # says so rather than failing.
-HEDGE_EXPORT_DIR = r'G:\FIN_COMM\DeltaOne\Kenny\PCA'
+HEDGE_EXPORT_DIR = _os.environ.get('HEDGE_EXPORT_DIR', _os.path.join(_os.getcwd(), 'hedge_exports'))
 
 
 def _slug(text):
@@ -1811,9 +1877,9 @@ def load_hedge_data(which=0, cache_dir=None):
 R2_GLOSSARY_ROWS = [
     ('1 · Fitted and scored on the\n    same days  (in-sample R²)',
      'flattered — a sanity check only',
-     'The model grades its own homework, so this is always the highest number '
-     'on the page. It says the fit converged. It says nothing about whether '
-     'the hedge works.'),
+     'Describes the fitted training data; it is not a forecast. Raw R² from '
+     'this Ridge fit with an intercept should be nonnegative on nonconstant '
+     'training data. The adjusted heuristic can be negative.'),
     ('2 · Fitted on the past, scored\n    on what came next',
      'honest weights, flattered recipe',
      'Fit on the last N days, score on the days that follow, repeat, average. '
@@ -1830,10 +1896,13 @@ R2_GLOSSARY_ROWS = [
      'only data from before each held-back stretch. This is closest to what '
      'running this tool live would actually have delivered.'),
 ]
-R2_GLOSSARY_NOTE = ('Expect them to fall in that order: 1 highest, 4 lowest. '
-                    'A big gap between 1 and 4 means the recipe was tuned to '
-                    'its own data. Trade on 3 and 4; quote 1 only as a '
-                    'caveat.')
+R2_GLOSSARY_NOTE = ('These scores need not fall in a fixed order: they use '
+                    'different windows and sometimes different configurations. '
+                    'Prefer nested unseen evidence. Negative OOS R² means '
+                    'worse squared return-tracking error than the test-window '
+                    'mean; it does not by itself prove that volatility rose. '
+                    'Check volatility reduction separately. Adjusted R² here '
+                    'uses nominal regressor count, an OLS-style Ridge heuristic.')
 
 # [Fix 116] The report is read by people who do not build these models. Where a
 # term is unavoidable — it is on a chart axis, in a column header, or it is what
@@ -1843,9 +1912,10 @@ WORDS_USED = [
     ('Hedge / basket', 'the set of names you trade against your position',
      'Shorting the basket is meant to cancel the part of your position that '
      'moves with the rest of the market.'),
-    ('Tracks N% of the moves', 'how much of the position the hedge follows',
-     'The statistical name is R². 100% would be a perfect mirror; 0% means '
-     'the hedge is unrelated to what you hold.'),
+    ('Return-tracking R²', 'squared error relative to the evaluated target mean',
+     '1 means exact fitted-return tracking; 0 matches the error from the '
+     'evaluated target mean; negative is worse. Zero does not imply zero '
+     'correlation. Volatility reduction measures risk removed separately.'),
     ('Drift / tracking error', 'the part the hedge does NOT cancel',
      'Quoted as %/yr. This is what you actually carry, and what a risk limit '
      'should be set against.'),
@@ -1853,8 +1923,8 @@ WORDS_USED = [
      'The only honest test. Any score measured on the days a model was fitted '
      'to is a description of the past, not a forecast.'),
     ('Its own data / in-sample', 'the days the model WAS fitted on',
-     'Always flattering. Useful as a ceiling and a sanity check, never as an '
-     'expectation.'),
+     'Useful as a fit diagnostic. It is not a guaranteed ceiling on later '
+     'scores and not an expectation of future hedge performance.'),
     ('Test stretch / window', 'a block of consecutive days held back',
      'The model is fitted on everything before it and graded on it, then the '
      'block moves forward.'),
@@ -1921,7 +1991,7 @@ def _pca_fit(tr_sc, n_pc, robust_cov='none'):
         total = float(np.trace(cov))
         evr = evals / total if total > 0 else np.zeros_like(evals)
         return _PCAShim(comps, evals, evr)
-    pca = PCA(n_components=n_pc).fit(X)
+    pca = PCA(n_components=n_pc, random_state=0).fit(X)
     return _PCAShim(pca.components_, pca.explained_variance_,
                     pca.explained_variance_ratio_)
 
@@ -2265,7 +2335,7 @@ TIER_MEANING = {
 
 def preview_window(data, sample_window=None, lookback_options=(126, 252),
                    cv_test_window=42, cv_n_folds=5, outer_window=None,
-                   outer_folds=3, basket_size_options=(3, 5, 7),
+                   outer_folds=3, basket_size_options=(1, 2, 3, 5, 7),
                    quiet=False):
     """[Fix 85] What will this sample_window actually buy me? Reports the
     session count and the validation tier BEFORE you spend minutes on a run,
@@ -2495,7 +2565,7 @@ def _block_bootstrap_ci(y, resid, n_boot=2000, block=None, seed=0, ann=1.0):
     sst = ((ys - ys.mean(axis=1, keepdims=True)) ** 2).sum(axis=1)
     sse = (rs ** 2).sum(axis=1)
     with np.errstate(divide='ignore', invalid='ignore'):
-        r2s = np.where(sst > 1e-12, 1.0 - sse / sst, np.nan)
+        r2s = np.where(sst > MIN_RETURN_STD ** 2, 1.0 - sse / sst, np.nan)
     tes = rs.std(axis=1) * ann
     r2s = r2s[np.isfinite(r2s)]
     if not len(r2s):
@@ -2504,7 +2574,8 @@ def _block_bootstrap_ci(y, resid, n_boot=2000, block=None, seed=0, ann=1.0):
             'r2_hi': float(np.percentile(r2s, 97.5)),
             'te_lo': float(np.percentile(tes, 2.5)),
             'te_hi': float(np.percentile(tes, 97.5)),
-            'block': b, 'n': n, 'n_boot': int(n_boot)}
+            'block': b, 'n': n, 'n_boot': int(n_boot),
+            'r2_point': 1 - float(np.sum(r**2)) / float(np.sum((y-y.mean())**2))}
 
 
 def _window_dispersion_stats(detail, pooled, n_eff):
@@ -2520,21 +2591,9 @@ def _window_dispersion_stats(detail, pooled, n_eff):
     out['worst_r2'] = float(detail['r2'].min())
     te_w = detail['tgt_vol'] * (1.0 - detail['vol_red'])
     out['worst_te'] = float(te_w.max())
-    if not np.isnan(pooled) and pooled > 0:
-        z = np.arctanh(min(np.sqrt(pooled), 0.999))
-        zsd = 1.96 / np.sqrt(max(n_eff - 3, 1))
-        out['band'] = (float(np.tanh(z - zsd) ** 2),
-                       float(np.tanh(z + zsd) ** 2))
-    band = out['band']
-    for _, r in detail.iterrows():
-        if band is None:
-            out['flags'].append('')
-        elif band[0] <= r['r2'] <= band[1]:
-            out['flags'].append('noise-range')
-        else:
-            out['flags'].append('BELOW band' if r['r2'] < band[0]
-                                else 'above band')
-    if detail['tgt_vol'].nunique() > 1:
+    out['flags'] = ['negative' if q < 0 else '' for q in detail['r2']]
+    # No Fisher-z confidence band: predictive R² need not equal correlation².
+    if detail['tgt_vol'].nunique() > 1 and detail['r2'].nunique() > 1:
         out['reg_corr'] = float(np.corrcoef(detail['tgt_vol'],
                                             detail['r2'])[0, 1])
     if len(detail) >= 2:
@@ -2557,7 +2616,7 @@ def _window_dispersion_stats(detail, pooled, n_eff):
     return out
 
 
-def _ticket_verdict(quality, worst_r2, overfit_gap, min_sim, trend,
+def _tracking_ticket_verdict(quality, worst_r2, overfit_gap, min_sim, trend,
                     ref_pca, ref_simple, roll_breach):
     """[Fix 72] One consolidated go / reduce / no-go verdict for the ticket.
 
@@ -2565,7 +2624,8 @@ def _ticket_verdict(quality, worst_r2, overfit_gap, min_sim, trend,
     judgment, not by re-running until the box says yes):
       ✗  pooled OOS R2 < 0.20 (vol cut under ~11%; costs likely eat it), OR
          in-sample-vs-OOS gap >= 0.35 (clear overfit), OR any window with
-         NEGATIVE OOS R2 (the hedge ADDED risk there), OR no OOS evidence.
+         NEGATIVE OOS R2 (tracking error worse than the target mean), OR
+         no OOS evidence. Negative R2 alone does not prove volatility rose.
       △  pooled R2 < 0.45, worst window < 0.15, gap >= 0.15, basket turnover
          across windows (min weight cosine <= 0.5), R2 deteriorating into
          the present, live rolling TE already past the kill-switch, or a
@@ -2588,7 +2648,8 @@ def _ticket_verdict(quality, worst_r2, overfit_gap, min_sim, trend,
     if not np.isnan(worst_r2) and worst_r2 < 0.0:
         fail = True
         reasons.append(f'worst window OOS R² {worst_r2:.2f} < 0 — the hedge '
-                       f'ADDED risk there')
+                       f'tracked returns worse than that window’s mean; '
+                       f'check volatility reduction separately')
     if roll_breach:
         warn = True
         reasons.append('latest rolling TE is already above the kill level — '
@@ -2624,6 +2685,50 @@ def _ticket_verdict(quality, worst_r2, overfit_gap, min_sim, trend,
         reasons.append('all gates passed — OOS strong, worst window fine, '
                        'no overfit, stable basket')
     return grade, reasons
+
+
+def _ticket_verdict(quality, worst_r2, overfit_gap, min_sim, trend,
+                    ref_pca, ref_simple, roll_breach, vol_red=None,
+                    worst_vol_red=None, objective='variance',
+                    ref_vol_pca=None, ref_vol_simple=None):
+    """Judge a hedge by its selected mandate, keeping R2 visible as a diagnostic."""
+    if objective == 'tracking':
+        return _tracking_ticket_verdict(quality, worst_r2, overfit_gap, min_sim,
+                                       trend, ref_pca, ref_simple, roll_breach)
+    if vol_red is None or not np.isfinite(vol_red):
+        return '? INSUFFICIENT OOS EVIDENCE', ['no valid unseen volatility comparison']
+    if vol_red <= 0:
+        return '✗ NO VALIDATED RISK REDUCTION', [
+            f'unseen coefficient-only spread volatility reduction {vol_red*100:.1f}% '
+            'versus the unhedged target; no improvement before costs']
+    reasons = [f'unseen coefficient-only spread reduced volatility {vol_red*100:.1f}% '
+               'before costs']
+    cautions = []
+    if quality is not None and np.isfinite(quality) and quality < 0:
+        cautions.append(f'pooled return-tracking R² {quality:.2f} is negative; '
+                        'inspect directional drift although volatility fell')
+    if np.isfinite(worst_r2) and worst_r2 < 0:
+        cautions.append('negative tracking R² in at least one window; '
+                        'this is a tracking caution, not an automatic risk-reduction failure')
+    if worst_vol_red is not None and np.isfinite(worst_vol_red) and worst_vol_red < 0:
+        cautions.append(f'worst unseen window volatility reduction '
+                        f'{worst_vol_red*100:.1f}%; the hedge increased risk in that window')
+    if np.isfinite(overfit_gap) and overfit_gap >= .35:
+        cautions.append('large training-versus-unseen tracking gap; review fit stability')
+    if min_sim is not None and np.isfinite(min_sim) and min_sim <= .5:
+        cautions.append('basket weights changed materially between windows')
+    if trend:
+        cautions.append('tracking deteriorated toward the latest window')
+    if roll_breach:
+        cautions.append('latest rolling tracking error breached the monitoring level')
+    if (ref_vol_pca is not None and ref_vol_simple is not None
+            and np.isfinite(ref_vol_pca) and np.isfinite(ref_vol_simple)
+            and ref_vol_simple >= ref_vol_pca):
+        cautions.append('a single instrument matched basket volatility reduction '
+                        'on the same unseen windows; compare the simpler hedge')
+    reasons.extend(cautions)
+    return ('△ RISK REDUCTION WITH CAUTIONS' if cautions
+            else '✓ RISK REDUCTION SUPPORTED'), reasons
 
 
 def _rank_scores(loadings, returns, target, universe):
@@ -2663,36 +2768,36 @@ def _rank_scores(loadings, returns, target, universe):
     return df.sort_values('rank_score')
 
 
-def _mask_stale(prices, max_flat_days=7):
-    """[Fix 56] Mask stale (forward-filled) prices — the suspension guard.
+def _mask_stale(prices, max_flat_days=7, observed=None):
+    """Bound forward fills by observation age, never by unchanged price value.
 
-    A-share names halt for weeks at a time; the forward fill keeps the last
-    print, producing long runs of identical prices and therefore zero
-    returns. Those zeros dilute every correlation and beta the selection
-    relies on: a suspended stock looks like a LOW-beta stock and can sneak
-    into the basket (or push a genuinely better name out of it). Any price
-    unchanged for more than `max_flat_days` consecutive sessions is masked,
-    so the complete-window filters downstream exclude the affected stretch
-    instead of learning from stale data.
-
-    The default (7) is deliberately longer than any holiday cluster — Golden
-    Week and CNY fills are ~5 weekdays — so ordinary market holidays are
-    left untouched. Set mask_stale_days=None in find_best_hedge to disable.
+    A real quote at the same price is still an observation. `observed` is the
+    raw price frame before forward filling. Mask only once the count of absent
+    observations exceeds the limit, using information available on each date.
+    The caller separately masks the return on resumption so an entire missing
+    interval cannot be labelled as a one-day move. Earlier dates are never
+    reclassified using a later quote.
+    Bloomberg-filled legacy caches cannot identify inactive days: re-download
+    with this revision for ACTIVE_DAYS_ONLY observation provenance.
     """
-    out = prices.copy()
-    n_masked = 0
-    for c in out.columns:
-        s = out[c]
-        flat = s.eq(s.shift())
-        grp = (~flat).cumsum()            # one group per constant-price run
-        run = flat.groupby(grp).cumsum()
-        bad_grp = set(grp[run > max_flat_days])
-        if bad_grp:
-            out[c] = s.mask(grp.isin(bad_grp) & flat)   # mask the whole run
-            n_masked += 1
-    if n_masked:
-        print(f"  [Fix 56] stale-price guard: masked suspension-like flat "
-              f"runs (>{max_flat_days} sessions) in {n_masked} names")
+    if max_flat_days is None:
+        return prices.copy()
+    limit = int(max_flat_days)
+    if limit < 1:
+        raise ValueError('mask_stale_days must be a positive integer or None')
+    raw = prices if observed is None else observed.reindex_like(prices)
+    out, affected = prices.copy(), 0
+    for column in out.columns:
+        valid = raw[column].notna()
+        groups = valid.cumsum()
+        absent_age = (~valid).groupby(groups).cumsum()
+        bad = (~valid) & (absent_age > limit)
+        if bad.any():
+            out[column] = out[column].mask(bad)
+            affected += 1
+    if affected:
+        print(f'  Observation guard: bounded missing-price fills '
+              f'in {affected} names; reported unchanged prices retained')
     return out
 
 
@@ -2715,11 +2820,15 @@ def _fit_basket(returns, target, basket):
     sd[sd < 1e-12] = 1.0                  # constant column → no rescaling
     reg = RidgeCV(alphas=RIDGE_ALPHAS).fit(X / sd, y)
     reg.coef_ = reg.coef_ / sd            # map back to raw-return space
-    return reg, reg.score(X, y), y - reg.predict(X)
+    raw_r2 = float(reg.score(X, y))
+    if not np.isfinite(raw_r2) or raw_r2 < -1e-8:
+        raise RuntimeError(f'Unexpected raw fitted R²={raw_r2}: check return '
+                           'alignment, finite inputs and coefficient scaling')
+    return reg, raw_r2, y - reg.predict(X)
 
 
 def _n_pc_auto(ret_scaled, cap, robust_cov='none'):
-    """[Fix 22] Number of significant PCs via the Marchenko-Pastur upper edge.
+    """[Fix 22] Heuristic PC count using the Marchenko-Pastur ideal-noise upper edge.
 
     [Fix 73] the count is now ALWAYS taken on the raw sample spectrum. The
     MP edge describes the bulk of SAMPLE eigenvalues under a pure-noise
@@ -2729,7 +2838,8 @@ def _n_pc_auto(ret_scaled, cap, robust_cov='none'):
     robust_cov='ledoit' silently ran with fewer PCs than the same data under
     'none'. Shrinkage still stabilizes the eigenVECTORS in _pca_fit (which
     is what the similarity ranking consumes); the eigenvalue COUNT is a
-    hypothesis test that belongs on the raw spectrum. `robust_cov` is kept
+    heuristic that belongs on the raw spectrum, not a formal significance test
+    for dependent or heavy-tailed financial returns. `robust_cov` is kept
     in the signature so call sites are unchanged."""
     n, p = ret_scaled.shape
     ev = PCA().fit(ret_scaled).explained_variance_
@@ -2903,7 +3013,8 @@ def download_hedge_data(target, candidates=None, session=None,
     out = {'target': target, 'target_label': label,
            'portfolio': {'legs': legs, 'weights': pf_w,
                          'is_portfolio': is_portfolio, 'label': label},
-           'prices': prices, 'mktcap_usd_mm': mktcap,
+           'prices': prices, 'price_observations': 'ACTIVE_DAYS_ONLY',
+           'mktcap_usd_mm': mktcap,
            'mktcap_hist': mktcap_hist,
            'pit_members': pit_members,                        # [Fix 49]
            'non_index_shorts': sorted(non_index_shorts),
@@ -2924,6 +3035,123 @@ def download_hedge_data(target, candidates=None, session=None,
     return out
 
 
+def _adf_pvalue(values, **kwargs):
+    """Use the tuple API explicitly where supported, including older statsmodels."""
+    import inspect
+    if 'result_object' in inspect.signature(adfuller).parameters:
+        kwargs['result_object'] = False
+    return float(adfuller(values, **kwargs)[1])
+
+
+def _forward_order(returns, target, universe, forced=(), max_size=7):
+    """Greedy partial-correlation selection on training data only.
+
+    Residualize every remaining instrument against the selected set. This
+    allows complementary exposures to enter even when marginal correlation
+    is weak. All eligible instruments are considered; this is a deterministic
+    heuristic rather than an exhaustive search over every subset.
+    """
+    pool = list(dict.fromkeys(c for c in universe if c != target))
+    selected = [c for c in forced if c in pool]
+    y = returns[target].to_numpy(dtype=float)
+    y = y - y.mean()
+    X = returns[pool].to_numpy(dtype=float)
+    X = X - X.mean(axis=0)
+    for _ in range(max(0, int(max_size) - len(selected))):
+        remaining = [c for c in pool if c not in selected]
+        if not remaining:
+            break
+        ids = [pool.index(c) for c in remaining]
+        xr, yr = X[:, ids], y
+        if selected:
+            xs = X[:, [pool.index(c) for c in selected]]
+            xr = xr - xs @ np.linalg.lstsq(xs, xr, rcond=None)[0]
+            yr = yr - xs @ np.linalg.lstsq(xs, yr, rcond=None)[0]
+        denom = np.sum(xr * xr, axis=0)
+        gain = np.full(len(remaining), -np.inf)
+        usable = denom > MIN_RETURN_STD ** 2 * len(y)
+        gain[usable] = (xr[:, usable].T @ yr) ** 2 / denom[usable]
+        if not np.isfinite(gain).any():
+            break
+        selected.append(remaining[int(np.argmax(gain))])
+    return selected
+
+
+def _config_family(spec, size):
+    if str(spec).startswith('single:'):
+        return 'single_etf' if _is_etf(str(spec)[7:]) else 'single_stock'
+    return 'single' if int(size) == 1 else 'basket'
+
+
+def _family_configs(summary, family):
+    kinds = summary['family']
+    mask = kinds.str.startswith('single') if family == 'single' else kinds.eq(family)
+    return summary.loc[mask]
+
+
+def _alternative_evidence(weights, raw_r2, ys, residuals, spreads, ann,
+                          expected_windows, mode, config, objective):
+    """Summarize a family's selection test without selecting on its test results."""
+    quality, risk = np.nan, {}
+    if ys:
+        y, residual = np.concatenate(ys), np.concatenate(residuals)
+        denom = float(np.sum((y - y.mean()) ** 2))
+        if denom > MIN_RETURN_STD ** 2:
+            quality = 1 - float(np.sum(residual ** 2)) / denom
+        risk = _trade_risk(y, np.concatenate(spreads), ann)
+    complete = bool(expected_windows and len(ys) == expected_windows)
+    within_cap = config.get('max_gross') is None or weights.abs().sum() <= config['max_gross']
+    if mode == 'IN-SAMPLE':
+        status = 'INDICATIVE — fitted history only'
+    elif not complete or not np.isfinite(quality):
+        status = 'INSUFFICIENT — incomplete unseen evidence'
+    elif not within_cap:
+        status = 'FAILED — final weights exceed gross cap'
+    elif quality < 0:
+        status = 'FAILED — negative unseen tracking R²'
+    elif risk.get('vol_reduction', 0) <= 0:
+        status = 'FAILED — no unseen volatility reduction'
+    else:
+        status = 'SUPPORTED — historical unseen test'
+    return {'weights': weights.copy(), 'in_sample_r2': float(raw_r2),
+            'unseen_r2': quality, 'trade_risk': risk,
+            'validation_mode': mode, 'n_unseen_windows': len(ys),
+            'expected_unseen_windows': expected_windows,
+            'status': status, 'qualified': status.startswith('SUPPORTED'),
+            'config': config, 'hedge_objective': objective}
+
+
+def _show_hedge_comparison(alternatives, selected_family, search):
+    rows = []
+    labels = {'basket': 'Best basket', 'single_stock': 'Best single stock',
+              'single_etf': 'Best single ETF'}
+    for family, label in labels.items():
+        item = alternatives.get(family)
+        if item is None:
+            rows.append([label, '—', '—', '—', '—', 'Unavailable under these settings'])
+            continue
+        w = item['weights']
+        recipe = '; '.join(f'{"SHORT" if x > 0 else "LONG"} ${abs(x)*100:.1f} {tk}'
+                           for tk, x in w.items())
+        risk = item['trade_risk']
+        q = item['unseen_r2']
+        rows.append([label + (' · selected' if family == selected_family else ''),
+                     recipe, f"{item['in_sample_r2']:.3f}",
+                     f'{q:.3f}' if np.isfinite(q) else '—',
+                     f"{risk['vol_reduction']*100:.1f}%" if risk else '—', item['status']])
+    _section('BEST BASKET AND SINGLE-INSTRUMENT HEDGES',
+             'same history, constraints and validation windows')
+    _print_table(['CANDIDATE', 'HEDGE PER $100 TARGET', 'FITTED R²', 'UNSEEN R²',
+                  'UNSEEN VOL CUT', 'EVIDENCE'], rows,
+                 note='Winners are selected using training/CV data. Unseen scores test each '
+                      'selection procedure, with instruments and weights refitted before each '
+                      'test window; they do not backtest today’s fixed weights. Failed candidates '
+                      'remain references and are excluded from recommendations.')
+    _P(f"  Search: {search['single_instruments_scored']} single instruments scored; "
+       f"{search['configurations_scored']} complete configurations; "
+       'basket methods: ' + ', '.join(search['basket_methods']) + '.')
+
+
 def find_best_hedge(
     target_ticker,
     candidates=None,
@@ -2931,7 +3159,7 @@ def find_best_hedge(
     session=None,
     lookback_options=(126, 252),
     pc_options='auto',            # 'auto' or a list of ints, e.g. [3, 5, 8]
-    basket_size_options=(3, 5, 7),
+    basket_size_options=(1, 2, 3, 5, 7),
     cv_test_window=42,
     cv_n_folds=5,
     outer_folds=3,                # [Fix 20] nested outer validation windows
@@ -2974,9 +3202,9 @@ def find_best_hedge(
                                   # the flat floor when set, e.g. (0.3, 3.0)
     size_override=None,           # [Fix 45] forward-looking cap views, e.g.
                                   # {'XYZ': 'large'} or {'XYZ': 8000} (USD mm)
-    mask_stale_days=7,            # [Fix 56] mask prices that stay flat for
-                                  # more than N consecutive sessions
-                                  # (suspensions); None disables the guard
+    mask_stale_days=7,            # maximum age of forward-filled missing quotes
+                                  # reported unchanged prices are retained
+                                  # None disables the observation-age guard
     notional_mm=None,             # [Fix 72] gross book notional in USD mm —
                                   # dollarizes the trade-ticket amounts
     rolling_oos=True,             # [Fix 71] walk-forward rolling OOS curve
@@ -3009,7 +3237,11 @@ def find_best_hedge(
     _rehedge_of=None,             # [Fix 115] set by quick_rehedge so the
                                   # report can say what it inherited and what
                                   # it did not re-validate
+    hedge_objective='variance',   # 'variance' (risk reduction) or 'tracking' (strict R2)
+    broad_search=True,            # all eligible singles + PCA/correlation/forward baskets
 ):
+    if hedge_objective not in ('variance', 'tracking'):
+        raise ValueError("hedge_objective must be 'variance' or 'tracking'")
     outer_window = outer_window or cv_test_window
     _kv_reset()             # [Fix 114] never inherit a failed run's rows
     transcript_reset()      # [Fix 115] this run's text copy starts empty
@@ -3082,8 +3314,7 @@ def find_best_hedge(
         if horizon_sets_windows:
             cv_test_window = outer_window = int(np.clip(_h, 10, 63))
             _P(f"  [Fix 100] horizon_sets_windows=True → OOS windows set "
-                  f"to {cv_test_window} rows (measured as no better than the "
-                  f"default; kept as an option)")
+                  f"to {cv_test_window} rows (this also changes the validation design)")
     # [Fix 46] single-name vs portfolio ---------------------------------------
     pf_legs, pf_w, is_portfolio, pf_label = _coerce_targets(target_ticker)
     _uniq = lambda seq: list(dict.fromkeys(seq))
@@ -3210,9 +3441,28 @@ def find_best_hedge(
               f"worth today — so a name that grew into the filter cannot "
               f"flatter the backtest")
 
+    prices = prices.apply(pd.to_numeric, errors='coerce').sort_index()
+    if prices.index.has_duplicates:
+        raise ValueError('Price dates are duplicated; repair the input data before modelling')
+    prices = prices.where(np.isfinite(prices) & (prices > 0))
+    if (data or {}).get('price_observations') == 'ACTIVE_DAYS_ONLY':
+        if len({_exch_of(c) for c in pf_legs}) == 1:
+            exchange = _exch_of(pf_legs[0])
+            peers = [c for c in prices.columns
+                     if c not in target_keepset and _exch_of(c) == exchange]
+            if len(peers) >= 2:
+                closed = prices[pf_legs + peers].isna().all(axis=1)
+                if closed.any():
+                    _P(f'  Removed {int(closed.sum())} shared exchange-closure rows')
+                    prices = prices.loc[~closed]
+    else:
+        _P('  Legacy/supplied price data: reported flat prices are retained. '
+           'Bloomberg-filled inactive days cannot be distinguished from real '
+           'quotes; re-download once for active-day provenance.')
+    observed_prices = prices.copy()
     prices = prices.ffill()
-    if mask_stale_days:                                     # [Fix 56]
-        prices = _mask_stale(prices, mask_stale_days)
+    if mask_stale_days:
+        prices = _mask_stale(prices, mask_stale_days, observed=observed_prices)
     if sample_window is not None:                           # [Fix 76]
         _sw0, _sw1 = _parse_sample_window(sample_window, prices.index)
         _avail = (prices.index[0], prices.index[-1])
@@ -3224,23 +3474,25 @@ def find_best_hedge(
                 f"{_avail[0]:%Y-%m-%d} → {_avail[1]:%Y-%m-%d}) — need ≥ 10")
         _P(f"  [Fix 76] sample window: {prices.index[0]:%Y-%m-%d} → "
               f"{prices.index[-1]:%Y-%m-%d} ({len(prices)} sessions)")
-    # completeness threshold applies WITHIN the analysis window
-    prices = prices.dropna(axis=1, thresh=int(len(prices) * 0.85))
+    # Per-fit eligibility is determined on training rows. Remove only columns
+    # with no usable observations anywhere; a later gap cannot exclude an
+    # otherwise valid instrument from an earlier historical fit.
+    prices = prices.dropna(axis=1, how='all')
     if is_portfolio:                             # [Fix 46]
         _pl = [c for c in pf_legs if c in prices.columns]
         if len(_pl) < 2:
             raise ValueError(
-                f"Fewer than 2 portfolio legs have ≥85% price history "
+                f"Fewer than 2 portfolio legs have any valid price observations "
                 f"({pf_legs}) — cannot build the book")
     elif target_ticker not in prices.columns:    # [Fix 21]
         raise ValueError(
-            f"{target_ticker} has price data for less than 85% of the window — "
+            f"{target_ticker} has no valid price data in the window — "
             "history too short for this configuration")
     # [Fix 40] a forced name with <85% history cannot be modelled — say so
     # loudly instead of silently forcing NaNs into every window
     lost = [c for c in forced if c not in prices.columns]
     if lost:
-        _P(f"  ⚠ force_include: {', '.join(lost)} dropped — less than 85% "
+        _P(f"  ⚠ force_include: {', '.join(lost)} dropped — no valid "
               f"price history in the window; cannot be forced into baskets")
         forced = [c for c in forced if c in prices.columns]
 
@@ -3318,6 +3570,10 @@ def find_best_hedge(
               f"async-trading bias")
 
     rets = np.log(prices / prices.shift(1))
+    raw_observed = observed_prices.reindex_like(prices).notna()
+    resumed = raw_observed & ~raw_observed.shift(1, fill_value=True)
+    rets = rets.mask(resumed)  # do not assign a gap's cumulative move to one row
+    rets = rets.replace([np.inf, -np.inf], np.nan)
     if is_portfolio:                             # [Fix 46] synthetic book return
         legs_present = [c for c in pf_legs if c in rets.columns]
         if len(legs_present) < 2:
@@ -3465,10 +3721,13 @@ def find_best_hedge(
 
     def _select_and_fit(train_rets, pc_spec, bsize):
         """Select a basket via PCA ranking on train_rets and fit RidgeCV."""
-        ok = train_rets.columns[(train_rets.notna().all()) & (train_rets.std() > 1e-6)]
-        if target_ticker not in ok:
-            raise RuntimeError(f"{target_short} has incomplete data or zero "
-                               f"variance in this window — cannot fit.")
+        ok = train_rets.columns[(train_rets.notna().all()) & (train_rets.std() > MIN_RETURN_STD)]
+        required_rows = (max(5, int(bsize) + 2)
+                         if val_mode in ('HOLDOUT', 'IN-SAMPLE') else min_train_rows)
+        problem = _window_problem(train_rets, target_ticker, required_rows)
+        if problem:
+            raise RuntimeError(f'Training window {train_rets.index[0]:%Y-%m-%d} '
+                               f'→ {train_rets.index[-1]:%Y-%m-%d}: {problem}')
         tr = train_rets[ok]
         u = [c for c in _eligible(tr.index[-1]) if c in ok]     # [Fix 44/45] PIT
         pca_cols = [c for c in tr.columns if c != PORTFOLIO_COL]  # [Fix 46]
@@ -3476,8 +3735,9 @@ def find_best_hedge(
         sc = StandardScaler()
         tr_sc = pd.DataFrame(sc.fit_transform(tr_w), index=tr.index,
                              columns=pca_cols)
-        cap = len(pca_cols) - 1
-        n_pc = (_n_pc_auto(tr_sc, cap, robust_cov) if pc_spec == 'auto'
+        cap = min(len(pca_cols) - 1, len(tr) - 1)
+        special = str(pc_spec).startswith('single:') or pc_spec in ('correlation', 'forward')
+        n_pc = (_n_pc_auto(tr_sc, cap, robust_cov) if pc_spec == 'auto' or special
                 else int(min(int(pc_spec), cap)))
         pca = _pca_fit(tr_sc, n_pc, robust_cov)                  # [Fix 42]
         # [Fix 23] scale loadings by sqrt(eigenvalue): similarity in factor-
@@ -3487,27 +3747,74 @@ def find_best_hedge(
                            columns=[f'PC{i+1}' for i in range(n_pc)])
         lds = _inject_synth_loadings(lds)                        # [Fix 46]
         rank = _rank_scores(lds, tr, target_ticker, u)
-        basket = _forced_basket(rank.index.tolist(), ok, bsize)   # [Fix 40]
-        if len(basket) < 2:                      # [Fix 21]
-            raise RuntimeError("Fewer than 2 valid candidates in this window "
-                               "— cannot build a basket.")
+        ranked = rank.index.tolist()
+        if str(pc_spec).startswith('single:'):
+            ticker = str(pc_spec)[7:]
+            if ticker not in u or any(c != ticker for c in forced):
+                raise RuntimeError(f'Single hedge {ticker} is ineligible or conflicts with forced names')
+            ranked = [ticker]
+        elif pc_spec == 'correlation':
+            ranked = tr[u].corrwith(tr[target_ticker]).abs().sort_values(ascending=False).index.tolist()
+        elif pc_spec == 'forward':
+            ranked = _forward_order(tr, target_ticker, u, forced, int(bsize))
+        if int(bsize) == 1 and not forced and not str(pc_spec).startswith('single:'):
+            ranked = tr[u].corrwith(tr[target_ticker]).abs().sort_values(ascending=False).index.tolist()
+        basket = _forced_basket(ranked, ok, bsize)
+        if len(basket) < 1:
+            raise RuntimeError('No valid hedge candidates in this window')
         reg, r2, resid = _fit_basket(tr, target_ticker, basket)
         return tr, rank, basket, reg, r2, resid, n_pc, pca, lds
 
     def _eval_on_window(reg, basket, test_rets):
         """Score a fitted basket on an unseen window → (r2, vol_red) or NaNs."""
         needed = basket + [target_ticker]
-        if not all(c in test_rets.columns and test_rets[c].notna().all()
+        if _window_problem(test_rets, target_ticker):
+            return np.nan, np.nan
+        if not all(c in test_rets.columns and np.isfinite(test_rets[c]).all()
                    for c in needed):
             return np.nan, np.nan
         r2 = reg.score(test_rets[basket].values, test_rets[target_ticker].values)
         resid = (test_rets[target_ticker].values -
                  reg.predict(test_rets[basket].values))
         tgt_std = np.std(test_rets[target_ticker].values) * ann_sqrt
-        vr = 1 - (np.std(resid) * ann_sqrt) / tgt_std if tgt_std > 1e-6 else 0.0
+        vr = 1 - (np.std(resid) * ann_sqrt) / tgt_std if tgt_std > MIN_RETURN_STD else 0.0
         return r2, vr
 
     pc_grid = ['auto'] if pc_options == 'auto' else list(pc_options)   # [Fix 4]
+
+    def _extra_baskets(train, eligible, ok):
+        entries = []
+        if broad_search:
+            for ticker in eligible:
+                if not forced or forced == [ticker]:
+                    entries.append(('single:' + ticker, 1, [ticker], 0))
+        for spec in pc_grid:
+            if str(spec).startswith('single:'):
+                ticker = str(spec)[7:]
+                if ticker in eligible and (not forced or forced == [ticker]):
+                    entries.append((str(spec), 1, [ticker], 0))
+        methods = [m for m in ('correlation', 'forward') if broad_search or m in pc_grid]
+        if methods:
+            corr_rank = train[eligible].corrwith(train[target_ticker]).abs().sort_values(ascending=False).index.tolist()
+            forward_rank = _forward_order(train, target_ticker, eligible, forced, max(basket_size_options))
+            for method in methods:
+                ranked = corr_rank if method == 'correlation' else forward_rank
+                for size in basket_size_options:
+                    if int(size) < 2:
+                        continue
+                    basket = _forced_basket(ranked, ok, int(size))
+                    if len(basket) >= 2:
+                        entries.append((method, int(size), basket, 0))
+        return entries
+
+    def _search_metadata(summary, detail):
+        specs = detail['pc_spec'].astype(str)
+        return {'broad_search': broad_search,
+                'single_instruments_scored': int(specs[specs.str.startswith('single:')].nunique()),
+                'configurations_scored': len(summary),
+                'basket_methods': (['PCA', 'correlation', 'forward selection']
+                                   if broad_search else ['pinned configuration']),
+                'scope': 'eligible downloaded universe; baskets use three deterministic search heuristics'}
 
     def _walk_forward_cv(rets_sub, verbose=False):
         """Run the full walk-forward CV grid on rets_sub → summary DataFrame
@@ -3530,7 +3837,7 @@ def find_best_hedge(
 
                 # [Fix 6] complete data + non-zero variance only, no fillna
                 ok = ret_tr_all.columns[(ret_tr_all.notna().all()) &
-                                        (ret_tr_all.std() > 1e-6)]
+                                        (ret_tr_all.std() > MIN_RETURN_STD)]
                 # [Fix 120] eligibility is decided on TRAINING data only.
                 # This line used to also require complete data in the TEST
                 # window, so a name entered the basket only if it had prices in
@@ -3541,11 +3848,12 @@ def find_best_hedge(
                 # TARGET alone, and _eval_on_window already returns NaN (and
                 # the fold is skipped) if a chosen basket name has a gap.
                 ok = list(ok)
-                if target_ticker not in ok or \
-                        not ret_te_all[target_ticker].notna().all():
+                train_problem = _window_problem(ret_tr_all, target_ticker, min_train_rows)
+                test_problem = _window_problem(ret_te_all, target_ticker, 10)
+                if train_problem or test_problem:
                     if verbose:
-                        _P(f"  ⚠ skipping fold {fold} (lookback {lookback}): "
-                              f"{target_short} incomplete or zero variance")
+                        _P(f'  Skipping fold {fold} (lookback {lookback}): '
+                           f'{"TRAIN " + train_problem if train_problem else "TEST " + test_problem}')
                     continue
                 ret_tr = ret_tr_all[ok]
                 ret_te = ret_te_all[ok]
@@ -3553,50 +3861,71 @@ def find_best_hedge(
                     continue                              # [Fix 80]
                 cur_uni = [c for c in _eligible(ret_tr.index[-1]) if c in ok]  # [Fix 44/45]
 
-                pca_cols = [c for c in ret_tr.columns if c != PORTFOLIO_COL]   # [Fix 46]
-                ret_tr_w = _winsorize_returns(ret_tr[pca_cols], winsorize_pct)  # [Fix 42]
+                entries = _extra_baskets(ret_tr, cur_uni, ok)
+                pca_cols = [c for c in ret_tr.columns if c != PORTFOLIO_COL]
+                ret_tr_w = _winsorize_returns(ret_tr[pca_cols], winsorize_pct)
                 scaler = StandardScaler()
                 ret_tr_sc = pd.DataFrame(scaler.fit_transform(ret_tr_w),
-                                         index=ret_tr.index, columns=pca_cols)
-                cap = len(pca_cols) - 1
+                                        index=ret_tr.index, columns=pca_cols)
+                cap = min(len(pca_cols) - 1, len(ret_tr) - 1)
                 for pc_spec in pc_grid:
+                    if str(pc_spec).startswith('single:') or pc_spec in ('correlation', 'forward'):
+                        continue
                     n_pc = (_n_pc_auto(ret_tr_sc, cap, robust_cov)
-                            if pc_spec == 'auto' else int(min(pc_spec, cap)))
-                    pca = _pca_fit(ret_tr_sc, n_pc, robust_cov)               # [Fix 42]
-                    # [Fix 23] eigenvalue-weighted loadings (see _select_and_fit)
-                    loadings = pd.DataFrame(
-                        pca.components_.T * np.sqrt(pca.explained_variance_),
-                        index=pca_cols,
-                        columns=[f'PC{i+1}' for i in range(n_pc)])
-                    loadings = _inject_synth_loadings(loadings)              # [Fix 46]
-                    ranked = _rank_scores(loadings, ret_tr, target_ticker,
-                                          cur_uni).index.tolist()
+                            if pc_spec == 'auto' else int(min(int(pc_spec), cap)))
+                    pca = _pca_fit(ret_tr_sc, n_pc, robust_cov)
+                    loadings = pd.DataFrame(pca.components_.T * np.sqrt(pca.explained_variance_),
+                                            index=pca_cols)
+                    loadings = _inject_synth_loadings(loadings)
+                    ranked = _rank_scores(loadings, ret_tr, target_ticker, cur_uni).index.tolist()
                     for bsize in basket_size_options:
-                        basket = _forced_basket(ranked, ok, bsize)  # [Fix 40]
-                        if len(basket) < 2:
-                            continue
-                        reg, r2_tr, _ = _fit_basket(ret_tr, target_ticker, basket)
-                        n, p = len(ret_tr), len(basket)
-                        adj_r2 = 1 - (1 - r2_tr) * (n - 1) / max(1, n - p - 1)
-                        r2_te, vol_red = _eval_on_window(reg, basket, ret_te)
-                        if np.isnan(r2_te):
-                            continue
-                        results.append({
-                            'lookback': lookback, 'pc_spec': str(pc_spec),
-                            'n_pcs': n_pc, 'basket_size': bsize, 'fold': fold,
-                            'r2_train': r2_tr, 'adj_r2_train': adj_r2,
-                            'r2_test': r2_te, 'vol_red_test': vol_red,
-                            'gross': float(np.abs(reg.coef_).sum()),  # [Fix 38]
-                        })
+                        if broad_search and int(bsize) == 1:
+                            continue  # all singles are explicit competing configurations above
+                        rank_for_size = ranked
+                        if int(bsize) == 1 and not forced:
+                            rank_for_size = ret_tr[cur_uni].corrwith(ret_tr[target_ticker]).abs().sort_values(ascending=False).index.tolist()
+                        basket = _forced_basket(rank_for_size, ok, int(bsize))
+                        if basket:
+                            entries.append((str(pc_spec), int(bsize), basket, n_pc))
+                seen = set()
+                for spec, size, basket, n_pc in entries:
+                    key = (spec, size)
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    reg, r2_tr, _ = _fit_basket(ret_tr, target_ticker, basket)
+                    if max_gross is not None and np.abs(reg.coef_).sum() > max_gross:
+                        continue
+                    r2_te, vol_red = _eval_on_window(reg, basket, ret_te)
+                    if not np.isfinite(r2_te):
+                        continue
+                    n, p = len(ret_tr), len(basket)
+                    adj_r2 = 1 - (1 - r2_tr) * (n - 1) / max(1, n - p - 1)
+                    results.append({'lookback': lookback, 'pc_spec': spec,
+                                    'n_pcs': n_pc, 'basket_size': size, 'fold': fold,
+                                    'family': _config_family(spec, len(basket)),
+                                    'r2_train': r2_tr, 'adj_r2_train': adj_r2,
+                                    'r2_test': r2_te, 'vol_red_test': vol_red,
+                                    'gross': float(np.abs(reg.coef_).sum())})
         if not results:
             return None, None
         cv = pd.DataFrame(results)
         summary = cv.groupby(['lookback', 'pc_spec', 'basket_size']).agg(
+            family=('family', 'first'),
             avg_r2_oos=('r2_test', 'mean'), std_r2_oos=('r2_test', 'std'),
             avg_vol_red=('vol_red_test', 'mean'),
+            std_vol_red=('vol_red_test', 'std'),
             avg_adj_r2=('adj_r2_train', 'mean'),
             avg_gross=('gross', 'mean'),
             n_folds=('fold', 'count')).reset_index()
+        # Compare configurations on the requested complete set of folds.
+        # A basket must not win just because its bad-data test windows vanished.
+        summary = summary.loc[summary['n_folds'] == cv_n_folds].copy()
+        if summary.empty:
+            if verbose:
+                _P(f'  No configuration completed all {cv_n_folds} CV folds; '
+                   'partial evidence is not ranked as a validated hedge.')
+            return None, cv
         # Sanitize NaN-able metrics so idxmax() always finds something
         summary['std_r2_oos'] = summary['std_r2_oos'].fillna(0)
         summary['avg_r2_oos'] = summary['avg_r2_oos'].fillna(-1)
@@ -3680,19 +4009,25 @@ def find_best_hedge(
         summary['composite'] = ((_r2_use - 0.5 * summary['std_r2_oos']) * 0.6
                                 + _vr_use * 0.4
                                 - gross_penalty * summary['avg_gross'])
+        if hedge_objective == 'variance':
+            summary['composite'] = (_vr_use
+                                    - .5 * summary['std_vol_red'].fillna(0)
+                                    - gross_penalty * summary['avg_gross'])
         # the same score computed on the RECENT folds only — never used for
         # the live pick, always reported, so the alternative is visible
         summary['composite_recent'] = (
             (summary['recent_r2'].fillna(-1)) * 0.6
             + summary['recent_vol_red'].fillna(0) * 0.4
             - gross_penalty * summary['avg_gross'])
+        if hedge_objective == 'variance':
+            summary['composite_recent'] = (summary['recent_vol_red'].fillna(0)
+                                           - gross_penalty * summary['avg_gross'])
         if max_gross is not None:
             within = summary[summary['avg_gross'] <= max_gross]
             if len(within):
                 summary = within.reset_index(drop=True)
             else:
-                _P(f"  ⚠ no config satisfies max_gross={max_gross:.1f} — "
-                      f"cap ignored for this run")
+                return None, cv  # A user-specified cap is never silently ignored.
         return summary, cv
 
 
@@ -3701,15 +4036,36 @@ def find_best_hedge(
     # held-out tail if there is one, print an honest mini-report in the
     # [Fix 79] layout, and return the same result-dict shape as a full run.
     if val_mode in ('HOLDOUT', 'IN-SAMPLE'):
-        _ps0 = 'auto' if pc_options == 'auto' else int(list(pc_options)[0])
-        _bs0 = int(max(basket_size_options))
         fit_rets = rets.iloc[:rows - hold_rows - (purge if hold_rows else 0)]
-        try:
-            (_, s_rank, s_basket, s_reg, s_r2_in, s_resid, s_npc,
-             _, _) = _select_and_fit(fit_rets, _ps0, _bs0)
-        except RuntimeError as e:
-            raise ValueError(
-                f"[Fix 77] cannot fit on {len(fit_rets)} rows: {e}")
+        short_trials, short_errors = [], []
+        short_specs = [(str(pc), int(size)) for pc in pc_grid for size in basket_size_options
+                       if not (broad_search and int(size) == 1)]
+        _short_ok = list(fit_rets.columns[fit_rets.notna().all() & (fit_rets.std() > MIN_RETURN_STD)])
+        _short_u = [c for c in _eligible(fit_rets.index[-1]) if c in _short_ok]
+        short_specs += [(spec, size) for spec, size, _, _ in _extra_baskets(fit_rets, _short_u, _short_ok)]
+        for short_pc, short_size in dict.fromkeys(short_specs):
+            try:
+                fitted = _select_and_fit(fit_rets, short_pc, int(short_size))
+            except RuntimeError as error:
+                short_errors.append(str(error))
+                continue
+            _, _, _, short_reg, short_r2, short_resid, _, _, _ = fitted
+            target_sd = float(np.std(fit_rets[target_ticker].values))
+            short_vr = 1 - float(np.std(short_resid)) / target_sd
+            measure = short_vr if hedge_objective == 'variance' else short_r2
+            gross = float(np.abs(short_reg.coef_).sum())
+            if max_gross is not None and gross > max_gross:
+                continue
+            score = measure - gross_penalty * gross
+            short_trials.append((score, short_pc, int(short_size), fitted))
+        if not short_trials:
+            raise ValueError(f'Cannot fit on {len(fit_rets)} rows: '
+                             + '; '.join(short_errors[:3]))
+        _, _ps0, _bs0, fitted = max(short_trials, key=lambda item: (item[0], -item[2]))
+        (_, s_rank, s_basket, s_reg, s_r2_in, s_resid, s_npc, _, _) = fitted
+        _P('  Short sample: configuration selected on training data only; '
+           'the holdout, if available, is scored afterwards. In-sample choices '
+           'are indicative, not independently validated.')
         s_w = pd.Series(s_reg.coef_, index=s_basket)
         # [Fix 83] adjusted R² — with k regressors on a short window the raw
         # in-sample R² is inflated by construction, and this tier is exactly
@@ -3719,11 +4075,11 @@ def find_best_hedge(
         s_r2_adj = (1 - (1 - s_r2_in) * (_n_fit - 1) / max(1, _n_fit - _k_fit - 1)
                     if _n_fit > _k_fit + 1 else np.nan)
         s_te_in = float(np.std(s_resid) * ann_sqrt)
-        s_tvol = float(fit_rets[target_ticker].std() * ann_sqrt)
-        s_vr_in = 1 - s_te_in / s_tvol if s_tvol > 1e-6 else 0.0
+        s_tvol = float(fit_rets[target_ticker].std(ddof=0) * ann_sqrt)
+        s_vr_in = 1 - s_te_in / s_tvol if s_tvol > MIN_RETURN_STD else 0.0
         # single-instrument comparison on the SAME basis
         _okc = fit_rets.columns[(fit_rets.notna().all())
-                                & (fit_rets.std() > 1e-6)]
+                                & (fit_rets.std() > MIN_RETURN_STD)]
         _pool = [c for c in _okc if c != target_ticker
                  and c not in set(pf_legs)]
         _acorr = (fit_rets[_pool].corrwith(fit_rets[target_ticker]).abs()
@@ -3750,7 +4106,8 @@ def find_best_hedge(
         if val_mode == 'HOLDOUT':
             _gap_s = (s_r2_in - s_r2_h) if not np.isnan(s_r2_h) else np.nan
             grade, reasons = _ticket_verdict(
-                s_r2_h, np.nan, _gap_s, None, False, s_r2_h, s_r2e_h, False)
+                s_r2_h, s_r2_h, _gap_s, None, False, s_r2_h, s_r2e_h, False,
+                vol_red=s_vr_h, worst_vol_red=s_vr_h, objective=hedge_objective)
             if grade.startswith('✓'):
                 grade = '△ TRADE AT REDUCED SIZE'
             reasons.insert(0, f'single {hold_rows}-row holdout — thin '
@@ -3764,6 +4121,9 @@ def find_best_hedge(
                 f'in-sample R² is inflated by construction',
                 'use for exposure identification; validate on a longer '
                 'window before trading']
+        if np.isfinite(s_r2_h) and s_r2_h < 0:
+            grade = '✗ NO VALIDATED HEDGE'
+            reasons.insert(0, 'negative unseen tracking R²; candidate retained for reference only')
         # display names (built later in the full flow — needed here)
         _shorts = pd.Series({c: c.split(' ')[0] for c in fit_rets.columns})
         _dup = _shorts[_shorts.duplicated(keep=False)].index
@@ -3785,7 +4145,7 @@ def find_best_hedge(
         kvo = _kv_open
         title(f"PCA HEDGE — {target_short}   ·   "
               f"{datetime.now():%Y-%m-%d %H:%M}")
-        _P(f"  {val_mode} validation · {len(universe)} names considered · "
+        _P(f"  Objective: {hedge_objective} · {val_mode} validation · {len(universe)} names considered · "
            f"{'2-day overlapping' if two_day else 'daily'} returns · "
            f"{rows} rows ({rets.index[0]:%d%b%y}→{rets.index[-1]:%d%b%y})")
         title("[0] TICKET")
@@ -3819,8 +4179,8 @@ def find_best_hedge(
            f"{s_te_in*100:.1f}%/yr ({s_vr_in*100:.0f}% cut) · "
            f"R² {s_r2_in:.2f}",
            'Fit and scored on the SAME rows. On a window this short that is '
-           'close to meaningless as a forecast — it is the ceiling, and the '
-           'gap to reality is unmeasured here.')
+           'a weak basis for forecasting. Later performance can be either '
+           'better or worse; use the unseen evidence when available.')
         if notional_mm:                                        # [Fix 86]
             _te_s = s_te_h if np.isfinite(s_te_h) else s_te_in
             kv('RISK ($)', f"±{_fmt_money_mm(_te_s*notional_mm)}/yr · "
@@ -3836,12 +4196,12 @@ def find_best_hedge(
             f"nothing on this path has survived a walk-forward.")
         kv('In-sample R²', f"{s_r2_in:.3f} on {len(fit_rets)} rows "
            f"({len(s_basket)} names, PCs {s_npc})"
-           + (f" · adj {s_r2_adj:.3f}" if np.isfinite(s_r2_adj) else ""),
-           'The adjusted figure charges the fit for its own degrees of '
-           'freedom — with this many regressors on this few rows, that is '
-           'the honest one of the two.')
+           + (f" · complexity score {s_r2_adj:.3f} (heuristic)" if np.isfinite(s_r2_adj) else ""),
+           'The adjusted figure penalizes nominal regressor count. It is an '
+           'OLS-style heuristic for Ridge, not effective degrees of freedom '
+           'and not out-of-sample evidence. A negative value can be legitimate.')
         if np.isfinite(s_r2_adj) and s_r2_adj < 0.1:
-            kv('  ⚠ adjusted R² ≈ 0', f"{s_r2_adj:.3f}",
+            kv('  ⚠ Ridge complexity score', f"{s_r2_adj:.3f}",
                'On this window the fit barely beats its own '
                'degrees-of-freedom cost. Treat the basket as a HYPOTHESIS, '
                'not a hedge — re-run on a longer window before trading it.')
@@ -3855,7 +4215,7 @@ def find_best_hedge(
                f"{hold_rows} rows. One window, so it is an anecdote — but it "
                f"is the only honest anecdote on the page.")
         if s_best_etf is not None:
-            kv('Best single ETF', f"{disp.get(s_best_etf, s_best_etf)}: "
+            kv('Correlation-picked ETF', f"{disp.get(s_best_etf, s_best_etf)}: "
                f"in-sample R² {s_r2e:.2f}"
                + (f" · holdout {s_r2e_h:.2f}"
                   if not np.isnan(s_r2e_h) else ''),
@@ -3870,7 +4230,45 @@ def find_best_hedge(
                'Charts are suppressed in short-sample modes — there is not '
                'enough data behind them to be worth drawing.')
         _kv_flush()
+        alternatives = {}
+        for family in ('basket', 'single', 'single_stock', 'single_etf'):
+            trials = [t for t in short_trials
+                      if (_config_family(t[1], len(t[3][2])).startswith('single')
+                          if family == 'single' else _config_family(t[1], len(t[3][2])) == family)]
+            if not trials:
+                continue
+            trial = max(trials, key=lambda t: (t[0], -t[2]))
+            _, spec, size, fitted_alt = trial
+            _, _, basket_alt, reg_alt, raw_alt, _, _, _, _ = fitted_alt
+            ys, residuals, spreads = [], [], []
+            if hold_rows:
+                test_alt = rets.iloc[-hold_rows:]
+                q_alt, _ = _eval_on_window(reg_alt, basket_alt, test_alt)
+                if np.isfinite(q_alt):
+                    y_alt = test_alt[target_ticker].to_numpy()
+                    ys.append(y_alt)
+                    residuals.append(y_alt - reg_alt.predict(test_alt[basket_alt].values))
+                    spreads.append(y_alt - test_alt[basket_alt].values @ reg_alt.coef_)
+            alternatives[family] = _alternative_evidence(
+                pd.Series(reg_alt.coef_, index=basket_alt), raw_alt, ys, residuals, spreads,
+                ann_sqrt, 1 if hold_rows else 0, val_mode,
+                {'lookback': len(fit_rets), 'pc_spec': spec, 'basket_size': size,
+                 'selection_score': trial[0], 'max_gross': max_gross}, hedge_objective)
+        search = {'broad_search': broad_search,
+                  'single_instruments_scored': len({t[1] for t in short_trials if str(t[1]).startswith('single:')}),
+                  'configurations_scored': len(short_trials),
+                  'basket_methods': ['PCA', 'correlation', 'forward selection'] if broad_search else ['pinned configuration']}
+        selected_family = _config_family(_ps0, len(s_basket))
+        _show_hedge_comparison(alternatives, selected_family, search)
+
         return {
+            'hedge_alternatives': alternatives, 'search': search,
+            'best_basket_hedge': alternatives.get('basket'),
+            'best_single_hedge': alternatives.get('single'),
+            'best_single_stock_hedge': alternatives.get('single_stock'),
+            'best_single_etf_hedge': alternatives.get('single_etf'),
+            **_decision_fields(s_w, grade),
+            'unhedged_baseline': {'vol_reduction': 0.0, 'variance_reduction': 0.0},
             'weights': s_w, 'basket': s_basket, 'ranking': s_rank,
             'cv_summary': None, 'cv_detail': None,
             'nested_validation': pd.DataFrame(),
@@ -3886,6 +4284,7 @@ def find_best_hedge(
             'asymmetry': {}, 'path': {},                     # [Fix 122/123]
             'exposures': (data or {}).get('exposures') or {},  # [Fix 119]
             'ticket': {'grade': grade, 'reasons': reasons,
+                       'hedge_objective': hedge_objective,
                        'quality_r2': (s_r2_h if hold_rows else np.nan),
                        'quality_source': ('holdout' if hold_rows
                                           else 'in-sample only'),
@@ -3910,7 +4309,7 @@ def find_best_hedge(
             'factor_leakage': None,
             'pit_size_active': pit_active, 'pit_members_active': pm_active,
             'params': {'lookback': len(fit_rets), 'pc_spec': _ps0,
-                       'basket_size': _bs0,
+                       'basket_size': _bs0, 'hedge_objective': hedge_objective, 'broad_search': broad_search,
                        'tz_tolerance_hours': tz_tolerance_hours,
                        'min_mktcap_usd_mm': min_mktcap_usd_mm,
                        'gross_penalty': gross_penalty, 'max_gross': max_gross,
@@ -3937,6 +4336,10 @@ def find_best_hedge(
           f"{cv_n_folds} earlier fold{'s' if cv_n_folds != 1 else ''}...")
     nested_rows = []
     nested_y_all, nested_res_all = [], []                     # [Fix 69]
+    nested_trade_res_all = []
+    nested_index_all = []
+    family_tests = {f: {'y': [], 'residual': [], 'spread': []}
+                    for f in ('basket', 'single', 'single_stock', 'single_etf')}
     N = len(rets)
     for j in range(1, outer_folds + 1):
         o_end = N - (j - 1) * outer_window
@@ -3947,18 +4350,40 @@ def find_best_hedge(
         if summary_j is None:
             _P(f"  outer window {j}: inner CV failed — skipped")
             continue
+        for family, evidence in family_tests.items():
+            choices = _family_configs(summary_j, family)
+            if choices.empty:
+                continue
+            choice = choices.loc[choices['composite'].idxmax()]
+            try:
+                _, _, fb, fr, _, _, _, _, _ = _select_and_fit(
+                    inner.iloc[-int(choice['lookback']):], choice['pc_spec'], int(choice['basket_size']))
+                if max_gross is not None and np.abs(fr.coef_).sum() > max_gross:
+                    raise RuntimeError('Outer refit exceeds the requested gross cap')
+                fq, _ = _eval_on_window(fr, fb, outer_test)
+                if np.isfinite(fq):
+                    fy = outer_test[target_ticker].to_numpy()
+                    evidence['y'].append(fy)
+                    evidence['residual'].append(fy - fr.predict(outer_test[fb].values))
+                    evidence['spread'].append(fy - outer_test[fb].values @ fr.coef_)
+            except RuntimeError:
+                pass
         cfg = summary_j.loc[summary_j['composite'].idxmax()]
         lb_j = int(cfg['lookback'])
         try:
             _, _, bkt_j, reg_j, _, _, _, _, _ = _select_and_fit(
                 inner.iloc[-lb_j:], cfg['pc_spec'], int(cfg['basket_size']))
+            if max_gross is not None and np.abs(reg_j.coef_).sum() > max_gross:
+                raise RuntimeError('Outer refit exceeds the requested gross cap')
             r2_j, vr_j = _eval_on_window(reg_j, bkt_j, outer_test)
         except RuntimeError as e:
             _P(f"  outer window {j}: refit failed ({e}) — skipped")
             continue
         if not np.isnan(r2_j):                                # [Fix 69]
             _yo = outer_test[target_ticker].values
+            nested_index_all.append(outer_test.index)
             nested_y_all.append(_yo)
+            nested_trade_res_all.append(_yo - outer_test[bkt_j].values @ reg_j.coef_)
             nested_res_all.append(_yo - reg_j.predict(
                 outer_test[bkt_j].values))
         nested_rows.append({
@@ -3988,8 +4413,19 @@ def find_best_hedge(
         _yc = np.concatenate(nested_y_all)
         _rc = np.concatenate(nested_res_all)
         _sst = float(np.sum((_yc - _yc.mean()) ** 2))
-        if _sst > 1e-12:
+        if _sst > MIN_RETURN_STD ** 2:
             nested_pooled = 1.0 - float(np.sum(_rc ** 2)) / _sst
+
+    trade_risk = (_trade_risk(np.concatenate(nested_y_all),
+                              np.concatenate(nested_trade_res_all), ann_sqrt)
+                  if nested_y_all else {})
+    trade_risk['source'] = 'nested unseen coefficient-only spread'
+    nested_unseen = (pd.DataFrame({
+        'target': np.concatenate(nested_y_all[::-1]),
+        'regression_residual': np.concatenate(nested_res_all[::-1]),
+        'traded_spread': np.concatenate(nested_trade_res_all[::-1])},
+        index=pd.DatetimeIndex(np.concatenate([ix.to_numpy() for ix in nested_index_all[::-1]])))
+        if nested_y_all else pd.DataFrame())
 
     # ── [Fix 27/53] HONESTY BENCHMARKS: simplest hedges, same windows ──────
     # [Fix 27] scored a single best-correlated ETF on the outer windows.
@@ -4013,7 +4449,7 @@ def find_best_hedge(
             for lb in lookback_options:
                 tr_all = rets.iloc[max(0, o_start - purge - lb):o_start - purge]
                 ok = tr_all.columns[(tr_all.notna().all()) &
-                                    (tr_all.std() > 1e-6)]
+                                    (tr_all.std() > MIN_RETURN_STD)]
                 if target_ticker not in ok:
                     continue
                 tr = tr_all[ok]
@@ -4090,10 +4526,10 @@ def find_best_hedge(
         # Each per-window R² rests on ~outer_window observations and is a
         # noisy statistic; the pooled figure rests on all of them at once
         # and is the more stable headline of the two.
-        y_cat = np.concatenate(y_all)
-        r_cat = np.concatenate(res_all)
+        y_cat = np.concatenate(y_all[::-1])
+        r_cat = np.concatenate(res_all[::-1])
         sst = float(np.sum((y_cat - y_cat.mean()) ** 2))
-        pooled = 1.0 - float(np.sum(r_cat ** 2)) / sst if sst > 1e-12 else np.nan
+        pooled = 1.0 - float(np.sum(r_cat ** 2)) / sst if sst > MIN_RETURN_STD ** 2 else np.nan
         # [Fix 70] hand back the pooled arrays so the bootstrap CI can
         # resample the exact series the pooled R² was computed on
         return out + (pd.DataFrame(rows), pooled, y_cat, r_cat)
@@ -4141,7 +4577,7 @@ def find_best_hedge(
             return None
         _sse = _df['resid'].pow(2).rolling(_w).sum()
         _sst = (_df['y'].rolling(_w).var(ddof=0) * _w).where(
-            lambda s: s > 1e-12)
+            lambda s: s > MIN_RETURN_STD ** 2)
         _r2 = (1.0 - _sse / _sst).dropna()
         _r2v = (1.0 - (_df['resid'].rolling(_w).var(ddof=0) * _w)
                 / _sst).dropna()
@@ -4164,8 +4600,13 @@ def find_best_hedge(
     _P(f"Full-data walk-forward CV — choosing the config to trade...")
     summary, cv_df = _walk_forward_cv(rets, verbose=True)
     if summary is None:
-        raise RuntimeError("All CV folds failed — the stock likely lacks "
-                           "sufficient liquidity or price history.")
+        raise RuntimeError(
+            'All CV folds failed or no configuration met the requested gross cap. Read the TRAIN/TEST diagnostics above: '
+            'missing returns, constant target returns, too few candidates, '
+            'or insufficient history are different problems. Reported flat '
+            'prices are no longer deleted. Check the cached target column and '
+            're-download active-day prices if necessary; do not replace '
+            'missing test returns with zero.')
     best = summary.loc[summary['composite'].idxmax()]
     best_lookback = int(best['lookback'])
     best_pc_spec = best['pc_spec']
@@ -4183,10 +4624,10 @@ def find_best_hedge(
             f"[Fix 81] cannot fit the FINAL {best_lookback}d window: "
             f"{_e_final}\n"
             f"  {target_short} has {_nan}/{len(_tail)} missing returns there"
-            + (" — most likely a trading halt masked by the stale-price "
-               "guard.\n  Options: raise mask_stale_days (or set it to None "
-               "to disable), pick a\n  sample_window that avoids the halt, or "
-               "hedge a liquid proxy instead."
+            + (" — inspect those dates in the raw Bloomberg price data. "
+               "Missing quotes, inactive days and suspensions need different "
+               "handling; re-download active-day data or choose a complete "
+               "window. Do not manufacture zero returns."
                if _nan else
                " — the name may have zero variance (limit-locked or "
                "untraded).\n  Try a longer lookback or a different "
@@ -4202,8 +4643,8 @@ def find_best_hedge(
 
     weights_final = pd.Series(reg_f.coef_, index=basket_final)
     te_final = np.std(resid_final) * ann_sqrt
-    tgt_std_final = returns_final[target_ticker].std() * ann_sqrt
-    vol_red_final = 1 - te_final / tgt_std_final if tgt_std_final > 1e-6 else 0.0
+    tgt_std_final = returns_final[target_ticker].std(ddof=0) * ann_sqrt
+    vol_red_final = 1 - te_final / tgt_std_final if tgt_std_final > MIN_RETURN_STD else 0.0
     # ── [Fix 121] THE DRIFT THE TICKET NEVER SHOWED ─────────────────────────
     # RidgeCV fits an intercept (nothing in this file passes
     # fit_intercept=False), and reg.predict() subtracts it in EVERY scored
@@ -4225,7 +4666,7 @@ def find_best_hedge(
         # autocorrelation that makes the ADF p-value anti-conservative;
         # test every 2nd (non-overlapping) residual instead
         resid_adf = resid_final[::2] if two_day else resid_final
-        adf_p = adfuller(resid_adf, maxlag=min(20, len(resid_adf) // 5))[1]
+        adf_p = _adf_pvalue(resid_adf, maxlag=min(20, len(resid_adf) // 5))
     except Exception:
         adf_p = np.nan
 
@@ -4269,11 +4710,26 @@ def find_best_hedge(
         best_lookback, best_pc_spec, best_bsize, detail=True)   # [Fix 65]
     n_eff = max(4, int(outer_window / (2 if two_day else 1)))
     wdisp = _window_dispersion_stats(sel_detail, sel_pooled, n_eff)
-    boot = None
-    if boot_n and sel_y is not None and len(sel_y):             # [Fix 70]
-        boot = _block_bootstrap_ci(sel_y, sel_res, n_boot=int(boot_n),
-                                   block=(8 if two_day else None),
-                                   ann=ann_sqrt)
+    boot = selected_boot = None
+    if boot_n:
+        if sel_y is not None and len(sel_y):
+            selected_boot = _block_bootstrap_ci(sel_y, sel_res, n_boot=int(boot_n),
+                                                block=(8 if two_day else None), ann=ann_sqrt)
+        if np.isfinite(nested_pooled) and len(nested_unseen):
+            boot = _block_bootstrap_ci(nested_unseen['target'].values,
+                                      nested_unseen['regression_residual'].values,
+                                      n_boot=int(boot_n), block=(8 if two_day else None), ann=ann_sqrt)
+            if boot:
+                boot['source'] = 'nested unseen selection procedure'
+        else:
+            boot = selected_boot
+            if boot:
+                boot['source'] = 'selected configuration; selection bias remains'
+        if selected_boot:
+            selected_boot['source'] = 'selected configuration; selection bias remains'
+            selected_boot['conditional_on_observed_fits'] = True
+        if boot:
+            boot['conditional_on_observed_fits'] = True
 
     # ── [Fix 71] ROLLING OOS CURVE ───────────────────────────────────────────
     # Three outer windows are three noisy readings. This walks the SELECTED
@@ -4534,10 +4990,9 @@ def find_best_hedge(
         if sel_n and len(sel_detail):
             _lw_r2 = float(sel_detail.iloc[0]['r2'])       # window 1 = latest
             _lw_flag = wdisp['flags'][0] if wdisp['flags'] else ''
-            if _lw_flag == 'BELOW band':
+            if _lw_flag == 'negative':
                 _sig.append('window')
-                _why.append(f"newest unseen window R² {_lw_r2:.2f} is below "
-                            f"the range sampling noise explains")
+                _why.append(f"newest unseen window R² {_lw_r2:.2f} is negative")
         # signal 3 — monotone deterioration toward the present
         if wdisp['trend']:
             _sig.append('trend')
@@ -4568,7 +5023,30 @@ def find_best_hedge(
                    'sizing_te_now': _te_now}
     grade, reasons = _ticket_verdict(
         _quality, wdisp['worst_r2'], _overfit_gap, wdisp['min_sim'],
-        wdisp['trend'], _ref_pca_t, _ref_simple_t, _roll_breach)
+        wdisp['trend'], _ref_pca_t, _ref_simple_t, _roll_breach,
+        vol_red=trade_risk.get('vol_reduction'),
+        worst_vol_red=(float(nested_valid['vol_red_oos'].min())
+                       if len(nested_valid) else np.nan),
+        objective=hedge_objective,
+        ref_vol_pca=nested_vr_mean,
+        ref_vol_simple=max(
+            [float(b['vol_red_oos'].mean()) for b in (etf_bench, name_bench)
+             if len(b) and set(b['window']) == set(nested_valid['window'])]
+            or [np.nan]))
+    if np.isfinite(_quality) and _quality < 0:
+        grade = '✗ NO VALIDATED HEDGE'
+        reasons.insert(0, 'negative unseen tracking R²; candidate retained for reference only')
+    if max_gross is not None and weights_final.abs().sum() > max_gross:
+        grade = '✗ NO VALIDATED HEDGE'
+        reasons.insert(0, 'final fitted weights exceed the requested gross exposure cap')
+    if trade_risk.get('vol_reduction', np.nan) <= 0:
+        grade = '✗ DO NOT TRADE AS-IS'
+        reasons.insert(0, 'coefficient-only nested unseen spread did not reduce '
+                       'volatility relative to the unhedged target')
+    if 0 < len(nested_valid) < outer_folds and str(grade).startswith(('✓', '△')):
+        grade = '? INSUFFICIENT OOS EVIDENCE'
+        reasons.insert(0, f'only {len(nested_valid)}/{outer_folds} nested unseen '
+                       'windows could be scored; this is partial evidence')
     if nowcast.get('condition') == 'DEGRADED':            # [Fix 93]
         if grade.startswith('✓'):
             grade = '△ TRADE AT REDUCED SIZE'
@@ -4618,6 +5096,9 @@ def find_best_hedge(
                         'vr': _vr, 'te_source': float(_te_src),
                         'refits_needed': _refits, 'blocks': _blocks}
     ticket_info = {'grade': grade, 'reasons': reasons,
+                   'trade_eligible': _decision_fields(weights_final, grade)['trade_eligible'],
+                   'trade_risk': trade_risk,
+                   'hedge_objective': hedge_objective,
                    'quality_r2': _quality, 'quality_source': _quality_src,
                    'worst_window_r2': wdisp['worst_r2'],
                    'worst_window_te': wdisp['worst_te'],
@@ -4649,7 +5130,7 @@ def find_best_hedge(
                'legend.fontsize': 8, 'legend.frameon': False,
                'figure.facecolor': 'white', 'axes.spines.top': False,
                'axes.spines.right': False, 'lines.linewidth': 1.4}
-        with plt.rc_context(_rc):
+        with plt.rc_context(_supported_plot_style(_rc)):
             fig, axes = plt.subplots(2, 3, figsize=(16, 8.5))
             ev = pca_f.explained_variance_ratio_
             axes[0, 0].bar(range(1, n_pc_final + 1), ev * 100,
@@ -4694,7 +5175,10 @@ def find_best_hedge(
             axes[0, 2].set_title(f'Top correlations with {target_short} '
                                  f'— green = in the basket')
             axes[0, 2].set_xlabel('correlation')
-            spread = pd.Series(resid_final, index=returns_final.index)
+            spread = pd.Series(
+                returns_final[target_ticker].values
+                - returns_final[basket_final].values @ reg_f.coef_,
+                index=returns_final.index)
             # [Fix 15] true cumulative % = expm1(cumulative log return)
             axes[1, 0].plot(np.expm1(returns_final[target_ticker].cumsum()) * 100,
                             color=_CLR['tgt'], label='unhedged')
@@ -4702,7 +5186,7 @@ def find_best_hedge(
                             color=_CLR['hedged'], label='hedged')
             axes[1, 0].axhline(0, color='#b0bcc8', ls='--', lw=.9)
             axes[1, 0].legend(); axes[1, 0].set_ylabel('%')
-            axes[1, 0].set_title('Cumulative return % — unhedged vs hedged')
+            axes[1, 0].set_title('Cumulative return approximation — fitted hedge')
             w = 20
             axes[1, 1].plot(returns_final[target_ticker].rolling(w).std()
                             * ann_sqrt * 100, color=_CLR['tgt'],
@@ -4725,6 +5209,10 @@ def find_best_hedge(
             for _ax in (axes[1, 0], axes[1, 1]):
                 _ax.xaxis.set_major_locator(_mdates.AutoDateLocator(maxticks=7))
                 _ax.xaxis.set_major_formatter(_mdates.DateFormatter('%b %y'))
+            for _axis in axes.flat:
+                _axis.title.set_color(_RF_HEAD)
+                _axis.spines['top'].set_visible(False)
+                _axis.spines['right'].set_visible(False)
             fig.tight_layout(pad=1.6)
             plt.show()
             # [Fix 71] rolling OOS curve — TE panel with the kill-switch line,
@@ -4749,17 +5237,21 @@ def find_best_hedge(
                 ax2[0].set_title('Rolling 21-row OOS tracking error — above '
                                  'the red line, stop')
                 ax2[1].plot(rolling_df.index,
-                            rolling_df['r2_roll'].clip(-0.5, 1.0),
+                            rolling_df['r2_roll'],
                             color=_CLR['pick'])
                 if not np.isnan(sel_pooled):
                     ax2[1].axhline(sel_pooled, color='#8a97a6', ls='--',
                                    label='pooled OOS R²')
                     ax2[1].legend(loc='lower left')
-                ax2[1].set_title('Rolling 21-row OOS R² (clipped at −0.5)')
+                ax2[1].set_title('Rolling 21-row OOS R² (negative values retained)')
                 ax2[1].xaxis.set_major_locator(
                     _mdates.AutoDateLocator(maxticks=9))
                 ax2[1].xaxis.set_major_formatter(
                     _mdates.DateFormatter('%b %y'))
+                for _axis in ax2:
+                    _axis.title.set_color(_RF_HEAD)
+                    _axis.spines['top'].set_visible(False)
+                    _axis.spines['right'].set_visible(False)
                 fig2.tight_layout(pad=1.4)
                 plt.show()
 
@@ -4804,7 +5296,7 @@ def find_best_hedge(
            f"a sanity check on the refit, not a fresh validation. The "
            f"config's credentials come from the run it inherits from. Press "
            f"RUN HEDGE (or pass full_validation=True) for the full protocol.")
-    _P(f"  {val_mode} validation · {len(universe)} names considered · "
+    _P(f"  Objective: {hedge_objective} · {val_mode} validation · {len(universe)} names considered · "
           f"{len(rets)} days of history "
           f"({rets.index[0]:%d %b %Y} → {rets.index[-1]:%d %b %Y})"
           + ("  ·  returns paired over 2 days because the markets close at "
@@ -4834,8 +5326,7 @@ def find_best_hedge(
     if not np.isnan(ticket_info['quality_r2']):
         # [Fix 86] plain English: R² is "share of the target's moves the
         # hedge tracks", vol reduction is the risk actually removed.
-        _sub = (f"tracks {ticket_info['quality_r2']*100:.0f}% of "
-                f"{target_short} out-of-sample")
+        _sub = (f"return-tracking OOS R² {ticket_info['quality_r2']:.3f}")
         if sel_n and np.isfinite(sel_vrm):
             _sub += f", cutting {sel_vrm*100:.0f}% of its risk"
     # ── [Fix 117] THE TICKET, DE-DUPLICATED ────────────────────────────────
@@ -4859,7 +5350,14 @@ def find_best_hedge(
     # to THIS tool and genuinely need saying: which window a number came from,
     # what "condition" means, what the stop is measured on.
     _verdict_banner(grade, reasons, _sub)                     # [Fix 87]
-    _P(f"  THE TRADE — per $100 of "
+    if trade_risk.get('n_observations'):
+        _P(f"  Actual coefficient-only nested unseen spread: volatility "
+           f"{trade_risk['unhedged_vol_ann']*100:.1f}% → "
+           f"{trade_risk['hedged_vol_ann']*100:.1f}%/yr; "
+           f"{trade_risk['vol_reduction']*100:.1f}% volatility reduction "
+           f"versus the unhedged baseline (0% reduction). No intercept is "
+           f"traded; costs are excluded.")
+    _P(f"  {'CANDIDATE RECIPE — NOT APPROVED' if not str(grade).startswith(('✓', '△')) else 'CANDIDATE RECIPE'} — per $100 of "
           f"{'gross book' if is_portfolio else 'long ' + target_short}"
           + (f", and on the ${notional_mm:g}mm entered" if notional_mm else ""))
     _t_head = ['SIDE', '$/100', 'NAME', 'FULL TICKER', '★']
@@ -4900,7 +5398,7 @@ def find_best_hedge(
         kv('OOS R²\nnested pooled — the honest one', ' · '.join(_qbits),
            'Judge the hedge on the worst window, not the pooled average. '
            'Full breakdown in [1].')
-    kv('Vol cut\nIN-SAMPLE — the ceiling',
+    kv('Vol cut\nIN-SAMPLE — descriptive',
        f"{tgt_std_final*100:.1f}% → {te_final*100:.1f}%/yr · "
        f"{vol_red_final*100:.0f}% cut · {_te_bp:.0f} bp/day",
        'Scored on its own fitting data, so it is the best this hedge ever '
@@ -5005,7 +5503,7 @@ def find_best_hedge(
     if hedge_horizon_days:
         _P("  ► over a "
            + (f"{int(hedge_horizon_days)}-day hold, a small persistent tilt "
-              f"compounds faster than tracking noise — read the ADF and "
+              f"compounds faster than tracking noise — read the residual mean and "
               f"FACTOR EXPOSURE rows in [3] before CONDITION NOW, which will "
               f"have turned over long before you are out"
               if int(hedge_horizon_days) >= 63 else
@@ -5025,20 +5523,29 @@ def find_best_hedge(
     # small second label line says which question each one answers; the
     # appendix spells the four out side by side.
     kvo(headers=('MEASURE', 'THIS RUN', ''))
+    if trade_risk.get('n_observations'):
+        kv('► Unseen volatility reduction\ncoefficient-only spread versus target',
+           f"{trade_risk['vol_reduction']*100:.1f}%",
+           'Primary hedge objective; measured before costs on nested unseen data.')
     if not np.isnan(nested_pooled):
-        kv('► Nested pooled OOS R²\nthe headline — whole pipeline re-run',
+        kv('Nested pooled tracking R²\nwhole pipeline re-run',
            f"{nested_pooled:.3f}   (selection re-run before each window, so "
            f"nothing downstream ever saw the scoring data)")
+    if boot:
+        kv('95% conditional block-bootstrap interval',
+           f"R² {boot['r2_lo']:.2f}–{boot['r2_hi']:.2f}",
+           'Resamples the errors from the stated evidence source. It does not rerun '
+           'the full fit/search, so it omits additional selection and fitting uncertainty.')
     if sel_n:
         kv('This config, unseen OOS\nweights honest, config not',
            f"{sel_r2m:.3f} ± {sel_r2s:.3f} over {sel_n}×{outer_window}d · "
            f"pooled {sel_pooled:.3f}"
-           + (f" · CI {boot['r2_lo']:.2f}–{boot['r2_hi']:.2f}" if boot else ''))
+           + (f" · CI {selected_boot['r2_lo']:.2f}–{selected_boot['r2_hi']:.2f}" if selected_boot else ''))
         kv('OOS vol reduction\nthe risk actually removed',
            f"{sel_vrm*100:.1f}%"
-           + (f" · TE CI {boot['te_lo']*100:.1f}–{boot['te_hi']*100:.1f}%/yr"
-              if boot else ''))
-    kv('Full-data CV R²\nwhat the selection optimised',
+           + (f" · TE CI {selected_boot['te_lo']*100:.1f}–{selected_boot['te_hi']*100:.1f}%/yr"
+              if selected_boot else ''))
+    kv('Full-data CV tracking R²\nselection diagnostic',
        f"{best['avg_r2_oos']:.3f} ± {best['std_r2_oos']:.3f} "
        f"({int(best['n_folds'])} folds) — flattered by construction; never "
        f"rank configs on it")
@@ -5074,13 +5581,11 @@ def find_best_hedge(
                            format(r['tgt_vol'] * 100, '.1f') + '%',
                            wdisp['flags'][_wi]])
         _print_table(['WIN', 'DATES', 'OOS R²', 'VOL RED', 'TGT VOL',
-                      'VS NOISE BAND'], w_rows,
-                     title='THE THREE UNSEEN WINDOWS, ONE BY ONE',
-                     note='TGT VOL is the target\'s own volatility in that '
-                          'window — R² is mechanically depressed in calm '
-                          'windows, so judge those by TE. NOISE BAND is the '
-                          'spread a perfectly stable hedge would show on '
-                          'windows this short.')
+                      'TRACKING FLAG'], w_rows,
+                     title='UNSEEN WINDOWS, ONE BY ONE',
+                     note='TGT VOL is the target\'s volatility in that window. '
+                          'A negative tracking score is a descriptive failure flag; '
+                          'window-to-window differences are not a significance test.')
         _band = wdisp['band']
         _below = [str(int(r['window'])) for _wi, (_, r)
                   in enumerate(sel_detail.iterrows())
@@ -5181,14 +5686,6 @@ def find_best_hedge(
                f"could not be computed ({type(_e108).__name__}: {_e108}) — "
                f"the rest of the report is unaffected")
         _kv_flush()
-        if full_rep:
-            _P("    (noise band = Fisher-z scatter a STABLE hedge with "
-                  "this pooled R² would produce on")
-            _P("    windows of this length. It is derived for a single "
-                  "predictor, so for a multi-name")
-            _P("    basket the true band is somewhat WIDER — a marginal "
-                  "'BELOW band' flag is weak")
-            _P("    evidence. The CI conditions on the fitted weights.)")
     if roll_stats:
         kvo('ROLLING OOS — 21-row walk-forward',
             note='Every 21 trading days the weights are refit and scored on '
@@ -5207,7 +5704,7 @@ def find_best_hedge(
            'negative while the hedge is still cutting risk — the next two '
            'rows say why.')
         if np.isfinite(roll_stats.get('r2var_median', np.nan)):
-            kv('R² (variance only)\ndrift not charged', f"median "
+            kv('Explained variance\nmean mismatch removed', f"median "
                f"{roll_stats['r2var_median']:+.2f} · worst "
                f"{roll_stats['r2var_worst']:+.2f} · latest "
                f"{roll_stats['r2var_latest']:+.2f}",
@@ -5219,9 +5716,9 @@ def find_best_hedge(
                f"{_nn} of {roll_stats['n_scored']}"
                + (f" · {_nc2} still CUT variance" if _nn else ''),
                (f"In {_nc2} of those {_nn}, the hedge genuinely did shrink the "
-                f"swing — the negative score is entirely the target grinding "
-                f"away from the basket, not a tracking failure. Judge those by "
-                f"drift instead. The other {_nn - _nc2} are real: the hedge "
+                f"swing while a mean-return mismatch made tracking R² negative. "
+                f"These still failed the return-tracking test. The other {_nn - _nc2} "
+                f"also failed to reduce variance: the hedge "
                 f"made things worse."
                 if _nc2 else
                 f"In all {_nn} the hedge genuinely made the swing BIGGER. "
@@ -5266,23 +5763,23 @@ def find_best_hedge(
           f"of book")
     cmp_rows = []
     if sel_n:
-        cmp_rows.append(['PCA basket — this config',
+        cmp_rows.append(['Selected hedge — this config',
                          f"{sel_r2m:.3f} ± {sel_r2s:.3f}",
                          f"{sel_vrm*100:.1f}%", str(sel_n)])
     if not np.isnan(nested_r2_mean):
-        cmp_rows.append(['PCA pipeline — nested',
+        cmp_rows.append(['Broad hedge search — nested',
                          f"{nested_r2_mean:.3f} ± {nested_r2_std:.3f}",
                          f"{nested_vr_mean*100:.1f}%",
                          str(len(nested_valid))])
     if len(etf_bench):
         _p = '/'.join(sorted({e.split(' ')[0]
                               for e in etf_bench['instrument']}))
-        cmp_rows.append([f'Best single ETF [{_p}]', f"{etf_r2_mean:.3f}",
+        cmp_rows.append([f'Correlation-picked ETF [{_p}]', f"{etf_r2_mean:.3f}",
                          f"{etf_vr_mean*100:.1f}%", str(len(etf_bench))])
     if len(name_bench):
         _p = '/'.join(sorted({e.split(' ')[0]
                               for e in name_bench['instrument']}))
-        cmp_rows.append([f'Best single name [{_p}]', f"{name_r2_mean:.3f}",
+        cmp_rows.append([f'Correlation-picked stock [{_p}]', f"{name_r2_mean:.3f}",
                          f"{name_vr_mean*100:.1f}%", str(len(name_bench))])
     if cmp_rows:
         _print_table(['HEDGE', 'OOS R²', 'VOL RED', 'WINDOWS'], cmp_rows,
@@ -5290,11 +5787,14 @@ def find_best_hedge(
                           'a fair fight. If a single instrument gets close it '
                           'is usually the better trade — one leg, one borrow, '
                           'nothing to refit.')
-    _ref_pca = sel_r2m if sel_n else nested_r2_mean
-    _ref_simple = np.nanmax([etf_r2_mean, name_r2_mean])
+    _ref_pca = (nested_vr_mean if hedge_objective == 'variance'
+                else (sel_r2m if sel_n else nested_r2_mean))
+    _ref_simple = (np.nanmax([etf_vr_mean, name_vr_mean])
+                   if hedge_objective == 'variance'
+                   else np.nanmax([etf_r2_mean, name_r2_mean]))
     if not (np.isnan(_ref_pca) or np.isnan(_ref_simple)):
-        _P("  ► " + ("the basket beats every single instrument on the same "
-                     "unseen stretches — the extra legs are earning their keep"
+        _P("  ► " + ("the selected hedge beat the correlation-picked single benchmarks "
+                     "on these unseen stretches"
                      if _ref_pca > _ref_simple else
                      "a single instrument held up at least as well — prefer "
                      "the simple hedge"))
@@ -5302,12 +5802,11 @@ def find_best_hedge(
     # ── [3] DIAGNOSTICS ─────────────────────────────────────────────────────
     title("[3] DIAGNOSTICS", "what is left after the hedge, and why")
     kvo()                     # [Fix 115] no 'DIAGNOSTICS' caption under a
-    kv('Residual ADF\ndoes the leftover risk drift?',  # section is the caption
-       f"p={adf_p:.4f} → "
-       + ('stationary ✓ (oscillates around zero)' if adf_p < 0.05
-          else 'MAY DRIFT ⚠ (can grind one way)'),
-       'Drift is what pushes the rolling R² negative while TE still looks '
-       'fine — the hedge tracks the SHAPE but slides against the LEVEL.')
+    kv('Residual return ADF\ndescriptive fitted diagnostic',
+       f"p={adf_p:.4f}" if np.isfinite(adf_p) else 'unavailable',
+       'Unit-root test on fitted return residuals. It does not establish price-spread '
+       'cointegration, zero expected drift or unseen hedge quality; selection is not '
+       'accounted for in this fitted diagnostic.')
     # ── [Fix 105] HOW MUCH OF THIS TARGET IS HEDGEABLE AT ALL ──────────────
     # The reported AAPL/TSLA/SK-Hynix case raised the right question: does
     # basket hedging even make sense for a concentrated book? A hedge built
@@ -5338,30 +5837,15 @@ def find_best_hedge(
             _ceil = float(max(0.0, _reg_ceil.score(_pcs, _yc)))
             _got = float(ticket_info['quality_r2']) if np.isfinite(
                 ticket_info.get('quality_r2', np.nan)) else np.nan
-            _idio = 1.0 - _ceil
-            _msg = (f"About {_idio*100:.0f}% of what {target_short} does is "
-                    f"its own story — nothing among the "
-                    f"{len(_uni_cols)} candidates moves with it, at any "
-                    f"weighting. That part cannot be hedged by anyone. ")
-            if np.isfinite(_got):
-                _msg += (f"This hedge got {_got*100:.0f} of the "
-                         f"{_ceil*100:.0f} points available, so it captured "
-                         f"{_got/_ceil*100 if _ceil > 0.05 else 0:.0f}% of "
-                         f"what was there to take. ")
-                _msg += ('The rest of the gap is structural, not a modelling '
-                         'failure — no recipe can close it.'
-                         if _got > 0.75 * _ceil else
-                         'There is real room left — the alternatives in [4] '
-                         'are worth comparing.')
-            if _ceil < 0.45:
-                _msg += (f" A ceiling this low is the honest verdict that this "
-                         f"position is mostly a single-name bet. Expect the "
-                         f"tracking score to jump around, and size off how far "
-                         f"the hedge drifts instead.")
-            kv('Hedgeable ceiling\nR² no config can beat here',
-               f"R² ≤ ~{_ceil:.2f} · idio {_idio*100:.0f}%", _msg)
+            _msg = (f'In-sample fit using {_npc_ceil} candidate-universe '
+                    f'components: R² {_ceil:.2f}. This measures historical '
+                    'association within the downloaded universe. It does not '
+                    'establish a hard ceiling or prove remaining risk is '
+                    'unhedgeable. Judge deployable baskets on unseen data.')
+            kv('Exploratory factor fit\ntraining data only',
+               f'in-sample R² {_ceil:.2f}', _msg)
     except Exception as _e105:
-        kv('Hedgeable ceiling', 'unavailable',              # [Fix 114]
+        kv('Exploratory factor fit', 'unavailable',              # [Fix 114]
            f"could not be estimated ({type(_e105).__name__}: {_e105}). "
            f"Without it there is no reading on how much of this target is "
            f"hedgeable at all — judge the hedge by how far it drifts, not by "
@@ -5573,7 +6057,7 @@ def find_best_hedge(
     _P("  ► each block below is the ticket that recipe would produce, and "
        "how it scored on exactly the same evidence as the one chosen")
     _kv_open('WHAT THE FOUR MEASURES BELOW MEAN')  # stated once, not per row
-    kv('gross / in-sample', 'what you would put on, and its ceiling',
+    kv('gross / in-sample', 'candidate position and its training fit',
        'The second figure is the fit scored on its own data. Never size off it.')
     kv('unseen windows', 'refit before each window, scored on it',
        'The honest comparison between configs.')
@@ -5647,8 +6131,7 @@ def find_best_hedge(
          'your holding period, reports what holds of that length actually '
          'delivered, and checks whether the weights go stale before the hold '
          'ends. It deliberately does NOT change which stretches are held back '
-         'for testing — that was measured and found to buy nothing while '
-         'costing evidence. horizon_sets_windows=True restores the old '
+         'for testing. horizon_sets_windows=True restores the old '
          'behaviour and WILL change which recipe wins.'
          if hedge_horizon_days else
          'Not set, so risk is quoted annualised and the "holds" evidence is '
@@ -5675,29 +6158,17 @@ def find_best_hedge(
         'How much history was read\nof what you downloaded',
         f"≈{min(_need, len(rets))} of {len(rets)} rows"
         + (f" · {_spare} unused" if _spare > 0 else ''),
-        (f"The SELECTION and the VALIDATION read about {_need} rows and "
-         f"stop; the oldest {_spare} ({_spare/252:.1f}y) never enter either. "
-         f"Measured: 2.5 and 5 years of history give identical picks and "
-         f"identical scores at these settings. So downloading more history "
-         f"does not steady the choice — only testing on more stretches "
-         f"consumes more, and that was measured not to help either (it "
-         f"reaches back into older, less relevant markets). Longer history IS "
-         f"worth having for one thing: it allows a longer lookback, which "
-         f"needs its own training run before every test stretch."
+        (f"The main grid and nested tests require about {_need} recent rows at these settings. "
+         f"Older rows may still enter other diagnostics and data-aware defaults. More history "
+         f"lets you test longer lookbacks or more folds, but does not guarantee a better hedge."
          if _spare > 20 else
-         f"TIGHT — the testing wants about {_need} days and has "
-         f"{len(rets)}. Test stretches get dropped when there is not enough "
-         f"history in front of them to train on, which is why the count can "
-         f"come back below {cv_n_folds}. Here — and only here — more history "
-         f"genuinely helps.")))
+         f"The requested tests need about {_need} rows and have {len(rets)}. "
+         f"More history can provide additional validation; short samples use a simpler evidence tier.")))
     _rows_a.append((
         'Basket sizes tried\nnames per basket', str(tuple(basket_size_options)),
-        'The grid the selection searched. 3/5/7 is a deliberate '
-        'bias-variance compromise: fewer names means less overfitting but '
-        'less spanning; more means the ridge starts pairing off '
-        'near-duplicates and gross climbs. k=1 is covered separately by [2], '
-        'which tests the single best ETF and the single best name on the '
-        'same unseen windows.'))
+        'Every eligible single instrument competes with the requested basket sizes. '
+        'Baskets are built by PCA, correlation and forward selection. '
+        'This broad search remains a finite set of heuristics rather than an exhaustive subset optimizer.'))
     # ── [Fix 113] IS THERE ROOM FOR A LONGER LOOKBACK? ─────────────────────
     # A lookback is only worth offering if the NESTED validation can still
     # train it — the oldest outer window's inner CV needs
@@ -5719,32 +6190,17 @@ def find_best_hedge(
     _lb_hint = ''
     if 504 > max(lookback_options):
         if 504 <= _lb_room:
-            _lb_hint = (" You have enough history to VALIDATE a 504-row (2y) "
-                        "lookback and are not trying one. Measured on 20 "
-                        "paired seeds, adding it moved nested OOS R² by "
-                        "+0.015 (t=+3.2) on a concentrated target and +0.003 "
-                        "(t=+2.3) on a well-spanned one. Worth an A/B: "
-                        "lookback_options=("
-                        + ', '.join(str(x) for x in
-                                    list(lookback_options) + [504]) + ").")
+            _lb_hint = ' There is enough history to test a 504-row lookback if you choose to include it.'
         else:
-            _lb_hint = (f" A 2-year (504-row) lookback would need about "
-                        f"{504 - _lb_room} more rows of history before it "
-                        f"could be validated, so it is correctly not offered "
-                        f"here — measured at 3 years of data it is chosen 0 "
-                        f"times out of 20 and buys nothing.")
+            _lb_hint = f' A 504-row lookback needs about {504 - _lb_room} additional rows for nested validation.'
     _rows_a.append((
         'Lookbacks tried\ndays of history per refit', str(tuple(lookback_options)),
         # [Fix 115] this row was a 120-word essay. The measured finding stays,
         # because it answers the question this row actually gets asked; the
         # recital of the experiment does not.
-        'How much history each refit sees. Short adapts faster and is noisier; '
-        'long is steadier and staler. The right lookback is set by how STABLE '
-        'the relationships are, NOT by how long you intend to hold — measured '
-        'across four kinds of market, the winner was identical at a 10-day and '
-        'a 120-day hold, but dropped from 504 days to 126 when the '
-        'relationships broke. If [1] says the recipe is fading, a shorter '
-        'lookback is the first thing to try.' + _lb_hint))
+        'The training-history length used at each refit. Shorter windows can adapt faster '
+        'and have noisier estimates; longer windows include more history and can span older regimes. '
+        'The selection compares the specified lengths using earlier CV folds.' + _lb_hint))
     _rows_a.append((
         'Outlier clipping\nwinsorize', f"{winsorize_pct:.1%}" if winsorize_pct else 'off',
         'Clips returns before the PCA that SELECTS candidates — never '
@@ -5806,7 +6262,37 @@ def find_best_hedge(
               "run it once without them to see what they cost")
     _P('═' * L)
 
+    alternatives = {}
+    for family, evidence in family_tests.items():
+        choices = _family_configs(summary, family)
+        if choices.empty:
+            continue
+        choice = choices.loc[choices['composite'].idxmax()]
+        try:
+            _, _, fb, fr, raw_alt, _, _, _, _ = _select_and_fit(
+                rets.iloc[-int(choice['lookback']):], choice['pc_spec'], int(choice['basket_size']))
+        except RuntimeError:
+            continue
+        alternatives[family] = _alternative_evidence(
+            pd.Series(fr.coef_, index=fb), raw_alt, evidence['y'], evidence['residual'], evidence['spread'],
+            ann_sqrt, outer_folds, val_mode,
+            {'lookback': int(choice['lookback']), 'pc_spec': choice['pc_spec'],
+             'basket_size': int(choice['basket_size']), 'selection_score': float(choice['composite']),
+             'max_gross': max_gross}, hedge_objective)
+    search = _search_metadata(summary, cv_df)
+    selected_family = _config_family(best_pc_spec, len(basket_final))
+    _show_hedge_comparison(alternatives, selected_family, search)
+
     return {
+        'hedge_alternatives': alternatives, 'search': search,
+        'best_basket_hedge': alternatives.get('basket'),
+        'best_single_hedge': alternatives.get('single'),
+        'best_single_stock_hedge': alternatives.get('single_stock'),
+        'best_single_etf_hedge': alternatives.get('single_etf'),
+        **_decision_fields(weights_final, grade),
+        'trade_risk': trade_risk,
+        'unhedged_baseline': {'vol_reduction': 0.0, 'variance_reduction': 0.0},
+        'in_sample_r2': r2_final,
         'weights': weights_final, 'basket': basket_final,
         'ranking': final_rank, 'cv_summary': summary, 'cv_detail': cv_df,
         'nested_validation': nested,
@@ -5816,6 +6302,8 @@ def find_best_hedge(
         'selected_unseen_pooled_r2': sel_pooled,       # [Fix 65]
         'outer_window_detail': sel_detail,             # [Fix 65]
         'nested_pooled_r2': nested_pooled,             # [Fix 69]
+        'selected_config_bootstrap_ci': selected_boot,
+        'nested_unseen_returns': nested_unseen,
         'bootstrap_ci': boot,                          # [Fix 70]
         'rolling_oos': rolling_df,                     # [Fix 71]
         'ticket': ticket_info,                         # [Fix 72]
@@ -5845,7 +6333,7 @@ def find_best_hedge(
         'pit_size_active': pit_active,                 # [Fix 44]
         'pit_members_active': pm_active,               # [Fix 49]
         'params': {'lookback': best_lookback, 'pc_spec': best_pc_spec,
-                   'basket_size': best_bsize,
+                   'basket_size': best_bsize, 'hedge_objective': hedge_objective, 'broad_search': broad_search,
                    'tz_tolerance_hours': tz_tolerance_hours,
                    'min_mktcap_usd_mm': min_mktcap_usd_mm,
                    'gross_penalty': gross_penalty, 'max_gross': max_gross,
@@ -5896,7 +6384,8 @@ def quick_rehedge(book, data, prev_result, show_plots=True, rolling_oos=True,
     return find_best_hedge(
         book, data=data,
         lookback_options=(p['lookback'],),
-        pc_options='auto' if p['pc_spec'] == 'auto' else [int(p['pc_spec'])],
+        pc_options='auto' if p['pc_spec'] == 'auto' else [p['pc_spec']],
+        broad_search=False,
         basket_size_options=(p['basket_size'],),
         min_mktcap_usd_mm=p['min_mktcap_usd_mm'],
         tz_tolerance_hours=p['tz_tolerance_hours'],
@@ -5907,6 +6396,7 @@ def quick_rehedge(book, data, prev_result, show_plots=True, rolling_oos=True,
         size_band=p['size_band'], size_override=p['size_override'],
         mask_stale_days=p.get('mask_stale_days', 7),
         notional_mm=p.get('notional_mm'),              # [Fix 72]
+        hedge_objective=p.get('hedge_objective', 'variance'),
         boot_n=p.get('boot_n', 2000),                  # [Fix 70]
         rolling_oos=rolling_oos,                       # [Fix 71]
         sample_window=p.get('sample_window'),          # [Fix 76]
@@ -6162,9 +6652,12 @@ def _docx_hedge_report(result, report_text, path):
     notional = params.get('notional_mm')
 
     # ── header ──────────────────────────────────────────────────────────
-    p = doc.add_paragraph(); p.paragraph_format.space_after = Pt(1)
-    r = p.add_run(f"PCA Hedge — {label}")
-    r.font.size = Pt(22); r.font.bold = True; r.font.color.rgb = NAVY
+    p = doc.add_paragraph(style='Title'); p.paragraph_format.space_after = Pt(1)
+    title_properties = doc.styles['Title'].element.get_or_add_pPr()
+    for border in list(title_properties.findall(qn('w:pBdr'))):
+        title_properties.remove(border)
+    r = p.add_run(f"PCA hedge analysis for {label}")
+    r.font.size = Pt(22); r.font.bold = True; r.font.color.rgb = RGBColor(0, 0, 0)
     span = result.get('analysis_span')
     sub = f"{datetime.now():%d %b %Y  %H:%M}"
     if span:
@@ -6194,9 +6687,13 @@ def _docx_hedge_report(result, report_text, path):
         if np.isfinite(tk.get('worst_window_r2', np.nan)):
             q += f"   ·   worst window {tk['worst_window_r2']:.2f}"
         KV('QUALITY', q)
+        if boot:
+            doc.add_paragraph('The 95% interval resamples observed test errors in blocks. '
+                              'It conditions on the observed fits and does not include '
+                              'all uncertainty from refitting or searching candidates.')
 
     # ── the trade ───────────────────────────────────────────────────────
-    H('The trade')
+    H('Candidate recipe' if result.get('trade_eligible') else 'Candidate recipe not approved')
     w = result['weights'].sort_values(key=lambda s: -s.abs())
     cols = ['ACTION', 'PER $100', 'INSTRUMENT', 'FULL TICKER']
     if notional:
@@ -6226,6 +6723,43 @@ def _docx_hedge_report(result, report_text, path):
                    f"{'short' if net >= 0 else 'long'} ${abs(net):,.1f} "
                    f"per $100 of "
                    f"{'gross book' if result.get('is_portfolio') else label}")
+
+    alternatives = result.get('hedge_alternatives') or {}
+    if alternatives:
+        H('Best basket and single instrument alternatives')
+        table = doc.add_table(rows=1, cols=5)
+        table.style = 'Light Grid Accent 1'
+        table.autofit = False
+        for column, width in zip(table.columns, [.8, 3.0, .7, .8, 1.6]):
+            column.width = Inches(width)
+        headers = ['CANDIDATE', 'REFERENCE WEIGHTS / $100', 'UNSEEN R²', 'VOL CUT', 'STATUS']
+        for cell, value in zip(table.rows[0].cells, headers):
+            cell.text = value
+        for family, name in [('basket', 'Basket'), ('single_stock', 'Single stock'), ('single_etf', 'Single ETF')]:
+            item = alternatives.get(family)
+            if item is None:
+                values = [name, 'Unavailable', '—', '—', 'No eligible candidate']
+            else:
+                weights = item['weights']
+                recipe = '; '.join(f'{"SHORT" if x > 0 else "LONG"} ${abs(x)*100:.1f} {ticker}'
+                                   for ticker, x in weights.items())
+                q = item['unseen_r2']
+                vr = item['trade_risk'].get('vol_reduction', np.nan)
+                values = [name, recipe, f'{q:.3f}' if np.isfinite(q) else '—',
+                          f'{vr*100:.1f}%' if np.isfinite(vr) else '—', item['status']]
+            for cell, value in zip(table.add_row().cells, values):
+                cell.text = value
+        for row in table.rows:
+            for cell in row.cells:
+                for paragraph in cell.paragraphs:
+                    for run in paragraph.runs:
+                        run.font.size = Pt(8)
+            cant_split = OxmlElement('w:cantSplit')
+            row._tr.get_or_add_trPr().append(cant_split)
+        repeat_header = OxmlElement('w:tblHeader')
+        table.rows[0]._tr.get_or_add_trPr().append(repeat_header)
+        doc.add_paragraph('Unseen results test each selection procedure on later data. '
+                          'Failed and in-sample candidates are references, not validated recommendations.')
 
     # ── risk & monitoring ───────────────────────────────────────────────
     H('Risk and monitoring')
@@ -6286,8 +6820,8 @@ def _docx_hedge_report(result, report_text, path):
     bits = []
     if np.isfinite(result.get('nested_pooled_r2', np.nan)):
         bits.append(f"nested pooled OOS R² {result['nested_pooled_r2']:.3f}")
-    for nm, key in (('best single ETF', 'etf_nested_r2_mean'),
-                    ('best single name', 'name_nested_r2_mean')):
+    for nm, key in (('correlation-picked ETF', 'etf_nested_r2_mean'),
+                    ('correlation-picked stock', 'name_nested_r2_mean')):
         v = result.get(key)
         if v is not None and np.isfinite(v):
             bits.append(f"{nm} {v:.3f}")
@@ -6313,8 +6847,8 @@ def _docx_hedge_report(result, report_text, path):
 
     # ── appendix ────────────────────────────────────────────────────────
     if report_text:
-        doc.add_page_break()
-        H('Appendix — full report', size=13, before=0)
+        appendix_heading = H('Full report appendix', size=13, before=0)
+        appendix_heading.paragraph_format.page_break_before = True
         for line in report_text.split('\n'):
             p = doc.add_paragraph()
             pf = p.paragraph_format
@@ -6332,11 +6866,11 @@ def export_result(result, report_text='', out_dir=None, also_csv=True):
     r"""[Fix 95/103] Export a finished hedge as a WORD DOCUMENT.
 
     Writes PCA_hedge_<label>_<timestamp>.docx into HEDGE_EXPORT_DIR (default
-    G:\FIN_COMM\DeltaOne\Kenny\PCA), or into `out_dir` when given. The
+    ./hedge_exports), or into `out_dir` when given. The
     document carries the verdict, the trade as a table, risk and monitoring
     levels, the out-of-sample evidence, the exact settings, and the full
     text report as an appendix. `also_csv` additionally drops weights.csv
-    next to it for execution/upload.
+    next to it as labelled candidate/reference weights.
 
     Needs python-docx (pip install python-docx); without it the report is
     written as .txt instead so an export never silently fails. Returns the
@@ -6370,7 +6904,10 @@ def export_result(result, report_text='', out_dir=None, also_csv=True):
             pd.DataFrame({
                 'ticker': w.index,
                 'action': ['SHORT' if x > 0 else 'LONG' for x in w.values],
-                'weight_per_100_gross': w.values.round(6),
+                'weight_per_100_gross': w.values.round(6),  # legacy coefficient field
+                'dollars_per_100_target': np.abs(w.values) * 100,
+                'trade_eligible': bool(result.get('trade_eligible', False)),
+                'evidence_status': (result.get('ticket') or {}).get('grade', 'UNVALIDATED'),
                 'notional_mm': ([abs(x) * result['params']['notional_mm']
                                  for x in w.values]
                                 if (result.get('params') or {}).get('notional_mm')
@@ -6381,6 +6918,19 @@ def export_result(result, report_text='', out_dir=None, also_csv=True):
         except Exception as e:
             print(f"  ⚠ weights CSV not written ({e})")
     print(f"  ✓ exported → {written}")
+    if also_csv and result.get('hedge_alternatives'):
+        rows = []
+        for family in ('basket', 'single_stock', 'single_etf'):
+            item = result['hedge_alternatives'].get(family)
+            if item is None:
+                continue
+            for ticker, weight in item['weights'].items():
+                rows.append({'candidate_type': family, 'ticker': ticker,
+                             'action': 'SHORT' if weight > 0 else 'LONG',
+                             'dollars_per_100_target': abs(float(weight)) * 100,
+                             'unseen_r2': item['unseen_r2'], 'status': item['status'],
+                             'qualified': item['qualified']})
+        pd.DataFrame(rows).to_csv(stem + '_alternatives.csv', index=False)
     return written
 
 
@@ -6474,7 +7024,7 @@ def hedge_ui(data=None):
     # ── Universe tab ────────────────────────────────────────────────────────
     w_mktcap = W.FloatText(value=1000.0, description='Min mkt cap ($mm)',
                            style=LBL, layout=FULL)
-    w_basket = W.Text(value='3,5,7', description='Basket sizes', style=LBL,
+    w_basket = W.Text(value='1,2,3,5,7', description='Basket sizes', style=LBL,
                       layout=FULL)
     w_look = W.Text(value='126,252', description='Lookbacks (days)',
                     style=LBL, layout=FULL)
@@ -6487,7 +7037,7 @@ def hedge_ui(data=None):
                                ('Allow global', False)],
                       value='auto', description='Timezone', style=LBL,
                       layout=FULL)
-    w_stale = W.IntText(value=7, description='Stale-price days', style=LBL,
+    w_stale = W.IntText(value=7, description='Missing-price limit', style=LBL,
                         layout=FULL)
     tab_uni = W.VBox([
         H('Candidate filters'), w_mktcap, w_tz, w_stale,
@@ -6498,6 +7048,9 @@ def hedge_ui(data=None):
         w_force, w_excl])
 
     # ── Model tab (factor / fitting knobs) ─────────────────────────────────
+    w_objective = W.Dropdown(
+        options=[('Reduce volatility', 'variance'), ('Track returns (strict R²)', 'tracking')],
+        value='variance', description='Hedge objective', style=LBL, layout=FULL)
     w_cov = W.Dropdown(options=[('Ledoit-Wolf shrinkage', 'ledoit'),
                                 ('Ordinary PCA', 'none')],
                        value='ledoit', description='PCA covariance',
@@ -6527,6 +7080,9 @@ def hedge_ui(data=None):
                  ('Full — same 3 windows as RUN HEDGE', 'full')],
         value='fast', description='RE-HEDGE depth', style=LBL, layout=FULL)
     tab_model = W.VBox([
+        H('Hedge objective'), w_objective,
+        HELP('Risk reduction ranks unseen volatility improvement; R² remains a diagnostic. '
+             'Tracking uses the former stricter R² screen.'),
         H('Factor model'),
         HELP('these shape candidate SELECTION only; hedge weights always '
              'come from ridge on real returns'),
@@ -6862,7 +7418,7 @@ def hedge_ui(data=None):
                     UI_STATE['data'], _window_arg(),
                     lookback_options=_ui_ints(w_look.value, (126, 252)),
                     cv_test_window=cvw,
-                    basket_size_options=_ui_ints(w_basket.value, (3, 5, 7)))
+                    basket_size_options=_ui_ints(w_basket.value, (1, 2, 3, 5, 7)))
             mode = pv.get('mode')
             if mode is None:
                 w_tier.value = ("<span style='color:#8c1c1c;font-size:12px'>"
@@ -6884,10 +7440,11 @@ def hedge_ui(data=None):
     def _kwargs():
         mg = w_maxgross.value or None
         pcs = str(w_pcs.value).strip().lower()
-        return {'min_mktcap_usd_mm': w_mktcap.value,
+        return {'hedge_objective': w_objective.value,
+                'min_mktcap_usd_mm': w_mktcap.value,
                 'notional_mm': (w_notional.value or None),
                 'hedge_horizon_days': _horizon_arg(),
-                'basket_size_options': _ui_ints(w_basket.value, (3, 5, 7)),
+                'basket_size_options': _ui_ints(w_basket.value, (1, 2, 3, 5, 7)),
                 'lookback_options': _ui_ints(w_look.value, (126, 252)),
                 'pc_options': ('auto' if pcs in ('', 'auto')
                                else list(_ui_ints(pcs, (3,)))),
@@ -7205,7 +7762,7 @@ def hedge_ui(data=None):
 #     pit_size=True,                  # [Fix 44] point-in-time size floor
 #     pit_members=True,               # [Fix 49] point-in-time index membership
 #     mask_stale_days=7,              # [Fix 56] suspension guard — mask prices
-#                                     # flat for >7 sessions; None disables
+#                                     # missing for >7 rows; None disables
 #     notional_mm=None,               # [Fix 72] e.g. 10 → the trade ticket adds
 #                                     # a $mm column sized for $10mm gross
 #     # sample_window='3m',           # [Fix 76] restrict the analysis window:
@@ -7262,6 +7819,120 @@ def hedge_ui(data=None):
 # be guaranteed via force_include= in CELL A). Ex-legs become candidates.
 # new_book = {'AAA AU Equity': 0.5, 'BBB AU Equity': -0.5}
 # result2 = quick_rehedge(new_book, data, result)
+
+
+
+def compare_history_windows(target, data, windows=('1y', '6m', '3m', '1m'),
+                            require_positive_tracking=True, **kwargs):
+    """A senior-facing comparison using each PAST period as the analysis window.
+
+    This is a history comparison, not a forecast of future holding-period
+    performance. Negative unseen tracking candidates are omitted from the
+    recommended hedge columns when require_positive_tracking=True. Failed
+    candidates and scores remain in diagnostic_results/reports. Very short
+    periods may provide only an indicative fitted candidate, clearly labelled.
+    """
+    import contextlib
+    import io
+    try:
+        from IPython.utils.capture import capture_output
+    except ImportError:
+        capture_output = None
+    results, reports, records, weight_rows = {}, {}, [], []
+    alternative_rows, alternative_weights = [], []
+    for period in windows:
+        options = dict(kwargs)
+        options.update(sample_window=period, show_plots=False,
+                       hedge_objective='variance')
+        options.setdefault('rolling_oos', False)
+        options.setdefault('boot_n', 0)
+        output = io.StringIO()
+        context = capture_output() if capture_output else contextlib.redirect_stdout(output)
+        try:
+            with context as captured:
+                result = find_best_hedge(target, data=data, **options)
+            results[period] = result
+            reports[period] = (captured.stdout if capture_output else output.getvalue())
+        except (ValueError, RuntimeError) as error:
+            reports[period] = output.getvalue() + str(error)
+            records.append({'period': period, 'hedge': '', 'weights_per_100': '',
+                            'vol_reduction': np.nan, 'tracking_oos_r2': np.nan,
+                            'evidence': 'Cannot fit', 'status': str(error)})
+            continue
+        for family in ('basket', 'single_stock', 'single_etf'):
+            item = result.get('hedge_alternatives', {}).get(family)
+            if item is None:
+                continue
+            reference = item['validation_mode'] == 'IN-SAMPLE'
+            show = item['qualified'] or reference
+            w = item['weights'] if show else item['weights'].iloc[:0]
+            recipe = '; '.join(f'{tk}: {(-x*100):+.1f}' for tk, x in w.items())
+            risk = item.get('trade_risk') or {}
+            alternative_rows.append({'period': period, 'candidate_type': family,
+                'hedge': '; '.join(w.index), 'weights_per_100': recipe,
+                'tracking_oos_r2': item['unseen_r2'] if show else np.nan,
+                'vol_reduction': risk.get('vol_reduction', np.nan) if show else np.nan,
+                'status': item['status'], 'qualified': item['qualified']})
+            for tk, x in w.items():
+                alternative_weights.append({'period': period, 'candidate_type': family,
+                    'ticker': tk, 'side': 'SHORT' if x > 0 else 'LONG',
+                    'dollars_per_100_target': abs(float(x))*100, 'indicative_only': reference})
+        mode = result['validation_mode']
+        q = result['ticket'].get('quality_r2', np.nan)
+        risk = result.get('trade_risk') or {}
+        vr = risk.get('vol_reduction', result.get('holdout_vol_red', np.nan))
+        indicative = mode == 'IN-SAMPLE'
+        eligible = result.get('trade_eligible', False)
+        if require_positive_tracking and np.isfinite(q) and q < 0:
+            eligible = False
+            status = 'No qualifying hedge; negative unseen tracking R²'
+        elif indicative:
+            status = 'Indicative candidate only; no unseen validation'
+        elif eligible:
+            status = result['ticket']['grade']
+        else:
+            status = 'No qualifying hedge; see diagnostics'
+        show_candidate = bool(eligible or indicative)
+        weights = result['weights'] if show_candidate else result['weights'].iloc[:0]
+        if indicative:
+            vr = np.nan
+        description = '; '.join(f'{"SHORT" if w > 0 else "LONG"} {tk}'
+                                for tk, w in weights.items())
+        recipe = '; '.join(f'{tk}: {(-w*100):+.1f}' for tk, w in weights.items())
+        records.append({'period': period, 'hedge': description,
+                        'weights_per_100': recipe,
+                        'vol_reduction': vr if show_candidate else np.nan,
+                        'tracking_oos_r2': q if show_candidate else np.nan,
+                        'evidence': mode, 'status': status})
+        for ticker, weight in weights.items():
+            weight_rows.append({'period': period, 'ticker': ticker,
+                                'side': 'SHORT' if weight > 0 else 'LONG',
+                                'dollars_per_100_target': abs(float(weight))*100,
+                                'indicative_only': indicative})
+    summary = pd.DataFrame(records)
+    display_rows = [[r['period'], r['hedge'] or 'No qualifying hedge',
+                     r['weights_per_100'] or '—',
+                     f"{r['vol_reduction']*100:.1f}%" if np.isfinite(r['vol_reduction']) else '—',
+                     f"{r['tracking_oos_r2']:.3f}" if np.isfinite(r['tracking_oos_r2']) else '—',
+                     r['evidence'], r['status']] for r in records]
+    _print_table(['HISTORY', 'HEDGE', 'SIGNED $/100', 'UNSEEN VOL CUT',
+                  'UNSEEN R²', 'EVIDENCE', 'STATUS'], display_rows,
+                 title=f'Best available hedges for {target}',
+                 note='Negative dollar amounts are shorts; positive amounts are longs. '
+                      'IN-SAMPLE rows are indicative candidates, not validated recommendations. '
+                      'Negative/failed candidates remain in diagnostic_results.')
+    alternative_summary = pd.DataFrame(alternative_rows)
+    if len(alternative_summary):
+        _print_table(['HISTORY', 'FORM', 'SIGNED $/100', 'EVIDENCE'],
+                     [[row['period'], row['candidate_type'], row['weights_per_100'] or '—', row['status']]
+                      for row in alternative_rows], title='Basket and single alternatives by history window',
+                     note='Failed candidates have no recommendation weights. In-sample recipes are indicative.')
+    return {'summary': summary, 'weights_table': pd.DataFrame(weight_rows),
+            'alternatives_summary': alternative_summary,
+            'alternative_weights_table': pd.DataFrame(alternative_weights),
+            'diagnostic_results': results, 'reports': reports,
+            'interpretation': 'past analysis windows',
+            'require_positive_tracking': require_positive_tracking}
 
 # =============================================================================
 # [Fix 107] AUTO-LAUNCH — the form comes up with CELL 1, no second cell

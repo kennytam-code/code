@@ -1,0 +1,30 @@
+name: PCA hedge validation
+on:
+  push:
+    branches: [main]
+    paths: ['pca_hedge_v103_full.py', 'pca_hedge_v103_full.ipynb', 'pca_requirements*.txt', 'tests/test_hedge_search.py', '.github/workflows/pca-validation.yml']
+  pull_request:
+    paths: ['pca_hedge_v103_full.py', 'pca_hedge_v103_full.ipynb', 'pca_requirements*.txt', 'tests/test_hedge_search.py', '.github/workflows/pca-validation.yml']
+jobs:
+  offline-tests:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        dependencies: [minimum, current]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install minimum dependencies
+        if: matrix.dependencies == 'minimum'
+        run: python -m pip install -r pca_requirements-min.txt
+      - name: Install current dependencies
+        if: matrix.dependencies == 'current'
+        run: python -m pip install -r pca_requirements.txt
+      - name: Validate cached-data analysis and notebook
+        env:
+          MPLBACKEND: Agg
+        run: python -m unittest discover -s tests -p test_hedge_search.py -v

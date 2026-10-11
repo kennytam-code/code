@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+hedge_data_cache/
+hedge_exports/
+hedge_reports/
+.ipynb_checkpoints/
