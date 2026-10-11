@@ -1,4 +1,4 @@
-# Database numeric review — 2026-10-08
+# Database numeric review — 2026-10-11
 
 Reviewed all 524 listed stocks and 37,771 scalar numeric entries across 99 fields. Quote and return snapshot: 2026-10-02. This is a source-confidence ledger, not a blanket certification.
 
@@ -10,7 +10,7 @@ Annual financials use the latest full fiscal year disclosed in the IPO filing. O
 
 Base offer size excludes over-allocation; where the filing's gross proceeds include it, the printed amount and basis are retained separately. P/E and P/S are recalculated after financial corrections; losses and zero revenue do not produce numeric multiples.
 
-Lock-up contains 1064 group/date rows for every stock, with 770 filed or explicitly derived dates. Both Excel and HTML include the IPO date. This is the original filed schedule, not evidence of actual selling or subsequent waivers. The date is the last day locked. Returns use exactly seven HK trading sessions before and after the last session on or before expiry; exact closes, split-neutral prices, no dividends or rights value. Both files select a company and holder-group event, with all 15 session observations plotted around the expiry reference close. In Excel, B4 selects the H code and E4 selects the event. Missing observations remain graph gaps. Upcoming dates and missing endpoints stay blank. Source comments give each endpoint date and close.
+The internal lock-up evidence retains 1064 group/date rows, with 770 filed or explicitly derived dates. The desk Excel and HTML show only 396 cornerstone events for 386 companies; unrelated holder restrictions and no-cornerstone placeholders are excluded. Both files include the IPO date. Company cornerstones is the full company roster; a particular expiry can apply to a subset, established by the linked event filing. There are 156 visible events with no established expiry: these show Expiry unconfirmed, with blank date, returns and chart. This is the original filed schedule, not evidence of actual selling or subsequent waivers. Returns use exactly seven HK trading sessions before and after the last session on or before the last locked day; exact closes, split-neutral prices, no dividends or rights value. Both files select a company and expiry event, with all 15 session observations plotted around the reference close where available. In Excel, B4 selects the H code and E4 selects the event. Missing observations remain graph gaps. Upcoming dates and missing endpoints stay blank. Source comments give each endpoint date and close.
 
 Bloomberg formulas are linted and their surrounding arithmetic is evaluated with simulated quotes. Execution by a Bloomberg terminal/add-in remains a desk check. The stored price snapshot ends on 2 October 2026.
 
@@ -22,4 +22,4 @@ Bloomberg formulas are linted and their surrounding arithmetic is evaluated with
 - Reviewed primary filing: 3,740
 - Reviewed primary filing metadata: 751
 
-Internal numeric failures: 0. Material numeric changes versus the prior delivery: 358. The separate CSV lists each value, previous value, source and basis. Existing price, formula, identity, scoring and visual gates must also pass before delivery.
+Internal numeric failures: 0. Material numeric changes versus the prior delivery: 0. The separate CSV lists each value, previous value, source and basis. Existing price, formula, identity, scoring and visual gates must also pass before delivery.

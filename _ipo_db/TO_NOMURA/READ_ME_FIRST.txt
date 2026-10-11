@@ -6,6 +6,7 @@ PUT THESE FILES IN:  G:\FIN_COMM\DeltaOne\Kenny\ECM\
 THE FILES
   HK_IPO_Database_v1.xlsx   the workbook — IPO Live, AH trend and Screener
   hk_ipo_dashboard.html     the charts — double-click, works offline
+  hk_ipo_dashboard.zip      smaller transfer copy; extract before opening
   hk_ipo.py                 updates everything (Jupyter, one command)
   ah_peers.ipynb            A/H price charts live off Bloomberg
   AH_Premium_Study.docx     updated 62-pair A/H study (6 October)
@@ -13,22 +14,34 @@ THE FILES
   Clawback_Study.docx       the 套路回撥 allocation study
   READ_ME_FIRST.txt         this file
 
-MARKET TABS (8 October 2026)
+MARKET TABS (11 October 2026)
   IPO Live: all 524 IPOs; live LAST_PRICE and change vs PX_YEST_CLOSE.
   B5 selects Sector/Subsector classification; H34 chooses the sector
   for the second, subsector-average chart. The first chart stays broad.
   AH: 62 pairs only. B4 accepts H/A code; E4 selects Stored/Bloomberg.
   Stored is the default, through 2 October. Bloomberg requests history
   from listing through TODAY and appends an available live endpoint.
-  Lock-up: original filed expiry schedules for all 524 stocks;
+  AH includes all 62 identified pairs within this IPO database sample.
+  Huaqin (3296): IPO/current premiums are available; the trend omits
+  22 May to 16 June while A/H ex-entitlement bases differ.
+  Lock-up: 396 cornerstone events for 386 stocks; no-cornerstone
+  entries and unrelated shareholder restrictions are excluded.
   returns use seven HK trading sessions before and after expiry.
   Excel: B4 selects H code; E4 selects expiry event, with Auto default.
   Both files show the IPO date and a selectable day -7 to +7 graph.
-  HTML Lock-up selects a company and holder-group event to chart
+  HTML Lock-up searches H code/company and selects an expiry event to chart
   every session from day -7 to +7, rebased to the expiry reference.
   Prices through 2 October 2026. Future and
   missing returns stay blank; hover dates for sources and endpoints.
+  Expiry unconfirmed means the retained filing does not establish a date;
+  that event has no inferred expiry, return or chart.
+  Company cornerstones shows the full company roster; individual
+  expiry events may apply to a subset, as shown in the linked filing.
   Screener freezes columns A:B, with no frozen rows.
+  Screener B5 accepts the H code, e.g. 9607 = RA MATERIALS / Red Avenue.
+  Cornerstones search 9607 shows all eight investors even if the
+  minimum-deals filter was set above one. MLP resolves to Millennium.
+  Pipeline: key terms first; expand M:AD in Excel or a company in HTML.
   Financial/source audit: see database_numeric_audit.md and CSV.
   Orange annual financial cells need fresh primary-row confirmation.
   Bloomberg formula logic is tested; live add-in execution is a desk check.
@@ -72,6 +85,13 @@ BLOOMBERG (terminal only)
   Bloomberg supersedes scrapes; reviewed HKEX figures take priority.
 
 THE DASHBOARD
+  Copy the delivered HTML file directly. It embeds compressed data and
+  opens offline with no companion folder. All stored histories remain.
+  If the shared drive reports no space, try the ZIP transfer copy
+  or open a local copy. Compression cannot clear a full server quota;
+  the shared drive owner may need to free space. Browser-saved HTML
+  was also checked to reopen offline. Quotes remain dated snapshots.
+
   Screener tab: pick or type a target, Deal Brief (base rate + worst
   peer = your downside), paint comps red/blue, factor strips, plot
   anything vs anything, daily price action for every comp (offer-

@@ -1,5 +1,5 @@
 {
-  "reviewed_at": "2026-10-08",
+  "reviewed_at": "2026-10-11",
   "snapshot_asof": "2026-10-02",
   "stocks": 524,
   "numeric_values": 37771,
@@ -1925,17 +1925,20 @@
       "source": "hkex-pdf:financial-summary(RMB)"
     }
   ],
-  "material_changes": 358,
+  "material_changes": 0,
   "subscriptions": {
     "oversub_public_mult": 524,
     "oversub_intl_mult": 521
   },
   "cornerstone": {
     "percentage_checks": 196,
-    "unresolved_name_aliases": 226
+    "unresolved_name_aliases": 119
   },
   "lockups": {
     "rows": 1064,
-    "dated": 770
+    "dated": 770,
+    "visible_rows": 396,
+    "visible_stocks": 386,
+    "unconfirmed_visible_expiries": 156
   }
 }
