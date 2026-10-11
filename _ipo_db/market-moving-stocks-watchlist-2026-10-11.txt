@@ -1,0 +1,212 @@
+MARKET-MOVING STOCKS: US AND ASIA WATCHLIST
+
+Reviewed 11 October 2026, Hong Kong time.
+
+Purpose: a concise recurring watchlist for a senior's market briefing, covering the US, Taiwan,
+Japan, Hong Kong, mainland China, Australia and South Korea. The priorities below are editorial
+judgment informed by the linked index, holdings and company sources. This is a monitoring
+universe; it does not identify which stocks are moving the market on any particular day.
+
+SELECTION LOGIC
+
+Each company earns its place through one or more of these channels:
+
+1. Index influence: a substantial benchmark weight means its share-price movement can
+   materially affect the index. For illustration, a stock with a 10% index weight rising 5%
+   contributes approximately 0.5 percentage points to the index, holding other constituents
+   unchanged.
+2. Sector spillover: earnings, guidance or investment decisions can change expectations for
+   suppliers, competitors or stocks overseas.
+3. Economic signal: results provide useful information about consumption, credit, interest
+   rates, exports or commodity demand.
+4. Distinct information: avoid giving several companies separate briefing slots when they are
+   delivering essentially the same sector signal.
+
+Index importance and economic usefulness are different reasons for inclusion. A company
+selected as a credit or consumption indicator should not automatically receive the same
+priority as an index heavyweight. ETF holdings are supporting evidence of market prominence;
+their weights are not the weights of the local benchmark.
+
+REVIEWED SHORTLIST
+
+Tickers identify the local share listings. Hong Kong means HK-listed shares, including mainland
+businesses; the mainland China row uses A-shares. Alphabet's two US share classes count as one
+company in this watchlist. There are 40 companies across the seven markets.
+
+US
+Highest briefing priority: Nvidia (NVDA), Microsoft (MSFT), Apple (AAPL), Amazon (AMZN),
+Alphabet (GOOGL / GOOG), Meta (META), Tesla (TSLA), Broadcom (AVGO), Micron (MU)
+Other important names: JPMorgan Chase (JPM), as a banking and credit indicator
+Logic: The Mag 7 combine index influence with sector leadership. Broadcom and Micron add
+distinct semiconductor signals. JPMorgan broadens the information set beyond technology.
+
+TAIWAN
+Highest briefing priority: TSMC (2330)
+Other important names: Hon Hai / Foxconn (2317), MediaTek (2454), Delta Electronics (2308)
+Logic: TSMC combines market size with global chip-supply-chain influence. The other three cover
+electronics/server manufacturing, chip design and power infrastructure.
+
+JAPAN
+Highest briefing priority: Advantest (6857), Tokyo Electron (8035), SoftBank Group (9984), Fast
+Retailing (9983)
+Other important names: Toyota Motor (7203), Mitsubishi UFJ Financial Group / MUFG (8306)
+Logic: The first four have substantial Nikkei influence. Toyota and MUFG broaden the picture to
+exports, the yen, banking and interest rates.
+
+HONG KONG
+Highest briefing priority: Tencent (0700), Alibaba (9988), HSBC (0005), AIA (1299), China
+Construction Bank / CCB (0939)
+Other important names: Xiaomi (1810), Meituan (3690), especially for sector news
+Logic: Combine major index constituents with China internet/AI sentiment and financial-sector
+exposure. Xiaomi and Meituan add technology, EV and consumer-competition signals.
+
+MAINLAND CHINA
+Highest briefing priority: CATL (300750.SZ), Kweichow Moutai (600519.SH), China Merchants Bank
+(600036.SH), BYD (002594.SZ)
+Other important names: Zhongji Innolight (300308.SZ), especially for AI hardware
+Logic: Each adds a distinct signal: batteries, premium consumption, banking/credit, EV
+competition and optical networking. Zhongji's priority is more sensitive to the AI investment
+theme.
+
+AUSTRALIA
+Highest briefing priority: Commonwealth Bank / CBA (CBA), BHP (BHP)
+Other important names: National Australia Bank (NAB), Westpac (WBC), ANZ Group (ANZ),
+considered together when the news is sector-wide
+Logic: CBA covers domestic banking, housing and rates; BHP covers commodities and China demand.
+The other major banks collectively matter to the index, but do not always need separate
+briefing slots.
+
+SOUTH KOREA
+Highest briefing priority: Samsung Electronics (005930), SK Hynix (000660)
+Other important names: Hyundai Motor (005380)
+Logic: Samsung and SK Hynix combine market concentration with global memory/AI influence.
+Hyundai adds a different signal through autos and exports.
+
+
+WHY THESE CHOICES
+
+US
+
+- Nvidia: AI computing demand and the spending outlook for the wider AI supply chain.
+- Microsoft, Amazon and Alphabet: cloud demand, AI investment and monetisation. Alphabet also
+  provides advertising information.
+- Meta: digital advertising and AI infrastructure spending.
+- Apple: consumer devices and the electronics supply chain.
+- Tesla: EV competition and investor sentiment around autonomy and growth expectations; its
+  signal differs from the cloud and semiconductor companies.
+- Broadcom: networking and custom-chip exposure, which complements Nvidia's computing signal.
+- Micron: memory demand and pricing, including high-bandwidth memory used in AI infrastructure.
+- JPMorgan: banking, credit and consumer/business conditions. Its role here is a financial-
+  sector indicator, not an assertion that its index impact equals Nvidia's.
+
+The S&P 500 page's 31 August 2026 constituent snapshot lists the Mag 7, Broadcom and Micron in
+its ten largest constituent positions, counting Alphabet's two share classes separately. The
+choice is therefore supported by index prominence as well as thematic relevance. S&P 500
+constituents [1], Micron AI memory and storage [2], JPMorgan business profile [3].
+
+TAIWAN
+
+TSMC comes first. Hon Hai adds manufacturing/server exposure; MediaTek adds chip design and
+handset demand; Delta adds power infrastructure. These four were Taiwan's largest listed
+companies by market capitalisation at end-2025. That historical size ranking supports their
+inclusion but is not a current TAIEX weight calculation. Taiwan Stock Exchange 2026 fact book
+[4].
+
+JAPAN
+
+Advantest, Tokyo Electron, Fast Retailing and SoftBank Group were the Nikkei's four largest
+constituents by weight in the 8 October 2026 daily summary. Fast Retailing earns its place
+through index influence even though its business has less semiconductor spillover. Toyota and
+MUFG provide broader economic information and appear among the prominent holdings in the Japan
+ETF factsheet reviewed. SoftBank Group means 9984, distinct from the listed telecom company
+SoftBank Corp. Nikkei daily summary [5], iShares Japan factsheet [6].
+
+HONG KONG
+
+Tencent and Alibaba combine index influence with internet/AI sentiment; HSBC and AIA add
+financial-sector coverage. CCB is an addition after review: omitting a major constituent
+weakened the earlier shortlist's ability to explain the wider market. Xiaomi and Meituan remain
+useful sector leaders but should receive more attention when their particular sectors have
+consequential news. Hang Seng constituent information [7], Hang Seng November 2025 constituent
+review [8].
+
+MAINLAND CHINA
+
+CATL and BYD cover different parts of the EV ecosystem: batteries and vehicle competition.
+Moutai is a premium-consumption indicator, while China Merchants Bank adds credit and banking
+information. Zhongji Innolight adds AI optical networking. Its inclusion is supported by its
+prominent position in the A-share ETF factsheet reviewed, although that does not establish its
+precise CSI 300 weight or prove that a daily move causes the whole market to move. iShares
+China A factsheet [9], BYD company profile [10].
+
+AUSTRALIA
+
+The shortlist reflects the importance of banks and resources in the Australian market. CBA and
+BHP receive first attention. NAB, Westpac and ANZ collectively matter, but requiring four
+separate bank updates every day would duplicate information when the driver is a shared rate,
+housing or credit development. Separate them when earnings or company-specific news creates a
+meaningful difference. This compact selection deliberately favours the dominant bank/resource
+exposures; it is not comprehensive sector coverage. S&P research on Australian index
+concentration [11], ASX-hosted 2026 market overview [12].
+
+SOUTH KOREA
+
+Samsung Electronics and SK Hynix deserve much more attention than the other Korean names
+because of their market prominence and shared global memory/AI relevance. Hyundai is included
+to add an auto/export signal rather than another semiconductor exposure. The Korea ETF
+factsheet supports the large difference in prominence between the semiconductor pair and
+Hyundai; its fund weights should not be presented as KOSPI weights. iShares Korea factsheet
+[13].
+
+DAILY BRIEFING RULE
+
+Elevate a company when its news changes expectations for the wider index or sector. Prioritise
+earnings/guidance surprises, investment plans, demand or pricing changes, and major regulatory
+or policy developments. A TSMC outlook change or a memory-pricing signal may matter more than a
+list of routine daily share-price moves.
+
+Use this note as the recurring monitoring universe. For each daily briefing, confirm the actual
+news, price movement and benchmark contribution before attributing that day's market direction
+to a company. The linked data snapshots have different observation dates; the review date is
+not a claim that all source figures are current to 11 October 2026.
+
+SOURCES
+
+[1] S&P 500 constituents
+https://www.spglobal.com/spdji/en/indices/equity/sp-500/
+
+[2] Micron AI memory and storage
+https://investors.micron.com/news/press-release/2026/Micron-and-Anthropic-Announce-Strategic-Agreement-to-Scale-Next-Generation-AI-Infrastructure/default.aspx
+
+[3] JPMorgan business profile
+https://www.jpmorganchase.com/ir/news/2026/jpmorganchase-announces-2026-dodd-frank-act-stress-test-results
+
+[4] Taiwan Stock Exchange 2026 fact book
+https://www.twse.com.tw/downloads/zh/about/company/factbook/2026/1.04.html
+
+[5] Nikkei daily summary
+https://indexes.nikkei.co.jp/en/nkave/archives/summary?dt=10082026&idx=nk225
+
+[6] iShares Japan factsheet
+https://www.ishares.com/us/literature/fact-sheet/ewj-ishares-msci-japan-etf-fund-fact-sheet-en-us.pdf
+
+[7] Hang Seng constituent information
+https://www.hsi.com.hk/zh-hk/indexes/all-indexes/index-details/?seriesCode=hsci
+
+[8] Hang Seng November 2025 constituent review
+https://www.hsi.com.hk/static/uploads/contents/en/news/pressRelease/20251121T174500.pdf
+
+[9] iShares China A factsheet
+https://www.ishares.com/us/literature/fact-sheet/cnya-ishares-msci-china-a-etf-fund-fact-sheet-en-us.pdf
+
+[10] BYD company profile
+https://www.bydglobal.com/cn/about
+
+[11] S&P research on Australian index concentration
+https://www.spglobal.com/spdji/en/documents/research/research-celebrating-25-years-of-sp-asx-indices.pdf
+
+[12] ASX-hosted 2026 market overview
+https://www.asx.com.au/content/dam/asx/investors/investment-tools-and-resources/investor-day-may-26/06-the-most-concentrated-market-vaneck.pdf
+
+[13] iShares Korea factsheet
+https://www.ishares.com/us/literature/fact-sheet/ewy-ishares-msci-south-korea-etf-fund-fact-sheet-en-us.pdf
