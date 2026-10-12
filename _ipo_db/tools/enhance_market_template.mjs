@@ -27,7 +27,7 @@ export async function enhance(wb,ipo,ah,lock,chart,events,header){
  const cmp=wb.worksheets.add('AH Compare'),live=wb.worksheets.add('AH Compare Live');put(ah,'J27','Compare premium histories');ah.getRange('J27:O27').format.font={name:'Arial',size:12,bold:true};
  for(let k=0;k<4;k++){
   const selector=k?'AH!$K$'+(27+k):'AH!$B$4',p=pairs.find(p=>p.code==['3986','3308','3759','3347'][k])||pairs[k];
-  if(k){put(ah,'J'+(27+k),'Compare '+(k+1));put(ah,'K'+(27+k),p.code);ah.getRange('K'+(27+k)).dataValidation={rule:{type:'list',values:pairs.map(x=>x.code)}};ah.getRange('K'+(27+k)).format.font.color='#0000FF';}
+  if(k){put(ah,'J'+(27+k),'Compare '+(k+1));put(ah,'K'+(27+k),p.code);ah.getRange('K'+(27+k)).dataValidation={rule:{type:'list',formula1:`INDIRECT("'AH Delta'!$A$3:$A$${pairs.length+2}")`}};ah.getRange('K'+(27+k)).format.font.color='#0000FF';}
   const cs=k*9,cols=Array.from({length:9},(_,j)=>ec(cs+j+1)), [d,h,a,f,ad,fd,prem,helper,valid]=cols;
   // Metadata selection is independently validated, including security and last snapshot date.
   const idx=`IFERROR(MATCH(TEXT(VALUE(${selector}),"0000"),'AH Delta'!$A$3:$A$${pairs.length+2},0),0)`,m=c=>`IFERROR(INDEX('AH Delta'!$${c}$3:$${c}$${pairs.length+2},$${helper}$2),0)`;
@@ -54,7 +54,7 @@ export async function enhance(wb,ipo,ah,lock,chart,events,header){
  const er=events.length+7;mx.getRange(`A8:BK${er}`).values=events.map(e=>{const w=e.windows?.['30 trading sessions']||{},points=new Map((w.path||[]).map(p=>[p[0],p[2]]));return [e.code,e.last_day_locked?new Date(e.last_day_locked+'T00:00:00Z'):null,...Array.from({length:61},(_,i)=>points.get(i-30)>0&&w.anchor_close>0?points.get(i-30)/w.anchor_close-1:null)];});
  put(lock,'A30','Compare stocks / expiry cohort');lock.getRange('A30:C30').format.font={name:'Arial',size:12,bold:true};
  const codes=[...new Set(events.map(e=>e.code))].sort(),defaults=events.filter(e=>e.windows?.['30 trading sessions']?.status==='Complete').slice(-4).map(e=>e.code);
- for(let k=0;k<4;k++){put(lock,`A${32+k}`,'Stock '+(k+1));put(lock,`B${32+k}`,defaults[k]||codes[k]);lock.getRange(`B${32+k}`).dataValidation={rule:{type:'list',values:codes}};lock.getRange(`B${32+k}`).format.font.color='#0000FF';}
+ for(let k=0;k<4;k++){put(lock,`A${32+k}`,'Stock '+(k+1));put(lock,`B${32+k}`,defaults[k]||codes[k]);lock.getRange(`B${32+k}`).dataValidation={rule:{type:'list',formula1:`INDIRECT("'Lock-up Data'!$Y$8:$Y$${7+codes.length}")`}};lock.getRange(`B${32+k}`).format.font.color='#0000FF';}
  put(lock,'A37','Expiry from');put(lock,'B37',new Date('2021-01-01T00:00:00Z'));put(lock,'A38','Expiry to');put(lock,'B38',new Date(peer.asof+'T00:00:00Z'));lock.getRange('B37:B38').setNumberFormat('dd-mmm-yyyy');put(lock,'A40','Cohort = equal-weight mean of');put(lock,'A41','available curves in the date range.');put(lock,'A42','Blank endpoints stay unavailable.');
  lc.getRange('A4:F4').values=[['Trading session','Cohort mean','Stock 1','Stock 2','Stock 3','Stock 4']];
  for(let i=0;i<61;i++){
@@ -66,36 +66,73 @@ export async function enhance(wb,ipo,ah,lock,chart,events,header){
   }
  }
  const lchart=lock.charts.add('line',lc.getRange('A4:F65'));lchart.title='Performance around lock-up expiry';lchart.hasLegend=true;lchart.setPosition('D30','M50');lchart.yAxis={numberFormatCode:'0.0%',numberFormatSourceLinked:false};lchart.displayBlanksAs='gap';lchart.series.items.forEach((s,k)=>s.line={fill:k?C[k-1]:'#333333',width:k?1.4:2.5});
- // Direct peers: live quotes and an independently selected live/stored graph.
- const ps=wb.worksheets.add('Peer Trades'),pd=wb.worksheets.add('Peer Data'),pl=wb.worksheets.add('Peer Live'),pc=wb.worksheets.add('Peer Chart');
- ps.showGridLines=false;ps.getRange('A1:M65').format.font={name:'Arial',size:11,color:'#111111'};ps.getRange('A1:M65').format.rowHeight=22;
- put(ps,'A2','Direct peer monitor');ps.getRange('A2').format.font={name:'Arial',size:14,bold:true};put(ps,'A4','Pair');put(ps,'B4',peer.pairs[0].id);put(ps,'D4','Chart source');put(ps,'E4','Stored');ps.getRange('B4').dataValidation={rule:{type:'list',values:peer.pairs.map(x=>x.id)}};ps.getRange('E4').dataValidation={rule:{type:'list',values:['Stored','Bloomberg']}};ps.getRange('B4:E4').format.font.color='#0000FF';
- ps.getRange('A7:K7').values=[['Pair / product','Stock A','Stock B','Live A HK$','Live B HK$','A daily %','B daily %','A − B daily (pp)','A / B price','Snapshot spread (pp)','Snapshot date']];head(ps,'A7:K7');
- let pr=2;
- peer.pairs.forEach((p,i)=>{
-  const r=i+8,start=pr;pd.getRange(`A${pr}:F${pr+p.history.length-1}`).values=p.history.map(h=>[new Date(h[0]+'T00:00:00Z'),...h.slice(1)]);pr+=p.history.length;
-  pd.getRange(`H${i+3}:O${i+3}`).values=[[p.id,p.ticker_a,p.ticker_b,start,p.history.length,new Date(p.start+'T00:00:00Z'),p.history[0][1],p.history[0][2]]];
-  ps.getRange(`A${r}:C${r}`).values=[[p.id+' · '+p.segment,p.name_a+' ('+p.code_a+')',p.name_b+' ('+p.code_b+')']];form(ps,`D${r}`,`=IF(B${r}="","",BDP("${p.ticker_a}","LAST_PRICE"))`);form(ps,`E${r}`,`=IF(C${r}="","",BDP("${p.ticker_b}","LAST_PRICE"))`);
-  for(const [col,price,ticker]of [['F','D',p.ticker_a],['G','E',p.ticker_b]])form(ps,`${col}${r}`,`=IFERROR(IF(AND(ISNUMBER(${price}${r}),${price}${r}>0,BDP("${ticker}","PX_YEST_CLOSE")>0),${price}${r}/BDP("${ticker}","PX_YEST_CLOSE")-1,""),"")`);
-  form(ps,`H${r}`,`=IF(AND(ISNUMBER(F${r}),ISNUMBER(G${r})),100*(F${r}-G${r}),"")`);form(ps,`I${r}`,`=IFERROR(IF(AND(ISNUMBER(D${r}),ISNUMBER(E${r}),E${r}>0),D${r}/E${r},""),"")`);put(ps,`J${r}`,100*p.history.at(-1)[5]);put(ps,`K${r}`,new Date(p.latest_date+'T00:00:00Z'));
-  put(ps,`A${57+i}`,p.id+' · '+p.watch);ps.getRange(`A${57+i}:K${57+i}`).merge();
- });
- ps.getRange('D8:E13').setNumberFormat('0.00');ps.getRange('F8:G13').setNumberFormat('0.0%');ps.getRange('H8:H13').setNumberFormat('0.0" pp"');ps.getRange('J8:J13').setNumberFormat('0.0" pp"');ps.getRange('K8:K13').setNumberFormat('dd-mmm-yyyy');change(ps,'F8:H13');change(ps,'J8:J13');
- for(const [c,w]of [['A',26],['B',25],['C',25],['D',13],['E',13],['F',13],['G',13],['H',18],['I',12],['J',19],['K',18]])ps.getRange(`${c}:${c}`).format.columnWidth=w;
- put(ps,'A15','Spread = A return minus B return, rebased to the first common observed session.');ps.getRange('A15:K15').merge();put(ps,'A54',`Stored prices through ${peer.asof}; Bloomberg quotes and histories refresh on the terminal.`);ps.getRange('A54:K54').merge();put(ps,'A55','Price performance excludes dividends and rights value. Product peers have different exposures.');ps.getRange('A55:K55').merge();
- form(pc,'H2',`=IFERROR(MATCH('Peer Trades'!$B$4,'Peer Data'!$H$3:$H$8,0),0)`);const pm=c=>`IFERROR(INDEX('Peer Data'!$${c}$3:$${c}$8,$H$2),0)`;
- for(const [col,c]of [['A','I'],['D','J']])form(pl,`${col}5`,`=IF(OR('Peer Trades'!$E$4<>"Bloomberg",'Peer Chart'!$H$2=0),"",BDH(INDEX('Peer Data'!$${c}$3:$${c}$8,'Peer Chart'!$H$2),"PX_LAST",INDEX('Peer Data'!$M$3:$M$8,'Peer Chart'!$H$2),TODAY(),"Dts=S","Sort=A","Dir=V","Days=T","Per=cd","UseDPDF=N","CshAdjNormal=N","CshAdjAbnormal=N","CapChg=Y"))`);
- form(pc,'H3',`=IFERROR(INDEX('Peer Trades'!$B$8:$B$13,$H$2),"")`);form(pc,'H4',`=IFERROR(INDEX('Peer Trades'!$C$8:$C$13,$H$2),"")`);
- form(pc,'I2',`=IFERROR(IF(AND('Peer Trades'!$E$4="Bloomberg",$H$2>0,MIN('Peer Live'!$A$5:$A$1504)=${pm('M')},MIN('Peer Live'!$D$5:$D$1504)=${pm('M')},MAX('Peer Live'!$A$5:$A$1504)>=MIN(TODAY()-8,${new Date(peer.asof+'T00:00:00Z').getTime()/86400000+25569}),MAX('Peer Live'!$D$5:$D$1504)>=MIN(TODAY()-8,${new Date(peer.asof+'T00:00:00Z').getTime()/86400000+25569}),ABS(INDEX('Peer Live'!$B$5:$B$1504,MATCH(${pm('M')},'Peer Live'!$A$5:$A$1504,0))/${pm('N')}-1)<.005,ABS(INDEX('Peer Live'!$E$5:$E$1504,MATCH(${pm('M')},'Peer Live'!$D$5:$D$1504,0))/${pm('O')}-1)<.005),1,0),0)`);
- form(pc,'K2',`=IFERROR(IF(AND($I$2=1,MAX('Peer Live'!$A$5:$A$1504)<TODAY(),ISNUMBER(INDEX('Peer Trades'!$D$8:$D$13,$H$2)),ISNUMBER(INDEX('Peer Trades'!$E$8:$E$13,$H$2)),INDEX('Peer Trades'!$D$8:$D$13,$H$2)>0,INDEX('Peer Trades'!$E$8:$E$13,$H$2)>0),1,0),0)`);
- form(pc,'J2',`=MAX(1,IF('Peer Trades'!$E$4="Stored",${pm('L')},IF($I$2=1,COUNT('Peer Live'!$A$5:$A$1504)+$K$2,0)))`);
- pc.getRange('A4:F4').values=[['Date','Stock A return','Stock B return','Spread (pp)','A adjusted HK$','B adjusted HK$']];const rows=[];
- for(let r=5;r<7;r++){
-  const n='(ROW()-4)',idx=`${pm('K')}+${n}-1`,ref=c=>`INDEX('Peer Data'!$${c}$2:$${c}$${pr-1},${idx}-1)`,la=c=>`INDEX('Peer Live'!$${c}$5:$${c}$1504,MATCH(${pm('M')},'Peer Live'!$A$5:$A$1504,0)+${n}-1)`,lb=`INDEX('Peer Live'!$E$5:$E$1504,MATCH(A${r},'Peer Live'!$D$5:$D$1504,0))`;
-  rows.push([`=IFERROR(IF(${n}>$J$2,"",IF('Peer Trades'!$E$4="Stored",${ref('A')},IF($I$2=1,IF(${n}>COUNT('Peer Live'!$A$5:$A$1504),TODAY(),${la('A')}),""))),"")`,`=IFERROR(IF(ISNUMBER(A${r}),E${r}/IF('Peer Trades'!$E$4="Stored",${pm('N')},INDEX('Peer Live'!$B$5:$B$1504,MATCH(${pm('M')},'Peer Live'!$A$5:$A$1504,0)))-1,NA()),NA())`,`=IFERROR(IF(ISNUMBER(A${r}),F${r}/IF('Peer Trades'!$E$4="Stored",${pm('O')},INDEX('Peer Live'!$E$5:$E$1504,MATCH(${pm('M')},'Peer Live'!$D$5:$D$1504,0)))-1,NA()),NA())`,`=IFERROR(IF(AND(ISNUMBER(B${r}),ISNUMBER(C${r})),100*(B${r}-C${r}),NA()),NA())`,`=IFERROR(IF(ISNUMBER(A${r}),IF('Peer Trades'!$E$4="Stored",${ref('B')},IF(AND($K$2=1,${n}=$J$2),INDEX('Peer Trades'!$D$8:$D$13,$H$2),${la('B')})),NA()),NA())`,`=IFERROR(IF(ISNUMBER(A${r}),IF('Peer Trades'!$E$4="Stored",${ref('C')},IF(AND($K$2=1,${n}=$J$2),INDEX('Peer Trades'!$E$8:$E$13,$H$2),${lb})),NA()),NA())`]);
- }
- pc.getRange('A5:F6').formulas=rows;pc.getRange('A5:A1504').setNumberFormat('dd-mmm-yy');pc.getRange('B5:C1504').setNumberFormat('0.0%');pc.getRange('D5:D1504').setNumberFormat('0.0" pp"');
- const perf=ps.charts.add('line',pc.getRange('A4:C1504'));perf.title='Relative performance from common start';perf.setPosition('A17','K33');perf.hasLegend=true;perf.yAxis={numberFormatCode:'0.0%',numberFormatSourceLinked:false};perf.displayBlanksAs='gap';perf.series.items.forEach((s,k)=>s.line={fill:C[k],width:2});
- const spread=ps.charts.add('line',{from:{row:34,col:0},extent:{widthPx:1100,heightPx:360}});spread.title='A − B performance spread (pp)';spread.hasLegend=false;const ser=spread.series.add('Spread (pp)');ser.categoriesSource="'Peer Chart'!A5:A1504";ser.valuesSource="'Peer Chart'!D5:D1504";ser.line={fill:'#333333',width:2};spread.yAxis={numberFormatCode:'0.0" pp"',numberFormatSourceLinked:false};spread.displayBlanksAs='gap';ps.freezePanes.freezeRows(7);ps.freezePanes.freezeColumns(3);
+ await buildPeers(wb,doc);
  change(lock,`G${header+1}:H${header+events.length}`);change(lock,`J${header+1}:J${header+events.length}`);
+}
+
+export async function buildPeers(wb,doc){
+ const peer=doc.peer;
+ const ec=n=>{let a='';while(n){n--;a=String.fromCharCode(65+n%26)+a;n=Math.floor(n/26)}return a};
+ const C=['#1F4E79','#758D50','#8E6949','#706080'];
+ const put=(s,a,v)=>{s.getRange(a).values=[[v]];},form=(s,a,f)=>{s.getRange(a).formulas=[[f]];};
+ const head=(s,a)=>s.getRange(a).format={fill:'#E6E6E6',font:{name:'Arial',size:11,bold:true,color:'#111111'},rowHeight:30,wrapText:true,borders:{bottom:{style:'thin',color:'#777777'}}};
+ const change=(s,a)=>{s.getRange(a).conditionalFormats.add('cellIs',{operator:'greaterThan',formula:0,format:{font:{color:'#217346'},fill:'#E8F2EA'}});s.getRange(a).conditionalFormats.add('cellIs',{operator:'lessThan',formula:0,format:{font:{color:'#B53939'},fill:'#F6E8E8'}});};
+ // Independent inputs accept any HK code. Only selected Bloomberg histories run.
+ const ps=wb.worksheets.add('Peer Trades'),pd=wb.worksheets.add('Peer Data'),pl=wb.worksheets.add('Peer Live'),pc=wb.worksheets.add('Peer Chart'),un=wb.worksheets.add('HK Stocks');
+ const catalog=JSON.parse(await fs.readFile(new URL('../data/hk_stock_universe.json',import.meta.url),'utf8')).stocks;
+ un.getRange(`A2:C${catalog.length+1}`).values=catalog.map(x=>[x.code,x.name,x.currency]);
+ ps.showGridLines=false;ps.getRange(`A1:L${54+peer.pairs.length}`).format={font:{name:'Arial',size:11,color:'#111111'},rowHeight:22};
+ for(let i=1;i<=12;i++)ps.getRange(`${ec(i)}:${ec(i)}`).format.columnWidth=13;
+ put(ps,'A2','Hong Kong peer monitor');ps.getRange('A2:L2').merge();ps.getRange('A2').format.font={name:'Arial',size:14,bold:true};
+ for(const [a,v]of [['A4','Stock A code'],['B4','9856'],['D4','Stock B code'],['E4','3308'],['G4','Price source'],['H4','Stored'],['J4','Horizon'],['K4','1Y'],['A5','From'],['D5','Through'],['G5','Custom from'],['J5','Custom to']])put(ps,a,v);
+ for(const a of ['B4','E4'])ps.getRange(a).dataValidation={rule:{type:'list',formula1:`INDIRECT("'HK Stocks'!$A$2:$A$${catalog.length+1}")`}};
+ ps.getRange('H4').dataValidation={rule:{type:'list',values:['Stored','Bloomberg']}};ps.getRange('K4').dataValidation={rule:{type:'list',values:['1M','3M','6M','1Y','3Y','5Y','Max','Custom']}};
+ put(ps,'H5',new Date('2025-10-02T00:00:00Z'));put(ps,'K5',new Date(peer.asof+'T00:00:00Z'));
+ form(ps,'E5',`=IF($K$4="Custom",$K$5,IF($H$4="Bloomberg",TODAY(),DATE(${peer.asof.split('-').map(Number).join(',')})))`);
+ form(ps,'B5',`=IF($K$4="Custom",MAX($H$5,EDATE($E$5,-120)),IF($K$4="Max",EDATE($E$5,-120),EDATE($E$5,-INDEX({1,3,6,12,36,60},MATCH($K$4,{"1M","3M","6M","1Y","3Y","5Y"},0)))))`);
+ for(const a of ['B4','E4','H4','K4','H5','K5'])ps.getRange(a).format={fill:'#EDF2F6',font:{color:'#0000FF'},borders:{bottom:{style:'thin',color:'#9AA6B0'}}};
+ for(const a of ['B5','E5','H5','K5'])ps.getRange(a).setNumberFormat('dd-mmm-yy');
+ put(ps,'A6','Enter any HK code. Bloomberg pulls the chosen pair; Stored uses saved histories. Max / Custom: up to 10 years.');ps.getRange('A6:L6').merge();ps.getRange('A6').format.font={name:'Arial',size:10,color:'#555555'};
+ ps.getRange('A8:L8').values=[['Selected stock',null,null,'Price',null,'Currency','Daily change',null,'Window return',null,'Spread (pp)',null]];head(ps,'A8:L8');
+ for(const r of [9,10])for(const a of [`A${r}:C${r}`,`D${r}:E${r}`,`G${r}:H${r}`,`I${r}:J${r}`,`K${r}:L${r}`])ps.getRange(a).merge();
+ let pr=2;const stocks=peer.stocks,end=stocks.length+2;
+ stocks.forEach((p,i)=>{pd.getRange(`A${pr}:B${pr+Math.min(2,p.history.length)-1}`).values=p.history.slice(0,2).map(h=>[new Date(h[0]+'T00:00:00Z'),h[1]]);pd.getRange(`H${i+3}:N${i+3}`).values=[[p.code,p.name,p.ticker,pr,p.history.length,new Date(p.history.at(-1)[0]+'T00:00:00Z'),p.currency]];pr+=p.history.length;});
+ const m=(c,row)=>`IFERROR(IF($H$${row}>0,INDEX('Peer Data'!$${c}$3:$${c}$${end},$H$${row}),0),0)`,md=(c,row)=>`INDEX('Peer Data'!$${c}$1:$${c}$${pr-1},MAX(1,${m('K',row)})):INDEX('Peer Data'!$${c}$1:$${c}$${pr-1},MAX(1,${m('K',row)}+${m('L',row)}-1))`;
+ for(const [r,inp,mr]of [[9,'B',2],[10,'E',5]]){
+  const tk=`IFERROR(TEXT(VALUE($${inp}$4),"0")&" HK Equity","")`,ix=`MATCH(TEXT(VALUE($${inp}$4),"0000"),'HK Stocks'!$A$2:$A$${catalog.length+1},0)`,meta=c=>`IFERROR(IF('Peer Chart'!$H$${mr}>0,INDEX('Peer Data'!$${c}$3:$${c}$${end},'Peer Chart'!$H$${mr}),0),0)`;
+  form(ps,`A${r}`,`=IFERROR(INDEX('HK Stocks'!$B$2:$B$${catalog.length+1},${ix})&" ("&TEXT(VALUE($${inp}$4),"0000")&")",IFERROR(TEXT(VALUE($${inp}$4),"0000")&" HK","Enter HK code"))`);
+  form(ps,`D${r}`,`=IF($H$4="Bloomberg",IFERROR(BDP(${tk},"LAST_PRICE"),""),IFERROR(IF(${meta('L')}>0,INDEX('Peer Data'!$B$1:$B$${pr-1},${meta('K')}+${meta('L')}-1),""),""))`);
+  form(ps,`F${r}`,`=IF($H$4="Bloomberg",IFERROR(BDP(${tk},"CRNCY"),""),IFERROR(INDEX('HK Stocks'!$C$2:$C$${catalog.length+1},${ix}),""))`);
+  form(ps,`G${r}`,`=IFERROR(IF($H$4="Bloomberg",IF(AND(ISNUMBER(D${r}),BDP(${tk},"PX_YEST_CLOSE")>0),D${r}/BDP(${tk},"PX_YEST_CLOSE")-1,""),IF(${meta('L')}>1,INDEX('Peer Data'!$B$1:$B$${pr-1},${meta('K')}+${meta('L')}-1)/INDEX('Peer Data'!$B$1:$B$${pr-1},${meta('K')}+${meta('L')}-2)-1,"")),"")`);
+  const rc=r===9?'B':'C';form(ps,`I${r}`,`=IFERROR(LOOKUP(2,1/(ISNUMBER('Peer Chart'!$${rc}$5:$${rc}$3004)),'Peer Chart'!$${rc}$5:$${rc}$3004),"")`);
+ }
+ for(const [label,target,mr]of [['A11','B11',2],['D11','E11',5]]){put(ps,label,mr===2?'A quote date':'B quote date');form(ps,target,`=IF($H$4="Stored",IFERROR(IF('Peer Chart'!$H$${mr}>0,INDEX('Peer Data'!$M$3:$M$${end},'Peer Chart'!$H$${mr}),""),""),"Live")`);ps.getRange(target).setNumberFormat('dd-mmm-yy');}
+ form(ps,'D8',`=IF($H$4="Stored","Stored price","Live price")`);
+ form(ps,'K9',`=IFERROR(LOOKUP(2,1/(ISNUMBER('Peer Chart'!$D$5:$D$3004)),'Peer Chart'!$D$5:$D$3004),"")`);put(ps,'K10','A return − B');
+ form(ps,'A12',`=IF($B$5>$E$5,"Start date is after end date.",IF('Peer Chart'!$J$3=0,IF($H$4="Stored","No shared stored history for these codes / dates. Choose Bloomberg.","Bloomberg history unavailable. Refresh Bloomberg for this pair."),$H$4&" | actual shared dates "&TEXT(INDEX('Peer Chart'!$A$5:$A$3004,'Peer Chart'!$J$3-4),"dd-mmm-yy")&" to "&TEXT(LOOKUP(2,1/(ISNUMBER('Peer Chart'!$D$5:$D$3004)),'Peer Chart'!$A$5:$A$3004),"dd-mmm-yy")))`);ps.getRange('A12:L12').merge();
+ put(ps,'A13','Split-adjusted price returns, excluding dividends. Same starting date; missing observations stay gaps.');ps.getRange('A13:L13').merge();ps.getRange('A12:L13').format.font={name:'Arial',size:10,color:'#555555'};
+ ps.getRange('D9:E10').setNumberFormat('0.00');ps.getRange('G9:J10').setNumberFormat('0.0%');ps.getRange('K9').setNumberFormat('0.0" pp"');change(ps,'G9:J10');change(ps,'K9');
+ form(pc,'H2',`=IFERROR(MATCH(TEXT(VALUE('Peer Trades'!$B$4),"0000"),'Peer Data'!$H$3:$H$${end},0),0)`);form(pc,'H5',`=IFERROR(MATCH(TEXT(VALUE('Peer Trades'!$E$4),"0000"),'Peer Data'!$H$3:$H$${end},0),0)`);
+ form(pc,'H3',`='Peer Trades'!$A$9`);form(pc,'H4',`='Peer Trades'!$A$10`);form(pc,'I2',`='Peer Trades'!$B$5`);form(pc,'K2',`='Peer Trades'!$E$5`);
+ for(const [col,inp]of [['A','B'],['D','E']])form(pl,`${col}5`,`=IF(OR('Peer Trades'!$H$4<>"Bloomberg",'Peer Trades'!$B$5>'Peer Trades'!$E$5),"",BDH(TEXT(VALUE('Peer Trades'!$${inp}$4),"0")&" HK Equity","PX_LAST",'Peer Trades'!$B$5,'Peer Trades'!$E$5,"Dts=S","Sort=A","Dir=V","Days=T","Per=cd","UseDPDF=N","CshAdjNormal=N","CshAdjAbnormal=N","CapChg=Y"))`);
+ const sd=md('A',2),sp=md('B',2),td=md('A',5),tp=md('B',5),ld="'Peer Live'!$A$5:$A$3004",lp="'Peer Live'!$B$5:$B$3004",rd="'Peer Live'!$D$5:$D$3004",rp="'Peer Live'!$E$5:$E$3004";
+ const mode="'Peer Trades'!$H$4=\"Stored\"",first=d=>`IFERROR(MATCH($I$2,${d},1)+IF(INDEX(${d},MATCH($I$2,${d},1))<$I$2,1,0),IFERROR(MATCH(MIN(${d}),${d},0),0))`;
+ form(pc,'H6',`=IF(${mode},${first(sd)},${first(ld)})`);
+ form(pc,'J2',`=MAX(1,IFERROR(IF(${mode},COUNTIFS(${sd},">="&$I$2,${sd},"<="&$K$2),COUNTIFS(${ld},">="&$I$2,${ld},"<="&$K$2)),0))`);form(pc,'J3',`=MIN($G$5:$G$3004)`);
+ pc.getRange('A4:G4').values=[['Date','Stock A return','Stock B return','Spread (pp)','A adjusted close','B adjusted close','Shared-row index']];
+ for(let r=5;r<=6;r++){
+  const n='ROW()-5';form(pc,`A${r}`,`=IFERROR(IF(AND(${n}+1<=$J$2,$H$6>0,$I$2<=$K$2,OR('Peer Trades'!$H$4="Bloomberg",AND($H$2>0,$H$5>0))),IF(${mode},INDEX(${sd},$H$6+${n}),INDEX(${ld},$H$6+${n})),""),"")`);
+  form(pc,`E${r}`,`=IFERROR(IF(ISNUMBER(A${r}),IF(${mode},INDEX(${sp},MATCH(A${r},${sd},0)),INDEX(${lp},MATCH(A${r},${ld},0))),NA()),NA())`);
+  form(pc,`F${r}`,`=IFERROR(IF(ISNUMBER(A${r}),IF(${mode},INDEX(${tp},MATCH(A${r},${td},0)),INDEX(${rp},MATCH(A${r},${rd},0))),NA()),NA())`);
+  form(pc,`G${r}`,`=IFERROR(IF(AND(ISNUMBER(A${r}),ISNUMBER(E${r}),ISNUMBER(F${r}),E${r}>0,F${r}>0),ROW(),""),"")`);
+  for(const [col,price]of [['B','E'],['C','F']])form(pc,`${col}${r}`,`=IFERROR(IF(AND($J$3>0,ROW()>=$J$3,ISNUMBER(G${r})),${price}${r}/INDEX($${price}$5:$${price}$3004,$J$3-4)-1,NA()),NA())`);
+  form(pc,`D${r}`,`=IFERROR(100*(B${r}-C${r}),NA())`);
+ }
+ pc.getRange('A5:A3004').setNumberFormat('dd-mmm-yy');pc.getRange('B5:C3004').setNumberFormat('0.0%');pc.getRange('D5:D3004').setNumberFormat('0.0" pp"');
+ const perf=ps.charts.add('line',pc.getRange('A4:C3004'));perf.title='Relative performance · selected horizon';perf.setPosition('A16','L31');perf.hasLegend=true;perf.yAxis={numberFormatCode:'0.0%',numberFormatSourceLinked:false};perf.displayBlanksAs='gap';perf.series.items.forEach((s,k)=>s.line={fill:C[k],width:2});
+ const spread=ps.charts.add('line',{from:{row:32,col:0},extent:{widthPx:1000,heightPx:330}});spread.setPosition('A33','L48');spread.title='A − B performance spread (pp)';spread.hasLegend=false;const ser=spread.series.add('Spread (pp)');ser.categoriesSource="'Peer Chart'!A5:A3004";ser.valuesSource="'Peer Chart'!D5:D3004";ser.line={fill:'#333333',width:2};spread.yAxis={numberFormatCode:'0.0" pp"',numberFormatSourceLinked:false};spread.displayBlanksAs='gap';
+ put(ps,'A50',`${peer.pairs.length} peer comparisons · enter their codes above`);ps.getRange('A50:L50').merge();ps.getRange('A50').format.font={name:'Arial',size:12,bold:true};ps.getRange('A52:L52').values=[['Code A','Code B','Segment',null,null,'Stock A',null,null,'Stock B',null,null,null]];head(ps,'A52:L52');
+ for(let i=0;i<peer.pairs.length;i++){const p=peer.pairs[i],r=53+i;for(const [col,v]of [['A',p.code_a],['B',p.code_b],['C',p.segment],['F',p.name_a],['I',p.name_b]])put(ps,`${col}${r}`,v);for(const a of [`C${r}:E${r}`,`F${r}:H${r}`,`I${r}:L${r}`])ps.getRange(a).merge();ps.getRange(`A${r}:L${r}`).format={rowHeight:26,borders:{bottom:{style:'hair',color:'#DDDDDD'}}};}
+ ps.freezePanes.freezeRows(6);ps.freezePanes.freezeColumns(2);
+
 }

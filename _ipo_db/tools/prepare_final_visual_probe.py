@@ -6,9 +6,9 @@ import openpyxl
 from openpyxl.chart.axis import TextAxis
 from openpyxl.chart.data_source import AxDataSource,StrRef,NumRef,NumDataSource
 ROOT=Path(__file__).resolve().parent.parent
-src=openpyxl.load_workbook(ROOT/'out/HK_IPO_Database_v1.xlsx');cache=openpyxl.load_workbook(ROOT/'out/HK_IPO_Database_v1.xlsx',data_only=True)
+src=openpyxl.load_workbook(ROOT/'out/HK_IPO_Database_v1.xlsx');cache=openpyxl.load_workbook(ROOT/'out/HK_IPO_Database_v1.xlsx',data_only=True,read_only=True)
 w=openpyxl.Workbook();w.remove(w.active)
-for name,rows,cols in [('IPO Live',64,15),('AH',64,15),('Lock-up',60,13),('Peer Trades',63,11),('Screener',38,15),('Database',38,15)]:
+for name,rows,cols in [('IPO Live',64,15),('AH',64,15),('Lock-up',60,13),('Peer Trades',89,12),('Screener',38,15),('Database',38,15)]:
  s=src[name];t=w.create_sheet(name)
  for row in s.iter_rows(max_row=rows,max_col=cols):
   for c in row:

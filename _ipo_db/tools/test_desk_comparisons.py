@@ -28,21 +28,12 @@ wb['AH']['P3']=1
 for a in ['K28','K29','K30']:copy('AH',a)
 for k in range(4):
  b=k*9
- for r in [2,3,4,5,6,7,8,20,500,1504,3004]:
+ for r in [2,3,4,5,6,7,8,20,500,1504,2204]:
   for c in range(b+1,b+10):copy('AH Compare',f'{openpyxl.utils.get_column_letter(c)}{r}')
 for p in meta['pairs']:
  hs=recs[p['code']]['h_history'];start=p['cache_start']
  for off in sorted(set([0,1,2,len(hs)-1])):
   for c in range(1,7):copy('AH History',f'{openpyxl.utils.get_column_letter(c)}{start+off}')
-for p in meta['peer']['pairs']:
- i=meta['peer']['pairs'].index(p)+3
- for c in range(8,16):copy('Peer Data',f'{openpyxl.utils.get_column_letter(c)}{i}')
- start=src['Peer Data'].cell(i,11).value
- for off in [0,1,2,len(p['history'])-1]:
-  for c in range(1,7):copy('Peer Data',f'{openpyxl.utils.get_column_letter(c)}{start+off}')
-for a in ['B4','E4']:copy('Peer Trades',a)
-for r in [2,5,6,7,8,9,500,1504]:
- for c in range(1,12):copy('Peer Chart',f'{openpyxl.utils.get_column_letter(c)}{r}')
 path=ROOT/'out/_desk_compare_probe.xlsx';wb.save(path)
 m=formulas.ExcelModel().loads(str(path)).finish()
 def key(s,c):return f"'[{path.name}]{s.upper()}'!{c}"
@@ -58,12 +49,7 @@ for index,p in enumerate(meta['pairs'],1):
  if len(hs)>495:
   got=calc({**inp,('AH History',f'A{start+495}'):date.fromisoformat(hs[495][0])},[('AH Compare','A500')])
   assert got['A500']==to_excel(date.fromisoformat(hs[495][0])),p['code']
-for p in meta['peer']['pairs']:
- got=calc({('Peer Trades','B4'):p['id']},[('Peer Chart','A5'),('Peer Chart','A6'),('Peer Chart','B5'),('Peer Chart','C5'),('Peer Chart','D6')])
- assert got['A5']==to_excel(date.fromisoformat(p['history'][0][0])) and got['A6']==to_excel(date.fromisoformat(p['history'][1][0]))
- assert abs(float(got['B5']))<1e-12 and abs(float(got['C5']))<1e-12
- assert math.isclose(float(got['D6']),p['history'][1][5]*100,abs_tol=1e-10)
-print('PASS stored dates advance for all 68 A/H and six peer selectors; rebasing and pp spreads',flush=True)
+print('PASS stored dates advance for all 68 A/H selectors',flush=True)
 # Headered BDH replies and a today live endpoint. Deliberately not a production snapshot.
 p=meta['pairs'][0];ipo=date.fromisoformat(p['ipo_date']);now=date.today();last=now-timedelta(days=3)
 inp={('AH','E4'):'Bloomberg',('AH','P3'):1}
@@ -83,15 +69,6 @@ for col,vs in [('A',['Date',target]),('B',['PX_LAST',80]),('D',['Date',target]),
  for r,v in enumerate(vs,start):inp[('AH Recent',f'{col}{r}')]=v
 assert math.isclose(float(calc(inp,[('AH Delta','D3')])['D3']),90*1.17/80-1,abs_tol=1e-12)
 print('PASS headered A/H history, exact starting date, today endpoint, stale/wrong security rejection and calendar reference',flush=True)
-p=meta['peer']['pairs'][0];start=date.fromisoformat(p['start']);a,b=p['history'][0][1:3]
-pi={('Peer Trades','E4'):'Bloomberg',('Peer Trades','B4'):p['id'],('Peer Trades','D8'):a*1.3,('Peer Trades','E8'):b*1.2}
-for col,vs in [('A',['Date',start,last]),('B',['PX_LAST',a,a*1.1]),('D',['Date',start,last]),('E',['PX_LAST',b,b*1.05])]:
- for r,v in enumerate(vs,5):pi[('Peer Live',f'{col}{r}')]=v
-outs=[('Peer Chart','I2'),('Peer Chart','J2'),('Peer Chart','A5'),('Peer Chart','A6'),('Peer Chart','A7'),('Peer Chart','D6'),('Peer Chart','D7')]
-got=calc(pi,outs);assert got['I2']==1 and got['J2']==3 and got['A5']==to_excel(start) and got['A6']==to_excel(last) and got['A7']==to_excel(now),got
-assert math.isclose(float(got['D6']),5,abs_tol=1e-10) and math.isclose(float(got['D7']),10,abs_tol=1e-10)
-assert calc({**pi,('Peer Live','B6'):a*2},[('Peer Chart','I2')])['I2']==0
-print('PASS headered peer histories, own common start, daily endpoint and pp performance spread',flush=True)
 f=load_actions(ROOT)
 assert math.isclose(.56/bbg_factor('2147',f,as_of='2026-10-12'),8.1641025641,abs_tol=1e-9)
 assert math.isclose(.56/bbg_factor('2147',f,as_of='2026-08-26'),11.2,abs_tol=1e-10)

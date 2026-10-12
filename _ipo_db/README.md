@@ -1,3 +1,5 @@
+Excel repair / peer monitor update (13 October 2026): A/H defaults to the Stored snapshot; E4 selects Bloomberg. Peer Trades accepts independent HK codes in B4 / E4, source in H4, and horizon in K4. Custom dates use H5 / K5. Bloomberg can request any HK equity; the saved snapshot covers 66 stocks and 35 preset comparisons. HTML has matching saved-data horizon controls. Charts rebase at the first common observed date; missing prices remain gaps. Oversized Excel dropdown lists were replaced with range references.
+
 # HK IPO Database + Comps Screener + Dashboard
 
 **514 Hong Kong Main Board IPOs, Jan 2021 – Sep 2026, plus the live pipeline.**

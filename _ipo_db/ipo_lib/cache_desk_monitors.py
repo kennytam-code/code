@@ -50,11 +50,19 @@ def add_caches(parts,sheets,root):
  for off in range(-30,31):
   v=[point(e,off) for e in cohort];v=[x for x in v if x is not None];vals=[sum(v)/len(v) if v else None]+[point(e,off) for e in choices]
   for j,val in enumerate(vals,2):col=ec(j);put('Lock Compare',f'{col}{off+35}',val,error=val is None);refs[f"'Lock Compare'!${col}$5:${col}$65"].append(val)
- pp=dc['peer'];selected=text(cells['Peer Trades'].get('B4'));peer=next(p for p in pp['pairs'] if p['id']==selected);h=peer['history'];put('Peer Chart','H2',pp['pairs'].index(peer)+1);put('Peer Chart','H3',peer['name_a']+' ('+peer['code_a']+')');put('Peer Chart','H4',peer['name_b']+' ('+peer['code_b']+')');put('Peer Chart','I2',0);put('Peer Chart','K2',0);put('Peer Chart','J2',max(1,len(h)))
- for i,row in enumerate(h,5):
-  dt,a,b,ra,rb,spread=row
-  for j,val in enumerate([serial(dt),ra,rb,100*spread,a,b],1):put('Peer Chart',ec(j)+str(i),val)
- for name,idx in [('Dates',0),('A',3),('B',4),('Spread',5)]:refs['PeerChart'+name]=[serial(x[0]) if idx==0 else x[idx]*100 if idx==5 else x[idx] for x in h]
+ pp=dc['peer'];stocks={p['code']:p for p in pp['stocks']};code_a=text(cells['Peer Trades'].get('B4'));code_b=text(cells['Peer Trades'].get('E4'));pa=stocks[code_a];pb=stocks[code_b];end=pp['asof'];dt=date.fromisoformat(end);start=dt.replace(year=dt.year-1).isoformat();a_prices=dict(pa['history']);b_prices=dict(pb['history']);dates=[d for d in a_prices if start<=d<=end];shared=[d for d in dates if d in b_prices];base=shared[0] if shared else None;first=dates.index(base)+5 if base else 0
+ for addr,v in [('H2',pp['stocks'].index(pa)+1),('H5',pp['stocks'].index(pb)+1),('H3',pa['name']+' ('+code_a+')'),('H4',pb['name']+' ('+code_b+')'),('I2',serial(start)),('K2',serial(end)),('J2',max(1,len(dates))),('J3',first),('H6',sum(d<start for d in a_prices)+1)]:put('Peer Chart',addr,v)
+ put('Peer Trades','B5',serial(start));put('Peer Trades','E5',serial(end));put('AH','A5','Stored snapshot through 02-Oct-2026')
+ refs.update({'PeerChartDates':[],'PeerChartA':[],'PeerChartB':[],'PeerChartSpread':[]})
+ for i,d in enumerate(dates,5):
+  a=a_prices[d];b=b_prices.get(d);ra=a/a_prices[base]-1 if base and d>=base and b else None;rb=b/b_prices[base]-1 if base and d>=base and b else None;spread=100*(ra-rb) if ra is not None else None
+  for j,val in enumerate([serial(d),ra,rb,spread,a,b,i if b else None],1):put('Peer Chart',ec(j)+str(i),val,error=val is None and j in [2,3,4,5,6])
+  if base and d>=base:
+   for k,v in [('Dates',serial(d)),('A',ra),('B',rb),('Spread',spread)]:refs['PeerChart'+k].append(v)
+ for r,code in [(9,code_a),(10,code_b)]:
+  st=stocks[code];h=st['history'];put('Peer Trades',f'A{r}',st['name']+' ('+code+')');put('Peer Trades',f'D{r}',h[-1][1]);put('Peer Trades',f'F{r}',st['currency']);put('Peer Trades',f'G{r}',h[-1][1]/h[-2][1]-1 if len(h)>1 else None);put('Peer Trades',f'I{r}',refs['PeerChart'+('A' if r==9 else 'B')][-1] if shared else None)
+ put('Peer Trades','B11',serial(pa['history'][-1][0]));put('Peer Trades','E11',serial(pb['history'][-1][0]));put('Peer Trades','D8','Stored price')
+ put('Peer Trades','K9',refs['PeerChartSpread'][-1] if shared else None);put('Peer Trades','A12','Stored | actual shared dates '+date.fromisoformat(base).strftime('%d-%b-%y')+' to '+date.fromisoformat(shared[-1]).strftime('%d-%b-%y') if shared else 'No shared stored history. Choose Bloomberg.')
  # Native charts consume exactly the same cached source cells and lengths.
  for name,raw in list(parts.items()):
   if not name.startswith('xl/charts/chart') or not name.endswith('.xml'):continue

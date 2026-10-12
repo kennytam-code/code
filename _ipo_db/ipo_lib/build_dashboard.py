@@ -3115,7 +3115,7 @@ HTML = """<!doctype html>
 
 <section id="peers">
  <h2>Direct peer monitor</h2><p class="sub">Snapshot through %%AHSNAPSHOT%%. Live prices and Bloomberg history are available in Excel’s Peer Trades tab.</p>
- <div class="filters"><label>Pair <select id="peer-pair"></select></label></div><h3 id="peer-title"></h3><p class="note" id="peer-watch"></p>
+ <div class="filters"><label>Preset <select id="peer-pair"></select></label><label>Stock A <input id="peer-a" list="peer-codes" value="9856" style="width:130px"></label><label>Stock B <input id="peer-b" list="peer-codes" value="3308" style="width:130px"></label><label>Horizon <select id="peer-horizon"><option>1M</option><option>3M</option><option>6M</option><option selected>1Y</option><option>3Y</option><option>5Y</option><option>Max</option><option>Custom</option></select></label><label>From <input id="peer-from" type="date"></label><label>To <input id="peer-to" type="date"></label><datalist id="peer-codes"></datalist></div><p class="note" id="peer-coverage"></p><h3 id="peer-title"></h3><p class="note" id="peer-watch"></p>
  <div class="row"><div class="chart"><h3>Relative performance</h3><div id="peer-performance"></div></div><div class="chart"><h3>A − B spread (percentage points)</h3><div id="peer-spread"></div></div></div>
  <p class="note">Both returns start on the first common observed session; split-neutral prices, excluding dividends.</p><div class="scroll" id="peer-table"></div>
 </section>
@@ -3463,7 +3463,7 @@ def main():
                 f"{_nm} is empty but data/deals.json has {_src} — the field is "
                 f"missing from KEEP, so it never reached the embed")
     blob = json.dumps({"as_of": as_of, "deals": deals, "pipe": pipe, "cfg": cfg,
-                       "market_deals":[{k:d.get(k) for k in ["code","name","sector","subsector","a_share_code","ipo_date"]} for d in market_deals(ROOT)], "peer_pairs":json.loads((ROOT/"data/peer_pairs.json").read_text()), "ah_asof":study["asof"], "ahpaths": paths, "ahstudy": ahstudy, "hpaths": hpaths, "cs_league": league,
+                       "market_deals":[{k:d.get(k) for k in ["code","name","sector","subsector","a_share_code","ipo_date"]} for d in market_deals(ROOT)], "peer_pairs":json.loads((ROOT/"data/peer_pairs.json").read_text()), "hk_stocks":json.loads((ROOT/"data/hk_stock_universe.json").read_text())["stocks"], "ah_asof":study["asof"], "ahpaths": paths, "ahstudy": ahstudy, "hpaths": hpaths, "cs_league": league,
                        "stab_league": smleague, "lockups": lockups},
                       ensure_ascii=False, separators=(",", ":"))
     import base64, gzip
@@ -3476,6 +3476,7 @@ def main():
         if isinstance(value,dict):return {k:rounded(v) for k,v in value.items()}
         return value
     for key in ['ahstudy','lockups','peer_pairs']:raw[key]=rounded(raw[key])
+    for pair in raw['peer_pairs']['pairs']:pair.pop('history',None)
     blob=json.dumps(raw,ensure_ascii=False,separators=(',',':'))
     payload = base64.b64encode(gzip.compress(blob.encode('utf-8'), compresslevel=9, mtime=0)).decode('ascii')
     js = JS + BODY_JS + (ROOT / "assets/desk_monitors.js").read_text()

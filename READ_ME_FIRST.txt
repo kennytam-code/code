@@ -18,36 +18,21 @@ MARKET TABS (12 October 2026)
   IPO Live: 714 seven-year monitoring listings; live LAST_PRICE and change vs PX_YEST_CLOSE.
   B5 selects Sector/Subsector classification; H34 chooses the sector
   for the second, subsector-average chart. The first chart stays broad.
-  AH: 68 pairs in the seven-year monitoring roster. B4 accepts H/A code; E4 selects Stored/Bloomberg.
-  Stored is the default, through 2 October. Bloomberg requests history
-  from listing through TODAY and appends an available live endpoint.
-  AH includes the 62 database pairs and six 2019/2020 H listings.
-  Huaqin (3296): IPO/current premiums are available; the trend omits
-  22 May to 16 June while A/H ex-entitlement bases differ.
+  AH: E4 selects Stored / Bloomberg; the banner states the active mode.
+  Stored is the default snapshot through 2 October. Bloomberg requests
+  live quotes and histories from H listing to TODAY (terminal required).
+  AH remains the seven-year 68-pair roster; Database / Screener remain 524.
   AH G/H: 7-day / one-calendar-month premium changes, percentage points.
   Compare up to four pairs in Excel; select multiple pairs in HTML.
-  Peer Trades: six direct-product pairs, live quotes and performance spread.
-  Lock-up: 396 cornerstone events for 386 stocks; no-cornerstone
-  entries and unrelated shareholder restrictions are excluded.
-  returns use 30 HK trading sessions before and after expiry.
-  Excel: B4 selects H code; E4 selects expiry event, with Auto default.
-  Both files show the IPO date and a selectable day -30 to +30 graph.
-  HTML Lock-up searches H code/company and selects an expiry event to chart
-  every session from day -30 to +30, rebased to the expiry reference.
-  Prices through 2 October 2026. Future and
-  missing returns stay blank; hover dates for sources and endpoints.
-  Expiry unconfirmed means the retained filing does not establish a date;
-  that event has no inferred expiry, return or chart.
-  Company cornerstones shows the full company roster; individual
-  expiry events may apply to a subset, as shown in the linked filing.
-  Screener freezes columns A:B, with no frozen rows.
-  Screener B5 accepts the H code, e.g. 9607 = RA MATERIALS / Red Avenue.
-  Cornerstones search 9607 shows all eight investors even if the
-  minimum-deals filter was set above one. MLP resolves to Millennium.
-  Pipeline: key terms first; expand M:AD in Excel or a company in HTML.
-  Financial/source audit: see database_numeric_audit.md and CSV.
-  Orange annual financial cells need fresh primary-row confirmation.
-  Bloomberg formula logic is tested; live add-in execution is a desk check.
+  Peer Trades: B4 = stock A code, E4 = stock B code, H4 = price source.
+  K4 = horizon (1M / 3M / 6M / 1Y / 3Y / 5Y / Max / Custom).
+  Custom dates: H5 / K5. Max / Custom chart capacity: ten years.
+  Type any HK code for Bloomberg, including shares outside this database.
+  Stored: 66 stocks, 35 preset comparisons. Other codes need Bloomberg.
+  Charts start at the first shared date within the selected horizon;
+  spread = A return minus B return, percentage points. Missing prices
+  stay unavailable. Actual coverage appears above the charts.
+  HTML provides saved-stock comparisons and the same horizon controls.
 
 RETURN METHODS / REVIEW (4 October 2026)
   1w/1m/3m = 5/21/63 traded sessions after debut, not calendar dates.

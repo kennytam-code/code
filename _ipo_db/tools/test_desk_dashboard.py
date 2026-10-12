@@ -34,7 +34,7 @@ async def main():
   await pg.select_option('#lockup-compare-mode','selected');await pg.select_option('#lockup-compare-stocks',vals)
   assert await pg.locator('#lockup-compare-chart svg').get_attribute('data-series')=='4'
   await pg.click('a[data-tab="peers"]')
-  assert await pg.locator('#peer-table tbody tr').count()==6
+  assert await pg.locator('#peer-table tbody tr').count()==35
   pairs=json.loads((ROOT/'data/peer_pairs.json').read_text())['pairs']
   for pair in pairs:
    await pg.select_option('#peer-pair',pair['id']);assert await pg.locator('#peer-performance svg').get_attribute('data-series')=='2'
@@ -42,13 +42,27 @@ async def main():
    assert pair['name_a'] in await pg.locator('#peer-title').inner_text()
    h=pair['history']
    assert all(math.isclose(x[5],x[3]-x[4],abs_tol=1e-12) for x in h)
+  await pg.select_option('#peer-pair','0005/2888')
+  for h in ['1M','3M','6M','1Y','3Y','5Y','Max']:
+   await pg.select_option('#peer-horizon',h)
+   assert await pg.locator('#peer-performance svg').count()==1
+   assert 'shared observations' in await pg.locator('#peer-coverage').inner_text()
+  await pg.select_option('#peer-horizon','Custom')
+  for id,value in [('peer-from','2026-01-01'),('peer-to','2026-04-01')]:
+   await pg.locator('#'+id).fill(value);await pg.locator('#'+id).dispatch_event('change')
+  assert await pg.locator('#peer-spread svg').count()==1
+  assert '2026-04-01' in await pg.locator('#peer-coverage').inner_text()
+  await pg.locator('#peer-a').fill('1');await pg.locator('#peer-a').dispatch_event('change')
+  assert await pg.locator('#peer-performance svg').count()==0
+  assert 'unavailable' in await pg.locator('#peer-coverage').inner_text()
+  await pg.select_option('#peer-horizon','1Y')
   await pg.locator('.peer-pick[data-pair="9856/3308"]').click();assert await pg.locator('#peer-pair').input_value()=='9856/3308'
   await pg.screenshot(path=str(ROOT/'out/peer_html_preview.png'),full_page=True)
   for chart in ['#peer-performance','#peer-spread']:
    await pg.locator(chart+' svg').hover(position={'x':240,'y':150});assert 'spread' in (await pg.locator('.tt').inner_text()).lower() or 'LIGENT' in await pg.locator('.tt').inner_text()
   assert not errors and not requests,(errors,requests)
   saved=ROOT/'out/_browser_saved_review.html';saved.write_text(await pg.content())
-  other=await b.new_page();other.on('pageerror',lambda e:errors.append(str(e)));await other.goto(saved.as_uri());await other.click('a[data-tab="peers"]');assert await other.locator('#peer-table tbody tr').count()==6
+  other=await b.new_page();other.on('pageerror',lambda e:errors.append(str(e)));await other.goto(saved.as_uri());await other.click('a[data-tab="peers"]');assert await other.locator('#peer-table tbody tr').count()==35
   assert not errors;await b.close();saved.unlink()
-  print('PASS four A/H comparisons and filtered checkboxes, 68-pair roster, expiry cohorts/ranges/selected curves, all six peer charts, math and offline browser-saved reopen')
+  print('PASS four A/H comparisons and filtered checkboxes, 68-pair roster, expiry cohorts/ranges/selected curves, 35 peer comparisons, math and offline browser-saved reopen')
 asyncio.run(main())

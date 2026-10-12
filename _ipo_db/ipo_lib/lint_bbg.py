@@ -34,7 +34,7 @@ PROVEN = {"CP036", "CP037", "GREENSHOE_FACILITY", "OFFERING_GREENSHOE_SHARES_EX"
 # came back "#N/A Invalid Field" and were REMOVED from the Verify tab (the
 # offer price is tied down by the verified day-1 close instead). HK tickers
 # must be built WITHOUT leading zeros — "0606 HK Equity" was rejected.
-AWAIT = {"PX_YEST_CLOSE": "Bloomberg DAPI previous-close field; test on terminal", "HSAHP Index": "new in v15 — verify one cell on the terminal before trusting the column",
+AWAIT = {"CRNCY": "selected security currency; verify on the Bloomberg desk", "PX_YEST_CLOSE": "Bloomberg DAPI previous-close field; test on terminal", "HSAHP Index": "new in v15 — verify one cell on the terminal before trusting the column",
          "CHG_PCT_1D": "new live monitor; verify Bloomberg daily percent units (/100)",
          "LAST_UPDATE_DT": "new live monitor; verify the quote-date field on the desk",
          "LAST_UPDATE": "new live monitor; verify the quote-time field on the desk",
@@ -44,7 +44,7 @@ MNEM = re.compile(r'"([A-Z][A-Z0-9_/ ]{2,40})"')
 
 
 def main():
-    wb = openpyxl.load_workbook(WB)
+    wb = openpyxl.load_workbook(WB, read_only=True)
     n_calls = bad = 0
     warns = set()
     for ws in wb:

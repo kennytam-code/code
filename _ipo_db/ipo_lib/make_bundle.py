@@ -63,7 +63,7 @@ DATA_FILES = [
 ]
 DATA_FILES += [str(p.relative_to(ROOT)) for p in sorted((ROOT / 'data/ah_study_cache').glob('*.json'))]
 DATA_FILES += ['data/batches/'+n+'.json' for n in ['subscription_review','subscription_manual_review','offer_number_review','financial_number_review','cornerstone_review','cornerstone_name_corrections','lockup_events']]
-DATA_FILES += ['data/market_supplement.json','data/batches/ah_market_supplement.json','data/batches/desk_source_review.json','data/desk_chart_data.json','data/peer_pairs.json','assets/desk_monitors.js']
+DATA_FILES += ['data/market_supplement.json','data/batches/ah_market_supplement.json','data/batches/desk_source_review.json','data/desk_chart_data.json','data/peer_pairs.json','data/hk_stock_universe.json','data/peer_views_template.json','assets/desk_monitors.js']
 DATA_FILES += ['data/investor_aliases.json', 'data/pipeline_layout.json', 'data/ah_entitlement_reviews.json', 'assets/fflate.min.js', 'assets/fflate.LICENSE']
 # every pipeline module, so the ONE file can also refresh — not just rebuild
 LIB_MODULES = [

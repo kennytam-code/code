@@ -10,7 +10,7 @@ The Bloomberg BDP cells on the AH tab cannot resolve off-terminal; only the
 Screener/Database chain is evaluated, which is exactly the part that must work
 with no add-in and no macros.
 """
-import json, math, sys
+import json, math, sys, gc
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -19,7 +19,9 @@ import formulas
 ROOT = Path(__file__).resolve().parent.parent
 MINI = ROOT / "out" / "_test_mini.xlsx"
 DB_R0_TEST = 5
-N = 40
+# Twenty deals cover subsector, cornerstone, A/H and force-include cases
+# while keeping repeated offline calculation below the memory budget.
+N = 20
 
 
 def python_reference(target, deals, cfg):
@@ -117,8 +119,17 @@ def main():
 
     import openpyxl as _px
     mini_wb = _px.load_workbook(MINI)
+    gc.collect()
     xl = formulas.ExcelModel().loads(str(MINI)).finish()
-    sol = xl.calculate()
+    def outputs_for(sheet, addresses=None):
+        ending = "]" + sheet.upper() + "'!"
+        return [k for k in xl.cells if ending in k.upper()
+                and (addresses is None or k.rsplit("!", 1)[-1].upper() in addresses)]
+    # Calculate every visible Screener result, with gate cells used by the
+    # assertions. Other reference tabs do not need repeated evaluation.
+    screen_outputs = outputs_for("Screener")
+    gate_outputs = outputs_for("Calc (scoring engine)", {"U1", *[f"B{r}" for r in range(5, N + 5)]})
+    sol = xl.calculate(outputs=screen_outputs + gate_outputs)
     book = MINI.name.upper()
 
     def cell(sheet, ref):
@@ -206,8 +217,8 @@ def main():
     # subscription column — parity still MATCHED because the top comp won on
     # the sector fallback. Assert the gate column on real rows instead.
     # The DEFAULT pick is whatever sits first in the pipeline, and its subsector
-    # need not appear in the 40-deal slice at all (Ligent: "Smart hardware",
-    # zero peers in the first 40). An empty assertion is not a pass and not a
+    # need not appear in the N-deal slice at all (Ligent: "Smart hardware",
+    # zero peers in the test slice). An empty assertion is not a pass and not a
     # failure, so the probe DRIVES the subsector instead of hoping for one.
     from collections import Counter
     def _gate_rows(sub_):
@@ -218,7 +229,7 @@ def main():
         common = Counter(d.get("subsector") for d in deals if d.get("subsector"))
         probe_sub = next((s2 for s2, _n in common.most_common() if _gate_rows(s2)), None)
         if probe_sub:
-            solg = xl.calculate(inputs={f"'[{MINI.name}]SCREENER'!C8": probe_sub})
+            solg = xl.calculate(inputs={f"'[{MINI.name}]SCREENER'!C8": probe_sub}, outputs=gate_outputs)
 
             def cellg(sheet, ref):
                 for k, v in solg.items():
@@ -272,6 +283,10 @@ def main():
         print("  FAIL: formula returned an Excel error")
         ok = False
 
+    # Release prior dispatch graphs before solving a different input case.
+    del sol
+    if "solg" in locals(): del solg
+    gc.collect()
     # --- cornerstone-overlap fixture: prove the rank-by-cornerstone machinery
     # end-to-end. Find two deals in the mini that SHARE an investor, re-solve
     # the workbook with the first as the picked target, and assert the split
@@ -292,7 +307,7 @@ def main():
         # input keys are CASE-SENSITIVE on the book name — the display keys are
         # upper-cased but overrides must use the file's real name
         sol2 = xl.calculate(inputs={
-            f"'[{MINI.name}]SCREENER'!B5": a["name"]})
+            f"'[{MINI.name}]SCREENER'!B5": a["name"]}, outputs=outputs_for("Calc (scoring engine)", {"U1", f"H{5 + deals.index(b)}"}))
 
         def cell2(sheet, ref):
             for k, v in sol2.items():
@@ -313,11 +328,13 @@ def main():
             ok = False
     else:
         print("  CS fixture  : no overlapping pair inside the mini slice — skipped")
+    if "sol2" in locals(): del sol2
+    gc.collect()
     # --- P/E-target probe: the comp table must survive a target WITH a P/E.
     # pe_ipo blanks hold Bloomberg-fallback TEXT; LOG10(text/x) is #VALUE!, and
     # that only fires when D13 carries a number — the default fixture (no P/E)
     # sailed past it while every pipeline pick with an expected multiple broke.
-    sol3 = xl.calculate(inputs={f"'[{MINI.name}]SCREENER'!C13": 30})
+    sol3 = xl.calculate(inputs={f"'[{MINI.name}]SCREENER'!C13": 30}, outputs=screen_outputs)
 
     def cell3(sheet, ref):
         for k, v in sol3.items():
@@ -353,12 +370,14 @@ def main():
     if not pe_ok:
         ok = False
 
+    del sol3
+    gc.collect()
     # --- A-share filter probe: with the hard filter ON, every RENDERED comp
     # row must be an A/H deal, and slots past the last valid comp must be
     # BLANK. The gated -999999 scores once leaked into the tail as phantom
     # non-A comps ("i set with a share then why those without still showing").
     r_filter = R["A-share filter"]
-    sol4 = xl.calculate(inputs={f"'[{MINI.name}]SCREENER'!B{r_filter}": "With A-share"})
+    sol4 = xl.calculate(inputs={f"'[{MINI.name}]SCREENER'!B{r_filter}": "With A-share"}, outputs=outputs_for("Screener", {"B5", *[f"B{r}" for r in range(21,36)]}))
 
     def cell4(sheet, ref):
         for k, v in sol4.items():
@@ -385,15 +404,17 @@ def main():
     if not af_ok:
         ok = False
 
+    del sol4
+    gc.collect()
     # --- force-include probe: a typed code must pin that deal to comp #1,
     # even THROUGH the A-share filter it would otherwise fail
-    tgt0 = cell("SCREENER", "B5")
+    tgt0 = target_name
     victim = next((d for d in reversed(deals)
                    if d["name"] != tgt0 and not d.get("a_share_code")), None)
     if victim:
         sol5 = xl.calculate(inputs={
             f"'[{MINI.name}]SCREENER'!D17": victim["code"],
-            f"'[{MINI.name}]SCREENER'!B{r_filter}": "With A-share"})
+            f"'[{MINI.name}]SCREENER'!B{r_filter}": "With A-share"}, outputs=outputs_for("Screener", {"B21"}))
 
         def cell5(sheet, ref):
             for k, v in sol5.items():

@@ -1,3 +1,17 @@
+## 13 October 2026 — Excel repair and selectable peer horizons
+
+Native Excel confirmed a content-repair warning. Seven inline dropdown lists exceeded Excel’s 255-character limit (A/H comparison codes and lock-up comparison codes). They now reference hidden ranges; the corrected test copy opened without recovery. Validate inline list length on every release, including charts’ comparison selectors.
+
+A/H opens in Stored mode through 2 October. E4 = Bloomberg requests live A/H/FX quotes and listing-to-TODAY histories. The banner states the active mode. The seven-year roster remains 68 pairs; the underlying database and screener remain 524 IPOs.
+
+Peer Trades: B4 / E4 are independent HK codes, H4 is Stored / Bloomberg, K4 is 1M / 3M / 6M / 1Y / 3Y / 5Y / Max / Custom. H5 / K5 specify custom dates. Max and custom requests have a ten-year chart capacity. Bloomberg accepts codes outside the IPO database and saved watchlist. The HKEX catalog contains 2,832 equity / REIT counters; 66 stocks have saved histories supporting 35 preset comparisons. HTML accepts any saved-stock combination and shows a clear message where no snapshot exists; it cannot call Bloomberg.
+
+Both returns rebase at the first common observed session within the chosen calendar horizon; spread = 100 × (A return − B return), in percentage points. No interpolation over missing stock prices. Quotes show each counter’s currency and individual stored quote date. Stored daily changes use each stock’s own last two observed closes. The display states actual common coverage, including recent listings / stale snapshots.
+
+Use tools/create_market_template.mjs --peers to author the small peer layout. data/peer_views_template.json is required in standalone bundles. Keep long code lists range-backed. tools/test_peer_horizons.py tests the shipped scalar formula logic with deliberately missing sessions and headered Bloomberg fixtures; those responses are simulated. Real Bloomberg add-in execution remains a terminal check.
+
+Resource constraint: do one heavy operation at a time. Full regeneration hit the 512 MB cap; patch_peer_workbook.py grafts the Artifact-authored layout into the existing file with less than 512 MB peak memory and preserves unrelated sheet parts. A/H helper capacity is 2,200 rows (largest stored history: 1,683); peer capacity is 3,000 rows. Audit readers stream the workbook; the screener test uses a 20-deal fixture covering A/H, shared cornerstones and multiple subsectors, evaluates the visible Screener / required scoring outputs, and releases dispatch graphs between input cases. Full-record numeric and formula-binding audits remain in place. Avoid loading the full workbook twice merely to create screenshots. Verified public filing page caches may be regenerated from the retained source-URL / SHA manifest; audit evidence remains in data/batches.
+
 # HK IPO Database — MAINTENANCE RUNBOOK
 
 Written for two readers: the analyst (Kenny, on the Nomura desk) and a future

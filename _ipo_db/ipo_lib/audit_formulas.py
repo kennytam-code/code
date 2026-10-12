@@ -69,7 +69,7 @@ def field_of(letter):
 def main():
     if not WB.exists():
         sys.exit(f"no workbook at {WB} — run build_xlsx.py first")
-    wb = openpyxl.load_workbook(WB)
+    wb = openpyxl.load_workbook(WB, read_only=True)
     ws, calc = wb["Screener"], wb["Calc (scoring engine)"]
     bad, checked = [], 0
 
@@ -99,7 +99,7 @@ def main():
     colA = [str(scr.cell(r, 1).value or "") for r in range(1, scr.max_row + 1)]
     for lab in LIVE_PANEL:
         if not any(v.startswith(lab) for v in colA):
-            bad += 1
+            bad.append(f"Screener live-panel row {lab!r} is missing")
             print(f"  FAIL Screener: live-panel row {lab!r} is missing — "
                   f"a block written below it overwrote the row")
 

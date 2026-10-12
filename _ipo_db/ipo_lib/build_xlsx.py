@@ -2485,6 +2485,11 @@ def main(limit=None, out=None):
     dest = Path(out) if out else OUT
     dest.parent.mkdir(exist_ok=True, parents=True)
     wb.save(dest)
+    # Release the large formula grids before the independent OOXML cache pass.
+    wb.close()
+    for saved_sheet in wb:saved_sheet._cells.clear()
+    import gc
+    gc.collect()
     # HK stock codes are TEXT ("0300" must keep its leading zero), which makes
     # Excel paint a green "number stored as text" triangle on every row. The
     # cure is the ignoredErrors element — openpyxl accepts the attribute but
