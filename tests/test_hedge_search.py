@@ -59,7 +59,7 @@ class HedgeSearchTests(unittest.TestCase):
     def tearDown(self):
         plt.close('all')
 
-    def test_every_eligible_single_competes_with_basket_methods(self):
+    def test_every_eligible_single_is_evaluated_alongside_basket_methods(self):
         specs = set(self.result['cv_detail']['pc_spec'])
         expected = {'single:' + c for c in self.dataset['prices'].columns[1:]}
         self.assertTrue(expected <= specs)
@@ -156,7 +156,9 @@ class HedgeSearchTests(unittest.TestCase):
         changed['prices'].iloc[-21:, 1] = np.nan
         first, second = run(baseline), run(changed)
         oldest = first['nested_validation'].iloc[-1]
-        changed_oldest = second['nested_validation'].iloc[-1]
+        second_nested = (second['prior_nested_validation'] if second.get('fallback_reason')
+                         else second['nested_validation'])
+        changed_oldest = second_nested.iloc[-1]
         for key in ('lookback', 'pc_spec', 'basket_size'):
             self.assertEqual(oldest[key], changed_oldest[key])
         self.assertAlmostEqual(oldest['r2_oos'], changed_oldest['r2_oos'])
@@ -174,9 +176,19 @@ class HedgeSearchTests(unittest.TestCase):
         self.assertEqual(result['search']['single_instruments_scored'], 5)
         self.assertIsNotNone(result['best_single_hedge'])
 
-    def test_quick_rehedge_preserves_a_single_configuration(self):
-        result = run(basket_size_options=(1,))
-        self.assertTrue(result['params']['pc_spec'].startswith('single:'))
+    def test_quick_rehedge_preserves_the_primary_basket_configuration(self):
+        result = self.result
+        self.assertEqual(result['primary_hedge_family'], 'basket')
+        with contextlib.redirect_stdout(io.StringIO()):
+            quick = engine['quick_rehedge']('2889 TT Equity', self.dataset, result,
+                                           show_plots=False, rolling_oos=False)
+        self.assertEqual(result['params']['pc_spec'], quick['params']['pc_spec'])
+        self.assertEqual(result['weights'].index.tolist(), quick['weights'].index.tolist())
+        self.assertFalse(quick['params']['broad_search'])
+
+    def test_explicitly_pinned_single_reference_can_still_be_refitted(self):
+        result = run(basket_size_options=(1,), broad_search=False,
+                     pc_options=('single:2910 TT Equity',))
         with contextlib.redirect_stdout(io.StringIO()):
             quick = engine['quick_rehedge']('2889 TT Equity', self.dataset, result,
                                            show_plots=False, rolling_oos=False)
@@ -187,11 +199,14 @@ class HedgeSearchTests(unittest.TestCase):
     def test_monthly_candidates_are_indicative_and_include_both_forms(self):
         result = run(sample_window='1m')
         self.assertEqual(result['validation_mode'], 'IN-SAMPLE')
+        self.assertEqual(result['primary_hedge_family'], 'basket')
+        pd.testing.assert_series_equal(result['weights'], result['best_basket_hedge']['weights'])
         for family in ('basket', 'single_stock', 'single_etf'):
             item = result['hedge_alternatives'][family]
             self.assertIn('INDICATIVE', item['status'])
             self.assertTrue(np.isnan(item['unseen_r2']))
             self.assertFalse(item['qualified'])
+            self.assertEqual(item['reference_only'], family.startswith('single'))
 
     def test_short_history_with_many_names_caps_requested_pca_dimensions(self):
         sample = data()
@@ -253,6 +268,11 @@ class HedgeSearchTests(unittest.TestCase):
             self.assertIn('Single ETF', text)
             alternatives = pd.read_csv(Path(path).with_suffix('').as_posix() + '_alternatives.csv')
             self.assertEqual(set(alternatives['candidate_type']), {'basket', 'single_stock', 'single_etf'})
+            self.assertTrue(alternatives.loc[alternatives['candidate_type'].str.startswith('single'),
+                                             'reference_only'].all())
+            self.assertFalse(alternatives.loc[alternatives['candidate_type'].eq('basket'),
+                                              'reference_only'].any())
+            self.assertIn('single stocks and ETFs are references', '\n'.join(p.text for p in document.paragraphs))
 
     def test_history_comparison_contains_both_forms_for_each_window(self):
         with contextlib.redirect_stdout(io.StringIO()):
@@ -262,6 +282,8 @@ class HedgeSearchTests(unittest.TestCase):
         self.assertEqual(set(table['period']), {'1y', '6m', '3m', '1m'})
         for period, rows in table.groupby('period'):
             self.assertEqual(set(rows['candidate_type']), {'basket', 'single_stock', 'single_etf'})
+            self.assertTrue(rows.loc[rows['candidate_type'].str.startswith('single'), 'reference_only'].all())
+            self.assertGreaterEqual(len(comparison['diagnostic_results'][period]['weights']), 2)
         rejected = table[~table['qualified'] & ~table['status'].str.contains('INDICATIVE')]
         self.assertTrue(rejected['weights_per_100'].eq('').all())
 
@@ -358,6 +380,17 @@ class HedgeSearchTests(unittest.TestCase):
         self.assertEqual(set(partial['fold']), {1, 2})
         self.assertFalse(result['trade_eligible'])
         self.assertTrue(result['trade_weights'].empty)
+        self.assertGreaterEqual(len(result['weights']), 2)
+        self.assertIn('unvalidated reference', result['fallback_reason'])
+        self.assertTrue(np.isnan(result['ticket']['quality_r2']))
+        self.assertFalse(result['best_basket_hedge']['qualified'])
+        with tempfile.TemporaryDirectory() as folder:
+            with contextlib.redirect_stdout(io.StringIO()):
+                path = engine['export_result'](result, report_text='Unvalidated basket regression case.', out_dir=folder)
+            from docx import Document
+            text = '\n'.join(p.text for p in Document(path).paragraphs)
+            self.assertIn('IN-SAMPLE ONLY', text)
+            self.assertIn('unvalidated reference', text)
         with self.assertRaisesRegex(RuntimeError, 'All CV folds failed'):
             run(sample, broad_search=False, pc_options=('single:2910 TT Equity',),
                 basket_size_options=(1,))
@@ -391,7 +424,7 @@ class HedgeSearchTests(unittest.TestCase):
         self.assertNotIn('trade it at full size', report)
         self.assertNotIn('✓ generalizes', report)
         self.assertNotIn('weighting three years ago', report)
-        self.assertIn('not a recommendation', report)
+        self.assertIn('CANDIDATE RECIPE — NOT APPROVED', report)
         self.assertEqual(result['ticket']['worst_window_r2'],
                          result['nested_validation']['r2_oos'].min())
         self.assertEqual(result['ticket']['worst_window_source'], 'nested selection procedure')
@@ -422,13 +455,84 @@ class HedgeSearchTests(unittest.TestCase):
         self.assertIsNotNone(result['best_basket_hedge'])
         self.assertIsNotNone(result['best_single_etf_hedge'])
 
-    def test_engine_charts_draw_for_single_winner_without_selection_pca(self):
+    def test_engine_charts_draw_for_explicitly_pinned_single_reference(self):
         with patch.object(plt, 'show'):
-            result = run(self.dataset, basket_size_options=(1,), show_plots=True)
+            result = run(self.dataset, basket_size_options=(1,), show_plots=True,
+                         broad_search=False, pc_options=('single:2910 TT Equity',))
         self.assertEqual(len(result['weights']), 1)
         self.assertEqual(result['params']['pc_spec'][:7], 'single:')
         for figure_number in plt.get_fignums():
             plt.figure(figure_number).canvas.draw()
+
+    def test_stronger_single_reference_cannot_override_primary_basket(self):
+        result = run(gross_penalty=1., basket_size_options=(1, 5))
+        summary = result['cv_summary']
+        basket = summary.loc[summary['family'].eq('basket')]
+        single = summary.loc[summary['family'].str.startswith('single')]
+        self.assertGreater(single['composite'].max(), basket['composite'].max())
+        self.assertEqual(result['primary_hedge_family'], 'basket')
+        self.assertGreaterEqual(len(result['weights']), 2)
+        pd.testing.assert_series_equal(result['weights'], result['best_basket_hedge']['weights'])
+        self.assertFalse(result['nested_validation']['pc_spec'].str.startswith('single:').any())
+        for weights in result['nested_validation']['weights']:
+            self.assertGreaterEqual(len(weights), 2)
+        for family in ('single', 'single_stock', 'single_etf'):
+            self.assertTrue(result['hedge_alternatives'][family]['reference_only'])
+        self.assertEqual(result['trade_eligible'], result['best_basket_hedge']['qualified'])
+
+    def test_holdout_selects_basket_without_using_holdout_target_returns(self):
+        sample = data(n=76)
+        first = run(sample)
+        self.assertEqual(first['validation_mode'], 'HOLDOUT')
+        self.assertGreaterEqual(len(first['weights']), 2)
+        returns = np.log(sample['prices'] / sample['prices'].shift()).fillna(0)
+        returns.iloc[-15:, 0] = -returns.iloc[-15:, 0] + .005
+        changed = {**sample, 'prices': 100*np.exp(returns.cumsum())}
+        second = run(changed)
+        self.assertEqual(first['params']['pc_spec'], second['params']['pc_spec'])
+        pd.testing.assert_series_equal(first['weights'], second['weights'])
+        self.assertEqual(second['trade_eligible'], second['best_basket_hedge']['qualified'])
+        self.assertTrue(second['best_single_hedge']['reference_only'])
+
+    def test_no_basket_means_no_implicit_single_fallback(self):
+        with self.assertRaisesRegex(ValueError, 'primary hedge is a basket'):
+            run(basket_size_options=(1,))
+        sample = data()
+        sample['prices'] = sample['prices'].iloc[:, :2]
+        with self.assertRaisesRegex(ValueError, 'No usable primary basket'):
+            run(sample)
+
+    def test_required_instrument_cannot_be_ignored_or_dropped(self):
+        with self.assertRaisesRegex(ValueError, 'required instruments cannot be ignored'):
+            run(force_include=['9999 TT Equity'])
+        sample = data()
+        sample['prices'].iloc[-1, 3] = np.nan
+        with self.assertRaisesRegex(RuntimeError, 'All CV folds failed'):
+            run(sample, force_include=['006208 TT Equity'])
+        sample['prices'].iloc[:, 3] = np.nan
+        with self.assertRaisesRegex(ValueError, 'required instruments cannot be dropped'):
+            run(sample, force_include=['006208 TT Equity'])
+
+    def test_absent_etf_is_unavailable_instead_of_relabelled_stock(self):
+        sample = data()
+        sample['prices'] = sample['prices'].drop(columns=['0050 TT Equity', '006208 TT Equity'])
+        result = run(sample)
+        self.assertIsNone(result['best_etf'])
+        self.assertIsNone(result['best_single_etf_hedge'])
+        self.assertIsNotNone(result['best_single_stock_hedge'])
+        self.assertIn('No eligible correlation-picked ETF reference', engine['transcript_text']())
+
+    def test_single_reference_does_not_change_primary_basket_grade(self):
+        for objective in ('variance', 'tracking'):
+            grade, reasons = engine['_ticket_verdict'](
+                .7, .5, .02, .9, False, .7, .8, False,
+                vol_red=.4, worst_vol_red=.3, objective=objective,
+                ref_vol_pca=.4, ref_vol_simple=.5)
+            self.assertTrue(grade.startswith('✓'))
+            self.assertIn('reference', ' '.join(reasons))
+        self.assertNotIn('prefer the simple hedge', self.report)
+        self.assertNotIn('take the ETF', self.report)
+        self.assertIn('basket remains primary', self.report)
 
     def test_notebook_engine_matches_script_and_every_cell_parses(self):
         notebook_path = ROOT / 'PCA_fixed.ipynb'

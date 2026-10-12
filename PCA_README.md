@@ -1,6 +1,6 @@
 # PCA hedge finder
 
-Compare a basket, single stock and single ETF for the same target and past history window using the existing form. Candidates are selected using earlier training/CV data; later validation is reported separately. Negative headline unseen tracking R² cannot qualify a supported hedge.
+Find a primary basket hedge and compare it with single-stock and single-ETF references for the same target and past history window using the existing form. Basket candidates are selected using earlier training/CV data; later validation is reported separately. Negative headline unseen tracking R² cannot qualify a supported hedge. A stronger single reference never replaces the basket.
 
 ## Setup on another computer
 
@@ -28,9 +28,13 @@ Open `pca_hedge_v103_full.ipynb` and run the engine cell, or run the existing sc
 %run pca_hedge_v103_full.py
 ```
 
-After updating, restart the notebook kernel and run the engine cell again. The run prints `Engine revision: 2026-10-12-training-and-scale`; this confirms that the new engine is loaded. The form opens automatically. Enter `2889 TT Equity`, load or download data, choose the past history window, then press **Run**. A fresh download is preferable for the reported issue because old caches can contain Bloomberg-generated inactive-day fills.
+After updating, restart the notebook kernel and run the engine cell again. The run prints `Engine revision: 2026-10-12-basket-primary`; this confirms that the new engine is loaded. The form opens automatically. Enter `2889 TT Equity`, load or download data, choose the past history window, then press **Run**. A fresh download is preferable for the reported issue because old caches can contain Bloomberg-generated inactive-day fills.
 
-The report and Word export include the best basket, single stock and single ETF, with hedge dollars per $100 target and evidence status. Default selection prioritizes volatility reduction; negative headline unseen tracking R² prevents qualification. The optional tracking objective retains additional conservative heuristic gates.
+The main recipe, nested validation, recency comparison and next-best recipes select among baskets with at least two instruments. Single-stock and single-ETF candidates are evaluated separately as references, even if their scores are higher. Their relative performance cannot replace the basket or change its grade. A rejected basket stays rejected; a single reference cannot approve it. Default selection prioritizes volatility reduction; negative headline unseen tracking R² prevents qualification. The optional tracking objective retains additional conservative heuristic gates.
+
+Keep at least one basket size of 2 or more in the existing form. A one-instrument universe cannot produce a basket and gets an explicit diagnostic. `broad_search=False` preserves an explicitly pinned configuration for code users and `quick_rehedge`; it is not an automatic fallback to a single. A missing required `force_include` instrument now stops the constrained fit instead of silently disappearing. An unavailable ETF is reported as unavailable, rather than relabelling a stock as an ETF.
+
+If single references complete CV but no basket does, the engine can return an **unvalidated fitted basket reference** when the training data support one. It keeps `trade_eligible=False`, empty recommendation weights, the failed CV rows and earlier nested diagnostics. A fitted reference is not a successful validation result.
 
 Exports default to `hedge_exports` in the working folder; caches default to `hedge_data_cache`. Override `HEDGE_EXPORT_DIR`/`HEDGE_CACHE_DIR`, or select another folder in the form. A mapped network drive is unnecessary.
 
@@ -49,7 +53,7 @@ comparison['alternatives_summary']
 comparison['alternative_weights_table'].to_csv('2889_history_weights.csv', index=False)
 ```
 
-Use the appropriate market-cap floor consistently in download and analysis. The notebook's optional comparison cell uses the download's recorded floor. Each period includes basket, stock and ETF alternatives when available. Failed alternatives have blank recommendation weights; full results remain in `diagnostic_results`. One month generally supports only an **indicative** fitted candidate, with no unseen score. Longer windows may support holdout, CV or nested validation depending on settings and available observations.
+Use the appropriate market-cap floor consistently in download and analysis. The notebook's optional comparison cell uses the download's recorded floor. Each period's main row is the basket; stock and ETF references appear separately when available. Their records include `reference_only`. Failed alternatives have blank recommendation weights; full results remain in `diagnostic_results`. One month generally supports only an **indicative** fitted basket, with no unseen score. Longer windows may support holdout, CV or nested validation depending on settings and available observations.
 
 ## Missing returns and large universes
 
@@ -63,7 +67,7 @@ The ticket's headline, volatility reduction and worst-window score use nested ev
 
 ## What best means
 
-Every eligible single instrument competes. Requested baskets use PCA exposure ranking, absolute correlation ranking and greedy forward selection that considers complementary exposures. Defaults try basket sizes 2, 3, 5 and 7 alongside singles. Forced names, exclusions, time-zone and size settings still apply.
+Every eligible single instrument is evaluated for reference. Requested baskets compete with one another using PCA exposure ranking, absolute correlation ranking and greedy forward selection that considers complementary exposures. Defaults try basket sizes 2, 3, 5 and 7. Forced names, exclusions, time-zone and size settings still apply. No basket is silently reduced to one instrument.
 
 The default inner-CV score is:
 
@@ -86,12 +90,14 @@ Risk uses the coefficient-only spread `target - X @ weights`; the intercept is n
 ## Result fields
 
 - `best_basket_hedge`, `best_single_hedge`, `best_single_stock_hedge`, `best_single_etf_hedge`: candidate weights, fitted/unseen scores, evidence and `qualified`. Unavailable families return `None`.
+- `primary_hedge_family`: `basket` for the default search. Single entries in `hedge_alternatives` have `reference_only=True`; their evidence status is not the main recommendation.
 - `trade_eligible`, `trade_weights`: overall screen and weights; rejected/unvalidated runs have empty trade weights.
 - `candidate_weights`, legacy `weights`: fitted reference weights, including failed candidates.
 - `nested_unseen_returns`, `bootstrap_ci`, `selected_config_bootstrap_ci`: auditable errors and separately identified intervals.
 - `search`, `cv_summary`, `cv_detail`: search scope and selection diagnostics.
 - `training_data_diagnostics`, `evaluation_data_diagnostics`: affected calendar windows, retained rows, missing dates and acceptance.
 - `engine_revision`: the loaded engine version.
+- `fallback_reason`, `prior_nested_validation`: explain the unvalidated fitted-basket fallback and retain earlier nested diagnostics separately from its unavailable headline evidence.
 
 Legacy `best_single`/`best_etf` remain correlation-picked benchmarks; use the new `*_hedge` fields for the broader search. Stock/ETF categories use the instrument mappings. A manually supplied ETF absent from those mappings may be categorized as a stock.
 
@@ -101,6 +107,6 @@ Legacy `best_single`/`best_etf` remain correlation-picked benchmarks; use the ne
 python -m unittest discover -s tests -p test_hedge_search.py -v
 ```
 
-The 32 offline tests include 1,132-candidate short-history coverage, sparse target gaps, rejection of missing hedge test returns, empty nested evidence, consistent rejected-report wording, and numerical equivalence of the faster PCA/single-feature ridge calculations. They also cover competition, matched validation windows, no use of future test returns in prior selection, R² arithmetic, actual-spread risk, interval association, negative-result rejection, price handling, caps, caches, the form, notebook consistency, charts and Word/CSV export. Synthetic ticker labels are not actual 2889 market data.
+The 39 offline tests include stronger-single reference cases that must keep a basket primary, holdout chronology, constrained required instruments, an absent ETF, single-only settings, and pinned rehedges. They also include 1,132-candidate short-history coverage, sparse target gaps, rejection of missing hedge test returns, empty nested evidence, consistent rejected-report wording, and numerical equivalence of the faster PCA/single-feature ridge calculations. Existing checks cover matched validation windows, no use of future test returns in prior selection, R² arithmetic, actual-spread risk, interval association, negative-result rejection, price handling, caps, caches, the form, notebook consistency, charts and Word/CSV export. Synthetic ticker labels are not actual 2889 market data.
 
 Live 2889 history and the other computer's Bloomberg session were unavailable. Verify that particular history with a fresh download there. The engine uses adjusted prices and weighted log returns as a P&L approximation. Explicit FX conversion, borrow, fees, financing and turnover costs are outside the optimization. Historical support is evidence for reference, not a guarantee of future performance.

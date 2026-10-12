@@ -240,7 +240,7 @@ import textwrap as _textwrap
 
 RIDGE_ALPHAS = np.logspace(-4, 2, 25)
 MIN_RETURN_STD = 1e-12
-PCA_REVISION = '2026-10-12-training-and-scale'
+PCA_REVISION = '2026-10-12-basket-primary'
 MIN_TRAIN_COVERAGE = 0.90
 
 
@@ -2714,9 +2714,8 @@ def _tracking_ticket_verdict(quality, worst_r2, overfit_gap, min_sim, trend,
                            'trust the newest reading, not the mean')
     if (not np.isnan(ref_pca) and not np.isnan(ref_simple)
             and ref_simple >= ref_pca):
-        warn = True
-        reasons.append('a single instrument matches the basket OOS — prefer '
-                       'the simple hedge (see [2])')
+        reasons.append('a single-instrument reference matches the basket OOS; '
+                       'the primary choice remains the basket (see [2])')
     grade = ('✗ DO NOT TRADE AS-IS' if fail
              else ('△ TRADE AT REDUCED SIZE' if warn else '✓ TRADE'))
     if not reasons:
@@ -2762,8 +2761,8 @@ def _ticket_verdict(quality, worst_r2, overfit_gap, min_sim, trend,
     if (ref_vol_pca is not None and ref_vol_simple is not None
             and np.isfinite(ref_vol_pca) and np.isfinite(ref_vol_simple)
             and ref_vol_simple >= ref_vol_pca):
-        cautions.append('a single instrument matched basket volatility reduction '
-                        'on the same unseen windows; compare the simpler hedge')
+        reasons.append('a single-instrument reference matched basket volatility '
+                       'reduction on the same unseen windows; the basket remains primary')
     reasons.extend(cautions)
     return ('△ RISK REDUCTION WITH CAUTIONS' if cautions
             else '✓ RISK REDUCTION SUPPORTED'), reasons
@@ -3216,8 +3215,8 @@ def _alternative_evidence(weights, raw_r2, ys, residuals, spreads, ann,
 
 def _show_hedge_comparison(alternatives, selected_family, search):
     rows = []
-    labels = {'basket': 'Best basket', 'single_stock': 'Best single stock',
-              'single_etf': 'Best single ETF'}
+    labels = {'basket': 'Best basket', 'single_stock': 'Best single stock · reference',
+              'single_etf': 'Best single ETF · reference'}
     for family, label in labels.items():
         item = alternatives.get(family)
         if item is None:
@@ -3233,15 +3232,16 @@ def _show_hedge_comparison(alternatives, selected_family, search):
                      f'{q:.3f}' if np.isfinite(q) else '—',
                      f"{risk['vol_reduction']*100:.1f}%" if risk else '—', item['status']])
     _section('BEST BASKET AND SINGLE-INSTRUMENT HEDGES',
-             'same history, constraints and validation windows')
+             'basket is primary; single instruments are references')
     _print_table(['CANDIDATE', 'HEDGE PER $100 TARGET', 'FITTED R²', 'UNSEEN R²',
                   'UNSEEN VOL CUT', 'EVIDENCE'], rows,
                  note='Winners are selected using training/CV data. Unseen scores test each '
                       'selection procedure, with instruments and weights refitted before each '
                       'test window; they do not backtest today’s fixed weights. Failed candidates '
-                      'remain references and are excluded from recommendations.')
+                      'remain references and are excluded from recommendations. '
+                      'Single instruments do not replace the primary basket.')
     _P(f"  Search: {search['single_instruments_scored']} single instruments scored; "
-       f"{search['configurations_scored']} complete configurations; "
+       f"{search['configurations_scored']} configurations scored; "
        'basket methods: ' + ', '.join(search['basket_methods']) + '.')
 
 
@@ -3252,7 +3252,7 @@ def find_best_hedge(
     session=None,
     lookback_options=(126, 252),
     pc_options='auto',            # 'auto' or a list of ints, e.g. [3, 5, 8]
-    basket_size_options=(1, 2, 3, 5, 7),
+    basket_size_options=(2, 3, 5, 7),
     cv_test_window=42,
     cv_n_folds=5,
     outer_folds=3,                # [Fix 20] nested outer validation windows
@@ -3331,10 +3331,14 @@ def find_best_hedge(
                                   # report can say what it inherited and what
                                   # it did not re-validate
     hedge_objective='variance',   # 'variance' (risk reduction) or 'tracking' (strict R2)
-    broad_search=True,            # all eligible singles + PCA/correlation/forward baskets
+    broad_search=True,            # select a basket; score all eligible singles as references
 ):
     if hedge_objective not in ('variance', 'tracking'):
         raise ValueError("hedge_objective must be 'variance' or 'tracking'")
+    if broad_search and not any(int(size) >= 2 for size in basket_size_options):
+        raise ValueError('The primary hedge is a basket. Include a basket size >= 2; '
+                         'single stocks and ETFs are evaluated as references. '
+                         'Use broad_search=False only for an explicitly pinned configuration.')
     outer_window = outer_window or cv_test_window
     _kv_reset()             # [Fix 114] never inherit a failed run's rows
     transcript_reset()      # [Fix 115] this run's text copy starts empty
@@ -3462,9 +3466,9 @@ def find_best_hedge(
     forced, fi_unres = _resolve_force_include(force_include, prices.columns,
                                               target_ticker)
     if fi_unres:
-        _P(f"  ⚠ force_include: {fi_unres} not in the downloaded data — "
-              f"re-run download_hedge_data(..., force_include=...) to fetch "
-              f"them (they will be ignored this run)")
+        raise ValueError(f'force_include entries {fi_unres} are not in the downloaded data. '
+                         'Re-run download_hedge_data(..., force_include=...) to fetch them; '
+                         'required instruments cannot be ignored.')
     if forced:
         _P(f"  Force-include active: {', '.join(forced)} will be held in "
               f"every basket (CV folds, nested windows, and final recipe)")
@@ -3587,9 +3591,8 @@ def find_best_hedge(
     # loudly instead of silently forcing NaNs into every window
     lost = [c for c in forced if c not in prices.columns]
     if lost:
-        _P(f"  ⚠ force_include: {', '.join(lost)} dropped — no valid "
-              f"price history in the window; cannot be forced into baskets")
-        forced = [c for c in forced if c in prices.columns]
+        raise ValueError(f'force_include instruments {lost} have no valid price history '
+                         'in this window; required instruments cannot be dropped.')
 
     # [Fix 26/31/32/33] Timezone restriction by CLOSING-TIME GAP, applied to
     # COLUMNS so one global download supports both restricted and
@@ -3812,9 +3815,12 @@ def find_best_hedge(
         so CV metrics measure the basket that would actually be traded; if
         more names are forced than basket_size, the basket grows to hold
         them all."""
-        f_ok = [c for c in forced if c in ok]
+        if any(c not in ok for c in forced):
+            return []  # A required instrument must never silently disappear.
+        f_ok = list(forced)
         rest = [t for t in ranked if t not in f_ok]
-        return f_ok + rest[:max(0, bsize - len(f_ok))]
+        basket = f_ok + rest[:max(0, bsize - len(f_ok))]
+        return [] if int(bsize) >= 2 and len(basket) < 2 else basket
 
     training_diagnostics, training_notices = [], set()
     evaluation_diagnostics, evaluation_notices = [], set()
@@ -3909,6 +3915,9 @@ def find_best_hedge(
                          if val_mode in ('HOLDOUT', 'IN-SAMPLE') else min_train_rows)
         ctx = _training_context(train_rets, required_rows)
         tr, ok, u = ctx['tr'], ctx['ok'], ctx['u']
+        if any(c not in ok for c in forced):
+            raise RuntimeError('Required instruments lack complete training returns: '
+                               + ', '.join(c for c in forced if c not in ok))
         rank, n_pc, pca, lds = ctx['corr_rank'], 0, None, pd.DataFrame()
         if str(pc_spec).startswith('single:'):
             ticker = str(pc_spec)[7:]
@@ -3982,6 +3991,8 @@ def find_best_hedge(
     def _search_metadata(summary, detail):
         specs = detail['pc_spec'].astype(str)
         return {'broad_search': broad_search,
+                'selection_scope': 'basket' if broad_search else 'pinned configuration',
+                'single_role': 'reference',
                 'single_instruments_scored': int(specs[specs.str.startswith('single:')].nunique()),
                 'configurations_scored': len(summary),
                 'basket_methods': (['PCA', 'correlation', 'forward selection']
@@ -4196,7 +4207,8 @@ def find_best_hedge(
     # Too little data for the walk-forward machinery: fit once, score the
     # held-out tail if there is one, print an honest mini-report in the
     # [Fix 79] layout, and return the same result-dict shape as a full run.
-    if val_mode in ('HOLDOUT', 'IN-SAMPLE'):
+    def _short_sample_result(val_mode, hold_rows, fallback_reason=None,
+                             cv_summary=None, cv_detail=None, prior_nested=None):
         fit_rets = rets.iloc[:rows - hold_rows - (purge if hold_rows else 0)]
         short_context = _training_context(fit_rets, max(5, max(basket_size_options) + 2))
         fit_rets = short_context['tr']
@@ -4229,9 +4241,16 @@ def find_best_hedge(
         if not short_trials:
             raise ValueError(f'Cannot fit on {len(fit_rets)} rows: '
                              + '; '.join(short_errors[:3]))
-        _, _ps0, _bs0, fitted = max(short_trials, key=lambda item: (item[0], -item[2]))
+        primary_trials = ([t for t in short_trials if len(t[3][2]) >= 2]
+                          if broad_search else short_trials)
+        if not primary_trials:
+            raise ValueError('No usable primary basket under these settings. '
+                             'At least two eligible instruments with complete training returns '
+                             'are required; single references cannot replace the basket.')
+        _, _ps0, _bs0, fitted = max(primary_trials, key=lambda item: (item[0], -item[2]))
         (_, s_rank, s_basket, s_reg, s_r2_in, s_resid, s_npc, _, _) = fitted
-        _P('  Short sample: configuration selected on training data only; '
+        _P(('  Fitted basket reference: ' if fallback_reason else '  Short sample: ')
+           + 'configuration selected on training data only; '
            'the holdout, if available, is scored afterwards. In-sample choices '
            'are indicative, not independently validated.')
         s_w = pd.Series(s_reg.coef_, index=s_basket)
@@ -4248,8 +4267,8 @@ def find_best_hedge(
         # single-instrument comparison on the SAME basis
         _okc = fit_rets.columns[(fit_rets.notna().all())
                                 & (fit_rets.std() > MIN_RETURN_STD)]
-        _pool = [c for c in _okc if c != target_ticker
-                 and c not in set(pf_legs)]
+        _pool = [c for c in _okc if c in short_context['u']
+                 and (not forced or forced == [c])]
         _acorr = (fit_rets[_pool].corrwith(fit_rets[target_ticker]).abs()
                   if _pool else pd.Series(dtype=float))
         _etf_p = [c for c in _pool if _is_etf(c)]
@@ -4284,7 +4303,7 @@ def find_best_hedge(
         else:
             grade = '? IN-SAMPLE ONLY — DO NOT SIZE OFF THIS'
             reasons = [
-                f'{rows} rows: no out-of-sample evidence is possible',
+                fallback_reason or f'{rows} rows: no out-of-sample evidence is possible',
                 f'{len(s_basket)} regressors on {len(fit_rets)} obs — the '
                 f'in-sample R² is inflated by construction',
                 'use for exposure identification; validate on a longer '
@@ -4387,12 +4406,15 @@ def find_best_hedge(
                f"in-sample R² {s_r2e:.2f}"
                + (f" · holdout {s_r2e_h:.2f}"
                   if not np.isnan(s_r2e_h) else ''),
-               'If this is close to the basket, take the ETF — one liquid '
-               'leg beats a fitted basket that has not been validated.')
-        kv('Next step', f"needs ≥ ~150 rows for the full protocol",
-           "For CV, nested windows and the rolling curve, give the model "
-           "more data — e.g. sample_window='1y', or drop sample_window "
-           "entirely.")
+               'Reference only. Its score does not replace or approve the primary basket.')
+        if fallback_reason:
+            kv('Basket validation', 'No basket completed every CV fold', fallback_reason)
+        kv('Next step', ('inspect the data and requested basket settings' if fallback_reason
+                         else 'needs ≥ ~150 rows for the full protocol'),
+           ('Inspect the failed fold diagnostics and eligible basket instruments. '
+            'A fitted reference does not repair missing validation data.' if fallback_reason else
+            "For CV, nested windows and the rolling curve, give the model "
+            "more data — e.g. sample_window='1y', or drop sample_window entirely."))
         if show_plots:
             kv('  charts', 'skipped',
                'Charts are suppressed in short-sample modes — there is not '
@@ -4422,7 +4444,16 @@ def find_best_hedge(
                 ann_sqrt, 1 if hold_rows else 0, val_mode,
                 {'lookback': len(fit_rets), 'pc_spec': spec, 'basket_size': size,
                  'selection_score': trial[0], 'max_gross': max_gross}, hedge_objective)
+            alternatives[family]['reference_only'] = family.startswith('single')
+        selected_family = _config_family(_ps0, len(s_basket))
+        primary_item = alternatives.get(selected_family)
+        if primary_item is not None and val_mode != 'IN-SAMPLE':
+            primary_item['qualified'] = _decision_fields(s_w, grade)['trade_eligible']
+            if not primary_item['qualified']:
+                primary_item['status'] = grade
         search = {'broad_search': broad_search,
+                  'selection_scope': 'basket' if broad_search else 'pinned configuration',
+                  'single_role': 'reference',
                   'single_instruments_scored': len({t[1] for t in short_trials if str(t[1]).startswith('single:')}),
                   'configurations_scored': len(short_trials),
                   'basket_methods': ['PCA', 'correlation', 'forward selection'] if broad_search else ['pinned configuration']}
@@ -4433,6 +4464,7 @@ def find_best_hedge(
             'training_data_diagnostics': pd.DataFrame(training_diagnostics),
             'evaluation_data_diagnostics': pd.DataFrame(evaluation_diagnostics),
             'engine_revision': PCA_REVISION,
+            'primary_hedge_family': selected_family,
             'hedge_alternatives': alternatives, 'search': search,
             'best_basket_hedge': alternatives.get('basket'),
             'best_single_hedge': alternatives.get('single'),
@@ -4441,7 +4473,9 @@ def find_best_hedge(
             **_decision_fields(s_w, grade),
             'unhedged_baseline': {'vol_reduction': 0.0, 'variance_reduction': 0.0},
             'weights': s_w, 'basket': s_basket, 'ranking': s_rank,
-            'cv_summary': None, 'cv_detail': None,
+            'cv_summary': cv_summary, 'cv_detail': cv_detail,
+            'fallback_reason': fallback_reason,
+            'prior_nested_validation': prior_nested,
             'nested_validation': pd.DataFrame(),
             'nested_r2_mean': np.nan, 'nested_r2_std': np.nan,
             'nested_vol_red_mean': np.nan, 'nested_pooled_r2': np.nan,
@@ -4495,6 +4529,9 @@ def find_best_hedge(
                        'sample_window': sample_window, 'report': report},
         }
 
+    if val_mode in ('HOLDOUT', 'IN-SAMPLE'):
+        return _short_sample_result(val_mode, hold_rows)
+
     # ── STEP 3: NESTED WALK-FORWARD VALIDATION [Fix 20] ──────────────────────
     # For each of the last `outer_folds` windows: rerun CV + selection + refit
     # using ONLY data prior to that window, then score on it. This measures
@@ -4539,7 +4576,12 @@ def find_best_hedge(
                     evidence['spread'].append(fy - outer_test[fb].values @ fr.coef_)
             except RuntimeError:
                 pass
-        cfg = summary_j.loc[summary_j['composite'].idxmax()]
+        primary_choices = _family_configs(summary_j, 'basket') if broad_search else summary_j
+        if primary_choices.empty:
+            _P(f'  outer window {j}: no basket completed inner CV — '
+               'single references cannot replace the primary basket')
+            continue
+        cfg = primary_choices.loc[primary_choices['composite'].idxmax()]
         lb_j = int(cfg['lookback'])
         try:
             _, _, bkt_j, reg_j, _, _, _, _, _ = _select_and_fit(
@@ -4635,11 +4677,14 @@ def find_best_hedge(
                 tr = tr_clean[ok]
                 eligible = set(_eligible(tr_all.index[-1]))
                 pool = [c for c in ok if c in eligible and c != target_ticker
-                        and c not in set(pf_legs) and pool_filter(c)]
+                        and c not in set(pf_legs) and pool_filter(c)
+                        and (not forced or forced == [c])]
                 if not pool:
                     continue
                 pick = tr[pool].corrwith(tr[target_ticker]).abs().idxmax()
                 reg_b, r2_tr, _ = _fit_basket(tr, target_ticker, [pick])
+                if max_gross is not None and np.abs(reg_b.coef_).sum() > max_gross:
+                    continue
                 if best is None or r2_tr > best[0]:
                     best = (r2_tr, pick, lb, reg_b)
             if best is None:
@@ -4650,7 +4695,8 @@ def find_best_hedge(
             if not np.isnan(r2_b):
                 rows.append({'window': j, 'instrument': pick, 'lookback': lb,
                              'r2_oos': r2_b, 'vol_red_oos': vr_b})
-        return pd.DataFrame(rows)
+        return pd.DataFrame(rows, columns=['window', 'instrument', 'lookback',
+                                           'r2_oos', 'vol_red_oos'])
 
     etf_bench = _single_bench(lambda c: _is_etf(c))
     name_bench = _single_bench(lambda c: not _is_etf(c))
@@ -4677,6 +4723,8 @@ def find_best_hedge(
                 _, _, bkt_w, reg_w, _, _, _, _, _ = _select_and_fit(
                     rets.iloc[max(0, os_ - purge - lb):os_ - purge],
                     ps, bs)                           # [Fix 39] purge gap
+                if max_gross is not None and np.abs(reg_w.coef_).sum() > max_gross:
+                    continue
                 test, _ = _prepare_evaluation(rets.iloc[os_:oe_])
                 r2_w, vr_w = _eval_on_window(reg_w, bkt_w, test)
                 if not np.isnan(r2_w):
@@ -4788,7 +4836,15 @@ def find_best_hedge(
             'prices are no longer deleted. Check the cached target column and '
             're-download active-day prices if necessary; do not replace '
             'missing test returns with zero.')
-    best = summary.loc[summary['composite'].idxmax()]
+    primary_summary = _family_configs(summary, 'basket') if broad_search else summary
+    if primary_summary.empty:
+        reason = ('No basket completed every requested CV fold under the data and '
+                  'exposure constraints. The fitted basket below is an unvalidated '
+                  'reference, not a recommendation. Single instruments cannot replace it.')
+        _P('  ' + reason)
+        return _short_sample_result('IN-SAMPLE', 0, fallback_reason=reason,
+                                    cv_summary=summary, cv_detail=cv_df, prior_nested=nested)
+    best = primary_summary.loc[primary_summary['composite'].idxmax()]
     best_lookback = int(best['lookback'])
     best_pc_spec = best['pc_spec']
     best_bsize = int(best['basket_size'])
@@ -4853,14 +4909,17 @@ def find_best_hedge(
 
     # [Fix 29] single-instrument alternatives chosen by realized hedging
     # power (|corr| with the target in the final window), not by rank_score
-    corr_final = returns_final.corr()[target_ticker].drop(
-        [target_ticker] + pf_legs, errors='ignore')        # [Fix 46] no self/legs
-    best_single = corr_final.abs().idxmax()
+    final_single_pool = [c for c in _eligible(returns_final.index[-1])
+                         if c in returns_final and (not forced or forced == [c])]
+    corr_final = returns_final[final_single_pool].corrwith(returns_final[target_ticker]).dropna()
+    best_single = corr_final.abs().idxmax() if len(corr_final) else None
     etf_cands = [c for c in corr_final.index if _is_etf(c)]
-    best_etf = (corr_final[etf_cands].abs().idxmax()
-                if etf_cands else best_single)   # [Fix 14]
-    reg_s, r2_single, _ = _fit_basket(returns_final, target_ticker, [best_single])
-    reg_e, r2_etf, _ = _fit_basket(returns_final, target_ticker, [best_etf])
+    best_etf = corr_final[etf_cands].abs().idxmax() if etf_cands else None
+    reg_e = None
+    if best_etf is not None:
+        reg_e, _, _ = _fit_basket(returns_final, target_ticker, [best_etf])
+        if max_gross is not None and np.abs(reg_e.coef_).sum() > max_gross:
+            best_etf, reg_e = None, None
 
     # ── Display names: short name; fall back to full ticker on collision ────
     shorts = pd.Series({c: c.split(' ')[0] for c in returns_final.columns})
@@ -5108,9 +5167,9 @@ def find_best_hedge(
         _quality, _quality_src = nested_pooled, 'nested pooled — honest'
     else:
         _quality, _quality_src = np.nan, 'nested validation unavailable'
-    _ref_pca_t = sel_r2m if sel_n else nested_r2_mean
-    _simple_pool = [x for x in (etf_r2_mean, name_r2_mean)
-                    if not np.isnan(x)]
+    _ref_pca_t = nested_r2_mean
+    _simple_pool = [float(b['r2_oos'].mean()) for b in (etf_bench, name_bench)
+                    if len(b) and set(b['window']) == set(nested_valid['window'])]
     _ref_simple_t = max(_simple_pool) if _simple_pool else np.nan
     _overfit_gap = ((r2_final - _quality)
                     if not np.isnan(_quality) else np.nan)
@@ -5805,9 +5864,9 @@ def find_best_hedge(
         # alternative scored on the SAME recent folds.
         try:
             _bkey = ['lookback', 'pc_spec', 'basket_size']
-            _srt = summary.sort_values('composite', ascending=False)
+            _srt = primary_summary.sort_values('composite', ascending=False)
             _cur = _srt.iloc[0]
-            _rsrt = summary.sort_values('composite_recent', ascending=False)
+            _rsrt = primary_summary.sort_values('composite_recent', ascending=False)
             _alt = _rsrt.iloc[0]
             _same = all(_cur[k] == _alt[k] for k in _bkey)
             _slope = _cur.get('r2_slope_per_fold', np.nan)
@@ -5824,7 +5883,7 @@ def find_best_hedge(
                     f"~{_slope * max(int(_cur.get('n_folds', 1)) - 1, 1):.2f} "
                     f"across the {int(_cur.get('n_folds', 0))} folds measured. "
                     f"The headline average is flattered by the older folds; "
-                    f"the newest reading is the better estimate of tomorrow."))
+                    f"These readings describe history and do not establish tomorrow's performance."))
             if np.isfinite(_cur.get('recent_r2', np.nan)):
                 kv('  all folds vs recent',
                    f"{_cur['avg_r2_oos']:.3f} all · {_cur['recent_r2']:.3f} "
@@ -5932,18 +5991,20 @@ def find_best_hedge(
 
     # ── [2] COMPARISON ──────────────────────────────────────────────────────
     title("[2] COMPARISON",
-          f"could one simple instrument have done the same job?")
-    _etf_dir = 'short' if reg_e.coef_[0] > 0 else 'long'
-    _P(f"  the simplest thing you could do instead: {_etf_dir} "
-          f"${abs(reg_e.coef_[0])*100:.0f} of {disp[best_etf]} per $100 "
-          f"of book")
+          'single instruments are references; the basket remains primary')
+    if reg_e is not None:
+        _etf_dir = 'short' if reg_e.coef_[0] > 0 else 'long'
+        _P(f'  Correlation-picked ETF reference: {_etf_dir} '
+           f'${abs(reg_e.coef_[0])*100:.0f} of {disp[best_etf]} per $100 of book')
+    else:
+        _P('  No eligible correlation-picked ETF reference under these settings.')
     cmp_rows = []
     if sel_n:
         cmp_rows.append(['Selected hedge — this config',
                          f"{sel_r2m:.3f} ± {sel_r2s:.3f}",
                          f"{sel_vrm*100:.1f}%", str(sel_n)])
     if not np.isnan(nested_r2_mean):
-        cmp_rows.append(['Broad hedge search — nested',
+        cmp_rows.append(['Primary basket search — nested' if broad_search else 'Pinned hedge — nested',
                          f"{nested_r2_mean:.3f} ± {nested_r2_std:.3f}",
                          f"{nested_vr_mean*100:.1f}%",
                          str(len(nested_valid))])
@@ -5959,21 +6020,20 @@ def find_best_hedge(
                          f"{name_vr_mean*100:.1f}%", str(len(name_bench))])
     if cmp_rows:
         _print_table(['HEDGE', 'OOS R²', 'VOL RED', 'WINDOWS'], cmp_rows,
-                     note='All scored on the SAME unseen windows, so this is '
-                          'a fair fight. If a single instrument gets close it '
-                          'is usually the better trade — one leg, one borrow, '
-                          'nothing to refit.')
-    _ref_pca = (nested_vr_mean if hedge_objective == 'variance'
-                else (sel_r2m if sel_n else nested_r2_mean))
-    _ref_simple = (np.nanmax([etf_vr_mean, name_vr_mean])
-                   if hedge_objective == 'variance'
-                   else np.nanmax([etf_r2_mean, name_r2_mean]))
+                     note='Each row reports its available unseen windows. Compare scores '
+                          'only when the window sets match. Single instruments are '
+                          'references and do not replace the primary basket.')
+    _ref_pca = nested_vr_mean if hedge_objective == 'variance' else nested_r2_mean
+    matched_simple = [b for b in (etf_bench, name_bench)
+                      if len(b) and set(b['window']) == set(nested_valid['window'])]
+    _simple_col = 'vol_red_oos' if hedge_objective == 'variance' else 'r2_oos'
+    _ref_simple = max([float(b[_simple_col].mean()) for b in matched_simple] or [np.nan])
     if not (np.isnan(_ref_pca) or np.isnan(_ref_simple)):
         _P("  ► " + ("the selected hedge beat the correlation-picked single benchmarks "
                      "on these unseen stretches"
                      if _ref_pca > _ref_simple else
-                     "a single instrument held up at least as well — prefer "
-                     "the simple hedge"))
+                     'a single-instrument reference held up at least as well; '
+                     'the basket remains the primary candidate'))
 
     # ── [3] DIAGNOSTICS ─────────────────────────────────────────────────────
     title("[3] DIAGNOSTICS", "what is left after the hedge, and why")
@@ -6180,7 +6240,7 @@ def find_best_hedge(
     # which is the only thing this section exists to answer.
     title("[4] ALTERNATIVES",
           "the next-best recipes, judged on exactly the same evidence")
-    top5 = summary.sort_values('composite', ascending=False).head(5)
+    top5 = primary_summary.sort_values('composite', ascending=False).head(5)
     _alt_cache = []
     for _i5, (_, cfg) in enumerate(top5.iterrows(), 1):
         _lb5, _ps5 = int(cfg['lookback']), cfg['pc_spec']
@@ -6221,9 +6281,9 @@ def find_best_hedge(
             f"${_a['cfg']['avg_gross']*100:.0f}",
             ('◄ chosen' if _a['sel'] else '')])
     _print_table(_hd, _rows5,
-                 note='Compare on UNSEEN R² and ROLL TE — never on CV R², '
-                      'which is what the selection already optimised and is '
-                      'therefore guaranteed to favour the pick. Config = '
+                 note='These are basket configuration diagnostics. Outer and rolling '
+                      'scores retain configuration-selection bias; choosing a new winner '
+                      'after seeing them is not independent validation. Config = '
                       'lookback days · PCs · basket size.')
     # ── per-config detail: the exact ticket each alternative would produce ──
     # [Fix 115] This used to repeat the SAME four explanation rows under every
@@ -6237,7 +6297,7 @@ def find_best_hedge(
     kv('gross / in-sample', 'candidate position and its training fit',
        'The second figure is the fit scored on its own data. Never size off it.')
     kv('unseen windows', 'refit before each window, scored on it',
-       'The honest comparison between configs.')
+       'Weights are refitted before scoring; configuration-selection bias remains.')
     kv('rolling OOS', '21-row walk-forward TE and R²',
        'Read stability here — a config with a similar median but a much worse '
        'worst case is the more dangerous one.')
@@ -6343,7 +6403,7 @@ def find_best_hedge(
          f"More history can provide additional validation; short samples use a simpler evidence tier.")))
     _rows_a.append((
         'Basket sizes tried\nnames per basket', str(tuple(basket_size_options)),
-        'Every eligible single instrument competes with the requested basket sizes. '
+        'Requested baskets compete for the primary recipe; every eligible single instrument is evaluated as a reference. '
         'Baskets are built by PCA, correlation and forward selection. '
         'This broad search remains a finite set of heuristics rather than an exhaustive subset optimizer.'))
     # ── [Fix 113] IS THERE ROOM FOR A LONGER LOOKBACK? ─────────────────────
@@ -6402,8 +6462,8 @@ def find_best_hedge(
         'How much recent data counts extra\nrecency_weight',
         f"{recency_weight:g}" + (' (ACTIVE)' if recency_weight else
                                  ' — every test stretch counts the same'),
-        'At 0 the search treats a test stretch from three years ago exactly '
-        'like one from last month. See "IS THIS STILL THE RIGHT RECIPE '
+        'At 0 the search gives equal weight to the available CV folds. '
+        'See "IS THIS STILL THE RIGHT RECIPE '
         'TODAY?" in [1] for what that cost on this run, and what choosing on '
         'recent data alone would have picked instead.'))
     _kv_block('SETTINGS — what each knob actually did', _rows_a,
@@ -6456,14 +6516,21 @@ def find_best_hedge(
             {'lookback': int(choice['lookback']), 'pc_spec': choice['pc_spec'],
              'basket_size': int(choice['basket_size']), 'selection_score': float(choice['composite']),
              'max_gross': max_gross}, hedge_objective)
+        alternatives[family]['reference_only'] = family.startswith('single')
     search = _search_metadata(summary, cv_df)
     selected_family = _config_family(best_pc_spec, len(basket_final))
+    primary_item = alternatives.get(selected_family)
+    if primary_item is not None:
+        primary_item['qualified'] = _decision_fields(weights_final, grade)['trade_eligible']
+        if not primary_item['qualified']:
+            primary_item['status'] = grade
     _show_hedge_comparison(alternatives, selected_family, search)
 
     return {
         'training_data_diagnostics': pd.DataFrame(training_diagnostics),
         'evaluation_data_diagnostics': pd.DataFrame(evaluation_diagnostics),
         'engine_revision': PCA_REVISION,
+        'primary_hedge_family': selected_family,
         'hedge_alternatives': alternatives, 'search': search,
         'best_basket_hedge': alternatives.get('basket'),
         'best_single_hedge': alternatives.get('single'),
@@ -6916,7 +6983,7 @@ def _docx_hedge_report(result, report_text, path):
 
     alternatives = result.get('hedge_alternatives') or {}
     if alternatives:
-        H('Best basket and single instrument alternatives')
+        H('Primary basket and single instrument references')
         table = doc.add_table(rows=1, cols=5)
         table.style = 'Light Grid Accent 1'
         table.autofit = False
@@ -6925,7 +6992,7 @@ def _docx_hedge_report(result, report_text, path):
         headers = ['CANDIDATE', 'REFERENCE WEIGHTS / $100', 'UNSEEN R²', 'VOL CUT', 'STATUS']
         for cell, value in zip(table.rows[0].cells, headers):
             cell.text = value
-        for family, name in [('basket', 'Basket'), ('single_stock', 'Single stock'), ('single_etf', 'Single ETF')]:
+        for family, name in [('basket', 'Basket'), ('single_stock', 'Single stock reference'), ('single_etf', 'Single ETF reference')]:
             item = alternatives.get(family)
             if item is None:
                 values = [name, 'Unavailable', '—', '—', 'No eligible candidate']
@@ -6949,7 +7016,8 @@ def _docx_hedge_report(result, report_text, path):
         repeat_header = OxmlElement('w:tblHeader')
         table.rows[0]._tr.get_or_add_trPr().append(repeat_header)
         doc.add_paragraph('Unseen results test each selection procedure on later data. '
-                          'Failed and in-sample candidates are references, not validated recommendations.')
+                          'The basket is the primary hedge; single stocks and ETFs are references. '
+                          'Failed and in-sample candidates are not validated recommendations.')
 
     # ── risk & monitoring ───────────────────────────────────────────────
     H('Risk and monitoring')
@@ -7136,6 +7204,7 @@ def export_result(result, report_text='', out_dir=None, also_csv=True):
                 continue
             for ticker, weight in item['weights'].items():
                 rows.append({'candidate_type': family, 'ticker': ticker,
+                             'reference_only': item.get('reference_only', family.startswith('single')),
                              'action': 'SHORT' if weight > 0 else 'LONG',
                              'dollars_per_100_target': abs(float(weight)) * 100,
                              'unseen_r2': item['unseen_r2'], 'status': item['status'],
@@ -7234,7 +7303,7 @@ def hedge_ui(data=None):
     # ── Universe tab ────────────────────────────────────────────────────────
     w_mktcap = W.FloatText(value=1000.0, description='Min mkt cap ($mm)',
                            style=LBL, layout=FULL)
-    w_basket = W.Text(value='1,2,3,5,7', description='Basket sizes', style=LBL,
+    w_basket = W.Text(value='2,3,5,7', description='Basket sizes', style=LBL,
                       layout=FULL)
     w_look = W.Text(value='126,252', description='Lookbacks (days)',
                     style=LBL, layout=FULL)
@@ -7252,6 +7321,8 @@ def hedge_ui(data=None):
     tab_uni = W.VBox([
         H('Candidate filters'), w_mktcap, w_tz, w_stale,
         H('Basket construction'), w_basket, w_look,
+        HELP('The primary hedge is a basket of at least two instruments. '
+             'Single stocks and ETFs are evaluated separately as references.'),
         H('Manual overrides'),
         HELP('force include = held in every basket (★); exclude = never a '
              'candidate. Short names or full tickers.'),
@@ -7628,7 +7699,7 @@ def hedge_ui(data=None):
                     UI_STATE['data'], _window_arg(),
                     lookback_options=_ui_ints(w_look.value, (126, 252)),
                     cv_test_window=cvw,
-                    basket_size_options=_ui_ints(w_basket.value, (1, 2, 3, 5, 7)))
+                    basket_size_options=_ui_ints(w_basket.value, (2, 3, 5, 7)))
             mode = pv.get('mode')
             if mode is None:
                 w_tier.value = ("<span style='color:#8c1c1c;font-size:12px'>"
@@ -7654,7 +7725,7 @@ def hedge_ui(data=None):
                 'min_mktcap_usd_mm': w_mktcap.value,
                 'notional_mm': (w_notional.value or None),
                 'hedge_horizon_days': _horizon_arg(),
-                'basket_size_options': _ui_ints(w_basket.value, (1, 2, 3, 5, 7)),
+                'basket_size_options': _ui_ints(w_basket.value, (2, 3, 5, 7)),
                 'lookback_options': _ui_ints(w_look.value, (126, 252)),
                 'pc_options': ('auto' if pcs in ('', 'auto')
                                else list(_ui_ints(pcs, (3,)))),
@@ -8079,12 +8150,14 @@ def compare_history_windows(target, data, windows=('1y', '6m', '3m', '1m'),
             recipe = '; '.join(f'{tk}: {(-x*100):+.1f}' for tk, x in w.items())
             risk = item.get('trade_risk') or {}
             alternative_rows.append({'period': period, 'candidate_type': family,
+                'reference_only': item.get('reference_only', family.startswith('single')),
                 'hedge': '; '.join(w.index), 'weights_per_100': recipe,
                 'tracking_oos_r2': item['unseen_r2'] if show else np.nan,
                 'vol_reduction': risk.get('vol_reduction', np.nan) if show else np.nan,
                 'status': item['status'], 'qualified': item['qualified']})
             for tk, x in w.items():
                 alternative_weights.append({'period': period, 'candidate_type': family,
+                    'reference_only': item.get('reference_only', family.startswith('single')),
                     'ticker': tk, 'side': 'SHORT' if x > 0 else 'LONG',
                     'dollars_per_100_target': abs(float(x))*100, 'indicative_only': reference})
         mode = result['validation_mode']
@@ -8127,16 +8200,18 @@ def compare_history_windows(target, data, windows=('1y', '6m', '3m', '1m'),
                      r['evidence'], r['status']] for r in records]
     _print_table(['HISTORY', 'HEDGE', 'SIGNED $/100', 'UNSEEN VOL CUT',
                   'UNSEEN R²', 'EVIDENCE', 'STATUS'], display_rows,
-                 title=f'Best available hedges for {target}',
+                 title=f'Primary basket hedges for {target}',
                  note='Negative dollar amounts are shorts; positive amounts are longs. '
                       'IN-SAMPLE rows are indicative candidates, not validated recommendations. '
-                      'Negative/failed candidates remain in diagnostic_results.')
+                      'Negative/failed candidates remain in diagnostic_results. '
+                      'Single instruments appear in the reference comparison only.')
     alternative_summary = pd.DataFrame(alternative_rows)
     if len(alternative_summary):
         _print_table(['HISTORY', 'FORM', 'SIGNED $/100', 'EVIDENCE'],
                      [[row['period'], row['candidate_type'], row['weights_per_100'] or '—', row['status']]
-                      for row in alternative_rows], title='Basket and single alternatives by history window',
-                     note='Failed candidates have no recommendation weights. In-sample recipes are indicative.')
+                      for row in alternative_rows], title='Basket and single references by history window',
+                     note='The basket is primary; single instruments are references. '
+                          'Failed candidates have no recommendation weights. In-sample recipes are indicative.')
     return {'summary': summary, 'weights_table': pd.DataFrame(weight_rows),
             'alternatives_summary': alternative_summary,
             'alternative_weights_table': pd.DataFrame(alternative_weights),
