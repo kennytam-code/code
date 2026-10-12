@@ -5780,9 +5780,9 @@ def find_best_hedge(
                       f"{_band[1]*100:.0f}%) — something real went wrong "
                       f"there, not just a short sample")
         if np.isfinite(wdisp['reg_corr']) and wdisp['reg_corr'] > 0.5:
-            _P(f"  ► the weak stretches are the CALM ones — a tracking score "
-                  f"is mechanically lower when there is less to track. Judge "
-                  f"those stretches by how far the hedge drifted instead")
+            _P('  ► In these windows, lower tracking R² coincided with lower '
+               'target volatility. This is a descriptive association; review '
+               'tracking error and volatility reduction alongside R².')
         if wdisp['min_sim'] is not None:
             _stab = ('the same basket every time' if wdisp['min_sim'] > 0.8
                      else 'a drifting basket' if wdisp['min_sim'] > 0.5
@@ -5820,7 +5820,7 @@ def find_best_hedge(
                    f"{-_slope:+.3f} per {cv_test_window}-row fold",
                    ('HOLDING UP — its OOS R² is flat or improving as the folds '
                     'get newer.' if _slope <= 0.005 else
-                    f"Loses ~{_slope:.3f} of R² per fold going forward, or "
+                    f"Observed R² fell ~{_slope:.3f} per fold toward the present, or "
                     f"~{_slope * max(int(_cur.get('n_folds', 1)) - 1, 1):.2f} "
                     f"across the {int(_cur.get('n_folds', 0))} folds measured. "
                     f"The headline average is flattered by the older folds; "
@@ -7047,22 +7047,27 @@ def _docx_hedge_report(result, report_text, path):
     txt = ' · '.join(f"{k}={params[k]}" for k in keep
                      if params.get(k) is not None)
     p = doc.add_paragraph(); p.paragraph_format.left_indent = Inches(0.12)
-    r = p.add_run(txt); r.font.size = Pt(8.5); r.font.name = 'Consolas'
+    r = p.add_run(txt); r.font.size = Pt(8.5); r.font.name = 'Courier New'
     r.font.color.rgb = SLATE
 
     # ── appendix ────────────────────────────────────────────────────────
     if report_text:
         appendix_heading = H('Full report appendix', size=13, before=0)
         appendix_heading.paragraph_format.page_break_before = True
-        for line in report_text.split('\n'):
+        lines = report_text.split('\n')
+        section = doc.sections[0]
+        width_pt = (section.page_width-section.left_margin-section.right_margin)/12700
+        appendix_size = min(7.2, width_pt/(.62*max(1, max(map(len, lines)))))
+        for line in lines:
             p = doc.add_paragraph()
             pf = p.paragraph_format
             pf.space_after = Pt(0); pf.space_before = Pt(0)
             pf.line_spacing = 1.0
             r = p.add_run(line)
-            r.font.name = 'Consolas'
-            r._element.rPr.rFonts.set(qn('w:eastAsia'), 'Consolas')
-            r.font.size = Pt(7.2)
+            r.font.name = 'Courier New'
+            r._element.rPr.rFonts.set(qn('w:eastAsia'), 'Courier New')
+            r._element.rPr.rFonts.set(qn('w:cs'), 'Courier New')
+            r.font.size = Pt(appendix_size)
     doc.save(path)
     return path
 
