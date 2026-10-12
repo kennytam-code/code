@@ -8,6 +8,7 @@ from pathlib import Path
 import runpy
 import tempfile
 import unittest
+from unittest.mock import patch
 
 os.environ.setdefault('MPLBACKEND', 'Agg')
 import numpy as np
@@ -263,6 +264,171 @@ class HedgeSearchTests(unittest.TestCase):
             self.assertEqual(set(rows['candidate_type']), {'basket', 'single_stock', 'single_etf'})
         rejected = table[~table['qualified'] & ~table['status'].str.contains('INDICATIVE')]
         self.assertTrue(rejected['weights_per_100'].eq('').all())
+
+    def test_batched_single_fits_match_ridgecv_alphas_coefficients_and_errors(self):
+        rng = np.random.default_rng(33)
+        for n, p in ((41, 20), (94, 9)):
+            X = rng.normal(0, .01, (n, p)) + rng.normal(0, .005, (1, p))
+            y = .003 + .7*X[:, 0] - .2*X[:, 1] + rng.normal(0, .002, n)
+            frame = pd.DataFrame(X, columns=[str(i) for i in range(p)])
+            frame['y'] = y
+            fits = engine['_fit_single_candidates'](frame, 'y', list(frame.columns[:-1]))
+            for name, (fast, score, residual) in fits.items():
+                original, expected, errors = engine['_fit_basket'](frame, 'y', [name])
+                self.assertEqual(fast.alpha_, original.alpha_)
+                np.testing.assert_allclose(fast.coef_, original.coef_, atol=1e-10)
+                self.assertAlmostEqual(fast.intercept_, original.intercept_, places=12)
+                self.assertAlmostEqual(score, expected, places=12)
+                np.testing.assert_allclose(residual, errors, atol=1e-12)
+
+    def test_thin_pca_matches_sample_and_ledoit_wolf_covariance(self):
+        from sklearn.covariance import LedoitWolf
+        from sklearn.decomposition import PCA
+        rng = np.random.default_rng(22)
+        for n, p in ((41, 90), (94, 25)):
+            X = rng.normal(size=(n, p)) + rng.normal(size=(n, 1))*np.arange(p)[None, :]/p
+            for method in ('none', 'ledoit'):
+                fast = engine['_pca_fit'](X, 3, method)
+                if method == 'ledoit':
+                    covariance = LedoitWolf().fit(X).covariance_
+                    ev, vectors = np.linalg.eigh(covariance)
+                    ids = np.argsort(ev)[::-1][:3]
+                    expected = ev[ids]
+                    projection = vectors[:, ids] @ vectors[:, ids].T
+                    total = np.trace(covariance)
+                else:
+                    original = PCA(n_components=3, svd_solver='full').fit(X)
+                    expected = original.explained_variance_
+                    projection = original.components_.T @ original.components_
+                    total = np.sum(np.var(X, axis=0, ddof=1))
+                np.testing.assert_allclose(fast.explained_variance_, expected, atol=1e-12)
+                np.testing.assert_allclose(fast.explained_variance_ratio_, expected/total, atol=1e-12)
+                np.testing.assert_allclose(fast.components_.T @ fast.components_, projection, atol=1e-10)
+
+    def test_two_missing_training_returns_do_not_discard_46_row_window(self):
+        frame = pd.DataFrame({'target': np.arange(46, dtype=float),
+                              'hedge': np.arange(46, dtype=float)*2},
+                             index=pd.bdate_range('2026-04-01', periods=46))
+        frame.iloc[[4, 14], 0] = np.nan
+        clean, problem, omitted = engine['_training_rows'](frame, 'target', 42)
+        self.assertIsNone(problem)
+        self.assertEqual(len(clean), 44)
+        self.assertEqual(omitted, list(frame.index[[4, 14]]))
+        np.testing.assert_allclose(clean['hedge'], frame.loc[clean.index, 'hedge'])
+        frame.iloc[:6, 0] = np.nan
+        self.assertIn('coverage', engine['_training_rows'](frame, 'target', 42)[1])
+        frame['target'] = 0.
+        self.assertIn('constant', engine['_training_rows'](frame, 'target', 42)[1])
+
+    def test_isolated_training_quote_gaps_keep_full_nested_validation(self):
+        sample = data()
+        sample['prices'].iloc[[210, 230], 0] = np.nan
+        result = run(sample)
+        self.assertEqual(len(result['nested_validation']), 2)
+        audit = result['training_data_diagnostics']
+        self.assertGreater(len(audit), 0)
+        self.assertTrue(audit['accepted'].all())
+        self.assertTrue(np.isfinite(result['in_sample_r2']))
+        self.assertTrue(np.isfinite(result['nested_pooled_r2']))
+
+    def test_missing_test_target_dates_are_common_and_not_filled_with_zero(self):
+        sample = data()
+        dates = sample['prices'].index
+        sample['prices'].iloc[-10, 0] = np.nan
+        result = run(sample)
+        unseen = result['nested_unseen_returns']
+        self.assertNotIn(dates[-10], unseen.index)
+        self.assertNotIn(dates[-9], unseen.index)
+        self.assertEqual(len(unseen), 40)
+        for family in ('basket', 'single_stock', 'single_etf'):
+            self.assertEqual(result['hedge_alternatives'][family]['trade_risk']['n_observations'], 40)
+        audit = result['evaluation_data_diagnostics']
+        self.assertTrue(audit['accepted'].all())
+        self.assertTrue((audit['retained_rows'] >= .9*audit['calendar_rows']).all())
+        prior = self.result['nested_unseen_returns'].loc[unseen.index]
+        np.testing.assert_allclose(unseen['target']-unseen['regression_residual'],
+                                   prior['target']-prior['regression_residual'], atol=1e-12)
+
+    def test_missing_hedge_test_returns_cannot_be_removed_to_save_candidate(self):
+        sample = data()
+        sample['prices'].iloc[-10, 1] = np.nan
+        result = run(sample)
+        self.assertNotIn('single:2910 TT Equity', set(result['cv_summary']['pc_spec']))
+        partial = result['cv_detail'].query("pc_spec == 'single:2910 TT Equity'")
+        self.assertEqual(set(partial['fold']), {1, 2})
+        self.assertFalse(result['trade_eligible'])
+        self.assertTrue(result['trade_weights'].empty)
+        with self.assertRaisesRegex(RuntimeError, 'All CV folds failed'):
+            run(sample, broad_search=False, pc_options=('single:2910 TT Equity',),
+                basket_size_options=(1,))
+
+    def test_empty_nested_evidence_has_schema_and_does_not_crash_report(self):
+        sample = data(n=264)
+        sample['prices'].index = pd.bdate_range(end='2026-10-12', periods=264)
+        sample['prices'].loc[pd.to_datetime(['2026-05-11', '2026-05-25']), sample['target']] = np.nan
+        result = run(sample, sample_window='1y', lookback_options=(126, 252),
+                     cv_test_window=42, outer_window=42, boot_n=150)
+        self.assertIn('window', result['nested_validation'])
+        self.assertTrue(result['nested_validation'].empty)
+        self.assertIsNone(result['bootstrap_ci'])
+        self.assertIsNotNone(result['selected_config_bootstrap_ci'])
+        audit = result['evaluation_data_diagnostics']
+        rejected = audit[~audit['accepted']]
+        self.assertGreater(len(rejected), 0)
+        self.assertTrue((rejected['retained_rows'] < .9*rejected['calendar_rows']).all())
+        self.assertFalse(result['trade_eligible'])
+        self.assertIn('INSUFFICIENT', result['ticket']['grade'])
+        self.assertTrue(np.isfinite(result['in_sample_r2']))
+
+    def test_rejected_report_never_recommends_full_size_or_claims_generalization(self):
+        sample = data()
+        returns = np.log(sample['prices']/sample['prices'].shift()).fillna(0)
+        returns.iloc[-42:, 0] *= -1
+        sample['prices'] = 100*np.exp(returns.cumsum())
+        result = run(sample, rolling_oos=True, hedge_horizon_days=21)
+        report = engine['transcript_text']()
+        self.assertFalse(result['trade_eligible'])
+        self.assertNotIn('trade it at full size', report)
+        self.assertNotIn('✓ generalizes', report)
+        self.assertNotIn('weighting three years ago', report)
+        self.assertIn('not a recommendation', report)
+        self.assertEqual(result['ticket']['worst_window_r2'],
+                         result['nested_validation']['r2_oos'].min())
+        self.assertEqual(result['ticket']['worst_window_source'], 'nested selection procedure')
+
+    def test_reported_universe_size_does_not_run_pca_for_each_single(self):
+        rng = np.random.default_rng(824)
+        n, p = 42, 1132
+        y = rng.normal(0, .01, n)
+        others = .5*y[:, None] + rng.normal(0, .01, (n, p))
+        columns = ['2889 TT Equity', '0050 TT Equity'] + [f'{10000+i} TT Equity' for i in range(p-1)]
+        prices = pd.DataFrame(100*np.exp(np.cumsum(np.column_stack([y, others]), axis=0)),
+                              index=pd.bdate_range('2026-08-10', periods=n), columns=columns)
+        sample = {'target': columns[0], 'prices': prices,
+                  'mktcap_usd_mm': {}, 'price_observations': 'ACTIVE_DAYS_ONLY'}
+        namespace = engine['find_best_hedge'].__globals__
+        with patch.dict(namespace, {'_pca_fit': namespace['_pca_fit']}):
+            original = namespace['_pca_fit']
+            calls = []
+            def counted(*a, **k):
+                calls.append(1)
+                return original(*a, **k)
+            namespace['_pca_fit'] = counted
+            result = run(sample, pc_options='auto', basket_size_options=(1, 2, 3, 5),
+                         robust_cov='ledoit', winsorize_pct=.01)
+        self.assertEqual(result['search']['single_instruments_scored'], 1132)
+        self.assertEqual(result['validation_mode'], 'IN-SAMPLE')
+        self.assertEqual(len(calls), 1)
+        self.assertIsNotNone(result['best_basket_hedge'])
+        self.assertIsNotNone(result['best_single_etf_hedge'])
+
+    def test_engine_charts_draw_for_single_winner_without_selection_pca(self):
+        with patch.object(plt, 'show'):
+            result = run(self.dataset, basket_size_options=(1,), show_plots=True)
+        self.assertEqual(len(result['weights']), 1)
+        self.assertEqual(result['params']['pc_spec'][:7], 'single:')
+        for figure_number in plt.get_fignums():
+            plt.figure(figure_number).canvas.draw()
 
     def test_notebook_engine_matches_script_and_every_cell_parses(self):
         notebook_path = ROOT / 'PCA_fixed.ipynb'

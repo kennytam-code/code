@@ -24,9 +24,9 @@ R² of -0.20 means 20% more squared prediction error than deviation from the eva
 
 ## Reported 2889 failure
 
-The old stale-price guard deleted long runs of identical reported prices. That could create missing target returns and skip every fold. The revision retains unchanged observations and distinguishes missing returns, genuinely constant returns and insufficient history. Bounded fills use earlier observations only; a missing interval's accumulated move is not labelled an ordinary one-row return.
+The old stale-price guard deleted long runs of identical reported prices. That could create missing target returns and skip every fold. The revision retains unchanged observations and distinguishes missing returns, genuinely constant returns and insufficient history. Price display fills use earlier observations only. Missing quotes and a missing interval’s accumulated resumption move are excluded from daily-return fitting and evaluation.
 
-Fresh downloads request `ACTIVE_DAYS_ONLY`, documented in the [Bloomberg guide](https://data.bloomberglp.com/professional/sites/4/blpapi-developers-guide-2.54.pdf). A shared absent day is inferred as an exchange closure only when the target and at least two same-exchange peers lack observations. Isolated target gaps remain problems. Old caches may contain vendor-generated fills; redownload for clearer provenance.
+Fresh downloads request `ACTIVE_DAYS_ONLY`, documented in the [Bloomberg guide](https://data.bloomberglp.com/professional/sites/4/blpapi-developers-guide-2.54.pdf). A shared absent day is inferred as an exchange closure only when the target and at least two same-exchange peers lack observations. Isolated target gaps now use common observed-row masks with a 90% coverage guard. Missing dates are reported; substantial gaps remain unscoreable. Old caches may contain vendor-generated fills; redownload for clearer provenance.
 
 The original failure was reproduced on synthetic flat-price data and the revised engine completed that dataset. The actual cause in the user's 2889 history remains unverified without the cache or a live connection.
 
@@ -37,3 +37,13 @@ Matplotlib settings are filtered against installed rcParams and title colors are
 The repository includes a notebook, current and pinned older dependencies, setup instructions and Windows/Linux CI. Offline checks also run on macOS with both dependency sets. They cover analysis, charts, the form and Word/CSV export, not another computer's Bloomberg session or real 2889 weights.
 
 See `PCA_README.md` for setup, result fields and the history comparison.
+
+## October 12 regression repair
+
+The production-sized report exposed a missed performance case: `_select_and_fit` ran large PCA calculations before fitting each fixed single instrument. The new path skips PCA for singles, batches the original ridge leave-one-out criterion, shares PCA across basket sizes, and computes Ledoit-Wolf leading components without a large covariance inverse/eigendecomposition. Numerical tests compare eigenvalues, component subspaces, alpha choices, coefficients and residuals with the original library calculations.
+
+Two missing training returns no longer invalidate an otherwise usable 46-row window. Cleaning removes the same target rows across all columns, preserves chronology, requires coverage/retained rows, and reports dates. Validation masks are common across candidates; candidate-specific test gaps still fail their fold. An empty nested result has a stable schema and returns an unvalidated reference report rather than a `KeyError`.
+
+The report previously mixed negative nested R² with positive selected-configuration risk reduction and worst-window scores. Primary ticket figures now use the same nested source. Monitoring prose no longer recommends full size after rejection. Selected-configuration weight stability does not claim that the whole search picked the same instrument, and a small fitted/unseen gap does not assert that a model generalizes. Gaussian coverage promises were removed. Word exports identify selected-configuration evidence and monitoring separately.
+
+Current and pinned older dependencies pass 32 offline tests on macOS. Windows/Linux CI runs the same suite against both dependency sets. The production-sized fixtures are synthetic, including 1,132 eligible singles; their speed and successful execution do not establish the actual 2889/AAPL hedge quality. The uploaded error report contains output and dates, not the underlying prices/configuration needed to reproduce the AAPL winner or determine the real cause of each missing quote. No score is forced positive.

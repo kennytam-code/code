@@ -28,7 +28,7 @@ Open `pca_hedge_v103_full.ipynb` and run the engine cell, or run the existing sc
 %run pca_hedge_v103_full.py
 ```
 
-The form opens automatically. Enter `2889 TT Equity`, load or download data, choose the past history window, then press **Run**. A fresh download is preferable for the reported issue because old caches can contain Bloomberg-generated inactive-day fills.
+After updating, restart the notebook kernel and run the engine cell again. The run prints `Engine revision: 2026-10-12-training-and-scale`; this confirms that the new engine is loaded. The form opens automatically. Enter `2889 TT Equity`, load or download data, choose the past history window, then press **Run**. A fresh download is preferable for the reported issue because old caches can contain Bloomberg-generated inactive-day fills.
 
 The report and Word export include the best basket, single stock and single ETF, with hedge dollars per $100 target and evidence status. Default selection prioritizes volatility reduction; negative headline unseen tracking R² prevents qualification. The optional tracking objective retains additional conservative heuristic gates.
 
@@ -50,6 +50,16 @@ comparison['alternative_weights_table'].to_csv('2889_history_weights.csv', index
 ```
 
 Use the appropriate market-cap floor consistently in download and analysis. The notebook's optional comparison cell uses the download's recorded floor. Each period includes basket, stock and ETF alternatives when available. Failed alternatives have blank recommendation weights; full results remain in `diagnostic_results`. One month generally supports only an **indicative** fitted candidate, with no unseen score. Longer windows may support holdout, CV or nested validation depending on settings and available observations.
+
+## Missing returns and large universes
+
+Training windows can omit isolated non-finite target-return rows, jointly across every candidate, while retaining their original calendar boundaries. A window needs at least 90% observed target returns and the retained-row floor. Reduced-validation tiers reserve up to 10% of the shortest training lookback for this allowance. Constant targets and substantial missing histories still fail with a distinct diagnostic.
+
+Validation uses the same observed-target dates for every candidate, with at least 90% coverage. It never removes a candidate's own missing test returns to rescue that candidate. All configurations must complete the requested inner folds; incomplete nested evidence cannot qualify the overall hedge. These coverage thresholds are operational heuristics, not statistical confidence guarantees. Scores are conditional on the observed dates, and the run reports missing dates, counts and rejected windows. Missing quotes and their multi-session resumptions are not manufactured daily zero returns.
+
+The short-history search batches single-feature ridge fits using the exact leave-one-out criterion of the original `RidgeCV`, and shares training/PCA work across basket sizes. Single-stock selection does not require PCA; a selected single gets descriptive PCA charts only if charts are enabled. Thin SVD removes the large covariance eigendecomposition and inverse. Isotropic [Ledoit-Wolf shrinkage](https://scikit-learn.org/stable/modules/generated/sklearn.covariance.LedoitWolf.html) preserves sample eigenvectors and changes their eigenvalues; it is covariance regularization, not an outlier-robust estimator. Winsorization remains a separate candidate-selection setting.
+
+The ticket's headline, volatility reduction and worst-window score use nested evidence. Selected-configuration monitoring is labelled separately and cannot approve a failed hedge. A low fitted-to-test gap is a descriptive difference, not proof of generalization. If nested validation is unavailable, the primary verdict is unvalidated; selected-configuration scores remain visible as diagnostics. The report's revision and progress lines help distinguish a running search from an outdated or stalled kernel.
 
 ## What best means
 
@@ -80,6 +90,8 @@ Risk uses the coefficient-only spread `target - X @ weights`; the intercept is n
 - `candidate_weights`, legacy `weights`: fitted reference weights, including failed candidates.
 - `nested_unseen_returns`, `bootstrap_ci`, `selected_config_bootstrap_ci`: auditable errors and separately identified intervals.
 - `search`, `cv_summary`, `cv_detail`: search scope and selection diagnostics.
+- `training_data_diagnostics`, `evaluation_data_diagnostics`: affected calendar windows, retained rows, missing dates and acceptance.
+- `engine_revision`: the loaded engine version.
 
 Legacy `best_single`/`best_etf` remain correlation-picked benchmarks; use the new `*_hedge` fields for the broader search. Stock/ETF categories use the instrument mappings. A manually supplied ETF absent from those mappings may be categorized as a stock.
 
@@ -89,6 +101,6 @@ Legacy `best_single`/`best_etf` remain correlation-picked benchmarks; use the ne
 python -m unittest discover -s tests -p test_hedge_search.py -v
 ```
 
-Offline tests cover competition, matched validation windows, no use of future test returns in prior selection, R² arithmetic, actual-spread risk, interval association, negative-result rejection, price handling, caps, caches, the form, notebook consistency, charts and Word/CSV export. Synthetic ticker labels are not actual 2889 market data.
+The 32 offline tests include 1,132-candidate short-history coverage, sparse target gaps, rejection of missing hedge test returns, empty nested evidence, consistent rejected-report wording, and numerical equivalence of the faster PCA/single-feature ridge calculations. They also cover competition, matched validation windows, no use of future test returns in prior selection, R² arithmetic, actual-spread risk, interval association, negative-result rejection, price handling, caps, caches, the form, notebook consistency, charts and Word/CSV export. Synthetic ticker labels are not actual 2889 market data.
 
 Live 2889 history and the other computer's Bloomberg session were unavailable. Verify that particular history with a fresh download there. The engine uses adjusted prices and weighted log returns as a P&L approximation. Explicit FX conversion, borrow, fees, financing and turnover costs are outside the optimization. Historical support is evidence for reference, not a guarantee of future performance.
