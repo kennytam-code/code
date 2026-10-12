@@ -20,18 +20,18 @@ OUT = ROOT / "data" / "batches" / "deep_autoclass.json"
 
 # ordered: first match wins. Most specific business first.
 RULES = [
-    ("LLM / foundation model", r"large language model|foundation model|LLM|generative AI model"),
-    ("AI chips & semis", r"\bGPU\b|\bASIC\b|semiconductor|chip design|fabless|wafer|foundry|"
+    ("Software & AI", r"large language model|foundation model|LLM|generative AI model"),
+    ("Semiconductors", r"\bGPU\b|\bASIC\b|semiconductor|chip design|fabless|wafer|foundry|"
                          r"integrated circuit|CMOS|image sensor|SiC|silicon carbide|EDA\b|analog IC|MCU\b"),
     ("Robotics & autonomous driving", r"robot|autonomous driving|self-driving|robotaxi|LiDAR|"
                                       r"ADAS|humanoid|embodied|drone|intelligent driving|AGV\b"),
-    ("Data center / cloud infra", r"data cent(?:er|re)|IDC\b|cloud comput|colocation"),
-    ("AI application / agent software", r"artificial intelligence|AI-powered|AI solutions|"
+    ("Data centres & cloud", r"data cent(?:er|re)|IDC\b|cloud comput|colocation"),
+    ("Software & AI", r"artificial intelligence|AI-powered|AI solutions|"
                                         r"machine learning|computer vision|speech recognition|NLP\b"),
-    ("Fintech platform", r"fintech|online (?:lending|payment)|digital payment|consumer credit platform|"
+    ("Internet & fintech", r"fintech|online (?:lending|payment)|digital payment|consumer credit platform|"
                          r"virtual bank|crypto|blockchain|digital asset"),
     ("Media / advertising", r"mobile game|game develop|game publish|esports"),
-    ("SaaS / enterprise software", r"SaaS|enterprise software|ERP\b|CRM\b|software-as-a-service|"
+    ("Software & AI", r"SaaS|enterprise software|ERP\b|CRM\b|software-as-a-service|"
                                    r"cloud-based (?:software|solution|platform for enterprise)|"
                                    # data / AI INFRASTRUCTURE software sold to
                                    # enterprises and government, the layer under
@@ -39,10 +39,10 @@ RULES = [
                                    r"infrastructure software|big data|data warehouse|data lake|"
                                    r"database (?:software|product|management system)|"
                                    r"banking (?:IT|software)|financial (?:IT|software) solution"),
-    ("Internet platform / e-commerce", r"e-commerce|online marketplace|online platform|online retail|"
+    ("Internet & fintech", r"e-commerce|online marketplace|online platform|online retail|"
                                        r"livestream|short video|social (?:media|commerce)|content community|"
                                        r"online travel|ride-?hailing|food delivery|recruitment platform"),
-    ("Smart hardware / consumer electronics", r"consumer electronics|smart (?:device|hardware|home|wearable)|"
+    ("Hardware & electronics", r"consumer electronics|smart (?:device|hardware|home|wearable)|"
                                               r"smartphone|IoT device|acoustic|optical module|display module|"
                                               r"printed circuit|PCB\b|connector|camera module|e-?paper|"
                                               # optical interconnect (Innolight-class): the
@@ -84,7 +84,7 @@ RULES = [
     ("Insurance", r"insurance|insurer|broker.{0,30}insurance"),
     ("Brokers / asset management", r"securities (?:brokerage|firm)|asset management|wealth management|"
                                    r"fund manage|futures compan|private equity"),
-    ("Fintech platform", r"money lend|pawn|micro-?finance|licensed moneylender"),
+    ("Internet & fintech", r"money lend|pawn|micro-?finance|licensed moneylender"),
     ("Logistics", r"logistics|freight|express delivery|shipping|supply chain service|warehouse|cold[- ]chain"),
     ("Construction / engineering", r"construction|engineering service|contractor|foundation work|"
                                    r"fitting-?out|curtain wall|municipal work"),

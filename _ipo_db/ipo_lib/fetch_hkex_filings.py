@@ -126,6 +126,12 @@ def cmd_roster():
         # keep earliest announcement per code (re-listings would be years apart; fine)
         if code not in deals or item["allot_announce_dt"] < deals[code]["allot_announce_dt"]:
             deals[code] = item
+    # Later same-deal announcements can contain the full summary/table when
+    # the evening copy was truncated (SDMC 0901). Keep their document links
+    # without shifting the listing-date estimate to the next morning.
+    for code,item in deals.items():
+        start=datetime.fromisoformat(item['allot_announce_dt'])
+        item['supplemental_allotment_links']=list(dict.fromkeys(r['FILE_LINK'] for r in recs if norm_code(r['STOCK_CODE'])==code and r['FILE_LINK']!=item['file_link'] and timedelta(0)<=parse_dt(r['DATE_TIME'])-start<=timedelta(days=3)))
     out = {
         "batch": "hkex_allotments",
         "source": "hkexnews titleSearchServlet t2=15100 Allotment Results",
@@ -194,11 +200,16 @@ def cmd_allotments():
     if only is not None:
         print(f"  incremental: {len(deals)} deal(s) to fetch, the rest carried forward")
     manifest = []
+    previous={r['code']:r for r in json.loads(out_p.read_text()).get('manifest',[])} if out_p.exists() else {}
     for i, d in enumerate(deals):
         parts = doc_parts(d["file_link"])
         # single-file announcements: take the pdf as-is
         want = WANT_ALLOT if len(parts) > 1 else None
         got = download_parts("allot", d["code"], parts, want, SKIP_PART)
+        for link in d.get('supplemental_allotment_links',[]):
+            extra=doc_parts(link)
+            got.extend(download_parts('allot',d['code'],extra,WANT_ALLOT if len(extra)>1 else None,SKIP_PART))
+        got=list({r['file']:r for r in [*previous.get(d['code'],{}).get('parts',[]),*got]}.values())
         manifest.append({"code": d["code"], "parts": got})
         if (i + 1) % 25 == 0:
             print(f"{i+1}/{len(deals)} allotment docs fetched")
@@ -216,6 +227,16 @@ WANT_PROSP = re.compile(r"^cover|summary|expected timetable|offering statistics|
 
 
 def load_stock_ids():
+    """{code: id}, the LIVE company's id where a code has been reused."""
+    return {c: v[0] for c, v in load_stock_id_candidates().items()}
+
+
+def load_stock_id_candidates():
+    """{code: [ids]} — every company that has held the code, the active one
+    first. HKEX reuses codes: reading the inactive list after the active one
+    used to OVERWRITE the live id with the delisted company's, so the
+    prospectus search for 華曦達 0901 looked under the old 0901 and found
+    nothing (and so for ~50 deals)."""
     ids = {}
     for f in ("activestock_sehk_e.json", "inactivestock_sehk_e.json"):
         txt = get(f"{BASE}/ncms/script/eds/{f}")
@@ -229,7 +250,9 @@ def load_stock_ids():
                 c = row.get("c") or row.get("code") or row.get("STOCK_CODE")
                 i = row.get("i") or row.get("id") or row.get("STOCK_ID")
                 if c is not None and i is not None:
-                    ids[norm_code(str(c))] = str(i)
+                    lst = ids.setdefault(norm_code(str(c)), [])
+                    if str(i) not in lst:
+                        lst.append(str(i))
     return ids
 
 
@@ -281,6 +304,7 @@ def attach_cached_newlist(links):
         for u in nl.get(rec["code"], [])[:1]:
             path = urlsplit(u).path
             if path:
+                for part in rec['parts']:part['url']=u
                 rec.setdefault("docs", []).append(
                     {"title": "Prospectus (offering-window copy)",
                      "dt": None, "file_link": path})
@@ -299,17 +323,27 @@ def cmd_prospectus():
              else [d for d in roster["deals"] if str(d["code"]) in only])
     if only is not None:
         print(f"  incremental: {len(deals)} deal(s) to search, the rest carried forward")
-    ids = load_stock_ids()
-    print(f"stock id map: {len(ids)} codes")
+    idc = load_stock_id_candidates()
+    print(f"stock id map: {len(idc)} codes")
     links, manifest = [], []
     for i, d in enumerate(deals):
-        sid = ids.get(d["code"])
-        rec = {"code": d["code"], "stock_id": sid, "docs": [], "parts": []}
-        if sid:
-            ann = datetime.fromisoformat(d["allot_announce_dt"]).date()
+        rec = {"code": d["code"], "stock_id": None, "docs": [], "parts": []}
+        ann = datetime.fromisoformat(d["allot_announce_dt"]).date()
+        cands, first_rows = [], None
+        for sid in idc.get(d["code"], []):
+            # the company that filed a prospectus in THIS deal's window is the
+            # right holder of a reused code
             rows = search(ann - timedelta(days=75), ann + timedelta(days=3),
                           30000, -2, -2, stock_id=sid, row_range=100)
-            cands = [r for r in rows if PROSP_TITLE.search(r.get("TITLE", "") + r.get("LONG_TEXT", ""))] or rows
+            if first_rows is None:
+                first_rows = (sid, rows)
+            cands = [r for r in rows if PROSP_TITLE.search(r.get("TITLE", "") + r.get("LONG_TEXT", ""))]
+            if cands:
+                rec["stock_id"] = sid
+                break
+        if not rec["stock_id"] and first_rows and first_rows[1]:
+            rec["stock_id"], cands = first_rows      # the old behaviour: any listing document
+        if rec["stock_id"]:
             for r in cands[:2]:
                 rec["docs"].append({"title": r["TITLE"], "dt": r["DATE_TIME"],
                                     "file_link": r["FILE_LINK"]})

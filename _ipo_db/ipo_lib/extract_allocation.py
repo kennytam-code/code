@@ -68,7 +68,7 @@ def text_of(code, parts, pages=18):
 RE_INTL_TABLE = re.compile(
     r"(?:INTERNATIONAL\s+(?:OFFER(?:ING)?|PLACING)|\bPLACING)\b.{0,400}?"
     r"(?:No\.|Number)\s+of\s+placees\s+([\d,]+).{0,160}?"
-    r"Subscription\s+[Ll]evel\s*(?:\([^)]{0,140}\))?\s*(" + NUM + r")\s*times", re.S)
+    r"Subscription\s+[Ll]evel\s*(?:\([^)]{0,140}\))?\s*(" + NUM + r")\s*times", re.S | re.I)
 # 2021-23 prose: "allotted to a total of 218 placees under the Placing"
 RE_PLACEES_PROSE = re.compile(r"(?:a\s+total\s+of\s+)?([\d,]+)\s+placees", re.I)
 RE_INTL_PROSE = [
@@ -128,7 +128,7 @@ RE_PUB_INITIAL = re.compile(
     r"(?:Hong\s+Kong\s+)?Public\s+Offer(?:ing)?\s*[:：]?\s*([\d,]{5,})", re.I)
 RE_18C = re.compile(r"Rule\s+18C|Chapter\s+18C|Specialist\s+Technology\s+Compan", re.I)
 RE_PUB_X = re.compile(
-    r"HONG\s+KONG\s+PUBLIC\s+OFFER(?:ING)?.{0,400}?Subscription\s+[Ll]evel\s+(" + NUM + r")\s*times", re.S)
+    r"HONG\s+KONG\s+PUBLIC\s+OFFER(?:ING)?.{0,400}?Subscription\s+[Ll]evel\s+(" + NUM + r")\s*times", re.S | re.I)
 
 
 def parse(flat):

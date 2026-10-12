@@ -25,12 +25,13 @@ OUT = ROOT / "export"
 DATA_FILES = [
     # what the two builders read
     'data/deals.json', 'data/taxonomy.json', 'data/screener_config.json',
+    'data/market_views_template.json', 'data/desk_colours.json', 'data/batches/ah_study.json',
     'data/force_raw_codes.json', 'data/manual_splits.json',
     'data/auto_splits.json', 'data/entitlement_adjustments.json',
     'data/official_counts.json',
     'data/batches/pipeline.json', 'data/batches/phip_pipeline.json',
     'data/batches/newlistings.json', 'data/batches/ah_paths.json',
-    'data/batches/h_paths.json',
+    'data/batches/h_paths.json', 'data/batches/benchmark_prices.json',
     'data/batches/press_sizes.json', 'data/batches/aastocks_planned.json',
     # v13: the BASE batches merge_batches consumes. Without these a desk that
     # cannot reach HKEX could not re-merge at all — which is exactly the case
@@ -52,10 +53,23 @@ DATA_FILES = [
     'data/batches/deep_autoclass.json', 'data/batches/extracted_allotments.json',
     'data/batches/hkex_allotment_files.json', 'data/batches/ah_triplecheck.json',
     'data/batches/relinked_docs.json', 'data/batches/deep_classify.json',
+    'data/cornerstone_fill.json', 'data/banks_fill.json',
+    'data/batches/etnet_ipo.json',
+    'data/batches/greymarket.json', 'data/batches/offering_terms.json',
+    'data/batches/extracted_allocation.json', 'data/batches/day1_tape.json',
+    'data/batches/stabilizing_managers.json', 'data/batches/conflict_rulings.json',
+    'data/conflicts.json', 'data/batches/audit_opens.json', 'data/grey_market_manual.json',
+    'data/grey_market_etnet_news.json', 'data/grey_market_na.json',
 ]
+DATA_FILES += [str(p.relative_to(ROOT)) for p in sorted((ROOT / 'data/ah_study_cache').glob('*.json'))]
+DATA_FILES += ['data/batches/'+n+'.json' for n in ['subscription_review','subscription_manual_review','offer_number_review','financial_number_review','cornerstone_review','cornerstone_name_corrections','lockup_events']]
+DATA_FILES += ['data/market_supplement.json','data/batches/ah_market_supplement.json','data/batches/desk_source_review.json','data/desk_chart_data.json','data/peer_pairs.json','assets/desk_monitors.js']
+DATA_FILES += ['data/investor_aliases.json', 'data/pipeline_layout.json', 'data/ah_entitlement_reviews.json', 'assets/fflate.min.js', 'assets/fflate.LICENSE']
 # every pipeline module, so the ONE file can also refresh — not just rebuild
 LIB_MODULES = [
+    "accept_option_capacity", "filing_review", "review_offer_numbers", "review_financial_numbers", "review_cornerstones", "review_lockups", "audit_numbers", "refresh_filing_reviews", "refresh_lockup_windows",
     "incremental", "extract_allocation", "fetch_day1_tape", "analyse_clawback", "make_clawback_note",
+    "fill_cornerstones", "fill_banks", "fetch_etnet_ipo", "test_screener_formulas",
     "fetch_roster", "fetch_hkex_filings", "fetch_bodies", "fetch_phip",
     "fetch_newlistings", "fetch_names_cn", "fetch_ah_snapshot", "fetch_prices",
     "fetch_ah_ipo", "fetch_ah_paths", "fetch_stabilization", "fetch_aastocks",
@@ -67,7 +81,8 @@ LIB_MODULES = [
     "reparse_cornerstone", "audit_returns",
     "fetch_h_paths", "ingest_bbg", "audit_formulas", "lint_bbg", "audit_opens",
     "audit_identities", "audit_visual", "audit_prices", "audit_bbg_verify", "audit_fresh",
-    "corp_actions",
+    "corp_actions", "benchmark_windows", "ah_basis",
+    "market_universe", "cache_desk_monitors", "build_market_views", "apply_desk_styles", "analyse_ah_study", "make_ah_study",
     "merge_batches", "build_xlsx", "build_dashboard", "make_ah_notebook", "checks",
     "make_weekly_email",
 ]
@@ -134,6 +149,20 @@ def _run(name, datadir):
     """Execute an inlined builder in its own namespace (both modules define
     same-named helpers, so they must not share globals). Reads from the temp
     data folder, writes the finished file next to this script."""
+    # Builders now use support modules too. Put them beside the data they read,
+    # including for a clean offline build whose data lives in a temporary dir.
+    import io, zipfile, importlib
+    libdir = Path(datadir) / "ipo_lib"
+    libdir.mkdir(exist_ok=True)
+    with zipfile.ZipFile(io.BytesIO(base64.b64decode(_LIBZIP))) as archive:
+        archive.extractall(libdir)
+    if str(libdir) not in sys.path:
+        sys.path.insert(0, str(libdir))
+    for key, mod in list(sys.modules.items()):
+        old = getattr(mod, "__file__", None)
+        if old and Path(old).parent.name == "ipo_lib" and Path(old).resolve().parent != libdir.resolve():
+            sys.modules.pop(key, None)
+    importlib.invalidate_caches()
     src = zlib.decompress(base64.b64decode(_MODULES[name])).decode("utf-8")
     ns = {{"__name__": name, "BUNDLE_ROOT": datadir, "__file__": name + ".py"}}
     exec(compile(src, name + ".py", "exec"), ns)
@@ -144,12 +173,20 @@ def _run(name, datadir):
 def _install_lib():
     """Unpack the pipeline modules beside this file and make them importable,
     so `refresh` works from the single file too (not just `build`)."""
-    import zipfile, io, sys as _s
+    import zipfile, io, sys as _s, hashlib, importlib
     libdir = BUNDLE_ROOT / "ipo_lib"
-    if not (libdir / "merge_batches.py").exists():
+    stamp = libdir / ".bundle_version"
+    digest = hashlib.sha256(_LIBZIP.encode()).hexdigest()
+    if not stamp.exists() or stamp.read_text() != digest:
         libdir.mkdir(exist_ok=True)
         with zipfile.ZipFile(io.BytesIO(base64.b64decode(_LIBZIP))) as z:
             z.extractall(libdir)
+        stamp.write_text(digest)
+        for key, mod in list(_s.modules.items()):
+            old = getattr(mod, "__file__", None)
+            if old and Path(old).resolve().parent == libdir.resolve():
+                _s.modules.pop(key, None)
+        importlib.invalidate_caches()
     # the modules import EACH OTHER by bare name (merge_batches -> clean_names),
     # so the unpacked lib dir itself must be importable, not just its parent
     for _p in (str(libdir), str(BUNDLE_ROOT)):
@@ -201,12 +238,15 @@ STAGES = [
     ("classify-auto", "auto_classify", [], "parse"),
     ("ah-snapshot", "fetch_ah_snapshot", [], "aastocks"),
     ("merge-pre-prices", "merge_batches", [], "local"),
+    ("review-new-filings", "refresh_filing_reviews", [], "parse"),
     ("prices", "fetch_prices", [], "prices"),
     ("ah-at-ipo", "fetch_ah_ipo", [], "prices"),
     ("split-detect", "detect_splits", [], "prices"),
     ("h-paths", "fetch_h_paths", [], "prices"),
     ("ah-paths", "fetch_ah_paths", [], "prices"),
+    ("lockup-windows", "refresh_lockup_windows", [], "prices"),
     ("merge", "merge_batches", [], "local"),
+    ("ah-study", "analyse_ah_study", ["--refresh"], "prices"),
 ]
 
 
@@ -269,7 +309,7 @@ def cmd_update(skip):
     gates = {{}}
     # gates are LIB modules (unpacked beside the script), not inlined builders —
     # _run() only knows the two builders and raised KeyError on them
-    for g in ("checks", "audit_returns"):
+    for g in ("checks", "audit_returns", "audit_prices", "audit_numbers", "audit_identities", "audit_bbg_verify", "audit_fresh"):
         try:
             _run_stage(g)
             gates[g] = "PASS"
@@ -302,14 +342,15 @@ def cmd_update(skip):
     for g, v in gates.items():
         print(f"  gate {{g:16}}: {{v}}")
     print(f"  files rebuilt      : {{', '.join(built) if built else 'NONE'}}")
-    if fail == 0 and len(built) == 2:
+    all_ok = fail == 0 and len(built) == 2 and all(v == "PASS" for v in gates.values())
+    if all_ok:
         print("\\n  ALL GOOD — the two files beside this script are current.")
     else:
         print("\\n  NEEDS A LOOK. Nothing here is silently wrong: any stage that")
         print("  failed simply left its previous data in place, so the files are")
         print("  still usable — they just do not include that stage's update.")
         print("  Re-run:  %run hk_ipo.py update --skip <the failing group>")
-    return 0 if fail == 0 else 1
+    return 0 if all_ok else 1
 
 
 def main():
@@ -354,7 +395,7 @@ def main():
         if Path(datadir).resolve() != BUNDLE_ROOT:
             shutil.rmtree(datadir, ignore_errors=True)
     print("\\nDone. Two files are now next to this script:")
-    print("   HK_IPO_Database_v1.xlsx   <- open this, go to the NEW DEAL tab")
+    print("   HK_IPO_Database_v1.xlsx   <- open this, go to the AH monitor or Screener")
     print("   hk_ipo_dashboard.html     <- double-click for the charts")
 
 

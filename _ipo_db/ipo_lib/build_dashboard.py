@@ -18,7 +18,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "out" / "hk_ipo_dashboard.html"
 
-KEEP = ["code", "name", "name_cn", "sector", "subsector", "ipo_date",
+KEEP = ["code", "name", "name_full", "name_cn", "sector", "subsector", "ipo_date",
         "deal_size_hkdm", "size_basis", "price_range_lo", "price_range_hi", "final_price",
         "pct_in_range", "priced_at_cap", "mktcap_ipo_hkdm", "oversub_public_mult", "first_day_return_pct",
         "cornerstone_pct", "eff_free_float_pct", "eff_free_float_hkdm",
@@ -26,17 +26,17 @@ KEEP = ["code", "name", "name_cn", "sector", "subsector", "ipo_date",
         "is_h_share", "a_share_code", "a_premium_now", "a_share_proxy",
         "intl_placees", "public_alloc_pct", "clawback",
         "day1_vol_x_retail", "day1_range_pct",
-        "sponsors", "valuation_notes", "oversub_intl_mult", "ret_1m_pct",
+        "valuation_notes", "oversub_intl_mult", "ret_1m_pct",
         "alpha_1m_pct", "benchmark", "since_ipo_pct", "greenshoe_exercised_final",
         # v5: the explorer lets any of these be an axis, so they must ship
         "ret_1w_pct", "ret_3m_pct", "alpha_1w_pct", "alpha_3m_pct", "greenshoe_pct",
         "aftermkt_1m_pct", "aftermkt_1w_pct", "aftermkt_3m_pct",
         "alpha_1m_expop_pct", "bench_1m_expop_pct", "day1_open_close_pct",
         "day1_open_pop_pct", "pct_of_cap", "a_premium_ipo_pct", "pe_now",
-        "pe_ipo_bbg", "ps_now", "stabilization_end_date", "bench_1m_pct",
+        "pe_ipo_bbg", "ps_now", "stabilization_end_date", "bench_1m_pct", "bench_day1_pct",
         # the evening session before listing, and how it related to day 1
         "grey_pct",
-        "cornerstone_investors", "cornerstone_keys", "sponsors_cn", "industry_en", "sponsors_en",
+        "cornerstone_investors", "cornerstone_keys", "cornerstone_none", "cornerstone_list_note", "intl_note", "public_sub_note", "sponsors_cn", "industry_en", "sponsors_en",
         "sponsors_display", "bookrunners_display", "price_asof",
         # v13 alignment: everything the Excel Database shows now travels to the
         # HTML too, so a field cannot exist in one deliverable and not the other
@@ -106,9 +106,13 @@ def _offering_rows(root):
             pe_mid = round((r["pe_expected_lo"] + r["pe_expected_hi"]) / 2, 1)
         out.append({
             "name": r.get("name"), "expected_code": r.get("code"),
-            "name_cn": cn, "industry_en": r.get("industry_en") or industry,
+            "name_cn": r.get("name_cn") or cn, "industry_en": r.get("industry_en") or industry,
             "subsector": r.get("subsector"), "sector": r.get("sector"),
             "status": r.get("status") or "OFFERING NOW",
+            "bookrunners": "; ".join(r.get("bookrunners") or []) or None,
+            "greenshoe_pct": r.get("greenshoe_pct"),
+            "greenshoe_note": r.get("greenshoe_note"),
+            "cornerstone_investors": r.get("cornerstone_investors") or None,
             "expected_timing": r.get("listing_date") or "",
             "range_lo": r.get("range_lo"), "range_hi": r.get("range_hi"),
             "pe_expected_lo": r.get("pe_expected_lo"),
@@ -163,13 +167,14 @@ def _phip_as_pipeline(root, existing_names):
     except Exception:
         return []
     out = _offering_rows(root)
-    low = [n.lower().split()[0] for n in existing_names if n]
-    low += [(x.get("name") or "").lower().split()[0] for x in out if x.get("name")]
+    from pipeline_dedupe import company_key
+    low = {company_key(n) for n in existing_names if n}
+    low.update(company_key(x.get("name")) for x in out if x.get("name"))
     for a in apps:
         if not a.get("has_phip") or a.get("sponsor_terminated"):
             continue
         nm = (a.get("applicant") or "").split("(formerly")[0].strip().rstrip(",")
-        first = nm.lower().split()[0] if nm else ""
+        first = company_key(nm)
         if first and first in low:
             continue                      # already covered by a curated entry (Shein)
         p = a.get("parsed") or {}
@@ -185,6 +190,10 @@ def _phip_as_pipeline(root, existing_names):
             "profitable_at_ipo": p.get("profitable_at_ipo"),
             "business_desc": p.get("business_overview"),
             "doc_link": a.get("doc_link"),
+            "sponsors": "; ".join(p.get("sponsors") or []) or None,
+            "bookrunners": "; ".join(p.get("coordinators") or []) or None,
+            "a_share_code": p.get("a_share_code"),
+            "is_h_share": "Y" if p.get("is_ah_applicant") else None,
         })
     return out
 
@@ -303,6 +312,24 @@ table { font-variant-numeric: tabular-nums; }
   color: var(--text-secondary); font-weight: 600; padding: 7px 9px;
   border-bottom: 1px solid var(--line); }
 .tbl td { padding: 5px 9px; border-bottom: 1px solid var(--line); }
+.ah-select { border: 0; background: transparent; color: var(--text-primary); padding: 0; text-align: left; font: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+#ah-tbl tr.selected td { background: var(--surface-2); font-weight: 600; }
+#lockup-tbl tr.selected td { background: var(--surface-2); font-weight: 600; }
+#lockup-tbl table { table-layout: fixed; width: 100%; }
+#lockup-tbl th:nth-child(1) { width:16%; }
+#lockup-tbl th:nth-child(2) { width:8%; }
+#lockup-tbl th:nth-child(3) { width:11%; }
+#lockup-tbl th:nth-child(4),#lockup-tbl th:nth-child(5) { width:8%; }
+#lockup-tbl th:nth-child(6),#lockup-tbl th:nth-child(7),#lockup-tbl th:nth-child(10) { width:7%; }
+#lockup-tbl th:nth-child(8),#lockup-tbl th:nth-child(9) { width:6%; }
+#lockup-tbl th:nth-child(11) { width:12%; }
+#lockup-tbl th:nth-child(12) { width:4%; }
+#lockup-tbl th, #lockup-tbl td { overflow-wrap: anywhere; vertical-align: top; }
+#lockup-tbl th { letter-spacing: 0; }
+#lockup-tbl th:last-child { white-space: nowrap; }
+#lockup-event { max-width: min(600px, 80vw); }
+#ah-comparison { margin-top: 20px; }
+#ah-comparison summary { cursor: pointer; font-size: 13px; }
 .tbl tbody tr:nth-child(even) { background: color-mix(in srgb, var(--surface-2) 42%, transparent); }
 .tbl tbody tr:hover { background: color-mix(in srgb, var(--s1) 9%, transparent); }
 .num, td.num, th.num { text-align: right; }
@@ -339,6 +366,21 @@ svg .lbl { fill: var(--text-primary); font-weight: 600; }
 .card:hover { box-shadow: 0 4px 14px rgba(0,0,0,.09); transform: translateY(-1px); }
 .card h4 { font-size: 14px; letter-spacing: -.01em; margin-bottom: 2px; }
 .card .meta { font-size: 11.5px; color: var(--text-secondary); margin: 2px 0 8px; }
+#pipeline .cards { display:block; }
+#pipeline .pipeline-row { border-radius:0; box-shadow:none; padding:0; margin:0; border:0; border-bottom:1px solid var(--line); }
+#pipeline .pipeline-row:hover { transform:none; box-shadow:none; }
+#pipeline .pipeline-row summary, .pipeline-head { display:grid; grid-template-columns:minmax(220px,2fr) 125px 145px minmax(155px,1.3fr) 110px 95px; gap:14px; align-items:center; padding:16px 12px; }
+#pipeline .pipeline-row summary { cursor:pointer; list-style:none; font-size:12px; }
+#pipeline .pipeline-row summary::-webkit-details-marker { display:none; }
+#pipeline .pipeline-head { font-size:11px; text-transform:uppercase; letter-spacing:.04em; background:var(--surface-2); border-bottom:1px solid var(--line); }
+#pipeline .pipeline-row .pipe-name { font-size:13px; font-weight:600; }
+#pipeline .pipeline-row small { display:block; color:var(--text-secondary); margin-top:4px; font-weight:400; }
+#pipeline .pipeline-row .pipe-body { padding:6px 18px 18px; max-width:940px; }
+#pipeline .pipeline-row .cardtbl { width:100%; }
+#pipeline .pipeline-row[open] { background:var(--surface-2); }
+#pipeline .pipeline-row .num { text-align:right; }
+.issuer-name { font-size:10px; line-height:1.35; margin-top:3px; }
+@media(max-width:950px) { #pipeline .pipeline-row summary { grid-template-columns:1fr 1fr; } .pipeline-head { display:none; } }
 .card p { font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; }
 .badge.dim { opacity: .62; }
 .badge.good { background: color-mix(in srgb, var(--pos) 16%, transparent); color: var(--pos);
@@ -357,12 +399,14 @@ select, input { background: var(--surface-2); color: var(--text-primary);
 .tbl.deals th:hover { color: var(--s1); }
 .tbl.deals tbody tr:nth-child(even) { background: color-mix(in srgb, var(--surface-2) 45%, transparent); }
 .tbl.deals tbody tr:hover { background: color-mix(in srgb, var(--s1) 10%, transparent); }
-.tbl.deals { width: 100%; font-size: 12px; }
+.tbl.deals { width: 100%; font-size: 11.5px; }
 .tbl.deals td { padding: 4px 6px; border-bottom: 1px solid var(--line); white-space: nowrap; }
-.tbl.deals td:nth-child(2) { max-width: 178px; overflow: hidden; text-overflow: ellipsis; }
-.tbl.deals td:nth-child(3) { max-width: 136px; overflow: hidden; text-overflow: ellipsis;
+.tbl.deals th, .tbl.deals td { padding-left: 4px; padding-right: 4px; }
+.tbl.deals td:nth-child(2) { max-width: 130px; overflow: hidden; text-overflow: ellipsis; }
+.tbl.deals td:nth-child(3) { max-width: 100px; overflow: hidden; text-overflow: ellipsis;
   color: var(--text-secondary); }
-.tbl.deals td.csx { max-width: 140px; font-size: 11.5px; color: var(--text-secondary);
+.tbl.deals th:nth-child(7), .tbl.deals th:nth-child(8), .tbl.deals th:nth-child(12), .tbl.deals th:last-child { white-space: normal; max-width: 72px; }
+.tbl.deals td.csx { max-width: 110px; font-size: 11.5px; color: var(--text-secondary);
   overflow: hidden; text-overflow: ellipsis; }
 .tbl.deals td.csx.open { white-space: normal; max-width: 380px; line-height: 1.55;
   padding-top: 7px; padding-bottom: 7px; }
@@ -417,7 +461,7 @@ select, input { background: var(--surface-2); color: var(--text-primary);
 .more:hover { background: color-mix(in srgb, var(--s1) 22%, transparent); }
 .tbl.deals tbody tr { height: 30px; }
 .tbl .mono { font-variant-numeric: tabular-nums; color: var(--text-secondary); }
-.tbl td.up { color: var(--s3); } .tbl td.down { color: var(--s2); }
+.tbl td.up { color: #217346; } .tbl td.down { color: #b53939; }
 .calchip { background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px;
   padding: 4px 10px; font-size: 12.5px; }
 .calchip b { color: var(--s2); }
@@ -876,7 +920,8 @@ function similarityScore(t, d, W, idx) {
 """
 
 BODY_JS = r"""
-const DATA = %%DATA%%;
+const DATA = window.__IPO_DATA__;
+delete window.__IPO_DATA__;
 // force-include: the user's judgment outranks the score. Codes here are pinned
 // to the FRONT of every comp list, past filters. Declared before ANY renderer
 // runs — topComps is hoisted and fires during the initial paint.
@@ -948,38 +993,84 @@ $("#pricing-stat").textContent = atCap.length
   : "";
 
 // 4) A/H — filterable by sector/subsector, chart + full table
-const ahDeals = deals.filter(d => d.a_share_code
-  && (d.a_premium_now != null || d.a_premium_ipo_pct != null));
+const AHST = DATA.ahstudy || {};
+const ahDeals = (DATA.market_deals || deals).filter(d => d.a_share_code).map(d => {
+  const s = AHST[d.code] || {};
+  return {...d, a_premium_now: s.latest_premium_pct == null ? null : s.latest_premium_pct / 100,
+    a_premium_ipo_pct: s.offer_reference_premium_pct,
+    delta7: s.delta7, delta1m: s.delta1m,
+    classReview: /share-scale/.test(s.exclusion || "") && !s.entitlement_review};
+});
+let selectedAhCode = "3986";
+function renderSelectedAH() {
+  const d = ahDeals.find(d => d.code === selectedAhCode);
+  const s = AHST[selectedAhCode] || {}, box = $("#ah-history");
+  box.innerHTML = "";
+  if (!d) return;
+  $("#ah-stock").value = d.code;
+  document.querySelectorAll("#ah-tbl tr[data-code]").forEach(r =>
+    r.classList.toggle("selected", r.dataset.code === d.code));
+  $("#ah-history-title").textContent = `${d.name} · A ${d.a_share_code} / H ${d.code}`;
+  const hs = s.h_history || [], end = hs.length ? hs[hs.length - 1][0] : "unavailable";
+  $("#ah-history-note").textContent = `H listing ${d.ipo_date} · H snapshot ${s.latest_h_date || end} · A snapshot ${s.latest_a_date || "unavailable"}. IPO premium uses the H offer price and prior A/FX closes.`;
+  if (s.entitlement_review) $("#ah-history-note").textContent += ` Chart gap ${s.entitlement_review.h_ex_date} to ${new Date(Date.parse(s.entitlement_review.a_ex_date) - 86400000).toISOString().slice(0,10)}: the A/H ex-entitlement dates differ; premiums resume on ${s.entitlement_review.a_ex_date}.`;
+  if (d.classReview) {
+    box.innerHTML = "<p class='note'>Premium withheld pending the A/H share-class ratio review.</p>";
+    return;
+  }
+  const points = (s.history || []).filter(p => p[0] >= d.ipo_date && p[0] <= end && Number.isFinite(p[4]) && (!s.entitlement_review || (s.entitlement_review.events || [s.entitlement_review]).every(e => (p[0] >= e.h_ex_date) === (p[5] >= e.a_ex_date))));
+  if (!points.length) { box.innerHTML = "<p class='note'>No aligned A/H/FX history available.</p>"; return; }
+  const W = fitW(box, 900), H = 320, M = {l: 62, r: 26, t: 20, b: 40};
+  const time = dt => Date.parse(dt + "T00:00:00Z"), first = time(d.ipo_date), last = time(end);
+  const values = points.map(p => p[4] * 100), lo = Math.min(0, ...values), hi = Math.max(0, ...values);
+  const pad = Math.max(5, (hi - lo) * .08), X = lin(first, last, M.l, W - M.r), Y = lin(lo - pad, hi + pad, H - M.b, M.t);
+  const svg = el("svg", {viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": `${d.name} premium from ${d.ipo_date} through ${end}`, "data-first": d.ipo_date, "data-last": end, "data-points": points.length}, box);
+  niceTicks(lo - pad, hi + pad, 5).forEach(v => {
+    el("line", {x1: M.l, x2: W - M.r, y1: Y(v), y2: Y(v), class: "gridline"}, svg);
+    const t = el("text", {x: M.l - 8, y: Y(v) + 4, "text-anchor": "end", class: "axlabel"}, svg); t.textContent = `${v.toFixed(0)}%`;
+  });
+  for (let i = 0; i < 5; i++) {
+    const v = first + (last - first) * i / 4, t = el("text", {x: X(v), y: H - 13, "text-anchor": i === 0 ? "start" : i === 4 ? "end" : "middle", class: "axlabel"}, svg);
+    t.textContent = new Date(v).toISOString().slice(0, 10);
+  }
+  el("line", {x1: M.l, x2: W - M.r, y1: Y(0), y2: Y(0), stroke: css("--mid")}, svg);
+  // A gap in available pair observations stays a gap; do not interpolate months of missing A data.
+  let path = "", previous = null;
+  points.forEach(p => { const now = time(p[0]); path += `${previous == null || now - previous > 10 * 86400000 ? "M" : "L"}${X(now).toFixed(2)},${Y(p[4] * 100).toFixed(2)} `; previous = now; });
+  el("path", {d: path, fill: "none", stroke: css("--text-primary"), "stroke-width": 2}, svg);
+  const focus = el("circle", {r: 4, fill: css("--text-primary"), display: "none"}, svg);
+  svg.addEventListener("mousemove", ev => {
+    const rect = svg.getBoundingClientRect(), v = first + ((ev.clientX - rect.left) * W / rect.width - M.l) / (W - M.r - M.l) * (last - first);
+    const p = points.reduce((best, p) => Math.abs(time(p[0]) - v) < Math.abs(time(best[0]) - v) ? p : best, points[0]);
+    focus.setAttribute("cx", X(time(p[0]))); focus.setAttribute("cy", Y(p[4] * 100)); focus.setAttribute("display", "block");
+    showTT(`<b>${d.name}</b>${p[0]} · A premium ${fmt.pct(p[4] * 100)}<br>H HK$${p[1]} · A CNY ${p[2]} · CNYHKD ${p[3]}<br><span class="m">A observation ${p[5]} · FX observation ${p[6]}</span>`, ev);
+  });
+  svg.addEventListener("mouseleave", () => {focus.setAttribute("display", "none"); hideTT();});
+}
 function ahMode() { const el = document.querySelector("#ah-when"); return el ? el.value : "now"; }
 function redrawAHTab() {
   const sec = $("#ah-sec").value, sub = $("#ah-sub").value, atIPO = ahMode() === "ipo";
   const pick = d => atIPO
     ? (d.a_premium_ipo_pct == null ? null : d.a_premium_ipo_pct / 100)
     : d.a_premium_now;
-  const rows = ahDeals.filter(d => (!sec || d.sector === sec) && (!sub || d.subsector === sub)
-    && pick(d) != null);
-  const ahAll = rows.map(d => ({ name: d.name, h: d.code, a: d.a_share_code,
+  const rows = ahDeals.filter(d => (!sec || d.sector === sec) && (!sub || d.subsector === sub));
+  const ahAll = rows.filter(d => !d.classReview && Number.isFinite(pick(d))).map(d => ({ name: d.name, h: d.code, a: d.a_share_code,
                                  v: pick(d) })).sort((a, b) => b.v - a.v);
-  const AH_SHOW = 12;
-  const ah = ahAll.length > AH_SHOW * 2
-    ? ahAll.slice(0, AH_SHOW).concat(ahAll.slice(-AH_SHOW)) : ahAll;
+  const ah = ahAll;
   $("#chart-ah").innerHTML = "";
   if (ah.length) divergingBars($("#chart-ah"), ah, {});
   else $("#chart-ah").innerHTML = "<p class='note'>no A+H pairs in this slice</p>";
-  $("#ah-note").textContent = ahAll.length > ah.length
-    ? `Chart shows the ${AH_SHOW} widest each way of ${ahAll.length} pairs in this slice; the full slice is in the table below.`
-    : `${ahAll.length} pairs in this slice.`;
-  $("#ah-tbl").innerHTML = `<table class="tbl"><thead><tr><th>Name</th><th>H</th><th>A</th>
-    <th class="num">A prem today</th><th class="num">A prem @IPO</th><th class="num">Day-1</th>
-    <th class="num">1m</th><th class="num">Since</th><th>Subsector</th></tr></thead><tbody>` +
+  $("#ah-note").textContent = `${rows.length} of ${ahDeals.length} IPO A/H pairs · ${ahAll.length} available premiums · ${rows.length - ahAll.length} unavailable or under review. Seven-year IPO monitoring universe.`;
+  $("#ah-stock").innerHTML = rows.map(d => `<option value="${d.code}">${d.name} (${d.code})</option>`).join("");
+  if (!rows.some(d => d.code === selectedAhCode)) selectedAhCode = rows.length ? rows[0].code : "";
+  $("#ah-tbl").innerHTML = `<table class="tbl"><thead><tr><th>Compare</th><th>Name</th><th>H</th><th>A</th>
+    <th>Sector</th><th>Subsector</th><th class="num">Premium at IPO</th><th class="num">Premium at snapshot</th><th class="num">7-day Δ (pp)</th><th class="num">1-month Δ (pp)</th></tr></thead><tbody>` +
     rows.sort((a, b) => (pick(b) || 0) - (pick(a) || 0)).map(d =>
-      `<tr><td>${d.name}</td><td>${d.code}</td><td>${d.a_share_code}</td>
-       <td class="num">${d.a_premium_now == null ? "—" : fmt.pct(100 * d.a_premium_now)}</td>
-       <td class="num">${d.a_premium_ipo_pct == null ? "—" : fmt.pct(d.a_premium_ipo_pct)}</td>
-       <td class="num">${fmt.pct(d.first_day_return_pct)}</td>
-       <td class="num">${fmt.pct(d.ret_1m_pct)}</td>
-       <td class="num">${fmt.pct(d.since_ipo_pct)}</td><td>${d.subsector || "—"}</td></tr>`).join("") +
+      `<tr data-code="${d.code}"><td><input type="checkbox" class="ah-compare-pick" data-code="${d.code}" aria-label="Compare ${d.code}"></td><td><button type="button" class="ah-select" data-code="${d.code}">${d.name}</button></td><td>${d.code}</td><td>${d.a_share_code}</td><td>${d.sector}</td><td>${d.subsector || "—"}</td>
+       <td class="num">${d.classReview ? "Class ratio review" : d.a_premium_ipo_pct == null ? "—" : fmt.pct(d.a_premium_ipo_pct)}</td>
+       <td class="num">${d.classReview ? "Class ratio review" : d.a_premium_now == null ? "—" : fmt.pct(100 * d.a_premium_now)}</td><td class="num ${d.delta7>0?'up':d.delta7<0?'down':''}">${Number.isFinite(d.delta7)?d.delta7.toFixed(1):'—'}</td><td class="num ${d.delta1m>0?'up':d.delta1m<0?'down':''}">${Number.isFinite(d.delta1m)?d.delta1m.toFixed(1):'—'}</td></tr>`).join("") +
     `</tbody></table>`;
+  renderSelectedAH();
 }
 const ahSecs = [...new Set(ahDeals.map(d => d.sector).filter(Boolean))].sort();
 $("#ah-sec").innerHTML = `<option value="">all sectors</option>` + ahSecs.map(x => `<option>${x}</option>`).join("");
@@ -993,7 +1084,117 @@ fillAhSubs();
 $("#ah-sec").addEventListener("change", () => { fillAhSubs(); redrawAHTab(); });
 $("#ah-sub").addEventListener("change", redrawAHTab);
 $("#ah-when").addEventListener("change", redrawAHTab);
+$("#ah-stock").addEventListener("change", () => {selectedAhCode = $("#ah-stock").value; renderSelectedAH();});
+$("#ah-tbl").addEventListener("click", ev => {const b = ev.target.closest(".ah-select"); if (b) {selectedAhCode = b.dataset.code; renderSelectedAH(); $("#ah-history-title").scrollIntoView({block: "nearest"});}});
 redrawAHTab();
+
+// Filed lock-ups: the same event windows and closes used by the Excel sheet.
+const LOCKUPS = (DATA.lockups || {}).events || [];
+let selectedLockup = -1;
+const lockupStatus = e => !e.last_day_locked ? "Expiry unconfirmed" : e.window.status || e.date_basis;
+function chooseLockup(code) {
+  const candidates = LOCKUPS.map((e, i) => ({e, i})).filter(x => x.e.code === code);
+  const past = candidates.filter(x => x.e.last_day_locked && x.e.last_day_locked <= DATA.lockups.price_asof);
+  const priority = past.filter(x => x.e.category === "Cornerstone");
+  const pool = priority.length ? priority : past.length ? past : candidates;
+  pool.sort((a, b) => (b.e.last_day_locked || "").localeCompare(a.e.last_day_locked || ""));
+  selectedLockup = pool.length ? pool[0].i : -1;
+}
+function renderSelectedLockup() {
+  const box = $("#lockup-history"), e = LOCKUPS[selectedLockup];
+  box.innerHTML = "";
+  if (!e) {
+    $("#lockup-event").innerHTML = "";
+    $("#lockup-history-title").textContent = "No matching cornerstone schedule";
+    for (const id of ["lockup-before", "lockup-after", "lockup-date"]) $("#" + id).textContent = "—";
+    for (const id of ["lockup-before-dates", "lockup-after-dates", "lockup-date-basis", "lockup-history-note"]) $("#" + id).textContent = "";
+    return;
+  }
+  $("#lockup-stock").value = e.code;
+  $("#lockup-event").innerHTML = LOCKUPS.map((x, i) => ({x, i})).filter(x => x.x.code === e.code)
+    .map(({x, i}) => `<option value="${i}">${safeText(x.category)} · ${x.last_day_locked || "date unavailable"}</option>`).join("");
+  $("#lockup-event").value = String(selectedLockup);
+  document.querySelectorAll("#lockup-tbl tr[data-event]").forEach(r =>
+    r.classList.toggle("selected", Number(r.dataset.event) === selectedLockup));
+  const w = e.window;
+  $("#lockup-history-title").textContent = `${e.name} (${e.code}) · ${e.category}`;
+  $("#lockup-before").textContent = Number.isFinite(w.before_pct) ? fmt.pct(w.before_pct) : "—";
+  $("#lockup-after").textContent = Number.isFinite(w.after_pct) ? fmt.pct(w.after_pct) : "—";
+  $("#lockup-before-dates").textContent = w.pre_start && w.anchor ? `${w.pre_start} → ${w.anchor}` : "30 trading sessions before expiry";
+  $("#lockup-after-dates").textContent = w.anchor && w.post_end ? `${w.anchor} → ${w.post_end}` : "30 trading sessions after expiry";
+  $("#lockup-date").textContent = e.last_day_locked || "Expiry unconfirmed";
+  $("#lockup-date-basis").textContent = e.date_basis;
+  const source = e.url ? ` <a href="${safeText(e.url)}" target="_blank" rel="noopener">HKEX filing${e.page ? ` · PDF page ${e.page}` : ""}</a>` : "";
+  $("#lockup-history-note").innerHTML = `${safeText(lockupStatus(e))}. Prices through ${DATA.lockups.price_asof}. ` +
+    (w.anchor ? `Day 0 is the last HK trading session on or before expiry (${w.anchor}). ` : "") +
+    `Chart rebased to day 0 = 0%; split-neutral closes, excluding dividends and rights value.${source}`;
+  if (!w.anchor_close || !w.path || !w.path.some(p => Number.isFinite(p[2]))) {
+    box.innerHTML = `<p class="note">${safeText(lockupStatus(e))}. A chart needs an observed reference close at expiry.</p>`;
+    return;
+  }
+  const all = w.path.map(p => [p[0], p[1], Number.isFinite(p[2]) ? 100 * (p[2] / w.anchor_close - 1) : null, p[2]]);
+  const points = all.filter(p => Number.isFinite(p[2]));
+  const W = fitW(box, 900), H = 320, M = {l: 62, r: 26, t: 24, b: 42};
+  const values = points.map(p => p[2]), lo = Math.min(0, ...values), hi = Math.max(0, ...values);
+  const pad = Math.max(1, (hi - lo) * .08), X = lin(-30, 30, M.l, W - M.r), Y = lin(lo - pad, hi + pad, H - M.b, M.t);
+  const svg = el("svg", {viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": `${e.name}: 30 trading sessions before and after ${e.last_day_locked}`,
+    "data-event": selectedLockup, "data-points": points.length, "data-anchor": w.anchor}, box);
+  niceTicks(lo - pad, hi + pad, 5).forEach(v => {
+    el("line", {x1: M.l, x2: W - M.r, y1: Y(v), y2: Y(v), class: "gridline"}, svg);
+    const t = el("text", {x: M.l - 8, y: Y(v) + 4, "text-anchor": "end", class: "axlabel"}, svg); t.textContent = `${v.toFixed(1)}%`;
+  });
+  [-30, -15, 0, 15, 30].forEach(v => {
+    const t = el("text", {x: X(v), y: H - 14, "text-anchor": v === -30 ? "start" : v === 30 ? "end" : "middle", class: "axlabel"}, svg);
+    t.textContent = v === 0 ? "Day 0 · expiry reference" : `${v > 0 ? "+" : ""}${v} trading days`;
+  });
+  el("line", {x1: M.l, x2: W - M.r, y1: Y(0), y2: Y(0), stroke: css("--mid")}, svg);
+  el("line", {x1: X(0), x2: X(0), y1: M.t, y2: H - M.b, stroke: css("--mid"), "stroke-dasharray": "4 4"}, svg);
+  let path = "", started = false;
+  all.forEach(p => {
+    if (!Number.isFinite(p[2])) {started = false; return;}
+    path += `${started ? "L" : "M"}${X(p[0]).toFixed(2)},${Y(p[2]).toFixed(2)} `; started = true;
+    el("circle", {cx: X(p[0]), cy: Y(p[2]), r: 2.4, fill: css("--text-primary")}, svg);
+  });
+  el("path", {d: path, fill: "none", stroke: css("--text-primary"), "stroke-width": 2}, svg);
+  const focus = el("circle", {r: 4, fill: css("--text-primary"), display: "none"}, svg);
+  svg.addEventListener("mousemove", ev => {
+    const rect = svg.getBoundingClientRect(), v = -30 + ((ev.clientX - rect.left) * W / rect.width - M.l) / (W - M.r - M.l) * 60;
+    const p = all.reduce((best, p) => Math.abs(p[0] - v) < Math.abs(best[0] - v) ? p : best, all[0]);
+    if (Number.isFinite(p[2])) {focus.setAttribute("cx", X(p[0])); focus.setAttribute("cy", Y(p[2])); focus.setAttribute("display", "block");}
+    else focus.setAttribute("display", "none");
+    showTT(`<b>${safeText(e.name)}</b>Day ${p[0] > 0 ? "+" : ""}${p[0]} · ${p[1] || "session pending"}<br>` +
+      (Number.isFinite(p[2]) ? `Split-neutral HK$${p[3].toFixed(4)} · ${fmt.pct(p[2])} vs day 0` : "No observed close"), ev);
+  });
+  svg.addEventListener("mouseleave", () => {focus.setAttribute("display", "none"); hideTT();});
+}
+function redrawLockupTab() {
+  const sec = $("#lockup-sec").value, q = $("#lockup-q").value.trim();
+  const codes = new Set(LOCKUPS.filter(e => (!sec || e.sector === sec) && (!q || matchesDealSearch(deals.find(d => d.code === e.code), q))).map(e => e.code));
+  const stocks = deals.filter(d => codes.has(d.code)).sort((a, b) => a.name.localeCompare(b.name));
+  $("#lockup-stock").innerHTML = stocks.map(d => `<option value="${d.code}">${safeText(d.name)} (${d.code})</option>`).join("");
+  if (selectedLockup < 0 || !stocks.some(d => d.code === LOCKUPS[selectedLockup].code)) chooseLockup(stocks.length ? stocks[0].code : "");
+  const rows = LOCKUPS.map((e, i) => ({e, i})).filter(x => codes.has(x.e.code))
+    .sort((a, b) => {
+      const ad = a.e.last_day_locked, bd = b.e.last_day_locked;
+      if (!ad || !bd) return ad ? -1 : bd ? 1 : a.e.code.localeCompare(b.e.code);
+      const af = ad > DATA.lockups.price_asof, bf = bd > DATA.lockups.price_asof;
+      return af !== bf ? (af ? -1 : 1) : (af ? ad.localeCompare(bd) : bd.localeCompare(ad)) || a.e.code.localeCompare(b.e.code);
+    });
+  $("#lockup-note").textContent = `${stocks.length} stocks · ${rows.length} cornerstone schedules. Unconfirmed dates and future returns remain blank.`;
+  $("#lockup-tbl").innerHTML = `<table class="tbl"><thead><tr><th>Company / H code</th><th>Sector</th><th title="Full company roster; individual expiry dates can cover subsets. Refer to the event filing.">Company cornerstones</th><th>IPO date</th><th>Last day locked</th><th class="num">30 trading sessions before</th><th class="num">30 trading sessions after</th><th class="num">Cornerstone % of offer</th><th class="num">Since IPO %</th><th class="num">Deal HK$m</th><th>Status</th><th>Source</th></tr></thead><tbody>` +
+    rows.map(({e, i}) => {const d = deals.find(d => d.code === e.code), names = d?.cornerstone_investors || [];return `<tr data-event="${i}"><td><button type="button" class="ah-select lockup-select" data-event="${i}">${safeText(e.name)} (${e.code})</button></td><td>${safeText(e.sector)}</td><td title="${safeText(names.join('; '))}">${names.length ? `<details><summary>${safeText(names[0])}${names.length > 1 ? ` +${names.length-1}` : ''}</summary>${safeText(names.join('; '))}</details>` : 'Roster unconfirmed'}</td><td>${e.ipo_date || "—"}</td><td>${e.last_day_locked || "Expiry unconfirmed"}</td><td class="num">${Number.isFinite(e.window.before_pct) ? fmt.pct(e.window.before_pct) : "—"}</td><td class="num">${Number.isFinite(e.window.after_pct) ? fmt.pct(e.window.after_pct) : "—"}</td><td class="num">${d?.cornerstone_pct==null?'—':fmt.pct(d.cornerstone_pct)}</td><td class="num">${d?.since_ipo_pct==null?'—':fmt.pct(d.since_ipo_pct)}</td><td class="num">${d?.deal_size_hkdm==null?'—':fmt.n(d.deal_size_hkdm)}</td><td title="${safeText(e.date_basis)}">${safeText(lockupStatus(e))}</td><td>${e.url ? `<a href="${safeText(e.url)}" target="_blank" rel="noopener" title="${safeText(e.date_basis)}${e.page ? ` · PDF page ${e.page}` : ""}">HKEX</a>` : "—"}</td></tr>`}).join("") + `</tbody></table>`;
+  renderSelectedLockup();
+}
+$("#lockup-sec").innerHTML = `<option value="">all sectors</option>` + [...new Set(deals.map(d => d.sector))].sort().map(s => `<option>${safeText(s)}</option>`).join("");
+$("#lockup-sec").addEventListener("change", redrawLockupTab);
+$("#lockup-q").addEventListener("input", redrawLockupTab);
+$("#lockup-stock").addEventListener("change", () => {chooseLockup($("#lockup-stock").value); renderSelectedLockup();});
+$("#lockup-event").addEventListener("change", () => {selectedLockup = Number($("#lockup-event").value); renderSelectedLockup();});
+$("#lockup-tbl").addEventListener("click", ev => {const b = ev.target.closest(".lockup-select"); if (b) {selectedLockup = Number(b.dataset.event); renderSelectedLockup(); $("#lockup-history-title").scrollIntoView({block: "nearest"});}});
+const lockupDefault = LOCKUPS.filter(e => e.category === "Cornerstone" && e.window.status === "Complete")
+  .sort((a, b) => b.last_day_locked.localeCompare(a.last_day_locked))[0];
+chooseLockup(lockupDefault ? lockupDefault.code : deals[0].code);
+redrawLockupTab();
 
 // ------------------- what drives the A/H premium (computed, not asserted) ---
 function renderAhDrivers() {
@@ -1159,7 +1360,8 @@ function groupBy(arr, f) { const o = {}; arr.forEach(x => { const k = f(x); (o[k
 // "WITHDRAWN - offering pulled 2026-07-08" CONTAINS the word "offering", so a
 // bare /OFFERING/i test badged EKH, pulled in July, as OFFERING NOW and ranked
 // it first. Withdrawn is checked first, everywhere.
-const isPulled = p => p.withdrawn === true || /^\s*WITHDRAWN/i.test(p.status || "");
+const isPulled = p => p.withdrawn === true || p.postponed === true ||
+                      /^\s*(WITHDRAWN|POSTPONED)/i.test(p.status || "");
 const isOffering = p => !isPulled(p) && /OFFERING/i.test(p.status || "");
 const pipeOrder = [...DATA.pipe].sort((a, b) => {
   const rank = p => isPulled(p) ? 9
@@ -1168,7 +1370,12 @@ const pipeOrder = [...DATA.pipe].sort((a, b) => {
     : /PHIP/i.test(p.status || "") ? 2 : 3;
   return rank(a) - rank(b) || String(a.name).localeCompare(String(b.name));
 });
-$("#cards").innerHTML = pipeOrder.map(p => {
+const pipelineStage = p => isPulled(p) ? "Withdrawn / postponed" : isOffering(p) ? "Offering" : /PHIP/i.test(p.status || "") ? "Hearing cleared" : "Filed / reported";
+function drawPipeline() {
+const q = $("#pipe-q").value.trim().toLowerCase(), stage = $("#pipe-stage").value;
+const shown = pipeOrder.filter(p => (!stage || pipelineStage(p) === stage) && (!q || [p.name, p.name_cn, p.sector, p.subsector].some(v => String(v || "").toLowerCase().includes(q)) || normalCode(p.expected_code) === normalCode(q) && normalCode(q)));
+$("#pipe-count").textContent = `${shown.length} deals · snapshot ${DATA.as_of} · click a company to expand terms`;
+$("#cards").innerHTML = shown.map(p => {
   const comps = topComps({ name: p.name, sector: p.sector, subsector: p.subsector,
     size: p.expected_size_hkdm, profitable: p.profitable_at_ipo, is_h: p.is_h_share,
     ref_date: DATA.as_of }, 3);
@@ -1184,7 +1391,7 @@ $("#cards").innerHTML = pipeOrder.map(p => {
       ? `${p.ps_expected_lo}–${p.ps_expected_hi}x` : `${p.ps_expected_lo}x`]);
   if (p.pe_at_h_cap) rows.push(["P/E at H cap (A-anchored)", `≈${p.pe_at_h_cap}x (A trades ${p.a_pe_ttm}x)`]);
   if (p.h_cap_vs_a_pct != null) rows.push(["H cap vs live A", fmt.pct(p.h_cap_vs_a_pct)]);
-  if (p.cornerstone_pct) rows.push(["Cornerstone", p.cornerstone_pct.toFixed(0) + "% locked"]);
+  if (p.cornerstone_pct) rows.push(["Cornerstone", p.cornerstone_pct.toFixed(1) + "% locked"]);
   else if (p.cornerstone_pct === 0) rows.push(["Cornerstone", "none — no tranche locked up"]);
   if (p.cornerstone_investors) rows.push(["Cornerstone investors",
     Array.isArray(p.cornerstone_investors) ? p.cornerstone_investors.join("; ")
@@ -1202,31 +1409,29 @@ $("#cards").innerHTML = pipeOrder.map(p => {
   if (p.a_share_code) rows.push(["A-share", p.a_share_code +
     (p.a_price_now ? ` @ ¥${p.a_price_now}` : "")]);
   if (p.industry_en) rows.push(["Industry (AAStocks)", p.industry_en]);
-  if (p.sponsors) rows.push(["Banks", p.sponsors]);
+  if (p.sponsors) rows.push(["Sponsors", p.sponsors]);
+  if (p.bookrunners) rows.push(["Bookrunners / OCs", p.bookrunners]);
+  if (p.lot_size) rows.push(["Lot size", Number(p.lot_size).toLocaleString() + " shares"]);
   if (p.use_of_proceeds) rows.push(["Use of proceeds", p.use_of_proceeds]);
   const size = p.expected_size_lo_usdm
     ? "US$" + p.expected_size_lo_usdm + "–" + p.expected_size_hi_usdm + "m"
     : (p.expected_size_hkdm ? fmt.hkd(p.expected_size_hkdm) : null);
-  return `<div class="card ${offering ? "hotcard" : ""}">
-  <div class="cardhd"><h4>${p.name}${p.name_cn ? " · " + p.name_cn : ""}</h4>
-    <span class="badge ${offering ? "hot" : ""}">${
-      offering ? "OFFERING NOW" : (p.status || "filed")}</span></div>
-  <div class="meta">${p.subsector || p.sector || "sector not yet classified"}</div>
-  <div class="chips">
-  ${size ? `<span class="badge">${size}</span>`
-         : `<span class="badge dim">size not guided</span>`}
-  ${p.is_h_share ? '<span class="badge">A+H</span>' : ""}
-  ${p.profitable_at_ipo === "Y" || p.profitable_at_ipo === true ? '<span class="badge good">profitable</span>'
-    : p.profitable_at_ipo != null ? '<span class="badge bad">loss-making</span>' : ""}
-  </div>
-  ${p.expected_size_basis ? `<div class="sizebasis">size basis: ${p.expected_size_basis}</div>` : ""}
-  <table class="cardtbl">${rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join("")}</table>
-  ${p.business_desc ? `<p class="desc clamp">${p.business_desc}</p>` +
-      (p.business_desc.length > 200
-        ? `<span class="more pmore" title="show the full description">more ▾</span>` : "") : ""}
-  ${p.doc_link ? `<div class="meta"><a href="${p.doc_link}" rel="noopener">filing ↗</a></div>` : ""}
-  <div class="meta comps">closest comps: ${comps.map(c => `${c.d.name} (${c.d.code})`).join(" · ") || "—"}</div></div>`;
+  const price = p.range_lo && p.range_hi ? `HK$${p.range_lo}–${p.range_hi}` : p.range_hi ? `≤ HK$${p.range_hi}` : "—";
+  return `<details class="card pipeline-row"><summary>
+    <span class="pipe-name">${safeText(p.name)}${p.expected_code ? ` (${safeText(p.expected_code)})` : ""}<small>${safeText(p.name_cn || "")} · details ▾</small></span>
+    <span>${pipelineStage(p)}</span><span>${safeText(p.expected_timing || "Not announced")}</span>
+    <span>${safeText(p.subsector || p.sector || "Unclassified")}</span><span class="num">${size || "Not guided"}</span><span class="num">${price}</span>
+    </summary><div class="pipe-body"><p class="meta">${safeText(p.status || "")} · ${p.is_h_share ? "A+H" : "H-only"}${p.profitable_at_ipo != null ? " · " + ((p.profitable_at_ipo === true || p.profitable_at_ipo === "Y") ? "Profitable" : "Loss-making") : ""}</p>
+    ${p.expected_size_basis ? `<p class="sizebasis">Size basis: ${safeText(p.expected_size_basis)}</p>` : ""}
+    <table class="cardtbl">${rows.map(([k, v]) => `<tr><td>${safeText(k)}</td><td>${safeText(v)}</td></tr>`).join("")}</table>
+    ${p.business_desc ? `<p class="desc">${safeText(p.business_desc)}</p>` : ""}
+    ${p.doc_link ? `<p class="meta"><a href="${safeText(p.doc_link)}" rel="noopener">HKEX filing ↗</a></p>` : ""}
+    <p class="meta comps">Closest comps: ${comps.map(c => `${safeText(c.d.name)} (${c.d.code})`).join(" · ") || "—"}</p></div></details>`;
 }).join("");
+}
+$("#pipe-q").addEventListener("input", drawPipeline);
+$("#pipe-stage").addEventListener("change", drawPipeline);
+drawPipeline();
 
 // IPO calendar strip — the dates that matter this fortnight
 (function calendar() {
@@ -1256,21 +1461,29 @@ function topComps(t, n) {
 }
 // one matcher for every box: code with/without leading zeros, EN substring,
 // CN substring, or the "Name (1234)" form the datalist inserts
+function normalCode(q) {
+  const s = String(q || "").trim().replace(/\s+HK\s+Equity$/i, "").replace(/\.HK$/i, "");
+  return /^\d{1,5}$/.test(s) ? String(Number(s)).padStart(4, "0") : null;
+}
+function matchesDealSearch(d, q) {
+  if (!d) return false;
+  const query = String(q || "").trim().toLowerCase(), code = normalCode(query);
+  return code ? normalCode(d.code) === code : [d.name, d.name_full, d.name_cn, d.a_share_code]
+    .some(v => String(v || "").toLowerCase().includes(query));
+}
 function findDeal(q) {
   q = (q || "").trim();
   if (!q) return null;
   const par = q.match(/\((\d{3,5})\)\s*$/);
   if (par) q = par[1];
   const ql = q.toLowerCase();
-  if (/^\d{3,5}$/.test(q)) {
-    const c = q.padStart(4, "0");
-    const hit = deals.find(d => d.code === c);
+  if (normalCode(q)) {
+    const hit = deals.find(d => normalCode(d.code) === normalCode(q));
     if (hit) return hit;
   }
   return deals.find(d => (d.name || "").toLowerCase() === ql)
       || deals.find(d => (d.name || "").toLowerCase().startsWith(ql))
-      || deals.find(d => (d.name || "").toLowerCase().includes(ql)
-                      || (d.name_cn || "").includes(q));
+      || deals.find(d => matchesDealSearch(d, q));
 }
 const sel = $("#picker");
 const opts = DATA.pipe.map(p => ({ v: "P:" + p.name, t: "▶ " + p.name + "  (pipeline)" }))
@@ -1280,7 +1493,7 @@ sel.innerHTML = opts.map(o => `<option value="${o.v}">${o.t}</option>`).join("")
 sel.addEventListener("change", () => { renderPick(); labReset(); });
 // the finder drives the picker: type CATL or 3750, land on the deal
 $("#deal-list").innerHTML = deals.map(d =>
-  `<option value="${d.name} (${d.code})">`).join("");
+  `<option value="${safeText(d.name)} (${d.code})" label="${safeText(d.name_full || d.name)}">`).join("");
 const finder = $("#finder");
 const jumpTo = () => {
   const hit = findDeal(finder.value);
@@ -1367,7 +1580,7 @@ function renderBrief(t, comps) {
   const med = f => median(peers.map(f).filter(v => v != null));
   const n_of = f => peers.map(f).filter(v => v != null).length;
   const tiles = [];
-  if (m.status && !/^\s*WITHDRAWN/i.test(m.status) && /OFFERING/i.test(m.status)) {
+  if (m.status && !/^\s*(WITHDRAWN|POSTPONED)/i.test(m.status) && /OFFERING/i.test(m.status)) {
     tiles.push([m.status, "status", "hot"]);
     if (m.range_lo && m.range_hi) tiles.push([`HK$${m.range_lo}–${m.range_hi}`, "price range"]);
     else if (m.range_hi) tiles.push([`≤ HK$${m.range_hi}`, "maximum offer price"]);
@@ -1382,7 +1595,7 @@ function renderBrief(t, comps) {
       tiles.push([fmt.pct(aOver),
         `A premium over the H cap (H cap is ${fmt.pct(m.h_cap_vs_a_pct)} vs the A line)`]);
     }
-    if (m.cornerstone_pct) tiles.push([m.cornerstone_pct.toFixed(0) + "%", "cornerstone locked"]);
+    if (m.cornerstone_pct) tiles.push([m.cornerstone_pct.toFixed(1) + "%", "cornerstone locked"]);
     if (m.expected_timing) tiles.push([m.expected_timing, "expected listing"]);
   } else if (m.first_day_return_pct != null) {
     tiles.push([fmt.pct(m.first_day_return_pct), "its own day-1"]);
@@ -1489,9 +1702,9 @@ const METRICS = [
   // to get it rather than pretending a number exists
   ["P/S today", "ps_now", v => v == null ? "terminal (BBG)" : fmt.x(v)],
   ["DEMAND", null, null],
-  ["Public sub", "oversub_public_mult", v => fmt.x(v)],
-  ["Instl sub", "oversub_intl_mult", v => fmt.x(v)],
-  ["Cornerstone %", "cornerstone_pct", v => v == null ? "—" : v.toFixed(0) + "%"],
+  ["Public sub", "oversub_public_mult", v => subMultiple(v)],
+  ["Instl sub", "oversub_intl_mult", (v,d) => institutionalMultiple(d)],
+  ["Cornerstone %", "cornerstone_pct", v => v == null ? "—" : v.toFixed(1) + "%"],
   // what can actually TRADE on day 1: the offer less the locked-up cornerstone
   // take. The money/share figures need no market cap, so they survive rows
   // whose cap is not derivable; the % is that same number over the cap.
@@ -1499,13 +1712,14 @@ const METRICS = [
   ["Eff. free float (shares)", "eff_free_float_shares",
      v => v == null ? "—" : v.toLocaleString()],
   ["Eff. free float", "eff_free_float_pct", v => v == null ? "—" : v.toFixed(1) + "% of cap"],
-  ["Greenshoe size", "greenshoe_pct", v => v == null ? "—" : v.toFixed(0) + "%"],
+  ["Max shoe %", "greenshoe_pct", v => v == null ? "—" : v.toFixed(0) + "%"],
   ["Greenshoe outcome", "greenshoe_exercised_final", v => v || "—"],
   ["Shoe ends (filed)", "stabilization_end_date", v => v || "—"],
   // the night before: last price before the exchange opened
   ["Grey mkt vs offer", "grey_pct", v => fmt.pct(v)],
   ["PERFORMANCE (vs offer)", null, null],
   ["Day-1", "first_day_return_pct", v => fmt.pct(v)],
+  ["Benchmark index Day-1", "bench_day1_pct", v => fmt.pct(v)],
   ["1-week", "ret_1w_pct", v => fmt.pct(v)],
   ["1-month", "ret_1m_pct", v => fmt.pct(v)],
   ["3-month", "ret_3m_pct", v => fmt.pct(v)],
@@ -1525,11 +1739,11 @@ const METRICS = [
   ["Sponsors", "sponsors_display", v => banksCell(v, 3)],
   ["Bookrunners", "bookrunners_display", v => banksCell(v, 4)],
   ["Cornerstone investors", "cornerstone_investors",
-   v => Array.isArray(v) && v.length
-        ? `<span class="csxp">${v.slice(0, 2).join(" · ")}` +
-          (v.length > 2 ? ` <span class="more csmore" data-full="${v.join("; ").replace(/"/g, "&quot;")}"
+   (v, d) => Array.isArray(v) && v.length
+        ? `<span class="csxp">${v.slice(0, 2).map(safeText).join(" · ")}` +
+          (v.length > 2 ? ` <span class="more csmore" data-full="${safeText(v.join("; "))}"
              title="show the full list">+${v.length - 2} all ▾</span>` : "") + `</span>`
-        : "—"],
+        : safeText(csList(d || {}))],
 ];
 const DRIVERS = [
   ["deal size", d => d.deal_size_hkdm > 0 ? Math.log10(d.deal_size_hkdm) : null,
@@ -1540,12 +1754,12 @@ const DRIVERS = [
    v => Math.pow(10, v).toFixed(0) + "x", true],
   ["instl sub", d => d.oversub_intl_mult > 0 ? Math.log10(d.oversub_intl_mult) : null,
    v => Math.pow(10, v).toFixed(1) + "x", true],
-  ["cornerstone %", d => d.cornerstone_pct, v => v.toFixed(0) + "%", false],
+  ["cornerstone %", d => d.cornerstone_pct, v => v.toFixed(1) + "%", false],
   ["A prem at IPO", d => d.a_premium_ipo_pct, v => v.toFixed(0) + "%", false],
   ["P/E at IPO", d => d.pe_ipo, v => v.toFixed(0) + "x", false],
   ["P/S at IPO", d => d.ps_ipo, v => v.toFixed(1) + "x", false],
   ["% of cap", d => d.pct_of_cap, v => v.toFixed(0) + "%", false],
-  ["greenshoe %", d => d.greenshoe_pct, v => v.toFixed(0) + "%", false],
+  ["max shoe %", d => d.greenshoe_pct, v => v.toFixed(0) + "%", false],
   ["day-1", d => d.first_day_return_pct, v => fmt.pct(v), false],
   ["1m ex-pop", d => d.aftermkt_1m_pct, v => fmt.pct(v), false],
   ["A prem today", d => d.a_premium_now == null ? null : 100 * d.a_premium_now,
@@ -1648,7 +1862,7 @@ function renderLab() {
   // 2. matrix — candidate first, per-row hi/lo edges, painted headers
   const cols = [{ name: (t.name || "target") + " (target)", d: t.meta || {}, paint: null }]
     .concat(chosen.map(d => ({ name: d.name, d, paint: paintOf(d) })));
-  const SIGNED = new Set(["first_day_return_pct", "ret_1w_pct", "ret_1m_pct", "ret_3m_pct",
+  const SIGNED = new Set(["first_day_return_pct", "bench_day1_pct", "ret_1w_pct", "ret_1m_pct", "ret_3m_pct",
     "aftermkt_1m_pct", "aftermkt_1w_pct", "aftermkt_3m_pct", "alpha_1m_pct",
     "alpha_1m_expop_pct", "day1_open_close_pct", "since_ipo_pct",
     "a_premium_ipo_pct", "a_premium_now"]);
@@ -2192,7 +2406,13 @@ function renderAH(chosen) {
       if (Number.isFinite(last) && Number.isFinite(Y(last))) {
         // halo + side-aware placement so the tag never sits ON the line
         const above = Y(last) > (M.t + H - M.b) / 2;
-        const t = el("text", { x: W - M.r - 2, y: Y(last) + (above ? -7 : 14),
+        let tagY = Y(last) + (above ? -7 : 14);
+        const ipoTagY = ipoLvl == null ? null : Y(ipoLvl) - 4;
+        if (ipoTagY != null && Math.abs(tagY - ipoTagY) < 18) {
+          tagY = ipoTagY + (tagY < ipoTagY ? -18 : 18);
+        }
+        tagY = Math.max(M.t + 10, Math.min(H - M.b - 4, tagY));
+        const t = el("text", { x: W - M.r - 2, y: tagY,
           "text-anchor": "end", class: "m halo" }, svg);
         t.textContent = "now " + (last > 0 ? "+" : "") + last.toFixed(0) + "%";
       }
@@ -2417,6 +2637,7 @@ const AXES = [
   ["pct_of_cap",          "priced at % of cap", "%", false],
   ["a_premium_ipo_pct", "A premium vs H at IPO", "%", false],
   ["first_day_return_pct", "day-1 return", "%", false],
+  ["bench_day1_pct", "day-1 sector benchmark return", "%", false],
   ["ret_1w_pct",          "1-week return", "%", false],
   ["ret_1m_pct",          "1-month return", "%", false],
   ["ret_3m_pct",          "3-month return", "%", false],
@@ -2429,7 +2650,7 @@ const AXES = [
   ["alpha_1m_pct",        "1-month alpha vs sector index", "%", false],
   ["alpha_1m_expop_pct",  "1-month alpha ex-pop (matched window)", "%", false],
   ["alpha_3m_pct",        "3-month alpha vs sector index", "%", false],
-  ["greenshoe_pct",       "greenshoe size %", "%", false],
+  ["greenshoe_pct",       "max shoe %", "%", false],
   ["pe_now",              "P/E today (BBG desk)", "x", true],
   ["since_ipo_pct",       "return since IPO", "%", false],
 ];
@@ -2517,13 +2738,13 @@ redrawExplorer();
 // Hillhouse back?") and by sponsor
 const tblRows = [...deals].sort((a, b) => (b.deal_size_hkdm || 0) - (a.deal_size_hkdm || 0));
 const SUBSHORT = {
-  "Smart hardware / consumer electronics": "Smart hw / cons. elec.",
-  "Internet platform / e-commerce": "Internet / e-commerce",
+  "Hardware & electronics": "Smart hw / cons. elec.",
+  "Internet & fintech": "Internet / e-commerce",
   "Robotics & autonomous driving": "Robotics & autonomous",
-  "SaaS / enterprise software": "SaaS / enterprise",
+  "Software & AI": "SaaS / enterprise",
   "Beverages / packaged food": "Beverages / pkg. food",
   "Biotech pre-revenue (18A)": "Biotech 18A",
-  "AI application / agent software": "AI application",
+  "Software & AI": "AI application",
   "Brokers / asset management": "Brokers / asset mgmt",
   "Commercial & Professional Services": "Comm. & prof. services",
   "F&B chain / restaurants": "F&B / restaurants",
@@ -2533,15 +2754,18 @@ const SUBSHORT = {
 function subShort(v) { return SUBSHORT[v] || v || "—"; }
 function csList(d) {
   const v = d.cornerstone_investors;
-  return Array.isArray(v) ? v.join("; ") : (v || "");
+  return Array.isArray(v) && v.length ? v.join("; ") : (v || (d.cornerstone_none || d.cornerstone_pct === 0 ? "none — no cornerstone tranche" : "Not established"));
 }
+function safeText(v) { return String(v || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;"); }
+function subMultiple(v) { return v == null ? "—" : v.toLocaleString("en-US", {minimumFractionDigits:2,maximumFractionDigits:3}) + "×"; }
+function institutionalMultiple(d) { return d.oversub_intl_mult == null && d.intl_note ? (d.code === "2161" ? "N/A" : "Not disclosed") : subMultiple(d.oversub_intl_mult); }
 function csShort(d) {
   const v = d.cornerstone_investors;
-  if (!Array.isArray(v) || !v.length) return "—";
+  if (!Array.isArray(v) || !v.length) return safeText(csList(d));
   // ONE name + the "+N all" chip: two names always ellipsized anyway, which
   // read as cut-off words — one full name reads clean
   // legal suffixes carry no information in a 150px cell — full name on hover
-  return v[0].replace(/\s+(Limited|Ltd\.?|LLC|L\.L\.C\.?|Inc\.?|Pte\. Ltd\.?|Co\.?,? Ltd\.?)$/i, "");
+  return safeText(v[0].replace(/\s+(Limited|Ltd\.?|LLC|L\.L\.C\.?|Inc\.?|Pte\. Ltd\.?|Co\.?,? Ltd\.?)$/i, ""));
 }
 let SORT_K = "deal_size_hkdm", SORT_DIR = -1;
 function retCell(v) {
@@ -2552,8 +2776,8 @@ function retCell(v) {
 function drawTable() {
   const q = ($("#tbl-q").value || "").trim().toLowerCase();
   let rows = q ? tblRows.filter(d =>
-    [d.name, d.code, d.name_cn, d.sector, d.subsector, csList(d), d.sponsors, d.sponsors_en]
-      .some(v => (v || "").toString().toLowerCase().includes(q))) : tblRows.slice();
+    (matchesDealSearch(d, q) || [d.sector, d.subsector, csList(d), d.sponsors_display, d.sponsors_en]
+      .some(v => (v || "").toString().toLowerCase().includes(q)))) : tblRows.slice();
   rows.sort((a, b) => {
     const x = a[SORT_K], y = b[SORT_K];
     if (x == null && y == null) return 0;
@@ -2562,17 +2786,18 @@ function drawTable() {
     return (typeof x === "number" ? x - y : String(x).localeCompare(String(y))) * SORT_DIR;
   });
   $("#tbl-body").innerHTML = rows.map(d => `<tr><td class="mono">${d.code}</td>
-  <td title="${(d.name + (d.name_cn ? " " + d.name_cn : "")).replace(/"/g, "'")}"><b>${d.name}</b>${d.name_cn ? ` <span class="m">${d.name_cn}</span>` : ""}</td>
+  <td title="${safeText(d.name_full || d.name)}"><b>${d.name}</b>${d.name_cn ? ` <span class="m">${d.name_cn}</span>` : ""}${d.name_full ? `<div class="m issuer-name">${safeText(d.name_full)}</div>` : ""}</td>
   <td title="${d.subsector || ""}">${subShort(d.subsector)}</td>
   <td class="mono" title="${d.ipo_date}">${d.ipo_date.slice(2)}</td><td class="num">${fmt.m(d.deal_size_hkdm)}</td>
   <td class="num">${fmt.px(d.final_price)}</td>
-  <td class="num">${d.oversub_public_mult == null ? "—" : fmt.x(d.oversub_public_mult)}</td>
-  <td class="num">${d.cornerstone_pct == null ? "—" : d.cornerstone_pct.toFixed(0) + "%"}</td>
+  <td class="num" title="${safeText(d.public_sub_note)}">${subMultiple(d.oversub_public_mult)}</td>
+  <td class="num" title="${safeText(d.intl_note)}">${institutionalMultiple(d)}</td>
+  <td class="num">${d.cornerstone_pct == null ? "—" : d.cornerstone_pct.toFixed(1) + "%"}</td>
   ${retCell(d.grey_pct)}
-  ${retCell(d.first_day_return_pct)}${retCell(d.ret_1m_pct)}${retCell(d.ret_3m_pct)}${retCell(d.since_ipo_pct)}
+  ${retCell(d.first_day_return_pct)}${retCell(d.bench_day1_pct)}${retCell(d.ret_1m_pct)}${retCell(d.ret_3m_pct)}${retCell(d.since_ipo_pct)}
   <td class="num">${d.pe_ipo == null ? (d.profitable_at_ipo === "N" ? "n/m" : "—") : fmt.x(d.pe_ipo)}</td>
   <td class="mono" title="${d.a_share_code || ""}">${(d.a_share_code || "—").split(".")[0]}</td>
-  <td class="csx" title="${csList(d).replace(/"/g, "'")}" data-full="${csList(d).replace(/"/g, "&quot;")}">${csShort(d)}${
+  <td class="csx" title="${safeText(csList(d))}" data-full="${safeText(csList(d))}">${csShort(d)}${
       (d.cornerstone_investors || []).length > 1
         ? `<span class="more" title="show the full list">+${(d.cornerstone_investors || []).length - 1} all ▾</span>` : ""}</td></tr>`).join("");
   drawTableBind();
@@ -2589,7 +2814,7 @@ function drawTableBind() {
       const code = td.closest("tr").firstElementChild.textContent.trim();
       const d = tblRows.find(x => x.code === code);
       if (td.classList.toggle("open"))
-        td.innerHTML = `${td.dataset.full.split("; ").join("<br>")}<span class="more">close ▴</span>`;
+        td.innerHTML = `${td.dataset.full.split("; ").map(safeText).join("<br>")}<span class="more">close ▴</span>`;
       else
         td.innerHTML = csShort(d) +
           `<span class="more" title="show the full list">+${(d.cornerstone_investors || []).length - 1} all ▾</span>`;
@@ -2614,9 +2839,11 @@ let CS_SORT = "n", CS_DIR = -1;
 function csLeagueRows() {
   const q = ($("#cs-q").value || "").trim().toLowerCase();
   const min = +($("#cs-min").value || 1);
-  let rows = DATA.cs_league.filter(r => r.n >= min &&
-    (!q || r.investor.toLowerCase().includes(q) ||
-     r.deals.some(d => (d.name || "").toLowerCase().includes(q) || d.code === q)));
+  const stock = normalCode(q) && deals.find(d => normalCode(d.code) === normalCode(q));
+  $("#cs-min").disabled = Boolean(stock);
+  let rows = DATA.cs_league.filter(r => r.n >= (stock ? 1 : min) &&
+    (!q || r.investor.toLowerCase().includes(q) || (r.aliases || []).some(v => v.toLowerCase().includes(q)) ||
+     r.deals.some(d => matchesDealSearch(deals.find(x => x.code === d.code), q))));
   rows.sort((a, b) => {
     const va = a[CS_SORT], vb = b[CS_SORT];
     if (va == null && vb == null) return 0;
@@ -2752,12 +2979,14 @@ document.addEventListener("click", ev => {
 });
 
 // ---------------------------------------------------------------- tabs ------
-// One page, five tabs: senior eyes get ONE topic per screen instead of a
+// One page, five tabs: one topic per screen instead of a
 // two-metre scroll. Sections keep their ids so old #hash links still resolve.
 const TABMAP = {
   screener: ["screener", "complab"],
   market: ["issuance", "size", "pricing", "analog", "insights", "explorer", "valuation"],
   ah: ["ah"],
+  lockup: ["lockup"],
+  peers: ["peers"],
   cs: ["csleague"],
   sm: ["smleague"],
   pipeline: ["pipeline"],
@@ -2795,6 +3024,7 @@ function redraw() {
   scatterLogX($("#chart-scatter"), pr, { ylo: -60, yhi: 200 });
   stackedBar($("#chart-inrange"), years, buckets.map(b => b[0]), bmat, { fmtVal: v => v + " deals", fmtAxis: v => v });
   redrawAHTab();
+  renderSelectedLockup();
   if (bands.length) rangeBands($("#chart-bands"), bands.slice(0, 14), {});
   redrawAnalog();
   redrawInsights();
@@ -2813,7 +3043,7 @@ HTML = """<!doctype html>
 <header class="top">
   <h1>HK IPO Dashboard</h1>
   <nav id="tabs">
-    <a data-tab="screener" class="active">Screener</a><a data-tab="market">Market</a><a data-tab="ah">A / H</a><a data-tab="cs">Cornerstones</a><a data-tab="sm">Stabilisers</a><a data-tab="pipeline">Pipeline</a><a data-tab="table">All deals</a>
+    <a data-tab="screener" class="active">Screener</a><a data-tab="market">Market</a><a data-tab="ah">A / H</a><a data-tab="lockup">Lock-up</a><a data-tab="peers">Peer trades</a><a data-tab="cs">Cornerstones</a><a data-tab="sm">Stabilisers</a><a data-tab="pipeline">Pipeline</a><a data-tab="table">All deals</a>
   </nav>
   <span class="asof">Main Board IPOs · data as of %%ASOF%% · offline snapshot (Bloomberg-live view: Excel workbook)</span>
   <button class="theme" id="theme">◐ theme</button>
@@ -2838,7 +3068,7 @@ HTML = """<!doctype html>
 
 <section id="pricing">
   <h2>Demand &amp; debut</h2>
-  <p class="sub">Left: how hard the Hong Kong public tranche was subscribed, by year. Right: subscription level vs day-1 performance — the "hot book &rarr; pop?" view (day-1 clamped to −60/+200% for display; hover for the deal). <span id="pricing-stat"></span></p>
+  <p class="sub">Left: how hard the Hong Kong public tranche was subscribed, by year. Right: subscription level vs day-1 performance — day-1 display range −60% to +200%; hover for actual values. <span id="pricing-stat"></span></p>
   <div class="legend" id="legend-inrange"></div>
   <div class="row">
     <div class="chart"><h3>Subscription level mix by year</h3><div id="chart-inrange"></div></div>
@@ -2848,17 +3078,46 @@ HTML = """<!doctype html>
 
 <section id="ah">
   <h2>A premium over H — dual-listed deals</h2>
-  <p class="sub">A premium = (A×CNY→HKD) ÷ H − 1 · + = A trades ABOVE H. Static snapshot as of %%ASOF%%; the Excel AH tab carries the live Bloomberg view.</p>
+  <p class="sub">A premium = (A×CNY→HKD) ÷ H − 1. Snapshot through %%AHSNAPSHOT%%; live Bloomberg prices are in Excel.</p>
   <div class="filters"><label>show <select id="ah-when">
-      <option value="now">A premium — today</option>
+      <option value="now">A premium — snapshot</option>
       <option value="ipo">A premium — at IPO (vs H offer)</option></select></label>
     <label>sector <select id="ah-sec"></select></label>
     <label>subsector <select id="ah-sub"></select></label></div>
-  <div class="row"><div class="chart"><div id="chart-ah"></div><p class="note" id="ah-note"></p></div></div>
+  <div class="filters"><label>Company <select id="ah-stock"></select></label></div>
+  <h3 id="ah-history-title"></h3>
+  <div class="chart"><div id="ah-history"></div><p class="note" id="ah-history-note"></p></div>
+  <p class="note" id="ah-note"></p>
   <div class="scroll" id="ah-tbl"></div>
+  <h3>Compare selected pairs</h3><button id="ah-clear-compare" type="button">Clear selection</button><span class="note" id="ah-compare-count"></span><div class="chart"><div id="ah-compare-chart"></div></div>
+  <details id="ah-comparison"><summary>Compare premiums across all pairs</summary><div class="chart"><div id="chart-ah"></div></div></details>
+  <div id="ah-drivers" hidden></div>
+</section>
 
-  <h3>What drives the premium — the evidence in this book</h3>
-  <div id="ah-drivers"></div>
+<section id="lockup">
+  <h2>Cornerstone lock-up expiries</h2>
+  <p class="sub">Returns for the 30 HK trading sessions before and after the last locked day. Filing dates do not imply actual selling.</p>
+  <div class="filters"><label>Search <input id="lockup-q" type="search" placeholder="H code or company name"></label><label>Sector <select id="lockup-sec"></select></label><label>Company <select id="lockup-stock"></select></label></div>
+  <div class="filters"><label>Cornerstone expiry <select id="lockup-event"></select></label></div>
+  <h3 id="lockup-history-title"></h3>
+  <div class="tiles">
+    <div class="tile"><div class="v" id="lockup-before"></div><div class="l">30 trading sessions before</div><p class="note" id="lockup-before-dates"></p></div>
+    <div class="tile"><div class="v" id="lockup-after"></div><div class="l">30 trading sessions after</div><p class="note" id="lockup-after-dates"></p></div>
+    <div class="tile"><div class="v" id="lockup-date"></div><div class="l">Last day locked</div><p class="note" id="lockup-date-basis"></p></div>
+  </div>
+  <div class="chart"><div id="lockup-history"></div><p class="note" id="lockup-history-note"></p></div>
+  <p class="note" id="lockup-note"></p>
+  <h3>Compare expiry performance</h3>
+  <div class="filters"><label>View <select id="lockup-compare-mode"><option value="cohort">Cohort average</option><option value="all">All stock curves</option><option value="selected">Selected stocks</option></select></label><label>Expiry from <input id="lockup-compare-from" type="date"></label><label>Expiry to <input id="lockup-compare-to" type="date"></label><label>Stocks <select id="lockup-compare-stocks" multiple size="4" style="min-width:310px"></select></label></div>
+  <p class="note" id="lockup-compare-count"></p><div class="chart"><div id="lockup-compare-chart"></div></div>
+  <div class="scroll" id="lockup-tbl"></div>
+</section>
+
+<section id="peers">
+ <h2>Direct peer monitor</h2><p class="sub">Snapshot through %%AHSNAPSHOT%%. Live prices and Bloomberg history are available in Excel’s Peer Trades tab.</p>
+ <div class="filters"><label>Pair <select id="peer-pair"></select></label></div><h3 id="peer-title"></h3><p class="note" id="peer-watch"></p>
+ <div class="row"><div class="chart"><h3>Relative performance</h3><div id="peer-performance"></div></div><div class="chart"><h3>A − B spread (percentage points)</h3><div id="peer-spread"></div></div></div>
+ <p class="note">Both returns start on the first common observed session; split-neutral prices, excluding dividends.</p><div class="scroll" id="peer-table"></div>
 </section>
 
 <section id="analog">
@@ -2912,7 +3171,9 @@ HTML = """<!doctype html>
 
 <section id="pipeline">
   <h2>Active pipeline</h2>
-  <p class="sub">Sizes are indicative and fluid; comps computed with the same subsector-first scorer.</p>
+  <p class="sub">Key terms at a glance; expand a company for its investors, banks, business and source filing. Sizes are indicative.</p>
+  <div class="filters"><label>Search <input id="pipe-q" type="search" placeholder="H code or company name"></label><label>Stage <select id="pipe-stage"><option value="">All stages</option><option>Offering</option><option>Hearing cleared</option><option>Filed / reported</option><option>Withdrawn / postponed</option></select></label><span class="note" id="pipe-count"></span></div>
+  <div class="pipeline-head"><span>Company</span><span>Stage</span><span>Listing / timing</span><span>Subsector</span><span class="num">Expected size</span><span class="num">Price range</span></div>
   <div class="cards" id="cards"></div>
 </section>
 
@@ -2937,13 +3198,13 @@ HTML = """<!doctype html>
   <div class="filters">
     <label>cornerstone investor <input id="cs-box" size="14" placeholder="e.g. gic, hillhouse"></label>
     <label class="labchk"><input type="checkbox" id="cs-first"> rank by cornerstone overlap first</label>
-    <span class="note">any spelling of the same house counts</span>
+
   </div>
   <div class="filters">
     <label>force-include a comp <input id="fi-box" list="deal-list" size="18"
       placeholder="name or code, then Enter"></label>
     <span id="fi-chips"></span>
-    <span class="note">pinned to the top of the comps, past every filter — same as Screener!B19 in the workbook</span>
+
   </div>
   <div id="deal-brief"></div>
   <div id="pick-summary"></div>
@@ -3008,9 +3269,11 @@ HTML = """<!doctype html>
   <th data-k="code">Code</th><th data-k="name">Name</th><th data-k="subsector">Subsector</th>
   <th data-k="ipo_date">IPO date</th>
   <th class="num" data-k="deal_size_hkdm">Size</th><th class="num" data-k="final_price">Offer</th>
-  <th class="num" data-k="oversub_public_mult">Sub</th><th class="num" data-k="cornerstone_pct">CS%</th>
+  <th class="num" data-k="oversub_public_mult">Public sub</th><th class="num" data-k="oversub_intl_mult">Inst. sub</th><th class="num" data-k="cornerstone_pct">CS%</th>
   <th class="num" data-k="grey_pct" title="Grey market (暗盤) close vs the offer price — the evening session before listing">Grey</th>
-  <th class="num" data-k="first_day_return_pct">Day-1</th><th class="num" data-k="ret_1m_pct">1m</th>
+  <th class="num" data-k="first_day_return_pct">Day-1</th>
+  <th class="num" data-k="bench_day1_pct" title="Sector benchmark return: previous trading close to listing-day close; benchmark named in the comparison table">Index Day-1</th>
+  <th class="num" data-k="ret_1m_pct" title="21 traded sessions after debut, price-only return vs offer">1m</th>
   <th class="num" data-k="ret_3m_pct">3m</th><th class="num" data-k="since_ipo_pct">Since</th>
   <th class="num" data-k="pe_ipo">P/E</th>
   <th data-k="a_share_code">A-share</th><th>Cornerstone (top holder)</th></tr></thead>
@@ -3025,7 +3288,7 @@ HTML = """<!doctype html>
   deals that closed day-1 above offer. Same grouping key the Screener uses, so
   "GIC Private Limited" and "GIC" count as one house.</p>
   <div class="filters">
-    <label>Find investor <input id="cs-q" type="search" placeholder="name…"
+    <label>Find investor / stock <input id="cs-q" type="search" placeholder="Investor, company or H code"
       style="min-width:260px;padding:5px 8px"></label>
     <label>Min deals <input id="cs-min" type="number" min="1" max="60" step="1"
       value="2" style="width:74px;padding:5px 8px"></label>
@@ -3110,6 +3373,11 @@ HTML = """<!doctype html>
   <tbody id="sm-body"></tbody></table></div>
 </section>
 
+<script>%%DECODER%%</script>
+<script id="ipo-payload" type="application/octet-stream">%%PAYLOAD%%</script>
+<script>
+window.__IPO_DATA__ = JSON.parse(fflate.strFromU8(fflate.gunzipSync(Uint8Array.from(atob(document.getElementById('ipo-payload').textContent.trim()), c => c.charCodeAt(0)))));
+</script>
 <script>%%JS%%</script>
 </body>
 </html>
@@ -3118,7 +3386,25 @@ HTML = """<!doctype html>
 
 def main():
     deals, tax, cfg, pipe = load()
-    as_of = date.today().isoformat()
+    as_of = json.loads((ROOT / 'data/deals.json').read_text())['as_of']
+    from market_universe import histories as market_histories, load as market_deals
+    study = market_histories(ROOT)
+    ahstudy = {r['code']: {k: r.get(k) for k in ('history', 'h_history', 'exclusion', 'latest_premium_pct', 'offer_reference_premium_pct', 'latest_h_date', 'latest_a_date')} for r in study['pairs']}
+    chartmeta = {r['code']:r for r in json.loads((ROOT/'data/desk_chart_data.json').read_text())['pairs']}
+    for code, record in ahstudy.items():
+        meta=chartmeta[code];latest=record.get('latest_premium_pct')
+        record['delta7']=latest-100*meta['stored_7'] if latest is not None and meta['stored_7'] is not None else None
+        record['delta1m']=latest-100*meta['stored_1m'] if latest is not None and meta['stored_1m'] is not None else None
+    from ah_basis import chart_review
+    for r in study['pairs']:
+        review = chart_review(r['code'], r, ROOT)
+        if review:
+            ahstudy[r['code']]['entitlement_review'] = review
+    lockup_batch = json.loads((ROOT / 'data/batches/lockup_events.json').read_text())
+    lockups = {'price_asof': lockup_batch['price_asof'], 'events': [
+        {**{k: e.get(k) for k in ('code', 'name', 'sector', 'category', 'last_day_locked', 'date_basis', 'page', 'url')}, 'ipo_date': next(d['ipo_date'] for d in deals if d['code'] == e['code']),
+         'window': e.get('windows', {}).get('30 trading sessions', {})} for e in lockup_batch['events']
+         if e['category'] == 'Cornerstone' and e['date_basis'] != 'No cornerstone tranche']}
     # daily A/H paths (Tencent + FX) so the reference notebook's charts render
     # offline inside the Lab — keyed by code, arrays only
     paths = {}
@@ -3177,12 +3463,26 @@ def main():
                 f"{_nm} is empty but data/deals.json has {_src} — the field is "
                 f"missing from KEEP, so it never reached the embed")
     blob = json.dumps({"as_of": as_of, "deals": deals, "pipe": pipe, "cfg": cfg,
-                       "ahpaths": paths, "hpaths": hpaths, "cs_league": league,
-                       "stab_league": smleague},
+                       "market_deals":[{k:d.get(k) for k in ["code","name","sector","subsector","a_share_code","ipo_date"]} for d in market_deals(ROOT)], "peer_pairs":json.loads((ROOT/"data/peer_pairs.json").read_text()), "ah_asof":study["asof"], "ahpaths": paths, "ahstudy": ahstudy, "hpaths": hpaths, "cs_league": league,
+                       "stab_league": smleague, "lockups": lockups},
                       ensure_ascii=False, separators=(",", ":"))
-    js = JS + BODY_JS.replace("%%DATA%%", blob)
+    import base64, gzip
+    # Compact charts only: eight decimals exceed the displayed precision;
+    # canonical deal values retain their source precision and audit parity.
+    raw=json.loads(blob)
+    def rounded(value):
+        if isinstance(value,float): return round(value,8)
+        if isinstance(value,list):return [rounded(x) for x in value]
+        if isinstance(value,dict):return {k:rounded(v) for k,v in value.items()}
+        return value
+    for key in ['ahstudy','lockups','peer_pairs']:raw[key]=rounded(raw[key])
+    blob=json.dumps(raw,ensure_ascii=False,separators=(',',':'))
+    payload = base64.b64encode(gzip.compress(blob.encode('utf-8'), compresslevel=9, mtime=0)).decode('ascii')
+    js = JS + BODY_JS + (ROOT / "assets/desk_monitors.js").read_text()
     html = (HTML.replace("%%CSS%%", CSS).replace("%%JS%%", js)
-                .replace("%%ASOF%%", as_of))
+                .replace("%%ASOF%%", as_of).replace("%%AHSNAPSHOT%%", study['asof'])
+                .replace("%%DECODER%%", (ROOT / 'assets/fflate.min.js').read_text())
+                .replace("%%PAYLOAD%%", payload))
     OUT.parent.mkdir(exist_ok=True)
     OUT.write_text(html)
     print(f"wrote {OUT} ({len(html)//1024} KB, {len(deals)} deals, {len(pipe)} pipeline)")

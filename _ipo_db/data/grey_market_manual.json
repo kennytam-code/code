@@ -187,6 +187,576 @@
    "grey_date": "2024-04-22",
    "venue": "Bright Smart (耀才); Futu -11.77%, Phillip opened -13.71%",
    "src": "澎湃/新浪 (2024-04-22): 耀才暗盤收跌8.57%，富途收跌11.77%，輝立開報跌13.71%"
+  },
+  {
+   "code": "9600",
+   "grey_close": 4.4,
+   "grey_pct": 0.9,
+   "grey_date": "2021-01-05",
+   "grey_venue": "Phillip",
+   "source_url": "https://www.am730.com.hk/article/154295",
+   "verified_at": "2026-10-04",
+   "src": "https://www.am730.com.hk/article/154295 — published closing quote 4.4, +0.9% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "1855",
+   "grey_close": 2.02,
+   "grey_pct": 1,
+   "grey_date": "2021-01-05",
+   "grey_venue": "Phillip",
+   "source_url": "https://www.am730.com.hk/article/154295",
+   "verified_at": "2026-10-04",
+   "src": "https://www.am730.com.hk/article/154295 — published closing quote 2.02, +1% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "1440",
+   "grey_close": 0.43,
+   "grey_pct": 7.5,
+   "grey_date": "2021-01-12",
+   "grey_venue": "Phillip",
+   "source_url": "https://www.aastocks.com/tc/stocks/analysis/stock-aafn-con/01440/AAFN/NOW.1068644/hk-stock-news",
+   "verified_at": "2026-10-04",
+   "src": "https://www.aastocks.com/tc/stocks/analysis/stock-aafn-con/01440/AAFN/NOW.1068644/hk-stock-news — published closing quote 0.43, +7.5% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "2129",
+   "grey_close": 0.51,
+   "grey_pct": 27.5,
+   "grey_date": "2021-01-12",
+   "grey_venue": "Phillip",
+   "source_url": "https://orientaldaily.on.cc/cnt/finance/20210113/00202_016.html",
+   "verified_at": "2026-10-04",
+   "src": "https://orientaldaily.on.cc/cnt/finance/20210113/00202_016.html — published closing quote 0.51, +27.5% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "2153",
+   "grey_close": 1.65,
+   "grey_pct": -4.62,
+   "grey_date": "2021-01-12",
+   "grey_venue": "Phillip",
+   "source_url": "https://orientaldaily.on.cc/cnt/finance/20210113/00202_016.html",
+   "verified_at": "2026-10-04",
+   "src": "https://orientaldaily.on.cc/cnt/finance/20210113/00202_016.html — published closing quote 1.65, -4.62% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "1643",
+   "grey_close": 1.39,
+   "grey_pct": 17.8,
+   "grey_date": "2021-01-14",
+   "grey_venue": "Futu",
+   "source_url": "https://www.tkww.hk/epaper/view/newsDetail/1349787899578683392.html",
+   "verified_at": "2026-10-04",
+   "src": "https://www.tkww.hk/epaper/view/newsDetail/1349787899578683392.html — published closing quote 1.39, +17.8% vs offer; venue Futu. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "1490",
+   "grey_close": 1.83,
+   "grey_pct": 48.8,
+   "grey_date": "2021-01-14",
+   "grey_venue": "Futu",
+   "source_url": "https://www.tkww.hk/epaper/view/newsDetail/1349787899578683392.html",
+   "verified_at": "2026-10-04",
+   "src": "https://www.tkww.hk/epaper/view/newsDetail/1349787899578683392.html — published closing quote 1.83, +48.8% vs offer; venue Futu. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "2125",
+   "grey_close": 7.71,
+   "grey_pct": 31.12,
+   "grey_date": "2021-01-14",
+   "grey_venue": "Futu",
+   "source_url": "https://www.tkww.hk/epaper/view/newsDetail/1349787899578683392.html",
+   "verified_at": "2026-10-04",
+   "src": "https://www.tkww.hk/epaper/view/newsDetail/1349787899578683392.html — published closing quote 7.71, +31.12% vs offer; venue Futu. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "9608",
+   "grey_close": 0.234,
+   "grey_pct": -6.4,
+   "grey_date": "2021-01-15",
+   "grey_venue": "Phillip",
+   "source_url": "https://www.edigest.hk/投資/狂撈制裁股-港股通周吸702億-騰訊中移佔逾半-231682/",
+   "verified_at": "2026-10-04",
+   "src": "https://www.edigest.hk/投資/狂撈制裁股-港股通周吸702億-騰訊中移佔逾半-231682/ — published closing quote 0.234, -6.4% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "6127",
+   "grey_close": 145,
+   "grey_pct": -3.97,
+   "grey_date": "2021-02-25",
+   "grey_venue": "Phillip",
+   "source_url": "https://collection.news/appledaily/articles/RC6LGF2S7FC7VOFFRPMHZQYSGE",
+   "verified_at": "2026-10-04",
+   "src": "https://collection.news/appledaily/articles/RC6LGF2S7FC7VOFFRPMHZQYSGE — published closing quote 145, -3.97% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "2518",
+   "grey_close": 188.5,
+   "grey_pct": 6.92,
+   "grey_date": "2021-03-12",
+   "grey_venue": "Phillip",
+   "source_url": "https://orientaldaily.on.cc/content/產經/odn-20210313-0313_00202_006/汽車之家暗盤漲-「頂頭槌飛」賺182萬",
+   "verified_at": "2026-10-04",
+   "src": "https://orientaldaily.on.cc/content/產經/odn-20210313-0313_00202_006/汽車之家暗盤漲-「頂頭槌飛」賺182萬 — published closing quote 188.5, +6.92% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "1927",
+   "grey_close": 0.75,
+   "grey_pct": 0,
+   "grey_date": "2021-03-15",
+   "grey_venue": "Phillip",
+   "source_url": "https://orientaldaily.on.cc/cnt/finance/20210317/00202_009.html",
+   "verified_at": "2026-10-04",
+   "src": "https://orientaldaily.on.cc/cnt/finance/20210317/00202_009.html — published closing quote 0.75, +0% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "6608",
+   "grey_close": 29.5,
+   "grey_pct": -7.23,
+   "grey_date": "2021-03-30",
+   "grey_venue": "Bright Smart",
+   "source_url": "https://stock360.hkej.com/stockConnect/dealerReportDetail/2753902",
+   "verified_at": "2026-10-04",
+   "src": "https://stock360.hkej.com/stockConnect/dealerReportDetail/2753902 — published closing quote 29.5, -7.23% vs offer; venue Bright Smart. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "6939",
+   "grey_close": 1.34,
+   "grey_pct": 6.35,
+   "grey_date": "2021-03-30",
+   "grey_venue": "Bright Smart",
+   "source_url": "https://stock360.hkej.com/stockConnect/dealerReportDetail/2753902",
+   "verified_at": "2026-10-04",
+   "src": "https://stock360.hkej.com/stockConnect/dealerReportDetail/2753902 — published closing quote 1.34, +6.35% vs offer; venue Bright Smart. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "2195",
+   "grey_close": 0.395,
+   "grey_pct": -29.46,
+   "grey_date": "2021-03-30",
+   "grey_venue": "Phillip",
+   "source_url": "https://www.aastocks.com/tc/stocks/analysis/stock-aafn-con/02195/AAFN/NOW.1087877/hk-stock-news",
+   "verified_at": "2026-10-04",
+   "src": "https://www.aastocks.com/tc/stocks/analysis/stock-aafn-con/02195/AAFN/NOW.1087877/hk-stock-news — published closing quote 0.395, -29.46% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "2187",
+   "grey_close": 1.56,
+   "grey_pct": 4,
+   "grey_date": "2021-03-25",
+   "grey_venue": "broker report; venue not stated",
+   "source_url": "https://www.swhyhk.com/storage/app/media/research/equities/2021/_2021.03.26.pdf",
+   "verified_at": "2026-10-04",
+   "src": "https://www.swhyhk.com/storage/app/media/research/equities/2021/_2021.03.26.pdf — published closing quote 1.56, +4% vs offer; venue broker report; venue not stated. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "9959",
+   "grey_close": 18.28,
+   "grey_pct": 4,
+   "grey_date": "2021-04-08",
+   "grey_venue": "Phillip",
+   "source_url": "https://www.am730.com.hk/article/164627",
+   "verified_at": "2026-10-04",
+   "src": "https://www.am730.com.hk/article/164627 — published closing quote 18.28, +4% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "6622",
+   "grey_close": 15.82,
+   "grey_pct": -5.8,
+   "grey_date": "2021-04-28",
+   "grey_venue": "Phillip",
+   "source_url": "https://www.singtao.ca/googleamp/amp.php?cat=61&post_id=4909987&region=toronto_sg",
+   "verified_at": "2026-10-04",
+   "src": "https://www.singtao.ca/googleamp/amp.php?cat=61&post_id=4909987&region=toronto_sg — published closing quote 15.82, -5.8% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "3658",
+   "grey_close": 3.68,
+   "grey_pct": -3.2,
+   "grey_date": "2021-05-24",
+   "grey_venue": "Phillip",
+   "source_url": "https://www.wenweipo.com/a/202105/25/AP60ac0db1e4b0a46dabeb883c.html",
+   "verified_at": "2026-10-04",
+   "src": "https://www.wenweipo.com/a/202105/25/AP60ac0db1e4b0a46dabeb883c.html — published closing quote 3.68, -3.2% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "2171",
+   "grey_close": 27.55,
+   "grey_pct": -16,
+   "grey_date": "2021-06-17",
+   "grey_venue": "Phillip",
+   "source_url": "https://www.am730.com.hk/財經/科濟優然今首掛-暗盤齊破底-一手1萬入場-奈雪的茶招股/172327",
+   "verified_at": "2026-10-04",
+   "src": "https://www.am730.com.hk/財經/科濟優然今首掛-暗盤齊破底-一手1萬入場-奈雪的茶招股/172327 — published closing quote 27.55, -16% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "9858",
+   "grey_close": 6.4,
+   "grey_pct": -8.3,
+   "grey_date": "2021-06-17",
+   "grey_venue": "Phillip",
+   "source_url": "https://www.am730.com.hk/財經/科濟優然今首掛-暗盤齊破底-一手1萬入場-奈雪的茶招股/172327",
+   "verified_at": "2026-10-04",
+   "src": "https://www.am730.com.hk/財經/科濟優然今首掛-暗盤齊破底-一手1萬入場-奈雪的茶招股/172327 — published closing quote 6.4, -8.3% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "2155",
+   "grey_close": 4,
+   "grey_pct": 61,
+   "grey_date": "2021-06-25",
+   "grey_venue": "Futu",
+   "source_url": "https://www.stheadline.com/opinion/3481130/超購千倍凍3080億-歸創通橋招股熱爆",
+   "verified_at": "2026-10-04",
+   "src": "https://www.stheadline.com/opinion/3481130/超購千倍凍3080億-歸創通橋招股熱爆 — published closing quote 4, +61% vs offer; venue Futu. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "6626",
+   "grey_close": 4.9,
+   "grey_pct": 0.41,
+   "grey_date": "2021-06-25",
+   "grey_venue": "Futu",
+   "source_url": "https://www.stheadline.com/opinion/3481130/超購千倍凍3080億-歸創通橋招股熱爆",
+   "verified_at": "2026-10-04",
+   "src": "https://www.stheadline.com/opinion/3481130/超購千倍凍3080億-歸創通橋招股熱爆 — published closing quote 4.9, +0.41% vs offer; venue Futu. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "0606",
+   "grey_close": 3.92,
+   "grey_pct": 5.9,
+   "grey_date": "2021-06-30",
+   "grey_venue": "Phillip",
+   "source_url": "https://www.aastocks.com/tc/stocks/analysis/stock-aafn-con/00606/AAFN/NOW.1109358/hk-stock-news",
+   "verified_at": "2026-10-04",
+   "src": "https://www.aastocks.com/tc/stocks/analysis/stock-aafn-con/00606/AAFN/NOW.1109358/hk-stock-news — published closing quote 3.92, +5.9% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "2165",
+   "grey_close": 5.75,
+   "grey_pct": 37.23,
+   "grey_date": "2021-07-09",
+   "grey_venue": "Phillip",
+   "source_url": "https://news.now.com/home/finance/player?newsId=441657",
+   "verified_at": "2026-10-04",
+   "src": "https://news.now.com/home/finance/player?newsId=441657 — published closing quote 5.75, +37.23% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "2177",
+   "grey_close": 12.44,
+   "grey_pct": 4.89,
+   "grey_date": "2021-07-09",
+   "grey_venue": "Phillip",
+   "source_url": "https://news.now.com/home/finance/player?newsId=441657",
+   "verified_at": "2026-10-04",
+   "src": "https://news.now.com/home/finance/player?newsId=441657 — published closing quote 12.44, +4.89% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "6609",
+   "grey_close": 145.5,
+   "grey_pct": -14.9,
+   "grey_date": "2021-08-19",
+   "grey_venue": "Phillip",
+   "source_url": "https://www.hkcd.com/content/2021-08/19/content_1288310.html",
+   "verified_at": "2026-10-04",
+   "src": "https://www.hkcd.com/content/2021-08/19/content_1288310.html — published closing quote 145.5, -14.9% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "6669",
+   "grey_close": 17.76,
+   "grey_pct": -25.38,
+   "grey_date": "2021-08-23",
+   "grey_venue": "Phillip",
+   "source_url": "https://www.stheadline.com/daily-finance/1759894/先瑞達暗盤挫25-專家料新股續低迷",
+   "verified_at": "2026-10-04",
+   "src": "https://www.stheadline.com/daily-finance/1759894/先瑞達暗盤挫25-專家料新股續低迷 — published closing quote 17.76, -25.38% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "2216",
+   "grey_close": 16.72,
+   "grey_pct": -10.6,
+   "grey_date": "2021-09-23",
+   "grey_venue": "Phillip",
+   "source_url": "https://www.wenweipo.com/epaper/view/newsDetail/1441097426827087872.html",
+   "verified_at": "2026-10-04",
+   "src": "https://www.wenweipo.com/epaper/view/newsDetail/1441097426827087872.html — published closing quote 16.72, -10.6% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "2235",
+   "grey_close": 30.9,
+   "grey_pct": 1.3,
+   "grey_date": "2021-10-18",
+   "grey_venue": "Phillip",
+   "source_url": "https://www.stheadline.com/opinion/3482231/微泰今掛牌-暗盤升33",
+   "verified_at": "2026-10-04",
+   "src": "https://www.stheadline.com/opinion/3482231/微泰今掛牌-暗盤升33 — published closing quote 30.9, +1.3% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "2197",
+   "grey_close": 13.22,
+   "grey_pct": -1.2,
+   "grey_date": "2021-11-04",
+   "grey_venue": "Phillip",
+   "source_url": "https://www.am730.com.hk/財經/新股登場-三葉草鷹瞳暗盤齊破底/293172",
+   "verified_at": "2026-10-04",
+   "src": "https://www.am730.com.hk/財經/新股登場-三葉草鷹瞳暗盤齊破底/293172 — published closing quote 13.22, -1.2% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "2251",
+   "grey_close": 73,
+   "grey_pct": -2.8,
+   "grey_date": "2021-11-04",
+   "grey_venue": "press; venue not stated for this quote",
+   "source_url": "https://www.am730.com.hk/財經/新股登場-三葉草鷹瞳暗盤齊破底/293172",
+   "verified_at": "2026-10-04",
+   "src": "https://www.am730.com.hk/財經/新股登場-三葉草鷹瞳暗盤齊破底/293172 — published closing quote 73, -2.8% vs offer; venue press; venue not stated for this quote. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "1948",
+   "grey_close": 6.4,
+   "grey_pct": -4.5,
+   "grey_date": "2021-11-05",
+   "grey_venue": "Bright Smart",
+   "source_url": "https://www.bastillepost.com/hongkong/article/9582755-三葉草上市翌日暴跌三成",
+   "verified_at": "2026-10-04",
+   "src": "https://www.bastillepost.com/hongkong/article/9582755-三葉草上市翌日暴跌三成 — published closing quote 6.4, -4.5% vs offer; venue Bright Smart. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "2273",
+   "grey_close": 34.4,
+   "grey_pct": 18.62,
+   "grey_date": "2021-12-09",
+   "grey_venue": "broker report; venue not stated",
+   "source_url": "https://www.swhyhk.com/storage/app/media/research/equities/2021/_2021.12.10.pdf",
+   "verified_at": "2026-10-04",
+   "src": "https://www.swhyhk.com/storage/app/media/research/equities/2021/_2021.12.10.pdf — published closing quote 34.4, +18.62% vs offer; venue broker report; venue not stated. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "1228",
+   "grey_close": 11,
+   "grey_pct": -9.69,
+   "grey_date": "2021-12-09",
+   "grey_venue": "broker report; venue not stated",
+   "source_url": "https://www.swhyhk.com/storage/app/media/research/equities/2021/_2021.12.10.pdf",
+   "verified_at": "2026-10-04",
+   "src": "https://www.swhyhk.com/storage/app/media/research/equities/2021/_2021.12.10.pdf — published closing quote 11, -9.69% vs offer; venue broker report; venue not stated. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "6821",
+   "grey_close": 371,
+   "grey_pct": -4.38,
+   "grey_date": "2021-12-09",
+   "grey_venue": "broker report; venue not stated",
+   "source_url": "https://www.swhyhk.com/storage/app/media/research/equities/2021/_2021.12.10.pdf",
+   "verified_at": "2026-10-04",
+   "src": "https://www.swhyhk.com/storage/app/media/research/equities/2021/_2021.12.10.pdf — published closing quote 371, -4.38% vs offer; venue broker report; venue not stated. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "1413",
+   "grey_close": 0.56,
+   "grey_pct": 3.7,
+   "grey_date": "2021-03-10",
+   "grey_venue": "Phillip",
+   "source_url": "https://www.am730.com.hk/article/161490",
+   "verified_at": "2026-10-04",
+   "src": "https://www.am730.com.hk/article/161490 — published closing quote 0.56, +3.7% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "1473",
+   "grey_close": 0.63,
+   "grey_pct": 12.5,
+   "grey_date": "2021-02-18",
+   "grey_venue": "Phillip",
+   "source_url": "https://orientaldaily.on.cc/cnt/finance/20210219/mobile/odn-20210219-0219_00202_009.html",
+   "verified_at": "2026-10-04",
+   "src": "https://orientaldaily.on.cc/cnt/finance/20210219/mobile/odn-20210219-0219_00202_009.html — published closing quote 0.63, +12.5% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "2170",
+   "grey_close": 31.95,
+   "grey_pct": 16.78,
+   "grey_date": "2021-02-05",
+   "grey_venue": "broker report; venue not stated",
+   "source_url": "https://www.swhyhk.com/storage/app/media/research/equities/申萬宏源香港財經早報2021.02.08.pdf",
+   "verified_at": "2026-10-04",
+   "src": "https://www.swhyhk.com/storage/app/media/research/equities/申萬宏源香港財經早報2021.02.08.pdf — published closing quote 31.95, +16.78% vs offer; venue broker report; venue not stated. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "2265",
+   "grey_close": 1.03,
+   "grey_pct": 0.98,
+   "grey_date": "2021-11-11",
+   "grey_venue": "Phillip",
+   "source_url": "https://www.stheadline.com/realtime-finance/2177240/回應監管問詢-貝特押後上市",
+   "verified_at": "2026-10-04",
+   "src": "https://www.stheadline.com/realtime-finance/2177240/回應監管問詢-貝特押後上市 — published closing quote 1.03, +0.98% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "6633",
+   "grey_close": 10.2,
+   "grey_pct": -8.92,
+   "grey_date": "2021-12-15",
+   "grey_venue": "Phillip",
+   "source_url": "https://orientaldaily.on.cc/content/產經/odn-20211216-1216_00202_003/港今年新股集資額量料縮",
+   "verified_at": "2026-10-04",
+   "src": "https://orientaldaily.on.cc/content/產經/odn-20211216-1216_00202_003/港今年新股集資額量料縮 — published closing quote 10.2, -8.92% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "2276",
+   "grey_close": 4.48,
+   "grey_pct": 0.44,
+   "grey_date": "2021-12-15",
+   "grey_venue": "Phillip (same report context)",
+   "source_url": "https://orientaldaily.on.cc/content/產經/odn-20211216-1216_00202_003/港今年新股集資額量料縮",
+   "verified_at": "2026-10-04",
+   "src": "https://orientaldaily.on.cc/content/產經/odn-20211216-1216_00202_003/港今年新股集資額量料縮 — published closing quote 4.48, +0.44% vs offer; venue Phillip (same report context). GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "2185",
+   "grey_close": 20.3,
+   "grey_pct": -4.47,
+   "grey_date": "2021-12-22",
+   "grey_venue": "Phillip",
+   "source_url": "https://www.bastillepost.com/hongkong/article/9856182-新股速遞｜百心安2185暗盤潛水-一手蝕最少475元",
+   "verified_at": "2026-10-04",
+   "src": "https://www.bastillepost.com/hongkong/article/9856182-新股速遞｜百心安2185暗盤潛水-一手蝕最少475元 — published closing quote 20.3, -4.47% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "2257",
+   "grey_close": 65.95,
+   "grey_pct": 0.076,
+   "grey_date": "2021-12-29",
+   "grey_venue": "Phillip",
+   "source_url": "https://dw-media.tkww.hk/epaper/hker/20211230/p16-1230.pdf",
+   "verified_at": "2026-10-04",
+   "src": "https://dw-media.tkww.hk/epaper/hker/20211230/p16-1230.pdf — published closing quote 65.95, +0.076% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "2285",
+   "grey_close": 50.25,
+   "grey_pct": 15.3,
+   "grey_date": "2021-12-29",
+   "grey_venue": "Phillip (same report context)",
+   "source_url": "https://dw-media.tkww.hk/epaper/hker/20211230/p16-1230.pdf",
+   "verified_at": "2026-10-04",
+   "src": "https://dw-media.tkww.hk/epaper/hker/20211230/p16-1230.pdf — published closing quote 50.25, +15.3% vs offer; venue Phillip (same report context). GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "2250",
+   "grey_close": 2.27,
+   "grey_pct": 10.73,
+   "grey_date": "2022-01-14",
+   "grey_venue": "Phillip",
+   "source_url": "https://www.wenweipo.com/a/202201/15/AP61e1ddd2e4b03103e0c418ac.html",
+   "verified_at": "2026-10-04",
+   "src": "https://www.wenweipo.com/a/202201/15/AP61e1ddd2e4b03103e0c418ac.html — published closing quote 2.27, +10.73% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "0314",
+   "grey_close": 24,
+   "grey_pct": 29,
+   "grey_date": "2022-12-22",
+   "grey_venue": "Phillip",
+   "source_url": "https://www.am730.com.hk/article/354269",
+   "verified_at": "2026-10-04",
+   "src": "https://www.am730.com.hk/article/354269 — published closing quote 24, +29% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "6929",
+   "grey_close": 8.6,
+   "grey_pct": -2.3,
+   "grey_date": "2022-12-22",
+   "grey_venue": "Phillip",
+   "source_url": "https://www.am730.com.hk/article/354269",
+   "verified_at": "2026-10-04",
+   "src": "https://www.am730.com.hk/article/354269 — published closing quote 8.6, -2.3% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "6680",
+   "grey_close": 27.85,
+   "grey_pct": -17.6,
+   "grey_date": "2022-01-13",
+   "grey_venue": "Phillip",
+   "source_url": "https://www.stheadline.com/realtime-finance/3020145/新股速遞｜金力永磁6680雙暗盤潛水-一手蝕最多1190元",
+   "verified_at": "2026-10-04",
+   "src": "https://www.stheadline.com/realtime-finance/3020145/新股速遞｜金力永磁6680雙暗盤潛水-一手蝕最多1190元 — published closing quote 27.85, -17.6% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "2516",
+   "grey_close": 1.16,
+   "grey_pct": 29,
+   "grey_date": "2023-12-21",
+   "grey_venue": "Bright Smart",
+   "source_url": "https://www.hkej.com/dailynews/headline/article/3644190/%25E5%259B%259B%25E8%2582%25A1%25E6%259A%2597%25E7%259B%25A4%25E5%2585%25A9%25E9%259A%25BB%25E6%258F%259A-%25E6%25B3%259B%25E9%2581%25A0%25E5%259C%258B%25E9%259A%259B%25E5%258D%2587%25E4%25B8%2589%25E6%2588%2590",
+   "verified_at": "2026-10-04",
+   "src": "https://www.hkej.com/dailynews/headline/article/3644190/%25E5%259B%259B%25E8%2582%25A1%25E6%259A%2597%25E7%259B%25A4%25E5%2585%25A9%25E9%259A%25BB%25E6%258F%259A-%25E6%25B3%259B%25E9%2581%25A0%25E5%259C%258B%25E9%259A%259B%25E5%258D%2587%25E4%25B8%2589%25E6%2588%2590 — published closing quote 1.16, +29% vs offer; venue Bright Smart. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "0666",
+   "grey_close": 18.42,
+   "grey_pct": 0.7,
+   "grey_date": "2023-12-15",
+   "grey_venue": "AAStocks; venue not stated",
+   "source_url": "https://hk.finance.yahoo.com/news/新股表現-瑞浦蘭鈞-00666-hk-高開1-012147159.html",
+   "verified_at": "2026-10-04",
+   "src": "https://hk.finance.yahoo.com/news/新股表現-瑞浦蘭鈞-00666-hk-高開1-012147159.html — published closing quote 18.42, +0.7% vs offer; venue AAStocks; venue not stated. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "9869",
+   "grey_close": 21,
+   "grey_pct": 6.22,
+   "grey_date": "2021-09-09",
+   "grey_venue": "Futu",
+   "source_url": "https://news.stcn.com/sd/202109/t20210910_3670946.html",
+   "verified_at": "2026-10-04",
+   "src": "https://news.stcn.com/sd/202109/t20210910_3670946.html — published closing quote 21, +6.22% vs offer; venue Futu. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "2270",
+   "grey_close": 1.19,
+   "grey_pct": 7.21,
+   "grey_date": "2021-12-16",
+   "grey_venue": "Livermore",
+   "source_url": "https://hk.stockstar.com/IG2021121600009678.shtml",
+   "verified_at": "2026-10-04",
+   "src": "https://hk.stockstar.com/IG2021121600009678.shtml — published closing quote 1.19, +7.21% vs offer; venue Livermore. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "2483",
+   "grey_close": 1.69,
+   "grey_pct": -6.1,
+   "grey_date": "2023-12-04",
+   "grey_venue": "Phillip",
+   "source_url": "https://www.singtao.ca/6475005/2023-12-04/news-FINI分配結果「靠估」股民難部署+3新股暗盤潛水+港交所：適時探討改進/?variant=zh-sg",
+   "verified_at": "2026-10-04",
+   "src": "https://www.singtao.ca/6475005/2023-12-04/news-FINI分配結果「靠估」股民難部署+3新股暗盤潛水+港交所：適時探討改進/?variant=zh-sg — published closing quote 1.69, -6.1% vs offer; venue Phillip. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "2521",
+   "grey_close": 0.305,
+   "grey_pct": -4.69,
+   "grey_date": "2023-12-04",
+   "grey_venue": "Bright Smart",
+   "source_url": "https://www.hkej.com/instantnews/hongkong/article/3630246/【新股追蹤】三新股周二掛牌+K+CASH暗盤收跌9%25",
+   "verified_at": "2026-10-04",
+   "src": "https://www.hkej.com/instantnews/hongkong/article/3630246/【新股追蹤】三新股周二掛牌+K+CASH暗盤收跌9%25 — published closing quote 0.305, -4.69% vs offer; venue Bright Smart. GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "9663",
+   "grey_close": 19,
+   "grey_pct": -3.4,
+   "grey_date": "2023-12-04",
+   "grey_venue": "Phillip (cross-checked with Ming Pao report)",
+   "source_url": "https://www.aastocks.com/tc/stocks/analysis/stock-aafn/09663",
+   "verified_at": "2026-10-04",
+   "src": "https://www.aastocks.com/tc/stocks/analysis/stock-aafn/09663 — published closing quote 19, -3.4% vs offer; venue Phillip (cross-checked with Ming Pao report). GPT archive review, 4 October 2026."
+  },
+  {
+   "code": "2159",
+   "grey_close": 3.32,
+   "grey_pct": 10.67,
+   "grey_date": "2021-01-18",
+   "grey_venue": "Livermore",
+   "source_url": "https://finance.ifeng.com/c/83EZJ1mRCqd",
+   "verified_at": "2026-10-04",
+   "src": "https://finance.ifeng.com/c/83EZJ1mRCqd — Eddid broker report syndicated by Phoenix: Livermore closing quote HK$3.32, +10.67% versus HK$3 offer; GPT archive review 4 October 2026."
   }
  ]
 }

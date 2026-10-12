@@ -67,6 +67,7 @@ ALT = {
     "alpha_1w_pct": "alpha_note", "alpha_1m_pct": "alpha_note",
     "alpha_3m_pct": "alpha_note", "alpha_1m_expop_pct": "alpha_note",
     "bench_1m_pct": "alpha_note", "bench_1m_expop_pct": "alpha_note",
+    "bench_day1_pct": "alpha_note",
     "pct_in_range": "range_lo_note",
     "eff_free_float_shares": "eff_ff_note",
 }

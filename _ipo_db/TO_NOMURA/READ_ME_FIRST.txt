@@ -14,23 +14,26 @@ THE FILES
   Clawback_Study.docx       the 套路回撥 allocation study
   READ_ME_FIRST.txt         this file
 
-MARKET TABS (11 October 2026)
-  IPO Live: all 524 IPOs; live LAST_PRICE and change vs PX_YEST_CLOSE.
+MARKET TABS (12 October 2026)
+  IPO Live: 714 seven-year monitoring listings; live LAST_PRICE and change vs PX_YEST_CLOSE.
   B5 selects Sector/Subsector classification; H34 chooses the sector
   for the second, subsector-average chart. The first chart stays broad.
-  AH: 62 pairs only. B4 accepts H/A code; E4 selects Stored/Bloomberg.
+  AH: 68 pairs in the seven-year monitoring roster. B4 accepts H/A code; E4 selects Stored/Bloomberg.
   Stored is the default, through 2 October. Bloomberg requests history
   from listing through TODAY and appends an available live endpoint.
-  AH includes all 62 identified pairs within this IPO database sample.
+  AH includes the 62 database pairs and six 2019/2020 H listings.
   Huaqin (3296): IPO/current premiums are available; the trend omits
   22 May to 16 June while A/H ex-entitlement bases differ.
+  AH G/H: 7-day / one-calendar-month premium changes, percentage points.
+  Compare up to four pairs in Excel; select multiple pairs in HTML.
+  Peer Trades: six direct-product pairs, live quotes and performance spread.
   Lock-up: 396 cornerstone events for 386 stocks; no-cornerstone
   entries and unrelated shareholder restrictions are excluded.
-  returns use seven HK trading sessions before and after expiry.
+  returns use 30 HK trading sessions before and after expiry.
   Excel: B4 selects H code; E4 selects expiry event, with Auto default.
-  Both files show the IPO date and a selectable day -7 to +7 graph.
+  Both files show the IPO date and a selectable day -30 to +30 graph.
   HTML Lock-up searches H code/company and selects an expiry event to chart
-  every session from day -7 to +7, rebased to the expiry reference.
+  every session from day -30 to +30, rebased to the expiry reference.
   Prices through 2 October 2026. Future and
   missing returns stay blank; hover dates for sources and endpoints.
   Expiry unconfirmed means the retained filing does not establish a date;
@@ -68,6 +71,8 @@ TO JUST USE IT
   panels rebase at the day-1 OPEN — the first tradeable print.
 
 TO UPDATE IT (Jupyter, ONE command)
+  To reproduce this delivery exactly, run hk_ipo.py in a clean folder.
+  An existing persistent data folder is retained for your own updates.
   %run hk_ipo.py update      <- fetch + parse + prices + gates +
                                 rebuild, ends with a VERDICT block
   %run hk_ipo.py update --skip aastocks   <- if a site is blocked
@@ -82,6 +87,7 @@ BLOOMBERG (terminal only)
   To feed the numbers back: let the tab compute, paste-VALUES into
   bbg.xlsx (one sheet, headers on row 4), put it next to the repo,
   then on the build machine: python ipo_lib/ingest_bbg.py + update.
+  Combined BBG Verify: subscriptions, shoe, valuation and price checks.
   Bloomberg supersedes scrapes; reviewed HKEX figures take priority.
 
 THE DASHBOARD

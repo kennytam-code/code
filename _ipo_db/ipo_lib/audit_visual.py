@@ -12,7 +12,7 @@ Per tab, LIGHT and DARK:
 Needs playwright + a built dashboard. Where playwright is missing (the desk),
 it says so and exits 0 — this gate belongs to the build machine.
 """
-import asyncio
+import asyncio,os
 import sys
 from pathlib import Path
 
@@ -53,7 +53,7 @@ async def run():
     from playwright.async_api import async_playwright
     fails = []
     async with async_playwright() as p:
-        b = await p.chromium.launch()
+        b = await p.chromium.launch(executable_path=os.environ.get("PLAYWRIGHT_EXECUTABLE_PATH"))
         pg = await b.new_page(viewport={"width": 1440, "height": 1100})
         errs = []
         pg.on("pageerror", lambda e: errs.append("PAGE:" + str(e)[:90]))
@@ -67,7 +67,7 @@ async def run():
             if mode == "dark":
                 await pg.click("#theme")
                 await pg.wait_for_timeout(400)
-            for tab in ("screener", "market", "ah", "cs", "pipeline", "table"):
+            for tab in ("screener", "market", "ah", "lockup", "peers", "cs", "pipeline", "table"):
                 await pg.click(f'a[data-tab="{tab}"]')
                 await pg.wait_for_timeout(500)
                 r = await pg.evaluate(SCAN)

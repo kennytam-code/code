@@ -189,8 +189,11 @@ def series_from(txt, line_re):
 
 
 def clean_text(txt):
-    """Remove dot-leader artifacts ('/H1118', '....') that sit between a row label
-    and its figures — they contain letters, so they block label matching."""
+    """Remove dot leaders and mend split thousands separators in PDF text."""
+    # PDF kerning can split the first thousands separator: "3 ,420,577".
+    # Rejoin it before tokenising or the latest FY becomes 3 rather than
+    # 3,420,577 and the remaining fiscal columns shift.
+    txt = re.sub(r"(?<=\d)\s+(?=,\d{3}(?:\D|$))", "", txt)
     return LEADER.sub(" ", txt)
 
 

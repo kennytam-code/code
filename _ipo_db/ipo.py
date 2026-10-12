@@ -62,8 +62,8 @@ STAGES = [
     ("names-cn", "ipo_lib/fetch_names_cn.py", [], "hkex"),
     ("stabilisation", "ipo_lib/fetch_stabilization.py", [], "hkex"),
     # the evening session before listing. MUST run every week: the headline
-    # leaves AAStocks' page one within days and no archive of past sessions
-    # exists anywhere, so a value not captured near the debut is lost. The
+    # leaves AAStocks' page one within days; older broker/press archives
+    # require manual research, so capture it near the debut. The
     # batch is an accumulating cache — captured values are never re-fetched.
     ("grey-market", "ipo_lib/fetch_greymarket.py", [], "aastocks"),
     ("day1-tape", "ipo_lib/fetch_day1_tape.py", [], "prices"),
@@ -79,6 +79,7 @@ STAGES = [
     # and needs a SECOND refresh to price — the merge below then folds the
     # prices back in.
     ("merge-pre-prices", "ipo_lib/merge_batches.py", [], "local"),
+    ("review-new-filings", "ipo_lib/refresh_filing_reviews.py", [], "parse"),
     ("prices", "ipo_lib/fetch_prices.py", [], "prices"),
     ("ah-at-ipo", "ipo_lib/fetch_ah_ipo.py", [], "prices"),
     # the chart batches: daily H closes for EVERY deal, and the paired A/H
@@ -87,7 +88,9 @@ STAGES = [
     ("split-detect", "ipo_lib/detect_splits.py", [], "prices"),
     ("h-paths", "ipo_lib/fetch_h_paths.py", [], "prices"),
     ("ah-paths", "ipo_lib/fetch_ah_paths.py", [], "prices"),
+    ("lockup-windows", "ipo_lib/refresh_lockup_windows.py", [], "prices"),
     ("merge", "ipo_lib/merge_batches.py", [], "local"),
+    ("ah-study", "ipo_lib/analyse_ah_study.py", ["--refresh"], "prices"),
 ]
 
 
@@ -123,7 +126,7 @@ def cmd_refresh(args):
 
 
 def cmd_build(_args):
-    run("ipo_lib/build_xlsx.py")
+    if not run("ipo_lib/build_xlsx.py"):raise SystemExit('Workbook build failed; export stopped.')
     run("ipo_lib/make_ah_notebook.py")
     run("ipo_lib/build_dashboard.py")
 
@@ -152,6 +155,7 @@ GATES = [
     ("coverage floors", "ipo_lib/checks.py", True),
     ("data identities + explained blanks", "ipo_lib/audit_identities.py", True),
     ("prices + returns (every deal, 3 ways)", "ipo_lib/audit_prices.py", True),
+    ("numeric source ledger", "ipo_lib/audit_numbers.py", True),
     ("Bloomberg terminal reconciliation", "ipo_lib/audit_bbg_verify.py", True),
     ("fresh listings fully parsed", "ipo_lib/audit_fresh.py", True),
     ("formula bindings + field parity", "ipo_lib/audit_formulas.py", True),
@@ -173,7 +177,7 @@ def cmd_check(_args):
     for name, script, _blocking in GATES:
         r = subprocess.run([PY, str(ROOT / script)], cwd=ROOT,
                            capture_output=True, text=True)
-        tail = [l for l in (r.stdout or "").splitlines() if l.strip()][-1:]
+        tail = [l for l in ((r.stdout or "") if r.returncode==0 else ((r.stderr or "") or (r.stdout or ""))).splitlines() if l.strip()][-1:]
         results.append((name, r.returncode == 0, tail[0] if tail else ""))
     print("=" * 64)
     print("GATE BATTERY")
@@ -236,8 +240,8 @@ def cmd_export(args):
     battery (for emergencies only, and it says so on the console).
     """
     import shutil
-    run("ipo_lib/build_xlsx.py", quiet=True)
-    run("ipo_lib/build_dashboard.py", quiet=True)
+    if not run("ipo_lib/build_xlsx.py", quiet=True):raise SystemExit('Workbook build failed; export stopped.')
+    if not run("ipo_lib/build_dashboard.py", quiet=True):raise SystemExit('Dashboard build failed; export stopped.')
     force = getattr(args, "force", False) if args is not None else False
     if force:
         print("   !! --force: exporting WITHOUT the gate battery")
@@ -246,21 +250,25 @@ def cmd_export(args):
               "and own the consequences.")
         return
     run("ipo_lib/make_ah_notebook.py", quiet=True)
+    run("ipo_lib/make_ah_study.py", quiet=True)
     run("ipo_lib/make_bundle.py", quiet=True)
     dest = ROOT / "TO_NOMURA"
-    if dest.exists():
-        shutil.rmtree(dest)
-    dest.mkdir()
+    # Keep desk research and other separately prepared documents when exporting.
+    dest.mkdir(exist_ok=True)
     shutil.copy2(ROOT / "export" / "hk_ipo.py", dest / "hk_ipo.py")
     shutil.copy2(ROOT / "out" / "HK_IPO_Database_v1.xlsx", dest / "HK_IPO_Database_v1.xlsx")
     shutil.copy2(ROOT / "out" / "hk_ipo_dashboard.html", dest / "hk_ipo_dashboard.html")
+    import zipfile
+    with zipfile.ZipFile(dest / "hk_ipo_dashboard.zip", 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
+        archive.write(dest / "hk_ipo_dashboard.html", "hk_ipo_dashboard.html")
     shutil.copy2(ROOT / "out" / "ah_peers.ipynb", dest / "ah_peers.ipynb")
-    # the A/H premium study travels with the deliverables when it has been
-    # built (export rmtree's this folder, so a hand-copied file would vanish)
-    # every tracked deliverable must be re-copied, or the rmtree above deletes
-    # it from the repo (the weekly email vanished this way once)
+    # Refresh generated documents when present, and preserve separately
+    # prepared research already in the delivery directory.
     for name in ("AH_Premium_Study.docx", "Grey_Market_vs_Day1.docx", "Clawback_Study.docx",
-                 "weekly_ipo_email.html", "weekly_ipo_email.txt"):
+                 "weekly_ipo_email.html", "weekly_ipo_email.txt",
+                 "database_numeric_audit.md", "database_numeric_audit.csv",
+                 "database_numeric_audit.json", "database_numeric_changes.csv",
+                 "cornerstone_name_review.csv"):
         study = ROOT / "out" / name
         if study.exists():
             shutil.copy2(study, dest / name)
@@ -269,14 +277,56 @@ def cmd_export(args):
         "===============\n\n"
         "PUT THESE FILES IN:  G:\\FIN_COMM\\DeltaOne\\Kenny\\ECM\\\n\n"
         "THE FILES\n"
-        "  HK_IPO_Database_v1.xlsx   the workbook — Screener tab is the tool\n"
+        "  HK_IPO_Database_v1.xlsx   the workbook — IPO Live, AH trend and Screener\n"
         "  hk_ipo_dashboard.html     the charts — double-click, works offline\n"
+        "  hk_ipo_dashboard.zip      smaller transfer copy; extract before opening\n"
         "  hk_ipo.py                 updates everything (Jupyter, one command)\n"
         "  ah_peers.ipynb            A/H price charts live off Bloomberg\n"
-        "  AH_Premium_Study.docx     the A/H premium write-up for senior traders\n"
+        "  AH_Premium_Study.docx     updated 62-pair A/H study (6 October)\n"
         "  Grey_Market_vs_Day1.docx  the grey market against day 1, every deal\n"
         "  Clawback_Study.docx       the 套路回撥 allocation study\n"
         "  READ_ME_FIRST.txt         this file\n\n"
+        "MARKET TABS (12 October 2026)\n"
+        "  IPO Live: 714 seven-year monitoring listings; live LAST_PRICE and change vs PX_YEST_CLOSE.\n"
+        "  B5 selects Sector/Subsector classification; H34 chooses the sector\n"
+        "  for the second, subsector-average chart. The first chart stays broad.\n"
+        "  AH: 68 pairs in the seven-year monitoring roster. B4 accepts H/A code; E4 selects Stored/Bloomberg.\n"
+        "  Stored is the default, through 2 October. Bloomberg requests history\n"
+        "  from listing through TODAY and appends an available live endpoint.\n"
+        "  AH includes the 62 database pairs and six 2019/2020 H listings.\n"
+        "  Huaqin (3296): IPO/current premiums are available; the trend omits\n"
+        "  22 May to 16 June while A/H ex-entitlement bases differ.\n"
+        "  AH G/H: 7-day / one-calendar-month premium changes, percentage points.\n"
+        "  Compare up to four pairs in Excel; select multiple pairs in HTML.\n"
+        "  Peer Trades: six direct-product pairs, live quotes and performance spread.\n"
+        "  Lock-up: 396 cornerstone events for 386 stocks; no-cornerstone\n"
+        "  entries and unrelated shareholder restrictions are excluded.\n"
+        "  returns use 30 HK trading sessions before and after expiry.\n"
+        "  Excel: B4 selects H code; E4 selects expiry event, with Auto default.\n"
+        "  Both files show the IPO date and a selectable day -30 to +30 graph.\n"
+        "  HTML Lock-up searches H code/company and selects an expiry event to chart\n"
+        "  every session from day -30 to +30, rebased to the expiry reference.\n"
+        "  Prices through 2 October 2026. Future and\n"
+        "  missing returns stay blank; hover dates for sources and endpoints.\n"
+        "  Expiry unconfirmed means the retained filing does not establish a date;\n"
+        "  that event has no inferred expiry, return or chart.\n"
+        "  Company cornerstones shows the full company roster; individual\n"
+        "  expiry events may apply to a subset, as shown in the linked filing.\n"
+        "  Screener freezes columns A:B, with no frozen rows.\n"
+        "  Screener B5 accepts the H code, e.g. 9607 = RA MATERIALS / Red Avenue.\n"
+        "  Cornerstones search 9607 shows all eight investors even if the\n"
+        "  minimum-deals filter was set above one. MLP resolves to Millennium.\n"
+        "  Pipeline: key terms first; expand M:AD in Excel or a company in HTML.\n"
+        "  Financial/source audit: see database_numeric_audit.md and CSV.\n"
+        "  Orange annual financial cells need fresh primary-row confirmation.\n"
+        "  Bloomberg formula logic is tested; live add-in execution is a desk check.\n\n"
+        "RETURN METHODS / REVIEW (4 October 2026)\n"
+        "  1w/1m/3m = 5/21/63 traded sessions after debut, not calendar dates.\n"
+        "  Benchmark index Day-1 = sector index return from previous close to\n"
+        "  listing close; the index named on each deal is used. Prices as of\n"
+        "  shows the actual last traded date, including suspended stocks.\n"
+        "  Other Word studies and weekly email are 3 October carryovers; they were\n"
+        "  not regenerated with the expanded grey-market sample.\n\n"
         "TO JUST USE IT\n"
         "  Open the .xlsx -> SCREENER tab. Pick a deal from the dropdown, or\n"
         "  type your own terms in the TYPE TO OVERRIDE column — comps re-rank\n"
@@ -289,6 +339,8 @@ def cmd_export(args):
         "  Ex-pop columns (teal) start at the day-1 CLOSE; the charts' ex-pop\n"
         "  panels rebase at the day-1 OPEN — the first tradeable print.\n\n"
         "TO UPDATE IT (Jupyter, ONE command)\n"
+        "  To reproduce this delivery exactly, run hk_ipo.py in a clean folder.\n"
+        "  An existing persistent data folder is retained for your own updates.\n"
         "  %run hk_ipo.py update      <- fetch + parse + prices + gates +\n"
         "                                rebuild, ends with a VERDICT block\n"
         "  %run hk_ipo.py update --skip aastocks   <- if a site is blocked\n"
@@ -302,8 +354,15 @@ def cmd_export(args):
         "  To feed the numbers back: let the tab compute, paste-VALUES into\n"
         "  bbg.xlsx (one sheet, headers on row 4), put it next to the repo,\n"
         "  then on the build machine: python ipo_lib/ingest_bbg.py + update.\n"
-        "  Retail/instl subscription from Bloomberg OVERRIDE the scrape.\n\n"
+        "  Combined BBG Verify: subscriptions, shoe, valuation and price checks.\n"
+        "  Bloomberg supersedes scrapes; reviewed HKEX figures take priority.\n\n"
         "THE DASHBOARD\n"
+        "  Copy the delivered HTML file directly. It embeds compressed data and\n"
+        "  opens offline with no companion folder. All stored histories remain.\n"
+        "  If the shared drive reports no space, try the ZIP transfer copy\n"
+        "  or open a local copy. Compression cannot clear a full server quota;\n"
+        "  the shared drive owner may need to free space. Browser-saved HTML\n"
+        "  was also checked to reopen offline. Quotes remain dated snapshots.\n\n"
         "  Screener tab: pick or type a target, Deal Brief (base rate + worst\n"
         "  peer = your downside), paint comps red/blue, factor strips, plot\n"
         "  anything vs anything, daily price action for every comp (offer-\n"
@@ -373,6 +432,7 @@ def main():
         fn=lambda a: run("ipo_lib/make_grey_note.py"))
     sub.add_parser("clawback-note", help="regenerate the 套路回撥 allocation study (docx)").set_defaults(
         fn=lambda a: run("ipo_lib/analyse_clawback.py") and run("ipo_lib/make_clawback_note.py"))
+    sub.add_parser("ah-study-note", help="regenerate the A/H Word study").set_defaults(fn=lambda a: run("ipo_lib/make_ah_study.py"))
     ex = sub.add_parser("export", help="bundle what another machine needs")
     ex.add_argument("--force", action="store_true",
                     help="skip the gate battery (emergencies only)")

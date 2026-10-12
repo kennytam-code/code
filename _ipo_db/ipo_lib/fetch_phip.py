@@ -128,18 +128,20 @@ def main():
 
 # Analyst labels for live applicants, matched on a name fragment. The keyword
 # classifier agrees with the hand labels only ~49% of the time and it put Shein
-# in "Fintech platform"; a pipeline name is the one place a wrong sector is
+# in "Internet & fintech"; a pipeline name is the one place a wrong sector is
 # expensive, so these override it exactly like classify.py's codes do for
 # listed deals. Anything not listed here keeps the provisional keyword label.
 PIPELINE_LABELS = {
-    "shein": "Internet platform / e-commerce",
+    "shein": "Internet & fintech",
     "tanboer": "Apparel / luxury",
     "direct drive": "Robotics & autonomous driving",
     "mech-mind": "Robotics & autonomous driving",
-    "ingenic": "AI chips & semis",
+    "ingenic": "Semiconductors",
     "ekh": "Logistics",
     # infusion systems / surgical devices / IVD (Shenzhen; PHIP 2026-08)
     "medcaptain": "Medical devices",
+    # PHIP summary: magnetic-sensor IDM, chip/wafer/module design and production.
+    "sinomags": "Semiconductors",
 }
 
 
@@ -243,12 +245,16 @@ def _oc_banks(a):
     if not m:
         # single-bank prose: "has appointed CLSA Limited as its (sole) overall
         # coordinator" (Direct Drive, Tanboer)
-        m1 = re.search(r"has\s+appointed\s+(.{4,120}?)\s+as\s+its\s+"
-                       r"(?:sole\s+)?overall\s+coordinator", flat, re.I)
+        m1 = re.search(r"has\s+appointed\s+(.{4,600}?)\s+as\s+its\s+"
+                       r"(?:sole\s+)?(sponsor[\s\-–]*overall\s+coordinators?|"
+                       r"overall\s+coordinators?)", flat, re.I)
         if m1:
             names = _clean_banks(_BANK.findall(m1.group(1)))
             if names:
-                return {"coordinators": names}
+                out = {"coordinators": names}
+                if m1.group(2).lower().startswith("sponsor"):
+                    out["sponsors"] = names
+                return out
         return {}
     body = m.group(1)
     # walk the role headings in order: whatever names follow "Sponsor-Overall
@@ -256,7 +262,7 @@ def _oc_banks(a):
     # Coordinators" (or "Joint Sponsors") joins the coordinator list
     parts = re.split(r"(Sponsor[\s\-–]*Overall\s+Coordinators?|Joint\s+Sponsors?|"
                      r"Sole\s+Sponsor|Overall\s+Coordinators?)", body, flags=re.I)
-    out, role = {}, None
+    out, role = {}, "coordinators"
     for seg in parts:
         low = seg.strip().lower()
         if re.fullmatch(r"sponsor[\s\-–]*overall\s+coordinators?|joint\s+sponsors?|"

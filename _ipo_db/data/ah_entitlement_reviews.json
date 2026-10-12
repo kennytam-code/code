@@ -1,0 +1,67 @@
+{
+ "reviewed_at": "2026-10-11",
+ "pairs": {
+  "3296": {
+   "a_code": "603296.SS",
+   "ratio": 1.4,
+   "h_ex_date": "2026-05-22",
+   "a_ex_date": "2026-06-17",
+   "policy": "Omit observations with different A/H entitlement bases; retain raw closes and valid premiums before and after the interval.",
+   "sources": [
+    {
+     "url": "https://www.hkexnews.hk/listedco/listconews/sehk/2026/0506/2026050602560.pdf",
+     "pages": [
+      1,
+      3,
+      7,
+      8
+     ],
+     "basis": "Four new shares for every ten existing A and H shares; H ex-entitlement from 22 May 2026."
+    },
+    {
+     "url": "https://www.hkexnews.hk/listedco/listconews/sehk/2026/0609/2026060901194_c.pdf",
+     "pages": [
+      2,
+      3,
+      4,
+      6
+     ],
+     "basis": "Implemented A-share capitalization of 0.4 per share; A ex-entitlement on 17 June 2026; approved at the 20 May AGM."
+    }
+   ]
+  },
+  "3759": {
+   "a_code": "300759.SZ",
+   "ratio": 1.5,
+   "h_ex_date": "2022-06-06",
+   "a_ex_date": "2022-06-14",
+   "events": [
+    {
+     "ratio": 1.5,
+     "h_ex_date": "2022-06-06",
+     "a_ex_date": "2022-06-14"
+    },
+    {
+     "ratio": 1.5,
+     "h_ex_date": "2023-07-18",
+     "a_ex_date": "2023-07-27"
+    }
+   ],
+   "policy": "Omit mismatched A/H entitlement bases for both reviewed capitalisation issues.",
+   "sources": [
+    {
+     "url": "https://www.hkex.com.hk/-/media/HKEX-Market/Services/Circulars-and-Notices/Participant-and-Members-Circulars/SEHK/2022/PMI2022066_e.pdf",
+     "basis": "H ex date 6 June 2022; five new shares for ten"
+    },
+    {
+     "url": "https://www.hkex.com.hk/-/media/HKEX-Market/Services/Circulars-and-Notices/Participant-and-Members-Circulars/SEHK/2023/PMI2023094_e.pdf",
+     "basis": "H ex date 18 July 2023; five new shares for ten"
+    },
+    {
+     "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0827/2023082700029.pdf",
+     "basis": "A ex dates 14 June 2022 and 27 July 2023; capitalisation of reserve"
+    }
+   ]
+  }
+ }
+}

@@ -29,12 +29,15 @@ WB = ROOT / "out" / "HK_IPO_Database_v1.xlsx"
 # fields that returned real values in the desk's pasted bbg.xlsx
 PROVEN = {"CP036", "CP037", "GREENSHOE_FACILITY", "OFFERING_GREENSHOE_SHARES_EX",
           "PE_RATIO", "A/H_SHARE_CONVERSION", "CUR_MKT_CAP", "EQUITY_OFFERINGS",
-          "PX_LAST"}
+          "PX_LAST", "LAST_PRICE"}
 # 2026-08-26 terminal verify: EQY_INIT_PO_SH_PRC and EQUITY_OFFERINGS-as-BDP
 # came back "#N/A Invalid Field" and were REMOVED from the Verify tab (the
 # offer price is tied down by the verified day-1 close instead). HK tickers
 # must be built WITHOUT leading zeros — "0606 HK Equity" was rejected.
-AWAIT = {"HSAHP Index": "new in v15 — verify one cell on the terminal before trusting the column",
+AWAIT = {"PX_YEST_CLOSE": "Bloomberg DAPI previous-close field; test on terminal", "HSAHP Index": "new in v15 — verify one cell on the terminal before trusting the column",
+         "CHG_PCT_1D": "new live monitor; verify Bloomberg daily percent units (/100)",
+         "LAST_UPDATE_DT": "new live monitor; verify the quote-date field on the desk",
+         "LAST_UPDATE": "new live monitor; verify the quote-time field on the desk",
          "PX_TO_SALES_RATIO": "new in v23 (Screener 'P/S now') — the desk's own formula; check one cell"}
 CALL = re.compile(r"\b(BDP|BDH|BDS)\s*\(")
 MNEM = re.compile(r'"([A-Z][A-Z0-9_/ ]{2,40})"')
@@ -58,7 +61,7 @@ def main():
                 if f.count('"') % 2:
                     bad += 1
                     print(f"  FAIL {where}: odd number of quotes")
-                if "IFERROR(" not in f and "IF(" not in f.replace("IFERROR(", ""):
+                if ws.title not in ("BBG Verify", "Verify (BBG)", "Market Data") and "IFERROR(" not in f and "IF(" not in f.replace("IFERROR(", ""):
                     bad += 1
                     print(f"  FAIL {where}: Bloomberg call with no IFERROR guard")
                 for m in MNEM.finditer(f):

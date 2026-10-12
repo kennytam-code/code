@@ -403,7 +403,7 @@ def main():
            "the deals are the large A+H names and behave as in finding 8. Cornerstone percentage: rank "
            "correlation with both the grey level and the intraday move is near zero. Priced at the cap: "
            "almost every deal in the sample priced at its cap, so there is no contrast to test. Sector "
-           "within Tech/AI: it is 45% of the sample and splits evenly between extension and fade. "
+           "within Technology: it is 45% of the sample and splits evenly between extension and fade. "
            "News and sentiment per deal are not in the database and nothing here estimates them.")
 
     # 11

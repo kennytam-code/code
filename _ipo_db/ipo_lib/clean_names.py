@@ -10,7 +10,13 @@ name. Anything that cannot be cleaned into one is dropped rather than shown.
 
 Reused by merge_batches.py (writes the clean list) and by the workbook build.
 """
-import re
+import re,json
+from pathlib import Path
+_GROUP_DOC=json.loads((Path(__file__).resolve().parent.parent/'data/investor_aliases.json').read_text()) if (Path(__file__).resolve().parent.parent/'data/investor_aliases.json').exists() else {'groups':[],'canonical_spellings':{}}
+def _alias_signature(name):
+    return re.sub(r'[^a-z0-9]','',re.sub(r'\b(?:limited|ltd|pte|llc|lp|l\.p)\b','',str(name).lower()))
+_GROUP_ALIASES={_alias_signature(n):g['key'] for g in _GROUP_DOC['groups'] for n in g['aliases']}
+_GROUP_LABELS={g['key']:g['label'] for g in _GROUP_DOC['groups']}
 
 # a table header or scenario tail, never an investor
 DROP = re.compile(
@@ -49,6 +55,11 @@ def clean_investor(raw):
     if not raw:
         return None
     s = re.sub(r"\s+", " ", str(raw)).strip()
+    # Nayuki's vendor table concatenated this exact legal name twice. The
+    # filed cornerstone section (18 June 2021, PDF p.339) names one CUAM.
+    s = re.sub(r'(China Universal Asset Management Co\., Ltd)\s*\1', r'\1', s)
+    s=s.replace('M a n a g e dA c c o u n to fM e g a','Managed Account of Mega')
+    s=re.sub(r'\bSPC\s*\{\s*','SPC — ',s)
     # cover-page bleed classes (shared with the bank lists, defined below):
     # section headings, page numbers, and footnote references ("Please refer
     # to Note (1). No" is a pointer, not an investor)
@@ -89,7 +100,19 @@ def clean_investor(raw):
         parts = [p for p in parts if re.search(r"[A-Za-z一-鿿]", p)]
         s = " / ".join(parts)
     s = re.sub(r"\s+", " ", s).strip()
-    if len(s) < 4 or len(s) > 70:
+    # Filed partnership/fund names (including a trustee or TRS vehicle) can
+    # exceed 70 characters. Reject prose through the rules below, not a
+    # display-width limit that deletes genuine cornerstone investors.
+    while s.endswith(")") and s.count(")") > s.count("("):
+        s = s[:-1].rstrip()
+    if len(s) < 4 or len(s) > 240:
+        return None
+    # Extending legal-name support must not let an entire numeric table row
+    # or a placing-consent heading pass as an investor.
+    s = re.sub(r"^(?:\d+(?:\.\d+)?%\s+)+(?:(?:No|Yes)\s+)?", "", s)
+    if re.search(r"\d{1,3}(?:,\d{3})+|\d+(?:\.\d+)?%", s):
+        return None
+    if re.match(r"(?:Allottees?|Allocations?)\s+with\b", s, re.I):
         return None
     if DROP.match(s) or GENERIC.match(s):
         return None
@@ -115,7 +138,7 @@ def clean_investor(raw):
     return s
 
 
-def clean_investor_list(raw_list, limit=15):
+def clean_investor_list(raw_list, limit=None):
     """Clean, drop the unusable, dedupe case-insensitively, keep order."""
     out, seen = [], set()
     for raw in raw_list or []:
@@ -127,7 +150,7 @@ def clean_investor_list(raw_list, limit=15):
             continue
         seen.add(k)
         out.append(n)
-        if len(out) >= limit:
+        if limit is not None and len(out) >= limit:
             break
     return out
 
@@ -187,7 +210,7 @@ def _strip_hk_address(s):
 # Limited", "Receiving Bank Industrial and Commercial Bank of China (Asia)
 # Limited") — ANKER's whole sponsor list was that table
 _P_ROLE_WORD = (r"(?:Managers?|Coor\s?dinators?|Representatives?|Bookrunners?|"
-                r"Sponsors?|Advis[eo]rs?|Capital\s+Market\s+Interm\w*|"
+                r"Sponsors?|Advis[eo]rs?|Capital\s+Markets?\s+Interm\w*|"
                 r"Compliance\s+Advis[eo]rs?|Receiving\s+Banks?|"
                 r"Principal\s+Banks?|Legal\s+Advis[eo]rs?|Auditors?|"
                 r"Reporting\s+Accountants?|Share\s+Registrars?|Registrars?|"
@@ -279,12 +302,18 @@ _AMBIG = {"mr", "ms", "mrs", "dr", "china", "chinese", "new", "first", "golden",
           "jiang", "yu", "du", "ye", "cheng", "wei", "su", "lu", "ding", "ren",
           "shen", "yao", "fang", "jin", "qiu", "xia", "tan", "shi", "qin",
           "bai", "mao", "jia", "gu", "meng", "qian", "wan", "yan", "kong"}
+_AMBIG |= {"wuxi", "wuhan", "sichuan", "huangshan", "huizhou", "guangdong",
+           "qianhai", "pt", "ocean", "horizon", "greater", "mega", "infore",
+           "snow", "lake", "ping", "close", "ningbo", "suzhou", "zhuhai",
+           "tianjin", "chongqing", "chengdu", "fujian", "jiangsu", "zhejiang",
+           "hunan", "hubei", "shandong", "shanxi", "hebei", "henan",
+           "citic", "icbc", "morgan"}
 
 
 # hand-curated initialism aliases the mechanics cannot safely infer — the
 # book itself carries both forms ("MSIP" and "Morgan Stanley & Co.
 # International plc"). Append-only; every entry needs that kind of evidence.
-_ALIASES = {"msip": "morgan", "cicc": "china-international",
+_ALIASES = {"msip": "morgan-stanley", "cicc": "china-international",
             "gtja": "guotai", "abci": "agricultural", "bocom": "bank-communications"}
 
 
@@ -299,7 +328,10 @@ def investor_key(name):
     """
     if not name:
         return ""
-    s = re.sub(r"\([^)]*\)", " ", str(name))        # drop parentheticals
+    group=_GROUP_ALIASES.get(_alias_signature(name))
+    if group:return group
+    s = re.sub(r'^Close associate of an existing shareholder\s+', '', str(name), flags=re.I)
+    s = re.sub(r"\([^)]*\)", " ", s)        # drop parentheticals
     s = re.sub(r"[^A-Za-z0-9一-鿿 ]", " ", s).lower()
     toks = [t for t in s.split() if t not in _KEY_DROP and len(t) > 1]
     if not toks:
@@ -311,7 +343,8 @@ def investor_key(name):
         return "-".join(toks) if toks else ""
     if not toks:
         return ""
-    n_keep = 2 if toks[0] in _AMBIG and len(toks) > 1 else 1
+    # A title and surname do not identify a person. Preserve the complete name.
+    n_keep = len(toks) if toks[0] in {"mr", "ms", "mrs", "dr"} else 2 if toks[0] in _AMBIG and len(toks) > 1 else 1
     k = "-".join(toks[:n_keep])
     return _ALIASES.get(k, k)
 
@@ -364,7 +397,7 @@ def split_conjunctions(name):
     return [str(name or "").strip()]
 
 
-_FOOTNOTE = re.compile(r"\s*(?:\(?\bnotes?\b\s*\d*\)?|\(\d\)|\[\d\])\s*$", re.I)
+_FOOTNOTE = re.compile(r"\s*(?:\(?\bnotes?\b\s*\d+(?:\s*[, &]\s*\d+)*\)?|\(\d\)|\[\d\])\s*$", re.I)
 
 
 def _tidy(name):
@@ -372,7 +405,7 @@ def _tidy(name):
     s = re.sub(r"\s+", " ", str(name or "")).strip(" ,;·")
     for _ in range(2):
         s = _FOOTNOTE.sub("", s).strip()
-    return s
+    return _GROUP_DOC['canonical_spellings'].get(s,s)
 
 
 def build_canonical_map(all_lists):
@@ -440,7 +473,7 @@ def canonical_list(names, canon):
     folded = []
     for d in out:
         a = sigs[d]
-        dup = any(d2 != d and len(a) >= 4 and len(sigs[d2]) > len(a)
+        dup = not _LEGAL_TAIL.search(d) and any(d2 != d and len(a) >= 4 and len(sigs[d2]) > len(a)
                   and sigs[d2].startswith(a) for d2 in out)
         if not dup:
             folded.append(d)
@@ -457,40 +490,18 @@ def cs_league(deals):
     sheet and the HTML tab can never disagree.
     """
     import collections
-    # cross-spelling fold: "hhlra"->"hhlr", "schroders"->"schroder",
-    # "southern-am"->"southern". Only where the shorter key is >=4 chars and
-    # the extra is <=1 char OR one whole generic token — "al" vs "all"
-    # (Al-Rayyan vs All View) are DIFFERENT companies and must not fold.
-    _GEN_TOK = {"am", "amc", "hk", "asia", "intl", "sg", "international"}
-    all_keys = sorted({k for x in deals
-                       for k in map(investor_key,
-                                    x.get("cornerstone_investors") or []) if k})
-    remap = {}
-    for i, a in enumerate(all_keys):
-        if a in remap or len(a) < 4:
-            continue
-        for b in all_keys[i + 1:]:
-            if not b.startswith(a):
-                break
-            if b in remap or a == b:
-                continue
-            extra = b[len(a):]
-            if len(extra) <= 1 or (extra.startswith("-")
-                                   and extra[1:] in _GEN_TOK):
-                remap[b] = a
-
     groups = collections.defaultdict(lambda: {"names": collections.Counter(),
                                               "deals": []})
     for x in deals:
         seen_keys = set()               # two spellings of one investor inside
         for nm in (x.get("cornerstone_investors") or []):   # ONE deal count once
             k = investor_key(nm)
-            k = remap.get(k, k)
             if not k or k in seen_keys:
                 continue
             seen_keys.add(k)
             g = groups[k]
-            g["names"][nm] += 1
+            display = re.sub(r'^Close associate of an existing shareholder\s+', '', nm, flags=re.I)
+            g["names"][display] += 1
             g["deals"].append({
                 "code": x.get("code"), "name": x.get("name"),
                 "ipo_date": x.get("ipo_date"),
@@ -516,7 +527,8 @@ def cs_league(deals):
         d1s = [d["d1"] for d in ds if d["d1"] is not None]
         out.append({
             "key": k,
-            "investor": g["names"].most_common(1)[0][0],
+            "investor": _GROUP_LABELS.get(k,g["names"].most_common(1)[0][0]),
+            "aliases": sorted(set(g['names']) | {alias for group in _GROUP_DOC['groups'] if group['key']==k for alias in group['aliases']}),
             "n": len(ds),
             "hit": round(100 * sum(1 for v in d1s if v > 0) / len(d1s), 0)
                    if d1s else None,

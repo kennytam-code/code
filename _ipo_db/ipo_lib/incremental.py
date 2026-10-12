@@ -62,7 +62,10 @@ def merge(out_path, fresh, only, key="deals"):
     A code parsed this run REPLACES its old record even when the parse found
     less than before — a re-parse is a decision to trust the new read.
     """
-    if not only:
+    # None = "all of them": the fresh list IS the batch. An EMPTY set means
+    # --new found nothing new — the batch must be carried forward whole
+    # (treating it as "all" wiped etnet_ipo.json: 244 grey prints, 29-Sep-2026)
+    if only is None:
         return fresh
     done = {str(r.get("code")) for r in fresh}
     kept = [r for r in existing(out_path, key) if str(r.get("code")) not in done]

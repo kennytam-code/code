@@ -53,9 +53,11 @@ def main():
     from corp_actions import load_actions
     splits = load_actions(ROOT)
 
+    benchmarks = load("benchmark_prices").get("benchmarks", {})
     fail = {k: [] for k in ("listing_day", "price_band", "price_range", "proceeds",
                             "identity_day1", "identity_expop", "recompute",
-                            "source_gap", "action_unhandled", "extreme")}
+                            "source_gap", "action_unhandled", "extreme",
+                            "horizon_dates", "benchmark_dates", "latest_identity")}
     checked = {k: 0 for k in fail}
 
     for x in deals:
@@ -133,11 +135,37 @@ def main():
                 stored = x.get(f"ret_{h}_pct")
                 if stored is None or len(raw) <= nb:
                     continue
+                checked["horizon_dates"] += 1
+                if x.get(f"ret_{h}_date") != sess[nb][0]:
+                    fail["horizon_dates"].append(f"{c}: {h} date {x.get(f'ret_{h}_date')} vs raw {sess[nb][0]}")
                 rec = 100 * (raw[nb][1] / fp - 1)
                 if abs(rec - stored) > max(TOL_RET, abs(stored) * 0.02):
                     fail["recompute"].append(
                         f"{c} {nm}: {h} stored {stored:+.2f}% vs raw prints "
                         f"{rec:+.2f}%")
+
+        # Dates are checked independently of the merger's benchmark helper.
+        rows = benchmarks.get(x.get("benchmark"), {}).get("closes", [])
+        if rows and ds:
+            closes = dict(rows)
+            before = [v for d, v in rows if d < ds]
+            if before:
+                for h, end, stock in [
+                    ("day1", ds, d1), ("since", x.get("price_asof"), x.get("since_ipo_pct")),
+                    *[(h, x.get(f"ret_{h}_date"), x.get(f"ret_{h}_pct")) for h, _ in HORIZONS],
+                ]:
+                    if end not in closes or stock is None:
+                        continue
+                    checked["benchmark_dates"] += 1
+                    actual = round(100 * (closes[end] / before[-1] - 1), 2)
+                    b, a = x.get(f"bench_{h}_pct"), x.get(f"alpha_{h}_pct")
+                    if b is None or a is None or abs(b - actual) > .015 or abs(a - (stock - actual)) > .015:
+                        fail["benchmark_dates"].append(f"{c}: {h} index/alpha must use {ds} pre-close to {end}, index {actual}")
+        if fp and pr.get("last_close") is not None and x.get("since_ipo_pct") is not None:
+            checked["latest_identity"] += 1
+            actual = 100 * (pr["last_close"] / fp - 1)
+            if abs(actual - x["since_ipo_pct"]) > max(.065, abs(actual) * .0006) or x.get("price_asof") != pr.get("last_date"):
+                fail["latest_identity"].append(f"{c}: latest return/date disagree with latest-price source")
 
         # ---- 4. TWO SOURCES on the same debut session ---------------------
         # prices.json is Yahoo for most deals; h_paths is always raw Tencent.
@@ -207,6 +235,9 @@ def main():
         "source_gap": "Yahoo and raw Tencent agree on the debut",
         "action_unhandled": "no uncorrected corporate action in the window",
         "extreme": "no day-1 beyond +/-400%",
+        "horizon_dates": "horizon dates match the actual stock session",
+        "benchmark_dates": "benchmark and alpha use the stock's exact dates",
+        "latest_identity": "since IPO matches latest close and quote date",
     }
     bad = 0
     for k, lab in LABEL.items():

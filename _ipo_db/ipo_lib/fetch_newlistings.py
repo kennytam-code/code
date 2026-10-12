@@ -88,15 +88,55 @@ def deep_parse(code, url):
     if len(txt) < 20000:
         return {"parse_note": "prospectus text too thin (scanned?)"}
     parsed = {}
+    # parse_syndicate returns {ROLE: [banks]} keyed by the filing's own role
+    # wording ("Joint Sponsors", "Sponsor-Overall Coordinators", "Joint
+    # Bookrunners"). Reading it by the keys "sponsors"/"bookrunners" matched
+    # nothing, so every live deal reached the Pipeline with no banks at all.
     syn = ED.parse_syndicate(txt) or {}
-    for k in ("sponsors", "bookrunners"):
-        if syn.get(k):
-            parsed[k] = syn[k]
+    sp, br = [], []
+    for role, banks in syn.items():
+        # the Database's rule: a "Sponsor-Overall Coordinator" is the
+        # sponsor's affiliate acting as coordinator (CLSA for CITIC), so it
+        # counts as a bookrunner, not a second sponsor
+        if re.search(r"sponsor", role, re.I) and not re.search(
+                r"coordinator|bookrunner|lead manager", role, re.I):
+            sp += [b for b in banks if b not in sp]
+        if re.search(r"bookrunner|global coordinator|overall coordinator", role, re.I):
+            br += [b for b in banks if b not in br]
+    # the same scrub the Database applies: PDF line breaks glue addresses
+    # ("Central, Hong Kong Huatai…") and role labels onto the bank names
+    from clean_names import clean_party_list
+    sp, br = clean_party_list(sp), clean_party_list(br)
+    if sp:
+        parsed["sponsors"] = sp
+    if br:
+        parsed["bookrunners"] = br[:14]
+    if syn:
+        parsed["syndicate"] = syn
+    gs, gsnip = ED.parse_greenshoe_pct(txt)
+    if gs:
+        parsed["greenshoe_pct"] = gs
+        parsed["greenshoe_snip"] = gsnip
+    elif not re.search(r"over-?\s?allotment\s+option", txt, re.I):
+        # NO SHOE is a fact the desk trades on (no stabilisation bid after
+        # listing), so it is recorded as 0 with the reason, never left blank.
+        # ESWIN has only an Offer Size Adjustment Option — an upsize, which
+        # adds supply at pricing and supports nothing afterwards.
+        parsed["greenshoe_pct"] = 0
+        parsed["greenshoe_note"] = ("none — no over-allotment option"
+                                    + ("; an Offer Size Adjustment Option (upsize at pricing) instead"
+                                       if re.search(r"Offer\s+Size\s+Adjustment\s+Option", txt, re.I)
+                                       else ""))
     cs = ED.parse_cornerstone(txt, is_allotment=False) or {}
     for k in ("cornerstone_pct", "cornerstone_amt_m", "cornerstone_amt_ccy",
               "cornerstone_investors"):
         if cs.get(k) is not None:
             parsed[k] = cs[k]
+    if (parsed.get("cornerstone_pct") is None and parsed.get("cornerstone_amt_m") is None
+            and len(txt) > 500_000 and len(ED.HDR_CORNER.findall(txt)) <= 4):
+        # a complete prospectus with no cornerstone section: none was placed
+        parsed["cornerstone_pct"] = 0
+        parsed["cornerstone_note"] = "no cornerstone tranche (no cornerstone section in the prospectus)"
     flat = re.sub(r"\s+", " ", txt)
     m = re.search(r"Offer\s+Price[^.]{0,120}?HK\$([\d.]+)[^.]{0,60}?"
                   r"(?:to|and|–|-)\s*HK\$([\d.]+)", flat)
@@ -126,14 +166,25 @@ def deep_parse(code, url):
                   flat)
     if m:
         parsed["offer_shares"] = float(m.group(1).replace(",", ""))
-    for pat, key2 in ((r"market\s+capitali[sz]ation[^.]{0,160}?HK\$([\d,.]+)\s*(million|billion)"
-                       r"[^.]{0,80}?HK\$([\d,.]+)\s*(million|billion)", "mktcap_range"),):
+    # The statistics table often states TWO caps: "Market capitalization of
+    # our H Shares" and "...of our Shares" (H + unlisted/A). The company is
+    # the second; taking the first made ESWIN's P/S 5.6x instead of 12.2x.
+    # Try the whole-company line first, then the generic phrase.
+    for pat, key2 in ((r"market\s+capitali[sz]ation\s+of\s+our\s+Shares[^.]{0,400}?HK\$([\d,.]+)\s*(million|billion)"
+                       r"[^.]{0,80}?HK\$([\d,.]+)\s*(million|billion)", "mktcap_all_shares"),
+                      (r"market\s+capitali[sz]ation[^.]{0,160}?HK\$([\d,.]+)\s*(million|billion)"
+                       r"[^.]{0,80}?HK\$([\d,.]+)\s*(million|billion)", "mktcap_range")):
         m = re.search(pat, flat, re.I)
         if m:
+            if key2 == "mktcap_all_shares":
+                parsed["mktcap_basis"] = "all shares (the filing's whole-company line)"
+            elif re.search(r"of\s+our\s+H\s+Shares", m.group(0)[:80], re.I):
+                parsed["mktcap_basis"] = "H shares only (no whole-company line in the filing)"
             def mval(v, u):
                 return float(v.replace(",", "")) * (1000 if u.lower() == "billion" else 1)
             a, b = mval(m.group(1), m.group(2)), mval(m.group(3), m.group(4))
             parsed["mktcap_lo_hkdm"], parsed["mktcap_hi_hkdm"] = sorted([a, b])
+            break
     fclean = EF.clean_text(txt)
     rev, _, _ = EF.series_from(fclean, EF.REV_LINE)
     ni, _, _ = EF.series_from(fclean, EF.NI_LINE)
@@ -158,6 +209,10 @@ def deep_parse(code, url):
     if ov:
         from textclip import clip_sentence
         parsed["business_overview"] = clip_sentence(ov, 620, hard=760)
+    else:
+        # no clean candidate: say so, and keep last run's (possibly
+        # risk-factor) sentence from backfilling in
+        parsed.setdefault("_rejected", []).append("business_overview")
     # An offering-window deal must land in the same taxonomy as the book it is
     # compared against, otherwise its card reads "not yet classified" and the
     # subsector-first scorer falls back to sector matching for no reason.
@@ -201,6 +256,16 @@ def deep_parse(code, url):
     cap_px = parsed.get("range_hi") or parsed.get("range_lo")
     if parsed.get("offer_shares") and cap_px:
         parsed["size_at_cap_hkdm"] = round(parsed["offer_shares"] * cap_px / 1e6, 1)
+    # CORNERSTONE % when the filing states only the committed AMOUNT: the
+    # amount is fixed in money, so its share of the deal is read at the same
+    # maximum price the size uses (and says so). ESWIN: HK$1,161m of HK$2,497m.
+    amt, ccy = parsed.get("cornerstone_amt_m"), parsed.get("cornerstone_amt_ccy")
+    fx_cs = {"HKD": 1.0, "HK$": 1.0, "USD": 7.80, "US$": 7.80, "RMB": 1.10, "CNY": 1.10}.get(ccy or "HKD")
+    if amt and fx_cs and parsed.get("size_at_cap_hkdm") and parsed.get("cornerstone_pct") is None:
+        pct = 100 * amt * fx_cs / parsed["size_at_cap_hkdm"]
+        if 0 < pct <= 100:
+            parsed["cornerstone_pct"] = round(pct, 1)
+            parsed["cornerstone_basis"] = "committed amount ÷ offering at the maximum price"
     # A REVENUE OF ZERO BESIDE A PROFIT IS A FAILED PARSE, not a pre-revenue
     # issuer: Red Avenue filed HK$635m of net income against "revenue 0".
     # ...and a revenue of exactly zero beside ANY net income line is the same
@@ -249,6 +314,25 @@ def deep_parse(code, url):
     return parsed
 
 
+def aa_names_cn():
+    """{code: Chinese short name} for every deal on AAStocks' upcoming-IPO
+    table ("奕斯偉計算 | 01256.HK"). HKEX's bilingual securities feed carries a
+    code only once it trades, so a live offering had no Chinese name at all."""
+    try:
+        h = requests.get("https://www.aastocks.com/tc/stocks/market/ipo/upcomingipo/ipo-info",
+                         headers=UA, timeout=40).text
+    except Exception:
+        return {}
+    t = re.sub(r"<script.*?</script>|<style.*?</style>", " ", h, flags=re.S)
+    t = re.sub(r"(\s*\|\s*)+", " | ", re.sub(r"<[^>]+>", " | ", t))
+    out = {}
+    for m in re.finditer(r"\|\s*([^|]{2,30}?)\s*\|\s*0?(\d{4})\.HK\s*\|", t):
+        nm = m.group(1).strip()
+        if re.search(r"[\u4e00-\u9fff]", nm) and m.group(2) not in out:
+            out[m.group(2)] = nm
+    return out
+
+
 def main():
     rows = rows_from_page()
     offering = [r for r in rows if r["prospectus_links"] and not r["allotment_links"]]
@@ -265,15 +349,56 @@ def main():
     p = ROOT / "data" / "batches" / "aastocks_deal_en.json"
     if p.exists():
         aa = {r["code"]: r for r in json.loads(p.read_text())["deals"]}
+    cn_aa = aa_names_cn()
+    # HKEX's own bilingual feed carries any code that has been allocated —
+    # the fallback for a deal AAStocks no longer lists (postponed / pulled)
+    try:
+        feed = requests.get("https://www1.hkexnews.hk/ncms/script/eds/activestock_sehk_c.json",
+                            headers=UA, timeout=45).json()
+        for row in (feed if isinstance(feed, list) else []):
+            c4 = str(row.get("c", "")).lstrip("0").zfill(4)
+            if row.get("n") and c4 not in cn_aa:
+                cn_aa[c4] = row["n"]
+    except Exception as e:
+        print(f"  HKEX Chinese-name feed skipped: {e}")
     out = []
     for r in offering:
         rec = dict(r)
         rec["status"] = "OFFERING NOW"
+        if cn_aa.get(r["code"]):
+            rec["name_cn"] = cn_aa[r["code"]]
         try:
             rec.update(deep_parse(r["code"], r["prospectus_links"][0]))
         except Exception as e:
             rec["error"] = str(e)[:120]
         en = aa.get(r["code"], {})
+        # BANKS AND CORNERSTONES WHERE THE PROSPECTUS PARSE CAME UP SHORT:
+        # AAStocks' deal page lists the sponsors, the whole underwriting
+        # syndicate and every cornerstone with its amount. The prospectus
+        # stays the source of record; this only fills what it left blank,
+        # and the *_src field says so.
+        if not rec.get("sponsors") and en.get("sponsors_en"):
+            rec["sponsors"], rec["sponsors_src"] = list(en["sponsors_en"]), "AAStocks deal page"
+        if not rec.get("bookrunners") and en.get("underwriters_en"):
+            rec["bookrunners"] = list(en["underwriters_en"])
+            rec["bookrunners_src"] = "AAStocks deal page (whole underwriting syndicate)"
+        cs_aa = en.get("cornerstone_aa") or []
+        names0 = rec.get("cornerstone_investors") or []
+        # a prospectus table that yielded only the short-form ALIASES
+        # ('(“Golden Link”') is a damaged read: AAStocks has the real names
+        damaged = any(str(n).lstrip().startswith(("(", "“", '"')) or len(str(n)) < 4 for n in names0)
+        if (not names0 or damaged) and cs_aa:
+            rec["cornerstone_investors"] = [x.get("name") for x in cs_aa if x.get("name")]
+            rec["cornerstone_src"] = "AAStocks deal page"
+        if rec.get("cornerstone_amt_m") is None and en.get("cornerstone_aa_total_hkdm"):
+            rec["cornerstone_amt_m"], rec["cornerstone_amt_ccy"] = float(en["cornerstone_aa_total_hkdm"]), "HKD"
+        if (rec.get("cornerstone_pct") is None and rec.get("cornerstone_amt_m")
+                and rec.get("size_at_cap_hkdm")):
+            fx_cs = {"USD": 7.80, "US$": 7.80, "RMB": 1.10, "CNY": 1.10}.get(rec.get("cornerstone_amt_ccy"), 1.0)
+            pct = 100 * rec["cornerstone_amt_m"] * fx_cs / rec["size_at_cap_hkdm"]
+            if 0 < pct <= 100:
+                rec["cornerstone_pct"] = round(pct, 1)
+                rec["cornerstone_basis"] = "committed amount ÷ offering at the maximum price"
         for k_src, k_dst in (("offer_period", "offer_period"),
                              ("listing_date_aa", "listing_date"),
                              ("lot_size_aa", "lot_size"),

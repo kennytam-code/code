@@ -36,7 +36,7 @@ CANDIDATES = [
     re.compile(r"((?:We|Our Company|Our Group)\s+(?:are|is)\s+(?:principally\s+)?engaged\s+in\b.{60,700})", re.S),
     re.compile(r"((?:We|Our Company|Our Group)\s+(?:are|is)\s+(?:a|an|one of)\s+"
                r"(?:the\s+)?(?:leading|largest|major|fast-growing|prominent|established|"
-               r"top|PRC|China|Hong Kong|global)\b.{60,700})", re.S),
+               r"top|PRC|China|Hong Kong|global|comprehensive|integrated)\b.{60,700})", re.S),
     re.compile(r"((?:We|Our Company|Our Group)\s+(?:are|is)\s+(?:a|an)\s+"
                r"(?:provider|manufacturer|operator|supplier|developer|producer|distributor|"
                r"platform|company|group|retailer|contractor)\b.{60,700})", re.S),
@@ -45,6 +45,10 @@ CANDIDATES = [
 ]
 RISKY = re.compile(r"cannot assure|no assurance|we may not|may be materially|adversely affect|"
                    r"highly competitive(?:\s+and\s+\w+)?\s+(?:industry|market)|compete against|market entrants|"
+                   # ESWIN's first "We operate" sentence: "We operate in a
+                   # competitive market subject to an evolving landscape. We
+                   # face challenges from..." — a risk factor, not a business
+                   r"operate in a (?:highly )?competitive|evolving landscape|we face challenges|"
                    r"are paid by our customers|risk factors|"
                    # "market acceptance ... remains uncertain" is a risk
                    # factor opener, not a description of the business
@@ -53,7 +57,7 @@ RISKY = re.compile(r"cannot assure|no assurance|we may not|may be materially|adv
                    # and "We are a company incorporated under the laws of…", which the
                    # business-description candidates match but which describe no business
                    r"subject to PRC tax|PRC tax resident|withholding tax|"
-                   r"incorporated under the laws|established under the laws|"
+                   r"incorporated under (?:the )?(?:PRC )?laws|established under the laws|"
                    r"assets are located in|reside in the PRC|effect service of process|"
                    r"enforce judgments|judgments obtained|"
                    # accounting-presentation boilerplate reads like a business

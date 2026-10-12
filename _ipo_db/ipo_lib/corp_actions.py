@@ -56,20 +56,22 @@ def load_entitlements(root=None):
     return _read(root / "data" / "entitlement_adjustments.json")
 
 
-def price_factor(code, actions=None):
+def price_factor(code, actions=None, as_of=None):
     """Cumulative factor applied to RAW PRINTS (splits/consolidations only)."""
     acts = actions if actions is not None else load_actions()
     f = 1.0
     for ev in acts.get(str(code), []):
+        if as_of and ev["date"] > as_of: continue
         f *= float(ev.get("ratio") or 1)
     return f
 
 
-def bbg_factor(code, actions=None, entitlements=None):
+def bbg_factor(code, actions=None, entitlements=None, as_of=None):
     """Cumulative factor between OUR raw print and BLOOMBERG's adjusted one:
     price-scale actions AND entitlement (TERP) adjustments."""
-    f = price_factor(code, actions)
+    f = price_factor(code, actions, as_of)
     ent = entitlements if entitlements is not None else load_entitlements()
     for ev in ent.get(str(code), []):
+        if as_of and ev["date"] > as_of: continue
         f *= float(ev.get("factor") or 1)
     return f

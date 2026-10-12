@@ -356,16 +356,18 @@ def parse_offer_shares_total(txt):
 
 
 def parse_greenshoe_pct(txt):
-    """Stated greenshoe size. HK deals are almost always 15%; anything outside
-    5-20% is a mis-read (a stray percentage in the same sentence) and dropped."""
-    for m in SHOE_PCT.finditer(txt):
-        raw = m.group(1) or m.group(2)
-        if not raw:
-            continue
-        v = float(raw.replace(",", ""))
-        if 5 <= v <= 20:
-            return v, clean(txt[max(0, m.start() - 80):m.end() + 40])[:200]
-    return None, None
+    """Express maximum option capacity, never a nearby float percentage."""
+    t=clean(txt)
+    if re.search(r'we will not grant any over.allotment option',t,re.I):
+        m=re.search(r'we will not grant any over.allotment option',t,re.I)
+        return 0,t[max(0,m.start()-60):m.end()+200]
+    for m in re.finditer(r'up to\s+(?:an aggregate of\s+)?[\d,]+\b.{0,300}?\b(?:Shares|Units)',t,re.I):
+        before=t[max(0,m.start()-1500):m.start()];after=t[m.end():m.end()+450]
+        if not re.search('over.allotment option',before,re.I) or not re.search('granted|right|require|exercisable|entitled',before[-1000:],re.I):continue
+        z=re.search(r'(?:representing|equivalent to)\s*(?:in aggregate\s*)?(?:(?:approximately|not more than|no more than|up to|a maximum of)\s*)?(\d+(?:\.\d+)?)%\s*of\s*(.{0,170})',t[m.start():m.end()]+after,re.I)
+        if z and re.search('Offer Shares|Global Offering|initial.*Offer',z[2],re.I) and not re.search('issued share capital',z[2],re.I) and 0<float(z[1])<=15.1:
+            return float(z[1]),t[max(0,m.start()-100):m.end()+450]
+    return None,None
 
 
 def parse_price_range(txt):

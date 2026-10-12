@@ -43,7 +43,19 @@
    "date": "2022-11",
    "factor": 1.1936,
    "event": "UNVERIFIED entitlement-class adjustment",
-   "src": "Inferred: Yahoo hidden x1.194 (audit_opens, no split row) and BBG day-1 basis 1.131=1.350/1.1936 agree; HKEX announcement not yet located — basis-only, never applied to returns"
+   "src": "Inferred: Yahoo hidden x1.194 (audit_opens, no split row) and BBG day-1 basis 1.131=1.350/1.1936 agree; HKEX announcement not yet located \u2014 basis-only, never applied to returns"
+  }
+ ],
+ "2147": [
+  {
+   "date": "2026-09-09",
+   "factor": 1.3718592964824117,
+   "event": "rights 6-for-1 at HK$0.400; last cum-rights close HK$0.585",
+   "src": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0803/2026080304061.pdf",
+   "cum_close_date": "2026-09-08",
+   "cum_close": 0.585,
+   "terp": 0.4264285714285715,
+   "price_source": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=hk02147,day,2026-09-01,2026-09-15,50,"
   }
  ]
 }

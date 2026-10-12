@@ -1,0 +1,4706 @@
+{
+ "note": "cornerstone % and names read from the filings' own tables; see ipo_lib/fill_cornerstones.py",
+ "deals": [
+  {
+   "code": "0013",
+   "cornerstone_investors": [
+    "CA Fern Parent",
+    "CICC Grandeur (Xiamen) Equity Investment Fund Partnership (L.P.)",
+    "CPP Investments",
+    "General Atlantic Singapore HCM Pte. Ltd.",
+    "HBM Healthcare Investments (Cayman) Ltd."
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "0020",
+   "cornerstone_investors": [
+    "C-MER Eye Care Holdings Limited",
+    "Guosheng Overseas Holdings (Hong Kong) Limited",
+    "Guotai Junan Investments (Hong Kong) Limited",
+    "HKSTP Venture Fund",
+    "SAIC Motor HK Investment Limited",
+    "Shanghai Artificial Intelligence Industry Equity Investment Fund Partnership",
+    "Shanghai Xuhui Capital Investment Co., Ltd.",
+    "Taizhou Culture & Tourism Development Group Ltd.",
+    "The China State-Owned Enterprise Mixed Ownership Reform Fund Co., Ltd."
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "0068",
+   "cornerstone_pct": 37.14,
+   "cornerstone_investors": [
+    "Taikang Life Insurance Co., Ltd",
+    "Sunshine Life Insurance Corporation Limited",
+    "GF Fund Management Co., Ltd. and GF International Investment Management Limited (together, “GF Fund”)",
+    "REDWOOD ELITE LIMITED",
+    "Mirae Asset Securities Co., Ltd.",
+    "RIME Capital Limited",
+    "Hesai Hong Kong Limited",
+    "Guohui (HK) Holdings Co., Limited",
+    "CR Construction Group Holdings Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "0100",
+   "cornerstone_pct": 56.53,
+   "cornerstone_investors": [
+    "Abu Dhabi Investment Authority",
+    "Alisoft China Holding Limited",
+    "Aspex Master Fund",
+    "Abstract Enigma Limited",
+    "China Universal Asset Management (Hong Kong) Company Limited ”)",
+    "Eastspring Investments (Singapore) Limited",
+    "E Fund Management Co., Ltd.",
+    "IDG Breyer Capital Fund L.P.",
+    "Janchor Partners Pan-Asian Master Fund and Janchor Partners Opportunities Master Fund III",
+    "Martis Fund, L.P.",
+    "Mirae Asset Securities Co., Ltd.",
+    "MPC VII Pte. Ltd.",
+    "Perseverance Asset Management International (Singapore) Pte. Ltd. (“Perseverance",
+    "Asset Management”) Taikang Life Insurance Co., Ltd"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "0300",
+   "cornerstone_pct": 31.63,
+   "cornerstone_investors": [
+    "COSCO SHIPPING Holdings (Hong Kong) Limited",
+    "UBS Asset Management (Singapore) Ltd.",
+    "China Structural Reform Fund II Corporation Limited",
+    "Golden Link Worldwide Limited",
+    "Splendor Achieve Limited",
+    "Supercluster Universe Limited",
+    "HCEP Master Fund",
+    "Foresight Global Superior Choice SPC — Global Superior Choice Series Fund 1 SP and Foresight Global Superior Choice SPC — Vision Fund 1 SP",
+    "CPE Investment XVI Limited",
+    "Dajia Life Insurance Co., Ltd",
+    "Metazone Link (HK) Limited",
+    "Enreal Asset Management Limited",
+    "Vanguard Focus Limited",
+    "PSBC Wealth Management",
+    "Jump Trading Pacific Pte. Ltd.",
+    "MY Asian Opportunities Master Fund, L.P.",
+    "Athos Capital Limited",
+    "Pamalican Fund Ltd"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "0314",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1756k chars) has no cornerstone section (0 passing mentions); allotment names none"
+  },
+  {
+   "code": "0325",
+   "cornerstone_pct": 23.2,
+   "cornerstone_investors": [
+    "Greenwoods Asset Management Hong Kong Limited",
+    "UBS Asset Management (Singapore) Ltd.",
+    "Fullgoal Fund Management Co., Ltd.",
+    "Fullgoal Asset Management (HK) Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "0470",
+   "cornerstone_pct": 43.48,
+   "cornerstone_investors": [
+    "Oaktree Capital Management , L.P.",
+    "Pinpoint Asset Management Limited",
+    "Aspex Master Fund",
+    "MY Asian Opportunities Master Fund, L.P .",
+    "Morgan Stanley & Co. International plc",
+    "Ovata Capital Management Limited",
+    "Qube Master Fund Ltd",
+    "Wuxi Jinchou and GTHT (in connection with Wuxi",
+    "Jinchou OTC Swaps) (as defined in the Prospectus) Integrated Core Strategies (Asia) Pte. Ltd.",
+    "Rome Garden Holding Limited"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "0501",
+   "cornerstone_pct": 45.28,
+   "cornerstone_investors": [
+    "Wildlife Willow Limited",
+    "UBS Asset Management (Singapore) Ltd.",
+    "Formosa Opportunity Limited",
+    "Huaqin Telecom Hong Kong Limited",
+    "SKY ROYAL TRADING LIMITED",
+    "Pudong Science and Technology (Cayman) Co., Ltd.",
+    "JSC International Investment Fund SPC (acting for and on behalf of Yongxin I SP)",
+    "Ghisallo Fund Master Ltd",
+    "Dajia Life Insurance Co., Ltd.",
+    "PSBC Wealth Management Co., Ltd. (through GF Securities Asset Management (Guangdong) Co., Ltd as the qualified domestic institutional investor)"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "0600",
+   "cornerstone_pct": 48.76,
+   "cornerstone_investors": [
+    "WILL semiconductor Limited Note 2 and",
+    "Xin Ma Apparel International Limited",
+    "JSC International Investment Fund SPC",
+    "NGS Super Pty Limited",
+    "Desay SV Automotive Singapore Pte. Ltd.",
+    "Factorial Master Fund",
+    "Hel Ved Master Fund",
+    "Valliance Asset Management Limited",
+    "Alphahill Capital Limited",
+    "Joyson Electronics Holdings Hong Kong Limited",
+    "Jupiter Global Master Fund Ltd.",
+    "GRANITE ASIA IX VCC (for the account of and on behalf of GX ACCESS)",
+    "Longhorn Note 2 and CICC Financial Trading Limited (in connection with Longhorn OTC Swaps)",
+    "NonaVerse (Hong Kong) Limited",
+    "Qingdao Guanlan Note 2 and Guotai Junan Investments (Hong Kong) Limited (in connection with Guanlan OTC Swaps)",
+    "Jinyi Capital Multi-Strategy Fund SPC Ltd."
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "0625",
+   "cornerstone_pct": 22.1,
+   "cornerstone_investors": [
+    "Exclusive Depot Limited",
+    "Internet Fund IIIA Pte. Ltd.",
+    "General Atlantic Singapore EDL Pte. Ltd.",
+    "Huang River Investment Limited",
+    "Greenwoods Asset Management Hong Kong Limited",
+    "Taikang Life Insurance Co., Ltd",
+    "UBS Asset Management (Singapore) Ltd."
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "0638",
+   "cornerstone_pct": 32.72,
+   "cornerstone_investors": [
+    "undertakings Note 2 Qindao Gantong",
+    "Pacific Asset Management",
+    "CPIC (HK)",
+    "GF Fund Management",
+    "GF International",
+    "Ruihua Investment"
+   ],
+   "basis_kind": "lockup",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "0664",
+   "cornerstone_pct": 28.94,
+   "cornerstone_investors": [
+    "Jiantou International (Hong Kong) Co., Limited",
+    "Allottees with consent under paragraph 1C(2) of the Placing Guidelines in relation to allocations to a close associate of an existing Shareholder Note 1 Wang Wenzhong “( Mr. Wang ”)",
+    "close associate of an existing Shareholder Allottee with consent under paragraph 1C(1) of the Placing Guidelines and Chapter 4.15 of the Guide for New Listing Applicants in relation to allocations to a connected client Note 1 CITIC Securities International Capital Management Limited"
+   ],
+   "basis_kind": "sum",
+   "src": "HKEX allotment results: cornerstone table (sum of the rows, % of offer shares)"
+  },
+  {
+   "code": "0666",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1819k chars) has no cornerstone section (0 passing mentions); allotment names none"
+  },
+  {
+   "code": "0668",
+   "cornerstone_pct": 49.9,
+   "cornerstone_investors": [
+    "Schroder Investment Management (Singapore) Ltd and Schroder Investment Management (Hong Kong) Limited",
+    "Aspex Master Fund",
+    "Principal Asset Management Company (Asia) Limited",
+    "Greenwoods Asset Management Hong Kong Limited",
+    "Guotai Junan Investments (Hong Kong) Limited and Shanghai Greenwoods Asset Management Co., Ltd. (in connection with the Greenwoods OTC Swaps)",
+    "HACF, L.P.",
+    "UBS Asset Management (Singapore) Ltd.",
+    "Franklin Templeton Sealand Fund Management Co., Ltd.",
+    "Jane Street Asia Trading Limited",
+    "Taikang Life Insurance Co., Ltd",
+    "WT Asset Management Limited",
+    "Value Partners Hong Kong Limited and Value Partners Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "0699",
+   "cornerstone_pct": 24.38,
+   "cornerstone_investors": [
+    "Jun Sheng SP",
+    "Ningbo Xinzhi Industrial Investment Co., Ltd.",
+    "Jump Trading Pacific Pte. Ltd.",
+    "Eastern Bell Capital VIII Investment Limited",
+    "PSBC Wealth Management Co., Ltd.",
+    "Vandi Investments Limited",
+    "Fidelidade – Companhia de Seguros, S.A."
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "0917",
+   "cornerstone_pct": 15.87,
+   "cornerstone_investors": [
+    "Golden Future LPF"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "0999",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1348k chars) has no cornerstone section (0 passing mentions); allotment names none"
+  },
+  {
+   "code": "1024",
+   "cornerstone_investors": [
+    "Aranda Investments Pte. Ltd.",
+    "BlackRock, Inc.",
+    "CPP Investment Board PMI-2 Inc",
+    "FIL Investment Management (Hong Kong) Limited",
+    "GIC Private Limited",
+    "Invesco Ltd.",
+    "Morgan Stanley Asia Limited and Morgan Stanley Investment Management Inc.",
+    "Sunny Festive Limited",
+    "The Capital Group Funds"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "1111",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1623k chars) has no cornerstone section (0 passing mentions); allotment names none"
+  },
+  {
+   "code": "1228",
+   "cornerstone_investors": [
+    "Belinda A. Termeer",
+    "General Atlantic Singapore CP Pte. Ltd.",
+    "Hongkong Ruihua Investment Management Limited",
+    "Hudson Bay Master Fund Ltd.",
+    "Janus Investors",
+    "RA Capital Healthcare Fund, L.P.",
+    "WuXi Biologics HealthCare Venture"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "1236",
+   "cornerstone_pct": 31.52,
+   "cornerstone_investors": [
+    "KCH Vision Investment Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "1274",
+   "cornerstone_pct": 79.17,
+   "cornerstone_investors": [
+    "Zhejiang Qixin Zhixing Information Technology Co., Ltd.",
+    "SilkyWater Absolute Return LPF 2,635,100 11.91% 2.59% 1.16% No Harvest International Premium Value (Secondary Market) Fund SPC on behalf of Harvest Prosperit y II SP"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "1276",
+   "cornerstone_pct": 41.77,
+   "cornerstone_investors": [
+    "GIC Private Limited",
+    "Invesco Advisers, Inc.",
+    "UBS Asset Management (Singapore) Ltd.",
+    "Cordial Solar Limited",
+    "HHLR CF, L.P.",
+    "Integrated Core Strategies (Asia) Pte. Ltd.",
+    "Oaktree Capital Management, L.P."
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "1304",
+   "cornerstone_pct": 38.92,
+   "cornerstone_investors": [
+    "Taikang Life",
+    "Pinpoint",
+    "3W Fund",
+    "Wind Sabre",
+    "ChinaAMC (HK)",
+    "Mega Prime",
+    "Sanhua International Singapore",
+    "Fourier Capital",
+    "Torus",
+    "Intac"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "1318",
+   "cornerstone_pct": 33.3,
+   "cornerstone_investors": [
+    "CPE Investment XV Limited",
+    "Loyal Valley Capital",
+    "Seraphim Advantage Inc.",
+    "IvyRock Asset Management (HK) Limited",
+    "Brilliant Partners Fund LP and China Core Fund",
+    "4 Mega Prime Development Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "1333",
+   "cornerstone_pct": 26.97,
+   "cornerstone_investors": [
+    "Hong Kong Xinwei Electronic Co., Limited",
+    "Changfeng Growth Equity Fund OFC"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "1334",
+   "cornerstone_pct": 44.04,
+   "cornerstone_investors": [
+    "Huangshan City Investment Private Equity Fund Management Co., Ltd.",
+    "Huangshan Chenghe Xinye Equity Investment Partnership (Limited Partnership)",
+    "Emsdom Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "1354",
+   "cornerstone_pct": 43.05,
+   "cornerstone_investors": [
+    "THE REYNOLD LEMKINS GROUP (ASIA) LIMITED",
+    "Xi’an Dingzhun Education and Technology Co., Ltd.",
+    "Xi’an Tianbo Diagnostics Co., Ltd."
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "1364",
+   "cornerstone_pct": 30.51,
+   "cornerstone_investors": [
+    "Huang River Investment Limited",
+    "GM Charm Yield (BVI) Limited",
+    "LVC",
+    "Golden Valley Global Limited",
+    "Golden Valley Value Select Master Fund",
+    "Long-Z Fund I, LP",
+    "Duckling Fund, L.P."
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "1377",
+   "cornerstone_pct": 41.45,
+   "cornerstone_investors": [
+    "VICTORY GIANT TECHNOLOGY HOLDINGS (HONG KONG) LIMITED",
+    "HHLR ADVISORS, LTD.",
+    "ASPEX MASTER FUND",
+    "KINGBOARD INVESTMENTS LIMITED",
+    "CPE INVESTMENT XV LIMITED",
+    "CloudAlpha Capital Management Limited",
+    "E FUND E FUND MANAGEMENT CO., LTD.",
+    "E FUND MANAGEMENT (HONG KONG) CO., LTD.",
+    "VERITION MULTI-STRATEGY MASTER FUND LTD.",
+    "TAIKANG LIFE INSURANCE CO., LTD",
+    "ATHOS CAPITAL LIMITED",
+    "HEL VED MASTER FUND",
+    "Integrated Core Strategies (Asia) Pte. Ltd.",
+    "IFUND SPC — Vision IX SP",
+    "BARING ASSET MANAGEMENT (ASIA) LIMITED",
+    "Martis Fund, L.P.",
+    "DYNAMIC HOLDING CO., LTD."
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "1392",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1284k chars) has no cornerstone section (1 passing mention); allotment names none"
+  },
+  {
+   "code": "1405",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1580k chars) has no cornerstone section (0 passing mentions); allotment names none"
+  },
+  {
+   "code": "1440",
+   "cornerstone_investors": [
+    "Cheng Hung Ping",
+    "Tam Yuk Ching Jenny",
+    "Tsai Chuen Sui Robert"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "1471",
+   "cornerstone_pct": 18.71,
+   "cornerstone_investors": [
+    "The Reynold Lemkins Group (Asia) Limited",
+    "Hong Tai International III LPF"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "1497",
+   "cornerstone_pct": 40.16,
+   "cornerstone_investors": [
+    "PT. Anugerah Citra Walet Indonesia",
+    "PT Esta Indonesia",
+    "PT Niaga Cakrawala Sukses",
+    "WU Chen",
+    "Value Partners Hong Kong Limited and Value Partners Limited",
+    "WONG Sing Kwong Cyrus"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "1519",
+   "cornerstone_investors": [
+    "Aspex Master Fund",
+    "CELESTIAL OCEAN INVESTMENTS LIMITED",
+    "D1 SPV Jupiter (Hong Kong) Limited",
+    "D1 SPV Master Holdco I (Hong Kong) Limited",
+    "Dahlia Investments Pte. Ltd",
+    "Eternal Earn Holding Limited",
+    "Hidden Hill SPV VIII",
+    "Huang River Investment Limited",
+    "Jallion Global Limited",
+    "JNRY III HOLDINGS LIMITED",
+    "Joyous Tempinis Limited",
+    "Parallel Cluster Investment Limited",
+    "SC GGF III Holdco, Ltd."
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "1541",
+   "cornerstone_investors": [
+    "ClinChoice Medical Development Limited",
+    "Harvest International Premium Value (Secondary Market) Fund SPC",
+    "RemeGen Hong Kong Limited",
+    "WuXi Biologics Healthcare Venture"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "1609",
+   "cornerstone_pct": 34.7,
+   "cornerstone_investors": [
+    "JSC International Investment Fund SPC for and on behalf of JSC International Investment Fund SPC-Shenghai SP",
+    "OAP IV (HK) Limited ʮ̡ ) (Note 1)",
+    "Greater Bay Area Development Fund Management Limited for and on behalf of the Managed Account of Mega Prime Development Limited",
+    "GBAD Fund Management for and on behalf of the Managed Account of Poly Platinum Enterprises Limited"
+   ],
+   "basis_kind": "sum",
+   "src": "HKEX allotment results: cornerstone table (sum of the rows, % of offer shares)"
+  },
+  {
+   "code": "1641",
+   "cornerstone_pct": 7.66,
+   "cornerstone_investors": [
+    "FUHUIDA (HK) LIMITED"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "1688",
+   "cornerstone_pct": 38.59,
+   "cornerstone_investors": [
+    "GF Fund Management Co., Ltd. ʮ̡",
+    "Yes GF International Investment Management Limited ᄿ೯਷ყ ʮ̡",
+    "Kaide Global Investment Ltd",
+    "Qube Master Fund Ltd, acting by its sub-investment manager Qube Research & Technologies Hong Kong Limited",
+    "Ti-Capital (HK) Pioneer Fund III and Ti-Capital (HK) Pioneer Fund IV (collectively, “Ti-Capital Funds ”)",
+    "Value Partners Hong Kong Limited",
+    "Value Partners Limited",
+    "Hongxing International Technology Limited ࠢ ʮ̡",
+    "Morgan Stanley & Co. International plc",
+    "Greenwoods Asset Management Hong Kong Limited, as the investment manager of Golden China Master Fund",
+    "3W Fund Management Limited",
+    "Deliante Holdings Co., Ltd.",
+    "Sunny Optical Capital Limited ʮ̡",
+    "Honor Information Technology Co., Limited ࢹڦ ʮ̡",
+    "Jain Global Master Fund Ltd, acting through its investment manager Jain Global LLC",
+    "Seven Grand Managers, LLC",
+    "Taikang Life Insurance Co., Ltd ᎈ ப΂ʮ̡",
+    "Da Cheng International Asset Management Company Limited",
+    "Everbright Wealth Management Co., Ltd. ࠢ ப΂ʮ̡",
+    "GRANITE ASIA IX VCC (for the account of and on behalf of GX ACCESS, “GRANITE ASIA ”)",
+    "Verition Multi-Strategy Master Fund Ltd., managed by Verition Fund Management LLC"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "1768",
+   "cornerstone_pct": 41.41,
+   "cornerstone_investors": [
+    "Tencent",
+    "Temasek",
+    "BlackRock",
+    "FIL Investment",
+    "Bosera International",
+    "E Fund",
+    "Springs Capital (Hong Kong)",
+    "Taikang Life"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "1779",
+   "cornerstone_pct": 49.96,
+   "cornerstone_investors": [
+    "OrbiMed Genesis Master Fund, L.P.",
+    "The Biotech Growth Trust PLC",
+    "TruMed Health Innovation Fund LP",
+    "TruMed Healthcare Master Fund",
+    "Shanghai Gaoyi Asset Management Partnership (Limited Partnership) ) and Huatai Capital Investment Limited (in connection with Huatai Back-to-back TRS and the Huatai Client TRS)",
+    "Wisdomshire Asset Management Co., Ltd* and HTCI (in connection with Huatai Back-to-back TRS and the Huatai Client TRS)",
+    "Foresight Global Superior Choice SPC { Vision Fund 1 SP",
+    "Foresight Global Superior Choice SPC { Global Superior Choice Fund 1 SP",
+    "Foresight Global Superior Choice SPC { Horizon Fund 1 SP",
+    "Foresight Global Superior Choice SPC { Horizon Next Fund SP",
+    "Fullgoal Fund Management Co., Ltd.",
+    "Fullgoal Asset Management (HK) Limited ʮ̡ )",
+    "Value Partners Hong Kong Limited",
+    "Value Partners Limited",
+    "Greater Bay Area Development Fund Management Limited for and on behalf of the managed account of Mega Prime Development Limited",
+    "FR M CONSULTING CO., LTD",
+    "Yuanfeng Future Growth Private Equity Securities Investment Fund* Yuanfeng Future Growth Fund ”) and China Galaxy International Investment Company Limited (in connection with the Yuanfeng OTC Swaps)"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "1828",
+   "cornerstone_pct": 56.2,
+   "cornerstone_investors": [
+    "MC Management 10 RSC Ltd",
+    "T&D United Capital Co., Ltd."
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "1855",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1697k chars) has no cornerstone section (0 passing mentions); allotment names none"
+  },
+  {
+   "code": "1879",
+   "cornerstone_pct": 65.06,
+   "cornerstone_investors": [
+    "Alibaba Investment",
+    "GIC",
+    "Baillie Gifford",
+    "BlackRock",
+    "Fidelity International",
+    "Schroders",
+    "Temasek",
+    "CM Shanghai Fund",
+    "HHLRA FUNDS",
+    "UBS AM",
+    "3W Fund",
+    "Aspex",
+    "CPE Fir",
+    "Greenwoods",
+    "Greenwoods Yes — Shanghai Greenwoods and CICC FT (in connection with Greenwoods OTC Swaps) GF Fund",
+    "Lenovo",
+    "Mirae Asset Securities HK",
+    "ZTE HK",
+    "ICBC Wealth",
+    "Ping An AM"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "1956",
+   "cornerstone_pct": 26.97,
+   "cornerstone_investors": [
+    "China Orient Enhanced Income Fund",
+    "Harvest Global Investments Limited",
+    "First Seafront Asset Management Limited",
+    "Guohui (HK) Holdings Co., Limited ʮ̡ )",
+    "Huatai Capital Investment Limited",
+    "CMBC International Investment (HK) Limited ࠢ ʮ̡)"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "1973",
+   "cornerstone_investors": [
+    "Qingdao Haiming, Qingdao Hainuo and Qingdao Financial",
+    "Shenzhen Futian Guiding Fund Investment Co., Ltd."
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "1989",
+   "cornerstone_investors": [
+    "Baring Asset Management (Asia) Limited",
+    "CPE Greater China Enterprises Growth Fund及CPE Growth Fund",
+    "Dajia Life Insurance Co., Ltd.",
+    "Eastspring Investments (Singapore) Limited",
+    "Greater Bay Area Homeland Investments Limited",
+    "Greenwoods Asset Management Hong Kong Limited",
+    "Guotai Junan Investments (Hong Kong) Limited and Beijing Yuanfeng Asset Management L.L.P.",
+    "ICBC Wealth Management Co., Ltd.",
+    "MY Asian Opportunities Master Fund, L.P",
+    "Shanghai Greenwoods Asset Management Co., Ltd and CITIC Securities International Capital Management Limited",
+    "UBS Asset Management (Singapore) Ltd.",
+    "Value Partners Hong Kong Limited and Value Partners Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2015",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1704k chars) has no cornerstone section (1 passing mention); allotment names none"
+  },
+  {
+   "code": "2026",
+   "cornerstone_pct": 13.91,
+   "cornerstone_investors": [
+    "Eastspring Investments (Singapore) Limited",
+    "Ghisallo Fund Master Ltd",
+    "Athos Capital Limited",
+    "Hel Ved Master Fund",
+    "Ocean Arete Limited"
+   ],
+   "basis_kind": "sum",
+   "src": "HKEX allotment results: cornerstone table (sum of the rows, % of offer shares)"
+  },
+  {
+   "code": "2050",
+   "cornerstone_pct": 47.22,
+   "cornerstone_investors": [
+    "Schroder Investment Management Limited, Schroder Investment Management (Singapore) Ltd and Schroder Investment Management (Hong Kong) Limited",
+    "GIC Private Limited",
+    "Greenwoods Asset Management Hong Kong Limited",
+    "Shanghai Greenwoods Asset Management Co., Ltd (上海 景林資產管理",
+    "5 有限公司) and Huatai Capital Investment Limited (in connection with Greenwoods OTC Swaps (as defined in the Prospectus)) Green Better Limited",
+    "Verition Multi- Strategy Master Fund Ltd.",
+    "Eastern Bell Capital VIII Investment Limited",
+    "Mirae Asset Securities Co., Ltd",
+    "ICBC Wealth Management Co., Ltd.",
+    "PSBC Wealth Management Co., Ltd.",
+    "6 (through GF SecuritiesA sset Manageme nt (Guangdong) Co., Ltd as the qualified domestic institutional investor) Taikang Life Insurance Co., Ltd",
+    "Mega Prime Development Limited",
+    "Wind Sabre Fund SPC on behalf of Wind Sabre Opportunities Fund SP",
+    "Martis Fund, L.P .",
+    "Morgan Stanley & Co. International plc",
+    "Jane Street Asia Trading Limited",
+    "3W Fund Management Limited"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "2097",
+   "cornerstone_pct": 45.09,
+   "cornerstone_investors": [
+    "M&G Investments",
+    "HSG Growth VI Holdco F, Ltd.",
+    "Persistence Growth Limited",
+    "HHLR Fund, L.P.",
+    "Long-Z Fund I, LP"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2105",
+   "cornerstone_investors": [
+    "Future Industry Investment Fund II",
+    "Ningbo Yaoshang Yanchuang Chenkai Venture Capital Partnership",
+    "OrbiMed Asia Partners III, L.P.",
+    "Yuyao Yangming Equity Investment Fund Co., Ltd."
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2137",
+   "cornerstone_investors": [
+    "AIHC Master Fund",
+    "Athos Asia Event Driven Master Fund",
+    "Boyu Capital Opportunities Master Fund",
+    "Invesco Advisers, Inc.",
+    "RBC Global Asset Management (Asia) Limited",
+    "Sage Partners Master Fund",
+    "SCC Growth V Holdco Q, Ltd.",
+    "Springhill Master Fund Limited",
+    "The Valliance Fund",
+    "UBS Asset Management (Singapore) Ltd.",
+    "Youyu Global Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2147",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1385k chars) has no cornerstone section (0 passing mentions); allotment names none"
+  },
+  {
+   "code": "2150",
+   "cornerstone_investors": [
+    "China Southern Asset Management Co., Ltd.",
+    "China Universal Asset Management Co., LtdChina Universal Asset Management Co., Ltd",
+    "GF Fund Management Co., Ltd.",
+    "Grand Rejuvenation Premium Selection Fund SPC",
+    "UBS Funds"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2158",
+   "cornerstone_investors": [
+    "3W Fund Management Limited",
+    "China Orient Multi-Strategy Master Fund",
+    "CPP Investment Board PMI-2 Inc.",
+    "Matthews Funds",
+    "OrbiMed Capital LLC",
+    "Tencent Mobility Limited",
+    "Velmar Company Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2161",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "allotment results (29k chars) name no cornerstone investor"
+  },
+  {
+   "code": "2162",
+   "cornerstone_investors": [
+    "Aranda Investments Pte. Ltd.",
+    "Boyu Capital Opportunities Master Fund",
+    "Double Joy Ventures Limited",
+    "Dragon Merit Holdings Limited",
+    "Hillhouse Capital Advisors, Ltd.",
+    "Hudson Bay Master Fund Ltd.",
+    "Invesco Ltd.",
+    "Janchor Partners Pan-Asian Master Fund",
+    "Lake Bleu Prime Healthcare Master Fund Limited",
+    "LAV Group",
+    "Octagon Investments Master Fund LP",
+    "Sage Partners Master Fund",
+    "Springhill Master Fund Limited",
+    "UBS Asset Management (Singapore) Ltd.",
+    "Yi Fang Da Sirius Inv. Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2167",
+   "cornerstone_investors": [
+    "Agora, Inc.",
+    "Platinum Investment Management Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2170",
+   "cornerstone_investors": [
+    "Affin Hwang Asset Management Berhad",
+    "CRF Investment Holdings Company Limited",
+    "Foresight Funds",
+    "IvyRock Asset Management (HK) Limited",
+    "Lake Bleu Prime Healthcare Master Fund Limited",
+    "OrbiMed Funds",
+    "WinTwin Capital Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2171",
+   "cornerstone_investors": [
+    "Affin Hwang Asset Management Berhad",
+    "China Southern Asset Management Co., Ltd.",
+    "CloudAlpha Master Fund",
+    "Dymon Asia Capital (Singapore) Pte. Ltd.",
+    "Foresight Fund Management Co., Ltd.",
+    "GF Fund Management Co., Ltd.,",
+    "IvyRock Asset Management (HK) Limited",
+    "LAV Star Limited",
+    "WT Asset Management Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2172",
+   "cornerstone_investors": [
+    "Harvest",
+    "Xinhuanet Co., Ltd."
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2177",
+   "cornerstone_investors": [
+    "Country Garden Property Services HK Holdings Company Limited",
+    "Kobayashi Pharmaceutical Co., Ltd.",
+    "Unicharm Corporation"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2179",
+   "cornerstone_investors": [
+    "Harvest High Yield SP",
+    "SCC Growth VI Holdco C (HK) Limited",
+    "SCHP Master Fund",
+    "Yangtze River (Hong Kong) Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2190",
+   "cornerstone_investors": [
+    "AIHC Capital Management Limited",
+    "Athos Capital Limited",
+    "Boyu Capital Opportunity Master Fund",
+    "Cormorant Asset Management, LP",
+    "Fidelity International",
+    "Gaoling Fund, L.P. and YHG Investment, L.P.",
+    "Hudson Bay Master Fund Ltd.",
+    "IvyRock Asset Management (HK) Limited",
+    "Lake Bleu Prime Healthcare Master Fund Limited",
+    "Octagon Investments Master Fund LP",
+    "Sage Partners Master Fund",
+    "Snow Lake China Master Fund, Ltd."
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2192",
+   "cornerstone_investors": [
+    "Fidelity Investments",
+    "FIL Investment Management (Hong Kong) Limited",
+    "GIC Private Limited",
+    "Matthews Funds",
+    "OrbiMed Funds",
+    "Springhill Master Fund Limited",
+    "Tencent Mobility Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2195",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1173k chars) has no cornerstone section (0 passing mentions); allotment names none"
+  },
+  {
+   "code": "2197",
+   "cornerstone_investors": [
+    "Athos Capital Limited",
+    "HHLR Fund, L.P. and YHG Investment, L.P.",
+    "Oceanpine Capital Management Limited",
+    "Orbimed Funds",
+    "Rock Springs Capital Master Fund LP",
+    "Springhill Master Fund Limited",
+    "Superstring Capital Master Fund LP",
+    "Toroa Master Fund"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2205",
+   "cornerstone_investors": [
+    "58.com Holdings Inc.",
+    "Autobio Group Co., Ltd",
+    "Country Garden Property Services HK Holdings Company Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2210",
+   "cornerstone_investors": [
+    "Glodon (Hongkong) Software Limited",
+    "Keltic Investment (HK) Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2215",
+   "cornerstone_investors": [
+    "Hangzhou Jintou Shenghan Investment Partnership (Limited Partnership)",
+    "Hangzhou Light Industrial Association Investment Group Co.,Ltd.",
+    "JIC TRUST CO., LTD"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2216",
+   "cornerstone_investors": [
+    "Artisan China Post-Venture Master Fund LP",
+    "CEPHEI",
+    "Emerging Markets Healthcare Partners LLC",
+    "Lake Bleu Prime Healthcare Master Fund Limited",
+    "Snow Lake China Master Fund, Ltd.",
+    "Springhill Master Fund Limited",
+    "Summer Healthcare Fund, L.P.",
+    "The Valliance Fund",
+    "UBS Asset Management (Singapore) Ltd.",
+    "Worldwide Healthcare Partners LLC"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2219",
+   "cornerstone_investors": [
+    "Fullgoal Fund Management Co., Ltd",
+    "Gigantic Wealth Holdings Limited",
+    "GT Cedar Capital (Hong Kong) Limited",
+    "The Valliance Fund"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2228",
+   "cornerstone_pct": 34.12,
+   "cornerstone_investors": [
+    "Successful Lotus Limited",
+    "IntelliMed One Investment Limited",
+    "Mammoth Medical Solutions",
+    "Begonia No. 1 LPF",
+    "Prof. Bradley Lether Pentelute",
+    "Ginkgo Capital Global Fund SPC— Ginkgo Capital Global Fund I SP",
+    "Biocytogen Pharmaceuticals (Beijing) Co., Ltd. 醫藥科技股份有 限公司)",
+    "FaaS Capital Longevity Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2235",
+   "cornerstone_investors": [
+    "Boyu Capital Opportunities Master Fund",
+    "Hudson Bay Master Fund Ltd.",
+    "Invesco Advisers, Inc.",
+    "Lake Bleu Prime Healthcare Master Fund Limited",
+    "LAV Star Limited and LAV Star Opportunities Limited",
+    "Octagon Investments Master Fund LP",
+    "OrbiMed Advisors LLC",
+    "Sage Partners Master Fund",
+    "Springhill Master Fund Limited",
+    "Tencent Mobility Limited",
+    "UBS Asset Management (Singapore) Ltd."
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2237",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1693k chars) has no cornerstone section (2 passing mentions); allotment names none"
+  },
+  {
+   "code": "2249",
+   "cornerstone_pct": 49.92,
+   "cornerstone_investors": [
+    "Hefei Chipone (Hong Kong) Co., Limited and Chipone (Hong Kong) Co., Limited (collectively, “ Chipone ”)",
+    "Puxin Technology Limited",
+    "Smartsens Technology (HK) Co., Limited ”)",
+    "Chery Automobile HongKong Trade Co., Limited",
+    "Goertek (HongKong) Co., Limited ”)",
+    "Taikang Life Insurance Co., Ltd",
+    "GF Fund Management Co., Ltd. and GF International Investment Management Limited",
+    "Shanghai Gaoyi Asset Management Partnership (Limited Partnership)",
+    "Perseverance Asset Management International (Singapore) Pte. Ltd.",
+    "China Universal Asset Management (Hong Kong) Company Limited ”)",
+    "NGS Super Pty Limited , as trustee of NGS Super",
+    "HHLR Advisors, Ltd.",
+    "WT Asset Management Limited",
+    "IvyRock Asset Management (HK) Limited",
+    "Verition Multi-Strategy Master Fund Ltd., managed by Verition Fund Management LLC",
+    "Pinpoint Asset Management Limited",
+    "Da Cheng International Asset Management Company Limited",
+    "ICBC Wealth Management Co., Ltd.",
+    "PSBC Wealth Management Co., Ltd.",
+    "Harvest Global Investments Limited"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "2252",
+   "cornerstone_investors": [
+    "Artisan China Post-Venture Master Fund LP",
+    "Aspex Master Fund",
+    "CloudAlpha Master Fund",
+    "Hillhouse Funds",
+    "LAV Fund VI, L.P.",
+    "Snow Lake Funds and Accounts",
+    "Yorkool International Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2256",
+   "cornerstone_investors": [
+    "AIHC Master Fund",
+    "Aranda Investments Pte. Ltd.",
+    "BlackRock Global Funds – World Healthscience Fund",
+    "Epsomite Gem Investments Ltd",
+    "Hudson Bay Master Fund Ltd.",
+    "Janchor Partners Pan-Asian Master Fund",
+    "Lake Bleu Prime Healthcare Master Fund Limited",
+    "LAV Fund VI, L.P",
+    "OrbiMed New Horizons Master Fund, L.P.",
+    "UBS Asset Management (Singapore) Ltd.",
+    "Vivo Opportunity Fund, L.P."
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2257",
+   "cornerstone_investors": [
+    "Kunming Jiashiqing Investment Partnership (Limited Partnership)",
+    "Zhejiang Innoforce Pharmaceuticals Co., Ltd."
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2259",
+   "cornerstone_pct": 49.9,
+   "cornerstone_investors": [
+    "GIC Private Limited",
+    "4.07% 0.61% No HHLR Advisors, Ltd.",
+    "4.07% 0.61% No BlackRock Funds",
+    "Schroder Investment Management Limited, Schroder Investment Management (Singapore) Ltd and Schroder Investment Management (Hong Kong) Limited",
+    "3.25% 0.49% No Perseverance Asset Management International (Singapore) Pte. Ltd.",
+    "1.44% 0.22% No Shanghai Gaoyi Asset Management Partnership (Limited Partnership) and CITIC Securities International",
+    "Capital Management Limited (in connection with CITICS Back-to- back TRS and CITICS Client TRS) FIL Investment Management (Hong Kong) Limited",
+    "2.17% 0.33% No Shanghai Greenwoods Asset Management Co., Ltd and CSICM (in connection with CITICS Back-to- back TRS and CITICS Client TRS)",
+    "1.49% 0.22% No Greenwoods Asset Management Hong Kong Limited",
+    "0.68% 0.10% No Baillie Gifford Overseas Limited and Baillie Gifford & Co (together “Baillie Gifford”)",
+    "1.63% 0.24% No Pacific Asset Management Co., Limited and CPIC Investment Management (H.K.)",
+    "Company Limited ”, together with Pacific Asset Management, “CPIC Investors”) Taikang Life Insurance Co., Ltd",
+    "1.63% 0.24% No China Universal Asset Management Company Limited and China Universal Asset Management (Hong Kong) Company Limited ”, together with CUAM, “China Universal Investors”)",
+    "1.36% 0.20% No UBS Asset Management (Singapore) Ltd.",
+    "1.36% 0.20% No GF International Investment Management Limited",
+    "1.36% 0.20% No Dao Yi Capital Limited",
+    "1.36% 0.20% No New Golden Future Limited",
+    "RBC Global Asset Management (Asia) Limited",
+    "1.36% 0.20% No Invesco Hong Kong Limited",
+    "1.08% 0.16% No CPE River Investment Limited",
+    "1.08% 0.16% No Oaktree Capital Management, L.P.",
+    "0.81% 0.12% No Mirae Asset Securities Co., Ltd. , Mirae Asset Global Investments Co., Ltd. , and Mirae Asset Securities (HK) Ltd. (together, the “Mirae Asset Financial Group”)",
+    "0.81% 0.12% No Fullgoal Asset Management (HK) Limited and Fullgoal Fund Management Co., Ltd.",
+    "0.81% 0.12% No IDG Breyer Capital Fund L.P.",
+    "Arc Avenue Asset Management Pte. Ltd.",
+    "0.27% 0.04% No Greater Bay Area Homeland Investments Limited",
+    "0.81% 0.12% No Millennium Capital Management (Singapore) Pte. Ltd., and its affiliated entities",
+    "0.81% 0.12% No Globe Asia Investments Limited",
+    "0.81% 0.12% No Sparky International Company Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2260",
+   "cornerstone_investors": [
+    "Chen Xiong",
+    "Gong Chaohui"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2268",
+   "cornerstone_investors": [
+    "Al-Rayyan Holding LLC.",
+    "General Atlantic Singapore SPV 64 Pte. Ltd.",
+    "HSG Growth VII Holdco, Ltd.",
+    "Invesco Advisers, Inc.",
+    "Lake Bleu Prime Healthcare Master Fund Limited",
+    "Novo Holdings A/S.",
+    "UBS Asset Management (Singapore) Ltd."
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2271",
+   "cornerstone_investors": [
+    "Heyuan Trading (Hong Kong) Limited",
+    "Wu Mingwu"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2276",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1684k chars) has no cornerstone section (1 passing mention); allotment names none"
+  },
+  {
+   "code": "2279",
+   "cornerstone_investors": [
+    "Athos Capital Limited",
+    "Enreal and Forreal Funds",
+    "Hudson Bay Master Fund Ltd",
+    "IvyRock Asset Management (HK) Limited",
+    "Lake Bleu Prime Healthcare Master Fund Limited",
+    "LAV Star Funds",
+    "NCC China A-Share Master Fund",
+    "WT Asset Management Limited",
+    "Yi Fang Da Hadar Investment Limited",
+    "York Asian Opportunities Investments Master Fund, LP"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2285",
+   "cornerstone_investors": [
+    "3W Fund Management Limited",
+    "Dragon Billion China Master Fund",
+    "Greenwoods Asset Management Hong Kong Limited",
+    "IvyRock Asset Management (HK) Limited",
+    "Luo Jinhong",
+    "Value Partners Hong Kong Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2290",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1279k chars) has no cornerstone section (1 passing mention); allotment names none"
+  },
+  {
+   "code": "2306",
+   "cornerstone_investors": [
+    "Ding Shijia",
+    "Maoyan Entertainment (HK) Limited",
+    "Sun Mass Energy Development Limited",
+    "TradArt Asset Management Co., Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2315",
+   "cornerstone_investors": [
+    "Beijing Xingxing Equity Investment Partnership (Limited Partnership)",
+    "QuantumPharm Inc.",
+    "RemeGen Co., Ltd.",
+    "Sanjin International CO., LTD.",
+    "VEKEN (HONGKONG) ECONOMIC AND TRADE CO., LIMITED."
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2321",
+   "cornerstone_investors": [
+    "Dato’ Sri Ng Chong Keong",
+    "Dato’ Sri Pek Kok Sam",
+    "Huihuang Resources Limited",
+    "Mr. Tee Kian Heng"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2325",
+   "cornerstone_investors": [
+    "Harvest International Premium Value (Secondary Market) Fund SPC",
+    "YHLO (Hong Kong) Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2335",
+   "cornerstone_pct": 42.51,
+   "cornerstone_investors": [
+    "Qiyuan Hong Kong note 2",
+    "Everest Medicine",
+    "Summit Capital"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2361",
+   "cornerstone_investors": [
+    "Baheal Wellness Limited",
+    "Kangshi No.1 LP",
+    "Lun’s Family Holdings Limited",
+    "Zheng Jingjie"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2372",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1260k chars) has no cornerstone section (0 passing mentions); allotment names none"
+  },
+  {
+   "code": "2373",
+   "cornerstone_investors": [
+    "Harvest International Premium Value (Secondary Market) Fund",
+    "Juzi Holding Co., Ltd",
+    "Kunming Botanee Bio-technology Sales Co., Ltd",
+    "TruMed Healthcare Master Fund and TruMed Health Innovation Fund LP"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2378",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "allotment results (20k chars) name no cornerstone investor"
+  },
+  {
+   "code": "2385",
+   "cornerstone_investors": [
+    "Azure Telecommunication",
+    "Eastland",
+    "Gold Synergy",
+    "Gui Chunfang",
+    "Jin Tao",
+    "Tower Lead",
+    "Yang Xiaojie",
+    "Zheng Changping"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2390",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1532k chars) has no cornerstone section (2 passing mentions); allotment names none"
+  },
+  {
+   "code": "2391",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1851k chars) has no cornerstone section (2 passing mentions); allotment names none"
+  },
+  {
+   "code": "2392",
+   "cornerstone_investors": [
+    "Colorful Cloud"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2405",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1419k chars) has no cornerstone section (2 passing mentions); allotment names none"
+  },
+  {
+   "code": "2407",
+   "cornerstone_investors": [
+    "CL Kiwi Holding Ltd.",
+    "Jiangsu Sino-German Services Trade Industry Investment Fund L.P",
+    "Wuxi Gaoshi Venture Capital L.P",
+    "Wuxi Shigao Equity Investment L.P"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2408",
+   "cornerstone_pct": 24.95,
+   "cornerstone_investors": [
+    "HHLR Advisors, Ltd.",
+    "Guotai Junan Investments (Hong Kong) Limited (in connection with the Dream ’ee OTC Swaps)",
+    "Dream ’ee (Hong Kong) Open-ended Fund Company",
+    "Hong Kong Shengying Investment Limited",
+    "Zeta Wisdom OFC",
+    "Hai Di Lao Holdings Pte. Ltd."
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "2409",
+   "cornerstone_investors": [
+    "Danube Bridge Shipping Limited",
+    "Guodian Shipping (Hong Kong) Company Limited",
+    "Huzhou Wuxing Tourism Development Co., Ltd."
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2410",
+   "cornerstone_pct": 35.51,
+   "cornerstone_investors": [
+    "Changxing Xingchang Industrial Investment Partnership (Limited Partnership)"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2411",
+   "cornerstone_investors": [
+    "HONG KONG BAIJIADA NEW MATERIAL LIMITED",
+    "Nantong Douson Drilling and Production Equipment Co., Ltd.",
+    "Yip Wing Kui"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2415",
+   "cornerstone_investors": [
+    "Anji Guorong Construction Co., Ltd.",
+    "Anji Guorong Venture Capital Co., Ltd",
+    "Anji Jiaotou Industrial Development Co., Ltd.",
+    "Anji Qicai Lingfeng Rural Tourism Investment Co., Ltd.",
+    "GF Global Capital Limited",
+    "Harvest International Premium Value (Secondary Market) Fund SPC"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2419",
+   "cornerstone_pct": 39.22,
+   "cornerstone_investors": [
+    "Xiushan County Xinzhiyuan Market Management Co., Ltd.",
+    "Guiyang Agricultural Investment Development Co., Ltd.",
+    "Quxian Huixing Industrial Investment Co., Ltd."
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2420",
+   "cornerstone_investors": [
+    "De Well Group Singapore Pte. Ltd.",
+    "GF Fund Management Co., Ltd.",
+    "Zhejiang Eifini Industrial Co., Ltd."
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2422",
+   "cornerstone_investors": [
+    "Fighton Asia Master Fund Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2425",
+   "cornerstone_investors": [
+    "Proterra Asia Food Fund 3 VCC",
+    "Well Alliance Investment Holdings Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2427",
+   "cornerstone_investors": [
+    "Carsonlin Investment Ltd",
+    "Mu Min",
+    "Yang Xinyun"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2429",
+   "cornerstone_investors": [
+    "Nayuki Holdings Limited",
+    "SensePower Management Limited",
+    "Shenzhen Maliujia Network Technology Co., Ltd.",
+    "Wei Jinbing"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2431",
+   "cornerstone_pct": 81.09,
+   "cornerstone_investors": [
+    "KCH International Investment Limited",
+    "Horizon Together Holding Ltd."
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2433",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1838k chars) has no cornerstone section (0 passing mentions); allotment names none"
+  },
+  {
+   "code": "2438",
+   "cornerstone_pct": 29.47,
+   "cornerstone_investors": [
+    "NANJING JINGKAI JUZHI INVESTMENT L.P.",
+    "ZGC INTERNATIONAL LIMITED"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2439",
+   "cornerstone_investors": [
+    "ZhongBaoNew materials. Ltd"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2443",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1741k chars) has no cornerstone section (0 passing mentions); allotment names none"
+  },
+  {
+   "code": "2451",
+   "cornerstone_investors": [
+    "Chongqing Dazuhuaiyuan Construction Investment Co., L",
+    "Hainan Dongfang Runze Private Equity Fund Management Co., Ltd.",
+    "Jinhua Industrial Fund Co., Ltd.",
+    "Jinhua Jinkai State Owned Capital Investments Co., Ltd.",
+    "Phylion Battery Co., Ltd."
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2460",
+   "cornerstone_pct": 47.72,
+   "cornerstone_investors": [
+    "UBS Asset Management (Singapore) Ltd.",
+    "China Travel Service (Holdings) Hong Kong Limited",
+    "No Wildlife Willow Limited",
+    "China Post Life Insurance Company Limited",
+    "No Oaktree Capital Management, L.P. 16,063,800 4.62% 0.68% No PT Indadi Juver",
+    "Athos Capital Limited",
+    "No Ghisallo Master Fund LP",
+    "Pamalican Fund Ltd."
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2465",
+   "cornerstone_pct": 20.0,
+   "cornerstone_investors": [
+    "account of Harvest Oriental SP"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2475",
+   "cornerstone_pct": 48.44,
+   "cornerstone_investors": [
+    "Taibai Investments Pte. Ltd.",
+    "True Light Investments H Pte. Ltd",
+    "HHLR Advisors, Ltd.",
+    "HHLRA (as the investment manager of a segregated management account for CPP Investments)",
+    "GIC Private Limited",
+    "CPE Neem Investment Limited",
+    "Greenwoods Asset Management Hong Kong Limited",
+    "Foresight Global Superior Choice SPC—Global Superior Choice Fund 1 SP , Foresight Global Superior Choice SPC—Vision Fund 1 SP , Foresight Global",
+    "SP , Foresight China Equity Fund Abu Dhabi Investment Authority",
+    "UBS Asset Management (Singapore) Ltd.",
+    "Oaktree Capital Management, L.P.",
+    "Eastspring Investments (Singapore) Limited",
+    "Eastspring Investments (Hong Kong) Limited (瀚 亞投資（香港）",
+    "有限公司 ) First Sentier Investors (Hong Kong) Limited",
+    "First Sentier Investors (Singapore)",
+    "GF Fund Management Co., Ltd.",
+    "GF International Investment Management Limited",
+    "China Universal Asset Management (Hong Kong) Company Limited ”)",
+    "Bosera Asset Management (International) Co., Limited",
+    "FIL Investment Management (Hong Kong) Limited",
+    "Value Partners Hong Kong Limited",
+    "Value Partners Limited",
+    "Taikang Life Insurance Co., Ltd",
+    "Huang River Investment Limited",
+    "Prosper High Holding Limited",
+    "Mirae Asset Securities Co., Ltd",
+    "Mirae Asset Global Investments Co., Ltd.",
+    "Perseverance Asset Management International (Singapore) Pte. Ltd. (“Perseverance",
+    "Investments Limited",
+    "Integrated Core Strategies (Asia) Pte. Ltd.",
+    "Jane Street Asia Trading Limited",
+    "WT Asset Management Limited",
+    "MY Asian Opportunities Master Fund, L.P.",
+    "Polymer Asia Fund LP"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "2479",
+   "cornerstone_pct": 79.62,
+   "cornerstone_investors": [
+    "Suzhou Harvest International Co., Limited",
+    "Gold Wings Holdings Limited",
+    "Xuzhou Economic and Technology Development Zone (HK) Investment Co., Limited",
+    "The Reynold Lemkins Group (Asia) Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2482",
+   "cornerstone_investors": [
+    "Hefei Gaoxin Development & Investment Group Co., Ltd.",
+    "XINGTAI HOLDING COMPANY (HONG KONG) LIMITED"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2483",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1312k chars) has no cornerstone section (0 passing mentions); allotment names none"
+  },
+  {
+   "code": "2489",
+   "cornerstone_pct": 39.6,
+   "cornerstone_investors": [
+    "Dongfang Gold Industry (Hong Kong) Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2493",
+   "cornerstone_pct": 31.87,
+   "cornerstone_investors": [
+    "Junshi Hong Kong Limited",
+    "Sanjin International Co., Ltd.",
+    "Guohui (HK) Holdings Co., Limited 控股有限公司)",
+    "CHIL",
+    "WuXi Biologics HealthCare Venture",
+    "Splendid Zhonghe (Tianjin) Investment Management Co., Ltd. 投資管理有限公 司)"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "2495",
+   "cornerstone_pct": 40.2,
+   "cornerstone_investors": [
+    "Jiangsu Jiangkong Investment Co., Ltd.",
+    "Wuhan Guangtong Gongying Enterprise Management Partnership (Limited Partnership)"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2496",
+   "cornerstone_investors": [
+    "Chengdu Puhua Kaizhi Biotechnology Co., Ltd.",
+    "Wuhan Chuxing Yourui General Health Industry Investment Fund Partnership (Limite",
+    "Wuhan Optics Valley Health Industry Investment Ltd."
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2498",
+   "cornerstone_pct": 79.29,
+   "cornerstone_investors": [
+    "Shenzhen Nanshan Strategic Emerging Industries Investment Co., Ltd."
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2501",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1437k chars) has no cornerstone section (0 passing mentions); allotment names none"
+  },
+  {
+   "code": "2502",
+   "cornerstone_pct": 50.95,
+   "cornerstone_investors": [
+    "Zhongsheng Holdings Company Limited",
+    "Genesis M Co., Limited",
+    "Prosperity Steel United Singapore Pte. Ltd.",
+    "Max Success Group Holdings Limited"
+   ],
+   "basis_kind": "sum",
+   "src": "HKEX allotment results: cornerstone table (sum of the rows, % of offer shares)"
+  },
+  {
+   "code": "2505",
+   "cornerstone_pct": 22.7,
+   "cornerstone_investors": [
+    "CPIC Investment Management (H.K.) Company Limited",
+    "The Reynold Lemkins Group (Asia) Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2506",
+   "cornerstone_pct": 47.5,
+   "cornerstone_investors": [
+    "Guangdong- Macao In-Depth Cooperation Zone in Hengqin",
+    "Industrial Investment Fund (Limited Partnership) Star Group Limited",
+    "Costone China Growth Capital I L.P.",
+    "Xunyi Limited",
+    "Honour Goal Investments Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2507",
+   "cornerstone_pct": 56.4,
+   "cornerstone_investors": [
+    "Changshu Southeast Industrial Investment Co., Ltd.*",
+    "Taicang High Tech Science and Innovation Development Co., Ltd.*",
+    "Wuxi Jianfa Xintou Aerospace Investment Partnership Enterprise (Limited Partnership)* )",
+    "China Structural Reform Fund II Corporation Limited*",
+    "Wuxi Jintou Lianying Industrial Investment Partnership (Limited Partnership)* )"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2508",
+   "cornerstone_pct": 44.96,
+   "cornerstone_investors": [
+    "GIMM Holding Limited",
+    "China Asset Management (Hong Kong) Limited",
+    "JKKB Limited",
+    "Carl Wu",
+    "SS Morgan Capital Limited",
+    "Minwise Business Consulting Limited",
+    "Wang Qianqing"
+   ],
+   "basis_kind": "lockup",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "2509",
+   "cornerstone_pct": 82.05,
+   "cornerstone_investors": [
+    "Huadong Medicine Investment Holding (Hong Kong) Limited",
+    "Beevest Capital Limited",
+    "JianXin Medical Technology Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2510",
+   "cornerstone_pct": 47.32,
+   "cornerstone_investors": [
+    "Indigo Rainbow Limited",
+    "Hung Chi-Li",
+    "Worldwide Logistics Holding HK Limited",
+    "Metro Shine Group Limited",
+    "Wang Yi-Fen",
+    "Crane Movement Investment Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2511",
+   "cornerstone_pct": 39.21,
+   "cornerstone_investors": [
+    "Cangzhou Chuangrong Equity Investment Fund Co., Ltd."
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2513",
+   "cornerstone_pct": 68.63,
+   "cornerstone_investors": [
+    "JSC International Investment Fund SPC (acting for and on behalf of Qizhi SP)",
+    "JinYi Capital Multi- Strategy Fund SPC Ltd. (acting for and on behalf of Structured Credit SP Fund)",
+    "Perseverance Asset Management",
+    "Shanghai Gaoyi and CICC Financial Trading Limited (in connection with Gaoyi OTC Swaps)",
+    "WT Asset Management",
+    "Taikang Life",
+    "GF Fund",
+    "3W Fund",
+    "RIME",
+    "Optimas Capital Limited",
+    "Luster LightTech International Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2515",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1470k chars) has no cornerstone section (1 passing mention); allotment names none"
+  },
+  {
+   "code": "2516",
+   "cornerstone_pct": 39.68,
+   "cornerstone_investors": [
+    "Liu Liyun",
+    "Guo Shaojun",
+    "Yang Yingwu"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2518",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1252k chars) has no cornerstone section (1 passing mention); allotment names none"
+  },
+  {
+   "code": "2519",
+   "cornerstone_pct": 23.46,
+   "cornerstone_investors": [
+    "Hongkong Valsun Technology Limited",
+    "LC Logistics, Inc.",
+    "Ms. Wong, Ka Wai Vivian"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2520",
+   "cornerstone_investors": [
+    "Mingyang Smart Energy Group Co., Ltd."
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2521",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1309k chars) has no cornerstone section (2 passing mentions); allotment names none"
+  },
+  {
+   "code": "2522",
+   "cornerstone_pct": 44.97,
+   "cornerstone_investors": [
+    "Excellent Investment Enterprise Management (Hong Kong) Co., Limited",
+    "China New Rich Medicine Holding Co. Limited",
+    "United Imaging Healthcare Hong Kong Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2525",
+   "cornerstone_pct": 27.73,
+   "cornerstone_investors": [
+    "HHLR Advisors, Ltd.",
+    "Taikang Life Insurance Co., Ltd",
+    "WT Asset Management Limited",
+    "Grab Inc.",
+    "Hongda Group (Hong Kong) Co., Limited",
+    "Commando Global Fund"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2529",
+   "cornerstone_pct": 52.34,
+   "cornerstone_investors": [
+    "LENS TECHNOLOGY",
+    "(HK) CO., LIMITED LEYARD (HONGKONG) CO., LIMITED",
+    "SANAN INTERNATION AL HOLDING CO., LIMITED",
+    "HONGKONG JIAGANG TRADING LIMITED",
+    "XIANGZHENG CAPITAL LIMITED"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2531",
+   "cornerstone_pct": 29.44,
+   "cornerstone_investors": [
+    "Huizhou Guohuilian Equity Investment Fund Partnership Enterprise (Limited Partnership)"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2533",
+   "cornerstone_pct": 7.38,
+   "cornerstone_investors": [
+    "Gardex Development Limited",
+    "Joyson Electronic USA LLC"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2535",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1365k chars) has no cornerstone section (0 passing mentions); allotment names none"
+  },
+  {
+   "code": "2536",
+   "cornerstone_pct": 18.8,
+   "cornerstone_investors": [
+    "XIANG SHANG GAMES CO., LTD."
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2543",
+   "cornerstone_pct": 25.43,
+   "cornerstone_investors": [
+    "Allianz Global Investors Asia Pacific Limited",
+    "Greater Bay Area Development Fund Management Limited for and on behalf of the M a n a g e dA c c o u n to fM e g a Prime Development Limited",
+    "Harvest International Premium Value (Secondary Market) Fund SPC acting on behalf of and for the account of Harvest Oriental SP",
+    "VEKEN (HONGKONG) ECONOMIC AND TRADE CO., LIMITED"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "2546",
+   "cornerstone_pct": 40.78,
+   "cornerstone_investors": [
+    "Sparky International Company Limited",
+    "Greater Bay Area Homeland Investments Limited No - GIGA Industries Limited",
+    "Poly Platinum Enterprises Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2549",
+   "cornerstone_pct": 41.72,
+   "cornerstone_investors": [
+    "MPC VII Pte. Ltd.",
+    "YSC Go (BVI) Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2551",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1656k chars) has no cornerstone section (0 passing mentions); allotment names none"
+  },
+  {
+   "code": "2556",
+   "cornerstone_pct": 15.2,
+   "cornerstone_investors": [
+    "VH Nanchang Donghu Asset",
+    "Capital LPF"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2560",
+   "cornerstone_pct": 69.92,
+   "cornerstone_investors": [
+    "Gotion High-tech Co., Ltd.*",
+    "Anhui Shengchang Chemical Co., Ltd.*",
+    "Wuhu Artec Biotechnology Co., Ltd.*",
+    "SCGC Capital Holding Company Limited",
+    "Guangdong Zongxing Technology Co., Ltd*",
+    "Shenzhen Gaodeng Computer Technology Co., Ltd.*"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2561",
+   "cornerstone_pct": 65.0,
+   "cornerstone_investors": [
+    "AnkeBio (HongKong) Co., Limited",
+    "Suzhou Harvest International Co., Limited",
+    "Vivo Plenilune IX Limited",
+    "WuXi Biologics HealthCare Venture",
+    "Reynold Lemkins Group (Asia) Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2563",
+   "cornerstone_pct": 76.15,
+   "cornerstone_investors": [
+    "WEALTH STRATEGY HOLDING LIMITED",
+    "NOVOTECH SG HOLDINGS PTE. LTD.",
+    "Baheal Wellness Industry International Trading Limited",
+    "Silkywater Absolute Return LPF"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2565",
+   "cornerstone_pct": 49.7,
+   "cornerstone_investors": [
+    "Yizekangrui Medical (HK) Limited ʮ̡ )"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2566",
+   "cornerstone_pct": 49.66,
+   "cornerstone_investors": [
+    "Alibaba Health (Hong Kong) Technology Company Limited",
+    "1.36% 0.61% No Fosun Industrial Co., Limited",
+    "2.30% 1.02% No Jointown International Group Company Limited",
+    "1.38% 0.61% No Heda HK",
+    "11.37% 5.05% Yes Mr. Wu",
+    "Delta Capital Hong Kong Limited",
+    "0.71% 0.31% No Hong Kong King-Friend Industrial Company Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2567",
+   "cornerstone_pct": 40.0,
+   "cornerstone_investors": [
+    "Woseon Limited Partnership"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2570",
+   "cornerstone_pct": 45.18,
+   "cornerstone_investors": [
+    "DINGCHUANG HONGKONG INVESTMENT LIMITED"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2571",
+   "cornerstone_pct": 34.3,
+   "cornerstone_investors": [
+    "China Mobile International Holdings Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2573",
+   "cornerstone_pct": 29.69,
+   "cornerstone_investors": [
+    "He Win Hong Kong Holdings Co., Limited",
+    "The Reynold Lemkins Group (Asia) Limited"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "2575",
+   "cornerstone_pct": 9.81,
+   "cornerstone_investors": [
+    "Beijing Denov Ruilang Phase XV Equity Investment Fund Center (Limited Partnership) )"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2577",
+   "cornerstone_pct": 55.38,
+   "cornerstone_investors": [
+    "STMicroelectro nics Limited",
+    "Jiangsu Govtor Inno Technology Innovation Limited Notes 2 and 4",
+    "HK InnoSC Limited Notes 2 and 4",
+    "Inno CL. Limited Notes 3 and 4"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2579",
+   "cornerstone_pct": 25.36,
+   "cornerstone_investors": [
+    "Pointer Investment (Hong Kong) Limited",
+    "CALB Group Co., Ltd.",
+    "Dongsheng Pulead Technology and Guotai Junan Investments (Hong Kong) Limited (in connection with Dongsheng Pulead OTC Swaps)",
+    "NR 1 SP",
+    "Shanghai Gaoyi and Huatai Capital Investment Limited (in connection with Gaoyi OTC Swaps)",
+    "Hunan Xingxiang Emerging Industry Investment Fund Partnership (Limited Partnership)",
+    "Lens International (HK) Limited",
+    "Sunwoda Treasury Hong Kong) Limited"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "2580",
+   "cornerstone_pct": 23.47,
+   "cornerstone_investors": [
+    "China Post Life Insurance Company Limited",
+    "PSBC Wealth Management Co., Ltd.",
+    "China Post Insurance and PBOC WM",
+    "Valin Group Hongkong International Trade Co., Limited",
+    "Tibet Longrising Asset Management Co., Ltd. and CICC Financial Trading Limited (in connection with Tibet Longrising OTC Swaps)",
+    "Shenzhen Yongxin Industrial Investment Partnership Enterprise (Limited Partnership) and Guotai Junan Investments (Hong Kong) Limited (in"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2581",
+   "cornerstone_pct": 49.63,
+   "cornerstone_investors": [
+    "Heron Neutron Medical Corp.",
+    "Cowealth Medical China Co., Ltd. ΅ ʮ̡ ) ”)",
+    "Suzhou Zhanxingtou Industrial Fund Partnership (Limited Partnership) )"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2582",
+   "cornerstone_pct": 80.72,
+   "cornerstone_investors": [
+    "Hongkong Frontier Tanzhonghe",
+    "Zhixin Qingzhuang"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2583",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1832k chars) has no cornerstone section (2 passing mentions); allotment names none"
+  },
+  {
+   "code": "2585",
+   "cornerstone_pct": 39.77,
+   "cornerstone_investors": [
+    "Tianjin Haitai Capital",
+    "Matrix Capital (on behalf of Matrix Income SP)",
+    "Solid Elegance",
+    "Bright Ambition",
+    "Swift Grace"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2586",
+   "cornerstone_pct": 39.05,
+   "cornerstone_investors": [
+    "DFI Development Holdings Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2587",
+   "cornerstone_pct": 51.23,
+   "cornerstone_investors": [
+    "Hengqin Guangdong Macao Deep Cooperation Zone Industrial Investment Fund (Limited Partnership)"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2590",
+   "cornerstone_pct": 26.43,
+   "cornerstone_investors": [
+    "Xiongan Intelligent Robot Limited",
+    "Arc Avenue Asset Management Pte. Ltd.",
+    "Eastspring Investments (Singapore) Limited",
+    "Etarget Limited"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "2591",
+   "cornerstone_pct": 11.49,
+   "cornerstone_investors": [
+    "June Star Global Limited",
+    "Ginkgo Capital Global Fund SPC-XtalPi AI Fund SP",
+    "Marketingforce Management Ltd",
+    "DENG Haifeng (ࢤ",
+    "LI Huifeng"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2592",
+   "cornerstone_pct": 29.25,
+   "cornerstone_investors": [
+    "Wealth Strategy Holding Limited",
+    "The Reynold Lemkins Group (Asia) Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2593",
+   "cornerstone_pct": 22.4,
+   "cornerstone_investors": [
+    "Water Live Wealth Limited",
+    "Vital Message Medical Health Care Centre Limited",
+    "Mr. Yuen Tsz Ho Ronald"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2595",
+   "cornerstone_pct": 42.84,
+   "cornerstone_investors": [
+    "RTW Master Fund, Ltd.",
+    "RTW Innovation Master Fund, Ltd.",
+    "RTW Biotech Opportunities Operating Ltd.",
+    "TruMed Health Innovation Fund LP",
+    "TruMed Healthcare Master Fund",
+    "OrbiMed Genesis Master Fund, L.P.",
+    "OrbiMed Partners Master Fund Limited",
+    "The Biotech Growth Trust PLC",
+    "UBS Asset Management (Singapore) Ltd.",
+    "Vivo Opportunity Fund Holdings, L.P.",
+    "Vivo Opportunity Caymen Fund, L.P.",
+    "China Universal Asset Management (Hong Kong) Company Limited",
+    "China Universal Asset Management Company Limited",
+    "Fullgoal Fund Management Co., Ltd.",
+    "Fullgoal Asset Management (HK) Limited",
+    "CITIC Securities International Capital Management Limited (in connection with Tibet Longrising OTC Swaps)",
+    "LBC HK Opportunity Fund",
+    "Lake Bleu Prime Healthcare Fund",
+    "Lake Bleu Innovation Fund"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2597",
+   "cornerstone_pct": 31.39,
+   "cornerstone_investors": [
+    "Tongzhou International Development Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2598",
+   "cornerstone_pct": 55.52,
+   "cornerstone_investors": [
+    "Hangzhou High- tech Venture Capital Co., Ltd.)",
+    "Hangzhou Urban Investment Industrial Development Investment Partnership (LP)"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2602",
+   "cornerstone_investors": [
+    "Athos Asia Event Driven Master Fund",
+    "Cephei QFII China Total Return Fund Ltd.",
+    "China Chengtong Investment Company Limited",
+    "HHLR Fund, L.P. and YHG Investment, L.P",
+    "The China State-owned Enterprise Mixed Ownership Reform Fund Co., Ltd.",
+    "UBS Asset Management (Singapore) Ltd."
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2603",
+   "cornerstone_pct": 29.8,
+   "cornerstone_investors": [
+    "Timber Kangaroo Capital Limited",
+    "Yulong International Capital Limited",
+    "Ms. Shen Zhenyu"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "2609",
+   "cornerstone_pct": 26.5,
+   "cornerstone_investors": [
+    "Harvest Oriental SP"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2610",
+   "cornerstone_pct": 39.82,
+   "cornerstone_investors": [
+    "Glencore International AG",
+    "Hongkong Topway Trading Co., Limited",
+    "Reijong International Industrial Equipment (HK) Limited",
+    "PT Indika Energy Tbk."
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2613",
+   "cornerstone_pct": 24.43,
+   "cornerstone_investors": [
+    "Harvest International Premium Value (Secondary Market) Fund SPC on behalf of Harvest Oriental SP"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2617",
+   "cornerstone_pct": 63.96,
+   "cornerstone_investors": [
+    "Jiangbei Pharmaceutical Technology (Hong Kong) Limited",
+    "Sinohsc Honest Limited",
+    "0.54% 0.41% Yes Pharmablock Horizon Capital Limited",
+    "0.27% 0.21% Yes Kelingan (Hong Kong) Technology Co., Limited",
+    "0.27% 0.21% No AKESO,INC."
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2618",
+   "cornerstone_investors": [
+    "China Chengtong Investment Co., Ltd.",
+    "Internet Fund IIIA Pte Ltd",
+    "Matthews Funds",
+    "Oaktree Emerging Markets Equity Fund, L.P.",
+    "SoftBank Group",
+    "The Blackstone Group Inc."
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "2619",
+   "cornerstone_pct": 44.0,
+   "cornerstone_investors": [
+    "Hubei Shunjie Investment (Hong Kong) Co., Limited",
+    "Hong Kong Xinghuang Holdings Limited",
+    "Hong Kong Yunxing Technology Trade Management Co., Limited"
+   ],
+   "basis_kind": "lockup",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "2621",
+   "cornerstone_pct": 24.92,
+   "cornerstone_investors": [
+    "HiTai (Hong Kong) Limited ʮ̡ )",
+    "Taller industrial Co., Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2627",
+   "cornerstone_pct": 23.42,
+   "cornerstone_investors": [
+    "Jiaxing Xinyang Private Equity Asset Management Co., Ltd. and Huatai Capital Investment Limited (in connection with Huatai Back-to-back TRS and Huatai Client TRS)"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2629",
+   "cornerstone_pct": 41.37,
+   "cornerstone_investors": [
+    "Beijing Xunrui Enterprise Management Partnership (Limited Partnership)",
+    "Evergreen Gate Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2630",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1834k chars) has no cornerstone section (3 passing mentions); allotment names none"
+  },
+  {
+   "code": "2632",
+   "cornerstone_pct": 15.33,
+   "cornerstone_investors": [
+    "Yingke No. 1 (Hongkong) Limited ʮ̡ )",
+    "Hongkong High Tech Industrial (Beijing) Development Investment Co., Limited ʮ̡ )"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2637",
+   "cornerstone_pct": 17.23,
+   "cornerstone_investors": [
+    "HARVEST INTERNATIONAL PREMIUM VALUE (SECONDARY MARKET) FUND SPC ACTING ON BEHALF OF AND FOR THE ACCOUNT OF HARVEST ORIENTAL SP"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2643",
+   "cornerstone_pct": 51.25,
+   "cornerstone_investors": [
+    "Mercedes-Benz Mobility Services GmbH",
+    "Mirae Asset Securities (HK) Ltd.",
+    "Infini Global Master Fund",
+    "GOTION HIGH-TECH (HK) LIMITED",
+    "EVE Asia Co., Limited",
+    "RoboSense HongKong Limited"
+   ],
+   "basis_kind": "lockup",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "2648",
+   "cornerstone_pct": 29.44,
+   "cornerstone_investors": [
+    "Shanghai Greenwoods Asset Management Co., Ltd. and Huatai Capital Investment Limited (in connection with the Greenwoods OTC Swaps (as defined in the Prospectus))",
+    "Greenwoods Asset Management Hong Kong Limited",
+    "HT Investment Limited",
+    "QRT Master Fund SPC and its segregated portfolio Torus Fund SP, which is managed by Qube Research & Technologies Hong Kong Limited and certain affiliates of QRT HK (collectively “QRT”)",
+    "4 FCP Domains Co., Ltd.",
+    "NonaVerse (Hong Kong) Limited"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "2652",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1750k chars) has no cornerstone section (2 passing mentions); allotment names none"
+  },
+  {
+   "code": "2655",
+   "cornerstone_pct": 9.49,
+   "cornerstone_investors": [
+    "Huikai Hong Kong Economic Development Co., Ltd.",
+    "Dream’ ee (Hong Kong) Open-ended Fund Company",
+    "RIME Capital Limited (Note)"
+   ],
+   "basis_kind": "sum",
+   "src": "HKEX allotment results: cornerstone table (sum of the rows, % of offer shares)"
+  },
+  {
+   "code": "2657",
+   "cornerstone_pct": 44.43,
+   "cornerstone_investors": [
+    "FIL Investment Management (Hong Kong) Limited",
+    "Mega Prime Development Limited",
+    "Loyal Valley Capital",
+    "Duckling Fund, L.P.",
+    "SynerSuccess Capital Ltd.",
+    "Dajia Life Insurance Co., Ltd.",
+    "Yield Royal Investment Holding (Singapore) PTE. LTD."
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2658",
+   "cornerstone_pct": 9.26,
+   "cornerstone_investors": [
+    "Guangdong Primitive Forest Fund Management Co., Ltd* and GF Global Capital Limited",
+    "Glory Ocean Innovation Limited"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "2659",
+   "cornerstone_pct": 20.06,
+   "cornerstone_investors": [
+    "AnkeBio (Hong Kong) Co., Limited",
+    "Derivatives China Alpha Fund SPC (acting for and on behalf of Derivatives China Fundamental Fund SP)",
+    "Guotai Junan Investments (Hong Kong) Limited (in connection with the Zhonghe OTC Swaps)"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2661",
+   "cornerstone_pct": 18.09,
+   "cornerstone_investors": [
+    "Aoqin Heming"
+   ],
+   "basis_kind": "sum",
+   "src": "HKEX allotment results: cornerstone table (sum of the rows, % of offer shares)"
+  },
+  {
+   "code": "2667",
+   "cornerstone_pct": 49.77,
+   "cornerstone_investors": [
+    "Airport Technology Capital",
+    "Aurora SF",
+    "CICCFT (in connection with OTC Swaps)"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2670",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1848k chars) has no cornerstone section (1 passing mention); allotment names none"
+  },
+  {
+   "code": "2671",
+   "cornerstone_pct": 29.48,
+   "cornerstone_investors": [
+    "Colorful Cloud Holdings Limited",
+    "Tiny Jade Holdings (HK) Co., Limited",
+    "Wu Xinghua",
+    "Logic Selective Value Investment Funds SPC"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2672",
+   "cornerstone_pct": 3.84,
+   "cornerstone_investors": [
+    "GLY New Mobility",
+    "Mr. Ke"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "2675",
+   "cornerstone_pct": 48.68,
+   "cornerstone_investors": [
+    "Abu Dhabi Investment Authority",
+    "UBS Asset Management (Singapore) Ltd.",
+    "OrbiMed Genesis Master Fund, L.P.",
+    "Shareholder Huang River Investment Limited",
+    "LYFE Capital Fund IV (Dragon), L.P.",
+    "Poly Platinum Enterprises Limited",
+    "Close associate of an existing shareholder Mega Prime Development Limited",
+    "Close associate of an existing shareholder China Asset Management (Hong Kong) Limited",
+    "China Alpha Fund Management (HK) Ltd",
+    "Tekful Limited",
+    "Integrated Core Strategies (Asia) Pte. Ltd.",
+    "Sage Partners Master Fund",
+    "Close associate of an existing shareholder Panjing Harbourview Investment Fund",
+    "Infini Global Master Fund"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2676",
+   "cornerstone_pct": 49.23,
+   "cornerstone_investors": [
+    "Oriza Naxin",
+    "Golden Link",
+    "Hield International",
+    "Perseverance Asset Management",
+    "3W Fund",
+    "Green Better",
+    "Dream’ee HK Fund"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2677",
+   "cornerstone_pct": 31.59,
+   "cornerstone_investors": [
+    "Health Vision Hong Kong Limited",
+    "KingMed Diagnostics (Hong Kong) Limited ʮ̡ )",
+    "Mininglamp Technology",
+    "Galaxy Dynasty Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2692",
+   "cornerstone_pct": 34.17,
+   "cornerstone_investors": [
+    "HHLRA",
+    "Mirae Asset Securities HK",
+    "Perseverance Asset Management",
+    "Da Cheng International",
+    "GF Fund HK",
+    "Oakwise Growth Fund",
+    "Jump Trading",
+    "VVC Technology",
+    "FMF",
+    "Taihu Golden Valley",
+    "Topstar Worldwide",
+    "Virtues Capital and China Securities (International) Investment Company Limited (in connection with the OTC Swaps)",
+    "Hengbang and China Galaxy International Investment Company Limited (in connection with the Hengbang OTC Swaps)",
+    "W Investment",
+    "BeingBoom Capital",
+    "Mr. He Maoling",
+    "Mr. Luo Jie",
+    "Bridge Zone Group",
+    "CMBC International",
+    "RIME",
+    "Main Source Capital"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2693",
+   "cornerstone_pct": 42.97,
+   "cornerstone_investors": [
+    "Pingmei Shenma (Hong Kong) International Investment Limited",
+    "Hong Kong Chuangli Yingtai Investment Limited",
+    "Hong Kong Jinyuan Industry and Trade Limited",
+    "Degao Mining Technology Limited"
+   ],
+   "basis_kind": "lockup",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "2698",
+   "cornerstone_pct": 40.45,
+   "cornerstone_investors": [
+    "up undertakings Note 1 BA Sprout 4,447, 000 0.73% May 9, 2026 BA HM",
+    "Arc Avenue",
+    "up undertakings Note 1 Arcane Nexus",
+    "Beijing Shunao",
+    "CDH Emerging Markets",
+    "HCEP Funds",
+    "NewTrails Capital",
+    "NewTrails Forest",
+    "China Southern",
+    "Fullgoal Fund",
+    "up undertakings Note 1 Fullgoal HK",
+    "E Fund Management",
+    "E Fund HK",
+    "Charisma Mega",
+    "TruMed Healthcare",
+    "TruMed Innovation Fund",
+    "Qihui Runjin",
+    "ChinaAMC (HK)",
+    "up undertakings Note 1 Jane Street"
+   ],
+   "basis_kind": "lockup",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "2714",
+   "cornerstone_pct": 45.25,
+   "cornerstone_investors": [
+    "Charoen Pokphand Foods Public Company Limited",
+    "Wilmar – Wii Pte Ltd",
+    "– HPRY Holdings Limited",
+    "Hong Kong Henan Agri International Co., Limited",
+    "FIL Investment Management (Hong Kong) Limited",
+    "RBC Global Asset Management (Asia) Limited",
+    "Gaoyi Entities – Perseverance Asset Management International (Singapore) Pte. Ltd.",
+    "– Shanghai Gaoyi Asset Management Partnership (Limited Partnership) and Huatai Capital Investment Limited (in connection with Gaoyi OTC Swaps)",
+    "Ping An of China Asset Management (Hong Kong) Company Limited",
+    "Dajia Life Insurance Co., Ltd.",
+    "UBS Asset Management (Singapore) Ltd.",
+    "Midea Development Holding (BVI) Limited",
+    "Integrated Core Strategies (Asia) Pte. Ltd.",
+    "Jane Street Asia Trading Limited"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "2715",
+   "cornerstone_pct": 35.18,
+   "cornerstone_investors": [
+    "Harvest Oriental",
+    "Hengtong Optic-electric International",
+    "Dream ’ee HK Fund",
+    "Deep Source",
+    "Haitian Huayuan",
+    "New Fortune",
+    "Qianhai Hezhong Investment"
+   ],
+   "basis_kind": "lockup",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "2718",
+   "cornerstone_pct": 45.1,
+   "cornerstone_investors": [
+    "Huang River Investment Limited",
+    "Ms. Minfang Guo (ٹ",
+    "Treasure-stone Investment Group Limited",
+    "Ms. Lina Bao (ࢆ",
+    "Hundreds Capital",
+    "GFH Financial Group B.S.C.",
+    "QuantumPharm Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2720",
+   "cornerstone_pct": 37.62,
+   "cornerstone_investors": [
+    "Orbit Venture Capital Management Co., Limited",
+    "Huangshan Dejun Enterprise Management Co., Ltd."
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2726",
+   "cornerstone_pct": 46.8,
+   "cornerstone_investors": [
+    "Xiamen Advanced Intelligent Manufacturing Industry Investment Limited"
+   ],
+   "basis_kind": "sum",
+   "src": "HKEX allotment results: cornerstone table (sum of the rows, % of offer shares)"
+  },
+  {
+   "code": "2768",
+   "cornerstone_pct": 29.56,
+   "cornerstone_investors": [
+    "Nice First Investments Limited",
+    "SLD International Enterprises Limited",
+    "Cheng A International Co., Limited",
+    "Shenwan Hongyuan Securities Co., Ltd.",
+    "First Seafront Fund Series SPC",
+    "New Harvest Wealth Securities Company Limited",
+    "Luminous Horizon Limited",
+    "Fullgoal Asset Management (HK) Limited"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "2788",
+   "cornerstone_pct": 49.66,
+   "cornerstone_investors": [
+    "the lock -up undertakings Note 1 HHLRA",
+    "China Hongqiao Group Limited",
+    "Taikang Life",
+    "Glencore AG",
+    "Mercuria Holdings (Singapore) Pte. Ltd.",
+    "HK Greenwoods",
+    "Shanghai Greenwoods and CICC FT (in connection with Greenwoods OTC Swaps)",
+    "Turquoise Hime",
+    "Investcorp",
+    "CPIC IMHK",
+    "GF Fund",
+    "Fullgoal HK and Fullgoal Fund",
+    "Millennium ICSA",
+    "Jane Street",
+    "Polymer",
+    "Pointer Investment",
+    "Brilliant Partners Fund LP and China Core Fund",
+    "Cephei Capital"
+   ],
+   "basis_kind": "lockup",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "2865",
+   "cornerstone_pct": 34.82,
+   "cornerstone_investors": [
+    "Modern Direct Investment New Energy Technology Co., Limited",
+    "Zhuhai Gokin New Energy Investment Co., Ltd"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "2889",
+   "cornerstone_pct": 43.56,
+   "cornerstone_investors": [
+    "Horizon Together Holding Ltd.",
+    "JSC International Investment Fund SPC (acting for and on behalf of Huangshan SP)",
+    "Smart Ventures Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "2898",
+   "cornerstone_pct": 9.07,
+   "cornerstone_investors": [
+    "Nanjing Jingkai Weilai Technology Industrial Investment Partnership (Limited Partnership)"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "3223",
+   "cornerstone_pct": 48.05,
+   "cornerstone_investors": [
+    "Emerald Prime",
+    "GF Fund",
+    "Perseverance Asset Management",
+    "Shanghai Gaoyi and HTCI (in connection with the Huatai Back-to-back TRS and the Huatai Client TRS)",
+    "Huaqin Singapore",
+    "ICBC Wealth",
+    "Arrow Target",
+    "China Universal (HK)",
+    "CloudAlpha Capital",
+    "Heading Pioneer 10 Fund LPF",
+    "Dream ’ee HK Fund"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "3231",
+   "cornerstone_pct": 3.63,
+   "cornerstone_investors": [
+    "SensePower Management Limited",
+    "CYGG Holding Limited"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "3268",
+   "cornerstone_pct": 39.47,
+   "cornerstone_investors": [
+    "Baoyue Lake Shenzhen Industrial Investment Win-Win Enterprise Management Limited",
+    "Meiko Elec. Hong Kong Co., Limited",
+    "Streamax Electronics Limited",
+    "Harvest International Premium Value (Secondary Market) Fund SPC on behalf of Harvest Oriental SP",
+    "Jinyi Capital Multi-Strategy Fund SPC Ltd.",
+    "Open Wealth Management Limited",
+    "China Winning Limited",
+    "Chau Tsang Cheong “(Mr. Chau”)"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "3277",
+   "cornerstone_pct": 50.0,
+   "cornerstone_investors": [
+    "CPE Peepal Investment Limited",
+    "HHLR Advisors, Ltd.",
+    "UBS Asset Management (Singapore) Ltd.",
+    "Arc Avenue Asset Management Pte. Ltd.",
+    "Boyu Capital Management (Singapore) Pte. Ltd. Note 3&4",
+    "Fullgoal Asset Management (HK) Limited Notes 3&5",
+    "Fullgoal Fund Management Co., Ltd. Notes 3&5",
+    "GF International Investment Management Limited",
+    "GF Fund Management Co., Ltd.",
+    "Shanghai Greenwoods Asset Management Co., Ltd. and Huatai Capital Investment Limited (in connection with Greenwoods OTC Swaps) Notes 3&7",
+    "Greenwoods Asset Management Hong Kong Limited",
+    "Mirae Asset Securities (HK) Limited",
+    "Perseverance Asset Management International (Singapore) Pte. Ltd.",
+    "Yield Royal Investment Holding (Singapore) PTE. LTD.",
+    "3W Fund Management Limited",
+    "Eastern Bell Capital VIII Investment Limited",
+    "ICBC Wealth Management Co., Ltd. Notes 3 & 8",
+    "Protium Capital Limited",
+    "SCC Foresight Ventures Ltd.",
+    "Voyage42 Master Fund",
+    "WT Asset Management Limited",
+    "E Fund Management (Hong Kong) Co., Ltd.",
+    "E Fund Management Co., Ltd.",
+    "China Asset Management Co., Ltd. Notes 3&6",
+    "Cithara Global Multi-Strategy SPC — Disruptive Innovation Investment Fund SP",
+    "Panjing Harbourview Investment Fund",
+    "Value Partners Hong Kong Limited",
+    "Value Partners Limited",
+    "China Orient International Asset Management Limited — China Orient Multi-Strategy Master Fund",
+    "China Merchants Securities Investment Management (Hong Kong) Company Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "3288",
+   "cornerstone_pct": 46.08,
+   "cornerstone_investors": [
+    "HHLR Advisors, Ltd.",
+    "GIC Private Limited",
+    "4 RBC Global Asset Management (Asia) Limited",
+    "China Pinnacle Equity Management Limited",
+    "UBS Asset Management (Singapore) Ltd.",
+    "Supercluster Universe Limited",
+    "HSG Growth VII Holdco, Ltd.",
+    "Foshan Development Co., Ltd."
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "3296",
+   "cornerstone_pct": 49.96,
+   "cornerstone_investors": [
+    "JPMAMAPL",
+    "UBS AM Singapore",
+    "Shanghai Gaoyi and CICC FT (in connection with Gaoyi OTC Swaps)",
+    "Perseverance Asset Management",
+    "Cloud Map",
+    "Taikang Life",
+    "3W Fund",
+    "New China Asset Management",
+    "Everbright Wealth",
+    "IvyRock",
+    "Aurora SF (in connection with the Arrangement)",
+    "KIL",
+    "OmniVision HK",
+    "Green Better",
+    "Hongxing International",
+    "Ingenic Semiconductor HK",
+    "Awinic Technology Limited",
+    "JinYi Capital (acting for and on behalf of Structured Credit SP Fund)"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "3308",
+   "cornerstone_pct": 50.0,
+   "cornerstone_investors": [
+    "Taibai",
+    "True Light",
+    "HHLRA",
+    "JPMIMI",
+    "JPMAMAPL",
+    "BlackRock",
+    "YF Capital",
+    "Aspex",
+    "ADIA",
+    "Wellington",
+    "Perseverance Asset Management",
+    "Indus Funds",
+    "Mirae Investors",
+    "NGS Super Fund",
+    "Bain Capital",
+    "CPE",
+    "Boyu Capital",
+    "IDG Capital",
+    "Ninety One Asia",
+    "WT Asset Management",
+    "CloudAlpha Capital",
+    "Tairen",
+    "Hao Funds",
+    "Janchor Funds",
+    "Alibaba",
+    "Tencent",
+    "CPP Investments",
+    "Oaktree",
+    "CP Black Dragon",
+    "CTFE",
+    "Athos Capital",
+    "TAL Funds",
+    "Burkehill",
+    "General Atlantic",
+    "Huadeng Technology"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "3310",
+   "cornerstone_investors": [
+    "Digital Vista GD Investment LP",
+    "SpreadCom Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "3317",
+   "cornerstone_pct": 28.5,
+   "cornerstone_investors": [
+    "SinoMedia Holding Limited",
+    "York House Investment Limited (together with Alphahill Future Fund and Manifold Master Fund, “Alphahill Funds ”)",
+    "Wealth Strategy Holdings Limited",
+    "Infini Global Master Fund",
+    "Vered Holdings (Hong Kong) Limited ʮ̡)",
+    "New Golden Future Limited",
+    "Cithara Global Multi-Strategy SPC — Bosideng Industry Investment Fund SP",
+    "Factorial Master Fund",
+    "Joy Mobile Network Pte. Ltd."
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "3355",
+   "cornerstone_pct": 42.31,
+   "cornerstone_investors": [
+    "Hao Great China Focus Fund",
+    "Great Holding Development Limited",
+    "WT Asset Management Limited",
+    "No Caitong Funds SPC — Strategic Equity Fund III SP",
+    "No Shanghai Intewise Capital Investment Limited ultimate clients and CICC Financial Trading Limited (in connection with Shanghai Intewise OTC Swaps)",
+    "No Foresight Capital Steady Growth LPF",
+    "No SCGC Capital Holding Company Limited",
+    "Aether Wave Fund L.P.",
+    "GF International Investment Management Limited",
+    "No Shenzhen Kaifeng Investment Management Co., Ltd. , Changdu Kaifeng Investment",
+    "Management Co., Ltd. and CICC FT (in connection with the Kaifeng OTC Swaps (as defined below)) Wider Huge Group Limited"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "3378",
+   "cornerstone_pct": 15.93,
+   "cornerstone_investors": [
+    "Fund Resources Investment Holding Group Company Limited",
+    "Sage Partners Master Fund",
+    "Guotai Junan Investments (Hong Kong) Limited (in connection with the Kunyang OTC Swaps)",
+    "TFI Investment Fund SPC (acting for and on behalf of its segregated portfolio, TFI Lakeside SP)",
+    "Main Source Capital Limited",
+    "YStem Holding Limited",
+    "Awaken Thunder Capital Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "3388",
+   "cornerstone_pct": 49.9,
+   "cornerstone_investors": [
+    "Taikang Life Insurance Co., Ltd",
+    "CITIC Industrial International Investment Limited",
+    "CPE Greater China Enterprises Growth Fund",
+    "Martis Fund, L.P.",
+    "Hong Kong BoYue International Investment Fund Co., Limited",
+    "Greater Bay Area Homeland Investments Limited",
+    "Apex Insight Investment L.P.",
+    "Oasis Investments II Master Fund Ltd.",
+    "Jump Trading Pacific Pte. Ltd.",
+    "Polymer Asia Fund LP",
+    "Dingxin (Securities) Limited",
+    "Colloway Group Limited",
+    "Seven Grand Managers, LLC",
+    "Integrated Core Strategies (Asia) Pte. Ltd.",
+    "Optimas Capital Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "3636",
+   "cornerstone_pct": 42.5,
+   "cornerstone_investors": [
+    "Glencore International AG",
+    "Stoneylake Global Alpha Fund",
+    "NR 1 SP",
+    "China Asset Management (Hong Kong) Limited",
+    "New Asia Ferrell Asset Management Limited",
+    "Bridge Zone Group Limited",
+    "Zhengxin Group Investment Limited",
+    "Sunwoda Treasury (Hong Kong) Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "3650",
+   "cornerstone_investors": [
+    "Fuqing Shengde Calorie Investment Co., Ltd.",
+    "Shenzhen Fenda Technology Co., Ltd.",
+    "Xiamen Evere Sports Goods Co., Ltd."
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "3658",
+   "cornerstone_investors": [
+    "China Sichuan International Investment Limited",
+    "Golden Star International Pty Limited",
+    "Green Better Limited",
+    "Keltic Investment (HK) Limited",
+    "Neptune Investments Holdings Limited",
+    "Peak Reinsurance Company Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "3660",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1814k chars) has no cornerstone section (1 passing mention); allotment names none"
+  },
+  {
+   "code": "3661",
+   "cornerstone_pct": 49.89,
+   "cornerstone_investors": [
+    "GIC Private Limited",
+    "JPMorgan Asset Management (Asia Pacific) Limited",
+    "CPE Ginkgo Investment Limited",
+    "Da Cheng International Asset Management Company Limited",
+    "Dajia Life Insurance Co., Ltd.",
+    "Dymon Asia Multi- Strategy Investment Master Fund",
+    "First Sentier Investors (Hong Kong) Limited",
+    "GF Fund Management Co., Ltd.",
+    "GF International Investment Management Limited",
+    "4 Golden Continent Global Vision Open- ended Fund Company- Value Opportunity Fund N0.2",
+    "Harvest Global Investments Limited",
+    "HHLR Advisors, Ltd.",
+    "HHLRA (as the investment manager of an SMA managed for CPP Investments)",
+    "Huadeng Tech Ace Investment Ltd",
+    "HQ TELECOM SINGAPORE PTE. LTD.",
+    "Sungrow Power (Hong Kong) Co., Limited",
+    "ICBC Wealth Management Co., Ltd.",
+    "iSoftStone Hong Kong Limited",
+    "LMR Multi-Strategy Master Fund Limited",
+    "Millennium Capital Management (Singapore) Pte. Ltd.",
+    "Ninety One Asia Pte. Limited",
+    "Ocean Fine Industrial Limited",
+    "5 PSBC Wealth Management Co., Ltd.",
+    "Taikang Life Insurance Co., Ltd",
+    "Value Partners Hong Kong Limited",
+    "Value Partners Limited"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "3677",
+   "cornerstone_pct": 61.79,
+   "cornerstone_investors": [
+    "Jiangsu Mixed Ownership Reform Fund",
+    "Suzhou High-end Equipment Fund",
+    "Southeast Investment Holding"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "3696",
+   "cornerstone_pct": 39.29,
+   "cornerstone_investors": [
+    "Lilly",
+    "Tencent",
+    "Oaktree",
+    "Schroders",
+    "TAIBAI INVESTMENTS PTE. LTD. (3)",
+    "of an existing shareholder UBS Asset Management (Singapore) Ltd. (3)",
+    "China AMC",
+    "Pacific Asset Management Co., Ltd.",
+    "E Fund Management (3)",
+    "Fullgoal HK",
+    "Fullgoal Fund",
+    "Harvest",
+    "Taikang Life",
+    "RTW",
+    "Emerging Markets Healthcare Partners LLC",
+    "Infini"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "3750",
+   "cornerstone_pct": 52.78,
+   "cornerstone_investors": [
+    "Sinopec HK",
+    "16 2025 KIA",
+    "November 19, 2025 HHLR CF, L.P .",
+    "November 19, 2025 Shanghai Gaoyi and CICC FT (in connection with Gaoyi OTC Swaps)",
+    "November 19, 2025 Perseverance Asset Management",
+    "November 19, 2025 Zenith Hop",
+    "November 19, 2025 Abstract Enigma Limited",
+    "November 19, 2025 Shanghai Greenwoods and CICC FT (in connection with Greenwoods OTC Swaps)",
+    "November 19, 2025 HK Greenwoods",
+    "November 19, 2025 Pinpoint",
+    "November 19, 2025 UBS AM Singapore",
+    "November 19, 2025 WT",
+    "November 19, 2025 CPE Investment",
+    "November 19, 2025 Oaktree",
+    "November 19, 2025 MX Bright",
+    "November 19, 2025 Mirae Investors",
+    "November 19, 2025 RBC Global",
+    "17 Asset Management (Asia) Limited 2025 CPIC Investors",
+    "November 19, 2025 LMR Master Fund 1,473,600 1.09 0.03 November 19, 2025 LUOYANG Sci-Tech Inv 1,473,600 1.09 0.03 November 19, 2025 PSBC Wealth 1,473,600 1.09 0.03 November 19, 2025 Taikang Life 1,473,600 1.09 0.03 November 19, 2025 Lingotto"
+   ],
+   "basis_kind": "lockup",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "3752",
+   "cornerstone_pct": 31.4,
+   "cornerstone_investors": [
+    "GF Management Co., Ltd. ʮ̡",
+    "GF International Investment Management Limitedʮ̡ HUATAI CAPITAL INVESTMENT LIMITEDʮ̡",
+    "Beijing Financial Street Capital Operation Group Co., Ltd.ፄ൑༟͉༶ᐄ ʮ̡",
+    "Yishao Capital Management (HK) Limited",
+    "All View Focus Fund LPF"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "3757",
+   "cornerstone_pct": 35.2,
+   "cornerstone_investors": [
+    "Temasek",
+    "Sunpeak Asset",
+    "IvyRock",
+    "E Fund Management",
+    "E Fund HK",
+    "CIG",
+    "Winner Global Fund",
+    "Wind Sabre",
+    "Vestide Lumir",
+    "Arrowpoint",
+    "Sino Opulence Fund",
+    "Roofer Asset Management",
+    "Bloom Capital",
+    "Mr. Lai Pak Lam",
+    "Mr. Xia Shengli",
+    "Mr. Zhu Guodong",
+    "Mr. Zheng Xiaofeng"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "3858",
+   "cornerstone_pct": 50.0,
+   "cornerstone_investors": [
+    "CHINA CINDA (HK) ASSET MANAGEMENT CO., LIMITED ʮ̡ )",
+    "LUYIN TRADING PTE. LTD.",
+    "GF Fund Management Co., Ltd.",
+    "GF International Investment Management Limited",
+    "Fullgoal Asset Management (HK) Limited",
+    "Fullgoal Fund Management Co., Ltd.",
+    "Zhengxin Group Investment Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "3880",
+   "cornerstone_pct": 15.27,
+   "cornerstone_investors": [
+    "Dragon Merit Holdings Limited",
+    "Welight Capital L.P."
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "3881",
+   "cornerstone_pct": 38.39,
+   "cornerstone_investors": [
+    "Hunan Xiangjiang Zhicheng Industrial Investment Fund Partnership (Limited Partnership)",
+    "Nanning Zhijia No. 1 Ruiyue Equity Investment Partnership (Limited Partnership)",
+    "ICBC UBS Asset Management Company Limited",
+    "ICBC UBS Asset Management (International) Company Limited",
+    "Qianhai Kaiyuan Qunwei QDII Single Asset Management Plan"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "3887",
+   "cornerstone_pct": 36.31,
+   "cornerstone_investors": [
+    "UBS Asset Management (Singapore) Ltd.",
+    "FIL Investment Management (Hong Kong) Limited",
+    "of an existing shareholder CDH Global Frontier Ventures Limited",
+    "of an existing shareholder Cithara Global Multi- Strategy SPC – Bosideng Industry Investment Fund SP",
+    "Infini Global Master Fund",
+    "Deep Source Holdings Limited",
+    "Profit Channel Development Limited",
+    "Shining Light Grace Limited",
+    "shareholder Space Z PTE. LTD."
+   ],
+   "basis_kind": "sum",
+   "src": "HKEX allotment results: cornerstone table (sum of the rows, % of offer shares)"
+  },
+  {
+   "code": "3952",
+   "cornerstone_pct": 37.52,
+   "cornerstone_investors": [
+    "OAKTREE CAPITAL MANAGEMENT, L.P.",
+    "Alphahill Capital Limited",
+    "HARVEST GLOBAL INVESTMENTS LIMITED",
+    "CDH Global Frontier Ventures Limited",
+    "E Fund Management Co., Ltd",
+    "Eurus Holdings SPC acting for and on behalf of OAAM Diversified Opportunities IV S.P.",
+    "LBC HK Opportunity Fund Limited",
+    "Dream ’ee (Hong Kong) Open-ended Fund Company",
+    "Factorial Master Fund",
+    "Oasis Investments II Master Fund Ltd."
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "3986",
+   "cornerstone_pct": 49.78,
+   "cornerstone_investors": [
+    "Beijing Yuanfeng Asset Management L.L.P. ) and Huatai Capital Investment Limited (in connection with the Yuanfeng Asset Management OTC Swaps) (as defined in the Prospectus)",
+    "China Pinnacle Equity Management Limited",
+    "Shanghai Greenwoods Asset Management Co., Ltd. and",
+    "4 Huatai Capital Investment Limited (in connection with the Greenwoods OTC Swaps) (as defined in the Prospectus) New Alternative Limited",
+    "New Golden Future Limited",
+    "Dymon Asia Multi- Strategy Investment Master Fund",
+    "CloudAlpha Capital Management Limited",
+    "3W Fund Management Limited",
+    "HUAQIN TELECOM HONG KONG LIMITED",
+    "Metazone Link (HK) Limited",
+    "Sky Royal Trading Limited",
+    "Green Better Limited",
+    "New China Asset Management (Hong Kong) Limited",
+    "Taikang Life Insurance Co., Ltd",
+    "Summit Ridge Capital SP",
+    "ICBC Wealth Management Co., Ltd.",
+    "Greater Bay Area Development Fund Management Limited",
+    "5 Wind Sabre Fund SPC on behalf of Wind Sabre Opportunities Fund SP"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "6031",
+   "cornerstone_pct": 34.94,
+   "cornerstone_investors": [
+    "Infore Funds Series 2 Open-ended Fund Company – Infore Technology Fund 2",
+    "UBS Asset Management (Singapore) Ltd.",
+    "LMR Multi-Strategy Master Fund Limited",
+    "BlackRock Funds",
+    "RBC Global Asset Management (Asia) Limited",
+    "WT Asset Management Limited",
+    "Oaktree Capital Management, L.P.",
+    "Foresight Global Superior Choice SPC – Global Superior Choice Series Fund 1 SP and Foresight Global Superior Choice SPC – Vision Fund 1 SP",
+    "Shanghai Gaoyi and CITIC Securities International Capital Management Limited (in connection with CITICS Back-to-back TRS and CITICS Client TRS)",
+    "Perseverance Asset Management International (Singapore) Pte. Ltd.",
+    "Greenwoods Asset Management Hong Kong Limited",
+    "Pinpoint Asset Management Limited",
+    "Shanghai Pinpoint and CICC Financial Trading Limited (in connection with Pinpoint OTC Swaps)",
+    "Jane Street Asia Trading Limited",
+    "FengHe Asia Fund Ltd.",
+    "Qube Master Fund Ltd",
+    "Weichai Power Hong Kong International Development Co., Ltd.",
+    "Dajia Life Insurance Co., Ltd.",
+    "Shaanxi Fast Auto Drive Group Co., Ltd.",
+    "Value Partners Hong Kong Limited and Value Partners Limited"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "6082",
+   "cornerstone_pct": 51.93,
+   "cornerstone_investors": [
+    "3W Fund Management Limited",
+    "Qiming Venture Partners",
+    "QM125 Limited",
+    "QM120 Limited",
+    "Aspex Master Fund",
+    "WT Asset Management Limited",
+    "Hao Great China Focus Fund",
+    "Ping An Life Insurance Company of China, Ltd.",
+    "Huadeng Technology Peak Fortitude Ventures Ltd",
+    "Lion Global Investors Limited",
+    "Shanghai Greenwoods and CICC Financial Trading Limited (in connection with Greenwoods OTC Swaps)",
+    "MY Asian Opportunities Master Fund, L.P.",
+    "Eastspring Investments (Singapore) Limited",
+    "UBS Asset Management (Singapore) Ltd.",
+    "Taikang Life Insurance Co., Ltd",
+    "Aspirational China Growth GP Limited",
+    "Charoen Pokphand Robot Limited",
+    "Digital China (HK) Limited 有限公司)",
+    "Jinxiu 608 and GTJA HK (in connection with the GTJA Back-to-back TRS and Zhonghe OTC Swaps)",
+    "China Southern Asset Management Co., Ltd.",
+    "Fullgoal Fund",
+    "Fullgoal Fund Management Co., Ltd.",
+    "Fullgoal Asset Management (HK) Limited",
+    "Yeebo Alpha Limited",
+    "Enhanced Investment Products Limited",
+    "Tessy Holding Limited",
+    "New Opportunities SPC"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "6086",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1564k chars) has no cornerstone section (0 passing mentions); allotment names none"
+  },
+  {
+   "code": "6090",
+   "cornerstone_pct": 14.96,
+   "cornerstone_investors": [
+    "Multi-Strategy SPC - Bosideng Industry Investment Fund SP",
+    "Shanghai Tongyi Investment Management Co., Ltd. and Huatai Capital Investment Limited (in connection with a back-to-back total return swap)",
+    "Great Praise Investment SPC - Selected AI Fund SP"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "6106",
+   "cornerstone_pct": 43.34,
+   "cornerstone_investors": [
+    "HHLRA",
+    "Yuanbao Family Office",
+    "3W Fund",
+    "GF Fund",
+    "Ruihua Investment",
+    "Zhonghe Capital (through GF Securities AM as the qualified domestic institutional investor)",
+    "Yishao Capital",
+    "Nova Kerry Inc."
+   ],
+   "basis_kind": "lockup",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "6127",
+   "cornerstone_investors": [
+    "Carmignac Funds",
+    "China Structural Reform Fund Corporation Limited",
+    "CPE Greater China Enterprises Growth Fund",
+    "CRF Investment Holdings Company Limited",
+    "Janchor Partners Pan-Asian Master Fund",
+    "Lake Bleu Prime Healthcare Master Fund Limited",
+    "Octagon Capital Advisors LP",
+    "Orbimed Funds",
+    "SCC Growth VI Holdco F, Ltd.",
+    "Valliance Fund"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "6132",
+   "cornerstone_pct": 45.79,
+   "cornerstone_investors": [
+    "Superior Choice SPC — Horizon Next Fund SP and Foresight International Series — Foresight China Equity Fund (collectively, “Foresight Funds”)",
+    "Key Broad Future Limited",
+    "LBC HK Opportunity Fund Limited",
+    "Sage Partners Master Fund",
+    "Panjing Harbourview Investment Fund",
+    "Taikang Life Insurance Co., Ltd."
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "6166",
+   "cornerstone_pct": 48.89,
+   "cornerstone_investors": [
+    "Baring Asset Management (Asia) Limited",
+    "Morgan Stanley & Co. International plc",
+    "HCEP Management Limited",
+    "Arc Avenue Asset Management Pte. Ltd.",
+    "CloudAlpha Capital Management Limited",
+    "Turing International Limited",
+    "Cithara Global Multi- Strategy SPC – Bosideng Industry Investment Fund SP",
+    "3W Fund Management Limited",
+    "Schonfeld Strategic Advisors (Hong Kong) Limited",
+    "Infini Global Master Fund",
+    "Alpine Investment Management Limited",
+    "Dymon Asia Multi-Strategy Investment Master Fund",
+    "Aqua Ocean Limited",
+    "Martis Fund, L.P.",
+    "Taikang Life Insurance Co., Ltd*",
+    "ICBC Wealth Management Co., Ltd.*"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "6168",
+   "cornerstone_pct": 44.38,
+   "cornerstone_investors": [
+    "Yongcheng No. 2 Hong Kong Limited",
+    "Jump Trading Pacific Pte. Ltd.",
+    "Shenzhen Luohu Investment Holding Co., Ltd.",
+    "Pimlico Family Office Limited",
+    "Seraphim Advantage Inc.",
+    "CICC Financial Trading Limited (in connection with Dream’ee Yongxin OTC Swaps)",
+    "Lingbao Gold International Company Limited",
+    "GF Fund Management Co., Ltd."
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "6181",
+   "cornerstone_pct": 48.29,
+   "cornerstone_investors": [
+    "Huang River Investment Limited",
+    "China",
+    "Southern Asset Management Co., Ltd. CPE Greater China Enterprises Growth Fund"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "6600",
+   "cornerstone_pct": 42.68,
+   "cornerstone_investors": [
+    "HACF, L.P.",
+    "Cithara Global Multi-Strategy SPC — Bosideng Industry Investment Fund SP",
+    "Infini Global Master Fund",
+    "China Orient Enhanced Income Fund",
+    "China Orient Multi-Strategy Master Fund",
+    "Wind Sabre Fund SPC",
+    "Yield Royal Investment Holding (Singapore) Pte. Ltd.",
+    "Sage Partners Master Fund",
+    "Sage Sunshine 1 Limited"
+   ],
+   "basis_kind": "lockup",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "6603",
+   "cornerstone_pct": 26.76,
+   "cornerstone_investors": [
+    "UBS Asset Management (Singapore) Ltd.",
+    "Black Dragon AP SPV1",
+    "Enreal China Master Fund and Forreal China Value Fund",
+    "HCEP Master Fund and HCEP Long Only Master Fund",
+    "China Southern Asset Management Co., Ltd.",
+    "GF International Investment Management Limited",
+    "Harvest Oriental SP",
+    "ICBC Wealth Management Co., Ltd.",
+    "Jain Global Master Fund Ltd",
+    "Jane Street Asia Trading Limited",
+    "Mega Prime Development Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "6608",
+   "cornerstone_investors": [
+    "Cederberg Capital Limited",
+    "China Structural Reform Fund Corporation Limited",
+    "Franchise Fund LP"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "6609",
+   "cornerstone_investors": [
+    "3W Fund Management Limited",
+    "Aspex Master Fund",
+    "Boyu Capital Opportunities Master Fund",
+    "Goldstream Capital Segregated Portfolio Company - Goldstream Healthcare Focus Fund SP",
+    "Lake Bleu Prime Healthcare Master Fund Limited",
+    "LYFE CAPITAL FUND III (DRAGON), L.P.",
+    "Octagon Investments Master Fund LP",
+    "Sage Partners Master Fund",
+    "Superstring Capital Master Fund LP",
+    "The Valliance Fund"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "6610",
+   "cornerstone_investors": [
+    "Anji Guorong Construction Co., Ltd.",
+    "Anji Qicai Lingfeng Rural Tourism Investment Co., Ltd.",
+    "SensePower Management Limited",
+    "TradeGo FinTech Limited",
+    "Zhejiang Tianzihu Industry Investment Co., Ltd."
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "6613",
+   "cornerstone_pct": 31.45,
+   "cornerstone_investors": [
+    "Green Better Limited",
+    "Olympic Country Company Limited",
+    "UBS Asset Management (Singapore) Ltd.",
+    "Oaktree Capital Management, L.P.",
+    "LMR Multi-Strategy Master Fund Limited",
+    "Redwood Elite Limited",
+    "QRT Master Fund SPC",
+    "Poly Platinum Enterprise Limited",
+    "Infini Global Master Fund",
+    "Verition Multi-Strategy Master Fund Ltd."
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "6616",
+   "cornerstone_investors": [
+    "Shanghai Huijin Asset Management Co., Ltd",
+    "YBN Investments"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "6622",
+   "cornerstone_investors": [
+    "CaaS Capital Master Fund LP",
+    "GIC Private Limited",
+    "Golden Valley Global Limited",
+    "Jennison Associates LLC",
+    "Mass Ave Global, Inc.",
+    "Matthews Asia Growth Fund and Matthews Asia Innovators Fund",
+    "OrbiMed Partners Master Fund Limited and OrbiMed Genesis Master Fund, L.P.",
+    "VMS Zhaoke Investment Fund SP"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "6626",
+   "cornerstone_investors": [
+    "Crotona Assets Limited",
+    "Goingup Inc Limited",
+    "Jiang Ganjun",
+    "Kaiser Private Equity Fund SPC-SPI",
+    "Ke Jiansheng",
+    "Keltic Investment (HK) Limited",
+    "New China Asset Management (Hong Kong) Limited",
+    "SensePower Management Limited",
+    "Sunfly Holding Co., Ltd.",
+    "Wealthking Investments Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "6633",
+   "cornerstone_investors": [
+    "ABCI China Dynamic Growth SP",
+    "Boyu Capital Opportunities Master Fund",
+    "GF Global Capital Limited",
+    "Harvest Alternative Investment Opportunities Fund SP3",
+    "I-China Holdings Limited",
+    "Qookka Entertainment Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "6636",
+   "cornerstone_pct": 9.45,
+   "cornerstone_investors": [
+    "Zhengjin International (Note 1)",
+    "GKI"
+   ],
+   "basis_kind": "sum",
+   "src": "HKEX allotment results: cornerstone table (sum of the rows, % of offer shares)"
+  },
+  {
+   "code": "6639",
+   "cornerstone_investors": [
+    "Abax Asian Structured Private Credit Fund III, LP",
+    "Harvest International Premium Value (Secondary Market) Fund SPC",
+    "Hudson Bay Master Fund Ltd.",
+    "OrbiMed Genesis Master Fund, L.P.",
+    "Top Vast (Hong Kong) Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "6651",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1757k chars) has no cornerstone section (1 passing mention); allotment names none"
+  },
+  {
+   "code": "6657",
+   "cornerstone_pct": 77.98,
+   "cornerstone_investors": [
+    "Jiangsu Yuanli Industrial Investment Co., Ltd."
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "6658",
+   "cornerstone_investors": [
+    "Top New Development Limited",
+    "Wuhu Fanchang District Rural Revitalization Development Group (Hong Kong) Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "6661",
+   "cornerstone_investors": [
+    "Huzhou Erqing Asset Operation Co., Ltd.",
+    "Zhejiang Caixu Equity Investment Co., Ltd.",
+    "Zhejiang Jiening Equity Investment Co., Ltd.",
+    "Zhejiang Lichen Equity Investment Co., Ltd."
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "6669",
+   "cornerstone_investors": [
+    "Athos Asia Event Driven Master Fund",
+    "China International Capital Corporation Limited",
+    "China Universal Asset Management Limited Liability Company",
+    "CPE Investment Wu Limited",
+    "Daguan International Limited",
+    "Dymon Asia Capital (Singapore) Pte. Ltd.",
+    "E Fund Global Healthcare Sector Sponsored Hybrid Fund",
+    "New Journey Hospital Group Ltd",
+    "Panjing Harbourview Investment Fund",
+    "Perseverance Asset Management International (Singapore) Pte. Ltd.",
+    "Pinpoint Asset Management Limited",
+    "PRIMEONE LUCK LIMITED",
+    "The Valliance Fund"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "6675",
+   "cornerstone_pct": 28.86,
+   "cornerstone_investors": [
+    "Sunwoda Treasury (Hong Kong) Limited ʮ̡ )",
+    "Longwei Hong Kong Company Limited",
+    "Oakwise Growth Fund SPC { Greater China Fund SP",
+    "Tembusu Limited",
+    "Andrew Y Yan",
+    "RIME Capital Limited",
+    "Thalassa Capital Dynamics SPC (acting for and on behalf of Thalassa Horizon SP)",
+    "Chample International Limited",
+    "Libra Stable Value and Fixed Income Segregated Portfolio Company acting for and on behalf of Libra Fixed Income One SP"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "6680",
+   "cornerstone_investors": [
+    "CITIC-Prudential Life Insurance Company Limited",
+    "CR Alpha Investment II Limited",
+    "HHLR Fund, L.P. and YHG Investment, L.P. are limited",
+    "SINO-BLR Industrial Investment Fund, L.P",
+    "The China State-owned Enterprise Mixed Ownership Reform Fund Co., Ltd."
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "6681",
+   "cornerstone_pct": 64.27,
+   "cornerstone_investors": [
+    "Tasly (Hong Kong) Pharmaceutical Investment Limited",
+    "Tasly (International) Healthcare Investment & Development Company Limited 醫 療健康投資發展有限公 司)",
+    "Suzhou Ceyuan Fuhai Enterprise Management Partnership (Limited Partnership)",
+    "Huang Guangwei"
+   ],
+   "basis_kind": "sum",
+   "src": "HKEX allotment results: cornerstone table (sum of the rows, % of offer shares)"
+  },
+  {
+   "code": "6682",
+   "cornerstone_investors": [
+    "Beijing Zhongguancun Science City Science and Technology Growth Investment Partn",
+    "Montage Technology Holdings Company Limited",
+    "New China Capital Management Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "6683",
+   "cornerstone_investors": [
+    "Blink Field Limited",
+    "NETDRAGON WEBSOFT INC."
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "6687",
+   "cornerstone_pct": 48.5,
+   "cornerstone_investors": [
+    "Blue Lake Capital Opportunity Fund I, L.P.",
+    "China Universal Asset Management Co., Ltd and China Universal Asset Management (Hong Kong) Company Limited ”, together with CUAM, each a Cornerstone Investor and collectively the “CUAM Entities ”)",
+    "Dymon Asia Multi-Strategy Investment Master Fund",
+    "Fourier Capital Management Limited",
+    "GRANITE ASIA VIII INVESTMENTS PTE. LTD.",
+    "Greenwoods Asset Management Hong Kong Limited",
+    "GTCS Holdings Limited",
+    "HSG Growth VI Holdco F, Ltd.",
+    "Jain Global Master Fund Ltd",
+    "Perseverance Asset Management International (Singapore) Pte. Ltd.",
+    "Stoneylake Global Alpha Fund",
+    "WT Asset Management Limited",
+    "3W Fund Management Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "6693",
+   "cornerstone_pct": 26.4,
+   "cornerstone_investors": [
+    "Gold Mountains (H.K.) International Mining Company Limited",
+    "Sparky International Company Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "6715",
+   "cornerstone_pct": 49.88,
+   "cornerstone_investors": [
+    "BlackRock Funds",
+    "Barings",
+    "Taikang Life",
+    "Shanghai Greenwoods and GTINV (in connection with Greenwoods OTC Swaps)",
+    "Dacheng Investors",
+    "ICBC Wealth Notes 3 and 5",
+    "Nova Kerry Inc.",
+    "Mirae Asset Securities HK"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "6727",
+   "cornerstone_pct": 10.75,
+   "cornerstone_investors": [
+    "Electronic Channel Limited",
+    "LUOYANG Sci-Tech Inv."
+   ],
+   "basis_kind": "lockup",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "6731",
+   "cornerstone_pct": 43.54,
+   "cornerstone_investors": [
+    "HK Technology Innovation",
+    "JSC International (for and on behalf of Shenghai SP) (Note)"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "6745",
+   "cornerstone_pct": 31.88,
+   "cornerstone_investors": [
+    "Beijing Yian and HTCI (in connection with the Beijing Yian OTC Swaps)",
+    "Luhua Daosheng and HTCI (in connection with the Luhua Daosheng OTC Swaps)",
+    "Aurora SF (in connection with Binzhou Guotou Arrangement)",
+    "China Hongqiao",
+    "Hyperion Venture",
+    "Tianto",
+    "Safewell"
+   ],
+   "basis_kind": "lockup",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "6802",
+   "cornerstone_pct": 16.13,
+   "cornerstone_investors": [
+    "Golden Link",
+    "Taiwan ZMAX"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table, p.7, printed final total 1,869,200 shares = 16.13% of offer. https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0929/2026092901927.pdf"
+  },
+  {
+   "code": "6809",
+   "cornerstone_pct": 49.82,
+   "cornerstone_investors": [
+    "J.P. Morgan Investment Management Inc.",
+    "UBS Asset Management (Singapore) Ltd.",
+    "Yunfeng Investments Limited New Alternative Limited",
+    "New Golden Future Limited",
+    "Alisoft China Holding Limited",
+    "Aspex Master Fund",
+    "Janchor Partners Pan- Asian Master Fund",
+    "abrdn Asia Limited",
+    "Baring Asset Management (Asia) Limited",
+    "Mirae Asset Securities Co., Ltd.",
+    "AGIC Partners Holding (Cayman) II Limited",
+    "Hel Ved Master Fund",
+    "Huaqin Telecom Hong Kong Limited",
+    "Huadeng Summit Fortitude Ventures Ltd",
+    "PSBC Wealth Management Co., Ltd.",
+    "Taikang Life Insurance Co., Ltd",
+    "MY Asian Opportunities Master Fund, L.P.",
+    "Qube Master Fund Ltd"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "6810",
+   "cornerstone_pct": 27.03,
+   "cornerstone_investors": [
+    "China Orient Enhanced Income Fund",
+    "XINWUTANG CO., LIMITED"
+   ],
+   "basis_kind": "sum",
+   "src": "HKEX allotment results: cornerstone table (sum of the rows, % of offer shares)"
+  },
+  {
+   "code": "6831",
+   "cornerstone_pct": 50.0,
+   "cornerstone_investors": [
+    "Wuxi Zixian Food Co., Ltd.",
+    "No Anji Liangshan Rural Revitalization Equity Investment Partnership (Limited Partnership) )",
+    "No Action Chain International Limited",
+    "No Chia Tai Food Investment Company Limited",
+    "No Wuxi Hexiang Food Co., Ltd.",
+    "No Wuxi Lvlian Food Co., Ltd.",
+    "Wuxi Qinyu Food Co., Ltd."
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "6872",
+   "cornerstone_pct": 34.81,
+   "cornerstone_investors": [
+    "AMR Action Fund, L.P.",
+    "AMR Action Fund, SCSp",
+    "Hua Yuan International Limited 有限公司)",
+    "Orient Asset Management (Hong Kong) Limited 有限公 司)",
+    "June Star Global Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "6880",
+   "cornerstone_pct": 49.95,
+   "cornerstone_investors": [
+    "GIC",
+    "Fidelity International",
+    "BlackRock",
+    "Mercedes-Benz AG",
+    "Shareholder) Oaktree",
+    "Golden Link",
+    "Shareholder) Franklin Templeton",
+    "Boyu",
+    "Gaoyi Entities",
+    "CPIC",
+    "GF Fund",
+    "ChinaAMC (HK)",
+    "Suzhou Mosu",
+    "GigaDevice"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "6883",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1609k chars) has no cornerstone section (0 passing mentions); allotment names none"
+  },
+  {
+   "code": "6911",
+   "cornerstone_pct": 50.31,
+   "cornerstone_investors": [
+    "Harvest",
+    "ROSY DAY INVESTMENTS LIMITED",
+    "Wang Chunyu",
+    "Lancang Green Resource Investment Co., Ltd.",
+    "China Ocean View Group Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "6915",
+   "cornerstone_pct": 12.32,
+   "cornerstone_investors": [
+    "Wealth Strategy Holding Limited"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "6922",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1787k chars) has no cornerstone section (2 passing mentions); allotment names none"
+  },
+  {
+   "code": "6929",
+   "cornerstone_investors": [
+    "Hangzhou Fuyang Industrial Fund Investment Management Co., Ltd."
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "6936",
+   "cornerstone_pct": 27.3,
+   "cornerstone_investors": [
+    "Oaktree Capital Management, L.P.",
+    "Wise Honest Limited",
+    "WT Asset Management Limited",
+    "China Pacific Insurance (Group) Co., Ltd.",
+    "Green Better Limited",
+    "Infini Global Master Fund",
+    "Wind Sabre Fund SPC on behalf of Wind Sabre Opportunities Fund SP",
+    "Morgan Stanley & Co. International plc",
+    "Ghisallo Fund Master Ltd",
+    "Wisdomshire Asset Management Co., Ltd"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "6938",
+   "cornerstone_pct": 42.5,
+   "cornerstone_investors": [
+    "Arc Avenue Asset Management Pte. Ltd.",
+    "Bright Stone Holdings Limited",
+    "China Asset Management Co., Ltd.",
+    "Da Cheng International Asset Management Company Limited and Dacheng Fund Management Company Limited",
+    "Erik Selin Fastigheter Aktiebolag",
+    "Himension Fund",
+    "IvyRock Asset Management (HK) Limited",
+    "Mingxin Growth Ventures LS2 Limited",
+    "Springs Capital (Hong Kong) Limited",
+    "Taikang Life Insurance Co., Ltd.",
+    "Tenbagger Capital Nengxin), LP. ), Tenbagger Capital (Shanghai, Ziran), LP. ) and Huatai Capital Investment Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "6951",
+   "cornerstone_pct": 49.81,
+   "cornerstone_investors": [
+    "Temasek",
+    "JPMAMAPL",
+    "CPE River",
+    "Ninety One Asia",
+    "Alibaba Investment",
+    "Huang River",
+    "GSAM",
+    "Manulife-managed Funds",
+    "Taikang Life",
+    "China Universal Investors",
+    "Bosera Internaitonal",
+    "ICBC Wealth",
+    "Ivy Rock",
+    "GBAHIL",
+    "Metazone",
+    "Verition Fund",
+    "GMF and IRMF"
+   ],
+   "basis_kind": "lockup",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "6960",
+   "cornerstone_pct": 28.1,
+   "cornerstone_investors": [
+    "Sanshui Venture Capital Co., Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "6963",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (2144k chars) has no cornerstone section (2 passing mentions); allotment names none"
+  },
+  {
+   "code": "6979",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1393k chars) has no cornerstone section (0 passing mentions); allotment names none"
+  },
+  {
+   "code": "6990",
+   "cornerstone_investors": [
+    "China Universal Asset Management Co., Ltd",
+    "Kelun International Development Co., Limited",
+    "Laurion Capital Master Fund Ltd.",
+    "RTW Master Fund, Ltd.",
+    "TruMed Healthcare Master Fund and TruMed Health Innovation Fund LP"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "7618",
+   "cornerstone_pct": 44.45,
+   "cornerstone_investors": [
+    "M&G Investors",
+    "(2) CPE Investment",
+    "(2) AIM",
+    "IvyRock",
+    "CoreView",
+    "Schonfeld",
+    "Burkehill"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "7630",
+   "cornerstone_pct": 33.19,
+   "cornerstone_investors": [
+    "Huang River Investment Limited",
+    "Prosper High Holding Limited",
+    "LAV Star Limited",
+    "LAV Star Opportunities Limited",
+    "Global Superior Choice Fund 1 SP",
+    "Vision Fund 1 SP",
+    "Horizon Next SP",
+    "First Quarter Moon OFC – Phecda Fund",
+    "Worldwide Healthcare Partners LLC"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "7666",
+   "cornerstone_pct": 54.87,
+   "cornerstone_investors": [
+    "BlackRock",
+    "UBS AM Singapore",
+    "China Venture Capital Innovation Investment Fund Co., Ltd.",
+    "Mirae",
+    "HHLRA",
+    "Deerfield",
+    "RTW Funds",
+    "Arc Avenue",
+    "Huadeng Technology",
+    "Isometry Global",
+    "GF Fund",
+    "ICBCUBS Entities",
+    "China AMC (HK)",
+    "Fullgoal Fund",
+    "Lake Bleu",
+    "Sage Partners",
+    "ICBC Wealth Management",
+    "ORIX Asia AM"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "7687",
+   "cornerstone_pct": 49.79,
+   "cornerstone_investors": [
+    "ZIJINNING",
+    "Aurora SF (in connection with the Arrangement)",
+    "Fidelity International",
+    "JPMAMAPL",
+    "Barings",
+    "Indus Fund",
+    "Jain Global Master Fund Ltd",
+    "REGAL",
+    "GF Fund",
+    "CDH",
+    "Seven Grand"
+   ],
+   "basis_kind": "lockup",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "7688",
+   "cornerstone_pct": 50.0,
+   "cornerstone_investors": [
+    "RBC Global Asset Management (Asia) Limited (Note 3)",
+    "3W Fund Management Limited (Note 3)",
+    "Boyu Capital Management (Singapore) Pte. Ltd. (Notes 3 and 4)",
+    "HHLR Advisors, Ltd. (Note 3)",
+    "UBS Asset Management (Singapore) Ltd. (Note 3)",
+    "CDH Global Frontier Ventures Limited (Note 3)",
+    "Cithara Global Multi-Strategy SPC – Disruptive Innovation Investment Fund SP",
+    "Fullgoal Asset Management (HK) Limited (Note 5)",
+    "Fullgoal Fund Management Co., Ltd. (Note 5)",
+    "China Asset Management Co., Ltd. (Note 6)",
+    "Shanghai Minhang Financial Investment Development Co., Ltd. (Notes 3 and 7)",
+    "TT International Asset Management Ltd (Note 8)",
+    "Mirae Asset Securities (HK) Limited",
+    "Goldman Sachs Asset Management (Hong Kong) Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "9600",
+   "cornerstone_investors": [
+    "Caitong Fund Management Co., Ltd.",
+    "Hony Goldstream Special Opportunity Fund I"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "9606",
+   "cornerstone_pct": 30.82,
+   "cornerstone_investors": [
+    "BioNTech SE",
+    "LAV Star Opportunities Limited",
+    "Lake Bleu Prime Healthcare Master Fund Limited",
+    "Lake Bleu Innovation Healthcare Master Fund Limited",
+    "TruMed Healthcare Master Fund, ABS Direct Equity Fund LLC Asia Series 11 and TruMed Health Innovation Fund LP (together “TruMed”)",
+    "Fullgoal Fund Management Co., Ltd.",
+    "Fullgoal Asset Management (HK) Limited",
+    "E Fund Management Co., Ltd.",
+    "E Fund Management (Hong Kong) Co., Ltd.",
+    "China Universal Asset Management Co., Ltd.",
+    "Panjing Harbourview Investment Fund",
+    "MY Asian Opportunities Master Fund, L.P.",
+    "Emerging Markets Healthcare Partners LLC",
+    "Worldwide Healthcare Partners LLC",
+    "Suzhou Suchuang Biomedical Health Venture Capital Fund Partnership (Limited Partnership) )"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "9607",
+   "cornerstone_pct": 33.14,
+   "cornerstone_investors": [
+    "CNCB Investment",
+    "Full Truck",
+    "Golden Valley Master",
+    "Goldshore",
+    "Happy Wisdom",
+    "Prinx Chengshan HK",
+    "Yang Quanhai",
+    "Zhou Bo"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "9609",
+   "cornerstone_pct": 42.67,
+   "cornerstone_investors": [
+    "Horizon Splendor Limited"
+   ],
+   "basis_kind": "sum",
+   "src": "HKEX allotment results: cornerstone table (sum of the rows, % of offer shares)"
+  },
+  {
+   "code": "9611",
+   "cornerstone_pct": 27.17,
+   "cornerstone_investors": [
+    "Qualcomm Ventures LLC",
+    "Jiangxi Guokong Private Equity Fund Management Co., Ltd.",
+    "WILL semiconductor Limited",
+    "Hong Kong Yuto Printing Company Limited",
+    "Qingdao Guanlan and Guotai Junan Investments (Hong Kong) Limited (in connection with Guanlan OTC Swaps)",
+    "Endless Growth NH Limited"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "9615",
+   "cornerstone_pct": 62.02,
+   "cornerstone_investors": [
+    "Baillie Gifford",
+    "Taikang Life",
+    "Invus",
+    "Jane Street",
+    "Ghisallo",
+    "Ruihua",
+    "NGS Super Fund",
+    "E Fund",
+    "Golden Link"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "9626",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1450k chars) has no cornerstone section (1 passing mention); allotment names none"
+  },
+  {
+   "code": "9636",
+   "cornerstone_investors": [
+    "Duke King Holdings Limited",
+    "Garland Glory Holdings Limited",
+    "New China Asset Management (Hong Kong) Limited",
+    "Orchid Asia V Co-Investment, Limited",
+    "Sichuan Hebang Investment Group Co., Ltd."
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "9637",
+   "cornerstone_pct": 49.78,
+   "cornerstone_investors": [
+    "GIC Private Limited (2)",
+    "Loomis, Sayles & Company, L.P.",
+    "Loomis Sayles Trust Company, LLC",
+    "RTW Master Fund, Ltd.",
+    "RTW Innovation Master Fund, Ltd.",
+    "RTW Biotech Opportunities Ltd.",
+    "SymBiosis II, LLC (2)",
+    "Huang River Investment Limited (2)",
+    "Perfect Ten Holding Limited (2)",
+    "Cormorant Global Healthcare Master Fund, LP",
+    "Dymon Asia Multi-Strategy Investment Master Fund",
+    "GF Fund Management Co., Ltd.",
+    "GF International Investment Management Limited",
+    "China Universal Asset Management (Hong Kong) Company Limited ”)",
+    "E Fund Management Co., Ltd.",
+    "E Fund Management (Hong Kong) Co., Ltd.",
+    "Golden Valley Value Select Master Fund (2)",
+    "Golden Valley Global Limited (2)",
+    "Loyal Valley Capital Advantage Fund III LP (2)"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "9638",
+   "cornerstone_investors": [
+    "Hainan Financial Holdings Co., Ltd.",
+    "Hainan Free Trade Port Construction Investment Fund Co., Ltd.",
+    "Qingdao Haifa Holding Development Co., Ltd.",
+    "Sanya Development Holdings Co., Ltd.",
+    "Sunshine Life Insurance Corporation Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "9639",
+   "cornerstone_pct": 19.18,
+   "cornerstone_investors": [
+    "Sany Hongkong Group Limited 三一 香港集團有限公司",
+    "Accel Group Holdings Limited 高 陞集團控股有限公司",
+    "The Triplex Holdings Limited 三鋒控股管 理有限公司"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "9660",
+   "cornerstone_pct": 31.56,
+   "cornerstone_investors": [
+    "Alisoft China Holding Limited",
+    "Baidu (Hong Kong) Limited",
+    "PARTICIPATIONS 1",
+    "JSC International Investment Fund SPC (acting for and on behalf of Ning Bo Yong Ning Gao Xin SP)"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "9669",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1828k chars) has no cornerstone section (0 passing mentions); allotment names none"
+  },
+  {
+   "code": "9676",
+   "cornerstone_investors": [
+    "Xinmin Tianshi Agricultural Industry Development Company Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "9678",
+   "cornerstone_pct": 29.65,
+   "cornerstone_investors": [
+    "SensePower",
+    "Nebula",
+    "Runjian International (Note 2)"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "9680",
+   "cornerstone_pct": 77.06,
+   "cornerstone_investors": [
+    "GAIG",
+    "An existing Shareholder Hongkong Pony AI Limited",
+    "An existing Shareholder Voyager Global Inc.",
+    "Close associate of an existing Shareholder WeRide Inc."
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "9699",
+   "cornerstone_investors": [
+    "Hello Inc.",
+    "Taobao China Holding Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "9856",
+   "cornerstone_pct": 47.02,
+   "cornerstone_investors": [
+    "Primavera Investment Fund",
+    "GBAHIL – Mega Prime",
+    "– Poly Platinum",
+    "HK BVF I LPF",
+    "Orient Asset Management",
+    "Mount Altai",
+    "Peak View Capital",
+    "Sinofortune International",
+    "Ambre Lau Trade Limited",
+    "SCV Delta",
+    "Mirae Asset Securities HK",
+    "PAG Capital Structure Opportunity Fund LP",
+    "Turquoise Hime (ORIX)",
+    "GF Fund (6) – GF Fund Management",
+    "– GF Fund HK",
+    "– E Fund Management",
+    "CSC OTC Swap",
+    "First Seafront Asset Management Limited",
+    "GaoTeng Global Asset Management Limited",
+    "GigaDevice",
+    "Amlogic Hong Kong",
+    "Atlas Venture Limited",
+    "Alphahill Capital",
+    "ODI Trust",
+    "Barings"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "9858",
+   "cornerstone_investors": [
+    "CITIC-Prudential Life Insurance Company Limited",
+    "Harvest Private Wealth Thematic Fund SPC"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "9860",
+   "cornerstone_investors": [
+    "Corelink Group Limited",
+    "Fosun Diagnostics (Shanghai) Co., Ltd.",
+    "MR Global (HK) Limited",
+    "Snibe Diagnostic (Hong Kong) Company Limited",
+    "Timestar Elite Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "9863",
+   "cornerstone_investors": [
+    "GF Fund Management Co., Ltd.",
+    "Jinhua Industrial Fund Co., Ltd.",
+    "Jinhua Jinkai Industrial Leading Investment Partnership (Limited Partnership)",
+    "Kwok Tai East International Group Limited",
+    "Zhejiang Industrial Fund"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "9868",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1770k chars) has no cornerstone section (4 passing mentions); allotment names none"
+  },
+  {
+   "code": "9877",
+   "cornerstone_investors": [
+    "LifeTech Scientific Corporation"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "9878",
+   "cornerstone_investors": [
+    "Golden Feather Corporation",
+    "Greenwoods Asset Management Hong Kong Limited",
+    "Heilan Group Co., Limited",
+    "SensePower Management Limited",
+    "Skyworth Overseas Investment Holdings Limited",
+    "Windfall T&L SPC"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "9879",
+   "cornerstone_pct": 45.58,
+   "cornerstone_investors": [
+    "MEGA DYNAMIC GROUP LIMITED",
+    "Harvest Global Capital Investments Limited",
+    "Changsheng Fund Management Co., Ltd. - CHINA GF BANK- CHANGSHENG FUND -QDII1"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "9880",
+   "cornerstone_pct": 53.41,
+   "cornerstone_investors": [
+    "E-Town International Holding (Hong Kong) Co., Limited"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "9881",
+   "cornerstone_pct": 43.64,
+   "cornerstone_investors": [
+    "Hongkong Linktech Technology Co., Limited",
+    "Cao Ke",
+    "Lin Xiaojian",
+    "Sinos Group Limited",
+    "Li Shuhan",
+    "Main Achieve Holdings Limited",
+    "Ng Chi Fat"
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "9885",
+   "cornerstone_investors": [
+    "ZGC International Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "9887",
+   "cornerstone_pct": 41.98,
+   "cornerstone_investors": [
+    "Loyal Valley Capital Advantage Fund III LP",
+    "Golden Valley Global Limited",
+    "Golden Valley Value Select Master Fund (together with Loyal Valley Fund III and Golden Valley Global Limited, the “ LVC Entities ”)",
+    "Shanghai Gaoyi Asset Management Partnership (Limited Partnership) and Huatai Capital Investment Limited (in connection with Huatai Back-to-back TRS and Huatai Client TRS)",
+    "Perseverance Asset Management International (Singapore) Pte. Ltd.",
+    "TruMed Healthcare Master Fund",
+    "TruMed Health Innovation Fund LP",
+    "OrbiMed Genesis Master Fund, L.P.",
+    "The Biotech Growth Trust PLC",
+    "Huang River Investment Limited",
+    "E Fund Management Co., Ltd.",
+    "E Fund Management (Hong Kong) Co., Ltd.",
+    "FORESIGHT GLOBAL SUPERIOR CHOICE SPC – GLOBAL SUPERIOR CHOICE FUND 1 SP and Foresight Global Superior Choice SPC – Vision Fund 1 SP",
+    "Sage Partners Master Fund",
+    "Hankang Biotech Fund III, L.P.",
+    "Splendid Biotech Fund L.P."
+   ],
+   "basis_kind": "printed",
+   "src": "HKEX allotment results: cornerstone table (the table's printed total, % of offer shares)"
+  },
+  {
+   "code": "9888",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1815k chars) has no cornerstone section (1 passing mention); allotment names none"
+  },
+  {
+   "code": "9890",
+   "cornerstone_investors": [
+    "4399 Net Limited",
+    "Aofei Data International Company Limited",
+    "Hong Kong Longsin Co., Limited",
+    "Shangrao High-speed Industrial Investment"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "9896",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1724k chars) has no cornerstone section (1 passing mention); allotment names none"
+  },
+  {
+   "code": "9898",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1715k chars) has no cornerstone section (1 passing mention); allotment names none"
+  },
+  {
+   "code": "9899",
+   "cornerstone_investors": [
+    "NetEase, Inc.",
+    "Orbis Investment Management Limited",
+    "Sony Music Entertainment"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "9903",
+   "cornerstone_pct": 43.02,
+   "cornerstone_investors": [
+    "ZTE (H.K.) LIMITED",
+    "XN Mountain International Limited",
+    "Wind Sabre Fund SPC acting on behalf and for the account of Wind Sabre Opportunities Fund SP",
+    "UBS Asset Management (Singapore) Ltd.",
+    "Teamsun Technology (HK) Limited",
+    "Qin Wan Investment Limited",
+    "OCM Limited",
+    "Ocean Fine Industrial Limited",
+    "Huatai Capital Investment Limited (in connection with OTC swaps for Jiujiu Hengxin (Xiamen) Private Fund Management Co., Ltd.)",
+    "Fourth Paradigm International Limited",
+    "Engine International Technology Co., Limited",
+    "Duckling Fund, L.P.",
+    "DeepRoot Alpha Ltd",
+    "China Universal Asset Management (Hong Kong) Company Limited",
+    "China Orient International Asset Management Limited — China Orient Enhanced Income Fund",
+    "China Orient International Asset Management Limited — China Orient Multi-Strategy Master Fund",
+    "China Asset Management (Hong Kong) Limited",
+    "CFIG Holdings Limited",
+    "Alphahill Capital Limited"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "9927",
+   "cornerstone_pct": 44.95,
+   "cornerstone_investors": [
+    "Chongqing Industrial Investment Parent Fund Enterprise Partnership (L.P.) )",
+    "Shenzhen Lin Yuan Investment Management Co., Ltd. and Huatai Capital Investment Limited (in connection with Huatai Back-to-back TRS and Linyuan TRS)",
+    "GF Fund Management Co., Ltd.",
+    "GF International Investment Management Limited",
+    "New China Asset Management (Hong Kong) Limited",
+    "BESS Broadway Limited",
+    "Sanhua (Hong Kong) Co Limited ”)",
+    "Zhongsheng Holdings Company Limited",
+    "Zhink International Pte. Ltd.",
+    "Gold Wings Holdings Limited",
+    "Honour Goal Investments Limited",
+    "Hichain Logistics (Hong Kong) Limited",
+    "Schroder Investment Management (Singapore) Ltd and Schroder Investment Management (Hong Kong) Limited (collectively, “Schroder ”)",
+    "Mirae Asset Securities Co., Ltd.",
+    "New Alternative Limited",
+    "PSBC Wealth Management Co., Ltd.",
+    "Skyler International Co., Ltd",
+    "Xingyu Automotive Lighting (Hong Kong) Company Limited",
+    "China MeiDong Auto Holdings Limited",
+    "Ghisallo Fund Master Ltd.",
+    "Jump Trading Pacific Pte. Ltd.",
+    "Jain Global Master Fund Ltd",
+    "China Alpha Fund Management (HK) Limited"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "9930",
+   "cornerstone_investors": [
+    "HK Dongbin Joint Victory Development Co. Limited",
+    "LGMG International Limited",
+    "Shanghai Gold Ring Enterprise Group Co., Ltd.",
+    "Shanghai Putuo Science and Technology Investment Co., Ltd.",
+    "Xinheng Holding Limited",
+    "Zhejiang Dingli Machinery Co., Ltd.",
+    "Zoomlion International Trading (H.K.) Co., Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "9955",
+   "cornerstone_investors": [
+    "Harvest International Premium Value (Secondary Market)Fund SPC",
+    "Sanofi Foreign Participations B.V",
+    "Tasly International Capital Limited",
+    "Yangtze River (Hong Kong) Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "9959",
+   "cornerstone_investors": [
+    "BlackRock Funds",
+    "EDB Investments",
+    "Fidelity International",
+    "Janus Henderson Funds",
+    "Ontario Teachers’ Pension Plan Board",
+    "Sequoia Funds"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "9960",
+   "cornerstone_investors": [
+    "Athos Capital Limited",
+    "BlackRock, Inc.",
+    "Carmignac Funds",
+    "China Pinnacle Equity Management Limited",
+    "DNCA Finance",
+    "IvyRock Asset Management (HK) Limited",
+    "Snow Lake Capital (HK) Limited"
+   ],
+   "src": "AAStocks deal page (機構性投資者)"
+  },
+  {
+   "code": "9961",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1228k chars) has no cornerstone section (1 passing mention); allotment names none"
+  },
+  {
+   "code": "9971",
+   "cornerstone_pct": 0,
+   "cornerstone_none": true,
+   "src": "prospectus (1555k chars) has no cornerstone section (2 passing mentions); allotment names none"
+  },
+  {
+   "code": "9973",
+   "cornerstone_pct": 50.0,
+   "cornerstone_investors": [
+    "JSC International Investment Fund SPC (acting for and on behalf of ShanRui SP)",
+    "HHLR Advisors, Ltd.",
+    "Shanghai Greenwoods Asset Management Co., Ltd and CICC Financial Trading Limited (in connection with Greenwoods OTC Swaps)",
+    "Greenwoods Asset Management Hong Kong Limited",
+    "Huangshan Construction Investment (Hong Kong) International Limited",
+    "Jinghui Ruiying (Hong Kong) Limited",
+    "Horizon Together Holding Ltd.",
+    "Dajia Life Insurance Co., Ltd.",
+    "Martis Fund, L.P.",
+    "GOTION HIGH-TECH (HK) LIMITED",
+    "Hefei Jianhui Zhanxin Cornerstone Investment Company Limited",
+    "PSBC Wealth Management Co., Ltd (through GF Securities Asset Management (Guangdong) Co., Ltd as the qualified domestic institutional investor)",
+    "Xingyu Automotive Lighting (Hong Kong) Company Limited"
+   ],
+   "basis_kind": "shares",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  },
+  {
+   "code": "9981",
+   "cornerstone_pct": 26.12,
+   "cornerstone_investors": [
+    "HHLR",
+    "Shanghai Greenwoods Asset Management Co., Ltd. and Huatai Capital Investment Limited (in connection with Greenwoods OTC Swaps)",
+    "Jump Trading",
+    "Huizhou Huilian",
+    "JCC and Guotai Junan Investments (Hong Kong) Limited (in connection with JCC OTC Swaps)",
+    "Shen Zhen New World",
+    "BEST CHEER",
+    "RIME",
+    "SCV Alpha",
+    "Yield Royal"
+   ],
+   "basis_kind": "lockup",
+   "src": "HKEX allotment results: cornerstone table (cornerstone shares over the offer shares (table has no % of offer column))"
+  }
+ ]
+}

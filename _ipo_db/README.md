@@ -119,3 +119,6 @@ verified press > analyst judgment (sector tags). Every key number in `deals.json
 carries `_prov` with its source and status. The Bloomberg mnemonics on the AH tab are
 standard `BDP ... PX_LAST` calls but are flagged **await-terminal-verify** until you
 confirm one row on the desk.
+
+
+12 October 2026 update: IPO Live/AH monitoring covers seven years (714 tickers / 68 pairs), while Database and Screener retain 524 deals. AH adds seven-day and one-calendar-month premium changes in percentage points and four-stock comparisons. Lock-up adds 30 trading sessions before/after, company cornerstone percentage, since-IPO return, deal size and expiry cohort comparisons. Peer Trades adds six direct-product pairs, including 9856/3308, with Bloomberg quotes and selectable history/spread charts. The two verification sheets are combined; Analogs is hidden as Scoring Stats. Primary filing corrections and remaining evidence gaps are documented in MAINTENANCE.md. Stored quotes end on 2 October; Bloomberg add-in execution remains a terminal check.

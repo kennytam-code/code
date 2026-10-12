@@ -1,52 +1,37 @@
 {
- "version": 1,
- "note": "Single source of truth for sector/subsector. Screener gates on subsector FIRST (weight dominance). Edit here; re-run build_xlsx.py + build_dashboard.py to propagate.",
+ "version": 3,
+ "note": "Consolidated business groups for daily monitoring and screening. Technology has six groups. Listing regime, profitability and A/H status remain separate. Existing return benchmarks are preserved.",
  "sectors": {
-  "Tech/AI": [
-   {
-    "id": "llm",
-    "label": "LLM / foundation model",
-    "comp_note": "Model-layer cos (MiniMax-type). NOT data-center, NOT AI application."
-   },
-   {
-    "id": "ai_app",
-    "label": "AI application / agent software",
-    "comp_note": "AI-native software & agents monetising models; not the model layer itself."
-   },
+  "Technology": [
    {
     "id": "ai_chips",
-    "label": "AI chips & semis",
-    "comp_note": "GPU/ASIC/accelerator designers and semi supply chain."
+    "label": "Semiconductors",
+    "comp_note": "Chip design, foundries, equipment and materials. Product mix remains relevant when comparing companies."
    },
    {
-    "id": "dc_cloud",
-    "label": "Data center / cloud infra",
-    "comp_note": "IDC, cloud capacity, AI infra landlords. Distinct from model layer."
+    "id": "saas",
+    "label": "Software & AI",
+    "comp_note": "Enterprise software, AI applications and foundation models. Compare revenue model and profitability."
+   },
+   {
+    "id": "internet",
+    "label": "Internet & fintech",
+    "comp_note": "Internet platforms, e-commerce and technology-led financial platforms."
+   },
+   {
+    "id": "smart_hw",
+    "label": "Hardware & electronics",
+    "comp_note": "Electronic devices, components and communications hardware."
    },
    {
     "id": "robotics_ad",
     "label": "Robotics & autonomous driving",
-    "comp_note": "Embodied AI, ADAS/AD stacks, robotaxi, humanoid."
+    "comp_note": "Robotics, LiDAR, autonomous driving and automation software."
    },
    {
-    "id": "smart_hw",
-    "label": "Smart hardware / consumer electronics",
-    "comp_note": "Devices, IoT, components ex-semis."
-   },
-   {
-    "id": "saas",
-    "label": "SaaS / enterprise software",
-    "comp_note": "Recurring-revenue software without AI-native positioning."
-   },
-   {
-    "id": "internet",
-    "label": "Internet platform / e-commerce",
-    "comp_note": "Marketplaces, local services, content platforms."
-   },
-   {
-    "id": "fintech",
-    "label": "Fintech platform",
-    "comp_note": "Payments, lending, wealth platforms (tech-first)."
+    "id": "dc_cloud",
+    "label": "Data centres & cloud",
+    "comp_note": "Data centre operators and cloud infrastructure."
    }
   ],
   "Healthcare": [
@@ -206,7 +191,7 @@
     "comp_note": ""
    }
   ],
-  "TMT-other": [
+  "Media & telecom": [
    {
     "id": "telecom",
     "label": "Telecom",

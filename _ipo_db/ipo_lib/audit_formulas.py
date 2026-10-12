@@ -145,7 +145,11 @@ def main():
     xl = {f for _b, _h, f, _fm, _w in B.DB_COLS if not f.startswith("_")}
     html = set(D.KEEP)
     # deliberate exceptions: HTML-only helpers with no column of their own
-    HTML_ONLY = {"a_share_proxy", "sponsors_cn", "sponsors_display"}
+    # Display metadata consumed by Database's cornerstone / notes cells;
+    # separate columns would duplicate those answers.
+    HTML_ONLY = {"name_full", "a_share_proxy", "sponsors_cn", "sponsors_display", "cornerstone_none", "cornerstone_list_note", "intl_note", "public_sub_note"}
+    for field in ('intl_note','public_sub_note','cornerstone_list_note'):
+        if field not in {k for k,_ in B.NOTE_FIELDS}:bad.append(f'HTML note {field} missing from Excel Notes cell')
     missing_html = xl - html
     missing_xl = html - xl - HTML_ONLY
     checked += len(xl)

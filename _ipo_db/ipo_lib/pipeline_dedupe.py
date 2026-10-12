@@ -2,7 +2,7 @@
 """One pipeline row per company — shared by BOTH builders.
 
 SHEIN reached the book twice: a curated watch-list entry ("Shein Group",
-no code, hand-classified Tech/AI · Internet platform) and, once its
+no code, hand-classified Technology · Internet platform) and, once its
 prospectus posted, the live offering-window record ("SHEIN Global Holdings
 Limited", 0625, classified Consumer · Apparel from the AAStocks industry
 string). Two rows, two sectors, and the tabs disagreed with each other.
@@ -30,7 +30,15 @@ HAND_WINS = ("sector", "subsector")
 
 def company_key(name):
     """Distinctive key for a company name ('Shein Group' == 'SHEIN Global')."""
-    return investor_key(name or "")
+    import re
+    # City/province prefixes describe the domicile, not the issuer. Keeping
+    # "Anhui" or "Zhejiang" as the brand collapses unrelated applicants and
+    # can falsely mark a new PHIP as an already listed company.
+    name = re.sub(r"^(?:Shenzhen|Shanghai|Beijing|Guangzhou|Zhuhai|Suzhou|"
+                  r"Hangzhou|Hefei|Nanjing|Chengdu|Qingdao|Anhui|Zhejiang|Hunan|"
+                  r"Hubei|Jiangsu|Jiangxi|Guangdong|Shandong|Fujian|Henan|"
+                  r"Hebei|Sichuan|Chongqing|Tianjin)\s+", "", name or "", flags=re.I)
+    return investor_key(name)
 
 
 def _withdrawn():
@@ -56,7 +64,8 @@ def _listed():
         return set(), set()
     book = json.loads(p.read_text()).get("deals", [])
     codes = {str(d.get("code")) for d in book if d.get("code")}
-    keys = {company_key(d.get("name")) for d in book if d.get("name")}
+    keys = {company_key(d.get(f)) for d in book for f in ("name", "name_full")
+            if d.get(f)}
     return codes, keys - {""}
 
 
@@ -68,6 +77,10 @@ def merge_pipeline(rows):
     # A DEAL THAT HAS LISTED IS NO LONGER PIPELINE — it is in the Database,
     # with its filed price, subscription and returns. Drop it here so it can
     # never appear in both tabs at once.
+    # Migrate cached provisional labels as well as newly fetched records.
+    for row in rows:
+        if row.get("subsector") == "AI chips & semis":
+            row["subsector"] = ("Semiconductors" if "sinomags" in (row.get("name") or "").lower() else "Semiconductors")
     listed_codes, listed_keys = _listed()
     kept = []
     for r in rows:
@@ -84,7 +97,13 @@ def merge_pipeline(rows):
     wd = _withdrawn()
     for r in rows:
         w = wd.get(str(r.get("code") or ""))
-        if w:
+        if w and w.get("kind") == "postponed":
+            # POSTPONED is not WITHDRAWN: the issuer says a new timetable is
+            # being set (Forms Syntron 6700, 2026-09-17)
+            r["status"] = f"POSTPONED — offering and listing postponed {w['date']}"
+            r["postponed"] = True
+            r["classification_note"] = (r.get("classification_note") or w.get("src", ""))[:160]
+        elif w:
             r["status"] = f"WITHDRAWN — offering pulled {w['date']}"
             r["withdrawn"] = True
             r["classification_note"] = (r.get("classification_note") or w.get("src", ""))[:160]

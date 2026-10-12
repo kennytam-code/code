@@ -18,6 +18,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from pypdf import PdfReader
+from filing_review import subscriptions
 
 ROOT = Path(__file__).resolve().parent.parent
 CACHE = ROOT / "scrape" / "pdf_cache"
@@ -87,6 +88,7 @@ def main():
         print(f"  incremental: {len(rows)} deal(s) to re-read")
     tbl = prose = 0
     for i, rec in enumerate(rows):
+        pages = []
         txt = ""
         for f in rec.get("files", []):
             p = CACHE / f
@@ -94,36 +96,16 @@ def main():
                 continue
             try:
                 r = PdfReader(str(p))
-                txt += "\n".join((r.pages[k].extract_text() or "")
-                                 for k in range(min(20, len(r.pages))))
+                pages.extend((page.extract_text() or "") for page in r.pages)
             except Exception:
                 continue
-        if not txt:
+        if not pages:
             continue
-        flat = re.sub(r"\s+", " ", txt)
-        pub = section_value(flat, SEC_PUB, SEC_INT)
-        itl = section_value(flat, SEC_INT, SEC_PUB)
-        method = "table" if (pub is not None or itl is not None) else None
-        if pub is None:
-            m = PROSE_PUB.search(flat) or PROSE_PUB2.search(flat)
-            if m:
-                pub, method = fnum(m.group(1)), method or "prose"
-        if itl is None:
-            m = PROSE_INT.search(flat) or PROSE_INT2.search(flat)
-            if m:
-                itl, method = fnum(m.group(1)), method or "prose"
-        if itl is None:
-            m = PROSE_INT_UNDER.search(flat)
-            if m:
-                v = fnum(m.group(1))
-                if v is not None and 0 < v <= 100:
-                    itl, method = round(v / 100, 4), method or "prose-under"
-        if pub is None:
-            m = PROSE_PUB_UNDER.search(flat)
-            if m:
-                v = fnum(m.group(1))
-                if v is not None and 0 < v <= 100:
-                    pub, method = round(v / 100, 4), method or "prose-under"
+        readings = subscriptions(pages)
+        pub = readings.get('public',{}).get('value')
+        itl = readings.get('intl',{}).get('value')
+        method = 'table' if any(x.get('method')=='tranche table' for x in readings.values() if isinstance(x,dict)) else 'prose'
+        rec['subscription_evidence'] = readings
         if pub is not None:
             rec["oversub_public_mult"] = pub
         if itl is not None:

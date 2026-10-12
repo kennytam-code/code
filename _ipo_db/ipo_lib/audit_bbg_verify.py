@@ -62,7 +62,7 @@ def main():
             missing.append(f"{c} {row['name'][:16]}: no offer price / day-1 on file")
             continue
         ours_raw = fp * (1 + d1 / 100)             # our listing-day close
-        f = bbg_factor(c, acts, ent)
+        f = bbg_factor(c, acts, ent, as_of=fixture.get("asof"))
         expected = ours_raw / f
         checked += 1
         if abs(expected / bbg - 1) <= TOL:

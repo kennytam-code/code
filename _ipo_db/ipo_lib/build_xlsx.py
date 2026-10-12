@@ -8,7 +8,7 @@ no XLOOKUP/LET/dynamic arrays). Bloomberg BDP formulas are written next to
 manual-override input cells; effective value = IF(override<>"",override,live).
 BDP mnemonics are AWAIT-TERMINAL-VERIFY until confirmed on the desk.
 """
-import json
+import json,re
 from datetime import date
 from pathlib import Path
 
@@ -19,12 +19,13 @@ from openpyxl.worksheet.datavalidation import DataValidation
 from openpyxl.formatting.rule import ColorScaleRule, DataBarRule, FormulaRule
 from openpyxl.chart import BarChart, LineChart, Reference, ScatterChart, Series
 from openpyxl.workbook.defined_name import DefinedName
+from openpyxl.comments import Comment
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "out" / "HK_IPO_Database_v1.xlsx"
 
 ARIAL = "Arial"
-TITLE = Font(name=ARIAL, size=13, bold=True)
+TITLE = Font(name=ARIAL, size=16, bold=True, color="00333333")
 SUB   = Font(name=ARIAL, size=9, italic=True, color="00808080")
 SECT  = Font(name=ARIAL, size=10, bold=True)
 WARN  = Font(name=ARIAL, size=10, bold=True, color="00C00000")
@@ -34,28 +35,26 @@ NOTE  = Font(name=ARIAL, size=9, italic=True, color="00808080")
 HDRF  = Font(name=ARIAL, size=10, bold=True, color="00FFFFFF")
 BOLD  = Font(name=ARIAL, size=10, bold=True)
 
-F_HDR  = PatternFill("solid", fgColor="001F3864")   # navy
-F_IN   = PatternFill("solid", fgColor="00DDEBF7")   # input blue
+F_HDR  = PatternFill("solid", fgColor="00333333")   # navy
+F_IN   = PatternFill("solid", fgColor="00F2F2F2")   # input blue
 F_CALC = PatternFill("solid", fgColor="00F2F2F2")   # calc grey
 F_ZEBRA = PatternFill("solid", fgColor="00F7F9FB")  # even-row wash, display only
 F_GRN  = PatternFill("solid", fgColor="00C6EFCE")   # xchecked
 F_AMB  = PatternFill("solid", fgColor="00FFE699")   # judgment / estimated
-F_OVR  = PatternFill("solid", fgColor="00FFC000")   # conflict
+F_OVR  = PatternFill("solid", fgColor="00F2DEC3")   # conflict
 # One tint per column band, shared by the Database band row and the Screener's
 # comp table so the two grids read the same way.
-BAND_TINT = {"IDENTITY": "001F4E79", "DEAL TERMS": "00274E13", "DEMAND": "007A5C00",
-             "PERFORMANCE": "00134F4A", "FUNDAMENTALS": "00434343",
-             "A / H": "00742323", "BANKS & DOCS": "00274E63", "NOTES": "00434343",
-             "SCORING": "00595959"}
+BAND_TINT = {key: "00333333" for key in ("IDENTITY","DEAL TERMS","DEMAND","PERFORMANCE","FUNDAMENTALS","A / H","BANKS & DOCS","NOTES","SCORING")}
+
 # Screener section bars: a different colour per block. With every bar navy the
 # desk could not see where one section ended and the next began.
-F_SEC_TARGET = PatternFill("solid", fgColor="001F3864")   # navy
-F_SEC_RANK   = PatternFill("solid", fgColor="00375623")   # green
-F_SEC_SUMM   = PatternFill("solid", fgColor="0044546A")   # slate
-F_SEC_ASHARE = PatternFill("solid", fgColor="00742323")   # burgundy, as the A/H band
-F_SEC_PANEL  = PatternFill("solid", fgColor="00595959")   # grey side panels
-_t = Side(style="thin")
-BOX = Border(left=_t, right=_t, top=_t, bottom=_t)
+F_SEC_TARGET = PatternFill("solid", fgColor="00333333")   # navy
+F_SEC_RANK   = PatternFill("solid", fgColor="00333333")   # green
+F_SEC_SUMM   = PatternFill("solid", fgColor="00333333")   # slate
+F_SEC_ASHARE = PatternFill("solid", fgColor="00333333")   # burgundy, as the A/H band
+F_SEC_PANEL  = PatternFill("solid", fgColor="00333333")   # grey side panels
+_t = Side(style="hair", color="00E1E7EF")
+BOX = Border(bottom=_t)
 C_HDR = Alignment(horizontal="center", vertical="center", wrap_text=True)
 C_MID = Alignment(horizontal="center")
 
@@ -72,6 +71,11 @@ STATUS_FILL = {"conflict": F_OVR}
 
 def put(ws, coord, value, font=BODY, fill=None, fmt=None, border=None, align=None):
     c = ws[coord]
+    if fmt == DATEF and isinstance(value, str) and not value.startswith("="):
+        try:
+            value = date.fromisoformat(value[:10])
+        except ValueError:
+            pass
     c.value = value
     c.font = font
     if fill:   c.fill = fill
@@ -79,6 +83,12 @@ def put(ws, coord, value, font=BODY, fill=None, fmt=None, border=None, align=Non
     if border: c.border = border
     if align:  c.alignment = align
     return c
+
+
+def bdh_point(ticker, field, date_ref, missing='"Awaiting quote"'):
+    """Use the direct, single-date BDH form confirmed on the user's terminal."""
+    return f'BDH({ticker},"{field}",{date_ref},{date_ref})'
+
 
 
 def hdr(ws, coord, text, fill=F_HDR):
@@ -163,7 +173,11 @@ def _offering_rows(root):
             pe_mid = round((r["pe_expected_lo"] + r["pe_expected_hi"]) / 2, 1)
         out.append({
             "name": r.get("name"), "expected_code": r.get("code"),
-            "name_cn": cn, "industry_en": r.get("industry_en") or industry,
+            "name_cn": r.get("name_cn") or cn, "industry_en": r.get("industry_en") or industry,
+            # the four things the desk asks of a live deal first, after size
+            "bookrunners": "; ".join(r.get("bookrunners") or []) or None,
+            "greenshoe_pct": r.get("greenshoe_pct"),
+            "cornerstone_names": "; ".join(r.get("cornerstone_investors") or []) or None,
             "subsector": r.get("subsector"), "sector": r.get("sector"),
             "status": r.get("status") or "OFFERING NOW",
             "expected_timing": r.get("listing_date") or "",
@@ -204,6 +218,9 @@ def _offering_rows(root):
             # the A line exists the A-anchored multiple is used instead.
             "valuation_notes": "; ".join(filter(None, [
                 r.get("mktcap_note"), r.get("fin_note"),
+                (f"greenshoe: {r['greenshoe_note']}" if r.get("greenshoe_note") else None),
+                (f"market cap basis: {r['mktcap_basis']}" if r.get("mktcap_basis") else None),
+                (f"cornerstone %: {r['cornerstone_basis']}" if r.get("cornerstone_basis") else None),
                 ("no expected P/E: no company market cap is stated in the filing"
                  if not (r.get("pe_at_h_cap") or r.get("pe_expected_lo"))
                  and (r.get("ni_latest") or 0) > 0 else None)])) or None,
@@ -221,13 +238,14 @@ def _phip_as_pipeline(root, existing_names):
     except Exception:
         return []
     out = _offering_rows(root)
-    low = [n.lower().split()[0] for n in existing_names if n]
-    low += [(x.get("name") or "").lower().split()[0] for x in out if x.get("name")]
+    from pipeline_dedupe import company_key
+    low = {company_key(n) for n in existing_names if n}
+    low.update(company_key(x.get("name")) for x in out if x.get("name"))
     for a in apps:
         if not a.get("has_phip") or a.get("sponsor_terminated"):
             continue
         nm = (a.get("applicant") or "").split("(formerly")[0].strip().rstrip(",")
-        first = nm.lower().split()[0] if nm else ""
+        first = company_key(nm)
         if first and first in low:
             continue                      # already covered by a curated entry (Shein)
         p = a.get("parsed") or {}
@@ -256,8 +274,9 @@ def _phip_as_pipeline(root, existing_names):
                 # the row looking half-built
                 "subsector not auto-classified; type one in the blue cell"
                 if not p.get("subsector") else None])) or None,
-            "sponsors": "; ".join((p.get("sponsors") or [])
-                                   or (p.get("coordinators") or [])) or None,
+            "sponsors": "; ".join(p.get("sponsors") or []) or None,
+            # the OC announcement names the coordinators before the prospectus
+            "bookrunners": "; ".join(p.get("coordinators") or []) or None,
             "expected_size_hkdm": press.get("expected_size_hkdm"),
             "expected_size_basis": press.get("basis"),
         })
@@ -269,6 +288,8 @@ def _stage(p):
     st = str(p.get("status") or "").upper()
     if p.get("withdrawn") or st.startswith("WITHDRAWN"):
         return "Withdrawn", 4
+    if p.get("postponed") or st.startswith("POSTPONED"):
+        return "Postponed", 4
     if "OFFERING" in st or p.get("range_hi") or p.get("offer_period"):
         return "Offering", 1
     if "PHIP" in st or str(p.get("expected_timing") or "").startswith("PHIP"):
@@ -321,8 +342,8 @@ DB_COLS = [
     ("DEAL TERMS", "Priced in range %", "pct_in_range", '0.0"%"', 11),
     ("DEAL TERMS", "Mkt cap at IPO (HK$m)", "mktcap_ipo_hkdm", MONEY, 12),
     ("DEAL TERMS", "Mkt cap basis", "mktcap_basis", None, 26),
-    ("DEMAND", "Public sub (x)", "oversub_public_mult", "#,##0.0", 10),
-    ("DEMAND", "Intl sub (x)", "oversub_intl_mult", "0.00", 9),
+    ("DEMAND", "Public sub (x)", "oversub_public_mult", "#,##0.00#", 12),
+    ("DEMAND", "Intl sub (x)", "oversub_intl_mult", "0.00#", 10),
     ("DEMAND", "Cornerstone (% of offer)", "cornerstone_pct", '0.0"%";;"none"', 11),
     # the allocation OUTCOME: placee count in the international book, the
     # public tranche's final share of the deal, and whether the PN18 clawback
@@ -339,7 +360,7 @@ DB_COLS = [
     ("DEMAND", "Eff. free float (% of cap)", "eff_free_float_pct", '0.0"%"', 11),
     ("DEMAND", "Cornerstone investors", "cornerstone_investors", None, 46),
     ("DEMAND", "CS keys", "cornerstone_keys", None, 16),
-    ("DEMAND", "Greenshoe size (%)", "greenshoe_pct", '0.0"%"', 9),
+    ("DEMAND", "Max shoe (%)", "greenshoe_pct", '0.0"%"', 9),
     ("DEMAND", "Shoe outcome (final)", "greenshoe_exercised_final", None, 17),
     # the date the stabilisation mandate dies, from the filing's own sentence —
     # the aftermarket desk plans around this, so it belongs on the row
@@ -361,6 +382,7 @@ DB_COLS = [
     # note (make_grey_note.py) but do not ship as columns.
     ("PERFORMANCE", "Grey mkt % vs offer", "grey_pct", '+0.0"%";-0.0"%"', 14),
     ("PERFORMANCE", "Day-1", "first_day_return_pct", '+0.0"%";-0.0"%"', 9),
+    ("PERFORMANCE", "Benchmark index Day-1", "bench_day1_pct", '+0.0"%";-0.0"%"', 18),
     ("PERFORMANCE", "Day-1 open pop", "day1_open_pop_pct", '+0.0"%";-0.0"%"', 10),
     ("PERFORMANCE", "Day-1 open to close", "day1_open_close_pct", '+0.0"%";-0.0"%"', 11),    # the listing-day tape (v31): how many times the retail tranche changed
     # hands on day one, and the intraday range - the distribution gauge
@@ -405,7 +427,9 @@ DB_COLS = [
     ("A / H", "A-line mkt cap now (HK$m)", "a_mktcap_now_hkdm", MONEY, 14),
     ("A / H", "A P/E @H-IPO (BBG)", "_a_pe_at_ipo_bbg", "0.0", 11),
     ("A / H", "HSAHP @IPO (BBG)", "_hsahp_bbg", "0.0", 11),
-    ("BANKS & DOCS", "Sponsors", "sponsors", None, 30),
+    # best available: the prospectus's own list, else AAStocks' 保薦人 (the
+    # note column says which) — a blank here read as "no sponsor" on 134 deals
+    ("BANKS & DOCS", "Sponsors", "sponsors_display", None, 30),
     ("BANKS & DOCS", "Sponsors (AAStocks)", "sponsors_en", None, 30),
     ("BANKS & DOCS", "Bookrunners", "bookrunners_display", None, 34),
     ("BANKS & DOCS", "Underwriters (AAStocks)", "underwriters_en", None, 34),
@@ -419,6 +443,8 @@ DB_COLS = [
 ]
 # the *_note fields merge_batches writes, in the order they read best
 NOTE_FIELDS = [("intl_note", "intl sub"), ("pe_note", "P/E"), ("shoe_note", "greenshoe"),
+               ("public_sub_note", "public sub"), ("gross_basis_note", "proceeds basis"),
+               ("revenue_basis_note", "income basis"),
                ("range_note", "price range"), ("range_lo_note", "range low"),
                ("ah_note", "A/H"),
                ("ret_note", "returns"), ("ret_1w_note", "1w"), ("ret_1m_note", "1m"),
@@ -453,11 +479,11 @@ LINK_FIELDS = {"prospectus_link": "prospectus",
 # column that answers them. A cell with no scraped value becomes a live pull on
 # the terminal instead of a blank; everywhere else it explains itself.
 BBG_FALLBACK = {"oversub_intl_mult": "E", "oversub_public_mult": "C",
-                "a_share_code": "K", "mktcap_ipo_hkdm": "M", "pe_ipo": "O",
+                "a_share_code": "K",  "pe_ipo": "O",
                 # no public source exists for either: a live P/S, and the A
                 # line's cap TODAY where the Tencent snapshot had none
                 "ps_now": "S", "a_mktcap_now_hkdm": "T"}
-BBG_BLANK_TEXT = "not filed; run on terminal"
+BBG_BLANK_TEXT = "Awaiting Bloomberg"
 # A/H columns that read N/A (not blank, never 0) when there is no A line
 AH_FIELDS = {"a_premium_ipo_pct", "a_close_hkd", "a_premium_now",
              "a_mktcap_now_hkdm"}
@@ -479,11 +505,13 @@ def plain(v):
     sheet reads them as plain punctuation. Names and codes never pass here."""
     if not isinstance(v, str):
         return v
-    return v.replace(" — ", "; ").replace("—", "-").replace("→", " to ")
+    return re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]','',v.replace(" — ", "; ").replace("—", "-").replace("→", " to "))
 
 
 def sheet_database(wb, deals, n):
     ws = wb.create_sheet("Database")
+    review_path=ROOT/'data/batches/cornerstone_review.json'
+    cornerstone_reviews={r['code']:r for r in json.loads(review_path.read_text()).get('deals',[])} if review_path.exists() else {}
     put(ws, "A1", "HK IPO DATABASE, Main Board 2021-2026", TITLE)
     put(ws, "A2", "One row per deal. Money in HK$m, returns in %. Day-1 + = closed above the offer. "
                   "Orange = sources disagree; grey = calculated; blue = input.", SUB)
@@ -493,7 +521,7 @@ def sheet_database(wb, deals, n):
     for band, grp in groupby(DB_COLS, key=lambda c: c[0]):
         width = len(list(grp))
         put(ws, f"{get_column_letter(col)}3", band, HDRF,
-            PatternFill("solid", fgColor=BAND_TINT.get(band, "001F3864")),
+            PatternFill("solid", fgColor=BAND_TINT.get(band, "00333333")),
             border=BOX, align=C_HDR)
         if width > 1:
             ws.merge_cells(start_row=3, start_column=col, end_row=3,
@@ -523,8 +551,8 @@ def sheet_database(wb, deals, n):
                 vcol = "Q" if f == "_a_pe_at_ipo_bbg" else "R"
                 c2 = f"{get_column_letter(j)}{r}"
                 if d.get("a_share_code"):
-                    put(ws, c2, f"=IF('BBG Verify'!{vcol}{r}=\"\",\"run on terminal\","
-                                f"'BBG Verify'!{vcol}{r})", fmt=fmt, fill=F_CALC)
+                    put(ws, c2, f"=IFERROR(IF('BBG Verify'!{vcol}{r}=\"\",\"Awaiting Bloomberg\","
+                                f"'BBG Verify'!{vcol}{r}),\"Awaiting Bloomberg\")", fmt=fmt, fill=F_CALC)
                 else:
                     put(ws, c2, "N/A")
                 continue
@@ -541,12 +569,21 @@ def sheet_database(wb, deals, n):
             # is the answer "no pair" — write it rather than leaving a blank
             if f == "is_h_share" and v in (None, ""):
                 v = "N"
+            # a deal with NO cornerstone tranche has no names to list — that is
+            # the answer, so the cell says it instead of reading as a gap
+            if f in ("cornerstone_investors", "cornerstone_keys") and v in (None, "") and (
+                    d.get("cornerstone_pct") == 0 or d.get("cornerstone_none")):
+                v = "none" if f == "cornerstone_keys" else "none — no cornerstone tranche"
+            if f == "sponsors_en" and v in (None, ""):
+                v = "not reported by AAStocks; see Sponsors"
             # a blank multiple is an ANSWER: n/m = loss-maker (no earnings to
             # divide by), pre-rev = the filed P&L has no revenue line at all
             if f == "pe_ipo" and v in (None, "") and d.get("profitable_at_ipo") == "N":
                 v, fmt = "n/m", None
             if f == "ps_ipo" and v in (None, "") and d.get("rev_latest") == 0:
                 v, fmt = "pre-rev", None
+            if f=='oversub_intl_mult' and v in (None,'') and d.get('intl_note'):
+                v,fmt=('N/A' if d['code']=='2161' else 'Not disclosed'),None
             # an issuer with no A line has no A/H numbers to show — say N/A
             # rather than leaving cells that read as a zero premium
             if (v in (None, "") and f in AH_FIELDS and not d.get("a_share_code")):
@@ -568,10 +605,45 @@ def sheet_database(wb, deals, n):
                 # point it at the matching BBG Verify column: on the terminal it
                 # fills itself, off the terminal it says so in words.
                 src = BBG_FALLBACK[f]
-                put(ws, cell, f"=IF('BBG Verify'!{src}{r}=\"\",\"{BBG_BLANK_TEXT}\","
-                              f"'BBG Verify'!{src}{r})", fmt=fmt, fill=F_CALC)
+                put(ws, cell, f"=IFERROR(IF('BBG Verify'!{src}{r}=\"\",\"{BBG_BLANK_TEXT}\","
+                              f"'BBG Verify'!{src}{r}),\"Awaiting Bloomberg\")", fmt=fmt, fill=F_CALC)
             else:
                 put(ws, cell, v, fmt=fmt, fill=fill)
+            evidence=(pv.get(f) or {}).get('evidence') or {}
+            if f in ('rev_latest','ni_latest') and isinstance(v,(int,float)) and not evidence:
+                ws[cell].fill=F_OVR
+                ws[cell].comment=Comment('Fresh annual filing row not unambiguously confirmed; retained researched figure.\nSource: '+(pv.get(f) or {}).get('src','not established')+'\nSee database_numeric_audit.csv for the full review status.','HK IPO source review')
+            if evidence:
+                details=[]
+                if evidence.get('financial_year'):details.append(f"FY{evidence['financial_year']}: {evidence.get('native_value')} {evidence.get('currency')} {evidence.get('unit')}; {evidence.get('basis','')}. HKD conversion uses the database's fixed FX convention, not a live rate.")
+                details.extend([evidence.get('basis_note',''),evidence.get('method',''),f"Filing page {evidence.get('page','see source')}: {evidence.get('url','')}",evidence.get('row',evidence.get('snippet',''))])
+                ws[cell].comment=Comment(plain('\n'.join(x for x in details if x)),'HK IPO source review')
+                ws[cell].comment.width,ws[cell].comment.height=500,230
+            if f=='cornerstone_investors' and d['code'] in cornerstone_reviews:
+                review=cornerstone_reviews[d['code']];checks=review.get('name_checks',[])
+                unresolved=[x['name'] for x in checks if 'needs manual' in x['status']]
+                detail=(ws[cell].comment.text+'\n' if ws[cell].comment else '')+(('Exact legal-name / investor-group aliases require confirmation: '+ '; '.join(unresolved)) if unresolved else review.get('none_review','Names found in cornerstone filing context.'))
+                detail+='\nFull source checks: cornerstone_name_review.csv. Group labels and legal subscribing vehicles may differ.'
+                ws[cell].comment=Comment(plain(detail),'HK IPO source review');ws[cell].comment.width,ws[cell].comment.height=500,230
+            if f == "grey_pct":
+                source = (pv.get("grey_close") or {}).get("src", "")
+                details = (f"Close: HK${d['grey_close']:g}\nDate: {d.get('grey_date', '')}\n"
+                           f"Venue: {d.get('grey_venue', 'not stated')}\nSource: {source}"
+                           if d.get("grey_close") is not None else d.get("grey_note", "unverified"))
+                ws[cell].comment = Comment(details, "HK IPO source review")
+                ws[cell].comment.width, ws[cell].comment.height = 450, 160
+            if f.startswith("ret_") and f.endswith("_pct"):
+                h = f.split("_")[1]
+                ws[cell].comment = Comment(
+                    f"Horizon close: {d.get(f'ret_{h}_date') or d.get(f'ret_{h}_note', 'pending')}\n"
+                    "5/21/63 traded sessions after debut; price-only return vs offer.", "HK IPO methods")
+            if f == "bench_day1_pct":
+                ws[cell].comment = Comment(
+                    f"{d.get('benchmark', 'Sector benchmark')}\n"
+                    f"Previous trading close to listing-day close ({d.get('ipo_date', '')}).\n"
+                    "Benchmark return in percent; not the index level or excess return.", "HK IPO methods")
+            if f == "ipo_date" and d.get("ipo_date_note"):
+                ws[cell].comment = Comment(d["ipo_date_note"], "HK IPO date review")
             if j in band_starts and j > 1:
                 cc = ws[cell]
                 cc.border = Border(left=Side(style="medium", color="00305496"),
@@ -778,7 +850,7 @@ def sheet_scores(wb, n, npipe):
 COMP_SKIP = {
     # "code" used to be skipped ("the Name cell carries it") — but the Excel
     # Name cell carries the NAME ONLY, and the desk asked for the code
-    "name", "name_cn",           # Name is the row label already
+    "name", "name_cn", "name_full",  # Name is the row label already
     "cornerstone_keys",          # internal matching key, not analysis
     "prospectus_link", "allotment_link", "stabilization_link",   # links
     "_blank_notes", "valuation_notes",                           # prose
@@ -888,9 +960,10 @@ def sheet_screener(wb, deals, pipe, cfg, n):
     # able to tell the blocks apart at a glance. Hints beside the controls are
     # gone; the labels say what the cell takes.
     section(ws, "A4", "TARGET", F_SEC_TARGET, span=5)
-    put(ws, "A5", "Pick a deal (pipeline or listed)", BODY, border=BOX)
+    put(ws, "A5", "Company name or H code", BODY, border=BOX)
     inp(ws, "B5", pipe[0].get("name") if pipe else deals[-1].get("name"))
     dv = DataValidation(type="list", formula1="=AllDeals", allow_blank=True)
+    dv.showErrorMessage = False  # Free typing accepts codes and issuer aliases.
     ws.add_data_validation(dv)
     dv.add(ws["B5"])
 
@@ -916,7 +989,7 @@ def sheet_screener(wb, deals, pipe, cfg, n):
     calc(ws, "B12", f'=IFERROR(INDEX({CALC}!$AG${MIR0}:$AG${last},'
                     f'MATCH($B$5,AllDeals,0)),"")', DATEF)
     inp(ws, "C12", None, DATEF)
-    calc(ws, "D12", '=IF($C12<>"",$C12,IF(ISNUMBER($B12),$B12,TODAY()))', DATEF)
+    calc(ws, "D12", '=IF($C12<>"",$C12,IF(ISNUMBER($B12),$B12,IFERROR(DATEVALUE($B12),TODAY())))', DATEF)
     put(ws, "A13", "Target P/E (x)", BODY, border=BOX)
     calc(ws, "B13", f'=IFERROR(INDEX({CALC}!$AH${MIR0}:$AH${last},'
                     f'MATCH($B$5,AllDeals,0)),"")', "0.0")
@@ -977,9 +1050,9 @@ def sheet_screener(wb, deals, pipe, cfg, n):
     section(ws, "G11", "ON FILE FOR THIS DEAL", F_SEC_PANEL, span=2)
     known = [("Day-1", "first_day_return_pct", '+0.0"%";-0.0"%"'),
              ("1-month", "ret_1m_pct", '+0.0"%";-0.0"%"'),
-             ("Public sub (x)", "oversub_public_mult", "#,##0.0"),
+             ("Public sub (x)", "oversub_public_mult", "#,##0.00#"),
              ("Cornerstone %", "cornerstone_pct", PCT),
-             ("Sponsors", "sponsors", None)]
+             ("Sponsors", "sponsors_display", None)]
     for k, (label, field, fmt) in enumerate(known):
         r = 12 + k
         put(ws, f"G{r}", label, BODY, border=BOX)
@@ -994,7 +1067,7 @@ def sheet_screener(wb, deals, pipe, cfg, n):
     col0 = 1
     for band, width in COMP_BANDS_GEN:
         put(ws, f"{get_column_letter(col0)}19", band, HDRF,
-            PatternFill("solid", fgColor=BAND_TINT.get(band, "001F3864")),
+            PatternFill("solid", fgColor=BAND_TINT.get(band, "00333333")),
             border=BOX, align=C_HDR)
         if width > 1:
             ws.merge_cells(start_row=19, start_column=col0, end_row=19,
@@ -1070,7 +1143,7 @@ def sheet_screener(wb, deals, pipe, cfg, n):
             f"A{r}:{LASTC}{r}", FormulaRule(formula=[f'${C_MTCH}{r}="sector only"'], fill=F_AMB))
     # The match tint paints the row; the return columns get the same zero-anchored
     # heat as the Database so a comp table reads the same way the book does.
-    for h in RET_COLS:
+    for h in sorted(RET_COLS):
         if h not in comp_cols:
             continue
         L = get_column_letter(comp_cols.index(h) + 1)
@@ -1153,7 +1226,7 @@ def sheet_screener(wb, deals, pipe, cfg, n):
     hdr(ws, f"F{R_BDH+3}", "Date", F_SEC_ASHARE); hdr(ws, f"G{R_BDH+3}", "Close (CNY)", F_SEC_ASHARE)
     put(ws, f"F{R_BDH+4}",
         f'=IF($F${R_BDH+2}="","no A-share for this pick",'
-        f'BDH($F${R_BDH+2},"PX_LAST",TEXT(TODAY()-31,"yyyymmdd"),TEXT(TODAY(),"yyyymmdd")))',
+        f'IFERROR(BDH($F${R_BDH+2},"PX_LAST",TODAY()-31,TODAY()),"Awaiting quote"))',
         BODY, F_CALC, border=BOX)
     # ---- A-SHARE LIVE PANEL (columns A:D, same rows as the BDH block) ------
     # Live BDP on the terminal; off the terminal every row falls back to the
@@ -1168,18 +1241,18 @@ def sheet_screener(wb, deals, pipe, cfg, n):
     # rejects "0606 HK Equity"); Database first, then the Pipeline tab
     h_code = (f'IFERROR(INDEX({db_range("code", n)},MATCH($B$5,{nm_rng2},0)),'
               f'IFERROR(INDEX({p_rng("expected_code")},MATCH($B$5,{p_name},0)),""))')
-    h_tick = f'IFERROR(TEXT(N({h_code}),"0")&" HK Equity","")'
+    h_tick = f'IFERROR(TEXT(VALUE({h_code}),"0")&" HK Equity","")'
     rows_live = [
         ("A price now (CNY)",
          f'=IF({tick}="","no A line",IFERROR(BDP({tick},"PX_LAST"),'
-         f'IFERROR(INDEX({p_rng("a_price_now")},MATCH($B$5,{p_name},0)),"run on terminal")))',
+         f'IFERROR(INDEX({p_rng("a_price_now")},MATCH($B$5,{p_name},0)),"Awaiting quote")))',
          "0.00", ""),
-        ("CNY to HKD", '=IFERROR(BDP("CNYHKD Curncy","PX_LAST"),1.10)', "0.0000", ""),
+        ("CNY to HKD", '=IFERROR(BDP("CNYHKD Curncy","PX_LAST"),"Awaiting quote")', "0.0000", ""),
         ("A price (HK$)",
          '=IF(OR(NOT(ISNUMBER(A_PX)),N(A_FX)<=0),"n/a",A_PX*A_FX)', "0.00", ""),
         ("A P/E (TTM)",
          f'=IF({tick}="","n/a",IFERROR(BDP({tick},"PE_RATIO"),'
-         f'IFERROR(INDEX({p_rng("a_pe_ttm")},MATCH($B$5,{p_name},0)),"run on terminal")))',
+         f'IFERROR(INDEX({p_rng("a_pe_ttm")},MATCH($B$5,{p_name},0)),"Awaiting quote")))',
          "0.0", ""),
         ("H offer / cap (HK$)", f'={h_terms}', "0.00", ""),
         ("A premium vs H (+ = A above)", '=IFERROR(IF(OR(N(A_HKD)<=0,N(H_TRM)<=0),"n/a",A_HKD/H_TRM-1),"n/a")',
@@ -1188,20 +1261,20 @@ def sheet_screener(wb, deals, pipe, cfg, n):
         # now per comp, but the desk reads the target here — so it needs both
         ("H P/E now (TTM)",
          f'=IF({h_tick}="","n/a",IFERROR(BDP({h_tick},"PE_RATIO"),'
-         f'IFERROR(INDEX({db_range("pe_now", n)},MATCH($B$5,{nm_rng2},0)),"run on terminal")))',
+         f'IFERROR(INDEX({db_range("pe_now", n)},MATCH($B$5,{nm_rng2},0)),"Awaiting quote")))',
          "0.0", ""),
         ("H P/S now",
          f'=IF({h_tick}="","n/a",IFERROR(BDP({h_tick},"PX_TO_SALES_RATIO"),'
-         f'IFERROR(INDEX({db_range("ps_ipo", n)},MATCH($B$5,{nm_rng2},0)),"run on terminal")))',
+         f'IFERROR(INDEX({db_range("ps_ipo", n)},MATCH($B$5,{nm_rng2},0)),"Awaiting quote")))',
          "0.0", ""),
         # the WHOLE COMPANY on the A line, not just the H tranche: Luxshare's
         # H slice is HK$24bn while the issuer is ~HK$490bn, and reading the
         # tranche as the company is the mistake this row exists to stop
         ("A-line company mkt cap (HK$m)",
          f'=IF({tick}="","no A line",IFERROR(BDP({tick},"CUR_MKT_CAP")*'
-         f'IF(N(A_FX)>0,A_FX,1.10)/1000000,'
+         f'IF(N(A_FX)>0,A_FX,NA()),'
          f'IFERROR(INDEX({db_range("a_mktcap_now_hkdm", n)},MATCH($B$5,{nm_rng2},0)),'
-         f'"run on terminal")))',
+         f'"Awaiting quote")))',
          "#,##0", ""),
     ]
     for k, (lab, f_, fmt_, note_) in enumerate(rows_live):
@@ -1264,7 +1337,7 @@ def sheet_screener(wb, deals, pipe, cfg, n):
 
     ws.row_dimensions[1].height = 26
     _heat_first(ws)
-    ws.freeze_panes = "C21"
+    ws.freeze_panes = "C1"
     _prettify(ws, f"A{R_COMP}:{LASTC}{R_COMP + MAXCOMP - 1}")
     return ws
 
@@ -1287,7 +1360,10 @@ PIPE_COLS = [("Code", "expected_code", None, 7), ("Name", "name", None, 26),
              ("Range lo (HK$)", "range_lo", PX, 9),
              ("Max/cap (HK$)", "range_hi", PX, 9),
              ("Expected P/E", "pe_expected_mid", "0.0", 9),
-             ("Cornerstone %", "cornerstone_pct", '0.0"%"', 10),
+             ("Cornerstone %", "cornerstone_pct", '0.0"%";;"none"', 10),
+             ("Cornerstone investors", "cornerstone_names", None, 30),
+             ("Greenshoe %", "greenshoe_pct", '0.0"%";;"none"', 9),
+             ("Lot size", "lot_size", "#,##0", 8),
              ("Offer period", "offer_period", None, 22),
              ("Profitable", "profitable_at_ipo", None, 8), ("H-share", "is_h_share", None, 7),
              ("A-share code", "a_share_code", None, 11),
@@ -1296,19 +1372,27 @@ PIPE_COLS = [("Code", "expected_code", None, 7), ("Name", "name", None, 26),
              ("H cap vs A", "h_cap_vs_a_pct", '+0.0"%";-0.0"%"', 10),
              ("A prem vs H cap", "a_prem_vs_hcap_pct", '+0.0"%";-0.0"%"', 11),
              ("Sponsors", "sponsors", None, 30),
+             ("Bookrunners / OCs", "bookrunners", None, 30),
              ("Prospectus", "doc_link", None, 10),
              ("Business", "business_desc", None, 58),
              ("Valuation notes", "valuation_notes", None, 58)]
-PIPE_BANDS = [("DEAL", 7), ("TERMS", 8), ("PROFILE", 3), ("A-SHARE (A+H only)", 4),
-              ("BANKS & DOCS", 2), ("NOTES", 2)]
+_PIPE_MAIN = ['expected_code', 'name', 'stage', 'expected_timing', 'sector', 'subsector',
+              'expected_size_hkdm', 'range_lo', 'range_hi', 'pe_expected_mid', 'cornerstone_pct', 'doc_link']
+PIPE_COLS = [next(c for c in PIPE_COLS if c[1] == f) for f in _PIPE_MAIN] + [c for c in PIPE_COLS if c[1] not in _PIPE_MAIN]
+PIPE_BANDS = [("DEAL", 6), ("TERMS", 5), ("FILING", 1), ("DETAILS", 18)]
 assert sum(w for _b, w in PIPE_BANDS) == len(PIPE_COLS)
 PIPE_BAND_TINT = {"DEAL": "001F4E79", "TERMS": "00274E13", "PROFILE": "00434343",
-                  "A-SHARE (A+H only)": "00742323", "BANKS & DOCS": "00274E63",
-                  "NOTES": "00434343"}
-PIPE_WRAP = {"business_desc", "valuation_notes", "sponsors", "expected_timing"}
+                  "A-SHARE (A+H only)": "00333333", "BANKS & DOCS": "00274E63",
+                  "NOTES": "00434343", "FILING": "0034495E", "DETAILS": "00434343"}
+# filled by the prospectus at launch; before that the cell says so
+PIPE_AT_LAUNCH = {"cornerstone_pct", "cornerstone_names", "greenshoe_pct", "lot_size",
+                  "offer_period", "bookrunners", "sponsors"}
+PIPE_WRAP = {"business_desc", "valuation_notes", "sponsors", "bookrunners",
+             "cornerstone_names", "expected_timing"}
 STAGE_FILL = {"Offering": PatternFill("solid", fgColor="00FDE9D9"),
               "PHIP posted": PatternFill("solid", fgColor="00E2F0D9"),
-              "Withdrawn": PatternFill("solid", fgColor="00EDEDED")}
+              "Withdrawn": PatternFill("solid", fgColor="00EDEDED"),
+              "Postponed": PatternFill("solid", fgColor="00EDEDED")}
 
 
 def _short_basis(v):
@@ -1398,6 +1482,18 @@ def sheet_pipeline(wb, pipe):
                 v = _offer_dates(v)
             if isinstance(v, bool):
                 v = "Y" if v else "N"
+            # NO SILENT BLANKS in the terms a desk asks for first. Before
+            # launch these facts do not exist yet (the prospectus brings the
+            # cornerstones, the shoe, the lot and the syndicate) — say when
+            # they arrive; a live deal with no cornerstone says "none".
+            if v in (None, "") and f in PIPE_AT_LAUNCH:
+                st = d.get("stage")
+                if st in ("Withdrawn", "Postponed"):
+                    v = st.lower()
+                elif st != "Offering":
+                    v = "at launch"
+                elif f == "cornerstone_names" and d.get("cornerstone_pct") == 0:
+                    v = "none — no cornerstone tranche"
             cell = f"{get_column_letter(j)}{r}"
             if f == "doc_link" and v:
                 put(ws, cell, f'=HYPERLINK("{v}","filing")',
@@ -1412,7 +1508,7 @@ def sheet_pipeline(wb, pipe):
                     ws[cell].comment = Comment(str(v), "ipo.py")
             else:
                 font = NOTE if f in ("business_desc", "valuation_notes") else BODY
-                if d.get("stage") == "Withdrawn":
+                if d.get("stage") in ("Withdrawn", "Postponed"):
                     font = Font(name=ARIAL, size=font.size, italic=font.italic, color="00808080")
                 put(ws, cell, v, font, fill=fill, fmt=fmt, border=BOX,
                     align=wrap_top if f in PIPE_WRAP else top)
@@ -1452,9 +1548,8 @@ def sheet_pipeline(wb, pipe):
         apps = phip.get("applications", [])
     except Exception:
         apps = []
-    for j, h in enumerate(["Applicant", "Stage", "First filed", "Latest filing",
-                           "Days in process", "Document"], 1):
-        hdr(ws, f"{get_column_letter(j)}{r0+2}", h)
+    for col, h in [('A','Applicant'),('C','Stage'),('D','First filed'),('E','Latest filing'),('F','Days in process'),('G','Document')]:
+        hdr(ws, f"{col}{r0+2}", h)
     shown = [a for a in apps if a.get("has_phip")] + [a for a in apps if not a.get("has_phip")][:30]
     for i, a in enumerate(shown):
         r = r0 + 3 + i
@@ -1464,13 +1559,13 @@ def sheet_pipeline(wb, pipe):
         put(ws, f"A{r}", a.get("applicant"), border=BOX,
             font=BOLD if a.get("has_phip") else BODY,
             fill=STAGE_FILL["PHIP posted"] if a.get("has_phip") else None)
-        put(ws, f"B{r}", stage, border=BOX,
+        put(ws, f"C{r}", stage, border=BOX,
             font=WARN if a.get("sponsor_terminated") else BODY)
-        put(ws, f"C{r}", a.get("first_filing"), border=BOX)
-        put(ws, f"D{r}", a.get("latest_submission"), border=BOX)
-        put(ws, f"E{r}", a.get("days_in_process"), fmt="0", border=BOX)
+        put(ws, f"D{r}", a.get("first_filing"), border=BOX)
+        put(ws, f"E{r}", a.get("latest_submission"), border=BOX)
+        put(ws, f"F{r}", a.get("days_in_process"), fmt="0", border=BOX)
         if a.get("doc_link"):
-            put(ws, f"F{r}", f'=HYPERLINK("{a["doc_link"]}","open filing")',
+            put(ws, f"G{r}", f'=HYPERLINK("{a["doc_link"]}","open filing")',
                 font=Font(name=ARIAL, size=10, color="000000FF", underline="single"))
     put(ws, f"A{r0 + 4 + len(shown)}",
         f"{len([a for a in apps if a.get('has_phip')])} PHIP-stage applications of {len(apps)} live; "
@@ -1588,12 +1683,11 @@ def sheet_verify_changes(wb, deals, n):
         cumf = cum_factor(c)
         put(ws, f"D{r}", round(d1c, 3) if d1c else None, fmt=PX, border=BOX)
         put(ws, f"E{r}", d.get("first_day_return_pct"), fmt='+0.0"%";-0.0"%"', border=BOX)
-        put(ws, f"F{r}", f'=IFERROR(BDH(TEXT(N($A{r}),"0")&" HK Equity","PX_LAST",'
-                         f'$C{r},$C{r}),"run on terminal")', BODY, F_CALC, PX, BOX)
+        put(ws, f"F{r}", '=' + bdh_point(f'"{int(c)} HK Equity"', "PX_LAST", f'$C{r}'), BODY, F_CALC, PX, BOX)
         # Bloomberg's history is back-ADJUSTED for later corporate actions;
         # our value is the raw traded print. Compare on Bloomberg's basis.
         exp_ref = f"$D{r}/{cumf}" if abs(cumf - 1) > 1e-9 else f"$D{r}"
-        calc(ws, f"G{r}", f'=IF(NOT(ISNUMBER($F{r})),"run on terminal",'
+        calc(ws, f"G{r}", f'=IF(NOT(ISNUMBER($F{r})),"Awaiting quote",'
                           f'IF(ABS($F{r}/({exp_ref})-1)<0.005,"MATCH",'
                           f'"CHECK: BBG "&TEXT($F{r},"0.000")))')
         put(ws, f"H{r}", f"AAStocks listing date (was {est.get(c)}); close from the "
@@ -1660,9 +1754,8 @@ def sheet_verify_changes(wb, deals, n):
         put(ws, f"C{r}", d.get("ipo_date"), fmt=DATEF, border=BOX)
         put(ws, f"D{r}", round(d1c, 3) if d1c else None, fmt=PX, border=BOX)
         calc(ws, f"E{r}", f"=IFERROR($D{r}/{cum},\"\")", PX)
-        put(ws, f"F{r}", f'=IFERROR(BDH(TEXT(N($A{r}),"0")&" HK Equity","PX_LAST",'
-                         f'$C{r},$C{r}),"run on terminal")', BODY, F_CALC, PX, BOX)
-        calc(ws, f"G{r}", f'=IF(NOT(ISNUMBER($F{r})),"run on terminal",'
+        put(ws, f"F{r}", '=' + bdh_point(f'"{int(c)} HK Equity"', "PX_LAST", f'$C{r}'), BODY, F_CALC, PX, BOX)
+        calc(ws, f"G{r}", f'=IF(NOT(ISNUMBER($F{r})),"Awaiting quote",'
                           f'IF(ABS($F{r}/$E{r}-1)<0.02,"MATCH",'
                           f'"CHECK: BBG "&TEXT($F{r},"0.000")))')
         parts = [f"{e['date']} x{e['ratio']:g}" for e in evs]
@@ -1863,41 +1956,47 @@ def sheet_sizebench(wb, deals, cfg, n):
 def sheet_taxonomy(wb, tax):
     ws = wb.create_sheet("Taxonomy")
     put(ws, "A1", "SECTOR / SUBSECTOR TAXONOMY", TITLE)
-    put(ws, "A2", "Source: data/taxonomy.json. Edit there and rebuild.", SUB)
+    put(ws, "A2", "Product and business model define peers. Listing regime (18A/18C), A/H status and profitability are separate attributes; all classifications are analyst judgments.", SUB)
     # column E: flat label list for dropdowns. An INLINE DataValidation list is
     # silently truncated at 255 characters by Excel, so dropdowns MUST point at
     # a range, never a joined string.
     flat = [s["label"] for subs in tax["sectors"].values() for s in subs]
     for i, lbl in enumerate(flat):
-        put(ws, f"E{4 + i}", lbl, NOTE)
-    ws.column_dimensions["E"].hidden = True
-    define(wb, "SubsectorList", f"Taxonomy!$E$4:$E${3 + len(flat)}")
+        put(ws, f"J{4 + i}", lbl, NOTE)
+    ws.column_dimensions["J"].hidden = True
+    define(wb, "SubsectorList", f"Taxonomy!$J$4:$J${3 + len(flat)}")
     # every sector says which index its alpha is measured against, so an alpha
     # number is never against an unnamed benchmark
     import sys as _sys
     _sys.path.insert(0, str(Path(__file__).resolve().parent))
     try:
-        from fetch_prices import BENCH, DEFAULT_BENCH
+        from benchmark_windows import BENCH, DEFAULT_BENCH
     except Exception:
         BENCH, DEFAULT_BENCH = {}, ("^HSI", "Hang Seng Index")
-    hdr(ws, "A3", "Sector / subsector")
-    hdr(ws, "B3", "")
-    hdr(ws, "C3", "Comp note")
-    hdr(ws, "D3", "Alpha benchmark")
+    hdr(ws, "A3", "Sector")
+    hdr(ws, "B3", "Subsector")
+    hdr(ws, "C3", "Peer boundary / what to compare")
+    hdr(ws, "D3", "Return benchmark")
+    hdr(ws, "E3", "IPO count")
     r = 4
     for sec, subs in tax["sectors"].items():
-        put(ws, f"A{r}", sec, SECT, F_CALC)
         bt, blabel = BENCH.get(sec, DEFAULT_BENCH)
-        put(ws, f"D{r}", f"{bt} ({blabel})", BODY, F_CALC)
-        r += 1
         for s in subs:
+            put(ws, f"A{r}", sec, BODY)
             put(ws, f"B{r}", s["label"], BODY)
-            put(ws, f"C{r}", s.get("comp_note", ""), NOTE)
+            put(ws, f"C{r}", s.get("comp_note", ""), BODY, align=Alignment(wrap_text=True, vertical="center"))
+            put(ws, f"D{r}", blabel, BODY, align=Alignment(wrap_text=True, vertical="center"))
+            sub = db_col("subsector")
+            put(ws, f"E{r}", f'=COUNTIF(Database!${sub}$5:${sub}${wb["Database"].max_row},B{r})')
+            ws.row_dimensions[r].height = 42
             r += 1
-    ws.column_dimensions["D"].width = 40
+    ws.column_dimensions["D"].width = 32
     ws.column_dimensions["A"].width = 18
-    ws.column_dimensions["B"].width = 30
-    ws.column_dimensions["C"].width = 70
+    ws.column_dimensions["B"].width = 38
+    ws.column_dimensions["C"].width = 68
+    ws.column_dimensions["E"].width = 12
+    ws.freeze_panes = "C4"
+    ws.auto_filter.ref = f"A3:E{r-1}"
     return ws
 
 
@@ -2000,9 +2099,9 @@ def sheet_bbg(wb, deals, n):
                   "once, then paste values if you want it static.", SUB)
     heads = ["Code / Name", "BBG IPO order ID", "Retail o/sub CP036", "Scraped public sub",
              "Instn o/sub CP037", "Scraped intl sub", "Greenshoe facility",
-             "Shoe exercised (BBG)", "Shoe outcome (scraped)", "Current P/E (BBG)",
-             "A/H conversion (BBG)", "A-share (scraped)", "Mkt cap at listing (BBG)",
-             "Mkt cap (scraped)", "P/E at listing (BBG)", "P/E at IPO (scraped)",
+             "Shoe exercised (BBG)", "Shoe exercised (filed shares)", "Current P/E (BBG)",
+             "A/H conversion (BBG)", "A-share (scraped)", "BBG cap at debut close HK$m",
+             "Company cap at offer HK$m", "P/E at listing (BBG)", "P/E at IPO (scraped)",
              "A-share P/E at H-IPO (BBG)", "HSAHP Index at IPO (BBG)",
              "P/S today (BBG)", "A-share mkt cap now (BBG)"]
     for j, h in enumerate(heads, 1):
@@ -2011,7 +2110,7 @@ def sheet_bbg(wb, deals, n):
     ccode = db_col("code")
     for i in range(n):
         r = DB_R0 + i
-        tk = f'Database!${ccode}{r}&" HK Equity"'
+        tk = f'TEXT(VALUE(Database!${ccode}{r}),"0")&" HK Equity"'
         put(ws, f"A{r}", f"=Database!{ccode}{r}&\"  \"&Database!{db_col('name')}{r}",
             BODY, border=BOX)
         put(ws, f"B{r}",
@@ -2028,7 +2127,7 @@ def sheet_bbg(wb, deals, n):
             BODY, F_CALC, fmt="#,##0.00", border=BOX)
         put(ws, f"H{r}", f'=IF($B{r}="","",IFERROR(BDP($B{r}&" Action","OFFERING_GREENSHOE_SHARES_EX"),""))',
             BODY, F_CALC, fmt="#,##0.00", border=BOX)
-        put(ws, f"I{r}", f"=Database!{db_col('greenshoe_exercised_final')}{r}", BODY, border=BOX)
+        put(ws, f"I{r}", deals[i].get("greenshoe_shares_exercised"), BODY, fmt="#,##0", border=BOX)
         put(ws, f"J{r}", f'=IFERROR(BDP({tk},"PE_RATIO"),"")', BODY, F_CALC, fmt="0.0", border=BOX)
         # A/H_SHARE_CONVERSION returns the OTHER line's ticker, so a value here
         # where the scraped column says nothing means the issuer does have an A
@@ -2040,28 +2139,23 @@ def sheet_bbg(wb, deals, n):
         ipo_c = db_col("ipo_date")
         # desk-verified: CUR_MKT_CAP already arrives in millions — the old
         # /1000000 made every value read as ~0.00
-        put(ws, f"M{r}", f'=IFERROR(BDH({tk},"CUR_MKT_CAP",Database!${ipo_c}{r},'
-                         f'Database!${ipo_c}{r}),"")',
+        put(ws, f"M{r}", '=' + bdh_point(tk, "CUR_MKT_CAP", f'Database!${ipo_c}{r}'),
             BODY, F_CALC, fmt=MONEY, border=BOX)
         put(ws, f"N{r}", f"=Database!{db_col('mktcap_ipo_hkdm')}{r}", BODY, fmt=MONEY, border=BOX)
-        put(ws, f"O{r}", f'=IFERROR(BDH({tk},"PE_RATIO",Database!${ipo_c}{r},'
-                         f'Database!${ipo_c}{r}),"")', BODY, F_CALC, fmt="0.0", border=BOX)
+        put(ws, f"O{r}", '=' + bdh_point(tk, "PE_RATIO", f'Database!${ipo_c}{r}'), BODY, F_CALC, fmt="0.0", border=BOX)
         put(ws, f"P{r}", f'=IF(Database!{db_col("pe_ipo")}{r}="","(n/m or not derivable)",'
                          f'Database!{db_col("pe_ipo")}{r})', BODY, fmt="0.0", border=BOX)
         # the A line's OWN multiple on the day the H priced — A/H deals only.
         # 300223.SZ -> "300223 CH Equity"; blank for issuers with no A line.
         ac = db_col("a_share_code")
+        a_ticker = f'LEFT(Database!{ac}{r},FIND(".",Database!{ac}{r})-1)&" CH Equity"'
         put(ws, f"Q{r}",
-            f'=IF(Database!{ac}{r}="","",'
-            f'IFERROR(BDH(LEFT(Database!{ac}{r},FIND(".",Database!{ac}{r})-1)'
-            f'&" CH Equity","PE_RATIO",Database!${ipo_c}{r},Database!${ipo_c}{r}),""))',
+            f'=IF(Database!{ac}{r}="","",' + bdh_point(a_ticker, "PE_RATIO", f'Database!${ipo_c}{r}') + ')',
             BODY, F_CALC, fmt="0.0", border=BOX)
         # the Hang Seng AH Premium index ON the listing day — where the whole
         # A/H complex stood when this deal priced. A/H rows only.
         put(ws, f"R{r}",
-            f'=IF(Database!{ac}{r}="","",'
-            f'IFERROR(BDH("HSAHP Index","PX_LAST",Database!${ipo_c}{r},'
-            f'Database!${ipo_c}{r}),""))',
+            f'=IF(Database!{ac}{r}="","",' + bdh_point('"HSAHP Index"', "PX_LAST", f'Database!${ipo_c}{r}') + ')',
             BODY, F_CALC, fmt="0.0", border=BOX)
         # TODAY's P/S on the H line. Nothing public fills this — the filings
         # state revenue and a cap at the OFFER, never a live multiple — so the
@@ -2074,10 +2168,10 @@ def sheet_bbg(wb, deals, n):
         put(ws, f"T{r}",
             f'=IF(Database!{ac}{r}="","",'
             f'IFERROR(BDP(LEFT(Database!{ac}{r},FIND(".",Database!{ac}{r})-1)'
-            f'&" CH Equity","CUR_MKT_CAP"),""))',
+            f'&" CH Equity","CUR_MKT_CAP")*BDP("CNYHKD Curncy","PX_LAST"),"Awaiting quote"))',
             BODY, F_CALC, fmt=MONEY, border=BOX)
     # a disagreement should be visible without reading two columns
-    for a, b in (("C", "D"), ("E", "F"), ("M", "N"), ("O", "P")):
+    for a, b in (("C", "D"), ("E", "F"), ("O", "P")):
         ws.conditional_formatting.add(
             f"{a}{DB_R0}:{a}{DB_R0 + n - 1}",
             FormulaRule(formula=[f'AND(ISNUMBER({a}{DB_R0}),ISNUMBER({b}{DB_R0}),'
@@ -2095,15 +2189,19 @@ def sheet_readme(wb, cfg, as_of, deals):
     ws = wb.create_sheet("Notes")
     w = cfg["weights"]
     put(ws, "A1", "HK IPO DATABASE", TITLE)
-    put(ws, "A2", f"{len(deals)} Main Board IPOs 2021-2026 plus the pipeline. Data as of {as_of}.", SUB)
+    px_date = max((d.get("price_asof") or "")[:10] for d in deals)
+    put(ws, "A2", f"{len(deals)} Main Board IPOs 2021-2026 plus the pipeline. Built {as_of}; latest price snapshot {px_date}. Each name retains its actual quote date.", SUB)
     lines = [
         ("", ""),
         ("Blue cells", "Inputs. Everything else calculates."),
+        ("AH daily monitor", "Choose a pair and a sector view. Auto uses a complete Bloomberg pair quote or a complete dated snapshot. Bloomberg mode leaves missing quotes unavailable. History source is labelled separately. Day change is terminal-only; snapshot rows are dated closes."),
+        ("A/H study", "The A/H analysis is in AH_Premium_Study.docx. It covers all 62 pairs and 60 first-month cases; it is separate from this live-price workbook."),
+        ("Support tabs", "Bloomberg checks are at the back. SizeBench, Verification and calculation/history sheets are hidden by default; right-click a tab and choose Unhide. They remain available for auditing and inputs."),
         ("Screener", "Pick a deal, or type your own terms; comps rank same-subsector first."),
         ("Database", "One row per deal. The last column says why any cell is blank."),
         ("CS League, SM League", "One row per cornerstone investor or stabilising manager, with how "
                                  "their deals traded. Read together: who anchored the deal, who defended it."),
-        ("Analogs", "Day-1 history by subscription bucket, subsector and year."),
+        ("Scoring Stats", "Day-1 history by subscription bucket, subsector and year."),
         ("Eff. free float", "Deal size x (1 - cornerstone %) / market cap: what can trade on day 1 "
                             "while cornerstones are locked up."),
         ("Money and signs", "HK$ millions. Day-1 + = closed above the offer. A premium + = A above H."),
@@ -2120,7 +2218,7 @@ def sheet_readme(wb, cfg, as_of, deals):
                                    "a number someone will check on a terminal. They diverge most for "
                                    "2021-23 deals."),
         ("P/E today, P/S today", "Bloomberg. P/E today is the desk paste; P/S today resolves on the "
-                                 "terminal and reads 'run on terminal' elsewhere."),
+                                 "terminal; unavailable external quotes remain pending elsewhere."),
         ("A-share mkt cap now", "From the A-share quote for A/H pairs, Bloomberg on the terminal where "
                                 "the quote had none. Non-A/H rows read N/A."),
         ("Force-include", "Type codes, comma-separated, on the Screener; those deals pin to the top."),
@@ -2160,7 +2258,7 @@ def sheet_readme(wb, cfg, as_of, deals):
         "Both A+H: 14.2pp. Subscription within 2x: 18.6pp. Same sector: 26.3pp. Same subsector: 29.2pp. "
         "Size, P/E, cornerstone: 29-33pp.",
         "Subsector decides which companies are comparable; it does not predict the debut. For "
-        "'how will it trade', rank demand-similar first and read the Analogs tab.",
+        "'how will it trade', rank demand-similar first and use the demand history.",
     ):
         r += 1
         put(ws, f"A{r}", line, NOTE)
@@ -2209,11 +2307,19 @@ COLUMN_SOURCES = [
     ("Shoe outcome", "The end-of-stabilisation notice filed about 30 days after listing."),
     ("Day-1", "Listing-day close vs the offer price, from the local session list; AAStocks where "
               "the price feed has no listing-day bar."),
-    ("1-week / 1-month / 3-month", "Close 5 / 21 / 63 trading days after the debut, vs the offer price."),
+    ("1-week / 1-month / 3-month", "Close 5 / 21 / 63 traded sessions after the debut (debut = 0), vs offer; "
+     "these are session counts, not calendar anniversaries. Price-only returns, split/consolidation "
+     "scaled to the offer; dividends and entitlement value excluded. Unelapsed windows stay blank with a reason."),
     ("1m ex-pop", "Same horizon measured from the day-1 close, so the debut pop is stripped out."),
+    ("Benchmark index Day-1", "Sector benchmark close on listing day / its previous trading close - 1, "
+     "in %. Uses the same benchmark named per row and the exact listing date."),
     ("Alpha / Index", "The sector index over the same window, anchored at the close before the "
                       "listing. Index named per row; map on the Taxonomy tab."),
-    ("Since IPO", "Latest close vs the offer price."),
+    ("Since IPO", "Last available traded close vs offer; see Prices as of for each row. Suspended "
+     "stocks retain their last trade, and their index leg ends on that same date."),
+    ("Grey market", "Verified evening-session close / offer - 1, in %. Brokers can print different "
+     "closes; hover the Database grey cell for venue, date and source. An open/intraday price is never "
+     "a closing quote. Missing means unverified or no session, never a 0% return."),
     ("Revenue / NI", "Prospectus financial information, latest full year, converted to HK$ at a "
                      "fixed rate."),
     ("P/E at IPO", "Market cap / latest FY net income. Loss-makers read n/m and carry P/S instead."),
@@ -2224,6 +2330,111 @@ COLUMN_SOURCES = [
                                "same facts from the deal's AAStocks page."),
     ("Prospectus / Allotment / Stabilisation", "HKEX filing links, resolved per stock code."),
 ]
+
+
+def apply_pipeline_layout(wb, pipe):
+    """Graft the Artifact-authored design without changing desk formulas."""
+    import base64, io
+    from copy import copy
+    from openpyxl import load_workbook
+    layout = json.loads((ROOT / 'data/pipeline_layout.json').read_text())
+    source = load_workbook(io.BytesIO(base64.b64decode(layout['xlsx_base64'])))['Pipeline']
+    target = wb['Pipeline']
+    count = len(pipe)
+    source_count = layout['pipeline_count']
+    delta = count - source_count
+    def row_number(row):
+        return row + delta if row >= 9 + source_count else row
+    def copy_style(cell, row):
+        dest = target.cell(row, cell.column)
+        for attribute in ['font', 'fill', 'border', 'alignment']:
+            setattr(dest, attribute, copy(getattr(cell, attribute)))
+    for merged in list(target.merged_cells.ranges):
+        target.unmerge_cells(str(merged))
+    for cell in source._cells.values():
+        if cell.__class__.__name__ == 'MergedCell':
+            continue
+        if not 6 <= cell.row <= 5 + source_count:
+            copy_style(cell, row_number(cell.row))
+    for index, deal in enumerate(pipe):
+        row = 6 + index
+        for col in range(1, 31):
+            copy_style(source.cell(6 + index % 2, col), row)
+        target.row_dimensions[row].height = 64 if len(str(deal.get('expected_timing') or '')) > 70 else 48
+    for key, dimension in source.column_dimensions.items():
+        target.column_dimensions[key] = copy(dimension)
+        target.column_dimensions[key].parent = target
+    for key, dimension in source.row_dimensions.items():
+        if 6 <= key <= 5 + source_count:
+            continue
+        row = row_number(key)
+        target.row_dimensions[row] = copy(dimension)
+        target.row_dimensions[row].index = row
+        target.row_dimensions[row].parent = target
+    for merged in source.merged_cells.ranges:
+        shifted = copy(merged)
+        if merged.min_row >= 9 + source_count:
+            shifted.shift(row_shift=delta)
+        target.merge_cells(str(shifted))
+    snapshot = json.loads((ROOT / 'data/deals.json').read_text())['as_of']
+    target['A2'] = f'Pipeline snapshot {snapshot}. Expand columns M:AD for investors, banks and notes. Blue cells feed the Screener.'
+    target.column_dimensions.group('M', 'AD', hidden=True)
+    target.column_dimensions['AE'].collapsed = True
+    target.auto_filter.ref = f'A5:AD{5 + count}'
+    target.freeze_panes = 'C6'
+    target.sheet_properties.tabColor = '34495E'
+    target.sheet_view.zoomScale = 90
+
+
+def add_search_keys(wb, deals, pipe):
+    """Resolve a typed identifier once; every target lookup uses that name."""
+    import re
+    from collections import defaultdict
+    engine = wb['Calc (scoring engine)']
+    records = pipe + deals
+    keys = defaultdict(set)
+    for index, d in enumerate(records, 3):
+        aliases = [d.get('name'), d.get('name_full'), d.get('name_cn')]
+        full = d.get('name_full') or ''
+        if full:
+            aliases.append(re.sub(r'\s+(?:Group\s+)?(?:Co\.,?\s*Ltd\.?|Limited|Ltd\.?|Corporation|Inc\.?)$', '', full, flags=re.I))
+        # Common issuer name, while retaining the official RA MATERIALS short name.
+        if d.get('code') == '9607':
+            aliases.append('Red Avenue')
+        code = d.get('code') or d.get('expected_code')
+        if code and str(code).isdigit():
+            number = str(int(code))
+            aliases += [number, number.zfill(4), number.zfill(5)]
+            aliases += [number + ' HK Equity', number.zfill(4) + ' HK Equity', number.zfill(5) + ' HK Equity', number + '.HK', number.zfill(4) + '.HK', number.zfill(5) + '.HK']
+        for alias in aliases:
+            if alias:
+                keys[str(alias).strip().lower()].add(index)
+    # Ambiguous aliases are excluded; exact names remain available in AllDeals.
+    unique = [(key, next(iter(rows))) for key, rows in sorted(keys.items()) if len(rows) == 1]
+    engine['AQ1'] = '=LOWER(TRIM(Screener!$B$5&""))'
+    engine['AQ2'], engine['AR2'] = 'Search key', 'Resolved company'
+    for row, (key, source_row) in enumerate(unique, 3):
+        engine.cell(row, 43, key)
+        engine.cell(row, 44, f'=$AA${source_row}')
+    last = 2 + len(records)
+    key_last = 2 + len(unique)
+    engine['AR1'] = (f'=IFERROR(INDEX($AA$3:$AA${last},MATCH(Screener!$B$5,$AA$3:$AA${last},0)),'
+                     f'IFERROR(INDEX($AR$3:$AR${key_last},MATCH($AQ$1,$AQ$3:$AQ${key_last},0)),""))')
+    define(wb, 'SelectedDeal', f'{CALC}!$AR$1')
+    for sheet in wb:
+        for cell in list(sheet._cells.values()):
+            if cell.data_type != 'f' or sheet == engine and cell.coordinate in ('AQ1', 'AR1'):
+                continue
+            value = re.sub(r"(?:'Screener'|Screener)!\$B\$5(?!\d)", 'SelectedDeal', cell.value)
+            if sheet.title == 'Screener':
+                value = re.sub(r'(?<![!\w])\$B\$5(?!\d)', 'SelectedDeal', value)
+            cell.value = value
+    screen = wb['Screener']
+    screen.merge_cells('A3:F3')
+    calc(screen, 'A3', '=IF($B$5="","Select a company or type its H code.",IF(SelectedDeal="","No matching deal. Select a name, or use the override fields below.","Selected: "&SelectedDeal))')
+    screen['A3'].font = Font(name=ARIAL, size=10, color='00333333')
+    screen.row_dimensions[3].height = 22
+    screen['A2'] = 'Select a company or type its H code, Bloomberg ticker or full issuer name. Overrides take priority; comps rank same-subsector first.'
 
 
 def main(limit=None, out=None):
@@ -2241,28 +2452,35 @@ def main(limit=None, out=None):
     # Calc first: the Screener's pick-list and target-split cells live there
     sheet_scores(wb, n, len(pipe))
     sheet_screener(wb, deals, pipe, cfg, n)
+    add_search_keys(wb, deals, pipe)
     sheet_analogs(wb, deals, an)
     sheet_readme(wb, cfg, as_of, deals)
     sheet_bbg(wb, deals, n)
-    sheet_ah(wb, deals, as_of)
+    if limit:
+        sheet_ah(wb, deals, as_of)
+    else:
+        from build_market_views import build as build_market_views
+        build_market_views(wb, deals, ROOT)
     sheet_verify_changes(wb, deals, n)
+    combine_bbg_sheets(wb, n)
+    wb["Scoring Stats"].sheet_state="hidden"
     sheet_cs_league(wb, deals)
     sheet_stab_league(wb, deals)
     sheet_sizebench(wb, deals, cfg, n)
     sheet_taxonomy(wb, tax)
     sheet_verification(wb, deals, counts, n)
     # explicit tab order: the daily tool first, reference material last
-    order = ["Screener", "Database", "Pipeline", "AH", "CS League", "SM League",
-             "Verify (BBG)", "Analogs",
-             "SizeBench", "BBG Verify", "Taxonomy", "Verification",
-             "Calc (scoring engine)", "Notes"]
+    order = ["IPO Live", "AH", "Lock-up", "Peer Trades", "Screener", "Database", "Pipeline", "CS League", "SM League",
+             "Scoring Stats", "Taxonomy", "Notes", "SizeBench", "BBG Verify", "Verify (BBG)",
+             "Verification", "Market Data", "AH History", "Live History", "Chart Data", "Lock-up Data", "Calc (scoring engine)"]
     wb._sheets = ([wb[t] for t in order if t in wb.sheetnames]
                   + [ws2 for ws2 in wb._sheets if ws2.title not in order])
     # tab colours: the three tabs the desk lives in stand out
-    TABCOLOR = {"Screener": "2A78D6", "Database": "1F3864", "Pipeline": "1BAF7A",
-                "BBG Verify": "ED7D31"}
+    TABCOLOR = {"IPO Live": "217346", "AH": "556778", "Lock-up":"B58942", "Peer Trades":"706080", "Screener": "1F4E79", "Database": "1F3864", "Pipeline": "70866C"}
     for ws2 in wb.worksheets:
         ws2.sheet_properties.tabColor = TABCOLOR.get(ws2.title, "BFBFBF")
+    polish_workbook(wb)
+    apply_pipeline_layout(wb, pipe)
     _assert_formulas_balanced(wb)
     dest = Path(out) if out else OUT
     dest.parent.mkdir(exist_ok=True, parents=True)
@@ -2272,8 +2490,93 @@ def main(limit=None, out=None):
     # cure is the ignoredErrors element — openpyxl accepts the attribute but
     # never serialises it, so it is injected into the saved sheet XML.
     _suppress_text_number_warning(dest, {"Database": "A5:A600", "Pipeline": "A6:A40"})
+    if not limit:
+        from apply_desk_styles import apply as apply_desk_styles
+        apply_desk_styles(dest, ROOT)
     print(f"wrote {dest} ({n} deals, {len(pipe)} pipeline)")
     return dest
+
+
+def polish_workbook(wb):
+    """Common spacing and light rules; preserve all model addresses and fields."""
+    from copy import copy
+    for ws in wb:
+        if ws.title in ("IPO Live","AH","Lock-up","Peer Trades","AH Delta","AH Recent","AH Compare","AH Compare Live","Lock Compare","Lock Matrix","Peer Data","Peer Live","Peer Chart"): continue
+        for cf in ws.conditional_formatting:
+            for rule in cf.rules:
+                if rule.type == 'colorScale':
+                    from openpyxl.styles.colors import Color
+                    rule.colorScale.color = [Color('E6E6E6'), Color('FFFFFF'), Color('D9D9D9')]
+                elif rule.type == 'dataBar':
+                    rule.dataBar.color = '666666'
+                elif rule.dxf and rule.dxf.fill:
+                    rule.dxf.fill = PatternFill('solid', fgColor='F2F2F2')
+
+        ws.sheet_view.showGridLines = False
+        ws.sheet_view.zoomScale = 90 if ws.title in ("IPO Live", "AH", "Database", "Screener") else 95
+        ws.sheet_properties.pageSetUpPr.fitToPage = True
+        ws.sheet_properties.outlinePr.summaryRight = True
+        ws.print_options.horizontalCentered = True
+        ws.page_setup.orientation = "landscape"
+        ws.page_setup.paperSize = ws.PAPERSIZE_A3
+        ws.page_setup.fitToWidth = 1
+        ws.page_setup.fitToHeight = 0
+        if ws.title in ("IPO Live", "AH", "Lock-up", "Market Data", "AH History", "Live History", "Chart Data", "Lock-up Data"):
+            continue
+        ws.row_dimensions[1].height = 30
+        # Most existing subtitles were long text spilling across narrow cells.
+        if isinstance(ws["A2"].value, str) and len(ws["A2"].value) > 70:
+            end = min(12, max(3, ws.max_column))
+            if all(ws.cell(2, j).value is None for j in range(2, end + 1)):
+                ws.merge_cells(start_row=2, start_column=1, end_row=2, end_column=end)
+                ws["A2"].alignment = Alignment(wrap_text=True, vertical="center")
+                ws.row_dimensions[2].height = 34
+        for row in ws:
+            for c in row:
+                if c.__class__.__name__ == "MergedCell" or c.value is None:
+                    continue
+                # Retain fonts, input blue and a muted conflict highlight;
+                # remove the old green/blue/pink section palette.
+                if c.fill.patternType == 'solid' and c.fill.fgColor.type == 'rgb':
+                    white = c.font.color and c.font.color.type == 'rgb' and c.font.color.rgb[-6:] == 'FFFFFF'
+                    if c.fill.fgColor.rgb[-6:] != 'F2DEC3':
+                        c.fill = PatternFill('solid', fgColor='333333' if white else 'F2F2F2')
+                a = copy(c.alignment)
+                a.vertical = "center"
+                c.alignment = a
+                if c.font.color and c.font.color.type == "rgb" and c.font.color.rgb[-6:] == "FFFFFF":
+                    ws.row_dimensions[c.row].height = max(ws.row_dimensions[c.row].height or 0, 30)
+        if ws.title == "Database":
+            ws.row_dimensions[4].height = 48
+            for r in range(5, ws.max_row + 1):
+                ws.row_dimensions[r].height = 22
+            ws.print_title_rows = "1:4"
+        elif ws.title == "Screener":
+            ws.merge_cells("B5:F5")
+            ws["B5"].alignment = Alignment(wrap_text=True, vertical="center")
+            ws.row_dimensions[5].height = 34
+            ws.column_dimensions["G"].width = max(ws.column_dimensions["G"].width or 0, 24)
+            ws.column_dimensions["H"].width = max(ws.column_dimensions["H"].width or 0, 17)
+            ws.column_dimensions["C"].width = max(ws.column_dimensions["C"].width or 0, 14)
+            ws.row_dimensions[20].height = 48
+            ws.print_title_rows = "19:20"
+        elif ws.title in ("BBG Verify", "Verify (BBG)"):
+            for r in range(5, ws.max_row + 1):
+                ws.row_dimensions[r].height = max(23, ws.row_dimensions[r].height or 0)
+            if ws.title == "BBG Verify":
+                ws.row_dimensions[4].height = 56
+                ws["T4"] = "A security cap now (HK$m, BBG)"
+                ws["M4"].comment = Comment("CUR_MKT_CAP is already in local-currency millions. H cap is HK$m; A cap in column T is converted from CNYm using live CNYHKD. Bloomberg security cap need not have the same share-count basis as the filing-derived company cap.", "HK IPO methods")
+        elif ws.title == "Notes":
+            for r in range(3, ws.max_row + 1):
+                if ws.cell(r, 2).value:
+                    ws.cell(r, 2).alignment = Alignment(wrap_text=True, vertical="center")
+                    ws.row_dimensions[r].height = 40
+        elif ws.title == "Taxonomy":
+            ws.row_dimensions[3].height = 38
+        if ws.title in ("SizeBench", "Verification", "Calc (scoring engine)"):
+            ws.sheet_state = "hidden"
+    wb.active = wb.sheetnames.index("IPO Live") if "IPO Live" in wb.sheetnames else wb.sheetnames.index("AH")
 
 
 def _suppress_text_number_warning(path, sheet_ranges):
@@ -2414,7 +2717,7 @@ def build_analogs(deals):
 
 
 def sheet_analogs(wb, deals, an):
-    ws = wb.create_sheet("Analogs")
+    ws = wb.create_sheet("Scoring Stats")
     put(ws, "A1", "DAY-1 ANALOGS", TITLE)
     put(ws, "A2", f"{an['pool_n']} deals with a listing-day price, {an['years'][0]}-{an['years'][-1]}. "
                   "Hit-rate = share that closed above the offer. Check n before trusting a cell.", SUB)
@@ -2477,20 +2780,39 @@ def sheet_analogs(wb, deals, an):
             put(ws, f"{get_column_letter(j)}{r}", v, fmt=fmt, border=BOX)
     for c, w in (("A", 30), ("B", 26), ("C", 14), ("D", 8), ("E", 13), ("F", 10)):
         ws.column_dimensions[c].width = w
-    define(wb, "AnalogKey", f"Analogs!$G${first_sb}:$G${last_sb}")
-    define(wb, "AnalogN", f"Analogs!$C${first_sb}:$C${last_sb}")
-    define(wb, "AnalogMed", f"Analogs!$D${first_sb}:$D${last_sb}")
-    define(wb, "AnalogHit", f"Analogs!$E${first_sb}:$E${last_sb}")
-    define(wb, "SubsecKey", f"Analogs!$A${first_s}:$A${last_s}")
-    define(wb, "SubsecN", f"Analogs!$B${first_s}:$B${last_s}")
-    define(wb, "SubsecMed", f"Analogs!$C${first_s}:$C${last_s}")
-    define(wb, "SubsecHit", f"Analogs!$D${first_s}:$D${last_s}")
-    define(wb, "SubsecPE", f"Analogs!$E${first_s}:$E${last_s}")
-    define(wb, "SubsecPS", f"Analogs!$F${first_s}:$F${last_s}")
+    define(wb, "AnalogKey", f"'Scoring Stats'!$G${first_sb}:$G${last_sb}")
+    define(wb, "AnalogN", f"'Scoring Stats'!$C${first_sb}:$C${last_sb}")
+    define(wb, "AnalogMed", f"'Scoring Stats'!$D${first_sb}:$D${last_sb}")
+    define(wb, "AnalogHit", f"'Scoring Stats'!$E${first_sb}:$E${last_sb}")
+    define(wb, "SubsecKey", f"'Scoring Stats'!$A${first_s}:$A${last_s}")
+    define(wb, "SubsecN", f"'Scoring Stats'!$B${first_s}:$B${last_s}")
+    define(wb, "SubsecMed", f"'Scoring Stats'!$C${first_s}:$C${last_s}")
+    define(wb, "SubsecHit", f"'Scoring Stats'!$D${first_s}:$D${last_s}")
+    define(wb, "SubsecPE", f"'Scoring Stats'!$E${first_s}:$E${last_s}")
+    define(wb, "SubsecPS", f"'Scoring Stats'!$F${first_s}:$F${last_s}")
     return ws
 
 
 
+
+def combine_bbg_sheets(wb,n):
+ from copy import copy,deepcopy
+ from openpyxl.formula.translate import Translator
+ dst,src=wb['BBG Verify'],wb['Verify (BBG)'];offset=n+8
+ for c in list(src._cells.values()):
+  if c.__class__.__name__=='MergedCell':continue
+  out=dst.cell(c.row+offset,c.column)
+  out.value=Translator(c.value,origin=c.coordinate).translate_formula(out.coordinate) if c.data_type=='f' else c.value
+  out._style=copy(c._style)
+  if c.comment:out.comment=copy(c.comment)
+ for m in src.merged_cells.ranges:dst.merge_cells(start_row=m.min_row+offset,end_row=m.max_row+offset,start_column=m.min_col,end_column=m.max_col)
+ for rr,d in src.row_dimensions.items():dst.row_dimensions[rr+offset].height=d.height
+ dst['U4']='Final shoe outcome';dst['V4']='Final shoe filing';dst.column_dimensions['U'].width=24;dst.column_dimensions['V'].width=18
+ for r in range(5,n+5):
+  code=str(wb['Database'].cell(r,1).value).zfill(4);d=next((d for d in json.loads((ROOT/'data/deals.json').read_text())['deals'] if d['code']==code),{})
+  dst.cell(r,21,d.get('greenshoe_exercised_final'));link=dst.cell(r,22,'HKEX' if d.get('stabilization_link') else '')
+  if d.get('stabilization_link'):link.hyperlink=d['stabilization_link']
+ wb.remove(src)
 
 if __name__ == "__main__":
     # Without this the file is importable but does NOTHING when run as a script,

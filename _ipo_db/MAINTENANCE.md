@@ -1,9 +1,234 @@
 # HK IPO Database — MAINTENANCE RUNBOOK
 
 Written for two readers: the analyst (Kenny, on the Nomura desk) and a future
-Claude session on this Mac that is asked to "update the database". Everything a
+AI session on this Mac that is asked to "update the database". Everything a
 refresh needs to know lives here. **Patch, never rebuild** — the data caches in
 `data/batches/` and `scrape/` are weeks of accumulated work.
+
+## 11 October 2026: code discovery, cornerstone grouping, compact delivery
+
+This revision preserves all 524 canonical IPOs, price histories and numeric
+fields. Nayuki 2150's CUAM name was concatenated twice in a vendor parse; its
+filed legal name is restored once, with PDF p.339 / printed p.329 evidence in
+cornerstone_name_corrections.json. All other investor rosters are retained.
+Price observations still end 2 October; the database
+snapshot is 7 October. Do not describe this offline HTML as live or current.
+
+Red Avenue is already recorded as the official short name **RA MATERIALS,
+9607**. HTML searches the H code and full issuer name. Excel Screener B5
+accepts a name or H code and resolves it once through the SelectedDeal named
+range, backed by Calc AQ:AR. Match code exactly and retain leading-zero aliases.
+When migrating B5 references use a bounded expression: naive string replacement
+also corrupts Database B5:B528 into an invalid range. All 524 name/code choices
+were compared using the delivered resolver and target formulas.
+
+The HTML now gzip-compresses its complete JSON payload and embeds the pinned
+fflate 0.8.3 decoder plus MIT license. assets/fflate.min.js and its license must
+travel in hk_ipo.py. Keep the ipo-payload DOM script after initialization: browser
+Save As/content export needs it to reopen offline. A browser-save round trip and
+zero-network-request check passed. This reduces the HTML from 5.48 MB to about
+1.77 MB without dropping charts/history. A ZIP copy is an optional transfer
+format; a full shared-drive quota still needs free space or a local destination.
+
+Pipeline retains all 30 fields, with the 12 main fields first. M:AD expands the
+investor, bank, A-line and note details. Data still starts at row 6, and Screener
+mirror columns must be derived from PIPE_COLS. data/pipeline_layout.json comes
+from tools/create_pipeline_layout.mjs using Artifact Tool; apply_pipeline_layout
+grafts its styles while preserving native data, formulas and validation. New
+rows use the same stripe styles; the application queue shifts with row count.
+
+The visible Lock-up views now contain only the 396 actual cornerstone events
+for 386 companies. Keep all 1,064 filed/reviewed restriction records in the
+internal batch; founder/controlling-holder restrictions and no-cornerstone
+placeholders are excluded only from these desk views. The company-cornerstone
+column shows its complete roster; multiple expiry events can apply to subsets,
+so the linked event filing is the authority for the actual restriction. There
+are 156 events whose expiry is not established by the retained evidence. Label
+them Expiry unconfirmed and leave dates, returns and charts blank. Never infer
+six months. Both returns continue to use seven HK trading sessions, with day 0
+the last traded session on/before the last locked day. All 396 event selectors,
+386 Auto choices and 2,618 graph observations were exercised in Artifact Tool.
+
+Cornerstone keys changed for 143 stocks after correcting unrelated groups that
+shared generic/city prefixes. Use explicit documented aliases for MLP/Millennium,
+Hillhouse/HHLR, JPMAM, ADIA and E Fund. Preserve separately named legal
+subscribers in the company roster. Do not fuzzy-fold CS League keys by a prefix,
+city, surname, PT, ICBC or CITIC. Each investor group counts a company once.
+Every one of 1,146 league groups was reconciled across Excel/HTML, including hit
+rate denominators and all seven return averages. A code query in HTML
+Cornerstones overrides the minimum-deal count, exposing the complete roster.
+The full filing-name audit was rerun. Short full names now require a complete
+word-bounded spelling on a cornerstone page, rather than being discarded by
+the old >8-character rule; 119 investor aliases remain unconfirmed and are
+retained in the internal review CSV. Numeric source confidence is unchanged.
+
+AH still covers all 62 identified A/H pairs in this IPO sample, not the entire
+market universe. All database codes present in ah_universe have their A code.
+Ingenic 3223 / 300223.SZ is an additional documented mapping outside that cache.
+Huaqin 3296's previous blanket Class ratio review came from its first-month
+H capitalisation. Primary filings now establish the same 4-for-10 capitalization
+on both classes, with H ex-date 22 May and A ex-date 17 June. Store evidence in
+data/ah_entitlement_reviews.json. ah_basis.py enables IPO/latest premiums once
+the quote bases match, while the chart omits mismatched H/A observation bases
+(22 May through 16 June, or a carried pre-ex A quote after 17 June). Raw histories
+are preserved. Stored and Bloomberg share the date rule; unknown/new actions
+invalidate the exception. Keep the first-month research correlation exclusion:
+the study's affected month-end remains outside comparable raw share units.
+
+Checks: ipo.py check; tools/test_cornerstone_names.py;
+tools/test_deliverable_review.py; tools/test_shared_drive_review.py;
+tools/test_search_excel.mjs; tools/test_lockup_excel.mjs;
+tools/test_lockup_refresh.py; tools/test_monitors.py;
+tools/test_ah_dashboard.py. Native Microsoft Excel opened without repair and
+rendered the Pipeline and Lock-up chart. This Mac is View Only and has no
+Bloomberg add-in: external BDP/BDH execution remains a desk validation.
+Do not deliver temporary fixture workbooks or render probes. Do not delete the
+TO_NOMURA directory during export; preserve separately prepared Word research.
+
+## 6 October 2026 revision: simplified monitors and consolidated Technology
+
+7 October follow-up: Screener and Database restore the original navy headers,
+dark section bands and pale blue inputs. Signed returns use subdued red/green
+shading and magnitude bars use muted blue. The Artifact-authored colour
+template is data/desk_colours.json; apply_desk_styles.py applies it after the
+native builder saves, preserving all formulas and unrelated sheets. This step
+also saves a truthful default A/H snapshot chart cache, so the curve and its
+dated cutoff are visible on first open without Bloomberg. Its dynamic names
+and formulas remain live. Premium now is never filled with a saved quote.
+The A/H premium headers are wider to accommodate the filter buttons. The
+standalone desk bundle includes the colour template and postprocessor.
+
+Visual QA also caught Screener D12 replacing an exact pipeline listing date
+stored as ISO text with TODAY(). The effective-date formula now parses that
+text date, retaining the existing typed override and real-date behavior.
+
+The current layout supersedes the source-mode controls described in older
+notes. IPO Live has five visible columns: Bloomberg H ticker, company, sector,
+live price and daily change. LAST_PRICE supplies the current price and
+PX_YEST_CLOSE supplies the previous trading-day close. Change is current /
+previous close minus one. The sector table and bar chart use equal-weight
+averages of available numeric changes; missing quotes are excluded and the
+quote count is shown. There is no saved-price substitution in this table.
+
+AH has six visible columns: A code, H code, sector, subsector, premium at IPO
+and premium now. B4 accepts an H or A code. Its single native chart uses each
+pair's own H-traded dates from H listing through TODAY, with A and FX aligned
+on or before each H date. The latest complete quote is appended to today when
+the daily series ends earlier. Prior A/FX carry is capped at 10/5 calendar days.
+Raw dated BDH output occupies three separate empty blocks on hidden Live
+History. If the native H output is unavailable, stale or fails the raw debut
+price/date check, the chart uses the dated cached history and explicitly labels
+its actual cutoff. It must never label a saved October 2 series as live today.
+Huaqin's premium remains withheld pending share-class ratio validation.
+
+Both BBG verification tabs use direct single-date BDH, matching the user's
+terminal-confirmed four-argument formula. There is no INDEX/MATCH around BDH.
+The Database's optional Bloomberg fallback marks unavailable responses as
+Awaiting Bloomberg; otherwise an add-in error can poison the offline screener
+score range. The verification sheet itself retains the raw external result.
+Date cells are typed Excel dates; HK security codes use their integer value.
+Do not restore N(text-code), which yields zero. Bloomberg API transport and
+desk entitlements cannot be tested on this Mac. Fixture calculation verifies
+the dependent maths, not the external Bloomberg response.
+
+Technology is consolidated into six business groups: Semiconductors;
+Software & AI; Internet & fintech; Hardware & electronics; Robotics &
+autonomous driving; Data centres & cloud. Both historical and pipeline labels,
+classification rules, the Taxonomy sheet and both screeners use these same
+labels. Existing return benchmark assignments are preserved. Screener freezes
+columns A:B only (C1); no row is frozen. Other tabs retain the neutral palette.
+
+The HTML A/H table retains all 62 pairs, including missing/review cases. Click
+a company or select it in the Company dropdown for its complete cached history.
+The comparison chart includes every available premium in the chosen slice.
+Cached observation dates are shown; HTML is an offline snapshot.
+
+Run tools/test_monitors.py after changing either monitor. It executes the
+delivered formulas with simulated quotes, exercises code selection, daily
+returns, sector averages, headered histories, holiday alignment, no look-ahead,
+wrong/stale output rejection and the live TODAY endpoint. Do not deliver the
+temporary visual probes or fixture values.
+
+## Earlier 6 October build: superseded monitor layout
+
+**IPO Live** is the first tab. It shows all 524 IPO H lines, grouped by sector,
+with live H price, one-day change versus the previous trading-day close,
+quote date/time and source. `B5` filters sector or A/H only. Available A prices
+and A premiums appear independently; missing A/FX does not suppress H prices.
+**AH** is second and contains only the 62 actual A/H pairs in this database.
+`B5` accepts an H code (3986, 0501 or numeric 501) or A code (603986.SS).
+Unknown codes clear the trend. `I5` filters sectors. Screener has no frozen rows.
+
+Each monitor's `M5` independently controls Bloomberg / Auto / Snapshot.
+Default Bloomberg never substitutes saved closes. Auto may use a complete,
+labelled dated snapshot; Snapshot is explicit historical mode. The cache ends
+2 October, with Mainland closes often 30 September. `PX_LAST` pulls prices;
+`CHG_PCT_1D / 100` pulls daily changes. Source dates and quote times are shown.
+
+AH's two editable charts request raw BDH history from H listing through TODAY.
+Three reserved two-column output blocks feed scalar date-aligned calculations.
+Headers are tolerated. A/FX begin 31 calendar days earlier for holiday carry;
+maximum prior-close carry is 10/5 days, with no future observations. A complete
+current quote is appended when daily history ends before today. Invalid,
+stale, wrong-debut or incomplete Bloomberg output does not become a chart.
+Default Bloomberg has no cached snapshot chart. The dynamic chart range uses
+a calendar date axis with monthly labels; gaps reflect unavailable or unverified observations.
+
+Bloomberg equity history explicitly requests no cash/capital adjustments.
+Date/time fields, daily change and adjustment flags still require a terminal
+test. This Mac has no Bloomberg add-in: fixture computation is not native
+Bloomberg proof. Native Excel can be used to inspect file compatibility only.
+
+Both Bloomberg verification sheets now construct H tickers with `VALUE`, not
+`N`: Excel `N(text)` returns zero. Single-date BDH checks extract the requested
+row and the price column with `INDEX/MATCH`, instead of `@` implicit
+intersection. Relevant date cells are real Excel dates. A-company Bloomberg
+`CUR_MKT_CAP` is already millions; the screener's erroneous extra division by
+1,000,000 and hard-coded FX fallback have been removed. Native Bloomberg
+execution remains a desk check.
+
+**AH_Premium_Study.docx** (Word, outside Excel) includes every pair and a 60-case first-month sample. First month
+means 21 H-traded sessions AFTER Day 1. Offer reference, Day 1 and first month
+are distinct. Offer reference uses A/FX closes before H debut, not book pricing
+time. BIOCYTOGEN has no A listing at H debut; HUAQIN has a first-month share
+scale event requiring class-ratio validation. Both are explicitly excluded.
+35/60 absolute gaps narrowed. GigaDevice: 32.2% Day 1 to 8.7% after one month,
+mainly H gains. Montage: 11.6% to -4.9%, mainly A declines. Deal-size Spearman
+rho is -0.182, with 95% interval spanning zero. Six exploratory correlations
+include bootstrap intervals and adjusted permutation p-values. Current cap
+has look-ahead bias. The listing cap revalued at the pre-debut A reference
+inherits the database's company-share basis; neither proxy is A-only float
+cap. Do not turn these weak associations into causal conclusions.
+
+New study sources and all dated observations live in `data/batches/ah_study.json`
+and `data/ah_study_cache/`. `analyse_ah_study.py` refresh merges new history into
+old cache rows, preserving debut data beyond the provider's rolling window.
+`ipo.py refresh` and the desk bundle include the study after merge. `make_ah_study.py` regenerates the Word study during export; `ipo.py ah-study-note`
+is its standalone command. Markdown is an internal research intermediate, not
+a delivered workbook tab. Export copies the regenerated Word into TO_NOMURA.
+
+Taxonomy v2 splits 27 semiconductor IPOs into compute/AI, memory/interface,
+analog/power, image/display, equipment/materials, foundry, and diversified
+businesses. Broad sectors remain unchanged. Manual and fallback classifiers,
+pipeline normalisation, HTML and workbook use the same labels. Legal regimes
+and profitability remain separate. Peer-boundary notes explain mixed names.
+
+`build_market_views.py` loads the small Artifact Tool-authored layout from
+`data/market_views_template.json`; normal desk builds still need only openpyxl.
+Node/Artifact Tool are design-time tools. `make_bundle.py` embeds the template,
+study, histories and support modules; it updates extracted module versions
+when a newer bundle is installed. Do not omit them from the single-file build.
+Backend/SizeBench/Verification sheets are hidden and support checks are at the
+back. Right-click a sheet tab and Unhide to inspect them. Existing return,
+grey-market, sponsor and cornerstone records have been preserved.
+
+Validation: all nine existing gates passed; semiconductor screener probes
+compute every revised peer group and an override; monitor probes compute
+H/A-code switches, invalid codes, quote-source modes and sector counts with
+simulated Bloomberg responses; chart probes check headers, holiday carry,
+FX alignment, rebasing and dynamic native chart references. Workbook sheet
+layouts were rendered in a disposable preview, separate from native formula
+execution. A clean single-file build is required before delivery.
 
 ## The two machines
 
@@ -13,7 +238,7 @@ refresh needs to know lives here. **Patch, never rebuild** — the data caches i
 | Scripted refresh (HKEX, Yahoo, Tencent) | ✅ | ✅ `%run hk_ipo.py refresh` |
 | Rebuild .xlsx / .html / .ipynb | ✅ `python ipo.py build` | ✅ `%run hk_ipo.py build` |
 | Bloomberg columns compute | ❌ | ✅ (BBG Verify tab, BDH/BDP) |
-| AI relabelling (subsectors, press sizes) | ✅ (a Claude session) | ❌ |
+| AI relabelling (subsectors, press sizes) | ✅ (an AI session) | ❌ |
 
 ## Update cadence
 
@@ -22,10 +247,10 @@ resumable and staleness-aware:
 - new allotment filings arrive → new deals appear end-to-end (roster → filings
   → parse → merge);
 - a PHIP that has LISTED graduates out of the Pipeline automatically (it enters
-  the listed roster; the pipeline dedupes by first word of the name);
+  the listed roster; the pipeline dedupes by company identity, including full-name aliases);
 - young deals' 1w/1m/3m fill in as their windows elapse, and `since IPO`
   refreshes, because `fetch_prices.py` re-fetches any cached code whose
-  `last_date` is >7 days old or whose elapsed horizon is still blank
+  last quote/check is behind the latest completed HSI session, whose benchmark changed, or whose elapsed horizon is still blank
   (the `stale()` rule — do not remove it);
 - stabilisation outcomes resolve as END-OF-STABILISATION notices get filed
   (only unresolved deals are re-searched).
@@ -1321,7 +1546,7 @@ Phillip vs 42.12 on Futu), so `grey_venue` records which, and the two are
 never mixed.
 
 **THIS IS A CAPTURE-OR-LOSE FIELD — the single most important thing to know.**
-There is no public archive of past HK grey-market sessions anywhere:
+**Superseded by the 4 October 2026 review:** historical published closing reports are accessible through stock-specific AAStocks news URLs, broker reports and newspaper archives. Capture promptly, but do not treat old blanks as unrecoverable. The original feed limitations were:
   * AAStocks' `greymarket.aspx` **ignores its own `?symbol=` parameter** and
     always renders TODAY's session; live quotes arrive over a websocket and no
     REST endpoint serves a past one.
@@ -1799,7 +2024,7 @@ Parsing rules, each learned from a real story:
 Validated: every overlap matches to the cent — etnet's table (FWD 36.75,
 Anjoy 59.6, Phillip row) and the AAStocks headline (天聚地合 110.5, 泓盈 3.57).
 
-**The 63 still blank, and why** (each carries a `grey_note`):
+**Historical v31.2 snapshot — 63 were blank; superseded by the 4 October 2026 review below:**
 - 33 open-only (31 in H1-2021): etnet printed the open, never the close.
 - 7 of the first FINI deals (Dec-2023: 國鴻氫能, KCASH, 升輝, 瑞浦蘭鈞, 泛遠, 集海,
   瀾滄): etnet ran no price stories for them. The one HKET piece it carried
@@ -1808,7 +2033,7 @@ Anjoy 59.6, Phillip row) and the AAStocks headline (天聚地合 110.5, 泓盈 3
 - 22 with no story at all (mostly 2021 property services, biotech -B, 保誠).
 - 1 follow-on offering with no grey session (BOSS 2076, `grey_market_na.json`).
 
-Dead ends, measured, so nobody retries them: AAStocks `NOW.{id}` before
+Historical access failures, not a permanent prohibition on retrying: AAStocks `NOW.{id}` before
 ~2024 (0 of 160 probes resolve); HKET inews (403 / human check); Zhitong (JS
 challenge); jisilu (history is member-only); Eastmoney search API (canned
 response); Futu post IDs (~30k a day, no way to target a date); web search
@@ -1822,6 +2047,88 @@ is not a close; where the press gives only the three-venue range, use
 `ipo_lib/fetch_etnet_ipo.py` also brings back the one-lot hit rate
 (一手中籤率) and etnet's own final HK/international split, which cross-checks
 the allotment parser: 229 deals have both and 1 disagrees (9615, worth a look).
+
+## v31.3 (2026-09-29) — a live deal arrives with every field, and the bank columns are whole
+
+**The desk's complaint, verbatim: "everytime you're like blank."** Three
+separate defects produced the blanks; all three are fixed in code, not by hand.
+
+1. **The offering-window parser never filled a bank.** `fetch_newlistings.
+   deep_parse` read `parse_syndicate()`'s result by the keys "sponsors" and
+   "bookrunners", but that function keys by the FILING's role wording ("Joint
+   Sponsors", "Sponsor-Overall Coordinators", "Joint Bookrunners"). Nothing
+   ever matched, so every live deal reached the Pipeline with no banks. Now
+   read by role, with the Database's rule (a Sponsor-Overall Coordinator is the
+   sponsor's affiliate acting as coordinator — a bookrunner, not a sponsor),
+   then scrubbed by `clean_party_list`. AAStocks' deal page fills whatever the
+   prospectus leaves (sponsors, the whole syndicate, cornerstone names/amounts)
+   and `*_src` says so.
+2. **The greenshoe was never read for a live deal**, and a deal with NO shoe
+   showed blank. Now `parse_greenshoe_pct`, and where the prospectus has no
+   over-allotment option at all it is recorded as 0 with the reason (ESWIN
+   1256: an Offer Size Adjustment Option — an upsize — and no stabilisation).
+3. **Pipeline and dashboard had no column for them.** Pipeline gained
+   Cornerstone investors, Greenshoe %, Lot size (TERMS) and Bookrunners (BANKS &
+   DOCS); the dashboard card shows Sponsors, Bookrunners and Lot size.
+
+Also for live deals: Chinese name from AAStocks' upcoming table (HKEX's
+bilingual feed carries a code only once it trades); cornerstone % from the
+committed amount at the maximum price when the filing states only the amount;
+**the whole-company market cap**, not the H-share line — ESWIN's statistics
+table states both (H HK$15.0-16.1bn, all shares HK$32.5-35.0bn) and the first
+match made its P/S 5.6x instead of 12.2x; risk-factor openers ("We operate in a
+competitive market subject to an evolving landscape") rejected as a business
+description, and a rejected overview no longer backfills from last run.
+
+**Database bank columns.**
+- *Bookrunners* fell back to AAStocks' underwriters CUT TO SIX names when no
+  bookrunner list had been parsed — 75 deals showed a partial list that read as
+  the full one. The fallback is now the whole syndicate, and the 140 deals with
+  no parsed list were re-parsed (`extract_deep.py --only`): the parser reads
+  them fine from the cached text; the stored batch simply predated it.
+- *Sponsors* showed the prospectus parse only — blank on 134 deals whose
+  English name did not parse, while AAStocks had it. The column now shows the
+  best available (`sponsors_display`); the note column says which source.
+- Prudential 2378 prints its banks as logos (no text): filled from its RNS of
+  19 Sep 2021 via `press_figures.json`, which now accepts `bookrunners` and
+  `sponsor_note` (no sponsor: an already-listed issuer's offer).
+- The role scrub missed "Capital MarketS Intermediaries" (plural) and left
+  "and Capital Markets Intermediaries CLSA Limited" as a bank name.
+
+**Three systemic bugs found on the way (all fixed in code):**
+
+1. **Reused stock codes hid 55 prospectuses.** `load_stock_ids()` read HKEX's
+   active list, then the INACTIVE list over it, so a reused code (華曦達 0901,
+   Midea 0300, JD Logistics 2618, HUTCHMED 0013, Innolight 3308, FWD 1828 …)
+   searched under the DELISTED company's id and found no prospectus.
+   `load_stock_id_candidates()` keeps every id a code has held (live first) and
+   the prospectus search tries each until one filed in the deal's own window.
+   534/534 deals now have their prospectus; sponsor lists 375→423, bookrunner
+   lists 390→437, business descriptions 380→427, revenue 421→472.
+2. **`incremental.merge()` wiped a batch when `--new` found nothing new.** It
+   tested `if not only`, so an EMPTY set read as "all deals" and the batch was
+   rewritten with zero records — `etnet_ipo.json` (244 grey tables and every
+   one-lot hit rate) went this way on 29 Sep and was re-fetched. Now `only is
+   None` = all; an empty set carries everything forward.
+3. **Cornerstone % was sometimes the largest PLACEE, not the cornerstones.**
+   The allotment parser read the "Top 1 / Top 5 / Top 25 placees" concentration
+   table (names like "are issued) Top", "Subtotal"). `fill_cornerstones.py`
+   reads the notice's real cornerstone table: the printed Total in the "% of
+   Offer Shares" column (prio 75), else the rows summed (68), else cornerstone
+   shares over offer shares when the table only has "% of H shares" (66); a
+   lock-up table count 60; a complete prospectus with no cornerstone section =
+   0% "no cornerstone tranche" (65). A computed % from a table that found fewer
+   investors than AAStocks lists is discarded (a missed row reads low). Fixed,
+   e.g.: KCASH 2483 24.7%→0 (no cornerstones), 方舟健客 6086 28.6%→0, 博泰 2889
+   22.8%→43.56%, IFBH 6603 78.3%→26.76%, 軒竹 2575 78%→9.81%, 綠茶 6831
+   5.71%→50.0%, 紫金黃金 2259 1.6%→49.9%. Muyuan 2714 reads 45.25% of the
+   FINAL (upsized) offer where the press quoted 50% of the base.
+
+**Refresh speed on an evicted cache.** `fetch_hkex_filings allotments|
+prospectus` without `--new` makes one throttled network call per deal (534);
+the routine runner now passes `--new` (5 new deals: 25 s instead of ~15 min).
+6700 Forms Syntron had listed on 22 Sep without reaching the Database — the
+roster had been fetched before its debut; this refresh graduated it.
 
 ## THE WEEKLY EMAIL (v26.3) — one command, Monday morning
 
@@ -1887,3 +2194,160 @@ and the note says so rather than leaving an unexplained hole.
 - `ipo_lib/classify.py` GROUPS + `fetch_phip.py` PIPELINE_LABELS — the analyst
   judgment layers; only ever extend
 - `TO_NOMURA/` — regenerated by `ipo.py export`, never edited by hand
+
+
+## 3 October 2026 refresh — v31.4, sponsor/cornerstone completeness
+
+Current deliverables contain **524 listed deals and 13 pipeline entries**. The latest
+listed deal is Camsense 6802 (30 September); HKEX's roster was checked through 3 October.
+Prices extend through the 2 October trading session. Original research caches remain
+append-only. A before-refresh backup is retained in `backups/2026-10-03-before-refresh.zip`.
+
+**Sponsor and cornerstone display coverage is complete on the Database tab.** There
+are 386 deals with cornerstone investor names and 138 verified cases with no cornerstone
+tranche, shown explicitly rather than left blank. Every listed deal has a cornerstone
+percentage. Nine apparent missing-name cases were caused by the name cleaner rejecting
+legal names longer than 70 characters. The cleaner now preserves long entity names and
+all investors, while rejecting concentration-table headings and numeric debris.
+Camsense's final allotment gives 1,869,200 cornerstone shares, 16.13% of the final offer,
+allocated to GoldenLink and Taiwan ZMAX; its manual record retains the filing URL.
+Manual/filing cornerstone lists must not be replaced by lower-priority AAStocks lists.
+
+**Prudential 2378 requires an explicit N/A sponsor.** Its September 2021 offer was by
+an existing listed issuer, and the prospectus's parties section does not appoint a
+sponsor. Do not turn its financial adviser or underwriting banks into a sponsor.
+Pipeline overall coordinators likewise are not automatically sponsors: only an explicit
+"sponsor-overall coordinator" role supplies both. Pipeline banks are labelled
+"Bookrunners / OCs" and undisclosed sponsor names remain "at launch".
+
+**Pipeline identity:** use `company_key` with geographic prefixes removed and both
+listed short/full names considered. A first-word match incorrectly removed Transsion
+because Forms Syntron also starts with Shenzhen; matching provincial prefixes could
+similarly suppress Sinomags or Taotao. Six active PHIP rows now remain, alongside one
+live offering, four curated applicants, one postponed offer and one withdrawn offer.
+Forms Syntron 6700 is postponed and EKH 2523 withdrawn: the older v26 statement saying
+Forms had listed is superseded. Neither belongs among completed listed deals.
+
+**Latest financial tables:** RA Materials 9607 requires repairing a whitespace-split
+thousands separator. Robotechnik 3757 uses the consolidated Group table, not the acquired
+ficonTEC subsidiary. Direct Drive 6731 uses the reported IFRS loss, not adjusted loss.
+Camsense 6802's FY2025 profit is RMB2.201m (HK$2.4m using the project's 1.10 conversion),
+so its extreme trailing P/E is real. `ni_filing_verified` in the source record allows
+that checked denominator to survive the automatic 300x extraction sanity cap; it is
+not permission to waive the cap for unverified rows. Each manual record links its
+specific prospectus and page.
+
+**Export reproducibility:** `make_bundle.py` now includes the manual sponsor/cornerstone
+fills and other merge inputs used by the Mac. A clean unpack and re-merge reproduced
+all 524 codes and the 11 checked fields. The regression suite in
+`tests/test_refresh_regressions.py` covers long names, table debris, split numeric
+columns, company identity, and explicitly stated bank roles. All five cases passed.
+The final export also passed all nine existing validation gates, including Excel's
+computed formulas, HTML/Excel field parity and light/dark visual checks. The premium
+chart's current-value annotation was moved to avoid overlapping the IPO label.
+
+Refreshes preserve manually verified research in `data/cornerstone_fill.json`,
+`data/banks_fill.json` and `data/batches/press_figures.json`. Make fixes in those source
+records or extraction modules, then merge and export; never patch the generated
+workbook or `data/deals.json` directly. Word research studies were carried forward
+unchanged; they remain separately maintained research documents.
+
+
+## 4 October 2026 review — v31.5, returns and Day-1 benchmark
+
+- Independently downloaded raw Tencent histories for all 524 listed deals through the last completed HK session, 2 October. The primary endpoint was supplemented with Tencent's official proxy for 12 blocked responses; no audit failures remain.
+- Confirmed price-only Day-1, 1-week, 1-month and 3-month returns, including split/consolidation scaling. Horizons remain **5/21/63 traded sessions after debut (debut = 0)**, not calendar anniversaries; dividends and entitlement value are excluded. Each Database horizon cell now comments its exact date or pending reason.
+- Corrected seven stored horizon dates across Morimatsu (2155), YZYBIO (2496) and Medcaptain (2041). Align benchmark legs to these exact dates, use the previous trading close as the offer-period anchor, and choose the benchmark after final sector classification. Four source-cache debut records now resolve the exact debut instead of a later/missing quote.
+- Refresh all 524 last closes from the fresh raw feed; 56 Since IPO values changed materially. Keep actual last-trade dates for halted or thin-history stocks instead of assigning a current carried-forward quote. MIRXES and Sanxun suspension evidence is retained in prices.json.
+- Add **Benchmark index Day-1** directly beside Day-1 in Database/Screener and the HTML table/comparison/explorer. It is the existing sector benchmark's percentage return from the previous trading close to the listing-day close, not an index level. Durable benchmark_prices.json is included in the desk bundle so offline re-merges reproduce the same values.
+- Recover 57 additional verified grey closing quotes (now 518 numeric closes); preserve source/date/venue and show them in cell comments. Missing closes remain unverified/no-session, never zero. Newspaper/broker archives can resolve historical blanks despite earlier runbook claims.
+- Two opening prices (2629, 1276) differ between the existing validated source and the new Tencent feed. Retain the existing opens and explicitly flag the variance; closing-price returns agree.
+- New price pulls exclude in-progress sessions and zero-volume stock carry-forward bars. Cache checks track the latest completed session, including stocks with an old actual last trade.
+- The three Word studies and weekly email are carryovers from 3 October; they were not regenerated with the expanded grey sample. Treat the workbook/HTML and dated review report as current.
+
+Read out/data_review_2026-10-04.md for counts, corrections, remaining grey gaps and validation. Historical v31.2 counts/dead-end notes above describe the old capture, not current coverage.
+
+**Suspension-window correction:** ALSCO Pooling (2649) has only 15 traded sessions after debut before suspension on 30 March 2026. Clear its spurious flat 1m/3m returns and derived index/alpha/ex-pop legs; keep its last-trade Since IPO return. Checked traded-session counts now overrule carried-forward cached horizon quotes.
+
+**Abbisko trading debut (2256):** formal listing was 13 October 2021, but the company confirms first share trading on 15 October due to the typhoon closure. conflict_rulings.json adjudicates the database IPO/debut date to 15 October, with the formal date retained in ipo_date_note. Price paths are rebased to the actual trading date; Day-1 benchmark now resolves for all 524 deals.
+
+## 7 October 2026 — A/H Stored / Bloomberg selector
+
+The A/H sheet now has one macro-free source dropdown at **E4**, alongside the H/A chart-code selector at B4. Default is **Stored**. This switch controls A/H requests only; IPO Live, Screener and the verification tabs retain their Bloomberg formulas.
+
+- Stored uses `ah_study.json` and each pair's own H trading dates. The latest premium uses A and FX closes aligned to the final H close, never a mixture of saved and current quotes. The snapshot currently ends on 2 October 2026; A/FX dates can precede it over holidays.
+- Bloomberg activates the A/H BDP and three separate BDH anchors. Histories are raw price closes (`UseDPDF=N`, cash and capital adjustments off), ordered ascending. Match the last A/FX date on or before each H date; existing carry limits are ten calendar days for A and five for FX. A complete live quote can append today's point.
+- Both sources calculate **A close (CNY) × CNYHKD ÷ H close (HKD) − 1**. IPO premium remains the H offer-price comparison. Share-class ratio exceptions remain explicitly withheld.
+- Bloomberg history that is unavailable, stale or fails the raw debut-price check leaves the chart unavailable and identifies the reason. It does not silently use a saved chart under a Bloomberg label. Switching to Stored ignores any lingering Bloomberg output.
+- A same-date comparison below the chart reconciles all overlapping H/A/FX closes and actual A/FX dates against the selected pair's snapshot. Price tolerances are max(0.005, 0.005%) for each equity close and 0.00005 for FX. Differences are reported for review, not forced equal or overwritten.
+- `tools/create_market_template.mjs` authors the selector's layout with Artifact Tool; the existing native workbook assembler preserves Bloomberg functions, dynamic chart names and the Excel date axis. `apply_desk_styles.py` saves a truthful dated opening cache, including the Stored latest-premium column.
+- `tools/test_monitors.py` checks all 62 selectors, all 18,045 saved H observations, premium mathematics, source switching, unavailable-history handling and same-date equality/mismatch detection with explicitly simulated Bloomberg inputs. Live Bloomberg responses still require a Bloomberg-enabled Excel session.
+
+Canonical deal data, classification, return calculations and HTML snapshot data are unchanged by this edit. The standalone desk bundle includes the source-selector implementation and layout template.
+
+
+## 7 October 2026 — complete numeric review, subscriptions and lock-ups
+
+The latest working data contains 524 listed stocks. `data/batches/subscription_review.json` reviews every public tranche and 521 institutional tranches against current HKEX allotment files, with document hashes, pages and snippets. JBM Healthcare 2161 was public-offer-only; UJU 2439 was under-subscribed without a numeric placing multiple; Prudential 2378's filing did not establish a numeric book multiple. Do not restore the former invented/repeated institutional figures. Camsense 6802 public demand is **3,546.91x**, not 5.53x. Direct Drive 6731 institutional demand is **2.72x**, not the retail 208.56x. Public-only, employee/preferential and Pool A/B figures must remain distinct. The quoted legacy “over-subscribed by” wording retains its basis note; do not add one blindly.
+
+The numeric audit covers all scalar database values. `out/database_numeric_audit.csv` is the full field/source ledger, `database_numeric_changes.csv` lists material differences from the prior delivery, and the JSON/Markdown describe unresolved primary confirmations. A passing arithmetic check is not a certification of a retained source. **273 annual revenue/profit figures still lack an unambiguous fresh primary-row confirmation**; they keep their researched source and orange Excel cue with a source comment. Cornerstone investor-group aliases also require confirmation where the filed legal name differs. No claim that every value has been primary-source verified should be made.
+
+Financial annual-row reviews are in `financial_number_review.json`. Fiscal-year headers determine the annual column; never take the third number indiscriminately from a two-FY-plus-interim table. Explicit currency and units are mandatory. Owner-attributable earnings take priority for P/E; a consolidated-profit fallback is labelled as a proxy. The project uses fixed HKD conversion approximations, RMB×1.10 and USD×7.80. Tian Tu 1973 retains its documented total-income proxy. P/E and P/S are recomputed after correction and are withheld for losses/zero revenue. Reviewed low earnings can create a real high multiple and must not be deleted solely by a 300x heuristic. Controls in PDFs must be removed from XML comment strings.
+
+Offer-number review distinguishes the **base offering** from proceeds including over-allocation. KCash 2483, Lancang Tea 6911 and Dida 2559 print proceeds that include extra shares; base gross figures are 225.0m, 224.7m and 234.546m HKD. Printed amounts and their bases survive separately. SDMC 0901's evening filing was truncated; the complete 27 May 2026 morning filing `2026052700001.pdf` is now also in its manifest. The roster retains supplemental same-deal allotment links without moving the listing-date estimate to the next day.
+
+Cornerstone review covers all 524 stocks, with 138 no-tranche cases reviewed against prospectus/allotment context. Partial table parses cannot replace a complete group list or percentage. Connected clients and waiver allottees are not automatically cornerstone investors: Tongshifu 0664's single cornerstone is **6.75%**, and the following consent table must not be included. Kinwong 3228's filed total is **34,788,400 shares / 47.69%**; E Fund's group total must be counted once, while both E Fund subscribers and Zhongji Innolight's VERTEXVEST vehicle are disclosed in the names. HTML and Excel use identical canonical lists and percentages, including explicit no-tranche text. Subscription displays retain two decimals and up to three when filed; cornerstone percentage displays use one decimal.
+
+Tab order is IPO Live, AH, Lock-up, Screener, Database, then reference sheets. IPO Live keeps five visible columns. **B5 selects Sector/Subsector**, and **H34 selects the broad sector for the second subsector-average chart**. The first chart remains the nine broad-sector averages. Changes exclude unavailable quotes and zero previous close. AH retains **B4 code selection / E4 Stored or Bloomberg**, with Stored default; 62 pairs, date-aligned A/H/FX snapshots, history to listing-to-TODAY in Bloomberg mode. Screener freezes only columns A:B (`C1`), with no row freeze. Existing professional band colours remain.
+
+`lockup_events.json` holds **1,064 group/date rows**, **770 dated events**, covering every stock. There are **240 dated cornerstone schedules**, **156 unestablished cornerstone expiries**, and **138 no-tranche cases**. This is the original filed schedule, not a record of actual sales or later waivers. Display the LAST day locked; the first day after is in the date's comment. A six-month date is derived only where the filing explicitly says “from and including” (or “inclusive of”) listing. Controller second-period restrictions can concern loss of control, rather than all sales; keep their label distinct. The delivered Excel and HTML windows use exactly seven HK trading sessions; there is no calendar-day selector. Internal calendar-window comparisons remain in the evidence batch for review. Anchor the last completed session on/before expiry; require exact, positive-volume endpoint closes; no carry over suspension gaps. Compound all splits from the common action loader. Price-only returns exclude dividends/rights value. Upcoming events have no before/after numbers. Snapshot is through **2 October 2026**.
+
+`refresh_filing_reviews.py` reviews cached sources for new stocks; `refresh_lockup_windows.py` updates incomplete event windows. Both run in Mac and bundled refresh workflows. Completed exact windows remain stable. Source-review modules and evidence batches are embedded in the standalone bundle. `fix_oversub.py` now uses the own-tranche parser, and allocation table matching is case-insensitive. `ipo.py build` stops on workbook build failure.
+
+Run the full gate battery plus `tools/test_source_reviews.py`, `tools/test_monitors.py`, and `tools/test_deliverable_review.py`. The latter checks all 524 HTML records, every displayed numeric Database cell, full cornerstone/subscription parity, all lock-up caches and trading-session formulas. Bloomberg calls are linted and surrounding logic is computed with simulated quotes; a Bloomberg terminal is still required to verify actual add-in execution. Native Excel inspection was unavailable because the Mac was locked; Artifact layout renders and automated checks were used.
+
+HTML has a dedicated **Lock-up** tab, with sector, company and holder-group/date selectors, before/after return tiles, and an A/H-style line chart covering day −7 to +7. The chart is rebased to the expiry reference close = 0%; returns themselves retain P0/P−7−1 and P+7/P0−1. `Trading sessions.path` stores all 15 offset/date/split-neutral-close observations; unknown or suspended observations stay null, breaking the plotted line. Hover gives the exact date and close. All 7,440 stored observations reconcile to cached raw histories and the common split adjustments. `tools/test_lockup_html.py` exercises every one of the 1,064 events, selectors, gaps, table row clicks, and both themes. Source dates stay linked to their HKEX PDF pages.
+
+
+### Selectable Excel lock-up chart and investor-name review — 8 October 2026
+
+Lock-up has a native line chart and the complete 1,064-event table. B4 chooses the H code; E4 chooses the holder-group/date event (Auto default). Auto uses the same stock/event priority as HTML. A stale event label triggers an explicit Auto fallback notice; invalid stock codes blank the metrics and graph. The chart uses the same 15 split-neutral observations as HTML, from -7 to +7 HK trading sessions around day 0. Intentional #N/A values in hidden Chart Data are graph gaps, not missing returns replaced with zero. IPO date is a typed sortable date in column E; last locked date is F, before/after returns G:H. Table header is row 28; data begin row 29. The top chart and summary show the actual selected event and IPO date.
+
+Name-comparison rules live in data/investor_aliases.json, with primary references. MLP, Millennium and Integrated Core Strategies compare under Millennium; HHLR/HHLRA/Hillhouse, JPM asset-management legal entities, and ADIA have explicit comparable keys. CPP segregated accounts managed by HHLRA retain a separate key. Individual stock rosters retain distinct legal subscribers (e.g. Value Partners Limited and Value Partners Hong Kong Limited; mainland and HK E Fund); the league counts a deal once per investor family. Never merge separate legal vehicles just because one name is a prefix of another.
+
+Internal audit lessons (do not add an Excel audit tab): source table rows continue across PDF pages. Dates, page numbers, Yes/No status and footnotes must never become investor names. CATL previously had 18 contaminated names: its complete final-allotment roster has 23 groups. Zijin Gold FIL and Gaoyi/CSICM, NSING Kaifeng/Wider Huge, AICT Greenwoods/GF Fund, and Yangtze Optical Foresight/ADIA demonstrate adjacent-row contamination. Review the complete roster; an exact substring in a cornerstone chapter does not prove row membership or completeness. A manually corrected name does not certify every other name in that stock list. Each corrected name retains page, URL and downloaded-file SHA evidence in cornerstone_name_corrections.json. Raw spellings remain available. Numeric/source uncertainty remains in the external review files; do not call retained figures independently verified. A passing arithmetic gate cannot establish a source value.
+
+Native Mac Excel opened the workbook without a repair prompt and rendered the default chart and summary at normal zoom. Its Microsoft 365 installation is view-only, so editable selector changes are tested by the spreadsheet evaluator, not claimed as native recalculation. Bloomberg add-in calls still require the desk terminal. Existing quotes remain the 2 October snapshot. New charts do not fetch Bloomberg data.
+
+Final source-confidence counts: 524 stocks, 37,771 scalar numeric entries across 99 fields, no arithmetic failures. Primary subscription readings cover all 524 public tranches and 521 institutional tranches, with the three documented N/A cases retained. There are 273 annual revenue/profit cells needing fresh unambiguous row confirmation, 226 cornerstone legal-name/group confirmations outstanding, and 156 unestablished cornerstone expiry dates. These are unresolved evidence items, not verified values. Sixteen stock rosters have targeted, page-and-hash-backed name corrections. Do not treat those targeted corrections as certification of untouched roster members. The delivered lock-up paths remain exactly the 2 October snapshot.
+
+QA includes offline bundle reproduction, all 1,064 HTML event graphs, every numeric Database cell and HTML record, source-review regressions, all 62 A/H selectors, stored histories and simulated Bloomberg switching, future-stock/event extension, and scope preservation of other sheets' values, formulae, styles, validations, native charts and conditional formats. Mac Excel visually confirms the final chart, IPO date, Screener and Database colours; editing is unavailable in its view-only installation. Keep these audit notes in maintenance/evidence files, not an Excel audit tab.
+
+
+## 12 October 2026 — market monitors, 30-session lock-ups and primary capital review
+
+This delivery keeps the canonical Database/Screener at 524 deals. Only IPO Live and A/H monitoring extend to the seven-year listing roster: 190 additional Main Board listings from the 2019/2020 HKEX Factbooks produce 714 live tickers and 68 A/H pairs. Supplementary records are in market_supplement.json, not deals.json; company codes identify securities. The additional A/H lines are Pharmaron, Tigermed, Hepalink, InnoCare, RemeGen and Haier Smart Home. An introduction or an A line listed after the H debut does not have an invented IPO premium. Stored prices remain dated, through 2 October; individual series retain actual last observation dates.
+
+IPO Live has five columns, LAST_PRICE, change against PX_YEST_CLOSE, sector/subsector classification and two average-change charts. Positive moves are green and negative red. Missing prices and nonpositive prior closes do not enter averages. B5 changes classification; H34 selects the broad sector for the subsector chart. Screener freezes A:B only; Database/Screener keep the professional group bands. Important tabs have muted identifying colours.
+
+AH uses B4 for H/A code and E4 for Stored/Bloomberg. G/H show current premium minus the premium on the last observed H date on/before seven calendar days or one calendar month earlier, in percentage points. The one-month reference uses EDATE, not 21 trading sessions. Both modes use raw A/H/FX price bases, dated alignment and ten-day A/five-day FX carry limits. Independent Bloomberg BDH output areas prevent spill collisions. Four selectable histories compare on their actual numeric date coordinates in an XY chart with lines, so a 2019 listing and a 2026 listing cannot be aligned by row number. The primary chart remains separately selectable. Headered BDH replies must be matched to the first data date; never index row one as a price/date. Filled formulas use ROW offsets rather than literal exemplar offsets. A valid current quote can append TODAY; missing, stale or wrong-security histories do not silently show stored prices under the live label. Native charts have bounded series and truthful opening caches, including legend labels.
+
+Huaqin's H/A ex-entitlement mismatch remains excluded. Pharmaron has two 5-for-10 events: H/A ex dates are 6/14 June 2022 and 18/27 July 2023. Each mismatch interval is excluded, including stale pre-ex A quotes carried after its own ex date. Keep all reviewed events in ah_entitlement_reviews.json; checking only the latest event would create a false historical premium. IPO and current premiums outside the intervals remain available.
+
+Peer Trades tracks six product pairs, including 9856/3308. Live quotes use LAST_PRICE and PX_YEST_CLOSE; independent stored/live chart selection is E4. Relative prices are rebased to the first common observed session; spread is A return minus B return in percentage points, not the raw-price difference. A/B price ratio is shown separately. BDH uses capital adjustments, with dividend adjustments disabled. Stored Tencent raw histories are normalized once; Yahoo Close is already split-adjusted and must not be scaled again. Product peers have different product mixes, customer exposures and valuation risks, recorded concisely next to each pair. Offline HTML uses dated snapshots and cannot execute the Bloomberg add-in.
+
+Lock-up displays 396 actual cornerstone schedules for 386 companies; no-tranche rows and unrelated holder restrictions stay excluded. Returns and 61-observation graphs now use exactly 30 HK trading sessions before/after day 0. Day 0 is the final HK session on/before the last locked day. IPO date, cornerstone percentage of base offer, since-IPO return and base deal size are included. Four stock selectors and an expiry-date cohort range are provided in Excel; HTML has cohort/all/selected-stock comparisons. Curves are normalized at their own observed reference close; cohort averages use only available observations at each offset. This composition can change across the window. Missing observations are gaps; future endpoints remain unavailable. Yahoo raw Close was used where Tencent blocked requests; do not apply split factors a second time. 0917's unavailable history remains unresolved rather than fabricated.
+
+Of previously undated cornerstone events, 89 now have explicit prospectus wording establishing six months from and inclusive of the listing date. The six-month anniversary is the first unlocked date; the preceding date is the last locked day. These dates are derived from the issuer's express clause, never inferred from a generic market convention. Sixty-seven visible events still lack sufficient evidence; their dates, returns and curves remain blank. The original filed schedule does not prove actual selling or rule out later waivers.
+
+The primary-source review downloaded/extracted 1,976 filing parts without download failures. The durable desk_source_review batch carries accepted listing share capital/treasury counts and final over-allotment outcomes/quantities. Primary evidence, pages and document hashes are in data/desk_review_20261012/source_evidence.json. Final exercise quantity is distinct from stabilising secondary-market purchases and from the facility's maximum percentage. Do not replace the maximum greenshoe facility with actual over-allocation: use over_allocation_pct for that separate quantity. Partial exercise followed by lapse of the remaining option remains Partial. A separate capacity review confirms 382 maximum-grant readings, with source page/hash evidence in option_capacity_evidence.json. This includes SF REIT 2191 at 5% (Units), 2440/1334/3288/2651 at 15%, and Red Avenue 9607 at zero under its explicit no-option clause. The early parser confused company float or employee awards with option capacity; require an express grant and a base-offer denominator. Parenthesized percentages, Units, and “no more than” clauses are valid grammatical variants. The six initially withheld legacy figures are now resolved by targeted primary readings. Maximum capacity, actual over-allocation and final exercise quantity stay separate. Additional complete-prospectus review covered 173 suspect documents, with 50 expanded narrative extractions, without download failures. Specific corrections include 1021/2219 Partial, 9927 Lapsed (not upsizing), and 2657 Full. The combined BBG Verify sheet compares numeric exercised shares with numeric exercised shares; final outcome is a separate column. The former second verification sheet is appended after the main block. Listing-close market cap and offer-price company market cap are separately labelled and not colour compared as if identical.
+
+Market cap uses filed total issued shares excluding identified treasury shares, multiplied by H offer price. A-line estimated cap no longer overwrites a higher-priority filed share count. Major source corrections include 3308, 2525 and 9609; resulting P/E/P/S and effective float are recalculated. Merdeka 6228 is an HDR: ten underlying shares per HDR (prospectus PDF p24); issued underlying shares must be multiplied by HDR offer price / 10. Its ratio evidence is durable and the source acceptance script handles it explicitly.
+
+2147 Zhengwei's raw historical debut remains HK$0.56. Its six-for-one rights at HK$0.40, ex 9 September 2026, add a Bloomberg entitlement factor based on the last cum-rights HK$0.585 close. Combined with the earlier consolidation, current comparable debut is 8.16410256. Bloomberg reconciliation factors must be evaluated as of the terminal observation date: the 26 August fixture is still 11.2 because the rights event had not occurred. Never change raw price returns just to force equality with an adjusted terminal print.
+
+The visible Analogs tab is removed; hidden Scoring Stats retains the screener's base-rate inputs. Numeric audit still covers every scalar value; 273 annual financial cells need fresh unambiguous primary-row confirmation. Retained figures are not promoted to verified status by arithmetic checks. The current review has 568 material numeric changes against the previous delivery; the earlier 358-correction history is retained separately in numeric_changes_history.json. Keep source-confidence notes in maintenance/evidence files, not an Excel audit tab. Word research remains separate and is preserved; it has not been extended to the six new monitoring pairs.
+
+HTML is approximately 2 MB, with self-contained gzip/fflate payloads and chart-only values rounded to eight decimal places; canonical deal fields retain precision. Browser Save As/reopen remains offline. A ZIP is also supplied for transfer. Shared-drive quota failures still require space on the server; compression cannot clear a full quota. Tables, graphs, selectors and tooltips are checked in both themes; unnecessary instructional footnotes have been shortened.
+
+Development workflow: after changing the monitoring roster, history or event universe, run prepare_desk_chart_data.py and re-author the market layout via create_market_template.mjs before build/export. The pre-authored template and new data/modules are included in the standalone hk_ipo.py bundle. Check all gates, the controlled headered-Bloomberg probes in test_desk_comparisons.py/test_monitors.py, all A/H and event charts, comparison selectors and offline saved-file reopening. Native visual QA uses actual cached values in a disposable bounded workbook; simulated live quotes must never enter a deliverable. Actual add-in execution requires a Bloomberg terminal and is not claimed by the controlled tests.

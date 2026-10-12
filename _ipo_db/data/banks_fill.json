@@ -1,0 +1,1899 @@
+{
+ "note": "sponsors / bookrunners re-read from each prospectus's parties section; see ipo_lib/fill_banks.py",
+ "deals": [
+  {
+   "code": "0013",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Morgan Stanley Asia Limited",
+    "Jefferies Hong Kong Limited",
+    "China International Capital Corporation Hong Kong Securities Limited"
+   ],
+   "bookrunners": [
+    "Morgan Stanley Asia Limited",
+    "Jefferies Hong Kong Limited",
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Credit Suisse (Hong Kong) Limited",
+    "Morgan Stanley & Co. International plc",
+    "London E14 4QA United Kingdom Jefferies Hong Kong Limited",
+    "The Hongkong and Shanghai Banking Corporation Limited",
+    "Macquarie Capital Limited",
+    "Deutsche Bank AG, Hong Kong Branch",
+    "BOCI Asia Limited",
+    "CMB International Capital Limited",
+    "China Merchants Securities (HK) Co., Limited"
+   ]
+  },
+  {
+   "code": "0020",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "bookrunners": [
+    "CMB International Capital Limited",
+    "DBS Asia Capital Limited",
+    "China Merchants Securities (HK) Co., Limited",
+    "BOCI Asia Limited",
+    "S AMENDMENTS TO THE PROSPECTUS CCB International Capital Limited",
+    "UOB Kay Hian (Hong Kong) Limited",
+    "ICBC International Capital Limited",
+    "Lu International (Hong Kong) Limited",
+    "ABCI Capital Limited",
+    "Orient Securities (Hong Kong) Limited",
+    "Futu Securities International (Hong Kong) Limited",
+    "Zero2IPO Securities Limited"
+   ]
+  },
+  {
+   "code": "0068",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "J.P. Morgan Securities (Far East) Limited",
+    "CCB International Capital Limited"
+   ],
+   "bookrunners": [
+    "J.P. Morgan Securities (Asia Pacific) Limited",
+    "CCB International Capital Limited",
+    "Tiger Brokers (HK) Global Limited",
+    "ABCI Capital Limited",
+    "BOCI Asia Limited"
+   ]
+  },
+  {
+   "code": "0100",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "UBS Securities Hong Kong Limited"
+   ],
+   "bookrunners": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "UBS AG Hong Kong Branch",
+    "Goldman Sachs (Asia) L.L.C",
+    "Morgan Stanley Asia Limited",
+    "Futu Securities International (Hong Kong) Limited",
+    "Tiger Brokers (HK) Global Limited"
+   ]
+  },
+  {
+   "code": "0314",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Morgan Stanley Asia Limited",
+    "Haitong International Capital Limited",
+    "Haitong International Securities Company Limited"
+   ]
+  },
+  {
+   "code": "0325",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "and Sponsor-OC Goldman Sachs (Asia) L.L.C",
+    "Huatai Financial Holdings (Hong Kong) Limited"
+   ],
+   "bookrunners": [
+    "Goldman Sachs (Asia) L.L.C",
+    "Huatai Financial Holdings (Hong Kong) Limited"
+   ]
+  },
+  {
+   "code": "0501",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "UBS Securities Hong Kong Limited",
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Ping An of China Capital (Hong Kong) Company Limited",
+    "GF Capital (Hong Kong) Limited"
+   ],
+   "bookrunners": [
+    "UBS AG Hong Kong Branch",
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Ping An Securities (Hong Kong) Company Limited",
+    "GF Securities (Hong Kong) Brokerage Limited",
+    "CLSA Limited",
+    "Haitong International Securities Company Limited"
+   ]
+  },
+  {
+   "code": "0537",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "CITIC Securities (Hong Kong) Limited"
+   ],
+   "bookrunners": [
+    "CLSA Limited"
+   ]
+  },
+  {
+   "code": "0600",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Guotai Junan Capital Limited",
+    "BOCOM International (Asia) Limited"
+   ],
+   "bookrunners": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "BOCOM International Securities Limited",
+    "GF Securities (Hong Kong) Brokerage Limited",
+    "Ping An Securities (Hong Kong) Company Limited",
+    "Guotai Junan Securities (Hong Kong) Limited",
+    "Futu Securities International (Hong Kong) Limited",
+    "Livermore Holdings Limited",
+    "Golden Continent Securities Co., Limited"
+   ]
+  },
+  {
+   "code": "0606",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "UBS AG Hong Kong Branch"
+   ]
+  },
+  {
+   "code": "0638",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "CITIC Securities (Hong Kong) Limited"
+   ],
+   "bookrunners": [
+    "CLSA Limited",
+    "SDICS International Securities (Hong Kong) Limited",
+    "CMB International Capital Limited",
+    "(Below in alphabetical order) ABCI Capital Limited",
+    "China Sunrise Securities (International) Limited"
+   ]
+  },
+  {
+   "code": "0666",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Morgan Stanley Asia Limited",
+    "CITIC Securities (Hong Kong) Limited"
+   ],
+   "bookrunners": [
+    "Morgan Stanley Asia Limited",
+    "CLSA Limited",
+    "The Hongkong and Shanghai Banking Corporation Limited",
+    "China Galaxy International Securities (Hong Kong) Co., Limited",
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Guotai Junan Securities (Hong Kong) Limited",
+    "CMB International Capital Limited",
+    "BOCI Asia Limited",
+    "ABCI Capital Limited"
+   ]
+  },
+  {
+   "code": "0668",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Rainbow Capital (HK) Limited",
+    "Industrial and Commercial Bank of China (Asia) Limited",
+    "Changsha Zhongdian Software Park Co., Ltd",
+    "Standard Chartered Bank (China) Co., Ltd",
+    "Shenzhen Branch",
+    "Citibank (China) Co., Ltd",
+    "Industrial and Commercial Bank of China Limited",
+    "Changsha Jinpeng Branch",
+    "Industrial Bank Co., Ltd",
+    "Changsha Branch"
+   ]
+  },
+  {
+   "code": "0699",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "UBS Securities Hong Kong Limited"
+   ],
+   "bookrunners": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "UBS AG Hong Kong Branch",
+    "ABCI Capital Limited",
+    "China Renaissance Securities (Hong Kong) Limited"
+   ]
+  },
+  {
+   "code": "0901",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "bookrunners": [
+    "China Securities (International) Corporate Finance Company Limited",
+    "CMB International Capital Limited",
+    "CCB International Capital Limited",
+    "ABCI Capital Limited",
+    "CNCB (Hong Kong) Capital Limited",
+    "Get Nice Securities Limited",
+    "Forthright Securities Company Limited",
+    "DIRECTORS AND P ARTIES INVOLVED IN THE GLOBAL OFFERING Roofer Securities Limited"
+   ]
+  },
+  {
+   "code": "0917",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Haitong International Capital Limited"
+   ],
+   "bookrunners": [
+    "Haitong International Securities Company Limited",
+    "Zhongtai International Securities Limited",
+    "CCB International Capital Limited",
+    "ABCI Capital Limited",
+    "SPDB International Capital Limited",
+    "BOCOM International Securities Limited",
+    "Quam Securities Limited"
+   ]
+  },
+  {
+   "code": "0999",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Huatai Financial Holdings (Hong Kong) Limited",
+    "UBS Securities Hong Kong Limited"
+   ],
+   "bookrunners": [
+    "Huatai Financial Holdings (Hong Kong) Limited",
+    "UBS AG Hong Kong Branch",
+    "Guoyuan Securities Brokerage (Hong Kong) Limited",
+    "CMB International Capital Limited",
+    "ABCI Capital Limited",
+    "ICBC International Securities Limited"
+   ]
+  },
+  {
+   "code": "1021",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Deutsche Securities Asia Limited"
+   ],
+   "bookrunners": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Deutsche Bank AG, Hong Kong Branch",
+    "Futu Securities International (Hong Kong) Limited",
+    "Zheshang International Financial Holdings Co., Limited"
+   ]
+  },
+  {
+   "code": "1024",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Morgan Stanley Asia Limited",
+    "Merrill Lynch Far East Limited",
+    "China Renaissance Securities (Hong Kong) Limited"
+   ],
+   "bookrunners": [
+    "Morgan Stanley & Co. International plc",
+    "Canary Wharf London E14 4QA United Kingdom Merrill Lynch (Asia Pacific) Limited",
+    "China Renaissance Securities (Hong Kong) Limited",
+    "ICBC International Securities Limited"
+   ]
+  },
+  {
+   "code": "1081",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Huatai Financial Holdings (Hong Kong) Limited",
+    "China Merchants Securities (HK) Co., Limited"
+   ],
+   "bookrunners": [
+    "Huatai Financial Holdings (Hong Kong) Limited",
+    "China Merchants Securities (HK) Co., Limited",
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Ping An Securities (Hong Kong) Company Limited"
+   ]
+  },
+  {
+   "code": "1111",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Rainbow Capital (HK) Limited"
+   ],
+   "bookrunners": [
+    "Rainbow Capital (HK) Limited",
+    "CCB International Capital Limited",
+    "ABCI Capital Limited",
+    "Cinda International Capital Limited",
+    "Zhong Jia Securities Limited",
+    "CMB International Capital Limited",
+    "SPDB International Capital Limited",
+    "Livermore Holdings Limited",
+    "Fosun International Securities Limited",
+    "Valuable Capital Limited",
+    "CEB International Capital Corporation Limited",
+    "Goldlink Securities Limited",
+    "Soochow Securities International Brokerage Limited",
+    "Silverbricks Securities Company Limited"
+   ]
+  },
+  {
+   "code": "1187",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Huatai Financial Holdings (Hong Kong) Limited",
+    "BNP Paribas Securities (Asia) Limited"
+   ]
+  },
+  {
+   "code": "1191",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Frost & Sullivan (Beijing) Inc., Shanghai Branch",
+    "Transfer Pricing Consultant Grant Thornton Singapore Pte Ltd",
+    "Bank of China (Hong Kong) Limited",
+    "China CITIC Bank International Limited",
+    "Agricultural Bank of China Suzhou Qingjianhu Branch"
+   ]
+  },
+  {
+   "code": "1204",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "China Tonghai Capital Limited"
+   ],
+   "bookrunners": [
+    "China Tonghai Securities Limited",
+    "Blackwell Global Securities Limited",
+    "BOCOM International Securities Limited",
+    "CCB International Capital Limited",
+    "China Galaxy International Securities (Hong Kong) Co., Limited",
+    "CMBC Securities Company Limited",
+    "Eddid Securities and Futures Limited",
+    "Fortune (HK) Securities Limited",
+    "Innovax Securities Limited",
+    "Zhongtai International Securities Limited"
+   ]
+  },
+  {
+   "code": "1228",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Morgan Stanley Asia Limited",
+    "Jefferies Hong Kong Limited"
+   ],
+   "bookrunners": [
+    "Morgan Stanley Asia Limited",
+    "Jefferies Hong Kong Limited",
+    "Haitong International Securities Company Limited",
+    "Morgan Stanley & Co. International plc",
+    "China Merchants Securities (HK) Co., Limited",
+    "BOCI Asia Limited"
+   ]
+  },
+  {
+   "code": "1236",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Haitong International Capital Limited",
+    "Guotai Junan Capital Limited"
+   ],
+   "bookrunners": [
+    "Orient Securities (Hong Kong) Limited",
+    "Yuet Sheung International Securities Limited",
+    "Goldbridge Securities Limited"
+   ]
+  },
+  {
+   "code": "1284",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Emperor Corporate Finance Limited",
+    "Lego Corporate Finance Limited"
+   ],
+   "bookrunners": [
+    "Emperor Corporate Finance Limited",
+    "Lego Securities Limited",
+    "Emperor Securities Limited",
+    "China Galaxy International Securities (Hong Kong) Co., Limited"
+   ]
+  },
+  {
+   "code": "1318",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "China International Capital Corporation Hong Kong Securities Limited"
+   ],
+   "bookrunners": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "China Galaxy International Securities (Hong Kong) Co., Limited",
+    "Huatai Financial Holdings (Hong Kong) Limited",
+    "Guotai Junan Securities (Hong Kong) Limited",
+    "CCB International Capital Limited",
+    "ABCI Capital Limited",
+    "CMBC Securities Company Limited"
+   ]
+  },
+  {
+   "code": "1333",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "CMB International Capital Limited"
+   ]
+  },
+  {
+   "code": "1384",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "CITIC Securities (Hong Kong) Limited",
+    "CMBC International Capital Limited",
+    "Guotai Junan Capital Limited",
+    "SPDB International Capital Limited",
+    "BOCOM International (Asia) Limited"
+   ],
+   "bookrunners": [
+    "CLSA Limited",
+    "CMBC Securities Company Limited",
+    "SPDB International Capital Limited",
+    "BOCOM International Securities Limited"
+   ]
+  },
+  {
+   "code": "1405",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Merrill Lynch (Asia Pacific) Limited",
+    "Financial Advisor Ampere Partners Limited"
+   ],
+   "bookrunners": [
+    "Merrill Lynch (Asia Pacific) Limited"
+   ]
+  },
+  {
+   "code": "1489",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "bookrunners": [
+    "China Tonghai Securities Limited",
+    "Realord Asia Pacific Securities Limited"
+   ]
+  },
+  {
+   "code": "1490",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "ABCI Capital Limited"
+   ],
+   "bookrunners": [
+    "ABCI Capital Limited",
+    "SBI China Capital Financial Services Limited",
+    "Harvest International Securities Company Limited",
+    "BOCOM International Securities Limited",
+    "Haitong International Securities Company Limited",
+    "Futu Securities International (Hong Kong) Limited",
+    "Valuable Capital Limited",
+    "Yue Xiu Securities Company Limited"
+   ]
+  },
+  {
+   "code": "1609",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "CITIC Securities (Hong Kong) Limited",
+    "CCB International Capital Limited"
+   ],
+   "bookrunners": [
+    "CLSA Limited",
+    "CCB International Capital Limited",
+    "(Hong Kong) Co., Limited",
+    "CMBC Securities Company Limited",
+    "Open Securities Limited",
+    "Zheshang International Financial Holdings Co., Limited"
+   ]
+  },
+  {
+   "code": "1688",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Guotai Junan Capital Limited"
+   ],
+   "bookrunners": [
+    "Guotai Junan Securities (Hong Kong) Limited",
+    "CLSA Limited",
+    "J.P. Morgan Securities (Asia Pacific) Limited",
+    "Citigroup Global Markets Asia Limited",
+    "Futu Securities International (Hong Kong) Limited",
+    "Tiger Brokers (HK) Global Limited"
+   ]
+  },
+  {
+   "code": "1768",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Goldman Sachs (Asia) L.L.C",
+    "Huatai Financial Holdings (Hong Kong) Limited"
+   ],
+   "bookrunners": [
+    "Goldman Sachs (Asia) L.L.C",
+    "Huatai Financial Holdings (Hong Kong) Limited",
+    "Deutsche Bank AG, Hong Kong Branch",
+    "Haitong International Securities Company Limited",
+    "Futu Securities International (Hong Kong) Limited"
+   ]
+  },
+  {
+   "code": "1828",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Morgan Stanley Asia Limited",
+    "Goldman Sachs (Asia) L.L.C"
+   ],
+   "bookrunners": [
+    "Morgan Stanley Asia Limited",
+    "Goldman Sachs (Asia) L.L.C",
+    "CMB International Capital Limited",
+    "The Hongkong and Shanghai Banking Corporation Limited",
+    "and Syndicate Capital Market Intermediaries Morgan Stanley Asia Limited"
+   ]
+  },
+  {
+   "code": "1855",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "China Tonghai Capital Limited"
+   ],
+   "bookrunners": [
+    "China Tonghai Securities Limited",
+    "CMBC Securities Company Limited",
+    "Southwest Securities (HK) Brokerage Limited",
+    "SPDB International Capital Limited"
+   ]
+  },
+  {
+   "code": "1879",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Haitong International Capital Limited"
+   ],
+   "bookrunners": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Haitong International Securities Company Limited",
+    "The Hongkong and Shanghai Banking Corporation Limited",
+    "Futu Securities International (Hong Kong) Limited",
+    "Shenwan Hongyuan Securities (H.K.) Limited"
+   ]
+  },
+  {
+   "code": "1880",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "UBS Securities Hong Kong Limited"
+   ],
+   "bookrunners": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "UBS AG Hong Kong Branch",
+    "CCB International Capital Limited",
+    "CLSA Limited",
+    "Haitong International Securities Company Limited",
+    "ABCI Capital Limited",
+    "BOCI Asia Limited",
+    "BOCOM International Securities Limited",
+    "CMB International Capital Limited",
+    "DBS Asia Capital Limited",
+    "Guotai Junan Securities (Hong Kong) Limited",
+    "ICBC International Capital Limited"
+   ]
+  },
+  {
+   "code": "1927",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Lego Corporate Finance Limited"
+   ]
+  },
+  {
+   "code": "1965",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Haitong International Capital Limited"
+   ]
+  },
+  {
+   "code": "1989",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "CITIC Securities (Hong Kong) Limited",
+    "HSBC Corporate Finance (Hong Kong) Limited"
+   ]
+  },
+  {
+   "code": "2097",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Merrill Lynch (Asia Pacific) Limited",
+    "Goldman Sachs (Asia) L.L.C",
+    "UBS Securities Hong Kong Limited"
+   ],
+   "bookrunners": [
+    "Merrill Lynch (Asia Pacific) Limited",
+    "Goldman Sachs (Asia) L.L.C",
+    "UBS AG Hong Kong Branch",
+    "Huatai Financial Holdings (Hong Kong) Limited",
+    "ICBC International Securities Limited",
+    "GF Securities (Hong Kong) Brokerage Limited",
+    "CMB International Capital Limited"
+   ]
+  },
+  {
+   "code": "2121",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "UBS Securities Hong Kong Limited",
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "China Renaissance Securities (Hong Kong) Limited"
+   ],
+   "bookrunners": [
+    "UBS AG Hong Kong Branch",
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "China Renaissance Securities (Hong Kong) Limited",
+    "ICBC International Capital Limited",
+    "ICBC International Securities Limited"
+   ]
+  },
+  {
+   "code": "2147",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Grand Moore Capital Limited"
+   ],
+   "bookrunners": [
+    "Grand Moore Capital Limited",
+    "Valuable Capital Limited",
+    "China PA Securities (Hong Kong) Company Limited",
+    "Cinda International Capital Limited",
+    "Fortune (HK) Securities Limited",
+    "Guotai Junan Securities (Hong Kong) Limited",
+    "Zhong Y ang Securities Limited"
+   ]
+  },
+  {
+   "code": "2160",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "J.P. Morgan Securities (Far East) Limited",
+    "Citigroup Global Markets Asia Limited",
+    "China International Capital Corporation Hong Kong Securities Limited"
+   ],
+   "bookrunners": [
+    "J.P. Morgan Securities (Asia Pacific) Limited",
+    "Citigroup Global Markets Asia Limited",
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "J.P. Morgan Securities plc",
+    "Citigroup Global Markets Limited"
+   ]
+  },
+  {
+   "code": "2170",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "CLSA Capital Markets Limited"
+   ],
+   "bookrunners": [
+    "CLSA Limited",
+    "Citigroup Global Markets Asia Limited",
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Citigroup Global Markets Limited",
+    "1 1 2– China International Capital Corporation Hong Kong Securities Limited",
+    "Haitong International Securities Company Limited",
+    "CMB International Capital Limited",
+    "ICBC International Capital Limited",
+    "SPDB International Capital Limited"
+   ]
+  },
+  {
+   "code": "2172",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "J.P. Morgan Securities (Far East) Limited",
+    "China International Capital Corporation Hong Kong Securities Limited"
+   ],
+   "bookrunners": [
+    "J.P. Morgan Securities (Asia Pacific) Limited",
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "J.P. Morgan Securities plc",
+    "Futu Securities International (Hong Kong) Limited",
+    "Livermore Holdings Limited"
+   ]
+  },
+  {
+   "code": "2192",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Frost & Sullivan (Beijing) Inc., Shanghai Branch",
+    "Bank of China (Hong Kong) Limited",
+    "KY1-1102 Cayman Islands Hong Kong Share Registrar Tricor Investor Services Limited",
+    "Somerley Capital Limited",
+    "Bank of Beijing Co., Ltd., Beijing Branch",
+    "The Industrial Bank Co., Ltd., Beijing Branch",
+    "Sanyuanqiao Sub-branch",
+    "CORPORATE INFORMATION China Citic Bank Corporation Limited, Beijing Branch",
+    "Jiuxianqiao Sub-branch",
+    "DBS Bank (China) Limited, Beijing Branch"
+   ]
+  },
+  {
+   "code": "2195",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "bookrunners": [
+    "Zhong J ia Securities Limited",
+    "MTF Securities Limited"
+   ]
+  },
+  {
+   "code": "2197",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Goldman Sachs (Asia) L.L.C",
+    "China International Capital Corporation Hong Kong Securities Limited"
+   ]
+  },
+  {
+   "code": "2219",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Haitong International Capital Limited",
+    "Industrial and Commercial Bank of China (Asia) Limited",
+    "Hong Kong Share Registrar Computershare Hong Kong Investor Services Limited",
+    "Industrial and Commercial Bank of China Co., Ltd., Xiamen Xinglin Branch"
+   ]
+  },
+  {
+   "code": "2228",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "CITIC Securities (Hong Kong) Limited"
+   ],
+   "bookrunners": [
+    "CLSA Limited",
+    "Sole Financial Advisor CMB International Capital Limited",
+    "Jefferies Hong Kong Limited",
+    "Deutsche Bank AG, Hong Kong Branch",
+    "CMB International Capital Limited",
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "SPDB International Capital Limited",
+    "Guosen Securities (HK) Capital Company Limited",
+    "Fosun International Securities Limited",
+    "ABCI Capital Limited",
+    "BOCI Asia Limited",
+    "CCB International Capital Limited",
+    "ICBC International Securities Limited"
+   ]
+  },
+  {
+   "code": "2245",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "CMB International Capital Limited"
+   ],
+   "bookrunners": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "CMB International Capital Limited",
+    "BOCI Asia Limited",
+    "DBS Asia Capital Limited",
+    "ABCI Capital Limited",
+    "BNP Paribas Securities (Asia) Limited"
+   ]
+  },
+  {
+   "code": "2251",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "UBS Securities Hong Kong Limited",
+    "CLSA Capital Markets Limited",
+    "UBS AG Hong Kong Branch",
+    "CLSA Limited"
+   ],
+   "bookrunners": [
+    "UBS AG Hong Kong Branch",
+    "CLSA Limited",
+    "CMB International Capital Limited",
+    "Haitong International Securities Company Limited",
+    "Essence International Securities (Hong Kong) Limited",
+    "Fosun Hani Securities Limited",
+    "GF Securities (Hong Kong) Brokerage Limited",
+    "Guodu Securities (Hong Kong) Limited",
+    "SPDB International Capital Limited"
+   ]
+  },
+  {
+   "code": "2257",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Nomura International (Hong Kong) Limited"
+   ],
+   "bookrunners": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "The Hongkong and Shanghai Banking Corporation Limited",
+    "Nomura International (Hong Kong) Limited",
+    "China Merchants Securities (HK) Co., Limited",
+    "China PA Securities (Hong Kong) Company Limited",
+    "Alpha Win Capital Limited",
+    "Valuable Capital Limited"
+   ]
+  },
+  {
+   "code": "2260",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "CMBC International Capital Limited"
+   ],
+   "bookrunners": [
+    "CMBC Securities Company Limited",
+    "ABCI Capital Limited",
+    "CCB International Capital Limited",
+    "Essence International Securities (Hong Kong) Limited",
+    "CEB International Capital Corporation Limited",
+    "China Everbright Securities (HK) Limited",
+    "China Industrial Securities International Capital Limited",
+    "Livermore Holdings Limited",
+    "SBI China Capital Financial Services Limited",
+    "China Tonghai Securities Limited",
+    "Zhongtai International Securities Limited"
+   ]
+  },
+  {
+   "code": "2268",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Morgan Stanley Asia Limited",
+    "Goldman Sachs (Asia) L.L.C",
+    "J.P. Morgan Securities (Far East) Limited"
+   ],
+   "bookrunners": [
+    "Morgan Stanley Asia Limited",
+    "Goldman Sachs (Asia) L.L.C",
+    "J.P. Morgan Securities (Asia Pacific) Limited",
+    "Citigroup Global Markets Asia Limited",
+    "Huatai Financial Holdings (Hong Kong) Limited",
+    "J.P. Morgan Securities plc",
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Citigroup Global Markets Limited",
+    "Canary Wharf London E14 5LB United Kingdom Huatai Financial Holdings (Hong Kong) Limited"
+   ]
+  },
+  {
+   "code": "2290",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "DBS Asia Capital Limited",
+    "Industry consultant Frost & Sullivan Limited",
+    "AVISTA Valuation Advisory Limited",
+    "Receiving bank DBS Bank (Hong Kong) Limited",
+    "Bank of China (Hong Kong) Limited",
+    "KY1-1111 Cayman Islands Hong Kong Share Registrar Tricor Investor Services Limited",
+    "Principal banks DBS Bank (Hong Kong) Limited",
+    "Hang Seng Bank, Limited",
+    "The Hongkong and Shanghai Banking Corporation Limited",
+    "Chong Hing Bank Limited"
+   ]
+  },
+  {
+   "code": "2350",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Innovax Capital Limited"
+   ],
+   "bookrunners": [
+    "and Innovax Securities Limited"
+   ]
+  },
+  {
+   "code": "2372",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "bookrunners": [
+    "First Shanghai Securities Limited",
+    "CRIC Securities Company Limited",
+    "Zhongtai International Securities Limited"
+   ]
+  },
+  {
+   "code": "2378",
+   "sponsors_display": "N/A — existing listing (2021 share offer)",
+   "src": "Prudential 20-Sep-2021 prospectus, pp.33–35 (parties: coordinators/bookrunners; no sponsor appointed); p.33 explicitly says this is not an initial public offering. https://www.prudentialplc.com/content/dam/prudential-plc/about-us/corporate-governance-and-corporate-actions/historical-information/equity-raise/Prospectus-20-09-2021.pdf"
+  },
+  {
+   "code": "2390",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Credit Suisse (Hong Kong) Limited",
+    "J.P. Morgan Securities (Far East) Limited",
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "CMB International Capital Limited"
+   ],
+   "bookrunners": [
+    "Credit Suisse (Hong Kong) Limited",
+    "J.P. Morgan Securities (Asia Pacific) Limited",
+    "China International Capital Corporation Hong Kong Securities Limited"
+   ]
+  },
+  {
+   "code": "2411",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Morgan Stanley Asia Limited"
+   ],
+   "bookrunners": [
+    "Morgan Stanley Asia Limited",
+    "CMB International Capital Limited"
+   ]
+  },
+  {
+   "code": "2433",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Grande Capital Limited"
+   ],
+   "bookrunners": [
+    "CMBC Securities Company Limited",
+    "Grande Capital Limited",
+    "SPDB International Capital Limited",
+    "BOCOM International Securities Limited",
+    "I Win Securities Limited",
+    "China Everbright Securities (HK) Limited",
+    "Soochow Securities International Brokerage Limited",
+    "Alliance Capital Partners Limited"
+   ]
+  },
+  {
+   "code": "2439",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Soochow Securities International Capital Limited"
+   ],
+   "bookrunners": [
+    "Soochow Securities International Brokerage Limited",
+    "Fosun International Securities Limited",
+    "VBG Capital Limited",
+    "Wealth Link Securities Limited",
+    "China Galaxy International Securities (Hong Kong) Co., Limited",
+    "Zhongtai International Securities Limited"
+   ]
+  },
+  {
+   "code": "2442",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "bookrunners": [
+    "Grande Capital Limited",
+    "Head & Shoulders Securities Limited"
+   ]
+  },
+  {
+   "code": "2443",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "CITIC Securities (Hong Kong) Limited",
+    "Haitong International Capital Limited"
+   ],
+   "bookrunners": [
+    "CLSA Limited",
+    "Haitong International S ecurities Company Limited",
+    "Fosun International Securities Limited",
+    "Central Hong Kong China Galaxy International Securities (Hong Kong) Co., Limited",
+    "Central Hong Kong CMB International Capital Limited",
+    "ABCI Securities Company Limited",
+    "BOCI Asia Limited",
+    "Futu Securities Internat ional (Hong Kong) Limited",
+    "Livermore Holdings Limited",
+    "Patrons Securities Limited",
+    "Ruibang Securities Limited",
+    "Central Hong Kong SPDB International Capital Limited",
+    "ABCI Capital Limited"
+   ]
+  },
+  {
+   "code": "2457",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Zhongtai International Capital Limited",
+    "OC Zhongtai International Securities Limited"
+   ],
+   "bookrunners": [
+    "Zhongtai International Securities Limited",
+    "BOCOM International Securities Limited",
+    "SPDB International Capital Limited",
+    "GF Securities (Hong Kong) Brokerage Limited",
+    "CEB International Capital Corporation Limited",
+    "Southwest Securities (HK) Brokerage Limited",
+    "First Shanghai Securities Limited",
+    "China Tonghai Securities Limited",
+    "Zheshang International Financial Holdings Co., Limited",
+    "ZMF Asset Management Limited"
+   ]
+  },
+  {
+   "code": "2475",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "CITIC Securities (Hong Kong) Limited",
+    "Goldman Sachs (Asia) L.L.C",
+    "China International Capital Corporation Hong Kong Securities Limited"
+   ],
+   "bookrunners": [
+    "CLSA Limited",
+    "Goldman Sachs (Asia) L.L.C",
+    "China International Capital Corporation Hong Kong Securities Limited"
+   ]
+  },
+  {
+   "code": "2476",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "J.P. Morgan Securities (Far East) Limited",
+    "China Securities (International) Corporate Finance Company Limited",
+    "GF Capital (Hong Kong) Limited"
+   ],
+   "bookrunners": [
+    "J.P. Morgan Securities (Asia Pacific) Limited",
+    "China Securities (International) Corporate Finance Company Limited",
+    "GF Securities (Hong Kong) Brokerage Limited",
+    "China International Capital Corporation Hong Kong Securities Limited"
+   ]
+  },
+  {
+   "code": "2487",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "China International Capital Corporation Hong Kong Securities Limited"
+   ],
+   "bookrunners": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "UOB Kay Hian (Hong Kong) Limited",
+    "Futu Securities International (Hong Kong) Limited",
+    "Valuable Capital Limited"
+   ]
+  },
+  {
+   "code": "2489",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Innovax Capital Limited"
+   ],
+   "bookrunners": [
+    "Innovax Securities Limited",
+    "and CMIs Innovax Securities Limited",
+    "CCB International Capital Limited",
+    "BOCOM International Securities Limited",
+    "SPDB International Capital Limited",
+    "Citrus Securities Limited",
+    "Quam Securities Limited",
+    "Valuable Capital Limited",
+    "CMBC Securities Company Limited",
+    "First Shanghai Securities Limited",
+    "and CMI ABCI Capital Limited"
+   ]
+  },
+  {
+   "code": "2501",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Quam Capital Limited"
+   ],
+   "bookrunners": [
+    "Quam Securities Limited",
+    "ABCI Capital Limited",
+    "BOCOM International Securities Limited",
+    "China Galaxy International Securities (Hong Kong) Co., Limited",
+    "CMB International Capital Limited",
+    "Guotai Junan Securities (Hong Kong) Limited",
+    "Zhongtai International Securities Limited",
+    "CMBC Securities Company Limited",
+    "Eddid Securities and Futures Limited",
+    "Innovax Securities Limited",
+    "Valuable Capital Limited",
+    "Yue Xiu Securities Company Limited"
+   ]
+  },
+  {
+   "code": "2505",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "CMB International Capital Limited"
+   ],
+   "bookrunners": [
+    "CMB International Capital Limited",
+    "ABCI Capital Limited",
+    "ABCI Securities Company Limited"
+   ]
+  },
+  {
+   "code": "2507",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "bookrunners": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "ABCI Capital Limited",
+    "BOCI Asia Limited",
+    "China Galaxy International Securities (Hong Kong) Co., Limited",
+    "China Merchants Securities (HK) Co., Limited",
+    "CMB International Capital Limited",
+    "Futu Securities International (Hong Kong) Limited",
+    "Huatai Financial Holdings (Hong Kong) Limited",
+    "ICBC International Securities Limited",
+    "Tiger Brokers (HK) Global Limited"
+   ]
+  },
+  {
+   "code": "2516",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Grand Moore Capital Limited"
+   ],
+   "bookrunners": [
+    "Grand Moore Capital Limited",
+    "Valuable Capital Limited"
+   ]
+  },
+  {
+   "code": "2535",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "bookrunners": [
+    "Grande Capital Limited",
+    "Quam Securities Limited",
+    "Yuen Meta (International) Securities Limited"
+   ]
+  },
+  {
+   "code": "2551",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "CITIC Securities (Hong Kong) Limited"
+   ],
+   "bookrunners": [
+    "CLSA Limited",
+    "GF Securities (Hong Kong) Brokerage Limited",
+    "Sinolink Securities (Hong Kong) Company Limited",
+    "BOCI Asia Limited",
+    "ABCI Capital Limited",
+    "ICBC International Securities Limited",
+    "China Galaxy International Securities (Hong Kong) Co., Limited",
+    "China Sunrise Securities (International) Limited",
+    "Patrons Securities Limited",
+    "Tiger Brokers (HK) Global Limited"
+   ]
+  },
+  {
+   "code": "2556",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "CCB International Capital Limited"
+   ]
+  },
+  {
+   "code": "2561",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Morgan Stanley Asia Limited",
+    "Jefferies Hong Kong Limited"
+   ],
+   "bookrunners": [
+    "Morgan Stanley Asia Limited",
+    "Jefferies Hong Kong Limited"
+   ]
+  },
+  {
+   "code": "2575",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "First Shanghai Capital Limited",
+    "CMB Wing Lung Bank Limited",
+    "China CITIC Bank International Limited",
+    "Ms. Wang Y u ( ˮρ) H Share Registrar Computershare Hong Kong Investor Services Limited"
+   ]
+  },
+  {
+   "code": "2579",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "and Sponsor-overall Coordinators Morgan Stanley Asia Limited",
+    "Huatai Financial Holdings (Hong Kong) Limited"
+   ],
+   "bookrunners": [
+    "Morgan Stanley Asia Limited",
+    "Huatai Financial Holdings (Hong Kong) Limited",
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "BNP Paribas Securities (Asia) Limited",
+    "ABCI CAPITAL LIMITED",
+    "BOCI Asia Limited",
+    "ICBC International Securities Limited",
+    "CCB International Capital Limited",
+    "Mizuho Securities Asia Limited",
+    "Tiger Brokers (HK) Global Limited"
+   ]
+  },
+  {
+   "code": "2580",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "bookrunners": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Orient Securities (Hong Kong) Limited",
+    "ABCI Capital Limited",
+    "ICBC International Securities Limited",
+    "Futu Securities International (Hong Kong) Limited"
+   ]
+  },
+  {
+   "code": "2586",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "UBS Securities Hong Kong Limited",
+    "CMB International Capital Limited",
+    "China Merchants Securities (HK) Co., Limited"
+   ],
+   "bookrunners": [
+    "UBS AG Hong Kong Branch",
+    "CMB International Capital Limited",
+    "China Merchants Securities (HK) Co., Limited",
+    "CLSA Limited",
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "CCB International Capital Limited",
+    "CMBC Securities Company Limited",
+    "Haitong International Securities Company Limited",
+    "ABCI Capital Limited",
+    "ABCI Securities Company Limited"
+   ]
+  },
+  {
+   "code": "2590",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Morgan Stanley Asia Limited",
+    "China International Capital Corporation Hong Kong Securities Limited"
+   ]
+  },
+  {
+   "code": "2609",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "CMB Wing Lung Bank Limited",
+    "CMB Wing Lung (Nominees) Limited",
+    "Principal Share Registrar and Transfer Office Maples Fund Services (Cayman) Limited",
+    "Cayman Islands Hong Kong Share Registrar Tricor Investor Services Limited",
+    "Caitong International Capital Co., Limited",
+    "CORPORATE INFORMATION Principal Banks Bank of China Tianjin Dagang Branch"
+   ]
+  },
+  {
+   "code": "2618",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Merrill Lynch (Asia Pacific) Limited",
+    "Goldman Sachs (Asia) L.L.C",
+    "Haitong International Capital Limited",
+    "Financial Advisor UBS AG Hong Kong Branch",
+    "Haitong International Securities Company Limited",
+    "UBS AG Hong Kong Branch"
+   ],
+   "bookrunners": [
+    "Merrill Lynch (Asia Pacific) Limited",
+    "Goldman Sachs (Asia) L.L.C",
+    "Haitong International Securities Company Limited",
+    "UBS AG Hong Kong Branch",
+    "CLSA Limited",
+    "ICBC International Capital Limited",
+    "CCB International Capital Limited",
+    "China Renaissance Securities (Hong Kong) Limited",
+    "BOCOM International Securities Limited",
+    "BOCI Asia Limited",
+    "ABCI Capital Limited",
+    "Guotai Junan Securities (Hong Kong) Limited",
+    "Futu Securities International (Hong Kong) Limited",
+    "Mizuho Securities Asia Limited"
+   ]
+  },
+  {
+   "code": "2619",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "bookrunners": [
+    "Sinolink Securities (Hong Kong) Company Limited"
+   ]
+  },
+  {
+   "code": "2675",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Morgan Stanley Asia Limited",
+    "GF Capital (Hong Kong) Limited"
+   ],
+   "bookrunners": [
+    "Morgan Stanley Asia Limited",
+    "GF Securities (Hong Kong) Brokerage Limited",
+    "CLSA Limited"
+   ]
+  },
+  {
+   "code": "2698",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "CITIC Securities (Hong Kong) Limited",
+    "GF Capital (Hong Kong) Limited"
+   ]
+  },
+  {
+   "code": "2718",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "China International Capital Corporation Hong Kong Securities Limited"
+   ],
+   "bookrunners": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "CLSA Limited",
+    "Futu Securities International (Hong Kong) Limited",
+    "Tiger Brokers (HK) Global Limited",
+    "Fuze Securities (International) Limited",
+    "Livermore Holdings Limited",
+    "Mulana Investment Management Limited",
+    "Citrus Securities Limited"
+   ]
+  },
+  {
+   "code": "2768",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "China Merchants Securities (HK) Co., Limited"
+   ],
+   "bookrunners": [
+    "China Merchants Securities (HK) Co., Limited",
+    "CLSA Limited",
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Tiger Brokers (HK) Global Limited",
+    "Livermore Holdings Limited"
+   ]
+  },
+  {
+   "code": "2788",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Huatai Financial Holdings (Hong Kong) Limited"
+   ],
+   "bookrunners": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Huatai Financial Holdings (Hong Kong) Limited",
+    "CMB International Capital Limited",
+    "UOB Kay Hian (Hong Kong) Limited",
+    "BOCI Asia Limited",
+    "South China Securities Limited"
+   ]
+  },
+  {
+   "code": "2889",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Guotai Junan Capital Limited",
+    "CMB International Capital Limited",
+    "Huatai Financial Holdings (Hong Kong) Limited",
+    "CITIC Securities (Hong Kong) Limited"
+   ],
+   "bookrunners": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Guotai Junan Securities (Hong Kong) Limited",
+    "CMB International Capital Limited",
+    "Huatai Financial Holdings (Hong Kong) Limited",
+    "CLSA Limited",
+    "BOCI Asia Limited",
+    "ABCI Capital Limited",
+    "Tiger Brokers (HK) Global Limited"
+   ]
+  },
+  {
+   "code": "2898",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "bookrunners": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "China Galaxy International Securities (Hong Kong) Co., Limited",
+    "CMB International Capital Limited",
+    "Zhongtai International Securities Limited"
+   ]
+  },
+  {
+   "code": "3223",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Guotai Junan Capital Limited"
+   ],
+   "bookrunners": [
+    "Guotai Junan Securities (Hong Kong) Limited",
+    "Huatai Financial Holdings (Hong Kong) Limited",
+    "Ping An Securities (Hong Kong) Company Limited"
+   ]
+  },
+  {
+   "code": "3308",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Goldman Sachs (Asia) L.L.C",
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Morgan Stanley Asia Limited",
+    "GF Capital (Hong Kong) Limited"
+   ],
+   "bookrunners": [
+    "Goldman Sachs (Asia) L.L.C",
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Morgan Stanley Asia Limited",
+    "GF Securities (Hong Kong) Brokerage Limited",
+    "Citigroup Global Markets Asia Limited",
+    "Citigroup Global Markets Limited",
+    "Corporation Limited",
+    "China Galaxy International Securities (Hong Kong) Co., Limited",
+    "Zhongtai International Securities Limited",
+    "Zero2IPO Securities Limited",
+    "Financial Adviser DBS Asia Capital Limited",
+    "Haitong International Securities Company Limited",
+    "The Hongkong and Shanghai Banking Corporation Limited",
+    "ABCI Capital Limited"
+   ]
+  },
+  {
+   "code": "3355",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "bookrunners": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "China Securities (International) Corporate Finance Company Limited",
+    "China Merchants Securities (HK) Co., Limited",
+    "BOCI Asia Limited",
+    "Tiger Brokers (HK) Global Limited"
+   ]
+  },
+  {
+   "code": "3378",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "ICBC International Capital Limited"
+   ],
+   "bookrunners": [
+    "ICBC International Securities Limited",
+    "China Securities (International) Corporate Finance Company Limited",
+    "China Merchants Securities (HK) Co., Limited",
+    "Haitong International Securities Company Limited",
+    "CCB International Capital Limited",
+    "TFI Securities and Futures Limited",
+    "ABCI Capital Limited",
+    "SPDB International Capital Limited",
+    "Livermore Holdings Limited",
+    "Tiger Brokers (HK) Global Limited",
+    "Shanxi Securities International Limited",
+    "Beta International Securities Limited"
+   ]
+  },
+  {
+   "code": "3636",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Huatai Financial Holdings (Hong Kong) Limited"
+   ],
+   "bookrunners": [
+    "ABCI Capital Limited",
+    "ABCI Securities Company Limited"
+   ]
+  },
+  {
+   "code": "3650",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "bookrunners": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "GF Securities (Hong Kong) Brokerage Limited",
+    "CCB International Capital Limited",
+    "CMB International Capital Limited",
+    "Futu Securities International (Hong Kong) Limited",
+    "Tiger Brokers (HK) Global Limited"
+   ]
+  },
+  {
+   "code": "3660",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Citigroup Global Markets Asia Limited",
+    "China International Capital Corporation Hong Kong Securities Limited"
+   ],
+   "bookrunners": [
+    "Citigroup Global Markets Asia Limited",
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Citigroup Global Markets Limited",
+    "198 – China International Capital Corporation Hong Kong Securities Limited",
+    "CCB International Capital Limited",
+    "Futu Securities International (Hong Kong) Limited",
+    "Tiger Brokers (HK) Global Limited"
+   ]
+  },
+  {
+   "code": "3661",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Huatai Financial Holdings (Hong Kong) Limited"
+   ]
+  },
+  {
+   "code": "3750",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "China Securities (International) Corporate Finance Company Limited",
+    "J.P. Morgan Securities (Far East) Limited",
+    "Merrill Lynch (Asia Pacific) Limited"
+   ]
+  },
+  {
+   "code": "3880",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Morgan Stanley Asia Limited",
+    "CITIC Securities (Hong Kong) Limited"
+   ],
+   "bookrunners": [
+    "Morgan Stanley Asia Limited",
+    "CLSA Limited"
+   ]
+  },
+  {
+   "code": "3986",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Huatai Financial Holdings (Hong Kong) Limited"
+   ],
+   "bookrunners": [
+    "Huatai Financial Holdings (Hong Kong) Limited",
+    "China International Capital Corporation Hong Kong Securities Limited"
+   ]
+  },
+  {
+   "code": "6090",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "CITIC Securities (Hong Kong) Limited",
+    "Haitong International Capital Limited"
+   ],
+   "bookrunners": [
+    "CLSA Limited",
+    "Haitong International Securities Company Limited",
+    "Futu Securities International (Hong Kong) Limited",
+    "SPDB International Capital Limited",
+    "Livermore Holdings Limited",
+    "Patrons Securities Limited"
+   ]
+  },
+  {
+   "code": "6166",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Guotai Junan Capital Limited",
+    "Guotai Junan Securities (Hong Kong) Limited"
+   ],
+   "bookrunners": [
+    "Guotai Junan Securities (Hong Kong) Limited",
+    "CLSA Limited",
+    "DBS Asia Capital Limited",
+    "Star River Securities Limited"
+   ]
+  },
+  {
+   "code": "6168",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "China Securities (International) Corporate Finance Company Limited"
+   ],
+   "bookrunners": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "China Securities (International) Corporate Finance Company Limited",
+    "CMB International Capital Limited",
+    "ABCI Capital Limited",
+    "BOCOM International Securities Limited",
+    "China Galaxy International Securities (Hong Kong) Co., Limited",
+    "China Industrial Securities International Capital Limited",
+    "Futu Securities International (Hong Kong) Limited",
+    "Tiger Brokers (HK) Global Limited"
+   ]
+  },
+  {
+   "code": "6600",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Guotai Junan Capital Limited",
+    "Huatai Financial Holdings (Hong Kong) Limited",
+    "Guotai Junan Securities (Hong Kong) Limited"
+   ],
+   "bookrunners": [
+    "Guotai Junan Securities (Hong Kong) Limited",
+    "Huatai Financial Holdings (Hong Kong) Limited",
+    "Co., Limited",
+    "BOCI Asia Limited",
+    "Futu Securities International (Hong Kong) Limited"
+   ]
+  },
+  {
+   "code": "6603",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "CITIC Securities (Hong Kong) Limited",
+    "CLSA Limited"
+   ],
+   "bookrunners": [
+    "CLSA Limited"
+   ]
+  },
+  {
+   "code": "6616",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Essence Corporate Finance (Hong Kong) Limited"
+   ]
+  },
+  {
+   "code": "6628",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Industry consultant China Insights Industry Consultancy Limited",
+    "Receiving bank Bank of China (Hong Kong) Limited",
+    "Registered office in the Cayman Islands Walkers Corporate Limited",
+    "transfer office Walkers Corporate Limited",
+    "Tricor Investor Services Limited",
+    "Compliance adviser Anglo Chinese Corporate Finance, Limited",
+    "Principal banks The Hongkong and Shanghai Banking Corporation Limited",
+    "China Construction Bank, Suzhou Branch"
+   ]
+  },
+  {
+   "code": "6699",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "China Insights Industry Consultancy Limited",
+    "Shanghai, PRC Receiving Banks Standard Chartered Bank (Hong Kong) Limited",
+    "Bank of China (Hong Kong) Limited",
+    "The Cayman Islands Principal Share Registrar Maples Fund Services (Cayman) Limited",
+    "Somerley Capital Limited",
+    "China Minsheng Bank, Shanghai Branch",
+    "Pudong New Area Shanghai, PRC China CITIC Bank, Wuxi Huishan Sub-Branch",
+    "Wuxi City, PRC Bank of China, Shanghai KIC Science Park Sub-Branch"
+   ]
+  },
+  {
+   "code": "6715",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "CITIC Securities (Hong Kong) Limited",
+    "China Securities (Internat ional) Corporate Finance Company Limited",
+    "CLSA Limited"
+   ]
+  },
+  {
+   "code": "6880",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Deutsche Securities Asia Limited"
+   ],
+   "bookrunners": [
+    "Tiger Brokers (HK) Global Limited"
+   ]
+  },
+  {
+   "code": "6883",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "BNP Paribas Securities (Asia) Limited",
+    "CITIC Securities (Hong Kong) Limited"
+   ],
+   "bookrunners": [
+    "First Shanghai Securities Limited",
+    "Futu Securities International (Hong Kong) Limited",
+    "SBI China Capital Financial Services Ltd"
+   ]
+  },
+  {
+   "code": "6979",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Goldman Sachs (Asia) L.L.C",
+    "China Securities (International) Corporate Finance Company Limited"
+   ],
+   "bookrunners": [
+    "Goldman Sachs (Asia) L.L.C",
+    "China Securities (International) Corporate Finance Company Limited",
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "KKR Capital Markets Asia Limited"
+   ]
+  },
+  {
+   "code": "9660",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Goldman Sachs (Asia) L.L.C",
+    "Morgan Stanley Asia Limited",
+    "China Securities (International) Corporate Finance Company Limited"
+   ],
+   "bookrunners": [
+    "Goldman Sachs (Asia) L.L.C",
+    "Morgan Stanley Asia Limited",
+    "China Securities (International) Corporate Finance Company Limited",
+    "CLSA Limited",
+    "Deutsche Bank AG, Hong Kong Branch",
+    "The Hongkong and Shanghai Banking Corporation Limited",
+    "CMB International Capital Limited",
+    "China Galaxy International Securities (Hong Kong) Co., Limited",
+    "BOCOM International Securities Limited"
+   ]
+  },
+  {
+   "code": "9669",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Sponsor-overall Coordinators and Overall Coordinators Morgan Stanley Asia Limited",
+    "China International Capital Corporation Hong Kong Securities Limited"
+   ],
+   "bookrunners": [
+    "Morgan Stanley Asia Limited",
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Futu Securities International (Hong Kong) Limited",
+    "Tiger Brokers (HK) Global Limited",
+    "Co-manager Silverbricks Securities Company Limited",
+    "Silverbricks Securities Company Limited"
+   ]
+  },
+  {
+   "code": "9690",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Goldman Sachs (Asia) L.L.C",
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Merrill Lynch (Asia Pacific) Limited",
+    "UBS AG Hong Kong Branch"
+   ],
+   "bookrunners": [
+    "Goldman Sachs (Asia) L.L.C",
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "UBS AG Hong Kong Branch",
+    "Merrill Lynch (Asia Pacific) Limited",
+    "CMB International Capital Limited",
+    "BOCOM International Securities Limited",
+    "ICBC International Securities Limited",
+    "ABCI Capital Limited",
+    "Futu Securities International (Hong Kong) Limited"
+   ]
+  },
+  {
+   "code": "9696",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Morgan Stanley Asia Limited",
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "CMB International Capital Limited"
+   ],
+   "bookrunners": [
+    "Morgan Stanley Asia Limited",
+    "CMB International Capital Limited",
+    "BNP Paribas Securities (Asia) Limited",
+    "Credit Suisse (Hong Kong) Limited",
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Banco BTG Pactual S.A. – Cayman Branch",
+    "Futu Securities International (Hong Kong) Limited",
+    "Huatai Financial Holdings (Hong Kong) Limited"
+   ]
+  },
+  {
+   "code": "9869",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Somerley Capital Limited",
+    "CMB Wing Lung Bank Limited",
+    "Standard Chartered Bank (Hong Kong) Limited",
+    "and Transfer Office Walkers Corporate Limited",
+    "China Merchants Bank Co., Ltd., Wuhan Guanggu Technology Sub-branch",
+    "Wuhan, Hubei Province The PRC Standard Chartered Bank (Hong Kong) Ltd"
+   ]
+  },
+  {
+   "code": "9885",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "bookrunners": [
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "CMB International Capital Limited",
+    "ICBC International Securities Limited",
+    "ABCI Capital Limited",
+    "Fosun International Securities Limited"
+   ]
+  },
+  {
+   "code": "9887",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Morgan StanleyAsia Limited",
+    "CITIC Securities (Hong Kong) Limited",
+    "CLSA Limited"
+   ],
+   "bookrunners": [
+    "Morgan StanleyAsia Limited",
+    "CLSA Limited",
+    "CMB International Capital Limited"
+   ]
+  },
+  {
+   "code": "9889",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "China Merchants Securities (HK) Co., Limited",
+    "CMB International Capital Limited",
+    "ABCI Capital Limited",
+    "ICBC International Capital Limited"
+   ],
+   "bookrunners": [
+    "ABCI Capital Limited",
+    "China Merchants Securities (HK) Co., Limited",
+    "CMB International Capital Limited",
+    "Fortune (HK) Securities Limited",
+    "ICBC International Capital Limited",
+    "Haitong International Securities Company Limited",
+    "CCB International Capital Limited",
+    "AMTD Global Markets Limited"
+   ]
+  },
+  {
+   "code": "9896",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Merrill Lynch (Asia Pacific) Limited",
+    "Haitong International Capital Limited",
+    "UBS Securities Hong Kong Limited"
+   ],
+   "bookrunners": [
+    "Merrill Lynch (Asia Pacific) Limited",
+    "Haitong International Securities Company Limited",
+    "UBS AG Hong Kong Branch",
+    "UBS Securities LLC"
+   ]
+  },
+  {
+   "code": "9955",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "Morgan Stanley Asia Limited",
+    "J.P. Morgan Securities (Far East) Limited",
+    "J.P. Morgan Securities (Asia Pacific) Limited",
+    "China International Capital Corporation Hong Kong Securities Limited"
+   ],
+   "bookrunners": [
+    "Morgan Stanley Asia Limited",
+    "J.P. Morgan Securities (Asia Pacific) Limited",
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "CMB International Capital Limited",
+    "J.P. Morgan Securities plc",
+    "Valuable Capital Limited"
+   ]
+  },
+  {
+   "code": "9981",
+   "src": "prospectus: Parties involved in the Global Offering",
+   "sponsors": [
+    "China Merchants Securities (HK) Co., Limited"
+   ],
+   "bookrunners": [
+    "China Securities (International) Corporate Finance Company Limited",
+    "China Merchants Securities (HK) Co., Limited",
+    "Shanxi Securities International Limited",
+    "DBS Asia Capital Limited",
+    "Futu Securities International (Hong Kong) Limited",
+    "Tiger Brokers (HK) Global Limited"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,136 @@
+{
+  "description": "Explicit, evidence-backed investor-family comparison keys. Legal subscribers remain in each stock roster. Grouped league rows count a stock once even when multiple related vehicles subscribe.",
+  "groups": [
+    {
+      "key": "e-fund",
+      "label": "E Fund",
+      "aliases": ["E Fund", "E Fund HK", "E Fund Management Co., Ltd.", "E Fund Management (Hong Kong) Co., Limited", "E Fund Management (HK) Co., Ltd.", "E Fund Management Company Limited"],
+      "sources": [{"url": "https://www.efunds.com.hk/aboutus/", "basis": "E Fund HK identifies itself as a wholly-owned subsidiary and international business platform of E Fund Management Co., Ltd.; verified 2026-10-11."}]
+    },
+    {
+      "key": "millennium",
+      "label": "Millennium",
+      "aliases": [
+        "MLP",
+        "Millennium",
+        "Milliennium",
+        "Millenium",
+        "Millennium ICSA",
+        "Millennium Capital Management (Singapore) Pte. Ltd.",
+        "Millennium Capital Management (Singapore) Pte. Ltd., and its affiliated entities",
+        "Integrated Core Strategies (Asia) Pte. Ltd.",
+        "Integrated Core Strategies (Asia) (Millennium)"
+      ],
+      "sources": [
+        {
+          "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0515/2025051500019.pdf",
+          "pages": [
+            429,
+            432
+          ],
+          "basis": "Defines Millennium ICSA as Integrated Core Strategies (Asia), managed by Millennium Capital, part of Millennium Group."
+        },
+        {
+          "url": "https://www.mlp.com/",
+          "basis": "Official Millennium website uses the MLP domain; MLP is treated only as this explicitly documented desk alias."
+        }
+      ]
+    },
+    {
+      "key": "hillhouse",
+      "label": "Hillhouse",
+      "aliases": [
+        "Hillhouse",
+        "Hillhouse Capital",
+        "HHLRA",
+        "HHLRA FUNDS",
+        "HHLR Advisors, Ltd.",
+        "HHLR Advisors (Hillhouse)",
+        "HHLR Fund, L.P.",
+        "HHLR CF, L.P."
+      ],
+      "sources": [
+        {
+          "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0512/2025051200005.pdf",
+          "pages": [
+            308,
+            309
+          ],
+          "basis": "HHLR CF is managed by HHLR Advisors (HHLRA), which is part of Hillhouse Group."
+        },
+        {
+          "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0919/2025091900073.pdf",
+          "pages": [
+            524
+          ],
+          "basis": "HHLRA acts for its managed HHLRA Funds; defined as part of Hillhouse Group."
+        }
+      ]
+    },
+    {
+      "key": "cpp-investments",
+      "label": "CPP Investments (HHLRA managed account)",
+      "aliases": [
+        "HHLRA (as the investment manager of an SMA managed for CPP Investments)",
+        "HHLRA (as the investment manager of a segregated management account for CPP Investments)"
+      ],
+      "sources": [
+        {
+          "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0625/2026062502076.pdf",
+          "pages": [
+            6
+          ],
+          "basis": "Separately listed CPP managed account; keep distinct from HHLRA Funds."
+        }
+      ]
+    },
+    {
+      "key": "jpmorgan-am",
+      "label": "JPMorgan Asset Management",
+      "aliases": [
+        "JPM AM",
+        "JPMAMAPL",
+        "JPMIMI",
+        "JPMorgan Asset Management (Asia Pacific) Limited",
+        "J.P. Morgan Investment Management Inc."
+      ],
+      "sources": [
+        {
+          "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0722/2026072200013.pdf",
+          "pages": [
+            289,
+            290
+          ],
+          "basis": "Defines the two legal entities and their common JPMorgan Asset Management Holdings parent."
+        }
+      ]
+    },
+    {
+      "key": "adia",
+      "label": "Abu Dhabi Investment Authority",
+      "aliases": [
+        "ADIA",
+        "Abu Dhabi Investment Authority"
+      ],
+      "sources": [
+        {
+          "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0722/2026072200013.pdf",
+          "pages": [
+            291
+          ],
+          "basis": "Explicit ADIA definition."
+        }
+      ]
+    }
+  ],
+  "canonical_spellings": {
+    "MLP": "Millennium",
+    "Milliennium": "Millennium",
+    "Millenium": "Millennium",
+    "Millennium ICSA": "Integrated Core Strategies (Asia) Pte. Ltd.",
+    "HHLRA": "HHLR Advisors, Ltd.",
+    "JPMAMAPL": "JPMorgan Asset Management (Asia Pacific) Limited",
+    "JPMIMI": "J.P. Morgan Investment Management Inc.",
+    "ADIA": "Abu Dhabi Investment Authority"
+  }
+}

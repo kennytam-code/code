@@ -50,30 +50,11 @@ def apply_manual_splits(code, h):
                 h.loc[m, col] = h.loc[m, col] * ev["ratio"]
     return h
 
-# Per-SECTOR benchmark, so a biotech is not measured against a tech index.
-# Every ticker below was verified to return yfinance history before adoption.
-# Healthcare: the Hang Seng biotech indices (^HSHKBIO, ^HSHCI) return NOTHING on
-# Yahoo, so the tradeable proxy 2820.HK is used instead (verified 1,380 bars).
-BENCH = {
-    "Tech/AI":          ("3033.HK", "HSTECH (Hang Seng TECH ETF)"),
-    "Healthcare":       ("2820.HK", "China Biotech ETF (HS biotech proxy)"),
-    "Financials":       ("^HSNF",   "Hang Seng Finance sub-index"),
-    "Real Estate":      ("^HSNP",   "Hang Seng Properties sub-index"),
-    # HSI's Utilities sub-index is power/gas distributors ONLY (CLP, HK & China
-    # Gas, Power Assets). Miners, chemicals and energy producers are classified
-    # into Commerce & Industry by the index's own methodology, so that is the
-    # honest benchmark for this bucket — Utilities was a mis-mapping.
-    "Materials/Energy": ("^HSNC",   "Hang Seng Commerce & Industry sub-index"),
-    "Consumer":         ("^HSNC",   "Hang Seng Commerce & Industry sub-index"),
-    "Industrials":      ("^HSNC",   "Hang Seng Commerce & Industry sub-index"),
-    "TMT-other":        ("^HSI",    "Hang Seng Index"),
-    "Other":            ("^HSI",    "Hang Seng Index"),
-}
-DEFAULT_BENCH = ("^HSI", "Hang Seng Index")
+# Shared mapping has no market-data dependency; the merger can rebuild offline.
+from benchmark_windows import BENCH, DEFAULT_BENCH
 HORIZONS = [("1w", 5), ("1m", 21), ("3m", 63)]     # trading-day offsets
-# how far after the listing date the first available bar may sit and still BE
-# the debut session (covers a listing straight into a long weekend)
-DEBUT_LAG_MAX = 5
+# A later bar is never the debut; a postponement must change the listing date.
+DEBUT_LAG_MAX = 0
 TX_UA = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
                        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
          "Referer": "https://gu.qq.com/"}
@@ -99,18 +80,26 @@ def tencent_kline(symbol, d1, d2, n=1500):
     u = (f"https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?"
          f"param={symbol},day,{d1},{d2},{n},")
     rows = []
+    endpoints = [u, u.replace("web.ifzq.gtimg.cn/appstock", "proxy.finance.qq.com/ifzqgtimg/appstock")]
     # Tencent throttles bursts by answering 200-with-empty-data; a burst of 511
     # requests once blanked an entire batch. Empty is retryable, not an answer.
     for attempt in range(3):
-        r = requests.get(u, headers=TX_UA, timeout=30)
-        d = (r.json().get("data") or {}).get(symbol) or {}
-        rows = d.get("day") or d.get("qfqday") or []
+        try:
+            r = requests.get(endpoints[min(attempt, 1)], headers=TX_UA, timeout=30)
+            d = (r.json().get("data") or {}).get(symbol) or {}
+            rows = d.get("day") or []     # never silently substitute dividend-adjusted qfq
+        except (requests.RequestException, ValueError):
+            rows = []
         if rows:
             break
         time.sleep(2.5 * (attempt + 1))
     out = []
+    now_hk = datetime.now(timezone(timedelta(hours=8)))
+    cutoff = now_hk.date() if now_hk.hour >= 17 else now_hk.date() - timedelta(days=1)
     for row in rows:
         try:
+            if row[0] > cutoff.isoformat() or (len(row) > 5 and float(row[5]) <= 0):
+                continue
             # [date, OPEN, CLOSE, high, low, volume] — the open is real data,
             # not a fabrication: v13 discarded it and then had to withhold the
             # day-1 open→close column for every Tencent-sourced deal
@@ -128,15 +117,32 @@ def bench_series(tickers, start):
     not the stock's bar count once a holiday or a halt intervenes.
     """
     out = {}
+    now_hk = datetime.now(timezone(timedelta(hours=8)))
+    cutoff = now_hk.date() if now_hk.hour >= 17 else now_hk.date() - timedelta(days=1)
     for t in sorted(set(tickers)):
         try:
             h = yf.Ticker(t).history(start=start, auto_adjust=False)
+            h = h[h.index.strftime("%Y-%m-%d") <= cutoff.isoformat()]
+            h = h[h["Close"].map(lambda c: math.isfinite(c) and c > 0)]
             if len(h):
                 out[t] = ([d.strftime("%Y-%m-%d") for d in h.index],
                           [float(c) for c in h["Close"]])
                 print(f"  benchmark {t}: {len(h)} bars", flush=True)
         except Exception as e:
             print(f"  benchmark {t} FAILED: {e}", flush=True)
+    # Persist the actual series, so offline merges use identical calendar dates.
+    from benchmark_windows import load_benchmarks
+    saved = load_benchmarks(ROOT)
+    for t, (dates, closes) in out.items():
+        label = next(label for ticker, label in list(BENCH.values()) + [DEFAULT_BENCH] if ticker == t)
+        old = dict(saved.get(label, {}).get("closes", []))
+        old.update(zip(dates, closes))
+        saved[label] = {"ticker": t, "closes": sorted(old.items()),
+                        "src": f"Yahoo Finance unadjusted Close: {t}",
+                        "fetched_at": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+    if saved:
+        (ROOT / "data" / "batches" / "benchmark_prices.json").write_text(json.dumps(
+            {"batch": "benchmark_prices", "benchmarks": saved}, ensure_ascii=False, indent=1))
     return out
 
 
@@ -198,15 +204,14 @@ def main():
         if rec.get("error"):
             return True                              # give failures another go
         last = rec.get("last_date")
-        if not last or (date.today() - date.fromisoformat(last)).days > 7:
-            return True                              # since-IPO leg is stale
         ipo = (d.get("ipo_date") or "")[:10]
-        # A DEAL IN ITS FIRST QUARTER is the one the desk actually reads, and
-        # its since-IPO print is the headline; the 7-day tolerance above left
-        # Ingenic showing a Friday close on the following Tuesday. Refetching
-        # only the young names keeps the other ~500 series on the cache.
-        if ipo and (date.today() - date.fromisoformat(ipo)).days <= 90 \
-                and (date.today() - date.fromisoformat(last)).days > 2:
+        latest_session = (benches.get("^HSI") or ([date.today().isoformat()], []))[0][-1]
+        # A halted stock may have an old last trade but was checked this session.
+        if not last or max(last, rec.get("checked_through_session") or "") < latest_session:
+            return True
+        if rec.get("benchmark") != BENCH.get(d.get("sector"), DEFAULT_BENCH)[1]:
+            return True
+        if rec.get("first_date") and rec["first_date"] != ipo:
             return True
         if ipo and not rec.get("debut_missing"):
             aged = (date.today() - date.fromisoformat(ipo)).days
@@ -228,6 +233,9 @@ def main():
             start = (date.fromisoformat(ipo) - timedelta(days=3)).isoformat()
             yt = yf.Ticker(tkr)
             h = yt.history(start=start, auto_adjust=False)
+            now_hk = datetime.now(timezone(timedelta(hours=8)))
+            cutoff = now_hk.date() if now_hk.hour >= 17 else now_hk.date() - timedelta(days=1)
+            h = h[h.index.strftime("%Y-%m-%d") <= cutoff.isoformat()]
             # A dated request can come back TRUNCATED — 0300.HK asked from
             # 2024-09-01 returns bars from 2024-10-02, but period="max" returns
             # them from 2024-07-05. Retry unbounded whenever the response has no
@@ -240,6 +248,11 @@ def main():
                         h = hmax
                 except Exception:
                     pass
+            # Period=max retries must obey the same completed-session cutoff.
+            # Zero-volume carried quotes during suspensions are not fresh trades.
+            h = h[h.index.strftime("%Y-%m-%d") <= cutoff.isoformat()]
+            if "Volume" in h.columns:
+                h = h[h["Volume"] > 0]
             # Yahoo back-adjusts history for SPLITS/consolidations even with
             # auto_adjust=False. The offer price is a raw historical price, so
             # comparing the two would be wrong (a 1:3 consolidation showed as a
@@ -396,6 +409,7 @@ def main():
                     rec["first_close"] = round(tcloses[ti], 4)
                     rec["first_open"] = round(topens[ti], 4)
                     rec["first_date"] = tdates[ti]
+                    rec["traded_sessions_available"] = len(tdates) - ti
                     if topens[ti] > 0:
                         rec["day1_open_pop_pct"] = round(100 * (topens[ti] / fp - 1), 2)
                     rec["last_close"] = round(tcloses[-1], 4)
@@ -424,6 +438,9 @@ def main():
                         rec["alpha_since_pct"] = round(rec["since_ipo_pct"] - bs, 2)
         except Exception as e:
             rec["error"] = str(e)[:120]
+        if not rec.get("error") and rec.get("last_date") and benches.get("^HSI"):
+            rec["checked_through_session"] = benches["^HSI"][0][-1]
+            rec.setdefault("traded_sessions_available", len(h[h.index.strftime("%Y-%m-%d") >= ipo]))
         cache[code] = rec
         if (i + 1) % 25 == 0:
             print(f"  {i+1}/{len(todo)}", flush=True)
