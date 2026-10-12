@@ -21,3 +21,8 @@ TO_NOMURA/*
 .DS_Store
 !TO_NOMURA/Grey_Market_vs_Day1.docx
 !TO_NOMURA/Clawback_Study.docx
+# TSMC 3Q26 Outlook email and its source / price-window audit notes
+!TO_NOMURA/tsmc_earnings_preview_2026-10-15.html
+!TO_NOMURA/tsmc_earnings_preview_2026-10-15.txt
+!TO_NOMURA/tsmc_earnings_preview_2026-10-15_sources.md
+!TO_NOMURA/tsmc_earnings_preview_2026-10-15_price_windows.csv

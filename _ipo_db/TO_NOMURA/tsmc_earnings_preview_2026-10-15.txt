@@ -1,0 +1,103 @@
+Subject: TSMC 3Q26 preview | 15 October: whisper EPS, broker split and earnings reaction history
+
+Team,
+
+TSMC reports 3Q26 on Thursday, 15 October; the call is at 14:00 Hong Kong / Taipei (02:00 ET). The revenue beat is largely visible already: published monthly sales total NT$1.494tn, or roughly US$46.7bn at the guidance FX assumption. Our read is that the share-price reaction will depend most on Q4 growth and margins, N2 ramp costs, and 2027 capacity / pricing visibility. Call calendar (https://investor.tsmc.com/english/financial-calendar) / monthly sales (https://investor.tsmc.com/english/monthly-revenue/2026).
+
+Quick take: public whisper EPS is US$4.58 per ADR versus US$4.45 consensus; Goldman and Wedbush differ by 2.0 percentage points on Q4 gross margin (67.3% versus 65.3%). TSMC beat the LSEG profit benchmark in each of the last four quarters, yet its ADR fell on three of those reporting days. A headline beat alone has been an unreliable guide to the stock reaction.
+
+Prepared 12 October 2026, Hong Kong; prices through the 9 October U.S. close. Estimates are public-source snapshots and may change before the print.
+
+1. Consensus, whisper and the numbers already known
+
+Metric | Company / reported baseline | Street or broker reference | Whisper / read-through |
+
+3Q ADR EPS
+US$ per ADR | Pending on 15 Oct | 4.45 (Earnings Whispers consensus (https://beta.earningswhispers.com/stocks/TSM)) | 4.58 public whisper; +0.13 / +2.9% above the same provider’s consensus. |
+
+3Q net profit
+NT$bn | Pending on 15 Oct | 746.3; approximately +65% YoY. LSEG SmartEstimate, 16 analysts (Reuters (https://www.investing.com/news/stock-market-news/tsmc-expected-to-report-sixth-straight-quarter-of-record-profit-thanks-to-ai-boom-4943004)). | No independently verified public profit whisper. SmartEstimate weights analyst accuracy; it is not a simple average. |
+
+3Q revenue | Guidance: US$44.6–45.8bn at USD/NTD 32. Monthly sales: NT$1,494.243bn (TSMC (https://investor.tsmc.com/english/encrypt/files/encrypt_file/reports/2026-07/a80d7933be643644081584087731f73b22ea5a2c/2Q26%20EarningsRelease.pdf) / sales (https://investor.tsmc.com/english/monthly-revenue/2026)). | US$45.62bn on the EPS provider’s page (https://beta.earningswhispers.com/stocks/TSM); appears behind the published monthly sales. | ~US$46.7bn at guide FX: ~2.0% above the guide ceiling. Indicative conversion; final reported USD revenue is pending. |
+
+3Q gross / operating margin | GM 65–67%; OM 56–58% (company guidance (https://investor.tsmc.com/english/encrypt/files/encrypt_file/reports/2026-07/a80d7933be643644081584087731f73b22ea5a2c/2Q26%20EarningsRelease.pdf)). | Public GM models: 66.0–67.5%; JPM 66.8%, Macquarie 67.0%, Goldman 67.5%. This range is not a consensus average. | No verified public margin whisper. A 67%+ GM result would satisfy the stronger public previews. |
+
+2026 capex
+US$bn | 60–64 (2Q call (https://investor.tsmc.com/english/encrypt/files/encrypt_file/reports/2026-08/3e494f0c14dd0890f897aa044415e21d93486cc4/TSMC%202Q26%20Transcript.pdf)). | JPM / Goldman both model 64; 2027 estimates 86 / 85, respectively. | 2027 directional comments matter; those broker forecasts are not company guidance. |
+
+Only EPS has a sourced public whisper here. Revenue, profit and margin “buy-side whispers” are not publicly verifiable. EPS is in U.S. dollars per ADR; net profit and monthly sales are in New Taiwan dollars. Different vendors’ consensus baskets and FX conventions can produce different EPS estimates.
+
+2. Broker expectations — where they agree and differ
+
+Broker / source date | 3Q26 expectation | 4Q26 expectation | Growth, capex and other colour |
+
+JPMorgan
+9 Oct update (https://hk.finance.yahoo.com/news/%E5%A4%A7%E8%A1%8C-%E6%91%A9%E9%80%9A-%E5%8F%B0%E7%A9%8D%E9%9B%BB-tsm-us-072145093.html); earlier preview (https://www.wealth.com.tw/articles/dbf7eeb7-f61c-423b-876c-a2435d6d049a) | GM 66.8%. Known Q3 sales were 2–3% above its / market’s prior forecast. | Revenue +11% QoQ in the earlier USD preview; September sales subsequently raised the starting point. | FY26 revenue +41% USD / +44% NTD; capex US$64bn / 86bn / 100bn for 2026/27/28. Taiwan target NT$3,300. |
+
+Goldman Sachs
+6 Oct coverage (https://technews.tw/2026/10/06/goldman-sachs-see-tsmc) | GM 67.5%; USD revenue +15.3% QoQ, implying ~US$46.35bn from Q2. Forecast predates September sales. | Revenue +11% QoQ in USD; GM 67.3%. | FY26 / FY27 USD revenue +42% / +36.9%; capex US$64bn / 85bn / 98bn. AI server CPUs broaden demand. Taiwan target NT$3,300. |
+
+Morgan Stanley
+6 Oct note, via Reuters (https://www.investing.com/news/stock-market-news/tsmc-expected-to-report-sixth-straight-quarter-of-record-profit-thanks-to-ai-boom-4943004) | Reuters’s accessible preview does not disclose quarterly EPS or GM. | No numerical Q4 forecast in the cited Reuters item. | FY26 USD revenue growth in the low-to-mid 40% range, versus the company’s current “above 40%” outlook. |
+
+Citi
+7 Oct newswire (https://www.tipranks.com/news/the-fly/citi-ups-tsmc-target-opens-upside-90-day-catalyst-watch-thefly-news) | Expects results above recently raised guidance; no quarterly EPS / GM in the accessible item. | No numerical Q4 forecast in the cited newswire item. | Buy; upside 90-day catalyst watch. Expects post-print consensus upgrades; target raised to NT$4,000 from 3,800. |
+
+Macquarie
+7 Oct note / 8 Oct coverage (https://www.worldjournal.com/wj/story/121347/9802835) | GM ~67%, at the company’s guide ceiling. N2 production / utilisation progressing better than expected. | Expects N2 margin pressure to ease from Q4; no specific quarterly GM in the public article. | 2026/27/28 net-profit estimates raised 2% / 5% / 5%. Watches 2027 pricing, N2 revenue and overseas expansion; target NT$4,410. |
+
+Wedbush
+9 Oct newswire (https://finance.yahoo.com/markets/stocks/articles/tsmc-apos-q3-revenue-represents-143642623.html) | GM model 66.0%, with upside potential from stronger utilisation. Q3 sales ~3% above prior expectations. | Revenue NT$1.599tn (~+7.0% QoQ in NTD); GM 65.3% versus the note’s cited consensus of 66.1%. | FY26 revenue +41% USD / +43% NTD. Provides the cautious margin case despite an Outperform rating; target NT$3,000. |
+
+Broker figures above come from dated public news summaries, rather than original client reports. Earlier models may not incorporate 8 October’s September sales release. All NT$ price targets refer to Taiwan ordinary shares, not the U.S. ADR. Missing broker EPS figures are left undisclosed rather than back-filled.
+
+3. Supply-chain evidence and channel colour
+
+Source / evidence type | What it says | Implication for the call |
+
+GlobalFoundries, 8 Oct (https://gf.com/news-and-events/news/globalfoundries-reaches-agreement-to-establish-us-based-supply-of-silicon-interposers-for-advanced-ai-packaging/)
+Primary corporate announcement | Multi-year US$2bn agreement to manufacture silicon interposers for TSMC’s CoWoS ecosystem, adding Malta, New York capacity. | Concrete packaging investment supports longer-term AI / HPC demand visibility. It does not quantify Q4 TSMC earnings or margin. |
+
+TrendForce, 30 Sep (https://www.trendforce.com/presscenter/news/20260930-13258.html)
+Primary industry research | AI / server procurement remains strong while consumer demand is weak. Conventional DRAM contract prices forecast +10–15% QoQ in Q4. | Supports the AI demand narrative, with a consumer offset. Watch whether component and packaging bottlenecks constrain customer deployments; memory pricing is not a direct TSMC margin forecast. |
+
+UBS sector report, 24 Sep (https://www.xxquant.com/en/institution/institutional-research/851e696646672cf580ff1df3fa5f266c)
+Secondary public interpretation | Industry CoWoS capacity projected at 160k wafers/month at end-2026 and 270k at end-2027, comprising 180k TSMC / 90k OSATs in 2027. | Useful capacity context, with lower confidence because the original note was not inspected. It is not used to set the quarterly earnings hurdle. |
+
+4. Previous beats and the ADR reaction
+
+Quarter / reported | Profit actual / estimate
+NT$bn | Profit beat | ADR: prior 5 sessions | ADR: report day | ADR: first 5 reaction sessions |
+
+3Q25
+16 Oct 2025 (https://finance.yahoo.com/news/tsmc-q3-profit-jumps-39-054027806.html) | 452.3 / 417.7 | +8.3% | +0.1% | -1.6% | -5.2% |
+
+4Q25
+15 Jan 2026 (https://finance.yahoo.com/news/tsmc-q4-profit-jumps-35-053601365.html) | 505.7 / 478.4 | +5.7% | +2.6% | +4.4% | +0.1% |
+
+1Q26
+16 Apr 2026 (https://finance.yahoo.com/markets/stocks/articles/tsmc-q1-profit-jumps-58-053252861.html) | 572.5 / 543.3 | +5.4% | +2.5% | -3.1% | +3.3% |
+
+2Q26
+16 Jul 2026 (https://finance.yahoo.com/markets/stocks/articles/tsmc-q2-profit-jumps-77-053602551.html) | 706.6 / 632.6 | +11.7% | -4.0% | -2.3% | +0.4% |
+
+Four out of four profit beats; three negative reporting-day reactions. The latest run-up has also cooled: the ADR closed at US$453.31 on 9 October, -4.1% versus 2 October. Daily price history (https://finance.yahoo.com/quote/TSM/history/).
+
+Profit benchmark: contemporaneous Reuters / LSEG SmartEstimate, using rounded reported figures. Returns: U.S. ADR closing prices, excluding dividends. “Prior 5” = T−6 close to T−1 close; “report day” = T−1 close to T close; “first 5 reaction sessions” = T−1 close to T+4 close, including the report day and allowing for holidays. Broader market moves are not removed. Q2’s profit beat included NT$63bn of Vanguard gains (NT$2.24 per ordinary share), so it is not a clean recurring-earnings comparison. TSMC transcript (https://investor.tsmc.com/english/encrypt/files/encrypt_file/reports/2026-08/3e494f0c14dd0890f897aa044415e21d93486cc4/TSMC%202Q26%20Transcript.pdf).
+
+5. What the market wants to hear this time — our interpretation
+
+Focus | What would support a positive read | What could disappoint |
+
+Q4 revenue guide | Sustained sequential growth after the known Q3 beat. JPM / Goldman’s earlier USD models are around +11% QoQ; focus on the guide’s midpoint against the final Q3 USD base. | A cautious midpoint, or bottlenecks preventing AI demand from converting into shipments. Wedbush’s +7% NTD model highlights a lower-growth case; FX prevents a direct USD comparison. |
+
+Q4 gross margin / N2 costs | Mid-66% or better would clear the 66.1% consensus reference cited by Wedbush; ~67% would approach Goldman’s stronger case. Evidence of better N2 utilisation / pricing matters. | ~65% GM, or N2 / overseas dilution persisting longer than bullish forecasts. The company previously flagged 3–4 percentage points of H2 N2 dilution. |
+
+2027 AI, pricing and capacity | Clear demand visibility across GPUs, ASICs and server CPUs; confidence in N3 / N2 and CoWoS expansion, and pricing sufficient to fund the ramp. | Customer delays, supply constraints worsening, or much higher investment without corresponding revenue / returns visibility. |
+
+Capex / earnings quality | Directional support for the large 2027 capacity step in broker models, with disciplined execution; recurring earnings backing the headline EPS beat. | Costs outrunning utilisation, or profit strength relying heavily on non-operating gains. A firm 2027 capex number may wait until the January call. |
+
+Suggested framing: “The Q3 sales beat is already known; the incremental test is whether Q4 margins and the 2027 capacity / pricing narrative can justify another round of estimate upgrades. The public EPS whisper is only 3% above consensus, but stronger broker margin assumptions set a higher bar for the outlook.”
+
+Best,
+[Your name]
