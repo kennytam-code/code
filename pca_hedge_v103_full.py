@@ -7456,6 +7456,8 @@ def find_best_hedge(*args, **kwargs):
         for output in getattr(rich, 'outputs', ()):
             output.display()
     result['report_text'] = transcript_text()
+    if not compact and old_jupyter:
+        print(result['report_text'])
     return result
 
 

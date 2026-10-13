@@ -734,6 +734,14 @@ class HedgeSearchTests(unittest.TestCase):
         pd.testing.assert_series_equal(result['weights'], self.result['weights'])
         self.assertEqual(result['nested_pooled_r2'], self.result['nested_pooled_r2'])
 
+        output = io.StringIO()
+        with patch.dict(namespace, _IN_JUPYTER=True, _ipy_display=lambda _: None):
+            with contextlib.redirect_stdout(output):
+                detailed = engine['find_best_hedge']('2889 TT Equity', data=self.dataset,
+                                                    report='full', **OPTIONS)
+        self.assertIn(detailed['report_text'], output.getvalue())
+        pd.testing.assert_series_equal(detailed['weights'], self.result['weights'])
+
     def test_failed_notebook_display_still_prints_the_result(self):
         namespace = engine['find_best_hedge'].__globals__
         for notebook in (False, True):
