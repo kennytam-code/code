@@ -687,11 +687,30 @@ class HedgeSearchTests(unittest.TestCase):
             self.assertTrue(all(base64.b64decode(c['png']).startswith(b'\x89PNG') for c in charts))
             html = engine['_report_html'](result)
             self.assertEqual(html.count('data:image/png;base64,'), count)
+            self.assertLess(html.index('<figure'), html.index('<div class="metric-grid">'))
+            blocks = engine['_report_blocks'](result)
+            chart_positions = [i for i, block in enumerate(blocks) if block['kind'] == 'chart']
+            first_table = next(i for i, block in enumerate(blocks) if block['kind'] == 'table')
+            self.assertLess(max(chart_positions), first_table)
             with tempfile.TemporaryDirectory() as folder:
                 path = Path(folder) / 'report.docx'
                 engine['_docx_hedge_report'](result, result['report_text'], str(path))
                 self.assertEqual(len(Document(path).inline_shapes), count)
             self.assertEqual(len(plt.get_fignums()), 0)
+
+    def test_recipe_trade_directions_match_the_coefficient_only_spread(self):
+        weights = pd.Series([.6, -.25], index=['2910 TT Equity', '0050 TT Equity'])
+        result = dict(self.result, weights=weights)
+        recipe = next(b for b in engine['_report_blocks'](result)
+                      if b.get('headers') == ['ACTION', 'PER $100 TARGET', 'INSTRUMENT'])
+        self.assertEqual(recipe['rows'], [['SHORT', '$60.0', '2910 TT Equity'],
+                                         ['LONG', '$25.0', '0050 TT Equity']])
+        frame = self.result['returns']
+        actual = frame['2889 TT Equity'] - frame[weights.index] @ weights
+        manual = frame['2889 TT Equity'] - .6*frame['2910 TT Equity'] + .25*frame['0050 TT Equity']
+        np.testing.assert_allclose(actual, manual)
+        self.assertFalse(engine['_decision_fields'](weights, '? IN-SAMPLE ONLY')['trade_eligible'])
+        self.assertTrue(engine['_decision_fields'](weights, '✗ NO VALIDATED HEDGE')['trade_weights'].empty)
 
     def test_two_day_cumulative_chart_does_not_double_count_overlap(self):
         curves = []

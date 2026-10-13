@@ -7007,6 +7007,11 @@ def _report_blocks(result):
         text('ILLUSTRATIVE SAMPLE — simulated prices and instruments, not live market data or a hedge recommendation.')
     if span:
         text(f"Analysis window {window} · {span[0]:%d %b %Y} to {span[1]:%d %b %Y} · {span[2]} return rows", True)
+    if result.get('report_charts'):
+        section('Charts')
+        for chart in result['report_charts']:
+            blocks.append(dict(kind='chart', **chart))
+        section('Summary')
     text(t['grade'])
     for reason in t.get('reasons') or []:
         text(reason)
@@ -7188,10 +7193,6 @@ def _report_blocks(result):
     if not tail and not path:
         text('Tail and path statistics unavailable for this run.', True)
 
-    if result.get('report_charts'):
-        section('Charts')
-        for chart in result['report_charts']:
-            blocks.append(dict(kind='chart', **chart))
     section('Search settings and data quality')
     search = result.get('search') or {}
     table(['SETTING', 'THIS RUN'], [
@@ -7230,7 +7231,7 @@ def _report_blocks(result):
 _BRIEF_METHODOLOGY = (
     'In-sample R² describes the current training fit; unseen scores test earlier selection and refitting. '
     'Alternative and rolling scores are conditional diagnostics. Spread paths approximate log-return hedges; '
-    'costs, borrow and FX conversion are excluded. Factor, condition and refit-interval diagnostics are descriptive.')
+    'costs, borrow, financing and FX conversion are excluded. Factor, condition and refit-interval diagnostics are descriptive.')
 
 
 def _tidy_report_blocks(blocks):
