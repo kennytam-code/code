@@ -315,7 +315,7 @@ table { font-variant-numeric: tabular-nums; }
 .ah-select { border: 0; background: transparent; color: var(--text-primary); padding: 0; text-align: left; font: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 #ah-tbl tr.selected td { background: var(--surface-2); font-weight: 600; }
 #lockup-tbl tr.selected td { background: var(--surface-2); font-weight: 600; }
-#lockup-tbl table { table-layout: fixed; width: 100%; }
+#lockup-tbl table { table-layout: auto; width: 100%; min-width: 1280px; }
 #lockup-tbl th:nth-child(1) { width:16%; }
 #lockup-tbl th:nth-child(2) { width:8%; }
 #lockup-tbl th:nth-child(3) { width:11%; }
@@ -324,7 +324,16 @@ table { font-variant-numeric: tabular-nums; }
 #lockup-tbl th:nth-child(8),#lockup-tbl th:nth-child(9) { width:6%; }
 #lockup-tbl th:nth-child(11) { width:12%; }
 #lockup-tbl th:nth-child(12) { width:4%; }
-#lockup-tbl th, #lockup-tbl td { overflow-wrap: anywhere; vertical-align: top; }
+#lockup-tbl th, #lockup-tbl td { vertical-align: middle; }
+#lockup-tbl td.num, #lockup-tbl td:nth-child(4), #lockup-tbl td:nth-child(5) { white-space: nowrap; }
+#lockup .tiles { grid-template-columns:repeat(3,minmax(0,1fr)); }
+#lockup .tile { border-radius:0; box-shadow:none; padding:16px 20px; }
+#lockup .tile .v { font-size:26px; }
+#lockup #lockup-date { font-size:22px; }
+#lockup-stock-picks select { min-width:300px; max-width:460px; }
+#ah .ahgrid, #lab-ah .ahgrid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+#ah .ahpane, #lab-ah .ahpane { border:1px solid var(--line); border-radius:0; padding:14px; }
+@media(max-width:760px){#ah .ahgrid, #lab-ah .ahgrid {grid-template-columns:1fr;}#lockup .tiles {grid-template-columns:1fr;}}
 #lockup-tbl th { letter-spacing: 0; }
 #lockup-tbl th:last-child { white-space: nowrap; }
 #lockup-event { max-width: min(600px, 80vw); }
@@ -462,6 +471,7 @@ select, input { background: var(--surface-2); color: var(--text-primary);
 .tbl.deals tbody tr { height: 30px; }
 .tbl .mono { font-variant-numeric: tabular-nums; color: var(--text-secondary); }
 .tbl td.up { color: #217346; } .tbl td.down { color: #b53939; }
+.tile .v.up { color: #217346; } .tile .v.down { color: #b53939; }
 .calchip { background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px;
   padding: 4px 10px; font-size: 12.5px; }
 .calchip b { color: var(--s2); }
@@ -532,12 +542,18 @@ table.labtbl thead th .dot { vertical-align: 1px; }
 .ahstock { margin: 16px 0 6px; }
 .ahstock h3 { margin: 8px 0 4px; font-size: 14.5px; }
 .ahwrap { }
-.ahgrid { display:grid; grid-template-columns: repeat(3, minmax(280px, 1fr)); gap: 14px; }
-.ahpane { background: var(--surface-1); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px 4px; }
+.ahgrid { display:grid; grid-template-columns: repeat(2, minmax(320px, 1fr)); gap: 18px; }
+.ahpane { background: var(--surface-1); border: 1px solid var(--line); border-radius: 4px; padding: 14px 16px 10px; }
 .ahpane h4 { margin: 0 0 4px; font-size: 12px; color: var(--text-secondary); font-weight: 600; }
 .ahpane svg { width: 100%; }
-.ahpane.withpop { background: color-mix(in srgb, var(--s2) 7%, var(--surface-1)); }
-.ahpane.expop { background: color-mix(in srgb, var(--s3) 8%, var(--surface-1)); }
+.ahpane.withpop, .ahpane.expop { background: var(--surface-1); }
+#lockup-stock-picks[hidden] { display: none; }
+#peers .peer-custom[hidden] { display: none; }
+#peer-pair { max-width: 760px; }
+#peer-table .peer-active { background: var(--surface-2); }
+#peer-table td:nth-child(4) { white-space:normal; max-width:360px; }
+#lab-ah .ah-focus { margin: 8px 0 16px; }
+.ahpane .ktag.kpop, .ahpane .ktag.kex { background: transparent; color: var(--text-muted); border: 1px solid var(--line); }
 .ovleg { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 11.5px;
   color: var(--text-secondary); margin: 2px 0 12px; }
 .ovleg .sw { display: inline-block; width: 10px; height: 3px; border-radius: 2px;
@@ -547,8 +563,7 @@ table.labtbl thead th .dot { vertical-align: 1px; }
 .ahpane h4 { font-size: 12.5px; line-height: 1.35; margin-bottom: 2px; }
 .ktag { font-size: 9.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
   border-radius: 999px; padding: 1px 7px; vertical-align: 1px; }
-.ktag.kpop { background: color-mix(in srgb, var(--s2) 18%, transparent); color: var(--s2); }
-.ktag.kex { background: color-mix(in srgb, var(--s3) 18%, transparent); color: var(--s3); }
+.ktag.kpop, .ktag.kex { background:transparent; color:var(--text-muted); border:1px solid var(--line); }
 .axlabel { font-size: 11px; fill: var(--text-secondary); }
 .sparks { display: grid; grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
   gap: 12px; margin-bottom: 6px; }
@@ -1004,48 +1019,11 @@ const ahDeals = (DATA.market_deals || deals).filter(d => d.a_share_code).map(d =
 let selectedAhCode = "3986";
 function renderSelectedAH() {
   const d = ahDeals.find(d => d.code === selectedAhCode);
-  const s = AHST[selectedAhCode] || {}, box = $("#ah-history");
-  box.innerHTML = "";
-  if (!d) return;
-  $("#ah-stock").value = d.code;
-  document.querySelectorAll("#ah-tbl tr[data-code]").forEach(r =>
-    r.classList.toggle("selected", r.dataset.code === d.code));
-  $("#ah-history-title").textContent = `${d.name} · A ${d.a_share_code} / H ${d.code}`;
-  const hs = s.h_history || [], end = hs.length ? hs[hs.length - 1][0] : "unavailable";
-  $("#ah-history-note").textContent = `H listing ${d.ipo_date} · H snapshot ${s.latest_h_date || end} · A snapshot ${s.latest_a_date || "unavailable"}. IPO premium uses the H offer price and prior A/FX closes.`;
-  if (s.entitlement_review) $("#ah-history-note").textContent += ` Chart gap ${s.entitlement_review.h_ex_date} to ${new Date(Date.parse(s.entitlement_review.a_ex_date) - 86400000).toISOString().slice(0,10)}: the A/H ex-entitlement dates differ; premiums resume on ${s.entitlement_review.a_ex_date}.`;
-  if (d.classReview) {
-    box.innerHTML = "<p class='note'>Premium withheld pending the A/H share-class ratio review.</p>";
-    return;
-  }
-  const points = (s.history || []).filter(p => p[0] >= d.ipo_date && p[0] <= end && Number.isFinite(p[4]) && (!s.entitlement_review || (s.entitlement_review.events || [s.entitlement_review]).every(e => (p[0] >= e.h_ex_date) === (p[5] >= e.a_ex_date))));
-  if (!points.length) { box.innerHTML = "<p class='note'>No aligned A/H/FX history available.</p>"; return; }
-  const W = fitW(box, 900), H = 320, M = {l: 62, r: 26, t: 20, b: 40};
-  const time = dt => Date.parse(dt + "T00:00:00Z"), first = time(d.ipo_date), last = time(end);
-  const values = points.map(p => p[4] * 100), lo = Math.min(0, ...values), hi = Math.max(0, ...values);
-  const pad = Math.max(5, (hi - lo) * .08), X = lin(first, last, M.l, W - M.r), Y = lin(lo - pad, hi + pad, H - M.b, M.t);
-  const svg = el("svg", {viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": `${d.name} premium from ${d.ipo_date} through ${end}`, "data-first": d.ipo_date, "data-last": end, "data-points": points.length}, box);
-  niceTicks(lo - pad, hi + pad, 5).forEach(v => {
-    el("line", {x1: M.l, x2: W - M.r, y1: Y(v), y2: Y(v), class: "gridline"}, svg);
-    const t = el("text", {x: M.l - 8, y: Y(v) + 4, "text-anchor": "end", class: "axlabel"}, svg); t.textContent = `${v.toFixed(0)}%`;
-  });
-  for (let i = 0; i < 5; i++) {
-    const v = first + (last - first) * i / 4, t = el("text", {x: X(v), y: H - 13, "text-anchor": i === 0 ? "start" : i === 4 ? "end" : "middle", class: "axlabel"}, svg);
-    t.textContent = new Date(v).toISOString().slice(0, 10);
-  }
-  el("line", {x1: M.l, x2: W - M.r, y1: Y(0), y2: Y(0), stroke: css("--mid")}, svg);
-  // A gap in available pair observations stays a gap; do not interpolate months of missing A data.
-  let path = "", previous = null;
-  points.forEach(p => { const now = time(p[0]); path += `${previous == null || now - previous > 10 * 86400000 ? "M" : "L"}${X(now).toFixed(2)},${Y(p[4] * 100).toFixed(2)} `; previous = now; });
-  el("path", {d: path, fill: "none", stroke: css("--text-primary"), "stroke-width": 2}, svg);
-  const focus = el("circle", {r: 4, fill: css("--text-primary"), display: "none"}, svg);
-  svg.addEventListener("mousemove", ev => {
-    const rect = svg.getBoundingClientRect(), v = first + ((ev.clientX - rect.left) * W / rect.width - M.l) / (W - M.r - M.l) * (last - first);
-    const p = points.reduce((best, p) => Math.abs(time(p[0]) - v) < Math.abs(time(best[0]) - v) ? p : best, points[0]);
-    focus.setAttribute("cx", X(time(p[0]))); focus.setAttribute("cy", Y(p[4] * 100)); focus.setAttribute("display", "block");
-    showTT(`<b>${d.name}</b>${p[0]} · A premium ${fmt.pct(p[4] * 100)}<br>H HK$${p[1]} · A CNY ${p[2]} · CNYHKD ${p[3]}<br><span class="m">A observation ${p[5]} · FX observation ${p[6]}</span>`, ev);
-  });
-  svg.addEventListener("mouseleave", () => {focus.setAttribute("display", "none"); hideTT();});
+  if (!d) {$("#ah-history").innerHTML=""; return;}
+  $("#ah-stock").value=d.code;
+  document.querySelectorAll("#ah-tbl tr[data-code]").forEach(r=>r.classList.toggle("selected",r.dataset.code===d.code));
+  $("#ah-history-title").textContent=`${d.name} · A ${d.a_share_code} / H ${d.code}`;
+  renderAH([d], {host:"#ah-history",note:"#ah-history-note",full:$("#ah-horizon").value==="Max"});
 }
 function ahMode() { const el = document.querySelector("#ah-when"); return el ? el.value : "now"; }
 function redrawAHTab() {
@@ -1084,9 +1062,10 @@ fillAhSubs();
 $("#ah-sec").addEventListener("change", () => { fillAhSubs(); redrawAHTab(); });
 $("#ah-sub").addEventListener("change", redrawAHTab);
 $("#ah-when").addEventListener("change", redrawAHTab);
+$("#ah-horizon").addEventListener("change",renderSelectedAH);
 $("#ah-stock").addEventListener("change", () => {selectedAhCode = $("#ah-stock").value; renderSelectedAH();});
 $("#ah-tbl").addEventListener("click", ev => {const b = ev.target.closest(".ah-select"); if (b) {selectedAhCode = b.dataset.code; renderSelectedAH(); $("#ah-history-title").scrollIntoView({block: "nearest"});}});
-redrawAHTab();
+// Initialized after the shared chart helpers.
 
 // Filed lock-ups: the same event windows and closes used by the Excel sheet.
 const LOCKUPS = (DATA.lockups || {}).events || [];
@@ -1123,11 +1102,12 @@ function renderSelectedLockup() {
   $("#lockup-before-dates").textContent = w.pre_start && w.anchor ? `${w.pre_start} → ${w.anchor}` : "30 trading sessions before expiry";
   $("#lockup-after-dates").textContent = w.anchor && w.post_end ? `${w.anchor} → ${w.post_end}` : "30 trading sessions after expiry";
   $("#lockup-date").textContent = e.last_day_locked || "Expiry unconfirmed";
-  $("#lockup-date-basis").textContent = e.date_basis;
+  $("#lockup-date-basis").textContent = "IPO "+e.ipo_date;
+  $("#lockup-date-basis").title=e.date_basis;
   const source = e.url ? ` <a href="${safeText(e.url)}" target="_blank" rel="noopener">HKEX filing${e.page ? ` · PDF page ${e.page}` : ""}</a>` : "";
-  $("#lockup-history-note").innerHTML = `${safeText(lockupStatus(e))}. Prices through ${DATA.lockups.price_asof}. ` +
-    (w.anchor ? `Day 0 is the last HK trading session on or before expiry (${w.anchor}). ` : "") +
-    `Chart rebased to day 0 = 0%; split-neutral closes, excluding dividends and rights value.${source}`;
+  $("#lockup-history-note").innerHTML = `${safeText(lockupStatus(e))} · prices through ${DATA.lockups.price_asof}${source}`;
+  $("#lockup-history-note").title = "Day 0 is the last HK trading session on or before expiry. Split-neutral price return; dividends and rights value excluded.";
+  for(const id of ["lockup-before","lockup-after"]){const v=id==="lockup-before"?w.before_pct:w.after_pct;$("#"+id).className="v "+(v>0?"up":v<0?"down":"");}
   if (!w.anchor_close || !w.path || !w.path.some(p => Number.isFinite(p[2]))) {
     box.innerHTML = `<p class="note">${safeText(lockupStatus(e))}. A chart needs an observed reference close at expiry.</p>`;
     return;
@@ -1180,8 +1160,8 @@ function redrawLockupTab() {
       const af = ad > DATA.lockups.price_asof, bf = bd > DATA.lockups.price_asof;
       return af !== bf ? (af ? -1 : 1) : (af ? ad.localeCompare(bd) : bd.localeCompare(ad)) || a.e.code.localeCompare(b.e.code);
     });
-  $("#lockup-note").textContent = `${stocks.length} stocks · ${rows.length} cornerstone schedules. Unconfirmed dates and future returns remain blank.`;
-  $("#lockup-tbl").innerHTML = `<table class="tbl"><thead><tr><th>Company / H code</th><th>Sector</th><th title="Full company roster; individual expiry dates can cover subsets. Refer to the event filing.">Company cornerstones</th><th>IPO date</th><th>Last day locked</th><th class="num">30 trading sessions before</th><th class="num">30 trading sessions after</th><th class="num">Cornerstone % of offer</th><th class="num">Since IPO %</th><th class="num">Deal HK$m</th><th>Status</th><th>Source</th></tr></thead><tbody>` +
+  $("#lockup-note").textContent = `${stocks.length} stocks · ${rows.length} cornerstone schedules`;
+  $("#lockup-tbl").innerHTML = `<table class="tbl"><thead><tr><th>Company / H code</th><th>Sector</th><th title="Full company roster; individual expiry dates can cover subsets. Refer to the event filing.">Cornerstones</th><th>IPO date</th><th>Last day locked</th><th class="num">30-session pre</th><th class="num">30-session post</th><th class="num">CS % of offer</th><th class="num">Since IPO %</th><th class="num">Deal HK$m</th><th>Status</th><th>Source</th></tr></thead><tbody>` +
     rows.map(({e, i}) => {const d = deals.find(d => d.code === e.code), names = d?.cornerstone_investors || [];return `<tr data-event="${i}"><td><button type="button" class="ah-select lockup-select" data-event="${i}">${safeText(e.name)} (${e.code})</button></td><td>${safeText(e.sector)}</td><td title="${safeText(names.join('; '))}">${names.length ? `<details><summary>${safeText(names[0])}${names.length > 1 ? ` +${names.length-1}` : ''}</summary>${safeText(names.join('; '))}</details>` : 'Roster unconfirmed'}</td><td>${e.ipo_date || "—"}</td><td>${e.last_day_locked || "Expiry unconfirmed"}</td><td class="num">${Number.isFinite(e.window.before_pct) ? fmt.pct(e.window.before_pct) : "—"}</td><td class="num">${Number.isFinite(e.window.after_pct) ? fmt.pct(e.window.after_pct) : "—"}</td><td class="num">${d?.cornerstone_pct==null?'—':fmt.pct(d.cornerstone_pct)}</td><td class="num">${d?.since_ipo_pct==null?'—':fmt.pct(d.since_ipo_pct)}</td><td class="num">${d?.deal_size_hkdm==null?'—':fmt.n(d.deal_size_hkdm)}</td><td title="${safeText(e.date_basis)}">${safeText(lockupStatus(e))}</td><td>${e.url ? `<a href="${safeText(e.url)}" target="_blank" rel="noopener" title="${safeText(e.date_basis)}${e.page ? ` · PDF page ${e.page}` : ""}">HKEX</a>` : "—"}</td></tr>`}).join("") + `</tbody></table>`;
   renderSelectedLockup();
 }
@@ -1788,7 +1768,7 @@ const OUTCOMES = [
   ["pop held (1m ex-pop)", d => d.aftermkt_1m_pct == null ? null : d.aftermkt_1m_pct > 0,
    "held after day-1", "faded after day-1"],
 ];
-const RED = "#e34948", BLUE = "#2a78d6";
+const RED = "#9b4a47", BLUE = "#315b7d";
 let labSel = new Set();
 let labPaint = {};                // code -> "r" | "b" | undefined (grey)
 function ahOnly() { return $("#lab-ashare").checked; }
@@ -2105,9 +2085,10 @@ function pathline(svg, xs, ys, X, Y, color, w) {
   let dstr = "", started = false;
   xs.forEach((x, i) => {
     const v = ys[i];
-    if (!Number.isFinite(v)) { return; }
+    if (!Number.isFinite(v)) { started=false; return; }
     const px = X(x), py = Y(v);
     if (!Number.isFinite(px) || !Number.isFinite(py)) { return; }
+    if (i>0 && x-xs[i-1]>10) started=false;
     dstr += (started ? "L" : "M") + px.toFixed(1) + "," + py.toFixed(1);
     started = true;
   });
@@ -2135,7 +2116,7 @@ function addXhair(svg, W, H, M, Xs, sers, unit) {
         : unit === "idx" ? v.toFixed(1) : v.toFixed(2);
       return `<div><span class="sw" style="background:${s2.color}"></span>${s2.name}: <b>${val}</b></div>`;
     }).join("");
-    showTT(`<b>day ${best}</b>${rows}`, ev);
+    showTT(`<b>${svg.dataset.ipo ? new Date(Date.parse(svg.dataset.ipo)+best*86400000).toISOString().slice(0,10) : "day "+best}</b>${rows}`, ev);
   });
   svg.addEventListener("mouseleave", () => { vline.setAttribute("visibility", "hidden"); hideTT(); });
 }
@@ -2159,14 +2140,14 @@ function hOpen0(P, code) {
 }
 
 const LEAD = -8;             // where the "struck at pricing" point is drawn
-function premFromIPO(days, prem, ipoPct) {
+function premFromIPO(days, prem, ipoPct, leadDay=LEAD) {
   if (!prem || !prem.length) return null;
   if (ipoPct == null) return { days: days, ys: prem, lead: null };
   // The at-pricing premium is observed BEFORE day 0 (A's last close vs the
   // offer), so it belongs left of the axis origin. Drawn as its own dashed
   // lead-in: stacking it at x=0 turned every line's drop into one vertical bar
   // and squashed the whole panel.
-  return { days: days, ys: prem, lead: { x: LEAD, y: ipoPct } };
+  return { days: days, ys: prem, lead: { x: leadDay, y: ipoPct } };
 }
 // x-scale that includes the pre-listing lead-in
 function xLead(W, M) { return v => M.l + (W - M.l - M.r) * (v - LEAD) / (92 - LEAD); }
@@ -2200,7 +2181,7 @@ function ahPanel(host, title, draw, kind, subtitle) {
     : kind === "expop" ? ' <span class="ktag kex">ex-pop</span>' : ""}</h4>` +
     (subtitle ? `<p class="psub">${subtitle}</p>` : "");
   host.appendChild(card);
-  const W = fitW(card, 340, 640), H = 230, M = { l: 44, r: 44, t: 14, b: 26 };
+  const W = fitW(card, 560), H = 270, M = { l: 58, r: 58, t: 20, b: 34 };
   const svg = el("svg", { viewBox: `0 0 ${W} ${H}` }, card);
   draw(svg, W, H, M);
   return svg;
@@ -2210,64 +2191,66 @@ function scaleFor(vals, H, M, pad) {
   if (!ok.length) return () => NaN;
   const lo = Math.min(...ok), hi = Math.max(...ok);
   const p = (hi - lo) * (pad || .06) || 1;
-  return v => H - M.b - (H - M.t - M.b) * (v - lo + p) / (hi - lo + 2 * p);
+  const result=v => H - M.b - (H - M.t - M.b) * (v - lo + p) / (hi - lo + 2 * p);result.domain=[lo-p,hi+p];return result;
 }
-function renderAH(chosen) {
-  const host = $("#lab-ah");
-  host.innerHTML = "";
-  const pairs = chosen.filter(d => AHP[d.code]);
-  $("#lab-ah-note").textContent = pairs.length
-    ? `${pairs.length} of the chosen comps have an A line — first ~3 months of daily prices, precomputed (Tencent + CNYHKD). The Jupyter notebook draws the same four panels live off Bloomberg for any window.`
-    : "None of the chosen comps has an A-share line — pick A/H deals (or tick 'A-share only') to see the paired-price panels.";
+function pathYAxis(svg,Y,W,H,M,unit=''){
+ if(!Y.domain)return;
+ niceTicks(Y.domain[0],Y.domain[1],4).filter(v=>Y(v)>=M.t&&Y(v)<=H-M.b).forEach(v=>{
+  el('line',{x1:M.l,x2:W-M.r,y1:Y(v),y2:Y(v),class:'gridline'},svg);
+  const t=el('text',{x:M.l-8,y:Y(v)+4,'text-anchor':'end',class:'axlabel'},svg);t.textContent=(Math.abs(v)>=100?v.toFixed(0):v.toFixed(1))+unit;
+ });
+}
+function fullAHPath(d) {
+  const old=DATA.ahpaths[d.code],r=AHST[d.code],by=new Map((r.history||[]).map(x=>[x[0],x]));
+  const out={...old};for(const key of ["days","dates","h","a_cny","a_hkd","prem","h_perf","a_perf_hkd"])out[key]=[];
+  for(const [dt,h] of r.h_history||[]){
+    const v=by.get(dt),valid=!!v&&!old.class_review&&(!r.entitlement_review||(r.entitlement_review.events||[r.entitlement_review]).every(e=>(dt>=e.h_ex_date)===(v[5]>=e.a_ex_date)));
+    const hf=(old.h_actions||[]).filter(e=>e.date<=dt).reduce((a,e)=>a*e.ratio,1)/(old.h_basefactor||1);
+    const af=(r.entitlement_review?(r.entitlement_review.events||[r.entitlement_review]):[]).filter(e=>old.ipo<e.a_ex_date&&e.a_ex_date<=dt).reduce((a,e)=>a*e.ratio,1);
+    out.days.push(Math.round((Date.parse(dt)-Date.parse(old.ipo))/86400000));out.dates.push(dt);out.h.push(h);out.a_cny.push(v?v[2]:null);out.a_hkd.push(valid?v[2]*v[3]:null);out.prem.push(valid?v[4]*100:null);out.h_perf.push(h*hf);out.a_perf_hkd.push(valid?v[2]*v[3]*af:null);
+  }
+  return out;
+}
+let labAHFocus=null;
+function renderAH(chosen, options={}) {
+  const host = $(options.host || "#lab-ah"); host.innerHTML="";
+  const paths=DATA.ahpaths || {};let pairs=chosen.filter(d=>paths[d.code]);
+  if(!options.host&&pairs.length>1){
+    if(!pairs.some(d=>d.code===labAHFocus))labAHFocus=pairs[0].code;
+    const label=document.createElement('label');label.className='ah-focus';label.innerHTML='A/H company <select id="lab-ah-stock">'+pairs.map(d=>`<option value="${d.code}">${safeText(d.name)} (${d.code})</option>`).join('')+'</select>';host.appendChild(label);
+    const selector=label.querySelector('select');selector.value=labAHFocus;selector.addEventListener('change',()=>{labAHFocus=selector.value;renderAH(chosen,options);});pairs=pairs.filter(d=>d.code===labAHFocus);
+  }
+  $(options.note || "#lab-ah-note").textContent=pairs.length ? `${pairs.length} A/H ${pairs.length===1?"pair":"pairs"} · prices through ${DATA.ah_asof}` : "No A/H price history for this selection.";
+  const AHP=paths, RED="#9b4a47",BLUE="#315b7d",GOLD="#a18347";
   pairs.forEach(d => {
-    const P = AHP[d.code];
-    const wrap = document.createElement("div");
-    wrap.className = "ahstock";
-    wrap.innerHTML = `<h3>${P.name} (${d.code}.HK vs ${P.a_code}) — listed ${P.ipo}, offer HK$${P.offer}` +
-      (d.first_day_return_pct != null ? ` · day-1 pop <b class="${d.first_day_return_pct >= 0 ? "up" : "down"}">${fmt.pct(d.first_day_return_pct)}</b>` : "") +
-      (d.a_premium_ipo_pct != null ? ` · A prem vs offer at IPO <b>${fmt.pct(d.a_premium_ipo_pct)}</b>` : "") +
-      (P.a_pre_runup_pct != null ? ` · <span class="m">A ran ${fmt.pct(P.a_pre_runup_pct)} in the month before</span>` : "") +
-      `</h3><div class="ahwrap"><div class="ahgrid"></div></div>`;
-    host.appendChild(wrap);
-    const g = wrap.querySelector(".ahgrid");
-    const X = (W, M) => v => M.l + (W - M.l - M.r) * v / 92;
-    // pane 0: the A line, month BEFORE -> month AFTER the H listing. The
-    // vertical rule at day 0 IS the IPO date; left of it = the run-in flow,
-    // right of it = how the A line digested the H listing.
-    if (P.a_pre && P.a_pre.length > 1) {
-      const postD = P.days.filter((dd, i) => dd <= 31 && P.a_cny[i] != null);
-      const postV = P.days.map((dd, i) => dd <= 31 ? P.a_cny[i] : null)
-                          .filter((v, i) => P.days[i] <= 31);
-      const postOK = postV.filter(v => v != null);
-      const postPct = postOK.length > 1 && postOK[0]
-        ? Math.round(1000 * (postOK[postOK.length - 1] / postOK[0] - 1)) / 10 : null;
-      ahPanel(g, `A-share, month before → month after`
-        + ` (${fmt.pct(P.a_pre_runup_pct)} → ${postPct == null ? "—" : fmt.pct(postPct)})`,
-        (svg, W, H, M) => {
-        const Xp = v => M.l + (W - M.l - M.r) * (v + 31) / 63;
-        const allv = P.a_pre.concat(postOK);
-        const Y = scaleFor(allv, H, M);
-        [[-21, "-3w"], [-7, "-1w"], [7, "+1w"], [21, "+3w"]].forEach(([dd, lab]) => {
-          el("line", { x1: Xp(dd), x2: Xp(dd), y1: M.t, y2: H - M.b, stroke: "var(--line)",
-            "stroke-dasharray": "2,3", "stroke-width": .8 }, svg);
-          const t2 = el("text", { x: Xp(dd) + 2, y: M.t + 9, class: "m" }, svg);
-          t2.textContent = lab;
-        });
-        pathline(svg, P.pre_days, P.a_pre, Xp, Y, RED, 1.8);
-        pathline(svg, postD, postV, Xp, Y, RED, 1.8);
-        // the IPO date, unmissable: a solid rule with its own label
-        el("line", { x1: Xp(0), x2: Xp(0), y1: M.t, y2: H - M.b,
-          stroke: "var(--text-primary)", "stroke-width": 1.3 }, svg);
-        const t = el("text", { x: Xp(0), y: H - M.b + 12, "text-anchor": "middle",
-          class: "m halo" }, svg);
-        t.textContent = "H LISTS";
-        addXhair(svg, W, H, M, Xp, [
-          { name: "A (¥), pre-IPO", days: P.pre_days, ys: P.a_pre, color: RED },
-          { name: "A (¥), post-IPO", days: postD, ys: postV, color: RED }], "px");
-      }, null, "Did the A line run INTO the H pricing, and did it hold after? "
-        + "Left of the rule = the month before; right = the month after.");
+    const source=options.full?fullAHPath(d):AHP[d.code], take=source.days.map((v,i)=>[v,i]).filter(x=>options.full||x[0]<=92).map(x=>x[1]);
+    const P={...source};for(const key of ["days","h","a_cny","a_hkd","prem","h_perf","a_perf_hkd"])P[key]=take.map(i=>source[key][i]);
+    const span=options.full?Math.max(1,P.days.at(-1)||1):92;
+    const LEAD=source.offer_date?Math.min(0,Math.round((Date.parse(source.offer_date)-Date.parse(P.ipo))/86400000)):0;
+    const X=(W,M)=>v=>M.l+(W-M.l-M.r)*v/span;
+    const xLead=(W,M)=>v=>M.l+(W-M.l-M.r)*(v-LEAD)/(span-LEAD);
+    const daymarks=(svg,Xs,M,H)=>{
+      const marks=span<=100?[[7,"1w"],[30,"1M"],[61,"2M"],[92,"3M"]]:Array.from({length:5},(_,i)=>{const n=Math.round(span*i/4);return[n,new Date(Date.parse(P.ipo)+n*86400000).toISOString().slice(0,7)];});
+      marks.filter(x=>x[0]<=span).forEach(([n,label])=>{el("line",{x1:Xs(n),x2:Xs(n),y1:M.t,y2:H-M.b,class:"gridline"},svg);const t=el("text",{x:Xs(n),y:H-8,"text-anchor":"middle",class:"axlabel"},svg);t.textContent=label;});
+      svg.setAttribute("data-ipo",P.ipo);svg.setAttribute("data-first",P.ipo);svg.setAttribute("data-last",P.dates[take.at(-1)]||P.ipo);
+    };
+    const wrap=document.createElement("div");wrap.className="ahstock";
+    wrap.innerHTML=`<div class="ovleg"><span><i class="sw" style="background:${BLUE}"></i>H shares (HKD)</span><span><i class="sw" style="background:${RED}"></i>A shares</span><span><i class="sw" style="background:#757f88"></i>CSI 300</span><span>H listed ${P.ipo} · offer HK$${P.offer}</span></div><div class="ahwrap"><div class="ahgrid"></div></div>`;
+    host.appendChild(wrap);const g=wrap.querySelector(".ahgrid");
+    const ref=(DATA.ah_reference?.pairs||{})[d.code],common=ref?.rows||[];
+    if(common.length>1 && ref.pre_from){
+      const days=common.map(x=>Math.round((Date.parse(x[0])-Date.parse(P.ipo))/86400000));
+      const a=common.map(x=>100*x[1]/common[0][1]),b=common.map(x=>100*x[2]/common[0][2]);
+      ahPanel(g,"A shares vs CSI 300 · around H listing",(svg,W,H,M)=>{
+        const Xp=v=>M.l+(W-M.l-M.r)*(v+31)/62,Y=scaleFor([...a,...b,100],H,M);
+        niceTicks(Math.min(...a,...b),Math.max(...a,...b),4).forEach(v=>{el("line",{x1:M.l,x2:W-M.r,y1:Y(v),y2:Y(v),class:"gridline"},svg);const t=el("text",{x:M.l-6,y:Y(v)+3,"text-anchor":"end",class:"axlabel"},svg);t.textContent=v.toFixed(0);});
+        [-30,-15,0,15,30].forEach(n=>{const t=el("text",{x:Xp(n),y:H-8,"text-anchor":"middle",class:"axlabel"},svg);t.textContent=n===0?"H IPO":(n>0?"+":"")+n+"d";});
+        el("line",{x1:Xp(0),x2:Xp(0),y1:M.t,y2:H-M.b,stroke:"var(--mid)","stroke-dasharray":"4 3"},svg);
+        pathline(svg,days,a,Xp,Y,RED,1.9);pathline(svg,days,b,Xp,Y,"#757f88",1.8);svg.dataset.ipo=P.ipo;svg.dataset.common=common.length;
+        addXhair(svg,W,H,M,Xp,[{name:"A shares",days,ys:a,color:RED},{name:"CSI 300",days,ys:b,color:"#757f88"}],"idx");
+      },null,`${ref.pre_from} to ${ref.pre_to}: A ${fmt.pct(ref.pre_a_return_pct)}, CSI ${fmt.pct(ref.pre_csi_return_pct)}, A − CSI ${ref.pre_excess_pp.toFixed(1)} pp. Both = 100 on the first common date.`);
     } else {
-      ahPanel(g, "A-share, month before (no data)", () => {});
+      const card=document.createElement("div");card.className="ahpane";card.innerHTML=`<h4>A shares vs CSI 300 · before H listing</h4><p class="note">A-line observations start ${ref?.a_first_observation||"after H listing"}; pre-IPO comparison unavailable.</p>`;g.appendChild(card);
     }
     // pane 1: native levels, twin axes (A CNY left red, H HKD right blue)
     ahPanel(g, "Price levels, native currency", (svg, W, H, M) => {
@@ -2294,14 +2277,14 @@ function renderAH(chosen) {
       if (aok.length) { put2(Math.max(...aok), Ya, -1, RED, ""); put2(Math.min(...aok), Ya, -1, RED, ""); }
       if (hok.length) { put2(Math.max(...hok), Yh, 1, BLUE, ""); put2(Math.min(...hok), Yh, 1, BLUE, ""); }
     }, null, `<span style="color:${RED}">left axis ¥ (A)</span> · ` +
-       `<span style="color:${BLUE}">right axis HK$ (H)</span> — two scales, `
-       + `so the LINES' shapes compare, not their levels.`);
+       `<span style="color:${BLUE}">right axis HK$ (H)</span>`);
     // pane 2: both legs in HKD, gap shaded by premium sign
-    ahPanel(g, "Common currency — shaded gap = premium", (svg, W, H, M) => {
+    ahPanel(g, "Prices in HKD", (svg, W, H, M) => {
       const Xs = X(W, M);
       daymarks(svg, Xs, M, H);
       const all = P.h.concat(P.a_hkd.filter(v => v != null));
       const Y = scaleFor(all, H, M);
+      pathYAxis(svg,Y,W,H,M);
       for (let i = 1; i < P.days.length; i++) {
         if (P.a_hkd[i] == null || P.a_hkd[i - 1] == null) continue;
         if (![P.a_hkd[i], P.a_hkd[i-1], P.h[i], P.h[i-1]].every(Number.isFinite)) continue;
@@ -2309,7 +2292,7 @@ function renderAH(chosen) {
         el("polygon", { points:
           `${Xs(P.days[i-1]).toFixed(1)},${Y(P.a_hkd[i-1]).toFixed(1)} ${Xs(P.days[i]).toFixed(1)},${Y(P.a_hkd[i]).toFixed(1)} ` +
           `${Xs(P.days[i]).toFixed(1)},${Y(P.h[i]).toFixed(1)} ${Xs(P.days[i-1]).toFixed(1)},${Y(P.h[i-1]).toFixed(1)}`,
-          fill: up ? RED : BLUE, "fill-opacity": .13 }, svg);
+          fill: up ? RED : BLUE, "fill-opacity": .06 }, svg);
       }
       pathline(svg, P.days, P.a_hkd, Xs, Y, RED);
       pathline(svg, P.days, P.h, Xs, Y, BLUE);
@@ -2317,15 +2300,17 @@ function renderAH(chosen) {
         { name: "H (HK$)", days: P.days, ys: P.h, color: BLUE },
         { name: "A in HKD", days: P.days, ys: P.a_hkd, color: RED }], "px");
     });
+    { const P={...source,days:take.map(i=>source.days[i]),h:take.map(i=>source.h_perf[i]),a_hkd:take.map(i=>source.a_perf_hkd[i])};
     // pane 3: rebased WITH the pop — 100 = the OFFER (pre-listing), so the
     // H line's very first dot already sits its day-1 return above/below 100
-    ahPanel(g, "Rebased on the OFFER (=100)", (svg, W, H, M) => {
+    ahPanel(g, "Performance from H offer", (svg, W, H, M) => {
       const Xs = X(W, M);
       daymarks(svg, Xs, M, H);
       const a0 = aOpen0HKD(P) || P.a_hkd.find(v => v != null);
       const hreb = P.h.map(v => 100 * v / P.offer);
       const areb = P.a_hkd.map(v => v == null ? null : 100 * v / a0);
       const Y = scaleFor(hreb.concat(areb.filter(v => v != null)).concat([100]), H, M);
+      pathYAxis(svg,Y,W,H,M);
       el("line", { x1: M.l, x2: W - M.r, y1: Y(100), y2: Y(100), stroke: "var(--mid)", "stroke-width": .8 }, svg);
       // the pop, made visible: a dotted riser from the offer line to day-1's dot
       if (Number.isFinite(hreb[0])) {
@@ -2335,16 +2320,13 @@ function renderAH(chosen) {
       }
       pathline(svg, P.days, areb, Xs, Y, RED);
       pathline(svg, P.days, hreb, Xs, Y, BLUE, 1.9);
-      const t = el("text", { x: M.l - 4, y: Y(100) + 3, "text-anchor": "end", class: "m halo" }, svg);
-      t.textContent = "100";
       addXhair(svg, W, H, M, Xs, [
         { name: "H (offer =100)", days: P.days, ys: hreb, color: BLUE },
         { name: "A (day-0 close =100)", days: P.days, ys: areb, color: RED }], "idx");
-    }, "pop", `100 = the H OFFER. The dotted riser into the first dot IS the day-1 pop `
-      + `(${fmt.pct(d.first_day_return_pct)}). A (red) on its own day-0 OPEN.`);
+    }, "pop", "H = 100 at offer; A = 100 at its first open or close. Split-neutral price performance.");
     // pane 3b: EX-POP — 100 = the day-1 OPEN, the first print you could
     // actually TRADE; the tiny day-0 step is the intraday open→close move
-    ahPanel(g, "Rebased ex-pop — 100 = the day-1 open (tradeable)", (svg, W, H, M) => {
+    ahPanel(g, "Performance from first open", (svg, W, H, M) => {
       const Xs = X(W, M);
       daymarks(svg, Xs, M, H);
       const hOS = openStart(P.days, P.h, hOpen0(P, d.code));
@@ -2355,11 +2337,10 @@ function renderAH(chosen) {
       const areb = aOS ? aOS.ys : P.a_hkd.map(v => v == null ? null : 100 * v / a0);
       const aDays = aOS ? aOS.days : P.days;
       const Y = scaleFor(hOS.ys.concat(areb.filter(v => v != null)).concat([100]), H, M);
+      pathYAxis(svg,Y,W,H,M);
       el("line", { x1: M.l, x2: W - M.r, y1: Y(100), y2: Y(100), stroke: "var(--mid)", "stroke-width": .8 }, svg);
       pathline(svg, aDays, areb, Xs, Y, RED);
       pathline(svg, hOS.days, hOS.ys, Xs, Y, BLUE, 1.9);
-      const t = el("text", { x: M.l - 4, y: Y(100) + 3, "text-anchor": "end", class: "m halo" }, svg);
-      t.textContent = "100";
       addXhair(svg, W, H, M, Xs, [
         { name: "H (buy at open =100)", days: hOS.days, ys: hOS.ys, color: BLUE },
         { name: aO ? "A (its open =100)" : "A (day-0 close =100)",
@@ -2368,15 +2349,18 @@ function renderAH(chosen) {
         const n2 = el("text", { x: W - M.r, y: H - 6, "text-anchor": "end", class: "m halo" }, svg);
         n2.textContent = "no true open on file — day-1 close used";
       }
-    }, "expop", "OPEN-TO-OPEN: both legs = 100 at their own day-0 opening print — "
-      + "the two first prices you could actually trade. Day-0 steps = each side's intraday move.");
+    }, "expop", "Both legs = 100 at their first available open. Split-neutral price performance.");
+    }
     // pane 4: premium with sign fills + the struck level vs the OFFER
-    const ipoLvl = d.a_premium_ipo_pct;
+    const ipoLvl = source.class_review ? null : source.offer_premium;
     ahPanel(g, "A premium over H (+ = A above H)", (svg, W, H, M) => {
       const Xs = xLead(W, M);
       daymarks(svg, Xs, M, H);
-      const ok = P.prem.filter(v => v != null);
+      const ok = P.prem.filter(Number.isFinite);
+      svg.dataset.points=ok.length;
+      if(!ok.length){const t=el("text",{x:W/2,y:H/2,"text-anchor":"middle",class:"axlabel"},svg);t.textContent=source.class_review?"A/H share basis requires review":"No aligned A/H/FX observations in this window";return;}
       const Y = scaleFor(ok.concat([0]).concat(ipoLvl != null ? [ipoLvl] : []), H, M);
+      pathYAxis(svg,Y,W,H,M,'%');
       if (ipoLvl != null && Number.isFinite(Y(ipoLvl))) {
         // the tag sits BY its dot, not down on the axis
         const tl = el("text", { x: Xs(LEAD), y: Y(ipoLvl) + 16, "text-anchor": "middle",
@@ -2397,9 +2381,9 @@ function renderAH(chosen) {
         el("polygon", { points:
           `${Xs(P.days[i-1]).toFixed(1)},${Y(0).toFixed(1)} ${Xs(P.days[i-1]).toFixed(1)},${Y(P.prem[i-1]).toFixed(1)} ` +
           `${Xs(P.days[i]).toFixed(1)},${Y(P.prem[i]).toFixed(1)} ${Xs(P.days[i]).toFixed(1)},${Y(0).toFixed(1)}`,
-          fill: P.prem[i] >= 0 ? RED : BLUE, "fill-opacity": .15 }, svg);
+          fill: P.prem[i] >= 0 ? RED : BLUE, "fill-opacity": .06 }, svg);
       }
-      const pS = premFromIPO(P.days, P.prem, ipoLvl) || { days: P.days, ys: P.prem };
+      const pS = premFromIPO(P.days, P.prem, ipoLvl, LEAD) || { days: P.days, ys: P.prem };
       drawLead(svg, Xs, Y, pS.lead, P.prem.find(v => v != null), "#6C5B7B");
       pathline(svg, pS.days, pS.ys, Xs, Y, "#6C5B7B", 1.7);
       const last = ok[ok.length - 1];
@@ -2419,8 +2403,7 @@ function renderAH(chosen) {
       addXhair(svg, W, H, M, Xs, [
         { name: "A premium", days: pS.days, ys: pS.ys, color: "#6C5B7B" }], "%");
     }, null, (ipoLvl != null
-      ? `Gold dash = the premium STRUCK AT PRICING — A's last close ÷ the H offer − 1 `
-        + `= ${fmt.pct(ipoLvl)}. Line above the dash: A has re-rated vs H since listing.`
+      ? `Dashed line: IPO premium ${fmt.pct(ipoLvl)}. Daily A × CNYHKD ÷ H − 1.`
       : "Daily A premium: (A × FX) ÷ H − 1."));
   });
   // overlay: all chosen pairs on one axis — H rebased | A rebased | premium
@@ -2495,8 +2478,9 @@ function renderAH(chosen) {
   }
 }
 
-const palette0 = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4",
-                  "#4a3aa7", "#e34948", "#008300"];
+redrawAHTab();
+const palette0 = ["#315b7d", "#9b4a47", "#55745d", "#927d54", "#6b617d",
+                  "#397a80", "#73828e", "#a36c51"];
 // 6b. daily H paths for every chosen comp — offer-rebased and ex-pop
 function renderHPaths(chosen) {
   const host = $("#lab-hpaths");
@@ -2515,6 +2499,7 @@ function renderHPaths(chosen) {
     const series = withP.map(d => mkSeries(d, HPX[d.code])).filter(Boolean);
     const flat = series.flatMap(s2 => s2.ys.filter(Number.isFinite)).concat([100]);
     const Y = scaleFor(flat, H, M);
+    pathYAxis(svg,Y,W,H,M);
     el("line", { x1: M.l, x2: W - M.r, y1: Y(100), y2: Y(100), stroke: "var(--mid)", "stroke-width": .8 }, svg);
     series.forEach((s2, i) => {
       const pth = pathline(svg, s2.days, s2.ys, Xs, Y, s2.color, 1.5);
@@ -2560,7 +2545,7 @@ function renderPaths(chosen) {
     const lo = Math.min(0, ...all), hi = Math.max(0, ...all), rng = hi - lo || 1;
     const px = i => 8 + i * 33, py = v => 44 - 38 * ((v - lo) / rng);
     const draw = arr => { let path = "", started = false;
-      arr.forEach((v, i) => { if (v == null) return;
+      arr.forEach((v, i) => { if (v == null) { started=false;return; }
         path += (started ? "L" : "M") + px(i) + "," + py(v).toFixed(1); started = true; });
       return path; };
     const last = known[known.length - 1];
@@ -3084,9 +3069,9 @@ HTML = """<!doctype html>
       <option value="ipo">A premium — at IPO (vs H offer)</option></select></label>
     <label>sector <select id="ah-sec"></select></label>
     <label>subsector <select id="ah-sub"></select></label></div>
-  <div class="filters"><label>Company <select id="ah-stock"></select></label></div>
+  <div class="filters"><label>Company <select id="ah-stock"></select></label><label>History <select id="ah-horizon"><option value="Max">Listing to snapshot</option><option value="3M">First 3 months</option></select></label></div>
   <h3 id="ah-history-title"></h3>
-  <div class="chart"><div id="ah-history"></div><p class="note" id="ah-history-note"></p></div>
+  <div id="ah-history"></div><p class="note" id="ah-history-note"></p>
   <p class="note" id="ah-note"></p>
   <div class="scroll" id="ah-tbl"></div>
   <h3>Compare selected pairs</h3><button id="ah-clear-compare" type="button">Clear selection</button><span class="note" id="ah-compare-count"></span><div class="chart"><div id="ah-compare-chart"></div></div>
@@ -3096,7 +3081,7 @@ HTML = """<!doctype html>
 
 <section id="lockup">
   <h2>Cornerstone lock-up expiries</h2>
-  <p class="sub">Returns for the 30 HK trading sessions before and after the last locked day. Filing dates do not imply actual selling.</p>
+  <p class="sub">30 HK trading sessions before and after expiry. Prices through %%AHSNAPSHOT%%.</p>
   <div class="filters"><label>Search <input id="lockup-q" type="search" placeholder="H code or company name"></label><label>Sector <select id="lockup-sec"></select></label><label>Company <select id="lockup-stock"></select></label></div>
   <div class="filters"><label>Cornerstone expiry <select id="lockup-event"></select></label></div>
   <h3 id="lockup-history-title"></h3>
@@ -3108,15 +3093,15 @@ HTML = """<!doctype html>
   <div class="chart"><div id="lockup-history"></div><p class="note" id="lockup-history-note"></p></div>
   <p class="note" id="lockup-note"></p>
   <h3>Compare expiry performance</h3>
-  <div class="filters"><label>View <select id="lockup-compare-mode"><option value="cohort">Cohort average</option><option value="all">All stock curves</option><option value="selected">Selected stocks</option></select></label><label>Expiry from <input id="lockup-compare-from" type="date"></label><label>Expiry to <input id="lockup-compare-to" type="date"></label><label>Stocks <select id="lockup-compare-stocks" multiple size="4" style="min-width:310px"></select></label></div>
+  <div class="filters"><label>View <select id="lockup-compare-mode"><option value="cohort">Cohort average</option><option value="all">All stock curves</option><option value="selected">Selected stocks</option></select></label><label>Expiry from <input id="lockup-compare-from" type="date"></label><label>Expiry to <input id="lockup-compare-to" type="date"></label><label id="lockup-stock-picks">Stocks <select id="lockup-compare-stocks" multiple size="3"></select></label></div>
   <p class="note" id="lockup-compare-count"></p><div class="chart"><div id="lockup-compare-chart"></div></div>
   <div class="scroll" id="lockup-tbl"></div>
 </section>
 
 <section id="peers">
- <h2>Direct peer monitor</h2><p class="sub">Snapshot through %%AHSNAPSHOT%%. Live prices and Bloomberg history are available in Excel’s Peer Trades tab.</p>
- <div class="filters"><label>Preset <select id="peer-pair"></select></label><label>Stock A <input id="peer-a" list="peer-codes" value="9856" style="width:130px"></label><label>Stock B <input id="peer-b" list="peer-codes" value="3308" style="width:130px"></label><label>Horizon <select id="peer-horizon"><option>1M</option><option>3M</option><option>6M</option><option selected>1Y</option><option>3Y</option><option>5Y</option><option>Max</option><option>Custom</option></select></label><label>From <input id="peer-from" type="date"></label><label>To <input id="peer-to" type="date"></label><datalist id="peer-codes"></datalist></div><p class="note" id="peer-coverage"></p><h3 id="peer-title"></h3><p class="note" id="peer-watch"></p>
- <div class="row"><div class="chart"><h3>Relative performance</h3><div id="peer-performance"></div></div><div class="chart"><h3>A − B spread (percentage points)</h3><div id="peer-spread"></div></div></div>
+ <h2>Hong Kong product peers</h2><p class="sub">Prices through %%AHSNAPSHOT%% · live Bloomberg mode in Excel</p>
+ <div class="filters"><label>Peer pair <select id="peer-pair"></select></label><label>Horizon <select id="peer-horizon"><option>1M</option><option>3M</option><option>6M</option><option selected>1Y</option><option>3Y</option><option>5Y</option><option>Max</option><option>Custom</option></select></label><label class="peer-custom">From <input id="peer-from" type="date"></label><label class="peer-custom">To <input id="peer-to" type="date"></label></div><h3 id="peer-title"></h3><p class="sub" id="peer-watch"></p><p class="note" id="peer-coverage"></p><div id="peer-summary" class="tiles"></div>
+ <div class="row"><div class="chart"><h3>Price return · common start = 0%</h3><div id="peer-performance"></div></div><div class="chart"><h3>A − B return spread · percentage points</h3><div id="peer-spread"></div></div></div>
  <p class="note">Both returns start on the first common observed session; split-neutral prices, excluding dividends.</p><div class="scroll" id="peer-table"></div>
 </section>
 
@@ -3212,12 +3197,8 @@ HTML = """<!doctype html>
 </section>
 
 <section id="complab">
-  <h2>Comps Lab — paint the comps, find the factor</h2>
-  <p class="sub">Tick the comps you believe in (top-8 pre-ticked; add any deal by name or code), then
-  <b>click each comp's dot to paint it red or blue</b> — e.g. the 3 that trade H-above-A in red, the
-  5 that don't in blue. Every panel below reads the paint: the strip grid shows ALL factors at once
-  ordered by how cleanly they split, the scatter crosses any two factors, and the histogram drops
-  your comps onto the whole market's distribution.</p>
+  <h2>Comparable-company charts</h2>
+  <p class="sub">Select companies to compare. Click a colour dot to group the series.</p>
   <div class="filters"><label class="labchk"><input type="checkbox" id="lab-ashare"> A-share deals only
     (mandatory A line)</label>
     <label class="labchk"><input type="checkbox" id="lab-industry"> must match AAStocks industry</label>
@@ -3428,6 +3409,33 @@ def main():
         if missing:
             raise SystemExit(f"embed drops batch fields {sorted(missing)} — "
                              f"refusing to build a lying dashboard")
+    from corp_actions import load_actions, price_factor
+    from ah_basis import review_for, comparable
+    reference = json.loads((ROOT/'data/ah_reference.json').read_text())
+    actions=load_actions(ROOT)
+    for r in study['pairs']:
+        code=r['code'];old=paths.get(code,{});ipo=r['ipo_date'];hs=r.get('h_history',[]);by={x[0]:x for x in r.get('history',[])};review=review_for(code,ROOT)
+        class_review='share-scale' in r.get('exclusion','') and not review
+        out=dict(old,code=code,name=r['name'],a_code=r['a_code'],ipo=ipo,offer=r['offer_hkd'],offer_date=r.get('offer_reference_a_date'),offer_premium=r.get('offer_reference_premium_pct'),class_review=class_review,
+                 dates=[],days=[],h=[],a_cny=[],a_hkd=[],prem=[],h_perf=[],a_perf_hkd=[])
+        basefactor=price_factor(code,actions,ipo)
+        for dt,h in hs:
+            v=by.get(dt);valid=bool(v) and comparable(review,dt,v[5]) and not class_review
+            out['dates'].append(dt);out['days'].append((date.fromisoformat(dt)-date.fromisoformat(ipo)).days);out['h'].append(h)
+            out['a_cny'].append(v[2] if v else None);out['a_hkd'].append(v[2]*v[3] if valid else None);out['prem'].append(100*v[4] if valid else None)
+            out['h_perf'].append(h*price_factor(code,actions,dt)/basefactor)
+            afactor=1
+            for e in (review.get('events',[review]) if review else []):
+                if ipo<e['a_ex_date']<=dt:afactor*=e['ratio']
+            out['a_perf_hkd'].append(v[2]*v[3]*afactor if valid else None)
+        out['h_actions']=actions.get(code,[]);out['h_basefactor']=basefactor
+        out['a_pre_runup_pct']=reference['pairs'][code]['pre_a_return_pct']
+        # Store only the screener's three-month plotting arrays. The monitor
+        # derives its full window from the already embedded A/H raw history.
+        keep=[i for i,x in enumerate(out['days']) if x<=92]
+        for key in ['dates','days','h','a_cny','a_hkd','prem','h_perf','a_perf_hkd']:
+            out[key]=[out[key][i] for i in keep]
+        paths[code]=out
     # H price paths for EVERY deal (first ~3 months) + the day-1 open where a
     # real open exists, so the Lab can draw price action for comps with no A
     # line and rebase ex-pop at the true opening print
@@ -3463,7 +3471,7 @@ def main():
                 f"{_nm} is empty but data/deals.json has {_src} — the field is "
                 f"missing from KEEP, so it never reached the embed")
     blob = json.dumps({"as_of": as_of, "deals": deals, "pipe": pipe, "cfg": cfg,
-                       "market_deals":[{k:d.get(k) for k in ["code","name","sector","subsector","a_share_code","ipo_date"]} for d in market_deals(ROOT)], "peer_pairs":json.loads((ROOT/"data/peer_pairs.json").read_text()), "hk_stocks":json.loads((ROOT/"data/hk_stock_universe.json").read_text())["stocks"], "ah_asof":study["asof"], "ahpaths": paths, "ahstudy": ahstudy, "hpaths": hpaths, "cs_league": league,
+                       "market_deals":[{k:d.get(k) for k in ["code","name","sector","subsector","a_share_code","ipo_date"]} for d in market_deals(ROOT)], "peer_pairs":json.loads((ROOT/"data/peer_pairs.json").read_text()), "hk_stocks":json.loads((ROOT/"data/hk_stock_universe.json").read_text())["stocks"], "ah_asof":study["asof"], "ahpaths": paths, "ahstudy": ahstudy, "ah_reference":reference, "hpaths": hpaths, "cs_league": league,
                        "stab_league": smleague, "lockups": lockups},
                       ensure_ascii=False, separators=(",", ":"))
     import base64, gzip

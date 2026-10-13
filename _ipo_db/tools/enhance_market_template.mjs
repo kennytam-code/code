@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 export async function enhance(wb,ipo,ah,lock,chart,events,header){
  const doc=JSON.parse(await fs.readFile(new URL('../data/desk_chart_data.json',import.meta.url),'utf8')), pairs=doc.pairs, peer=doc.peer;
  const ec=n=>{let a='';while(n){n--;a=String.fromCharCode(65+n%26)+a;n=Math.floor(n/26)}return a};
- const C=['#1F4E79','#758D50','#8E6949','#706080'];
+ const C=['#315B7D','#9B4A47','#657480','#927D54'];
  const put=(s,a,v)=>{s.getRange(a).values=[[v]];},form=(s,a,f)=>{s.getRange(a).formulas=[[f]];};
  const head=(s,a)=>s.getRange(a).format={fill:'#E6E6E6',font:{name:'Arial',size:11,bold:true,color:'#111111'},rowHeight:30,wrapText:true,borders:{bottom:{style:'thin',color:'#777777'}}};
  const change=(s,a)=>{s.getRange(a).conditionalFormats.add('cellIs',{operator:'greaterThan',formula:0,format:{font:{color:'#217346'},fill:'#E8F2EA'}});s.getRange(a).conditionalFormats.add('cellIs',{operator:'lessThan',formula:0,format:{font:{color:'#B53939'},fill:'#F6E8E8'}});};
@@ -73,26 +73,29 @@ export async function enhance(wb,ipo,ah,lock,chart,events,header){
 export async function buildPeers(wb,doc){
  const peer=doc.peer;
  const ec=n=>{let a='';while(n){n--;a=String.fromCharCode(65+n%26)+a;n=Math.floor(n/26)}return a};
- const C=['#1F4E79','#758D50','#8E6949','#706080'];
+ const C=['#315B7D','#9B4A47','#657480','#927D54'];
  const put=(s,a,v)=>{s.getRange(a).values=[[v]];},form=(s,a,f)=>{s.getRange(a).formulas=[[f]];};
  const head=(s,a)=>s.getRange(a).format={fill:'#E6E6E6',font:{name:'Arial',size:11,bold:true,color:'#111111'},rowHeight:30,wrapText:true,borders:{bottom:{style:'thin',color:'#777777'}}};
  const change=(s,a)=>{s.getRange(a).conditionalFormats.add('cellIs',{operator:'greaterThan',formula:0,format:{font:{color:'#217346'},fill:'#E8F2EA'}});s.getRange(a).conditionalFormats.add('cellIs',{operator:'lessThan',formula:0,format:{font:{color:'#B53939'},fill:'#F6E8E8'}});};
- // Independent inputs accept any HK code. Only selected Bloomberg histories run.
+ // One named pair selector populates both securities. Only its histories run.
  const ps=wb.worksheets.add('Peer Trades'),pd=wb.worksheets.add('Peer Data'),pl=wb.worksheets.add('Peer Live'),pc=wb.worksheets.add('Peer Chart'),un=wb.worksheets.add('HK Stocks');
  const catalog=JSON.parse(await fs.readFile(new URL('../data/hk_stock_universe.json',import.meta.url),'utf8')).stocks;
  un.getRange(`A2:C${catalog.length+1}`).values=catalog.map(x=>[x.code,x.name,x.currency]);
  ps.showGridLines=false;ps.getRange(`A1:L${54+peer.pairs.length}`).format={font:{name:'Arial',size:11,color:'#111111'},rowHeight:22};
  for(let i=1;i<=12;i++)ps.getRange(`${ec(i)}:${ec(i)}`).format.columnWidth=13;
- put(ps,'A2','Hong Kong peer monitor');ps.getRange('A2:L2').merge();ps.getRange('A2').format.font={name:'Arial',size:14,bold:true};
+ put(ps,'A2','Hong Kong product peers');ps.getRange('A2:L2').merge();ps.getRange('A2:L2').format={font:{name:'Arial',size:15,bold:true,color:'#202D39'},rowHeight:30,borders:{bottom:{style:'thin',color:'#8C99A5'}}};
+ put(ps,'A3','Peer pair');put(ps,'B3',peer.pairs[0].label);ps.getRange('B3:L3').merge();ps.getRange('B3:L3').format={font:{name:'Arial',size:11,color:'#0000FF'},fill:'#F2F5F8',rowHeight:30,borders:{bottom:{style:'thin',color:'#8C99A5'}}};
+ pd.getRange(`S3:W${peer.pairs.length+2}`).values=peer.pairs.map(p=>[p.label,p.code_a,p.code_b,p.segment,p.watch]);
+ ps.getRange('B3').dataValidation={rule:{type:'list',formula1:`INDIRECT("'Peer Data'!$S$3:$S$${peer.pairs.length+2}")`}};
  for(const [a,v]of [['A4','Stock A code'],['B4','9856'],['D4','Stock B code'],['E4','3308'],['G4','Price source'],['H4','Stored'],['J4','Horizon'],['K4','1Y'],['A5','From'],['D5','Through'],['G5','Custom from'],['J5','Custom to']])put(ps,a,v);
- for(const a of ['B4','E4'])ps.getRange(a).dataValidation={rule:{type:'list',formula1:`INDIRECT("'HK Stocks'!$A$2:$A$${catalog.length+1}")`}};
+ for(const [a,col] of [['B4','T'],['E4','U']])form(ps,a,`=IFERROR(INDEX('Peer Data'!$${col}$3:$${col}$${peer.pairs.length+2},MATCH($B$3,'Peer Data'!$S$3:$S$${peer.pairs.length+2},0)),"")`);
  ps.getRange('H4').dataValidation={rule:{type:'list',values:['Stored','Bloomberg']}};ps.getRange('K4').dataValidation={rule:{type:'list',values:['1M','3M','6M','1Y','3Y','5Y','Max','Custom']}};
  put(ps,'H5',new Date('2025-10-02T00:00:00Z'));put(ps,'K5',new Date(peer.asof+'T00:00:00Z'));
  form(ps,'E5',`=IF($K$4="Custom",$K$5,IF($H$4="Bloomberg",TODAY(),DATE(${peer.asof.split('-').map(Number).join(',')})))`);
  form(ps,'B5',`=IF($K$4="Custom",MAX($H$5,EDATE($E$5,-120)),IF($K$4="Max",EDATE($E$5,-120),EDATE($E$5,-INDEX({1,3,6,12,36,60},MATCH($K$4,{"1M","3M","6M","1Y","3Y","5Y"},0)))))`);
- for(const a of ['B4','E4','H4','K4','H5','K5'])ps.getRange(a).format={fill:'#EDF2F6',font:{color:'#0000FF'},borders:{bottom:{style:'thin',color:'#9AA6B0'}}};
+ for(const a of ['H4','K4','H5','K5'])ps.getRange(a).format={fill:'#F2F5F8',font:{color:'#0000FF'},borders:{bottom:{style:'thin',color:'#9AA6B0'}}};
  for(const a of ['B5','E5','H5','K5'])ps.getRange(a).setNumberFormat('dd-mmm-yy');
- put(ps,'A6','Enter any HK code. Bloomberg pulls the chosen pair; Stored uses saved histories. Max / Custom: up to 10 years.');ps.getRange('A6:L6').merge();ps.getRange('A6').format.font={name:'Arial',size:10,color:'#555555'};
+ form(ps,'A6',`=IFERROR(INDEX('Peer Data'!$V$3:$V$${peer.pairs.length+2},MATCH($B$3,'Peer Data'!$S$3:$S$${peer.pairs.length+2},0))&" | "&INDEX('Peer Data'!$W$3:$W$${peer.pairs.length+2},MATCH($B$3,'Peer Data'!$S$3:$S$${peer.pairs.length+2},0)),"")`);ps.getRange('A6:L6').merge();ps.getRange('A6:L6').format={font:{name:'Arial',size:10,color:'#657480'},rowHeight:28,wrapText:true};
  ps.getRange('A8:L8').values=[['Selected stock',null,null,'Price',null,'Currency','Daily change',null,'Window return',null,'Spread (pp)',null]];head(ps,'A8:L8');
  for(const r of [9,10])for(const a of [`A${r}:C${r}`,`D${r}:E${r}`,`G${r}:H${r}`,`I${r}:J${r}`,`K${r}:L${r}`])ps.getRange(a).merge();
  let pr=2;const stocks=peer.stocks,end=stocks.length+2;
@@ -129,10 +132,13 @@ export async function buildPeers(wb,doc){
   form(pc,`D${r}`,`=IFERROR(100*(B${r}-C${r}),NA())`);
  }
  pc.getRange('A5:A3004').setNumberFormat('dd-mmm-yy');pc.getRange('B5:C3004').setNumberFormat('0.0%');pc.getRange('D5:D3004').setNumberFormat('0.0" pp"');
- const perf=ps.charts.add('line',pc.getRange('A4:C3004'));perf.title='Relative performance · selected horizon';perf.setPosition('A16','L31');perf.hasLegend=true;perf.yAxis={numberFormatCode:'0.0%',numberFormatSourceLinked:false};perf.displayBlanksAs='gap';perf.series.items.forEach((s,k)=>s.line={fill:C[k],width:2});
- const spread=ps.charts.add('line',{from:{row:32,col:0},extent:{widthPx:1000,heightPx:330}});spread.setPosition('A33','L48');spread.title='A − B performance spread (pp)';spread.hasLegend=false;const ser=spread.series.add('Spread (pp)');ser.categoriesSource="'Peer Chart'!A5:A3004";ser.valuesSource="'Peer Chart'!D5:D3004";ser.line={fill:'#333333',width:2};spread.yAxis={numberFormatCode:'0.0" pp"',numberFormatSourceLinked:false};spread.displayBlanksAs='gap';
- put(ps,'A50',`${peer.pairs.length} peer comparisons · enter their codes above`);ps.getRange('A50:L50').merge();ps.getRange('A50').format.font={name:'Arial',size:12,bold:true};ps.getRange('A52:L52').values=[['Code A','Code B','Segment',null,null,'Stock A',null,null,'Stock B',null,null,null]];head(ps,'A52:L52');
- for(let i=0;i<peer.pairs.length;i++){const p=peer.pairs[i],r=53+i;for(const [col,v]of [['A',p.code_a],['B',p.code_b],['C',p.segment],['F',p.name_a],['I',p.name_b]])put(ps,`${col}${r}`,v);for(const a of [`C${r}:E${r}`,`F${r}:H${r}`,`I${r}:L${r}`])ps.getRange(a).merge();ps.getRange(`A${r}:L${r}`).format={rowHeight:26,borders:{bottom:{style:'hair',color:'#DDDDDD'}}};}
- ps.freezePanes.freezeRows(6);ps.freezePanes.freezeColumns(2);
+ const perf=ps.charts.add('line',pc.getRange('A4:C3004'));perf.title='Price return';perf.setPosition('A15','F32');perf.hasLegend=true;perf.yAxis={numberFormatCode:'0.0%',numberFormatSourceLinked:false};perf.displayBlanksAs='gap';perf.series.items.forEach((s,k)=>s.line={fill:C[k],width:2});
+ const spread=ps.charts.add('line',{from:{row:14,col:6},extent:{widthPx:530,heightPx:360}});spread.setPosition('G15','L32');spread.title='A − B return spread';spread.hasLegend=false;const ser=spread.series.add('Spread (pp)');ser.categoriesSource="'Peer Chart'!A5:A3004";ser.valuesSource="'Peer Chart'!D5:D3004";ser.line={fill:'#315B7D',width:2};spread.yAxis={numberFormatCode:'0.0" pp"',numberFormatSourceLinked:false};spread.displayBlanksAs='gap';
+ for(const ch of [perf,spread]){ch.titleTextStyle.typeface='Arial';ch.titleTextStyle.fontSize=12;}
+ put(ps,'A35',`${peer.pairs.length} product peer pairs`);ps.getRange('A35:L35').merge();ps.getRange('A35:L35').format={font:{name:'Arial',size:12,bold:true,color:'#202D39'},rowHeight:30};
+ for(const [a,v] of [['A37','Product'],['D37','Company A'],['G37','Company B'],['J37','Key difference']])put(ps,a,v);
+ for(const a of ['A37:C37','D37:F37','G37:I37','J37:L37'])ps.getRange(a).merge();head(ps,'A37:L37');
+ for(let i=0;i<peer.pairs.length;i++){const p=peer.pairs[i],r=38+i;for(const [col,v]of [['A',p.segment],['D',p.name_a+' ('+p.code_a+')'],['G',p.name_b+' ('+p.code_b+')'],['J',p.watch]])put(ps,`${col}${r}`,v);for(const a of [`A${r}:C${r}`,`D${r}:F${r}`,`G${r}:I${r}`,`J${r}:L${r}`])ps.getRange(a).merge();ps.getRange(`A${r}:L${r}`).format={rowHeight:40,wrapText:true,font:{name:'Arial',size:11,color:'#202D39'},borders:{bottom:{style:'hair',color:'#CED6DD'}}};}
+ ps.freezePanes.freezeColumns(2);
 
 }

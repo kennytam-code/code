@@ -877,7 +877,7 @@ for _b, _h, _f, _fmt, _w in DB_COLS:
 # them beside Match/Score, where they read as scoring inputs rather than as
 # what they are (today's multiple against the one the deal priced at).
 _LIVE_MULT = [("P/E now (x)", "pe_now", "0.0"),
-              ("P/S now (x)", "ps_ipo", "0.0")]     # live BDP leads; at-IPO is the fallback
+              ("P/S now (x)", "ps_now", "0.0")]     # production BQL graft keeps current multiples live
 _ins, _pos = None, 0
 for _i, (_bn, _cnt) in enumerate(_bands):
     _pos += _cnt
@@ -2498,6 +2498,11 @@ def main(limit=None, out=None):
     if not limit:
         from apply_desk_styles import apply as apply_desk_styles
         apply_desk_styles(dest, ROOT)
+        if (ROOT/'data/presentation_template.json').exists():
+            from patch_presentation_workbook import patch as patch_presentation
+            staged=dest.with_suffix('.presentation.tmp.xlsx')
+            patch_presentation(dest,staged,ROOT)
+            staged.replace(dest)
     print(f"wrote {dest} ({n} deals, {len(pipe)} pipeline)")
     return dest
 

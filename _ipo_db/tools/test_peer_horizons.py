@@ -5,7 +5,7 @@ Bloomberg responses here are fixtures, never delivered quote stand-ins.
 import io,json,re,math,base64,zipfile,sys,xml.etree.ElementTree as E
 from pathlib import Path
 from datetime import date
-import openpyxl,formulas
+import openpyxl,formulas,numpy as np
 from openpyxl.formula.translate import Translator
 from openpyxl.utils.datetime import to_excel
 ROOT=Path(__file__).resolve().parent.parent;sys.path.insert(0,str(ROOT/'ipo_lib'))
@@ -53,4 +53,15 @@ controls.save(path);cm=formulas.ExcelModel().loads(str(path)).finish()
 for horizon,expected_date in [('1M',date(2026,9,2)),('3M',date(2026,7,2)),('6M',date(2026,4,2)),('1Y',date(2025,10,2)),('3Y',date(2023,10,2)),('5Y',date(2021,10,2)),('Custom',date(2026,7,1))]:
  result=cm.calculate(inputs={key('Peer Trades','K4'):horizon});got=result[key('Peer Trades','B5')].value[0,0]
  assert got==to_excel(expected_date),(horizon,got)
-path.unlink();print('PASS stored/live parity, unrestricted codes, headered histories, common-date rebasing, gaps and all calendar/custom horizons')
+path.unlink()
+pairs=json.loads((ROOT/'data/peer_pairs.json').read_text())['pairs']
+for addr,field in [('B4','code_a'),('E4','code_b')]:
+ fn=formulas.Parser().ast('='+source['Peer Trades'][addr])[1].compile()
+ for pair in pairs:
+  args=[]
+  for key in fn.inputs:
+   if key=='B3':args.append(pair['label'])
+   elif "!S" in key:args.append(np.array([[p['label']] for p in pairs],dtype=object))
+   else:args.append(np.array([[p[field]] for p in pairs],dtype=object))
+  result=fn(*args).item();assert result==pair[field],(addr,pair['id'],result)
+print('PASS 35 named-pair selections; stored/live parity, headered histories, common-date rebasing, gaps and all calendar/custom horizons')

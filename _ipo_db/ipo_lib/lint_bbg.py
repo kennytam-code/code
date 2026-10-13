@@ -39,7 +39,7 @@ AWAIT = {"CRNCY": "selected security currency; verify on the Bloomberg desk", "P
          "LAST_UPDATE_DT": "new live monitor; verify the quote-date field on the desk",
          "LAST_UPDATE": "new live monitor; verify the quote-time field on the desk",
          "PX_TO_SALES_RATIO": "new in v23 (Screener 'P/S now') — the desk's own formula; check one cell"}
-CALL = re.compile(r"\b(BDP|BDH|BDS)\s*\(")
+CALL = re.compile(r"\b(BDP|BDH|BDS|BQL)\s*\(")
 MNEM = re.compile(r'"([A-Z][A-Z0-9_/ ]{2,40})"')
 
 
@@ -61,7 +61,7 @@ def main():
                 if f.count('"') % 2:
                     bad += 1
                     print(f"  FAIL {where}: odd number of quotes")
-                if ws.title not in ("BBG Verify", "Verify (BBG)", "Market Data") and "IFERROR(" not in f and "IF(" not in f.replace("IFERROR(", ""):
+                if ws.title not in ("BBG Verify", "Verify (BBG)", "Market Data", "Valuation Data") and "IFERROR(" not in f and "IF(" not in f.replace("IFERROR(", ""):
                     bad += 1
                     print(f"  FAIL {where}: Bloomberg call with no IFERROR guard")
                 for m in MNEM.finditer(f):
@@ -79,6 +79,13 @@ def main():
                     if tok not in PROVEN and tok.isupper():
                         bad += 1
                         print(f"  FAIL {where}: mnemonic {tok!r} not in the desk-proven set")
+                if 'BQL(' in f:
+                    expressions = re.findall(r'"((?:pe_ratio|px_to_sales_ratio)\([^"]+\))"', f)
+                    from patch_presentation_workbook import QUERIES
+                    if len(expressions) != 1 or expressions[0] not in QUERIES:
+                        bad += 1
+                        print(f"  FAIL {where}: BQL expression differs from the supplied references")
+                    warns.add('BQL: user-supplied query expressions; live add-in execution requires the Bloomberg terminal')
                 # BDH with two date args must anchor on the IPO-date column
                 if "BDH(" in f and "TODAY()" not in f:
                     # the rule's intent is NO FROZEN LITERAL DATES: a BDH whose

@@ -1,11 +1,16 @@
 import {enhance,buildPeers} from './enhance_market_template.mjs';
 import fs from 'node:fs/promises';
+import {execFileSync} from 'node:child_process';
 import {Workbook,SpreadsheetFile} from '@oai/artifact-tool';
 if(process.argv.includes('--peers')){
  const peerWb=Workbook.create(),data=JSON.parse(await fs.readFile(new URL('../data/desk_chart_data.json',import.meta.url),'utf8'));
+ // Author/recalculate a small, real two-session model. Native assembly
+ // restores the full history metadata/ranges after export, within its cap.
+ data.peer.stocks=data.peer.stocks.map(s=>({...s,history:s.history.slice(0,2)}));
  await buildPeers(peerWb,data);peerWb.recalculate();
  const out=await SpreadsheetFile.exportXlsx(peerWb),p=new URL('../data/peer_views_template.xlsx',import.meta.url).pathname;await out.save(p);
- await fs.writeFile(new URL('../data/peer_views_template.json',import.meta.url),JSON.stringify({version:1,xlsx_base64:(await fs.readFile(p)).toString('base64')}));await fs.unlink(p);console.log('Saved bounded peer layout');process.exit(0);
+ await fs.writeFile(new URL('../data/peer_views_template.json',import.meta.url),JSON.stringify({version:1,xlsx_base64:(await fs.readFile(p)).toString('base64')}));await fs.unlink(p);
+ execFileSync(process.env.IPO_TEMPLATE_PYTHON||'python3',[new URL('restore_peer_history_ranges.py',import.meta.url).pathname],{stdio:'inherit'});console.log('Saved bounded peer layout');process.exit(0);
 }
 const wb=Workbook.create();wb.worksheets.add('Market Data');wb.worksheets.add('AH History');
 const ipo=wb.worksheets.add('IPO Live'),ah=wb.worksheets.add('AH'),lock=wb.worksheets.add('Lock-up'),chart=wb.worksheets.add('Chart Data'),lockData=wb.worksheets.add('Lock-up Data');

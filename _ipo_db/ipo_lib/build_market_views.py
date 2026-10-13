@@ -282,7 +282,9 @@ def bind_peer_charts(wb):
  for ci,ch in enumerate(wb['Peer Trades']._charts):
   for si,sr in enumerate(ch.series):
    sr.cat=AxDataSource(numRef=NumRef(f="'Peer Chart'!PeerChartDates"));sr.val=NumDataSource(numRef=NumRef(f="'Peer Chart'!PeerChart"+('Spread' if ci else 'A' if si==0 else 'B')))
-  old=ch.x_axis;ch.x_axis=DateAxis(axId=old.axId,crossAx=old.crossAx,axPos='b',numFmt='dd-mmm-yy',baseTimeUnit='days',delete=False,tickLblPos='low');
+  old=ch.x_axis;ch.x_axis=DateAxis(axId=old.axId,crossAx=old.crossAx,axPos='b',numFmt='mmm-yy',baseTimeUnit='days',delete=False,tickLblPos='low');
   if ci==0:
    for si,sr in enumerate(ch.series):sr.tx=SeriesLabel(strRef=StrRef(f"'Peer Chart'!$H${3+si}"))
   ch.display_blanks='gap';ch.visible_cells_only=False
+  ch.x_axis.majorGridlines=None;ch.x_axis.minorGridlines=None
+  for sr in ch.series:sr.marker.symbol='none';sr.smooth=False

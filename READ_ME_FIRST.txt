@@ -14,7 +14,7 @@ THE FILES
   Clawback_Study.docx       the 套路回撥 allocation study
   READ_ME_FIRST.txt         this file
 
-MARKET TABS (12 October 2026)
+MARKET TABS (13 October 2026)
   IPO Live: 714 seven-year monitoring listings; live LAST_PRICE and change vs PX_YEST_CLOSE.
   B5 selects Sector/Subsector classification; H34 chooses the sector
   for the second, subsector-average chart. The first chart stays broad.
@@ -24,11 +24,24 @@ MARKET TABS (12 October 2026)
   AH remains the seven-year 68-pair roster; Database / Screener remain 524.
   AH G/H: 7-day / one-calendar-month premium changes, percentage points.
   Compare up to four pairs in Excel; select multiple pairs in HTML.
-  Peer Trades: B4 = stock A code, E4 = stock B code, H4 = price source.
+  HTML A/H uses the Screener chart format, listing-to-snapshot or 3M.
+  CSI 300 compares the A line around H listing on matching observed dates.
+  Pre-IPO A, CSI and A-minus-CSI returns use the same date window.
+  A/H prices retain genuine missing / entitlement gaps; none are filled.
+  Lock-up: filed cornerstone expiry and +/-30 HK trading sessions,
+  with the IPO date, price-return chart and range / stock comparisons.
+  Current P/E and P/S in Database, BBG Verify and Screener use live BQL.
+  Screener also shows selected A/H NTM and FY2027 estimates. Historic IPO
+  multiples remain historic. Unavailable means no usable Bloomberg reply.
+  BQL expressions match the supplied screenshots. Live execution needs
+  a Bloomberg terminal; this Mac validated formula logic with fixtures.
+  Peer Trades: choose a named pair in B3; B4 / E4 fill automatically.
+  H4 = Stored / Bloomberg price source.
   K4 = horizon (1M / 3M / 6M / 1Y / 3Y / 5Y / Max / Custom).
   Custom dates: H5 / K5. Max / Custom chart capacity: ten years.
-  Type any HK code for Bloomberg, including shares outside this database.
-  Stored: 66 stocks, 35 preset comparisons. Other codes need Bloomberg.
+  35 product peer pairs, including shares outside the IPO database.
+  The roster shows company names, codes and business-mix differences.
+  Stored histories cover 66 stocks through 02-Oct-2026.
   Charts start at the first shared date within the selected horizon;
   spread = A return minus B return, percentage points. Missing prices
   stay unavailable. Actual coverage appears above the charts.
