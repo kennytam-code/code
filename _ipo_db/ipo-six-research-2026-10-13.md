@@ -113,4 +113,33 @@ Unrounded inputs and calculations: [valuation JSON](ipo-six-valuations-2026-10-1
 
 Source elements were copied from the supplied Word document, including its title, red headings, navy Arial 10pt body, hyphen bullets and table borders. Four company blocks follow the original sequence; the cover essay and forced company page breaks are removed. Only document.xml and document.xml.rels change; all other ZIP parts and the Letter section are preserved. Render review is completed before publication.
 
-Final QA: three pages; every rendered page inspected. No clipping, split peer table, orphan company heading or font loss. Four PHIP headings and all 17 peer closing-price labels checked; 14 numerical FY2026E/FY2027E rows independently recalculated with Decimal arithmetic. Official same-day FX and downloaded Citi distributor table checked. All package parts except document.xml/rels remain byte-identical to the template.
+## Kinwong versus Dongshan
+
+**Trade read.** Kinwong H is the PCB valuation anchor for Dongshan's H offer. Dongshan adds complete optical modules and a larger earnings ramp. At current prices, Kinwong H is cheaper on FY2026E profit; Dongshan A becomes cheaper on FY2027E only after its forecast profit more than doubles.
+
+| Metric | Kinwong | Dongshan |
+|---|---|---|
+| AI exposure | AI server / switch PCBs; PCBs inside optical modules | AI PCBs plus complete 800G/1.6T optical modules |
+| FY2025 global position | PCB No.11 (2.5%); automotive PCB No.1 (10.6%) | PCB No.3 (4.2%); FPC No.2 (24.5%); optics No.7 (2.9%) |
+| H1 sales / YoY | RMB8.61bn / +21% | RMB27.80bn / +64% |
+| H1 owner profit / YoY | RMB0.602bn / -7% | RMB2.957bn / +290% |
+| H1 gross margin | 20.22% | 20.15% |
+| H1 operating cash / capex | RMB0.60bn / RMB3.20bn | RMB2.38bn / RMB5.25bn |
+| FY2026E / FY2027E owner profit | RMB2.207bn / RMB3.707bn; FY2027E growth +68% | RMB7.231bn / RMB15.214bn; FY2027E growth +110% |
+| FY2026E / FY2027E P/E | H 30.0x / 17.8x; A 48.0x / 28.6x | A 35.4x / 16.8x; H offer pending |
+
+- **Good - Kinwong's recovery has a fresh catalyst.** Its 10 October preliminary Q3 guidance is RMB0.912-1.089bn owner profit (+205-265% YoY), above the whole H1. Profit excluding non-recurring items is RMB0.939-1.116bn: the rebound is operational. AI PCB shipments and better material-cost pass-through support the turn; formal results must confirm it.
+- **Bad - neither is a steady cash compounder yet.** Kinwong's H1 profit fell and included RMB136m non-recurring gains. Capex was 5.3x operating cash, versus Dongshan's 2.2x. Both gross margins were about 20%: AI exposure has yet to create a group margin gap. Watch utilisation, yields and cash conversion; Dongshan also carries acquisition integration and consumer FPC exposure.
+- **Valuation - Dongshan's cheaper FY2027 multiple needs more growth.** Kinwong H is 30.0x FY2026E versus Dongshan A at 35.4x. By FY2027E, Dongshan is 16.8x versus 17.8x, but assumes 110% profit growth against Kinwong's 68%. Kinwong H's 37.5% A discount is a reference; Dongshan's H offer needs its own post-issue P/E and dilution check.
+
+Prices: 13 Oct close. H1 2026 figures use PRC accounts for both companies. Capex is cash paid for fixed, intangible and other long-term assets, not total investing outflow. Forecasts: Guosen 18 Sep (Kinwong), Shanghai 28 Aug (Dongshan); selected estimates, not consensus. Kinwong's forecast predates its new Q3 guidance; the guidance is not an updated FY2026 estimate. Optics rank refers to Source Photonics standalone FY2025 sales.
+
+- [Kinwong prospectus](https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0921/2026092100036_c.pdf)
+- [Kinwong H1](https://static.cninfo.com.cn/finalpage/2026-08-22/1225493416.PDF)
+- [Kinwong Q3 guidance](https://file.finance.sina.com.cn/211.154.219.97:9494/MRGG/CNSESH_STOCK/2026/2026-10/2026-10-10/12635456.PDF)
+- [Dongshan H1](https://static.cninfo.com.cn/finalpage/2026-08-22/1225491182.PDF)
+- [Dongshan PHIP](https://www1.hkexnews.hk/app/sehk/2026/108550/documents/sehk26101100054.pdf)
+- [Guosen 18 Sep](https://pdf.dfcfw.com/pdf/H3_AP202609221829741062_1.pdf)
+- [Shanghai 28 Aug](https://pdf.dfcfw.com/pdf/H3_AP202609021828932204_1.pdf)
+
+This is a comparator section, not an additional IPO candidate: Kinwong already listed on 29 September. The four-PHIP overview is unchanged. The approved first three pages are retained, with the comparison appended on a fourth page. Kinwong sells PCBs used inside optical modules, while Dongshan sells complete optical modules through Source Photonics. The difference affects earnings exposure and peer selection. Cash capex is compared on the same PRC consolidated definition, separately from total investing outflows. The 10 October Q3 issuer guidance is preliminary for July-September only; it has not been substituted for Guosen's full-year forecast. Exact amounts and computed ratios are in the JSON.
