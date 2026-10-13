@@ -240,7 +240,7 @@ import textwrap as _textwrap
 
 RIDGE_ALPHAS = np.logspace(-4, 2, 25)
 MIN_RETURN_STD = 1e-12
-PCA_REVISION = '2026-10-12-basket-primary'
+PCA_REVISION = '2026-10-13-peer-scope-and-report'
 MIN_TRAIN_COVERAGE = 0.90
 
 
@@ -316,6 +316,29 @@ def _trade_risk(y, spread, ann_sqrt):
             'variance_reduction': 1.0 - (spread_sd / target_sd) ** 2,
             'spread_mean_per_observation': float(np.mean(spread)),
             'n_observations': len(y)}
+
+
+def _spread_path_stats(spread, two_day=False, source='coefficient-only spread'):
+    """Descriptive log-spread path proxy, including the starting zero level.
+
+    Two-day returns overlap; take one non-overlapping phase before cumulating.
+    This is not exact self-financing portfolio P&L or a future drawdown forecast.
+    """
+    series = spread.dropna().iloc[::2] if two_day else spread.dropna()
+    if not len(series):
+        return {}
+    cumulative = series.cumsum()
+    running_peak = cumulative.cummax().clip(lower=0.0)
+    drawdown = np.expm1(cumulative - running_peak)
+    trough = drawdown.idxmin()
+    before = cumulative.loc[:trough]
+    peak = before.idxmax() if float(before.max()) > 0 else None
+    # Five calendar trading days cannot be represented exactly by 2-day observations.
+    worst_5d = (float(np.expm1(series.rolling(5).sum()).min())
+                if not two_day and len(series) >= 5 else np.nan)
+    return {'max_drawdown': float(drawdown.min()), 'peak': peak, 'trough': trough,
+            'worst_5d': worst_5d, 'source': source, 'n_observations': len(series),
+            'non_overlapping': True, 'path_proxy': True}
 
 # ─────────────────────────────────────────────────────────────────────────────
 # INDEX MAP: (market_code, sector_keyword) → Bloomberg Index Ticker
@@ -433,6 +456,31 @@ CONTROL_ETFS = {
                'IQLT US Equity', 'ACWV US Equity'],
     'GLOBAL': ['ACWI US Equity', 'EEM US Equity', 'EFA US Equity', 'URTH US Equity'],
 }
+
+# Broad-market instruments are executable ETF proxies, never raw Index levels.
+# Listing venue controls this map, including US-listed ADRs. Country-of-risk
+# and sector discovery remain separate. Taiwan 50 is NOT the full TAIEX.
+BROAD_MARKET_HEDGES = {
+    'US': ('S&P 500', ('SPY US Equity',)),
+    'HK': ('Hang Seng Index', ('2800 HK Equity',)),
+    'TW': ('Taiwan 50 large-cap proxy for the Taiwan market',
+           ('0050 TT Equity', '006208 TT Equity')),
+    'JP': ('TOPIX', ('1306 JP Equity',)),
+    'CN': ('CSI 300 large-cap A shares', ('510300 CH Equity',)),
+    'KR': ('KOSPI 200 large caps', ('069500 KS Equity',)),
+    'IN': ('Nifty 50 large caps', ('NIFTYBEES IN Equity',)),
+    'DE': ('DAX large caps', ('EXS1 GR Equity',)),
+    'GB': ('FTSE 100 large caps', ('ISF LN Equity', 'VUKE LN Equity')),
+    'FR': ('CAC 40 large caps', ('CAC FP Equity',)),
+    'AU': ('S&P/ASX 200', ('STW AU Equity', 'IOZ AU Equity')),
+}
+
+
+def _broad_market_spec(target):
+    market = EXCH_TO_MARKET.get(_exch_of(target))
+    label, instruments = BROAD_MARKET_HEDGES.get(market, ('No local proxy mapped', ()))
+    return {'market': market, 'benchmark': label, 'instruments': list(instruments)}
+
 
 # [Fix 14] ETF whitelist (short names) auto-generated — always in sync.
 # [Fix 118] SUPERSEDED as a membership test by _is_etf() below, which matches on
@@ -577,7 +625,7 @@ EXCH_CLOSE_UTC = {
     'NA': 16.5, 'SW': 16.5,            # continental Europe ~17:30 CET
     'SJ': 15.0,                        # JSE 17:00 SAST
     'TT': 5.5,                         # TWSE 13:30
-    'JP': 6.0,                         # TSE 15:00 JST
+    'JP': 6.5,                         # TSE 15:30 JST since November 2024
     'AU': 6.0,                         # ASX 16:00 AEST
     'KS': 6.5,                         # KRX 15:30 KST
     'CH': 7.0,                         # SSE / SZSE 15:00 CST
@@ -614,6 +662,7 @@ def _exch_of(full_ticker):
 # today (all are three-token, so _exch_of resolves normally).
 # ─────────────────────────────────────────────────────────────────────────────
 ETF_FULL_SET = ({t for lst in CONTROL_ETFS.values() for t in lst}
+                | {t for _, lst in BROAD_MARKET_HEDGES.values() for t in lst}
                 | {t for lst in MARKET_INSTRUMENTS.values() for t in lst})
 _ETF_SHORT_EXCH = {}
 for _t in ETF_FULL_SET:
@@ -631,6 +680,7 @@ import hashlib as _hashlib
 _INSTRUMENT_MAP_HASH = _hashlib.md5(
     repr(sorted((str(k), tuple(v)) for k, v in MARKET_INSTRUMENTS.items())
          + sorted((str(k), tuple(v)) for k, v in CONTROL_ETFS.items())
+         + sorted((str(k), tuple(v)) for k, v in BROAD_MARKET_HEDGES.items())
          ).encode()).hexdigest()[:12]
 
 
@@ -791,8 +841,7 @@ except Exception:                      # [Fix 87] _HTML kept defined either way
 #     records a text copy, and Export gets the whole report.
 _RF_UI = ("-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,"
           "'Helvetica Neue',Arial,sans-serif")
-_RF_NUM = ("ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,"
-           "'Liberation Mono',monospace")
+_RF_NUM = _RF_UI
 _RF_INK = '#1c2733'          # body text / the claim
 _RF_MUTE = '#5b6b7c'         # supporting prose
 _RF_FAINT = '#8a97a6'        # captions, notes, sub-labels
@@ -882,12 +931,19 @@ def _html_table(headers, rows, kinds, title='', note=''):
     # content instead of sitting in a field of white space
     wide = 'prose' in kinds
     th = (f'background:{_RF_HEAD};color:#fff;text-align:left;'
-          f'padding:7px 12px;font-size:10.5px;font-weight:600;'
+          f'padding:9px 12px;font-size:11.5px;font-weight:600;'
           f'letter-spacing:.06em;text-transform:uppercase;'
           f'font-family:{_RF_UI};white-space:nowrap')
     out = [f'<table style="border-collapse:collapse;border-spacing:0;'
            f'margin:4px 0 14px 0;font-family:{_RF_UI};'
-           f'{"width:100%;" if wide else ""}max-width:{_RF_MAXW}">']
+           f'width:100%;max-width:{_RF_MAXW}">']
+    widths = None
+    if list(headers) == ['ACTION', 'PER $100 TARGET', 'INSTRUMENT']:
+        widths = [12, 20, 68]
+    elif list(headers) == ['ACTION', 'PER $100 TARGET', 'INSTRUMENT', 'UNSEEN R²', 'VOL CUT']:
+        widths = [12, 18, 42, 14, 14]
+    if widths:
+        out.append('<colgroup>' + ''.join(f'<col style="width:{w}%">' for w in widths) + '</colgroup>')
     if title:
         out.append(f'<caption style="caption-side:top;text-align:left;'
                    f'font-family:{_RF_UI};font-size:11px;font-weight:700;'
@@ -909,7 +965,7 @@ def _html_table(headers, rows, kinds, title='', note=''):
                   f'border-bottom:1px solid {_RF_RULE};{bg}')
             if kind == 'num':
                 out.append(f'<td style="{td}text-align:right;'
-                           f'font-family:{_RF_NUM};font-size:11.5px;'
+                           f'font-family:{_RF_NUM};font-size:13.5px;'
                            f'font-variant-numeric:tabular-nums;'
                            f'white-space:nowrap;color:{_RF_INK}">'
                            f'{_html.escape(_clean(cell))}</td>')
@@ -927,7 +983,7 @@ def _html_table(headers, rows, kinds, title='', note=''):
                              f'{_html.escape(_clean(_l2))}</div>')
                 out.append(
                     f'<td style="{td}white-space:nowrap;font-size:'
-                    f'{11 if sub else 12}px;font-weight:{400 if sub else 600};'
+                    f'{12 if sub else 13.5}px;font-weight:{400 if sub else 600};'
                     f'color:{_RF_FAINT if sub else _RF_INK};'
                     f'padding-left:{26 if sub else 12}px">{body}</td>')
             elif kind == 'prose':
@@ -952,7 +1008,7 @@ def _html_table(headers, rows, kinds, title='', note=''):
                 _nw = ('white-space:nowrap;'
                        if max((len(x) for x in parts), default=0) <= 22
                        else '')
-                out.append(f'<td style="{td}{_nw}font-size:12px;'
+                out.append(f'<td style="{td}{_nw}font-size:13.5px;'
                            f'line-height:1.5;font-variant-numeric:tabular-nums;'
                            f'color:{_RF_INK}">{body}</td>')
         out.append('</tr>')
@@ -1107,7 +1163,7 @@ def _P(*a, **k):
     try:
         if _IN_JUPYTER and k.pop('html', True):
             _ipy_display(_HTML(
-                f'<div style="font-family:{_RF_UI};font-size:12px;'
+                f'<div style="font-family:{_RF_UI};font-size:13.5px;'
                 f'color:{_RF_INK if _key else _RF_MUTE};'
                 f'font-weight:{600 if _key else 400};line-height:1.5;'
                 f'margin:3px 0 3px {8 + _lead * 3}px;max-width:{_RF_MAXW}">'
@@ -1133,7 +1189,7 @@ def _section(title, subtitle=''):
                 f'<div style="margin:26px 0 8px 0;padding:0 0 5px 0;'
                 f'border-bottom:2px solid {_RF_HEAD};font-family:{_RF_UI};'
                 f'max-width:{_RF_MAXW}">'
-                f'<span style="font-size:14.5px;font-weight:700;'
+                f'<span style="font-size:16.5px;font-weight:700;'
                 f'letter-spacing:.03em;color:{_RF_HEAD}">'
                 f'{_html.escape(title)}</span>'
                 + (f'<span style="font-size:12px;color:{_RF_FAINT};'
@@ -1174,6 +1230,9 @@ def _print_table(headers, rows, indent='  ', wrap_last=None, title='',
     and ignored — wrapping is decided per column now, by _col_kind."""
     headers, rows = list(headers), [[str(x) for x in r] for r in rows]
     kinds = [_col_kind([r[i] for r in rows]) for i in range(len(headers))]
+    for i, header in enumerate(headers):
+        if str(header).lower() in ('instrument', 'full ticker', 'candidate', 'method'):
+            kinds[i] = 'text'
     _emit_table(headers, rows, kinds, title=title, note=note, indent=indent)
 
 
@@ -1609,7 +1668,7 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=10,
 
     # 4. Bloomberg official peers + second-degree peers
     #    [Fix 1: proper formatting + capped API calls]
-    peer_matches = []
+    peer_matches, first_degree = [], []
     try:
         first_degree = []
         for r in bbg_bulk(session, target_ticker, 'BLOOMBERG_PEERS'):
@@ -1630,12 +1689,16 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=10,
         print(f"    ⚠ failed to read peers: {e}")
 
     # 5. Control ETFs — from BOTH listing market and country of risk [Fix 19]
-    all_etfs = sorted(set(CONTROL_ETFS.get(market, []) +
+    broad_spec = _broad_market_spec(target_ticker)
+    all_etfs = sorted(set(broad_spec['instruments'] + CONTROL_ETFS.get(market, []) +
                           CONTROL_ETFS.get(country, []) +
                           CONTROL_ETFS.get('FACTOR', []) +   # [Fix 43]
                           CONTROL_ETFS['GLOBAL']))
 
     if meta is not None:                          # [Fix 49] expose discovery
+        meta['target'] = target_ticker
+        meta['peer_tickers'] = sorted(set(first_degree + industry_matches) - {target_ticker})
+        meta['broad_market'] = broad_spec
         meta['index_ticker'] = local_index_ticker  # facts for PIT membership
         meta['non_index_shorts'] = (
             {t.split(' ')[0] for t in peer_matches} |
@@ -2283,7 +2346,7 @@ def _coerce_targets(target):
 
 def _validation_tier(rows, lookback_options, cv_test_window, cv_n_folds,
                      outer_window, outer_folds, purge, basket_size_options,
-                     rolling_refit_every):
+                     rolling_refit_every, strict_basket_sizes=False):
     """[Fix 77/85] Resolve the validation protocol for a window of `rows`
     return rows. Extracted verbatim from find_best_hedge in [Fix 85] so that
     preview_window() and the GUI describe the protocol that will ACTUALLY
@@ -2351,33 +2414,33 @@ def _validation_tier(rows, lookback_options, cv_test_window, cv_n_folds,
     _fit_len = (min(rows, max(t['lookback_options']))
                 if t['mode'] in ('FULL', 'REDUCED') else rows - t['hold_rows'])
     _bs_cap = max(2, _fit_len // 8)
-    if max(basket_size_options) > _bs_cap:
-        t['basket_size_options'] = tuple(sorted({min(b, _bs_cap)
-                                                 for b in basket_size_options}))
-        t['notes'].append(f"  [Fix 77] basket sizes capped at {_bs_cap} "
-                          f"({_fit_len}-row fit window)")
+    if not strict_basket_sizes and max(basket_size_options) > _bs_cap:
+        sizes = tuple(b for b in basket_size_options if b <= _bs_cap)
+        if not sizes or (any(b >= 2 for b in basket_size_options) and not any(b >= 2 for b in sizes)):
+            raise ValueError(f'History supports basket sizes up to {_bs_cap} under the default '
+                             'sample rule. Choose smaller sizes or explicitly set basket_size_range '
+                             'for a descriptive regularized fit.')
+        t['basket_size_options'] = sizes
+        t['notes'].append(f'Unsupported sizes above {_bs_cap} omitted; requested sizes are exact.')
     return t
 
 
 TIER_MEANING = {
-    'FULL': 'full protocol: walk-forward CV, nested windows, rolling curve, '
-            'bootstrap CI — a tradeable verdict',
-    'REDUCED': 'walk-forward still runs but on shorter/fewer windows — '
-               'a usable verdict with wider error bars',
-    'HOLDOUT': 'one held-out tail only — thin evidence; size down and '
-               'confirm on a longer window',
-    'IN-SAMPLE': 'NO out-of-sample evidence is possible — descriptive only, '
-                 'do not size off it',
+    'FULL': 'walk-forward CV and nested selection windows; inspect the actual scores and coverage',
+    'REDUCED': 'CV and nested evaluation on shorter or fewer windows; evidence is more limited',
+    'HOLDOUT': 'one reserved test period; limited evidence, not a multi-window stability test',
+    'IN-SAMPLE': 'fitted descriptive evidence only; no unseen validation was available',
 }
 
 
 def preview_window(data, sample_window=None, lookback_options=(126, 252),
                    cv_test_window=42, cv_n_folds=5, outer_window=None,
                    outer_folds=3, basket_size_options=(1, 2, 3, 5, 7),
-                   quiet=False):
+                   quiet=False, basket_size_range=None):
     """[Fix 85] What will this sample_window actually buy me? Reports the
     session count and the validation tier BEFORE you spend minutes on a run,
     using the same _validation_tier the engine uses. Cheap and API-free."""
+    basket_size_options = _basket_sizes(basket_size_options, basket_size_range)
     idx = data['prices'].index
     if sample_window is not None:
         s, e = _parse_sample_window(sample_window, idx)
@@ -2399,7 +2462,8 @@ def preview_window(data, sample_window=None, lookback_options=(126, 252),
         try:
             t = _validation_tier(len(sub) - 1 - pu, lookback_options,
                                  cv_test_window, cv_n_folds, ow, outer_folds,
-                                 pu, basket_size_options, 21)
+                                 pu, basket_size_options, 21,
+                                 strict_basket_sizes=basket_size_range is not None)
             modes[lab] = t['mode']
         except ValueError:
             modes[lab] = None
@@ -2677,8 +2741,7 @@ def _tracking_ticket_verdict(quality, worst_r2, overfit_gap, min_sim, trend,
     reasons, fail, warn = [], False, False
     if quality < 0.20:
         fail = True
-        reasons.append(f'pooled OOS R² {quality:.2f} < 0.20 — too little to '
-                       f'pay for')
+        reasons.append(f'pooled OOS R² {quality:.2f} is below the chosen 0.20 tracking threshold')
     if not np.isnan(overfit_gap) and overfit_gap >= 0.35:
         fail = True
         reasons.append(f'in-sample vs OOS gap {overfit_gap:.2f} ≥ 0.35 — '
@@ -2940,7 +3003,7 @@ def _n_pc_auto(ret_scaled, cap, robust_cov='none'):
     return int(min(max(2, k), cap, 15, n - 1, p))
 
 
-def download_hedge_data(target, candidates=None, session=None,
+def _download_hedge_data_impl(target, candidates=None, session=None,
                         years=3, min_mktcap_usd_mm=5000, exclude=None,
                         force_include=None, fetch_mktcap_hist=True,
                         fetch_pit_members=True, cache=True):
@@ -3105,6 +3168,8 @@ def download_hedge_data(target, candidates=None, session=None,
     out = {'target': target, 'target_label': label,
            'portfolio': {'legs': legs, 'weights': pf_w,
                          'is_portfolio': is_portfolio, 'label': label},
+           'peer_tickers_by_target': {m['target']: m['peer_tickers'] for m in disc_meta},
+           'broad_markets': [m['broad_market'] for m in disc_meta],
            'prices': prices, 'price_observations': 'ACTIVE_DAYS_ONLY',
            'mktcap_usd_mm': mktcap,
            'mktcap_hist': mktcap_hist,
@@ -3125,6 +3190,30 @@ def download_hedge_data(target, candidates=None, session=None,
             print(f"  ⚠ could not cache this download ({e}) — it is still "
                   f"returned in memory")
     return out
+
+
+from functools import wraps as _wraps
+
+
+@_wraps(_download_hedge_data_impl)
+def download_hedge_data(*args, verbose=False, **kwargs):
+    """Same download API; verbose=True exposes the full discovery log."""
+    if verbose:
+        return _download_hedge_data_impl(*args, **kwargs)
+    import io
+    from contextlib import redirect_stdout
+    print('Discovering candidates and downloading Bloomberg history…')
+    capture = io.StringIO()
+    with redirect_stdout(capture):
+        result = _download_hedge_data_impl(*args, **kwargs)
+    result['download_log'] = capture.getvalue()
+    warnings = [_clean(line) for line in result['download_log'].splitlines() if '⚠' in line]
+    print(f"Downloaded {result['prices'].shape[0]} price rows for {result['prices'].shape[1]} instruments.")
+    for warning in warnings[:3]:
+        print(warning)
+    if len(warnings) > 3:
+        print(f'{len(warnings)-3} further data warnings are in the detailed download log.')
+    return result
 
 
 def _adf_pvalue(values, **kwargs):
@@ -3175,7 +3264,9 @@ def _config_family(spec, size):
     return 'single' if int(size) == 1 else 'basket'
 
 
-def _family_configs(summary, family):
+def _family_configs(summary, family, market_tickers=()):
+    if family == 'single_market':
+        return summary.loc[summary['pc_spec'].isin(['single:' + t for t in market_tickers])]
     kinds = summary['family']
     mask = kinds.str.startswith('single') if family == 'single' else kinds.eq(family)
     return summary.loc[mask]
@@ -3245,7 +3336,71 @@ def _show_hedge_comparison(alternatives, selected_family, search):
        'basket methods: ' + ', '.join(search['basket_methods']) + '.')
 
 
-def find_best_hedge(
+def _basket_sizes(options, size_range=None):
+    """Inclusive hard range; equal bounds request an exact cardinality."""
+    if size_range is not None:
+        if len(size_range) != 2:
+            raise ValueError('basket_size_range must be (minimum, maximum)')
+        lo, hi = size_range
+        if isinstance(lo, bool) or isinstance(hi, bool) or int(lo) != lo or int(hi) != hi:
+            raise ValueError('Basket range bounds must be whole numbers')
+        if not 2 <= int(lo) <= int(hi) <= 50:
+            raise ValueError('Basket range must satisfy 2 <= minimum <= maximum <= 50')
+        return tuple(range(int(lo), int(hi) + 1))
+    values = tuple(options)
+    if not values or any(isinstance(k, bool) or int(k) != k or not 1 <= int(k) <= 50 for k in values):
+        raise ValueError('basket_size_options must contain whole numbers from 1 to 50')
+    return tuple(sorted(set(map(int, values))))
+
+
+def _filter_candidate_scope(data, legs, columns, scope, include_market, peers=None, forced=None):
+    """Filter by verified identity before PCA and every validation window.
+
+    Direct Bloomberg peers and same BICS/GICS industry peers are eligible.
+    Second-degree-only names and arbitrary index constituents are not peers.
+    Relationships are current discovery metadata, not historical classifications.
+    """
+    def canonical(t):
+        return _fmt_bbg_ticker(str(t).upper().replace(' EQUITY', '')) or str(t)
+
+    broad = [_broad_market_spec(t) for t in legs]
+    market_ids = {canonical(t) for m in broad for t in m['instruments']}
+    market_tickers = [c for c in columns if canonical(c) in market_ids and c not in legs]
+    if scope == 'peers':
+        manual_peers = peers is not None
+        if peers is None:
+            by_target = data.get('peer_tickers_by_target') or {}
+            if any(t not in by_target for t in legs):
+                raise ValueError('Peers-only needs verified peer metadata for this target. '
+                                 'Download again, or enter the peer tickers explicitly for this cache.')
+            peers = [p for t in legs for p in by_target[t]]
+        ids = {canonical(t) for t in peers}
+        if peers:
+            resolved, missing = _resolve_force_include(peers, columns, legs[0])
+            if missing:
+                # Auto discovery can contain peers without licensed price series;
+                # a manual peer list must be actionable and fully understood.
+                if manual_peers:
+                    raise ValueError('Peer tickers are not in the downloaded data: ' + ', '.join(missing))
+            ids.update(canonical(t) for t in resolved)
+        if include_market:
+            ids |= market_ids
+        candidates = [c for c in columns if canonical(c) in ids and c not in legs]
+    else:
+        candidates = [c for c in columns if c not in legs and
+                      (include_market or canonical(c) not in market_ids)]
+    resolved_forced, _ = _resolve_force_include(forced, columns, legs[0])
+    outside = [t for t in resolved_forced if t not in candidates and t not in legs]
+    if outside:
+        raise ValueError('Required instruments conflict with the candidate filter: '
+                         + ', '.join(outside) + '. Change the filter or required instruments.')
+    return {'columns': list(dict.fromkeys(list(legs) + candidates)),
+            'market_tickers': [c for c in market_tickers if c in candidates],
+            'broad_markets': broad, 'candidate_scope': scope,
+            'include_broad_market': bool(include_market)}
+
+
+def _find_best_hedge_impl(
     target_ticker,
     candidates=None,
     data=None,                    # [Fix 31] dict from download_hedge_data()
@@ -3332,7 +3487,16 @@ def find_best_hedge(
                                   # it did not re-validate
     hedge_objective='variance',   # 'variance' (risk reduction) or 'tracking' (strict R2)
     broad_search=True,            # select a basket; score all eligible singles as references
+    candidate_scope='all',        # 'all' or verified direct/industry peers
+    include_broad_market=None,    # default: on for all, off for peers only
+    peer_tickers=None,            # manual peer list for older caches
+    basket_size_range=None,       # inclusive (min, max); exact number when equal
 ):
+    basket_size_options = _basket_sizes(basket_size_options, basket_size_range)
+    if candidate_scope not in ('all', 'peers'):
+        raise ValueError("candidate_scope must be 'all' or 'peers'")
+    if include_broad_market is None:
+        include_broad_market = candidate_scope == 'all'
     if hedge_objective not in ('variance', 'tracking'):
         raise ValueError("hedge_objective must be 'variance' or 'tracking'")
     if broad_search and not any(int(size) >= 2 for size in basket_size_options):
@@ -3342,68 +3506,13 @@ def find_best_hedge(
     outer_window = outer_window or cv_test_window
     _kv_reset()             # [Fix 114] never inherit a failed run's rows
     transcript_reset()      # [Fix 115] this run's text copy starts empty
-    # ── [Fix 100] WHY THE HORIZON DOES NOT RE-CUT THE WINDOWS ───────────────
-    # [Fix 91] originally set the OOS windows to the holding period, on the
-    # intuition that you should be validated on the period you will live.
-    # That intuition does not survive measurement. A hedge ratio is a
-    # property of the covariance between target and basket; estimated on
-    # daily returns it targets the SAME quantity as one estimated on 63-day
-    # returns, but with ~63x more observations and far less noise. Changing
-    # the SCORING window only changes which config wins — and longer windows
-    # mean FEWER of them, so the choice gets noisier, not sharper.
-    #
-    # Tested directly: train on 600 rows, then score the SAME weights on a
-    # held-out tail in non-overlapping 63-row blocks, 8 paired trials per
-    # regime.
-    #     iid residuals   default 16.39%  vs  horizon-matched 16.43%
-    #                     (t=+0.44, horizon better in 4/8)
-    #     AR(1) 0.6       default 20.57%  vs  horizon-matched 20.58%
-    #                     (t=+0.09, horizon better in 5/8)
-    # No detectable benefit either way. So the horizon is used where it
-    # genuinely carries information — scaling risk to the holding period
-    # ([Fix 92]), reporting what holds of that length actually delivered
-    # ([Fix 98]), and checking the horizon against the measured rebalance
-    # cadence ([Fix 78/84]) — and NOT to shrink the evidence base. Pass
-    # horizon_sets_windows=True to restore the old behaviour.
-    #
-    # ── [Fix 112] THE STRONGER REASON, AND THE ONE THAT SETTLES IT ─────────
-    # [Fix 100] only tested one way of using the horizon (re-cutting the
-    # windows). That left the obvious objection unanswered: hedging for a
-    # MONTH and hedging for HALF A YEAR are different problems, so surely the
-    # horizon belongs in the selection somehow?
-    #
-    # The mechanism by which it could is real. A hedge ratio is horizon-free
-    # only if the residual is iid. When residuals are serially dependent,
-    #     VR_h = Var(sum of h residuals) / (h x Var(residual))
-    # and h-day tracking error is daily-TE x sqrt(VR_h). Two configs with the
-    # SAME daily TE can therefore have very different 21-day or 126-day TE.
-    # Crucially this needs NO extra data — VR is estimable from the same
-    # daily returns — so it dodges the objection that killed [Fix 100].
-    #
-    # It was implemented and measured. Three selection rules, scored on
-    # REALISED non-overlapping h-day tracking error on held-out data, 25
-    # paired seeds x 40 candidate baskets, h = 5/21/63/126, two worlds (one
-    # built specifically so residual persistence differs across configs):
-    #     rule                                    h=21      h=63     h=126
-    #     A  minimise daily TE      (current)   baseline  baseline  baseline
-    #     B  minimise TE x sqrt(VR) (proposed)   -0.50pp   -0.54pp   -0.93pp
-    #     C  minimise TE on h-blocks ([Fix 100]) -0.84pp   -0.82pp   -2.55pp
-    # Both horizon-aware rules are WORSE, at every horizon, in both worlds,
-    # and B wins in only 4-11 of 25 seeds. The reason is visible in the
-    # estimates themselves:
-    #     corr(VR_in-sample, VR_out-of-sample) = -0.32 .. +0.18
-    #     corr(VR_out-of-sample, realised)     = +0.54 .. +0.86
-    # The quantity MATTERS enormously and is NOT forecastable. Selecting on
-    # it does not merely fail to help — it maximises an estimation error, so
-    # it actively hurts, and hurts MORE at longer horizons because VR gets
-    # harder to estimate as h grows.
-    #
-    # That is the answer to "shouldn't a 1-month and a 6-month hedge differ?"
-    # They differ in the RISK you carry and in how often you must refit —
-    # both of which are reported. They do not differ in which covariance you
-    # should estimate, and the longer the horizon the LESS the data can say
-    # about anything horizon-specific. So the horizon shapes the report and
-    # the monitoring plan, and stays out of the fit.
+    # Holding duration is an optional risk-report input. The default fit
+    # minimizes daily (or asynchronous two-day) return risk. With serial
+    # dependence, an optimal multi-period hedge can differ; this model does
+    # not optimize the covariance of horizon-aggregated returns. Recutting
+    # validation windows alone is not such an optimization. The explicit
+    # horizon_sets_windows option changes the validation design only and
+    # is retained for compatibility; the form uses the ordinary defaults.
     if hedge_horizon_days:
         _h = int(hedge_horizon_days)
         if _h < 1:
@@ -3461,6 +3570,11 @@ def find_best_hedge(
                                    force_include=force_include)  # [Fix 40]
         prices = data['prices'].copy()
 
+    scope = _filter_candidate_scope(data, pf_legs, prices.columns, candidate_scope,
+                                    include_broad_market, peer_tickers, force_include)
+    prices = prices[scope['columns']]
+    market_tickers = scope['market_tickers']
+
     # [Fix 40] Resolve the must-have securities against the downloaded
     # columns BEFORE any filter runs, so every filter below can exempt them.
     forced, fi_unres = _resolve_force_include(force_include, prices.columns,
@@ -3472,6 +3586,10 @@ def find_best_hedge(
     if forced:
         _P(f"  Force-include active: {', '.join(forced)} will be held in "
               f"every basket (CV folds, nested windows, and final recipe)")
+
+    primary_sizes = [k for k in basket_size_options if k >= 2]
+    if broad_search and forced and not any(k >= len(forced) for k in primary_sizes):
+        raise ValueError('The forced instrument count exceeds every requested basket size.')
 
     # [Fix 36] Manual exclusions on COLUMNS — works on pre-downloaded data
     kept_cols, removed_cols = _apply_exclusions(
@@ -3706,7 +3824,8 @@ def find_best_hedge(
     rows = len(rets)
     _tier = _validation_tier(rows, lookback_options, cv_test_window,
                              cv_n_folds, outer_window, outer_folds, purge,
-                             basket_size_options, rolling_refit_every)
+                             basket_size_options, rolling_refit_every,
+                             strict_basket_sizes=basket_size_range is not None)
     val_mode = _tier['mode']
     hold_rows = _tier['hold_rows']
     lookback_options = _tier['lookback_options']
@@ -3723,6 +3842,10 @@ def find_best_hedge(
     universe = [c for c in prices.columns
                 if c not in set(pf_legs) and c != target_ticker]   # [Fix 46]
     forced = [c for c in forced if c in universe]           # [Fix 40]
+    market_tickers = [c for c in market_tickers if c in universe]
+    if broad_search and not any(2 <= k <= len(universe) for k in basket_size_options):
+        raise ValueError(f'At least two eligible instruments are required. Requested basket sizes {basket_size_options} require more '
+                         f'eligible instruments than available ({len(universe)}).')
 
     # [Fix 44/45] point-in-time eligibility: size floor / size band / overrides
     _sz_over = {}
@@ -3811,16 +3934,14 @@ def find_best_hedge(
     def _forced_basket(ranked, ok, bsize):
         """[Fix 40] Assemble a basket that always contains the forced names
         (those usable in this window), topped up with the best-ranked other
-        candidates. Forced names OCCUPY SLOTS inside the same basket size,
-        so CV metrics measure the basket that would actually be traded; if
-        more names are forced than basket_size, the basket grows to hold
-        them all."""
-        if any(c not in ok for c in forced):
-            return []  # A required instrument must never silently disappear.
+        candidates. Requested cardinality is exact; an unavailable or
+        conflicting size is skipped rather than enlarged or shrunk."""
+        if any(c not in ok for c in forced) or len(forced) > int(bsize):
+            return []
         f_ok = list(forced)
-        rest = [t for t in ranked if t not in f_ok]
-        basket = f_ok + rest[:max(0, bsize - len(f_ok))]
-        return [] if int(bsize) >= 2 and len(basket) < 2 else basket
+        rest = list(dict.fromkeys(t for t in ranked if t not in f_ok and t in ok))
+        basket = f_ok + rest[:max(0, int(bsize) - len(f_ok))]
+        return basket if len(basket) == int(bsize) else []
 
     training_diagnostics, training_notices = [], set()
     evaluation_diagnostics, evaluation_notices = [], set()
@@ -3910,7 +4031,7 @@ def find_best_hedge(
         ctx['pca'][pc_spec] = (rank, n_pc, pca, lds)
         return ctx['pca'][pc_spec]
 
-    def _select_and_fit(train_rets, pc_spec, bsize):
+    def _select_and_fit(train_rets, pc_spec, bsize, enforce_gross=True):
         required_rows = (max(5, int(bsize) + 2)
                          if val_mode in ('HOLDOUT', 'IN-SAMPLE') else min_train_rows)
         ctx = _training_context(train_rets, required_rows)
@@ -3943,6 +4064,8 @@ def find_best_hedge(
             reg, r2, resid = ctx['single_fits'][basket[0]]
         else:
             reg, r2, resid = _fit_basket(tr, target_ticker, basket)
+        if enforce_gross and max_gross is not None and np.abs(reg.coef_).sum() > max_gross:
+            raise RuntimeError('Refit exceeds the requested gross cap')
         return tr, rank, basket, reg, r2, resid, n_pc, pca, lds
 
     def _eval_on_window(reg, basket, test_rets):
@@ -4210,7 +4333,7 @@ def find_best_hedge(
     def _short_sample_result(val_mode, hold_rows, fallback_reason=None,
                              cv_summary=None, cv_detail=None, prior_nested=None):
         fit_rets = rets.iloc[:rows - hold_rows - (purge if hold_rows else 0)]
-        short_context = _training_context(fit_rets, max(5, max(basket_size_options) + 2))
+        short_context = _training_context(fit_rets, max(5, min(basket_size_options) + 2))
         fit_rets = short_context['tr']
         short_trials, short_errors = [], []
         short_specs = [(str(pc), int(size)) for pc in pc_grid for size in basket_size_options
@@ -4296,16 +4419,15 @@ def find_best_hedge(
                 s_r2_h, s_r2_h, _gap_s, None, False, s_r2_h, s_r2e_h, False,
                 vol_red=s_vr_h, worst_vol_red=s_vr_h, objective=hedge_objective)
             if grade.startswith('✓'):
-                grade = '△ TRADE AT REDUCED SIZE'
+                grade = '△ LIMITED EVIDENCE — REVIEW CANDIDATE'
             reasons.insert(0, f'single {hold_rows}-row holdout — thin '
-                              f'evidence; widen sample_window for a real '
-                              f'verdict')
+                              f'evidence; compare with a longer analysis window')
         else:
             grade = '? IN-SAMPLE ONLY — DO NOT SIZE OFF THIS'
             reasons = [
-                fallback_reason or f'{rows} rows: no out-of-sample evidence is possible',
+                fallback_reason or f'{rows} rows: no unseen validation was available',
                 f'{len(s_basket)} regressors on {len(fit_rets)} obs — the '
-                f'in-sample R² is inflated by construction',
+                f'fitted R² is not independent evidence',
                 'use for exposure identification; validate on a longer '
                 'window before trading']
         if np.isfinite(s_r2_h) and s_r2_h < 0:
@@ -4421,9 +4543,11 @@ def find_best_hedge(
                'enough data behind them to be worth drawing.')
         _kv_flush()
         alternatives = {}
-        for family in ('basket', 'single', 'single_stock', 'single_etf'):
+        for family in ('basket', 'single', 'single_stock', 'single_etf', 'single_market'):
             trials = [t for t in short_trials
-                      if (_config_family(t[1], len(t[3][2])).startswith('single')
+                      if (str(t[1]).removeprefix('single:') in market_tickers
+                          if family == 'single_market' else
+                          _config_family(t[1], len(t[3][2])).startswith('single')
                           if family == 'single' else _config_family(t[1], len(t[3][2])) == family)]
             if not trials:
                 continue
@@ -4460,10 +4584,29 @@ def find_best_hedge(
         selected_family = _config_family(_ps0, len(s_basket))
         _show_hedge_comparison(alternatives, selected_family, search)
 
+        # Retain useful fitted exposure/path diagnostics even in short history.
+        # They do not upgrade the validation tier or qualify the basket.
+        short_spread = pd.Series(fit_rets[target_ticker].values
+                                 - fit_rets[s_basket].values @ s_w.values, index=fit_rets.index)
+        short_path = _spread_path_stats(short_spread, two_day, 'fitted coefficient-only spread')
+        target_fit = fit_rets[target_ticker]
+        worst = short_spread[target_fit <= target_fit.quantile(.1)]
+        best = short_spread[target_fit >= target_fit.quantile(.9)]
+        short_tail = ({'worst_decile_mean': float(worst.mean()), 'best_decile_mean': float(best.mean()),
+                       'gap_bp_day': float((worst.mean()-best.mean())*1e4), 'n_worst': len(worst)}
+                      if len(worst) >= 5 and len(best) >= 5 else {})
+        stock_cols = [c for c in fit_rets if c != target_ticker and c not in set(pf_legs) and not _is_etf(c)]
+        short_factors = _factor_leakage(fit_rets, target_ticker, s_w,
+                          caps_map={c: _cap_asof(c, fit_rets.index[-1]) for c in stock_cols},
+                          stock_cols=stock_cols)
         return {
             'training_data_diagnostics': pd.DataFrame(training_diagnostics),
             'evaluation_data_diagnostics': pd.DataFrame(evaluation_diagnostics),
             'engine_revision': PCA_REVISION,
+            'basket_candidates': [dict(cfg={'avg_r2_oos': np.nan},
+                lb=len(fit_rets), ps=t[1], bs=t[2], sel=t[1] == _ps0 and t[2] == _bs0,
+                r2m=np.nan, vrm=np.nan, n=0, w=pd.Series(t[3][3].coef_, index=t[3][2]),
+                r2_in=t[3][4]) for t in sorted(primary_trials, key=lambda t: t[0], reverse=True)[:5]],
             'primary_hedge_family': selected_family,
             'hedge_alternatives': alternatives, 'search': search,
             'best_basket_hedge': alternatives.get('basket'),
@@ -4486,7 +4629,7 @@ def find_best_hedge(
             'decay': {}, 'turnover': {},
             'drift_ann': (float(s_reg.intercept_) * 252.0    # [Fix 121]
                           / (2 if two_day else 1)),
-            'asymmetry': {}, 'path': {},                     # [Fix 122/123]
+            'asymmetry': short_tail, 'path': short_path,
             'exposures': (data or {}).get('exposures') or {},  # [Fix 119]
             'ticket': {'grade': grade, 'reasons': reasons,
                        'hedge_objective': hedge_objective,
@@ -4501,6 +4644,7 @@ def find_best_hedge(
             'analysis_span': (rets.index[0], rets.index[-1], rows),  # [Fix 99]
             'holdout_r2': s_r2_h, 'holdout_vol_red': s_vr_h,
             'holdout_te': s_te_h, 'in_sample_r2': s_r2_in,
+            'trade_risk': (primary_item or {}).get('trade_risk', {}),
             'in_sample_r2_adj': s_r2_adj,                  # [Fix 83]
             'validation_mode': val_mode,
             'etf_benchmark': pd.DataFrame(), 'etf_nested_r2_mean': np.nan,
@@ -4511,10 +4655,11 @@ def find_best_hedge(
             'excluded': removed_cols, 'force_included': forced,
             'is_portfolio': is_portfolio,
             'portfolio_legs': pf_legs, 'portfolio_weights': pf_w,
-            'factor_leakage': None,
+            'factor_leakage': short_factors,
             'pit_size_active': pit_active, 'pit_members_active': pm_active,
             'params': {'lookback': len(fit_rets), 'pc_spec': _ps0,
                        'basket_size': _bs0, 'hedge_objective': hedge_objective, 'broad_search': broad_search,
+                       'recency_weight': recency_weight,
                        'tz_tolerance_hours': tz_tolerance_hours,
                        'min_mktcap_usd_mm': min_mktcap_usd_mm,
                        'gross_penalty': gross_penalty, 'max_gross': max_gross,
@@ -4547,7 +4692,7 @@ def find_best_hedge(
     nested_trade_res_all = []
     nested_index_all = []
     family_tests = {f: {'y': [], 'residual': [], 'spread': []}
-                    for f in ('basket', 'single', 'single_stock', 'single_etf')}
+                    for f in ('basket', 'single', 'single_stock', 'single_etf', 'single_market')}
     N = len(rets)
     for j in range(1, outer_folds + 1):
         o_end = N - (j - 1) * outer_window
@@ -4559,7 +4704,7 @@ def find_best_hedge(
             _P(f"  outer window {j}: inner CV failed — skipped")
             continue
         for family, evidence in family_tests.items():
-            choices = _family_configs(summary_j, family)
+            choices = _family_configs(summary_j, family, market_tickers)
             if choices.empty:
                 continue
             choice = choices.loc[choices['composite'].idxmax()]
@@ -4853,7 +4998,7 @@ def find_best_hedge(
     try:
         (returns_final, final_rank, basket_final, reg_f,
          r2_final, resid_final, n_pc_final, pca_f, loadings_f) = _select_and_fit(
-            rets.iloc[-best_lookback:], best_pc_spec, best_bsize)  # [Fix 46]
+            rets.iloc[-best_lookback:], best_pc_spec, best_bsize, enforce_gross=False)  # final screen reports cap failure
     except RuntimeError as _e_final:                       # [Fix 81]
         _tail = rets.iloc[-best_lookback:][target_ticker]
         _nan = int(_tail.isna().sum())
@@ -4980,7 +5125,7 @@ def find_best_hedge(
     roll_stats, decay_stats, turnover_stats = {}, {}, {}      # [Fix 78]
     if rolling_oos:
         _step = max(5, int(rolling_refit_every))
-        _segs_y, _segs_r, _segs_ix, _n_skip = [], [], [], 0
+        _segs_y, _segs_r, _segs_spread, _segs_ix, _n_skip = [], [], [], [], 0
         _dec_map, _bskts = {}, []                             # [Fix 84]
         for _i in range(int(rolling_max_windows), 0, -1):
             _e = len(rets) - (_i - 1) * _step
@@ -5004,6 +5149,7 @@ def find_best_hedge(
             _y_sr = _test_r[target_ticker].values
             _segs_y.append(_y_sr)
             _segs_r.append(_y_sr - _reg_r.predict(_test_r[_bkt_r].values))
+            _segs_spread.append(_y_sr - _test_r[_bkt_r].values @ _reg_r.coef_)
             _segs_ix.append(_test_r.index)
             # [Fix 84] PAIRED staleness measurement. Fixes 78/82, which
             # bucketed residuals by raw row-age: with a fixed refit step,
@@ -5033,7 +5179,8 @@ def find_best_hedge(
         if _segs_y:
             rolling_df = pd.DataFrame(
                 {'y': np.concatenate(_segs_y),
-                 'resid': np.concatenate(_segs_r)},
+                 'resid': np.concatenate(_segs_r),
+                 'traded_spread': np.concatenate(_segs_spread)},
                 index=pd.DatetimeIndex(
                     np.concatenate([ix.values for ix in _segs_ix])))
             _w_roll = 21
@@ -5084,6 +5231,8 @@ def find_best_hedge(
                 _resid_r.rolling(_w_roll).var(ddof=0) * _w_roll) / _sstw
             rolling_df['drift_pen'] = (
                 _resid_r.rolling(_w_roll).mean().pow(2) * _w_roll) / _sstw
+            rolling_df['spread_vol_roll'] = (rolling_df['traded_spread']
+                                                    .rolling(_w_roll).std() * ann_sqrt)
             rolling_df['te_roll'] = (_resid_r
                                      .rolling(_w_roll).std() * ann_sqrt)
             rolling_df['tgt_vol_roll'] = (rolling_df['y']
@@ -5228,7 +5377,7 @@ def find_best_hedge(
         if wdisp['trend']:
             _sig.append('trend')
             _why.append('R² has deteriorated steadily toward the present')
-        # decide: two independent signals, or one extreme TE block
+        # Heuristic condition flag: two possibly related signals, or an extreme TE block.
         _strong = (np.isfinite(_pct) and _pct >= 0.95 and _persist >= 0.6)
         if len(_sig) >= 2 or _strong:
             _cond = 'DEGRADED'
@@ -5283,7 +5432,7 @@ def find_best_hedge(
                        'missing dates and coverage are listed in the data diagnostics')
     if nowcast.get('condition') == 'DEGRADED':            # [Fix 93]
         if grade.startswith('✓'):
-            grade = '△ TRADE AT REDUCED SIZE'
+            grade = '△ RECENT DETERIORATION — REVIEW CANDIDATE'
         for _w93 in nowcast['why']:
             if _w93 not in reasons:
                 reasons.append(_w93)
@@ -5464,7 +5613,7 @@ def find_best_hedge(
                             color=_CLR['hedged'])
                 if np.isfinite(wdisp['worst_te']):
                     ax2[0].axhline(wdisp['worst_te'] * 100, color=_CLR['warn'],
-                                   ls='--', label='worst validated window')
+                                   ls='--', label='selected-config worst window')
                     ax2[0].axhline(1.5 * wdisp['worst_te'] * 100,
                                    color=_CLR['kill'], ls='--',
                                    label='kill-switch (1.5×)')
@@ -6110,7 +6259,9 @@ def find_best_hedge(
     # Reported only. Selecting on a semivariance would halve the sample to
     # estimate a noisier quantity — the trap [Fix 112] already refused.
     try:
-        _dn_src = pd.Series(resid_final, index=returns_final.index)
+        _dn_src = pd.Series(returns_final[target_ticker].values
+                            - returns_final[basket_final].values @ weights_final.values,
+                            index=returns_final.index)
         _tgt_d = returns_final[target_ticker]
         _q = _tgt_d.quantile(0.10)
         _worst = _dn_src[_tgt_d <= _q]
@@ -6120,14 +6271,10 @@ def find_best_hedge(
             asym_stats = {'worst_decile_mean': _wm, 'best_decile_mean': _bm,
                           'gap_bp_day': (_wm - _bm) * 1e4,
                           'n_worst': int(len(_worst))}
-            kv('Worst-day behaviour\nresidual on the target’s worst 10% of days',
-               f"{_wm*1e4:+.0f} bp/day vs {_bm*1e4:+.0f} bp on its best 10%",
-               ('Roughly symmetric — the hedge behaves the same in both tails, '
-                'so the TE above describes the bad days too.'
-                if abs(_wm - _bm) * 1e4 < 15 else
-                f"The hedge is NOT symmetric: it loses "
-                f"{abs(_wm - _bm)*1e4:.0f} bp/day more on the worst days than "
-                f"on the best. TE cannot see this — size for the left column."))
+            kv('Worst-day behaviour',
+               f"{_wm*1e4:+.1f} bp/observation vs {_bm*1e4:+.1f} bp on the best 10%",
+               'Fitted coefficient-only spread averages on target-tail observations. '
+               'Descriptive and sample-dependent; they do not establish crisis protection.')
     except Exception as _e122:
         kv('Worst-day behaviour', 'unavailable',
            f"could not be computed ({type(_e122).__name__}: {_e122}) — the "
@@ -6139,26 +6286,23 @@ def find_best_hedge(
     # walk-forward residual (honest weights, refit through time) over the
     # in-sample one; returns are logs, hence expm1 on the cumulative.
     try:
-        if roll_stats and len(rolling_df) and rolling_df['resid'].notna().any():
-            _dd_src, _dd_lbl = rolling_df['resid'].dropna(), 'out-of-sample'
+        if len(rolling_df) and rolling_df['traded_spread'].notna().any():
+            _dd_src = rolling_df['traded_spread'].dropna()
+            _dd_lbl = 'selected-configuration walk-forward spread'
         else:
-            _dd_src, _dd_lbl = (pd.Series(resid_final,
-                                          index=returns_final.index),
-                                'in-sample')
-        _c = _dd_src.cumsum()
-        _dd = np.expm1(_c - _c.cummax())
-        _mdd = float(_dd.min())
-        _trough = _dd.idxmin()
-        _peak = _c.loc[:_trough].idxmax()
-        _w5 = float(np.expm1(_dd_src.rolling(5).sum()).min())
-        path_stats = {'max_drawdown': _mdd, 'peak': _peak, 'trough': _trough,
-                      'worst_5d': _w5, 'source': _dd_lbl}
+            _dd_src = pd.Series(returns_final[target_ticker].values
+                                - returns_final[basket_final].values @ weights_final.values,
+                                index=returns_final.index)
+            _dd_lbl = 'fitted coefficient-only spread'
+        path_stats = _spread_path_stats(_dd_src, two_day, _dd_lbl)
+        _mdd, _peak, _trough = (path_stats[k] for k in ('max_drawdown', 'peak', 'trough'))
+        _w5 = path_stats['worst_5d']
         kv('Hedged drawdown\nworst peak-to-trough of the hedged book',
-           f"{_mdd*100:.1f}% ({_peak:%d%b%y}→{_trough:%d%b%y})"
+           f"{_mdd*100:.1f}% ({_peak.strftime('%d%b%y') if _peak is not None else 'start'}→{_trough:%d%b%y})"
            + (f" · worst 5 days {_w5*100:.1f}%" if np.isfinite(_w5) else ''),
-           f"On the {_dd_lbl} residual. A 1σ figure says how wide the spread "
+           f"On the {_dd_lbl}, using non-overlapping returns. A 1σ figure says how wide the spread "
            f"scatters; this says how far it actually went against a holder "
-           f"before recovering — the number a stop is set against.")
+           f"before recovering. This log-spread path is a proxy, not financed portfolio P&L.")
     except Exception as _e123:
         kv('Hedged drawdown', 'unavailable',
            f"could not be computed ({type(_e123).__name__}: {_e123}) — with no "
@@ -6501,7 +6645,7 @@ def find_best_hedge(
 
     alternatives = {}
     for family, evidence in family_tests.items():
-        choices = _family_configs(summary, family)
+        choices = _family_configs(summary, family, market_tickers)
         if choices.empty:
             continue
         choice = choices.loc[choices['composite'].idxmax()]
@@ -6540,6 +6684,7 @@ def find_best_hedge(
         'trade_risk': trade_risk,
         'unhedged_baseline': {'vol_reduction': 0.0, 'variance_reduction': 0.0},
         'in_sample_r2': r2_final,
+        'basket_candidates': _alt_cache,
         'weights': weights_final, 'basket': basket_final,
         'ranking': final_rank, 'cv_summary': summary, 'cv_detail': cv_df,
         'nested_validation': nested,
@@ -6553,6 +6698,7 @@ def find_best_hedge(
         'nested_unseen_returns': nested_unseen,
         'bootstrap_ci': boot,                          # [Fix 70]
         'rolling_oos': rolling_df,                     # [Fix 71]
+        'rolling_stats': roll_stats,
         'ticket': ticket_info,                         # [Fix 72]
         'nowcast': nowcast,                            # [Fix 93]
         'target_label': target_short,                  # [Fix 103] for export
@@ -6581,6 +6727,7 @@ def find_best_hedge(
         'pit_members_active': pm_active,               # [Fix 49]
         'params': {'lookback': best_lookback, 'pc_spec': best_pc_spec,
                    'basket_size': best_bsize, 'hedge_objective': hedge_objective, 'broad_search': broad_search,
+                       'recency_weight': recency_weight,
                    'tz_tolerance_hours': tz_tolerance_hours,
                    'min_mktcap_usd_mm': min_mktcap_usd_mm,
                    'gross_penalty': gross_penalty, 'max_gross': max_gross,
@@ -6599,6 +6746,390 @@ def find_best_hedge(
     }
 
 
+
+
+def _report_number(value, percent=False):
+    if value is None or not np.isfinite(value):
+        return '—'
+    return f'{value*100:.1f}%' if percent else f'{value:.3f}'
+
+
+def _market_reference_duplicates_etf(result):
+    alternatives = result.get('hedge_alternatives') or {}
+    etf, market = alternatives.get('single_etf'), alternatives.get('single_market')
+    if etf is None or market is None:
+        return False
+    return (etf['weights'].equals(market['weights'])
+            and np.allclose(etf['unseen_r2'], market['unseen_r2'], equal_nan=True))
+
+
+def _basket_report_rows(result):
+    """Distinct current recipes, ordered by training/CV selection score.
+
+    Alternative outer scores are conditional configuration diagnostics, never
+    relabelled as independent nested selection results or new recommendations.
+    """
+    rows, seen = [], set()
+    for entry in result.get('basket_candidates') or []:
+        weights = entry.get('w')
+        if weights is None or len(weights) < 2:
+            continue
+        fingerprint = tuple(sorted((t, round(float(x), 5)) for t, x in weights.items()))
+        if fingerprint in seen:
+            continue
+        seen.add(fingerprint)
+        rows.append({'number': len(rows) + 1, 'selected': bool(entry.get('sel')),
+                     'weights': weights.copy(), 'lookback': entry['lb'],
+                     'method': str(entry['ps']), 'basket_size': len(weights),
+                     'cv_r2': float(entry['cfg'].get('avg_r2_oos', np.nan)),
+                     'conditional_r2': entry.get('r2m', np.nan),
+                     'conditional_vol_reduction': entry.get('vrm', np.nan),
+                     'n_windows': entry.get('n', 0),
+                     'in_sample_r2': entry.get('r2_in', np.nan),
+                     'cv_std': entry['cfg'].get('std_r2_oos', np.nan),
+                     'cv_vol_cut': entry['cfg'].get('avg_vol_red', np.nan),
+                     'rolling': entry.get('roll') or {},
+                     'gross': float(weights.abs().sum())})
+    return rows
+
+
+
+def _report_method(spec):
+    label = str(spec)
+    if label in ('forward', 'correlation'):
+        return {'forward': 'Forward selection', 'correlation': 'Correlation'}[label]
+    if label == 'auto':
+        return 'PCA auto PCs'
+    if label.startswith('single:'):
+        return 'Single instrument'
+    return f'PCA {label} PCs'
+
+def _report_blocks(result):
+    """Shared notebook and Word analysis, with explicit evidence sources."""
+    blocks = []
+    def title(text): blocks.append(dict(kind='title', text=text))
+    def section(text): blocks.append(dict(kind='section', text=text))
+    def text(value, muted=False): blocks.append(dict(kind='text', text=value, muted=muted))
+    def table(headers, rows, label=None, widths=None):
+        if rows:
+            blocks.append(dict(kind='table', headers=headers, rows=rows, title=label, widths=widths))
+    def recipe(weights, label=None):
+        table(['ACTION', 'PER $100 TARGET', 'INSTRUMENT'], [
+            ['SHORT' if x > 0 else 'LONG', f'${abs(x)*100:.1f}', t]
+            for t, x in weights.sort_values(key=lambda x: -x.abs()).items()], label, [1.0, 1.35, 4.65])
+    p, t = result['params'], result['ticket']
+    fmt = _report_number
+    risk = result.get('trade_risk') or {}
+    span = result.get('analysis_span')
+    window = p.get('sample_window') or 'all downloaded history'
+    title(f"Hedge analysis for {result['target_label']}")
+    if result.get('illustrative_sample'):
+        text('ILLUSTRATIVE SAMPLE — simulated prices and instruments, not live market data or a hedge recommendation.')
+    if span:
+        text(f"Analysis window {window} · {span[0]:%d %b %Y} to {span[1]:%d %b %Y} · {span[2]} return rows", True)
+    text(t['grade'])
+    for reason in t.get('reasons') or []:
+        text(reason)
+    table(['EVIDENCE', 'UNSEEN R²', 'VOLATILITY CUT', 'FITTED R²'], [[
+        result['validation_mode'], fmt(t.get('quality_r2')),
+        fmt(risk.get('vol_reduction'), True), fmt(result.get('in_sample_r2'))]])
+    scope = 'Peers only' if p['candidate_scope'] == 'peers' else 'All eligible candidates'
+    if p['candidate_scope'] == 'peers' and p['include_broad_market']:
+        scope = 'Peers plus local market ETF'
+    text(f"Universe: {scope} · Basket sizes: {', '.join(map(str, result['requested_basket_sizes']))}", True)
+    section(('Primary basket' if result['primary_hedge_family'] == 'basket' else 'Pinned hedge reference')
+            if result.get('trade_eligible') else 'Candidate recipe — not approved')
+    if result.get('fallback_reason'):
+        text(result['fallback_reason'])
+    recipe(result['weights'])
+    text(f"Gross hedge ${result['weights'].abs().sum()*100:.1f} per $100 target · "
+         f"Net hedge coefficient {result['weights'].sum():+.3f} · "
+         f"Method {_report_method(p.get('pc_spec'))} · Training rows {p.get('lookback')}", True)
+
+    summary = result.get('cv_summary')
+    if isinstance(summary, pd.DataFrame) and len(summary) and 'avg_vol_red' in summary:
+        current = summary[(summary['lookback'] == p['lookback']) &
+                          (summary['pc_spec'].astype(str) == str(p['pc_spec'])) &
+                          (summary['basket_size'] == p['basket_size'])]
+        if len(current):
+            selected = current.iloc[0]
+            table(['TRAINING SELECTION DIAGNOSTIC', 'VALUE'], [
+                ['Mean CV volatility reduction', fmt(selected.get('avg_vol_red'), True)],
+                ['CV volatility reduction standard deviation', fmt(selected.get('std_vol_red'), True)],
+                ['Mean CV tracking R²', fmt(selected.get('avg_r2_oos'))],
+                ['Recent CV tracking R²', fmt(selected.get('recent_r2'))],
+                ['Recent CV volatility reduction', fmt(selected.get('recent_vol_red'), True)],
+                ['Selection score after penalties', fmt(selected.get('composite'))]])
+            text('These CV scores selected the current configuration; the independent evaluation appears below. '
+                 'The score is a ranking heuristic, not a probability or confidence bound.', True)
+    section('Validation and residual risk')
+    mode = result['validation_mode']
+    text(f"{mode}: {TIER_MEANING.get(mode, 'inspect the available validation evidence')}", True)
+    quality = t.get('quality_r2')
+    if quality is not None and np.isfinite(quality) and quality < 0:
+        text('Negative unseen tracking R²: prediction errors exceeded the test-period average-return '
+             'benchmark. This candidate is not a recommended hedge.')
+    if risk.get('n_observations'):
+        table(['RISK MEASURE', 'VALUE'], [
+            ['Unhedged target volatility annualised', fmt(risk.get('unhedged_vol_ann'), True)],
+            ['Coefficient-only spread volatility annualised', fmt(risk.get('hedged_vol_ann'), True)],
+            ['Volatility reduction', fmt(risk.get('vol_reduction'), True)],
+            ['Variance reduction', fmt(risk.get('variance_reduction'), True)],
+            ['Mean spread return per observation', f"{risk['spread_mean_per_observation']*1e4:+.1f} bp"],
+            ['Scored unseen observations', risk.get('n_observations', '—')]])
+    nested = result.get('nested_validation')
+    if isinstance(nested, pd.DataFrame) and len(nested):
+        table(['TEST DATES', 'ROWS IN FIT', 'NAMES', 'UNSEEN R²', 'VOL CUT'], [
+            [f"{row['start']:%d %b %y}–{row['end']:%d %b %y}", row['lookback'], row['basket_size'],
+             fmt(row['r2_oos']), fmt(row['vol_red_oos'], True)]
+            for _, row in nested.sort_values('start').iterrows()], 'Nested selection windows', [2.0, 1.25, .7, 1.5, 1.55])
+        text('Each nested window repeats selection and fitting using earlier data. The headline R² pools '
+             'the unseen errors; it is not the average of these window scores.', True)
+    elif np.isfinite(result.get('holdout_r2', np.nan)):
+        text(f"One reserved holdout: R² {fmt(result['holdout_r2'])}. This is limited evidence from one test period.", True)
+    else:
+        text('No complete unseen validation is available. The fitted basket is a reference for further investigation.', True)
+    if np.isfinite(t.get('worst_window_r2', np.nan)):
+        text(f"Worst nested window R² {fmt(t['worst_window_r2'])} · "
+             f"Worst nested window tracking error {fmt(t.get('worst_window_te'), True)} annualised", True)
+    boot = result.get('bootstrap_ci')
+    if boot:
+        text(f"Nested R² 95% block-bootstrap interval [{boot['r2_lo']:.3f}, {boot['r2_hi']:.3f}]. "
+             'It resamples the observed errors and does not rerun model selection or establish future certainty.', True)
+    adj = result.get('in_sample_r2_adj', np.nan)
+    if np.isfinite(adj):
+        text(f"Adjusted fitted complexity score {adj:.3f}: nominal regressor-count penalty, "
+             'not Ridge effective degrees of freedom or unseen evidence.', True)
+
+    candidates = result.get('basket_comparison') or []
+    if candidates:
+        section('Alternative baskets')
+        if mode in ('IN-SAMPLE', 'HOLDOUT'):
+            text('Short-window baskets are ranked on fitted training data; the reserved holdout, when '
+                 'available, is not used to rank alternatives. No CV or independent alternative scores exist.', True)
+            table(['BASKET', 'NAMES', 'TRAINING ROWS', 'METHOD', 'FITTED R²'], [
+                [str(row['number']) + (' selected' if row['selected'] else ''), row['basket_size'],
+                 row['lookback'], _report_method(row['method']), fmt(row['in_sample_r2'])] for row in candidates])
+        else:
+            text('Ranked using training and CV data. Diagnostic R² is the mean of fixed-configuration '
+                 'test windows; selection bias remains. A displayed alternative is not independently approved.', True)
+            table(['BASKET', 'NAMES', 'METHOD', 'CV VOL CUT', 'CV R²', 'DIAGNOSTIC R²'], [
+                [str(row['number']) + (' selected' if row['selected'] else ''), row['basket_size'],
+                 _report_method(row['method']), fmt(row['cv_vol_cut'], True), fmt(row['cv_r2']), fmt(row['conditional_r2'])]
+                for row in candidates], widths=[1.2, .6, 1.5, 1.1, 1.0, 1.6])
+        for row in candidates:
+            if row['selected']:
+                continue
+            recipe(row['weights'], f"Alternative basket {row['number']}")
+            text(f"Training rows {row['lookback']} · Gross {row['gross']:.2f}× · Fitted R² {fmt(row['in_sample_r2'])} · "
+                 + (f"Diagnostic mean vol cut {fmt(row['conditional_vol_reduction'], True)} · "
+                    f"Complete diagnostic windows {row['n_windows']}" if mode not in ('IN-SAMPLE', 'HOLDOUT')
+                    else 'Fitted training reference only'), True)
+
+    section('Best basket and single-instrument hedges')
+    text('The basket is the primary hedge; single instruments are references. Scores use the same '
+         'test periods and repeat each family’s selection before the test.', True)
+    text(result['market_reference_status'], True)
+    for family, label in [('single_stock', 'Best single stock'), ('single_etf', 'Best single ETF'),
+                          ('single_market', 'Local broad market ETF')]:
+        if _market_reference_duplicates_etf(result):
+            if family == 'single_market': continue
+            if family == 'single_etf': label = 'Best single ETF and local market reference'
+        item = result.get('hedge_alternatives', {}).get(family)
+        if item is None:
+            if family != 'single_market': text(label + ': unavailable under these settings', True)
+            continue
+        table(['ACTION', 'PER $100', 'INSTRUMENT', 'UNSEEN R²', 'VOL CUT'], [
+            ['SHORT' if x > 0 else 'LONG', f'${abs(x)*100:.1f}', name, fmt(item['unseen_r2']),
+             fmt(item['trade_risk'].get('vol_reduction'), True)] for name, x in item['weights'].items()],
+            label, [.8, 1.0, 3.0, 1.1, 1.1])
+        text(item['status'], True)
+
+    section('Stability and recent conditions')
+    roll = result.get('rolling_stats') or {}
+    if roll:
+        table(['SELECTED CONFIGURATION', 'LATEST', 'MEDIAN', 'WORST'], [
+            ['Rolling tracking R²', fmt(roll.get('r2_latest')), fmt(roll.get('r2_median')), fmt(roll.get('r2_worst'))],
+            ['Rolling regression tracking error', fmt(roll.get('te_latest'), True), fmt(roll.get('te_median'), True), fmt(roll.get('te_worst'), True)]],
+            widths=[2.8, 1.4, 1.4, 1.4])
+        text(f"{roll['n_days']} scored rows · {roll['n_segments']} refits · {roll['n_skipped']} skipped segments. "
+             'Rolling weights are fitted before each segment; the configuration was selected using the full analysis window.', True)
+        frame = result['rolling_oos']
+        spread_vol = frame.get('spread_vol_roll', pd.Series(dtype=float)).dropna()
+        if len(spread_vol):
+            text(f"Latest rolling coefficient-only spread volatility {fmt(spread_vol.iloc[-1], True)} annualised. "
+                 'Regression error removes a fitted intercept and can differ across refits.', True)
+    else:
+        text('Rolling stability is unavailable or disabled; short windows may have insufficient history.', True)
+    now = result.get('nowcast') or {}
+    if now:
+        text(f"Condition flag {now['condition']} · Latest selected-configuration test R² {fmt(now.get('latest_window_r2'))}. "
+             'This descriptive flag is a heuristic; its signals can be related.', True)
+        for reason in now.get('why') or []: text(reason, True)
+    turn = result.get('turnover') or {}
+    if turn:
+        text(f"Name overlap {fmt(turn['mean_jaccard'], True)} · Coefficient similarity {fmt(turn['mean_cosine'])} · "
+             f"{turn['n_refits']} refits. These measure stability, not execution costs.", True)
+    decay = result.get('decay') or {}
+    if decay:
+        table(['WEIGHT AGE ROWS', 'TRACKING ERROR ANNUALISED'],
+              [[age, fmt(te, True)] for age, te in decay['te_by_interval']], 'Weight staleness on matched dates')
+        text(f"Compared on {decay['n_rows']} common rows. Indicative refit interval {decay['rec_rows']} rows "
+             'uses a 15% deterioration threshold, a chosen heuristic.', True)
+
+    section('Remaining exposures and downside behaviour')
+    factors = result.get('factor_leakage')
+    if isinstance(factors, pd.DataFrame) and len(factors):
+        table(['FACTOR', 'TARGET BETA', 'SPREAD BETA'], [
+            [r['factor'], f"{r['target_beta']:+.3f}", f"{r['residual_beta']:+.3f}"]
+            for _, r in factors.iterrows()])
+        text('Fitted diagnostic using sequentially orthogonalised factors from this universe. '
+             'Betas depend on factor construction and ordering; they are not causal or unseen estimates.', True)
+    else:
+        text('Factor diagnostics unavailable: too few eligible factor instruments or stock peers.', True)
+    exposure = result.get('exposures') or {}
+    if exposure.get('tags'):
+        text('Taxonomy exposures: ' + ', '.join(exposure['tags']), True)
+    if exposure.get('unresolved'):
+        text('Missing mapped exposure instruments: ' + ', '.join(sorted(exposure['unresolved'])), True)
+    tail = result.get('asymmetry') or {}
+    if tail:
+        text(f"Fitted spread on target’s worst 10% of observations: {tail['worst_decile_mean']*1e4:+.1f} bp "
+             f"vs {tail['best_decile_mean']*1e4:+.1f} bp on its best 10% · {tail['n_worst']} worst observations. "
+             'Descriptive tail averages do not establish crisis protection.', True)
+    path = result.get('path') or {}
+    if path:
+        text(f"Spread path drawdown {fmt(path['max_drawdown'], True)} · Source {path['source']} · "
+             f"{path['n_observations']} non-overlapping observations. A log-spread proxy, not financed portfolio P&L.", True)
+        if np.isfinite(path.get('worst_5d', np.nan)):
+            text(f"Worst five-day spread proxy {fmt(path['worst_5d'], True)}", True)
+    if not tail and not path:
+        text('Tail and path statistics unavailable for this run.', True)
+
+    section('Search settings and data quality')
+    search = result.get('search') or {}
+    table(['SETTING', 'THIS RUN'], [
+        ['Candidate scope', scope],
+        ['Selection objective', 'Volatility reduction' if p['hedge_objective'] == 'variance' else 'Return tracking with risk reduction'],
+        ['Recency weighting', p.get('recency_weight', 0)],
+        ['Configurations scored', search.get('configurations_scored', '—')],
+        ['Single instruments scored as references', search.get('single_instruments_scored', '—')],
+        ['Basket search methods', ', '.join(search.get('basket_methods') or [])],
+        ['PCA covariance', p.get('robust_cov', '—')],
+        ['PCA selection outlier clipping', fmt(p.get('winsorize_pct'), True)],
+        ['Gross penalty and cap', f"{p.get('gross_penalty', 0):g} per 1×; cap {p.get('max_gross') or 'off'}"],
+        ['Returns', 'Overlapping two-day observations' if result.get('two_day_returns') else 'Daily observations'],
+        ['Historical size and membership filters', f"Size {'active' if result.get('pit_size_active') else 'inactive'}; "
+         f"membership {'active' if result.get('pit_members_active') else 'inactive'}"]])
+    affected = False
+    for field, label in [('training_data_diagnostics', 'Training'), ('evaluation_data_diagnostics', 'Validation')]:
+        audit = result.get(field)
+        if isinstance(audit, pd.DataFrame) and len(audit):
+            affected = True
+            text(f"{label}: {len(audit)} data-quality audit records. Missing target observations "
+                 'use a common date mask; incomplete candidate windows remain failures. Full dates and reasons are retained in result diagnostics.', True)
+    if not affected: text('No missing-target window audit records on this run.', True)
+    removed = result.get('excluded') or []
+    if removed: text(f"Excluded instruments: {len(removed)}; retained in result['excluded'].", True)
+    text('Search is limited to the supplied eligible universe and tested configurations. PCA finds shared '
+         'return directions; it does not guarantee the best possible hedge. Unseen evaluation is kept separate '
+         'from the data used to select the current recipe.', True)
+    text('Alternative basket scores retain selection bias. Prices use each instrument’s own currency; '
+         'costs, borrow, financing and FX conversion are not modelled. Current universe discovery can introduce '
+         'survivorship bias even when historical filters are enabled.', True)
+    text(f"Engine revision {result.get('engine_revision')}", True)
+    return blocks
+
+
+def _render_compact_sections(result):
+    for block in _report_blocks(result):
+        if block['kind'] in ('title', 'section'):
+            _section(block['text'].upper())
+        elif block['kind'] == 'text':
+            _P(block['text'])
+        else:
+            _print_table(block['headers'], block['rows'], title=block.get('title'))
+
+
+def _render_compact_report(result):
+    """One notebook document with consistent typography and readable widths."""
+    global _ipy_display
+    if not _IN_JUPYTER:
+        return _render_compact_sections(result)
+    fragments = []
+    original = _ipy_display
+    _ipy_display = lambda item: fragments.append(item.data)
+    try:
+        _render_compact_sections(result)
+    finally:
+        _ipy_display = original
+    original(_HTML('<div class="pca-report" style="font-family:Arial,sans-serif;'
+                   'max-width:980px;padding:8px 20px 20px;color:#243447;'
+                   'background:#fff;border:1px solid #e4e9ef;border-radius:8px;'
+                   'overflow-x:auto">' + ''.join(fragments) + '</div>'))
+
+
+from functools import wraps as _wraps
+
+
+@_wraps(_find_best_hedge_impl)
+def find_best_hedge(*args, **kwargs):
+    """Existing API with a structured default report and an optional diagnostic log."""
+    import contextlib
+    import inspect
+    import io
+    global _IN_JUPYTER
+    bound = inspect.signature(_find_best_hedge_impl).bind(*args, **kwargs)
+    bound.apply_defaults()
+    options = bound.arguments
+    if options['report'] not in ('compact', 'full'):
+        raise ValueError("report must be 'compact' or 'full'")
+    compact = options['report'] == 'compact'
+    old_jupyter, capture = _IN_JUPYTER, io.StringIO()
+    if compact:
+        _IN_JUPYTER = False
+    try:
+        from IPython.utils.capture import capture_output
+    except ImportError:
+        capture_output = None
+    rich_capture = (capture_output(stdout=False, stderr=False, display=True)
+                    if compact and capture_output else contextlib.nullcontext())
+    try:
+        with rich_capture as rich:
+            with contextlib.redirect_stdout(capture) if compact else contextlib.nullcontext():
+                result = _find_best_hedge_impl(*args, **kwargs)
+    finally:
+        _IN_JUPYTER = old_jupyter
+    result['full_report'] = transcript_text()
+    result['diagnostic_log'] = capture.getvalue() if compact else result['full_report']
+    scope = options['candidate_scope']
+    market = options['include_broad_market']
+    market = scope == 'all' if market is None else bool(market)
+    result['params'].update(candidate_scope=scope, include_broad_market=market,
+                            peer_tickers=options['peer_tickers'],
+                            basket_size_range=options['basket_size_range'],
+                            restrict_to_target_tz=options['restrict_to_target_tz'],
+                            exclude=options['exclude'])
+    result['requested_basket_sizes'] = _basket_sizes(options['basket_size_options'], options['basket_size_range'])
+    result['basket_comparison'] = _basket_report_rows(result)
+    result['broad_markets'] = [_broad_market_spec(t) for t in result['portfolio_legs']]
+    result['broad_market_hedge'] = result.get('hedge_alternatives', {}).get('single_market')
+    benchmark = '; '.join(dict.fromkeys(m['benchmark'] for m in result['broad_markets']))
+    if not market:
+        status = 'Local broad market ETF: disabled for this run'
+    elif result['broad_market_hedge'] is not None:
+        status = 'Local broad market ETF: ' + benchmark
+    else:
+        status = 'Local broad market ETF unavailable after data and eligibility filters: ' + benchmark
+    result['market_reference_status'] = status
+    if compact:
+        transcript_reset()
+        _kv_reset()
+        _render_compact_report(result)
+        for output in getattr(rich, 'outputs', ()):
+            output.display()
+    result['report_text'] = transcript_text()
+    return result
 
 
 # ── [Fix 63] FAST RE-HEDGE — for books that change daily ────────────────────
@@ -6633,6 +7164,10 @@ def quick_rehedge(book, data, prev_result, show_plots=True, rolling_oos=True,
         lookback_options=(p['lookback'],),
         pc_options='auto' if p['pc_spec'] == 'auto' else [p['pc_spec']],
         broad_search=False,
+        candidate_scope=p.get('candidate_scope', 'all'),
+        include_broad_market=p.get('include_broad_market'),
+        peer_tickers=p.get('peer_tickers'),
+        basket_size_range=(p['basket_size'], p['basket_size']) if p.get('basket_size_range') else None,
         basket_size_options=(p['basket_size'],),
         min_mktcap_usd_mm=p['min_mktcap_usd_mm'],
         tz_tolerance_hours=p['tz_tolerance_hours'],
@@ -6701,7 +7236,7 @@ _UI_CSS = """
   font-weight: 600 !important; letter-spacing: .01em;
 }
 .hedge-ui input, .hedge-ui select, .hedge-ui textarea {
-  font-family: 'SF Mono', Menlo, Consolas, monospace !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif !important;
   font-size: 12.5px !important; color: #16222e !important;
   border: 1px solid #cfd8e3 !important; border-radius: 5px !important;
   padding: 3px 7px !important; background: #fdfefe !important;
@@ -6854,288 +7389,122 @@ def _export_folder(out_dir=None):
 
 
 def _docx_hedge_report(result, report_text, path):
-    """[Fix 103] Write the hedge as a Word document a desk can file or send:
-    verdict, the trade as a real table, risk and monitoring, the evidence,
-    the exact settings, and the full text report as an appendix."""
+    """Structured desk report. Detailed transcript appendix is opt-in via full report."""
     from docx import Document
     from docx.shared import Pt, Inches, RGBColor
-    from docx.oxml.ns import qn
     from docx.oxml import OxmlElement
-
-    NAVY = RGBColor(0x16, 0x32, 0x4B)
-    SLATE = RGBColor(0x55, 0x66, 0x77)
-    COL = {'✓': RGBColor(0x1B, 0x6B, 0x3A), '△': RGBColor(0x8A, 0x5A, 0x00),
-           '✗': RGBColor(0x8C, 0x1C, 0x1C), '?': RGBColor(0x3D, 0x46, 0x50)}
+    from docx.oxml.ns import qn
 
     doc = Document()
-    for s in doc.sections:
-        s.top_margin = s.bottom_margin = Inches(0.7)
-        s.left_margin = s.right_margin = Inches(0.8)
+    section = doc.sections[0]
+    section.top_margin = section.bottom_margin = Inches(.65)
+    section.left_margin = section.right_margin = Inches(.75)
+    section.page_width, section.page_height = Inches(8.5), Inches(11)
     base = doc.styles['Normal']
-    base.font.name = 'Calibri'
-    base.font.size = Pt(10.5)
-    base.paragraph_format.space_after = Pt(5)
+    base.font.name, base.font.size = 'Arial', Pt(10)
+    base.font.color.rgb = RGBColor.from_string('243447')
+    base.paragraph_format.space_after = Pt(6)
+    base.paragraph_format.line_spacing = 1.12
+    for style in ('Title', 'Heading 1', 'Heading 2'):
+        doc.styles[style].font.name = 'Arial'
+        props = doc.styles[style].element.get_or_add_pPr()
+        for border in list(props.findall(qn('w:pBdr'))):
+            props.remove(border)
+    doc.styles['Title'].font.color.rgb = RGBColor(0, 0, 0)
+    doc.styles['Title'].font.size = Pt(22)
+    doc.styles['Heading 1'].font.color.rgb = RGBColor.from_string('1F3F66')
+    doc.styles['Heading 1'].font.size = Pt(14)
+    doc.styles['Heading 1'].paragraph_format.space_before = Pt(14)
+    doc.styles['Heading 1'].paragraph_format.space_after = Pt(6)
 
-    def H(txt, size=15, before=14):
-        p = doc.add_paragraph()
-        p.paragraph_format.space_before = Pt(before)
-        p.paragraph_format.space_after = Pt(6)
-        p.paragraph_format.keep_with_next = True
-        r = p.add_run(txt)
-        r.font.size = Pt(size); r.font.bold = True; r.font.color.rgb = NAVY
+    def paragraph(text, muted=False):
+        p = doc.add_paragraph(text)
+        if muted:
+            for run in p.runs:
+                run.font.size = Pt(9)
+                run.font.color.rgb = RGBColor.from_string('5B6B7C')
         return p
 
-    def KV(label, value, color=None):
-        p = doc.add_paragraph()
-        p.paragraph_format.space_after = Pt(2)
-        p.paragraph_format.left_indent = Inches(0.12)
-        r = p.add_run(f"{label}   ")
-        r.font.bold = True; r.font.size = Pt(10)
-        r.font.color.rgb = color or NAVY
-        r2 = p.add_run(str(value)); r2.font.size = Pt(10)
+    def heading(text):
+        return doc.add_paragraph(text, style='Heading 1')
 
-    tk = result.get('ticket') or {}
-    label = result.get('target_label') or 'hedge'
+    def table(headers, rows, widths):
+        t = doc.add_table(rows=1, cols=len(headers))
+        t.autofit = False
+        for col, width in zip(t.columns, widths):
+            col.width = Inches(width)
+        for cell, value in zip(t.rows[0].cells, headers):
+            cell.text = str(value)
+        for values in rows:
+            for cell, value in zip(t.add_row().cells, values):
+                cell.text = str(value)
+        for row_no, row in enumerate(t.rows):
+            tr = row._tr.get_or_add_trPr()
+            tr.append(OxmlElement('w:cantSplit'))
+            if row_no == 0:
+                tr.append(OxmlElement('w:tblHeader'))
+            for cell, width in zip(row.cells, widths):
+                cell.width = Inches(width)
+                props = cell._tc.get_or_add_tcPr()
+                shade = OxmlElement('w:shd')
+                shade.set(qn('w:fill'), '1F3F66' if row_no == 0 else ('F3F6FA' if row_no % 2 else 'FFFFFF'))
+                props.append(shade)
+                margins = OxmlElement('w:tcMar')
+                for edge in ('top', 'left', 'bottom', 'right'):
+                    margin = OxmlElement('w:' + edge)
+                    margin.set(qn('w:w'), '80')
+                    margin.set(qn('w:type'), 'dxa')
+                    margins.append(margin)
+                props.append(margins)
+                for p in cell.paragraphs:
+                    p.paragraph_format.space_after = Pt(0)
+                    p.paragraph_format.line_spacing = 1.05
+                    for run in p.runs:
+                        run.font.name = 'Arial'
+                        run.font.size = Pt(9)
+                        run.font.bold = row_no == 0
+                        run.font.color.rgb = RGBColor.from_string('FFFFFF' if row_no == 0 else '243447')
+        doc.add_paragraph().paragraph_format.space_after = Pt(0)
+        return t
+
+    def recipe(weights):
+        w = weights.sort_values(key=lambda x: -x.abs())
+        table(['Action', 'Per $100 target', 'Instrument'],
+              [['SHORT' if x > 0 else 'LONG', f'${abs(x)*100:.1f}', t] for t, x in w.items()],
+              [1.0, 1.35, 4.65])
+
     params = result.get('params') or {}
-    notional = params.get('notional_mm')
-
-    # ── header ──────────────────────────────────────────────────────────
-    p = doc.add_paragraph(style='Title'); p.paragraph_format.space_after = Pt(1)
-    title_properties = doc.styles['Title'].element.get_or_add_pPr()
-    for border in list(title_properties.findall(qn('w:pBdr'))):
-        title_properties.remove(border)
-    r = p.add_run(f"PCA hedge analysis for {label}")
-    r.font.size = Pt(22); r.font.bold = True; r.font.color.rgb = RGBColor(0, 0, 0)
-    span = result.get('analysis_span')
-    sub = f"{datetime.now():%d %b %Y  %H:%M}"
-    if span:
-        sub += (f"   ·   analysed {span[0]:%d %b %Y} → {span[1]:%d %b %Y} "
-                f"({span[2]} rows)")
-    sub += f"   ·   {result.get('validation_mode', '')} validation"
-    p = doc.add_paragraph(); p.paragraph_format.space_after = Pt(10)
-    r = p.add_run(sub); r.font.size = Pt(9.5); r.font.color.rgb = SLATE
-
-    # ── verdict ─────────────────────────────────────────────────────────
-    grade = tk.get('grade', 'n/a')
-    p = doc.add_paragraph(); p.paragraph_format.space_after = Pt(3)
-    r = p.add_run(grade)
-    r.font.size = Pt(14); r.font.bold = True
-    r.font.color.rgb = COL.get(str(grade)[:1], NAVY)
-    for why in (tk.get('reasons') or [])[:4]:
-        b = doc.add_paragraph(style='List Bullet')
-        b.paragraph_format.left_indent = Inches(0.3)
-        b.paragraph_format.space_after = Pt(1)
-        b.add_run(str(why)).font.size = Pt(9.5)
-    if tk.get('quality_r2') is not None and np.isfinite(tk['quality_r2']):
-        boot = result.get('bootstrap_ci') or {}
-        q = (f"pooled out-of-sample R² {tk['quality_r2']:.2f} "
-             f"({tk.get('quality_source', '')})")
-        if boot:
-            q += f"   ·   95% CI [{boot['r2_lo']:.2f}, {boot['r2_hi']:.2f}]"
-        if np.isfinite(tk.get('worst_window_r2', np.nan)):
-            q += f"   ·   worst window {tk['worst_window_r2']:.2f}"
-        KV('QUALITY', q)
-        if boot:
-            doc.add_paragraph('The 95% interval resamples observed test errors in blocks. '
-                              'It conditions on the observed fits and does not include '
-                              'all uncertainty from refitting or searching candidates.')
-
-    for field, heading in [('training_data_diagnostics', 'Training data coverage'),
-                           ('evaluation_data_diagnostics', 'Validation data coverage')]:
-        audit = result.get(field)
-        if isinstance(audit, pd.DataFrame) and len(audit):
-            KV(heading, f'{len(audit)} windows contained missing target returns; '
-                        'counts and dates are recorded in the analysis log/result.')
-    if result.get('engine_revision'):
-        KV('Engine revision', result['engine_revision'])
-
-    # ── the trade ───────────────────────────────────────────────────────
-    H('Candidate recipe' if result.get('trade_eligible') else 'Candidate recipe not approved')
-    w = result['weights'].sort_values(key=lambda s: -s.abs())
-    cols = ['ACTION', 'PER $100', 'INSTRUMENT', 'FULL TICKER']
-    if notional:
-        cols.insert(2, f'${notional:g}mm')
-    t = doc.add_table(rows=1, cols=len(cols))
-    t.style = 'Light Grid Accent 1'
-    for i, c in enumerate(cols):
-        cell = t.rows[0].cells[i]
-        cell.text = c
-        for run in cell.paragraphs[0].runs:
-            run.font.bold = True; run.font.size = Pt(9)
-    forced = set(result.get('force_included') or [])
-    for tkr, val in w.items():
-        row = t.add_row().cells
-        vals = ['SHORT' if val > 0 else 'LONG',
-                f"${abs(val)*100:,.1f}",
-                tkr.split(' ')[0] + (' ★' if tkr in forced else ''),
-                tkr]
-        if notional:
-            vals.insert(2, f"${abs(val)*notional:,.2f}mm")
-        for i, v in enumerate(vals):
-            row[i].text = str(v)
-            for run in row[i].paragraphs[0].runs:
-                run.font.size = Pt(9)
-    gross, net = w.abs().sum()*100, w.sum()*100
-    KV('Exposure', f"gross ${gross:,.1f} · net "
-                   f"{'short' if net >= 0 else 'long'} ${abs(net):,.1f} "
-                   f"per $100 of "
-                   f"{'gross book' if result.get('is_portfolio') else label}")
-
-    alternatives = result.get('hedge_alternatives') or {}
-    if alternatives:
-        H('Primary basket and single instrument references')
-        table = doc.add_table(rows=1, cols=5)
-        table.style = 'Light Grid Accent 1'
-        table.autofit = False
-        for column, width in zip(table.columns, [.8, 3.0, .7, .8, 1.6]):
-            column.width = Inches(width)
-        headers = ['CANDIDATE', 'REFERENCE WEIGHTS / $100', 'UNSEEN R²', 'VOL CUT', 'STATUS']
-        for cell, value in zip(table.rows[0].cells, headers):
-            cell.text = value
-        for family, name in [('basket', 'Basket'), ('single_stock', 'Single stock reference'), ('single_etf', 'Single ETF reference')]:
-            item = alternatives.get(family)
-            if item is None:
-                values = [name, 'Unavailable', '—', '—', 'No eligible candidate']
-            else:
-                weights = item['weights']
-                recipe = '; '.join(f'{"SHORT" if x > 0 else "LONG"} ${abs(x)*100:.1f} {ticker}'
-                                   for ticker, x in weights.items())
-                q = item['unseen_r2']
-                vr = item['trade_risk'].get('vol_reduction', np.nan)
-                values = [name, recipe, f'{q:.3f}' if np.isfinite(q) else '—',
-                          f'{vr*100:.1f}%' if np.isfinite(vr) else '—', item['status']]
-            for cell, value in zip(table.add_row().cells, values):
-                cell.text = value
-        for row in table.rows:
-            for cell in row.cells:
-                for paragraph in cell.paragraphs:
-                    for run in paragraph.runs:
-                        run.font.size = Pt(8)
-            cant_split = OxmlElement('w:cantSplit')
-            row._tr.get_or_add_trPr().append(cant_split)
-        repeat_header = OxmlElement('w:tblHeader')
-        table.rows[0]._tr.get_or_add_trPr().append(repeat_header)
-        doc.add_paragraph('Unseen results test each selection procedure on later data. '
-                          'The basket is the primary hedge; single stocks and ETFs are references. '
-                          'Failed and in-sample candidates are not validated recommendations.')
-
-    # ── risk & monitoring ───────────────────────────────────────────────
-    H('Risk and monitoring')
-    nc = result.get('nowcast') or {}
-    hz = result.get('horizon') or {}
-    if np.isfinite(tk.get('worst_window_te', np.nan)):
-        line = f"hedged vol {tk['worst_window_te']*100:.1f}%/yr (worst " \
-               f"nested window; historical risk reference)"
-        if notional:
-            line += (f"  ≈ ±{_fmt_money_mm(tk['worst_window_te']*notional)}"
-                     f"/yr 1σ")
-        KV('NESTED RISK REFERENCE', line)
-    if nc:
-        KV('SELECTED-CONFIG CONDITION', f"{nc.get('condition')} — "
-                        + '; '.join(nc.get('why') or ['within its observed range']))
-        doc.add_paragraph('This condition describes tracking error relative to the '
-                          'selected configuration’s history. It does not override the '
-                          'validation verdict or constitute a sizing recommendation.')
-    if hz:
-        line = (f"1σ slippage over {hz['days']} trading days ≈ "
-                f"±{hz['sigma_pct']*100:.2f}%")
-        if notional:
-            line += f" ≈ ±{_fmt_money_mm(hz['sigma_pct']*notional)}"
-        KV('HORIZON', line)
-        blk = hz.get('blocks')
-        if blk:
-            KV(f"{hz['days']}-DAY HOLDS",
-               f"{blk['n']} non-overlapping holds: median TE "
-               f"{blk['te_median']*100:.1f}%, worst {blk['te_worst']*100:.1f}"
-               f"%/yr; risk cut in {blk['share_helped']*100:.0f}% of them")
-        if hz.get('refits_needed') is not None:
-            KV('REFITS', 'none needed within the horizon'
-               if hz['refits_needed'] <= 0
-               else f"plan ~{hz['refits_needed']} re-hedge(s) during the hold")
-    if np.isfinite(tk.get('kill_switch_te', np.nan)):
-        KV('MONITOR', f"refit or cut if rolling 21-row tracking error "
-                      f"exceeds {tk['kill_switch_te']*100:.1f}%/yr")
-
-    # ── evidence ────────────────────────────────────────────────────────
-    det = result.get('outer_window_detail')
-    if det is not None and len(det):
-        H('Selected-configuration windows')
-        explanation = doc.add_paragraph('Weights use earlier data, but this configuration was chosen '
-                          'using the full history. Selection bias remains; these windows '
-                          'do not replace the nested selection-procedure test.')
-        explanation.paragraph_format.keep_with_next = True
-        t2 = doc.add_table(rows=1, cols=5)
-        t2.style = 'Light Grid Accent 1'
-        for i, c in enumerate(['WINDOW', 'DATES', 'OOS R²', 'VOL RED',
-                               'TARGET VOL']):
-            t2.rows[0].cells[i].text = c
-            for run in t2.rows[0].cells[i].paragraphs[0].runs:
-                run.font.bold = True; run.font.size = Pt(9)
-        for _, rw in det.iterrows():
-            cells = t2.add_row().cells
-            for i, v in enumerate([
-                    f"{int(rw['window'])}"
-                    + (' (latest)' if rw['window'] == 1 else ''),
-                    f"{rw['start']:%d %b} – {rw['end']:%d %b %y}",
-                    f"{rw['r2']:.3f}", f"{rw['vol_red']*100:.1f}%",
-                    f"{rw['tgt_vol']*100:.1f}%"]):
-                cells[i].text = v
-                for run in cells[i].paragraphs[0].runs:
-                    run.font.size = Pt(9)
-    bits = []
-    if np.isfinite(result.get('nested_pooled_r2', np.nan)):
-        bits.append(f"nested pooled OOS R² {result['nested_pooled_r2']:.3f}")
-    for nm, key in (('correlation-picked ETF', 'etf_nested_r2_mean'),
-                    ('correlation-picked stock', 'name_nested_r2_mean')):
-        v = result.get(key)
-        if v is not None and np.isfinite(v):
-            bits.append(f"{nm} {v:.3f}")
-    if bits:
-        header = OxmlElement('w:tblHeader')
-        t2.rows[0]._tr.get_or_add_trPr().append(header)
-        for row_no, row in enumerate(t2.rows):
-            keep_row = OxmlElement('w:cantSplit')
-            row._tr.get_or_add_trPr().append(keep_row)
-            for cell in row.cells:
-                for paragraph in cell.paragraphs:
-                    paragraph.paragraph_format.keep_with_next = row_no < len(t2.rows)-1
-        KV('VS SIMPLE HEDGES', ' · '.join(bits))
-    dec = result.get('decay') or {}
-    if dec.get('rec_rows'):
-        KV('REBALANCE', f"refit about every {dec['rec_rows']} rows "
-                        f"(measured tracking-error decay)")
-
-    # ── settings ────────────────────────────────────────────────────────
-    H('Settings used')
-    keep = ('lookback', 'pc_spec', 'basket_size', 'hedge_horizon_days',
-            'sample_window', 'min_mktcap_usd_mm', 'notional_mm',
-            'robust_cov', 'winsorize_pct', 'gross_penalty', 'max_gross',
-            'restrict_to_target_tz', 'tz_tolerance_hours', 'mask_stale_days',
-            'force_include', 'size_band')
-    txt = ' · '.join(f"{k}={params[k]}" for k in keep
-                     if params.get(k) is not None)
-    p = doc.add_paragraph(); p.paragraph_format.left_indent = Inches(0.12)
-    r = p.add_run(txt); r.font.size = Pt(8.5); r.font.name = 'Courier New'
-    r.font.color.rgb = SLATE
-
-    # ── appendix ────────────────────────────────────────────────────────
-    if report_text:
-        appendix_heading = H('Full report appendix', size=13, before=0)
-        appendix_heading.paragraph_format.page_break_before = True
-        lines = report_text.split('\n')
-        section = doc.sections[0]
-        width_pt = (section.page_width-section.left_margin-section.right_margin)/12700
-        appendix_size = min(7.2, width_pt/(.62*max(1, max(map(len, lines)))))
-        for line in lines:
-            p = doc.add_paragraph()
-            pf = p.paragraph_format
-            pf.space_after = Pt(0); pf.space_before = Pt(0)
-            pf.line_spacing = 1.0
-            r = p.add_run(line)
-            r.font.name = 'Courier New'
-            r._element.rPr.rFonts.set(qn('w:eastAsia'), 'Courier New')
-            r._element.rPr.rFonts.set(qn('w:cs'), 'Courier New')
-            r.font.size = Pt(appendix_size)
+    for block in _report_blocks(result):
+        kind = block['kind']
+        if kind == 'title':
+            p = doc.add_paragraph(block['text'], style='Title')
+            p.paragraph_format.space_after = Pt(6)
+        elif kind == 'section':
+            h = heading(block['text'].replace(' — ', ' ').replace('-', ' '))
+            if block['text'] == 'Search settings and data quality':
+                h.paragraph_format.page_break_before = True
+        elif kind == 'text':
+            paragraph(block['text'], muted=block.get('muted', False))
+        else:
+            if block.get('title'):
+                p = paragraph(block['title'])
+                p.paragraph_format.keep_with_next = True
+                for run in p.runs:
+                    run.font.bold = True
+            count = len(block['headers'])
+            widths = block.get('widths') or ([2.9, 4.1] if count == 2 else [7.0 / count] * count)
+            table(block['headers'], block['rows'], widths)
+    if params.get('notional_mm'):
+        paragraph(f"Optional target book size ${params['notional_mm']:g} million.", muted=True)
+    if params.get('report') == 'full' and report_text:
+        doc.add_page_break()
+        heading('Diagnostic report appendix')
+        for line in report_text.splitlines():
+            p = doc.add_paragraph(line)
+            p.paragraph_format.space_after = Pt(0)
+            p.paragraph_format.line_spacing = 1
+            for run in p.runs:
+                run.font.name, run.font.size = 'Courier New', Pt(6.5)
     doc.save(path)
     return path
 
@@ -7157,7 +7526,7 @@ def export_result(result, report_text='', out_dir=None, also_csv=True):
     # [Fix 115] In a notebook the report renders as HTML and never reaches
     # stdout, so a caller that captured stdout handed us only the progress
     # lines. The renderers keep their own text copy; prefer it.
-    report_text = report_text or transcript_text()
+    report_text = report_text or result.get('report_text') or transcript_text()
     folder, warn = _export_folder(out_dir)
     if warn:
         print(f"  ⚠ {warn}")
@@ -7198,7 +7567,7 @@ def export_result(result, report_text='', out_dir=None, also_csv=True):
     print(f"  ✓ exported → {written}")
     if also_csv and result.get('hedge_alternatives'):
         rows = []
-        for family in ('basket', 'single_stock', 'single_etf'):
+        for family in ('basket', 'single_stock', 'single_etf', 'single_market'):
             item = result['hedge_alternatives'].get(family)
             if item is None:
                 continue
@@ -7246,7 +7615,7 @@ def hedge_ui(data=None):
 
     # ── Trade tab ───────────────────────────────────────────────────────────
     w_target = W.Textarea(
-        value='AAPL US Equity',
+        value=(data['target'] if data and isinstance(data.get('target'), str) else 'AAPL US Equity'),
         placeholder=("single name:   AAPL US Equity\n"
                      "book (one leg per line, weight optional):\n"
                      "AAPL US Equity, 50\nNVDA US Equity, 30\n"
@@ -7270,13 +7639,14 @@ def hedge_ui(data=None):
         options=[('— not set —', 0), ('1 week (5d)', 5), ('2 weeks (10d)', 10),
                  ('1 month (21d)', 21), ('2 months (42d)', 42),
                  ('3 months (63d)', 63), ('Custom…', -1)],
-        value=21, description='Hedge duration', style=LBL, layout=FULL)
+        value=0, description='Hedge duration', style=LBL, layout=FULL)
     w_horizon_n = W.BoundedIntText(
         value=21, min=1, max=756, step=1, description='trading days',
         style=LBL, layout=HALF)
     w_horizon_hint = W.HTML()
     w_win = W.Dropdown(
-        options=[('Full downloaded history', 'none'), ('Last 3 months', '3m'),
+        options=[('Full downloaded history', 'none'), ('Last 1 month', '1m'),
+                 ('Last 2 months', '2m'), ('Last 3 months', '3m'),
                  ('Last 6 months', '6m'), ('Last 1 year', '1y'),
                  ('Last 2 years', '2y'), ('Custom dates…', 'custom')],
         value='none', description='Analysis window', style=LBL, layout=FULL)
@@ -7285,26 +7655,31 @@ def hedge_ui(data=None):
     w_dates = W.HBox([w_from, w_to])
     w_dates_hint = W.HTML()
     w_tier = W.HTML()
-    w_notional = W.FloatText(value=10.0, description='Book size ($mm)',
+    w_notional = W.FloatText(value=0.0, description='Book size ($mm)',
                              style=LBL, layout=FULL)
 
+    optional_sizing = W.Accordion(children=[W.VBox([
+        HELP('Optional display settings. Neither changes the selected instruments or weights.'),
+        w_notional, w_horizon, w_horizon_n, w_horizon_hint])], selected_index=None)
+    optional_sizing.set_title(0, 'Optional sizing and holding-period risk')
     tab_trade = W.VBox([
-        H('What to hedge'), w_target, w_parsed,
-        H('How long you will hold the hedge'),
-        HELP('risk is quoted over this hold, and the ticket reports what holds '
-             'of that length actually delivered'),
-        w_horizon, w_horizon_n, w_horizon_hint,
-        H('Which period to analyse'),
-        HELP('short windows can only support weaker validation — the line '
-             'below tells you what the chosen window buys BEFORE you run'),
-        w_win, w_dates, w_dates_hint, w_tier,
-        H('Sizing'), w_notional])
+        H('Target'), w_target, w_parsed,
+        H('Past analysis window'), w_win, w_dates, w_dates_hint, w_tier,
+        optional_sizing])
 
     # ── Universe tab ────────────────────────────────────────────────────────
     w_mktcap = W.FloatText(value=1000.0, description='Min mkt cap ($mm)',
                            style=LBL, layout=FULL)
-    w_basket = W.Text(value='2,3,5,7', description='Basket sizes', style=LBL,
-                      layout=FULL)
+    w_scope = W.Dropdown(options=[('All eligible candidates', 'all'), ('Peers only', 'peers')],
+                         value='all', description='Candidate universe', style=LBL, layout=FULL)
+    w_market = W.Checkbox(value=True, description='Include local broad market ETF', indent=False)
+    w_peers = W.Text(value='', description='Manual peer list', style=LBL, layout=FULL,
+                     placeholder='Optional for older caches: 2910 TT, 2911 TT')
+    w_basket_mode = W.Dropdown(options=[('Automatic sizes', 'auto'), ('Require a range or exact size', 'range')],
+                               value='auto', description='Basket size', style=LBL, layout=FULL)
+    w_basket = W.Text(value='2,3,5,7', description='Automatic choices', style=LBL, layout=FULL)
+    w_basket_min = W.BoundedIntText(value=2, min=2, max=50, description='Minimum names', style=LBL, layout=HALF)
+    w_basket_max = W.BoundedIntText(value=5, min=2, max=50, description='Maximum names', style=LBL, layout=HALF)
     w_look = W.Text(value='126,252', description='Lookbacks (days)',
                     style=LBL, layout=FULL)
     w_force = W.Text(value='', placeholder='0050 TT, 2330 TT',
@@ -7319,10 +7694,13 @@ def hedge_ui(data=None):
     w_stale = W.IntText(value=7, description='Missing-price limit', style=LBL,
                         layout=FULL)
     tab_uni = W.VBox([
-        H('Candidate filters'), w_mktcap, w_tz, w_stale,
-        H('Basket construction'), w_basket, w_look,
-        HELP('The primary hedge is a basket of at least two instruments. '
-             'Single stocks and ETFs are evaluated separately as references.'),
+        H('Candidate universe'), w_scope, w_market,
+        HELP('Peers only uses direct Bloomberg peers and matching industry peers. '
+             'The local market ETF is optional. Older caches need a new download or a manual peer list.'),
+        w_peers, w_mktcap, w_tz, w_stale,
+        H('Basket construction'), w_basket_mode, w_basket, W.HBox([w_basket_min, w_basket_max]),
+        HELP('Equal minimum and maximum request an exact number. Required sizes are never shrunk. '
+             'Single instruments remain references.'), w_look,
         H('Manual overrides'),
         HELP('force include = held in every basket (★); exclude = never a '
              'candidate. Short names or full tickers.'),
@@ -7347,7 +7725,7 @@ def hedge_ui(data=None):
                              style=LBL, layout=FULL)
     w_boot = W.IntText(value=2000, description='Bootstrap draws',
                        style=LBL, layout=FULL)
-    w_report = W.Dropdown(options=[('Compact', 'compact'), ('Full', 'full')],
+    w_report = W.Dropdown(options=[('Structured desk analysis', 'compact'), ('Full diagnostic report', 'full')],
                           value='compact', description='Report', style=LBL,
                           layout=FULL)
     w_plots = W.Checkbox(value=True, description='Charts', indent=False)
@@ -7410,7 +7788,7 @@ def hedge_ui(data=None):
         w_expdir, w_expcsv])
 
     tabs = W.Tab(children=[tab_trade, tab_uni, tab_model, tab_data])
-    for i, t in enumerate(('Trade', 'Universe', 'Model', 'Data')):
+    for i, t in enumerate(('Analysis', 'Candidates', 'Advanced', 'Data')):
         tabs.set_title(i, t)
 
     w_fit = W.HTML()
@@ -7677,7 +8055,7 @@ def hedge_ui(data=None):
                      '<br>press <b>Download from Bloomberg</b> in the Data '
                      'tab')
         w_fit.value = (f"<div style='color:{col};font-size:12px;"
-                       f"font-family:Menlo,monospace;margin-top:4px'>{mark} "
+                       f"font-family:Arial,sans-serif;margin-top:4px'>{mark} "
                        f"data: {fit['message']}{extra}</div>")
 
     def _refresh_tier(_=None):
@@ -7692,14 +8070,22 @@ def hedge_ui(data=None):
         try:
             import io as _io
             from contextlib import redirect_stdout as _rso
-            h = _horizon_arg()
-            cvw = int(np.clip(h, 10, 63)) if h else 42
+            size_options, size_range = _basket_args()
+            legs = _coerce_targets(_ui_parse_book(w_target.value))[0]
+            filtered = _filter_candidate_scope(UI_STATE['data'], legs,
+                UI_STATE['data']['prices'].columns, w_scope.value, w_market.value,
+                _ui_list(w_peers.value), _ui_list(w_force.value))
+            sizes = _basket_sizes(size_options, size_range)
+            available = len(filtered['columns']) - len(legs)
+            if not any(2 <= k <= available for k in sizes):
+                raise ValueError(f'Only {available} candidates; requested basket sizes cannot be filled.')
+            cvw = 42
             with _rso(_io.StringIO()):
                 pv = preview_window(
                     UI_STATE['data'], _window_arg(),
                     lookback_options=_ui_ints(w_look.value, (126, 252)),
                     cv_test_window=cvw,
-                    basket_size_options=_ui_ints(w_basket.value, (2, 3, 5, 7)))
+                    basket_size_options=size_options, basket_size_range=size_range)
             mode = pv.get('mode')
             if mode is None:
                 w_tier.value = ("<span style='color:#8c1c1c;font-size:12px'>"
@@ -7709,8 +8095,8 @@ def hedge_ui(data=None):
             col = {'FULL': '#1b6b3a', 'REDUCED': '#1b6b3a',
                    'HOLDOUT': '#8a5a00', 'IN-SAMPLE': '#8c1c1c'}[mode]
             w_tier.value = (
-                f"<div style='color:{col};font-size:12px;font-family:Menlo,"
-                f"monospace'>{pv['sessions']} sessions "
+                f"<div style='color:{col};font-size:12px;font-family:Arial,"
+                f"sans-serif'>{pv['sessions']} sessions "
                 f"({pv['start']:%d %b %Y} → {pv['end']:%d %b %Y}) → "
                 f"<b>{mode}</b><br><span style='color:#555'>"
                 f"{TIER_MEANING[mode]}</span></div>")
@@ -7718,14 +8104,36 @@ def hedge_ui(data=None):
             w_tier.value = (f"<span style='color:#8c1c1c;font-size:12px'>"
                             f"{e}</span>")
 
+    def _basket_args():
+        if w_basket_mode.value == 'range':
+            bounds = (int(w_basket_min.value), int(w_basket_max.value))
+            _basket_sizes((2,), bounds)
+            return (2,), bounds
+        return _ui_ints(w_basket.value, (2, 3, 5, 7)), None
+
+    def _scope_changed(_=None):
+        w_market.value = w_scope.value == 'all'
+        _refresh_tier()
+
+    def _size_changed(_=None):
+        forced_range = w_basket_mode.value == 'range'
+        w_basket.disabled = forced_range
+        w_basket_min.disabled = w_basket_max.disabled = not forced_range
+        _refresh_tier()
+
     def _kwargs():
+        size_options, size_range = _basket_args()
         mg = w_maxgross.value or None
         pcs = str(w_pcs.value).strip().lower()
         return {'hedge_objective': w_objective.value,
                 'min_mktcap_usd_mm': w_mktcap.value,
                 'notional_mm': (w_notional.value or None),
                 'hedge_horizon_days': _horizon_arg(),
-                'basket_size_options': _ui_ints(w_basket.value, (2, 3, 5, 7)),
+                'candidate_scope': w_scope.value,
+                'include_broad_market': w_market.value,
+                'peer_tickers': _ui_list(w_peers.value),
+                'basket_size_options': size_options,
+                'basket_size_range': size_range,
                 'lookback_options': _ui_ints(w_look.value, (126, 252)),
                 'pc_options': ('auto' if pcs in ('', 'auto')
                                else list(_ui_ints(pcs, (3,)))),
@@ -7937,8 +8345,10 @@ def hedge_ui(data=None):
     b_quick.on_click(_guard(on_quick, 're-hedging', 'RE-HEDGE (fast)'))
     b_export.on_click(_guard(on_export, 'writing the report', 'Export Word'))
     b_code.on_click(on_code)
-    for wdg in (w_win, w_from, w_to, w_look, w_basket, w_horizon,
-                w_horizon_n):
+    w_scope.observe(_scope_changed, names='value')
+    w_basket_mode.observe(_size_changed, names='value')
+    for wdg in (w_win, w_from, w_to, w_look, w_basket, w_basket_min, w_basket_max,
+                w_market, w_peers, w_force):
         wdg.observe(_refresh_tier, names='value')
     # [Fix 115] preset ⇄ number box, and the date pickers' enabled state
     w_horizon.observe(_on_horizon_preset, names='value')
@@ -7953,7 +8363,7 @@ def hedge_ui(data=None):
     _on_horizon_preset()
     _seed_dates()
     _dates_hint()
-    _refresh_tier()
+    _size_changed()
     _refresh_fit()
     root = W.VBox([
         W.HTML(_UI_CSS),
@@ -7967,6 +8377,12 @@ def hedge_ui(data=None):
                layout=W.Layout(margin='12px 0 2px 0')),
         w_status, out])
     root.add_class('hedge-ui')
+    UI_STATE['widgets'] = {'candidate_scope': w_scope, 'include_broad_market': w_market,
+                           'basket_mode': w_basket_mode, 'basket_min': w_basket_min,
+                           'basket_max': w_basket_max, 'analysis_window': w_win,
+                           'hedge_horizon': w_horizon, 'notional': w_notional,
+                           'target': w_target, 'run_button': b_run,
+                           'validation_preview': w_tier, 'form': root}
     display(root)
     return UI_STATE
 
@@ -8103,7 +8519,7 @@ def hedge_ui(data=None):
 
 
 
-def compare_history_windows(target, data, windows=('1y', '6m', '3m', '1m'),
+def compare_history_windows(target, data, windows=('1m', '2m', '3m', '6m', '1y'),
                             require_positive_tracking=True, **kwargs):
     """A senior-facing comparison using each PAST period as the analysis window.
 
@@ -8140,7 +8556,7 @@ def compare_history_windows(target, data, windows=('1y', '6m', '3m', '1m'),
                             'vol_reduction': np.nan, 'tracking_oos_r2': np.nan,
                             'evidence': 'Cannot fit', 'status': str(error)})
             continue
-        for family in ('basket', 'single_stock', 'single_etf'):
+        for family in ('basket', 'single_stock', 'single_etf', 'single_market'):
             item = result.get('hedge_alternatives', {}).get(family)
             if item is None:
                 continue

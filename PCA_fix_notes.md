@@ -56,4 +56,20 @@ Further review found required instruments could be dropped when unavailable, and
 
 When singles complete CV but no basket does, usable training data can still produce a fitted basket reference. It is explicitly unvalidated and returns no recommendation weights. The failed CV rows and prior nested diagnostics are retained; they do not become a successful test of this fitted basket. Default form sizes are 2, 3, 5 and 7.
 
-The updated suite has 39 offline regression checks, including stronger-single comparisons, basket-only nested selection, holdout chronology, required-instrument failures, absent ETFs, single-only settings, and pinned basket/single refits. Actual market-data quality and the live Bloomberg session still require the original price cache or a fresh download on the licensed computer.
+The earlier basket revision had 39 offline regression checks, including stronger-single comparisons, basket-only nested selection, holdout chronology, required-instrument failures, absent ETFs, single-only settings, and pinned basket/single refits. Actual market-data quality and the live Bloomberg session still require the original price cache or a fresh download on the licensed computer.
+
+## October 13 candidate controls and presentation
+
+Peers-only filtering uses verified direct Bloomberg and industry matches and applies before all fitting. A local market ETF exception is explicit. Old caches need peer metadata or a manual list; required names cannot bypass the peer filter. Discovery records full peer identities and separate listing-market benchmark metadata.
+
+Inclusive basket ranges are hard constraints; equal bounds enforce an exact count. Requested baskets no longer shrink when candidates are unavailable or grow past the requested size for forced names. Explicit ranges preserve the requested size on short samples without changing their indicative evidence status.
+
+The form adds 1m/2m history presets and collapses optional, initially unset duration/book-size controls. Its validation preview no longer derives CV windows from duration when the engine does not. Rolling refits now check the gross cap. A final fit above that cap remains a rejected diagnostic recipe.
+
+Local market ETF references are scored as their own training-selected family, on the same planned outer periods. The mapping follows listing venue, including US ADRs, and accurately distinguishes Taiwan 50 from TAIEX. Unsupported/missing instruments stay unavailable. Local listing does not remove the need for FX/borrow/cost checks outside the model.
+
+The default notebook and Word reports are concise and structured. Alternative basket recipes and conditional diagnostics are returned explicitly. Equivalent recipes and ETF/market reference displays are deduplicated; the basket remains primary. Full diagnostics remain available, and the Word transcript appendix requires full-report mode.
+
+The suite now has 51 offline checks, including strict peer filtering, discovery provenance, market mapping, range/exact cardinality across CV/nested/refits, optional sizing/preview consistency, quiet download logs, and structured alternative export. These are synthetic/offline checks, not a live-market hedge-quality guarantee.
+
+The structured report retains the informative diagnostics rather than reducing the analysis to a small summary. Notebook and Word use the same labelled evidence blocks. Drawdown and tail diagnostics now use the coefficient-only spread; drawdown includes the initial zero level and avoids overlapping two-day compounding. Rolling results retain both regression errors and tradable coefficient-only spreads. Condition and staleness flags are explicitly described as heuristics.

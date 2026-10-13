@@ -83,8 +83,8 @@ class HedgeSearchTests(unittest.TestCase):
     def test_comparison_is_in_existing_report(self):
         text = self.report
         self.assertIn('BEST BASKET AND SINGLE-INSTRUMENT HEDGES', text)
-        self.assertIn('Best single', text)
-        self.assertIn('stock', text)
+        self.assertIn('BEST SINGLE', text)
+        self.assertIn('STOCK', text)
         self.assertIn('ETF', text)
 
     def test_forward_selection_can_find_complementary_exposures(self):
@@ -262,17 +262,18 @@ class HedgeSearchTests(unittest.TestCase):
                 path = engine['export_result'](self.result, report_text='Offline synthetic validation.', out_dir=folder)
             self.assertEqual(Path(path).suffix, '.docx')
             document = Document(path)
-            text = '\n'.join(cell.text for table in document.tables for row in table.rows for cell in row.cells)
+            text = ('\n'.join(cell.text for table in document.tables for row in table.rows for cell in row.cells)
+                    + '\n' + '\n'.join(p.text for p in document.paragraphs))
             self.assertIn('Basket', text)
-            self.assertIn('Single stock', text)
-            self.assertIn('Single ETF', text)
+            self.assertIn('Best single stock', text)
+            self.assertIn('Best single ETF', text)
             alternatives = pd.read_csv(Path(path).with_suffix('').as_posix() + '_alternatives.csv')
-            self.assertEqual(set(alternatives['candidate_type']), {'basket', 'single_stock', 'single_etf'})
+            self.assertEqual(set(alternatives['candidate_type']), {'basket', 'single_stock', 'single_etf', 'single_market'})
             self.assertTrue(alternatives.loc[alternatives['candidate_type'].str.startswith('single'),
                                              'reference_only'].all())
             self.assertFalse(alternatives.loc[alternatives['candidate_type'].eq('basket'),
                                               'reference_only'].any())
-            self.assertIn('single stocks and ETFs are references', '\n'.join(p.text for p in document.paragraphs))
+            self.assertIn('single instruments are references', '\n'.join(p.text for p in document.paragraphs))
 
     def test_history_comparison_contains_both_forms_for_each_window(self):
         with contextlib.redirect_stdout(io.StringIO()):
@@ -281,7 +282,7 @@ class HedgeSearchTests(unittest.TestCase):
         table = comparison['alternatives_summary']
         self.assertEqual(set(table['period']), {'1y', '6m', '3m', '1m'})
         for period, rows in table.groupby('period'):
-            self.assertEqual(set(rows['candidate_type']), {'basket', 'single_stock', 'single_etf'})
+            self.assertEqual(set(rows['candidate_type']), {'basket', 'single_stock', 'single_etf', 'single_market'})
             self.assertTrue(rows.loc[rows['candidate_type'].str.startswith('single'), 'reference_only'].all())
             self.assertGreaterEqual(len(comparison['diagnostic_results'][period]['weights']), 2)
         rejected = table[~table['qualified'] & ~table['status'].str.contains('INDICATIVE')]
@@ -499,7 +500,7 @@ class HedgeSearchTests(unittest.TestCase):
             run(basket_size_options=(1,))
         sample = data()
         sample['prices'] = sample['prices'].iloc[:, :2]
-        with self.assertRaisesRegex(ValueError, 'No usable primary basket'):
+        with self.assertRaisesRegex(ValueError, 'At least two eligible instruments'):
             run(sample)
 
     def test_required_instrument_cannot_be_ignored_or_dropped(self):
@@ -520,7 +521,7 @@ class HedgeSearchTests(unittest.TestCase):
         self.assertIsNone(result['best_etf'])
         self.assertIsNone(result['best_single_etf_hedge'])
         self.assertIsNotNone(result['best_single_stock_hedge'])
-        self.assertIn('No eligible correlation-picked ETF reference', engine['transcript_text']())
+        self.assertIn('Best single ETF: unavailable', engine['transcript_text']())
 
     def test_single_reference_does_not_change_primary_basket_grade(self):
         for objective in ('variance', 'tracking'):
@@ -532,7 +533,7 @@ class HedgeSearchTests(unittest.TestCase):
             self.assertIn('reference', ' '.join(reasons))
         self.assertNotIn('prefer the simple hedge', self.report)
         self.assertNotIn('take the ETF', self.report)
-        self.assertIn('basket remains primary', self.report)
+        self.assertIn('single instruments are references', self.report)
 
     def test_notebook_engine_matches_script_and_every_cell_parses(self):
         notebook_path = ROOT / 'PCA_fixed.ipynb'
@@ -544,6 +545,188 @@ class HedgeSearchTests(unittest.TestCase):
             if cell['cell_type'] == 'code':
                 ast.parse(''.join(cell['source']))
                 self.assertFalse(cell.get('outputs'))
+
+    def test_peers_only_filters_every_fit_and_reference(self):
+        sample = data()
+        peers = ['2911 TT Equity', '2912 TT Equity']
+        sample['peer_tickers_by_target'] = {'2889 TT Equity': peers}
+        result = run(sample, candidate_scope='peers', basket_size_range=(2, 2))
+        self.assertEqual(set(result['weights'].index), set(peers))
+        self.assertEqual(set(result['prices'].columns), {'2889 TT Equity', *peers})
+        for weights in result['nested_validation']['weights']:
+            self.assertEqual(set(weights.index), set(peers))
+        self.assertIsNone(result['best_single_etf_hedge'])
+        self.assertIsNone(result['broad_market_hedge'])
+        for item in result['hedge_alternatives'].values():
+            self.assertTrue(set(item['weights'].index) <= set(peers))
+
+    def test_peer_filter_fails_closed_for_old_cache_and_conflicting_forced_name(self):
+        with self.assertRaisesRegex(ValueError, 'Peers-only needs verified peer metadata'):
+            run(candidate_scope='peers')
+        peers = ['2910 TT Equity', '2911 TT Equity']
+        manual = run(candidate_scope='peers', peer_tickers=peers, basket_size_range=(2, 2))
+        self.assertEqual(set(manual['weights'].index), set(peers))
+        with self.assertRaisesRegex(ValueError, 'conflict with the candidate filter'):
+            run(candidate_scope='peers', peer_tickers=peers, force_include=['2912 TT Equity'])
+        sample = dict(self.dataset, peer_tickers_by_target={'2889 TT Equity': peers})
+        with self.assertRaisesRegex(ValueError, 'not in the downloaded data'):
+            run(sample, candidate_scope='peers', peer_tickers=['UNKNOWN TT Equity'])
+
+    def test_local_market_exception_is_explicit_and_synchronous(self):
+        sample = dict(self.dataset, peer_tickers_by_target={'2889 TT Equity': ['2910 TT Equity', '2911 TT Equity']})
+        result = run(sample, candidate_scope='peers', include_broad_market=True, basket_size_range=(2, 3))
+        allowed = {'2910 TT Equity', '2911 TT Equity', '0050 TT Equity', '006208 TT Equity'}
+        self.assertEqual(set(result['prices'].columns) - {'2889 TT Equity'}, allowed)
+        market = result['broad_market_hedge']
+        self.assertTrue(set(market['weights'].index) <= {'0050 TT Equity', '006208 TT Equity'})
+        self.assertTrue(market['reference_only'])
+        self.assertEqual(market['trade_risk']['n_observations'], 42)
+        self.assertFalse(result['two_day_returns'])
+
+    def test_hk_and_adr_market_mapping_use_listing_venue(self):
+        spec = engine['_broad_market_spec']
+        self.assertEqual(spec('700 HK Equity')['instruments'], ['2800 HK Equity'])
+        self.assertEqual(spec('BABA US Equity')['instruments'], ['SPY US Equity'])
+        self.assertEqual(spec('7203 JT Equity')['instruments'], ['1306 JP Equity'])
+        self.assertEqual(engine['_close_utc_of']('7203 JT Equity'), 6.5)
+        self.assertIn('Taiwan 50', spec('2889 TT Equity')['benchmark'])
+        self.assertNotIn('TAIEX', spec('2889 TT Equity')['benchmark'])
+        self.assertEqual(spec('UNKNOWN ZZ Equity')['instruments'], [])
+        for _, tickers in engine['BROAD_MARKET_HEDGES'].values():
+            self.assertTrue(all(engine['_is_etf'](ticker) for ticker in tickers))
+
+    def test_discovery_tags_direct_and_industry_peers_not_arbitrary_members(self):
+        ns = engine['auto_discover_universe'].__globals__
+        fields = {'COUNTRY_ISO': 'TW', 'GICS_SECTOR_NAME': 'Financials', 'GICS_INDUSTRY_NAME': 'Banks'}
+        def members(session, spec):
+            return 'TW50 Index', ['2910 TT Equity', '2911 TT Equity', '2912 TT Equity']
+        def refs(session, tickers, ref_fields, **kw):
+            return {ticker: {'GICS_INDUSTRY_NAME': 'Banks' if ticker == '2911 TT Equity' else 'Hardware'} for ticker in tickers}
+        def bulk(session, ticker, field):
+            return [{'Peer Ticker': '2910 TT'}] if ticker == '2889 TT Equity' else [{'Peer Ticker': '2912 TT'}]
+        meta = {}
+        with patch.dict(ns, bbg_ref_single=lambda *a: fields, _index_members=members,
+                        bbg_ref_multi=refs, bbg_bulk=bulk), contextlib.redirect_stdout(io.StringIO()):
+            universe = engine['auto_discover_universe'](object(), '2889 TT Equity', min_mktcap_usd_mm=0, meta=meta)
+        self.assertIn('2912 TT Equity', universe)
+        self.assertEqual(set(meta['peer_tickers']), {'2910 TT Equity', '2911 TT Equity'})
+        self.assertEqual(meta['broad_market']['market'], 'TW')
+
+    def test_exact_range_is_obeyed_in_cv_nested_and_final_refits(self):
+        result = run(basket_size_range=(3, 3), force_include=['2911 TT Equity'])
+        self.assertEqual(len(result['weights']), 3)
+        baskets = result['cv_detail'].loc[result['cv_detail']['family'].eq('basket')]
+        self.assertEqual(set(baskets['basket_size']), {3})
+        for weights in result['nested_validation']['weights']:
+            self.assertEqual(len(weights), 3)
+            self.assertIn('2911 TT Equity', weights.index)
+        for row in result['basket_comparison']:
+            self.assertEqual(len(row['weights']), 3)
+        quick = engine['quick_rehedge']
+        with contextlib.redirect_stdout(io.StringIO()):
+            refreshed = quick('2889 TT Equity', self.dataset, result, show_plots=False, rolling_oos=False)
+        self.assertEqual(len(refreshed['weights']), 3)
+        with self.assertRaisesRegex(ValueError, 'exceeds every requested basket size'):
+            run(basket_size_range=(2, 2), force_include=['2910 TT Equity', '2911 TT Equity', '2912 TT Equity'])
+
+    def test_unfillable_size_is_never_shrunk_and_short_forced_size_is_indicative(self):
+        sample = dict(self.dataset, peer_tickers_by_target={'2889 TT Equity': ['2910 TT Equity', '2911 TT Equity']})
+        with self.assertRaisesRegex(ValueError, 'eligible instruments'):
+            run(sample, candidate_scope='peers', basket_size_range=(3, 3))
+        result = run(sample_window='1m', basket_size_range=(3, 3))
+        self.assertEqual(len(result['weights']), 3)
+        self.assertEqual(result['validation_mode'], 'IN-SAMPLE')
+        self.assertFalse(result['trade_eligible'])
+        self.assertTrue(np.isnan(result['ticket']['quality_r2']))
+        for row in result['basket_comparison']:
+            self.assertEqual(len(row['weights']), 3)
+        for invalid in ((1, 3), (4, 2), (2.5, 3), (2, 51)):
+            with self.assertRaises(ValueError):
+                run(basket_size_range=invalid)
+
+    def test_spread_path_uses_initial_capital_and_nonoverlapping_returns(self):
+        dates = pd.bdate_range('2024-01-01', periods=8)
+        series = pd.Series([-.02] * 8, index=dates)
+        path = engine['_spread_path_stats'](series)
+        self.assertAlmostEqual(path['max_drawdown'], np.expm1(-.16))
+        self.assertIsNone(path['peak'])
+        two_day = engine['_spread_path_stats'](series, two_day=True)
+        self.assertEqual(two_day['n_observations'], 4)
+        self.assertAlmostEqual(two_day['max_drawdown'], np.expm1(-.08))
+        self.assertTrue(np.isnan(two_day['worst_5d']))
+        short = run(sample_window='1m')
+        self.assertIn('fitted', short['path']['source'])
+        self.assertFalse(short['trade_eligible'])
+
+    def test_rich_report_retains_evidence_and_distinguishes_tracking_from_traded_risk(self):
+        result = run(rolling_oos=True, boot_n=100)
+        frame = result['rolling_oos']
+        self.assertIn('traded_spread', frame.columns)
+        self.assertIn('spread_vol_roll', frame.columns)
+        self.assertGreater(float((frame['traded_spread'] - frame['resid']).abs().max()), 0)
+        expected = engine['_spread_path_stats'](frame['traded_spread'], result['two_day_returns'])
+        self.assertAlmostEqual(result['path']['max_drawdown'], expected['max_drawdown'])
+        text = ' '.join(result['report_text'].split()).lower()
+        for useful in ('VALIDATION AND RESIDUAL RISK', 'Nested selection windows',
+                       'STABILITY AND RECENT CONDITIONS', 'REMAINING EXPOSURES',
+                       'SEARCH SETTINGS AND DATA QUALITY', 'Coefficient-only spread volatility',
+                       'block-bootstrap interval', 'Name overlap'):
+            self.assertIn(useful.lower(), text)
+        self.assertIn('configuration was selected using the full analysis window', text)
+        self.assertIn('not financed portfolio p&l', text)
+
+    def test_compact_report_keeps_full_diagnostics_separate_and_exports_real_alternatives(self):
+        from docx import Document
+        result = self.result
+        self.assertGreater(len(result['full_report']), 2 * len(result['report_text']))
+        self.assertNotIn('WORDS USED IN THIS REPORT', result['report_text'])
+        self.assertIn('Alternative basket scores retain', result['report_text'])
+        self.assertGreater(len(result['basket_comparison']), 1)
+        with tempfile.TemporaryDirectory() as folder, contextlib.redirect_stdout(io.StringIO()):
+            path = engine['export_result'](result, out_dir=folder)
+            document = Document(path)
+            paragraphs = '\n'.join(p.text for p in document.paragraphs)
+            self.assertIn('Alternative baskets', paragraphs)
+            self.assertNotIn('Diagnostic report appendix', paragraphs)
+            table_text = '\n'.join(cell.text for t in document.tables for row in t.rows for cell in row.cells)
+            for row in result['basket_comparison']:
+                self.assertTrue(all(t in table_text for t in row['weights'].index))
+
+    def test_form_presets_and_optional_sizing_do_not_change_validation_preview(self):
+        from IPython.utils.capture import capture_output
+        with capture_output():
+            state = engine['hedge_ui'](data=self.dataset)
+        widgets = state['widgets']
+        periods = {v for _, v in widgets['analysis_window'].options}
+        self.assertTrue({'1m', '2m'} <= periods)
+        self.assertEqual(widgets['hedge_horizon'].value, 0)
+        self.assertEqual(widgets['notional'].value, 0)
+        before = widgets['validation_preview'].value
+        widgets['hedge_horizon'].value = 63
+        self.assertEqual(widgets['validation_preview'].value, before)
+        widgets['candidate_scope'].value = 'peers'
+        self.assertFalse(widgets['include_broad_market'].value)
+        self.assertIn('verified peer metadata', widgets['validation_preview'].value)
+
+    def test_quiet_download_cache_retains_peer_metadata_and_material_data_warnings(self):
+        sample = dict(self.dataset, peer_tickers_by_target={
+            '2889 TT Equity': ['2910 TT Equity', '2911 TT Equity']})
+        def downloaded(*args, **kwargs):
+            print('routine discovery progress')
+            print('⚠ historical classification data unavailable')
+            return dict(sample)
+        ns = engine['download_hedge_data'].__globals__
+        summary = io.StringIO()
+        with patch.dict(ns, _download_hedge_data_impl=downloaded), contextlib.redirect_stdout(summary):
+            result = engine['download_hedge_data']('2889 TT Equity')
+        self.assertNotIn('routine discovery progress', summary.getvalue())
+        self.assertIn('historical classification data unavailable', summary.getvalue())
+        self.assertIn('routine discovery progress', result['download_log'])
+        with tempfile.TemporaryDirectory() as folder, contextlib.redirect_stdout(io.StringIO()):
+            path = engine['save_hedge_data'](result, cache_dir=folder)
+            cached = engine['load_hedge_data'](path)
+        peer_result = run(cached, candidate_scope='peers', basket_size_range=(2, 2))
+        self.assertEqual(set(peer_result['weights'].index), {'2910 TT Equity', '2911 TT Equity'})
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
