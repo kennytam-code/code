@@ -644,6 +644,75 @@ class HedgeSearchTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 run(basket_size_range=invalid)
 
+    def test_all_five_windows_show_in_sample_r2_and_keep_notes_in_one_area(self):
+        for period in ('1m', '2m', '3m', '6m', '1y'):
+            result = run(sample_window=period)
+            blocks = engine['_report_blocks'](result)
+            headline = next(b for b in blocks if b.get('headers', []) ==
+                            ['EVIDENCE', 'UNSEEN R²', 'VOLATILITY CUT', 'IN-SAMPLE R²'])
+            self.assertEqual(headline['rows'][0][3], f"{result['in_sample_r2']:.3f}")
+            html = engine['_report_html'](result)
+            visible, notes = html.split('<details>', 1)
+            self.assertIn('IN-SAMPLE R²', visible)
+            self.assertIn('metric-grid', visible)
+            self.assertEqual(html.count('<details>'), 1)
+            self.assertNotIn('Alternative basket scores retain selection bias', visible)
+            self.assertIn('Alternative basket scores retain selection bias', notes)
+            self.assertIn('costs', engine['_BRIEF_METHODOLOGY'])
+
+    def test_more_distinct_alternatives_do_not_change_the_selected_hedge(self):
+        options = dict(lookback_options=(63, 126), pc_options=(2, 3, 4), basket_size_range=(2, 4))
+        fewer = run(alternative_baskets=1, **options)
+        more = run(alternative_baskets=8, **options)
+        pd.testing.assert_series_equal(fewer['weights'], more['weights'])
+        self.assertEqual(fewer['nested_pooled_r2'], more['nested_pooled_r2'])
+        self.assertLessEqual(len(fewer['basket_comparison']), 2)
+        self.assertGreater(len(more['basket_comparison']), len(fewer['basket_comparison']))
+        fingerprints = [tuple(sorted((tk, round(float(x), 5)) for tk, x in r['weights'].items()))
+                        for r in more['basket_comparison']]
+        self.assertEqual(len(fingerprints), len(set(fingerprints)))
+        self.assertEqual(sum(row['selected'] for row in more['basket_comparison']), 1)
+        self.assertTrue(all(2 <= row['basket_size'] <= 4 for row in more['basket_comparison']))
+        for bad in (0, 21, 2.5, True):
+            with self.assertRaisesRegex(ValueError, 'alternative_baskets'):
+                run(alternative_baskets=bad)
+
+    def test_short_and_long_window_graphs_survive_html_and_word_export(self):
+        import base64
+        from docx import Document
+        for window, count in [('1m', 2), ('1y', 3)]:
+            result = run(sample_window=window, show_plots=True, rolling_oos=True)
+            charts = result['report_charts']
+            self.assertEqual(len(charts), count)
+            self.assertTrue(all(base64.b64decode(c['png']).startswith(b'\x89PNG') for c in charts))
+            html = engine['_report_html'](result)
+            self.assertEqual(html.count('data:image/png;base64,'), count)
+            with tempfile.TemporaryDirectory() as folder:
+                path = Path(folder) / 'report.docx'
+                engine['_docx_hedge_report'](result, result['report_text'], str(path))
+                self.assertEqual(len(Document(path).inline_shapes), count)
+            self.assertEqual(len(plt.get_fignums()), 0)
+
+    def test_two_day_cumulative_chart_does_not_double_count_overlap(self):
+        curves = []
+        def capture():
+            figure = plt.gcf()
+            if len(figure.axes) == 6:
+                curves.append([np.asarray(line.get_ydata(), dtype=float).copy()
+                               for line in figure.axes[3].lines[:2]])
+        try:
+            with patch.object(plt, 'show', side_effect=capture):
+                result = run(async_adjust=True, show_plots=True)
+            self.assertTrue(result['two_day_returns'])
+            self.assertEqual(len(curves), 1)
+            frame = result['returns']
+            target = frame['2889 TT Equity']
+            spread = target - frame[result['weights'].index] @ result['weights']
+            np.testing.assert_allclose(curves[0][0], np.expm1(target.iloc[::2].cumsum())*100)
+            np.testing.assert_allclose(curves[0][1], np.expm1(spread.iloc[::2].cumsum())*100)
+        finally:
+            plt.close('all')
+
     def test_spread_path_uses_initial_capital_and_nonoverlapping_returns(self):
         dates = pd.bdate_range('2024-01-01', periods=8)
         series = pd.Series([-.02] * 8, index=dates)

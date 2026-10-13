@@ -70,6 +70,14 @@ Local market ETF references are scored as their own training-selected family, on
 
 The default notebook and Word reports are concise and structured. Alternative basket recipes and conditional diagnostics are returned explicitly. Equivalent recipes and ETF/market reference displays are deduplicated; the basket remains primary. Full diagnostics remain available, and the Word transcript appendix requires full-report mode.
 
-The suite now has 51 offline checks, including strict peer filtering, discovery provenance, market mapping, range/exact cardinality across CV/nested/refits, optional sizing/preview consistency, quiet download logs, and structured alternative export. These are synthetic/offline checks, not a live-market hedge-quality guarantee.
+The suite now has 55 offline checks, including strict peer filtering, discovery provenance, market mapping, range/exact cardinality across CV/nested/refits, optional sizing/preview consistency, quiet download logs, and structured alternative export. These are synthetic/offline checks, not a live-market hedge-quality guarantee.
 
 The structured report retains the informative diagnostics rather than reducing the analysis to a small summary. Notebook and Word use the same labelled evidence blocks. Drawdown and tail diagnostics now use the coefficient-only spread; drawdown includes the initial zero level and avoids overlapping two-day compounding. Rolling results retain both regression errors and tradable coefficient-only spreads. Condition and staleness flags are explicitly described as heuristics.
+
+The fitted cumulative chart also uses non-overlapping two-day returns on a common phase for target and spread. Chart CV sensitivity and monitoring lines are labelled as diagnostics and heuristics.
+
+The report uses a softer slate and teal palette, metric cards, clearer section headings and lighter table bands. In-sample R² is explicitly labelled for every history window, including 1y; it measures the current training fit, whose row count is shown. Repeated explanations are gathered into one expandable notebook methodology section; Word uses one brief methodology paragraph. Detailed notes remain in the result transcript and optional full report.
+
+The report shows up to five distinct additional basket recipes by default; set `alternative_baskets=8` (1–20) or use the form’s Alternative baskets control for more. It scans past duplicate configurations, retains the selected recipe, and respects the requested scope and basket sizes. Fewer alternatives are shown when the tested configurations produce fewer distinct recipes. This is a reporting change and does not rerank the primary basket using alternative test results.
+
+Charts are enabled by default and included in the structured notebook, standalone HTML and Word exports. The previous PCA scree/map, correlations, fitted spread path, rolling volatility and basket-size sensitivity views are retained, with basket-weight and alternative-score comparisons. Rolling tracking-error/R² charts appear when available; 1m/2m also get clearly labelled fitted charts. Set `show_plots=False` to omit figures. Charts do not upgrade the validation tier.

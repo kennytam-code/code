@@ -1028,7 +1028,7 @@ def _text_table(headers, rows, kinds, title='', note='', indent='  '):
               else ([_clean(x) for x in str(r[i]).split('\n')]  # [Fix 116]
                     if kinds[i] == 'label' else [_clean(r[i])])
               for i in range(n)] for r in rows]
-    w = [max([len(_clean(headers[i]))]
+    w = [max([1, len(_clean(headers[i]))]
              + [max((len(x) for x in row[i]), default=0) for row in cells])
          for i in range(n)]
     budget = _TXT_W - len(indent) - 3 * n - 1
@@ -3491,7 +3491,12 @@ def _find_best_hedge_impl(
     include_broad_market=None,    # default: on for all, off for peers only
     peer_tickers=None,            # manual peer list for older caches
     basket_size_range=None,       # inclusive (min, max); exact number when equal
+    alternative_baskets=5,       # distinct additional recipes to display (1–20)
 ):
+    if (isinstance(alternative_baskets, bool)
+            or not isinstance(alternative_baskets, (int, np.integer))
+            or not 1 <= alternative_baskets <= 20):
+        raise ValueError('alternative_baskets must be an integer from 1 to 20')
     basket_size_options = _basket_sizes(basket_size_options, basket_size_range)
     if candidate_scope not in ('all', 'peers'):
         raise ValueError("candidate_scope must be 'all' or 'peers'")
@@ -4371,7 +4376,7 @@ def _find_best_hedge_impl(
                              'At least two eligible instruments with complete training returns '
                              'are required; single references cannot replace the basket.')
         _, _ps0, _bs0, fitted = max(primary_trials, key=lambda item: (item[0], -item[2]))
-        (_, s_rank, s_basket, s_reg, s_r2_in, s_resid, s_npc, _, _) = fitted
+        (_, s_rank, s_basket, s_reg, s_r2_in, s_resid, s_npc, s_pca, s_loadings) = fitted
         _P(('  Fitted basket reference: ' if fallback_reason else '  Short sample: ')
            + 'configuration selected on training data only; '
            'the holdout, if available, is scored afterwards. In-sample choices '
@@ -4538,9 +4543,8 @@ def _find_best_hedge_impl(
             "For CV, nested windows and the rolling curve, give the model "
             "more data — e.g. sample_window='1y', or drop sample_window entirely."))
         if show_plots:
-            kv('  charts', 'skipped',
-               'Charts are suppressed in short-sample modes — there is not '
-               'enough data behind them to be worth drawing.')
+            kv('Charts', 'fitted diagnostics',
+               'Short-window charts describe the training fit; they do not add unseen evidence.')
         _kv_flush()
         alternatives = {}
         for family in ('basket', 'single', 'single_stock', 'single_etf', 'single_market'):
@@ -4599,14 +4603,28 @@ def _find_best_hedge_impl(
         short_factors = _factor_leakage(fit_rets, target_ticker, s_w,
                           caps_map={c: _cap_asof(c, fit_rets.index[-1]) for c in stock_cols},
                           stock_cols=stock_cols)
+        short_candidates, short_seen = [], set()
+        ordered_trials = sorted(primary_trials, key=lambda t: (t[1] == _ps0 and t[2] == _bs0, t[0]), reverse=True)
+        for trial in ordered_trials:
+            _, spec, size, fitted_alt = trial
+            w_alt = pd.Series(fitted_alt[3].coef_, index=fitted_alt[2])
+            key = tuple(sorted((tk, round(float(x), 5)) for tk, x in w_alt.items()))
+            if len(w_alt) < 2 or key in short_seen:
+                continue
+            short_seen.add(key)
+            short_candidates.append(dict(cfg={'avg_r2_oos': np.nan}, lb=len(fit_rets), ps=spec,
+                bs=size, sel=spec == _ps0 and size == _bs0, r2m=np.nan, vrm=np.nan, n=0,
+                w=w_alt, r2_in=fitted_alt[4]))
+            if len(short_candidates) >= alternative_baskets + 1:
+                break
+        if show_plots and s_pca is None:
+            _, _, s_pca, s_loadings = _context_pca(short_context, 'auto')
         return {
             'training_data_diagnostics': pd.DataFrame(training_diagnostics),
             'evaluation_data_diagnostics': pd.DataFrame(evaluation_diagnostics),
             'engine_revision': PCA_REVISION,
-            'basket_candidates': [dict(cfg={'avg_r2_oos': np.nan},
-                lb=len(fit_rets), ps=t[1], bs=t[2], sel=t[1] == _ps0 and t[2] == _bs0,
-                r2m=np.nan, vrm=np.nan, n=0, w=pd.Series(t[3][3].coef_, index=t[3][2]),
-                r2_in=t[3][4]) for t in sorted(primary_trials, key=lambda t: t[0], reverse=True)[:5]],
+            'basket_candidates': short_candidates,
+            'chart_pca': s_pca, 'chart_loadings': s_loadings,
             'primary_hedge_family': selected_family,
             'hedge_alternatives': alternatives, 'search': search,
             'best_basket_hedge': alternatives.get('basket'),
@@ -5502,7 +5520,7 @@ def _find_best_hedge_impl(
     # [Fix 115] restyling (report type scale, readable date ticks) and lose the
     # relocation.
     def _draw_charts():
-        if not show_plots:
+        if not show_plots or report == 'compact':
             return
         _CLR = {'tgt': '#c0392b', 'hedged': '#1b6b3a', 'pick': '#1f3f66',
                 'other': '#9fb3c8', 'warn': '#b7791f', 'kill': '#8c1c1c'}
@@ -5569,14 +5587,16 @@ def _find_best_hedge_impl(
                 returns_final[target_ticker].values
                 - returns_final[basket_final].values @ reg_f.coef_,
                 index=returns_final.index)
-            # [Fix 15] true cumulative % = expm1(cumulative log return)
-            axes[1, 0].plot(np.expm1(returns_final[target_ticker].cumsum()) * 100,
+            # Two-day returns overlap. Use the same non-overlapping phase for both paths.
+            _path_target = returns_final[target_ticker].iloc[::2] if two_day else returns_final[target_ticker]
+            _path_spread = spread.iloc[::2] if two_day else spread
+            axes[1, 0].plot(np.expm1(_path_target.cumsum()) * 100,
                             color=_CLR['tgt'], label='unhedged')
-            axes[1, 0].plot(np.expm1(spread.cumsum()) * 100,
+            axes[1, 0].plot(np.expm1(_path_spread.cumsum()) * 100,
                             color=_CLR['hedged'], label='hedged')
             axes[1, 0].axhline(0, color='#b0bcc8', ls='--', lw=.9)
             axes[1, 0].legend(); axes[1, 0].set_ylabel('%')
-            axes[1, 0].set_title('Cumulative return approximation — fitted hedge')
+            axes[1, 0].set_title('Cumulative log-spread proxy — fitted, non-overlapping')
             w = 20
             axes[1, 1].plot(returns_final[target_ticker].rolling(w).std()
                             * ann_sqrt * 100, color=_CLR['tgt'],
@@ -5591,9 +5611,9 @@ def _find_best_hedge_impl(
                 axes[1, 2].plot(sub.index, sub.values, 'o-', ms=4,
                                 label=f'lookback {int(lb)}d')
             axes[1, 2].set_xlabel('basket size')
-            axes[1, 2].set_ylabel('OOS R²')
+            axes[1, 2].set_ylabel('Mean CV R²')
             axes[1, 2].legend()
-            axes[1, 2].set_title('Sensitivity — does a bigger basket help?')
+            axes[1, 2].set_title('Basket-size sensitivity — selected CV configurations')
             # date axes: matplotlib's default tick density overlapped the
             # labels into an unreadable smear on the two time-series panels
             for _ax in (axes[1, 0], axes[1, 1]):
@@ -5616,7 +5636,7 @@ def _find_best_hedge_impl(
                                    ls='--', label='selected-config worst window')
                     ax2[0].axhline(1.5 * wdisp['worst_te'] * 100,
                                    color=_CLR['kill'], ls='--',
-                                   label='kill-switch (1.5×)')
+                                   label='monitoring threshold (1.5×)' )
                     # headroom + an opaque box, or the legend sits on top of
                     # the kill-switch line it is labelling
                     ax2[0].margins(y=.22)
@@ -5624,14 +5644,13 @@ def _find_best_hedge_impl(
                                   facecolor='white', edgecolor='#dfe4ea',
                                   framealpha=.95)
                 ax2[0].set_ylabel('%/yr')
-                ax2[0].set_title('Rolling 21-row OOS tracking error — above '
-                                 'the red line, stop')
+                ax2[0].set_title('Selected-config rolling tracking error — heuristic threshold')
                 ax2[1].plot(rolling_df.index,
                             rolling_df['r2_roll'],
                             color=_CLR['pick'])
                 if not np.isnan(sel_pooled):
                     ax2[1].axhline(sel_pooled, color='#8a97a6', ls='--',
-                                   label='pooled OOS R²')
+                                   label='selected-config pooled R²')
                     ax2[1].legend(loc='lower left')
                 ax2[1].set_title('Rolling 21-row OOS R² (negative values retained)')
                 ax2[1].xaxis.set_major_locator(
@@ -6384,27 +6403,33 @@ def _find_best_hedge_impl(
     # which is the only thing this section exists to answer.
     title("[4] ALTERNATIVES",
           "the next-best recipes, judged on exactly the same evidence")
-    top5 = primary_summary.sort_values('composite', ascending=False).head(5)
-    _alt_cache = []
-    for _i5, (_, cfg) in enumerate(top5.iterrows(), 1):
-        _lb5, _ps5 = int(cfg['lookback']), cfg['pc_spec']
-        _bs5 = int(cfg['basket_size'])
-        _is_sel = (_lb5 == best_lookback and _ps5 == best_pc_spec
-                   and _bs5 == best_bsize)
-        _c_r2m, _c_r2s, _c_vrm, _c_n = _config_outer_oos(_lb5, _ps5, _bs5)
-        _rs5 = (roll_stats if (_is_sel and roll_stats)
-                else (_roll_stats_for(_lb5, _ps5, _bs5) if rolling_oos
-                      else None))
+    top5 = primary_summary.assign(_chosen=(
+        (primary_summary['lookback'] == best_lookback) &
+        (primary_summary['pc_spec'].astype(str) == str(best_pc_spec)) &
+        (primary_summary['basket_size'] == best_bsize))).sort_values(
+            ['_chosen', 'composite'], ascending=False)
+    _alt_cache, _alt_seen = [], set()
+    for _, cfg in top5.iterrows():
+        _lb5, _ps5, _bs5 = int(cfg['lookback']), cfg['pc_spec'], int(cfg['basket_size'])
+        _is_sel = bool(cfg['_chosen'])
         try:
             (_, _, _bkt5, _reg5, _r25, _, _, _, _) = _select_and_fit(
                 rets.iloc[-_lb5:], _ps5, _bs5)
             _w5 = pd.Series(_reg5.coef_, index=_bkt5)
-        except RuntimeError as _e5:
-            _w5, _r25 = None, np.nan
-        _alt_cache.append(dict(i=_i5, cfg=cfg, lb=_lb5, ps=_ps5, bs=_bs5,
+        except RuntimeError:
+            continue
+        _key5 = tuple(sorted((tk, round(float(x), 5)) for tk, x in _w5.items()))
+        if len(_w5) < 2 or _key5 in _alt_seen:
+            continue
+        _alt_seen.add(_key5)
+        _c_r2m, _c_r2s, _c_vrm, _c_n = _config_outer_oos(_lb5, _ps5, _bs5)
+        _rs5 = (roll_stats if (_is_sel and roll_stats)
+                else (_roll_stats_for(_lb5, _ps5, _bs5) if rolling_oos else None))
+        _alt_cache.append(dict(i=len(_alt_cache)+1, cfg=cfg, lb=_lb5, ps=_ps5, bs=_bs5,
                                sel=_is_sel, r2m=_c_r2m, r2s=_c_r2s,
-                               vrm=_c_vrm, n=_c_n, roll=_rs5, w=_w5,
-                               r2_in=_r25))
+                               vrm=_c_vrm, n=_c_n, roll=_rs5, w=_w5, r2_in=_r25))
+        if len(_alt_cache) >= alternative_baskets + 1:
+            break
     # ── summary table: one row per config, every headline side by side ─────
     _hd = ['', 'CONFIG', 'CV R²', 'UNSEEN R²', 'ROLL TE med/worst',
            'ROLL R² med', 'RECENT R²', 'VOL RED', 'GROSS', '']
@@ -6670,6 +6695,10 @@ def _find_best_hedge_impl(
             primary_item['status'] = grade
     _show_hedge_comparison(alternatives, selected_family, search)
 
+    chart_pca, chart_loadings = pca_f, loadings_f
+    if show_plots and chart_pca is None:
+        ctx = _training_context(rets.iloc[-best_lookback:], min_train_rows)
+        _, _, chart_pca, chart_loadings = _context_pca(ctx, 'auto')
     return {
         'training_data_diagnostics': pd.DataFrame(training_diagnostics),
         'evaluation_data_diagnostics': pd.DataFrame(evaluation_diagnostics),
@@ -6685,6 +6714,7 @@ def _find_best_hedge_impl(
         'unhedged_baseline': {'vol_reduction': 0.0, 'variance_reduction': 0.0},
         'in_sample_r2': r2_final,
         'basket_candidates': _alt_cache,
+        'chart_pca': chart_pca, 'chart_loadings': chart_loadings,
         'weights': weights_final, 'basket': basket_final,
         'ranking': final_rank, 'cv_summary': summary, 'cv_detail': cv_df,
         'nested_validation': nested,
@@ -6746,6 +6776,156 @@ def _find_best_hedge_impl(
     }
 
 
+
+
+def _report_figures(result):
+    """Fitted diagnostics and conditional rolling charts; no extra validation."""
+    frame, weights = result['returns'], result['weights']
+    target = PORTFOLIO_COL if result.get('is_portfolio') else result['portfolio_legs'][0]
+    target_returns = frame[target]
+    spread = target_returns - frame[weights.index] @ weights
+    two_day = result.get('two_day_returns', False)
+    annualisation = np.sqrt(252 / (2 if two_day else 1))
+    colour = {'target': '#b36b58', 'hedged': '#287b6f', 'pick': '#315a69', 'other': '#b6cbc7'}
+    style = {'font.family': 'DejaVu Sans', 'font.size': 9, 'axes.titlesize': 10,
+             'axes.titleweight': 'bold', 'axes.labelsize': 8,
+             'axes.edgecolor': '#d9e3df', 'axes.labelcolor': '#52666f',
+             'axes.grid': True, 'grid.color': '#eef3f0', 'axes.axisbelow': True,
+             'figure.facecolor': 'white', 'legend.frameon': False,
+             'legend.fontsize': 8, 'xtick.labelsize': 8, 'ytick.labelsize': 8,
+             'lines.linewidth': 1.5}
+    figures = []
+    with plt.rc_context(_supported_plot_style(style)):
+        fig, axes = plt.subplots(2, 3, figsize=(16, 8.5))
+        pca, loadings = result.get('chart_pca'), result.get('chart_loadings')
+        if pca is not None:
+            ev = pca.explained_variance_ratio_ * 100
+            axes[0, 0].bar(np.arange(1, len(ev)+1), ev, color=colour['pick'])
+            axes[0, 0].plot(np.arange(1, len(ev)+1), np.cumsum(ev), 'o-', color=colour['target'])
+            axes[0, 0].set_xticks(np.arange(1, len(ev)+1))
+            axes[0, 0].set_xlabel('Principal component'); axes[0, 0].set_ylabel('Variance (%)')
+        axes[0, 0].set_title('PCA variance explained · descriptive')
+        if isinstance(loadings, pd.DataFrame) and {'PC1', 'PC2'} <= set(loadings):
+            labels = set(weights.index) | {target}
+            for ticker, row in loadings.iterrows():
+                c = colour['target'] if ticker == target else colour['hedged'] if ticker in weights else colour['other']
+                axes[0, 1].scatter(row['PC1'], row['PC2'], color=c, s=80 if ticker == target else 24, zorder=3)
+                if ticker in labels:
+                    axes[0, 1].annotate(ticker.split(' ')[0], (row['PC1'], row['PC2']),
+                                        fontsize=6.5, xytext=(3,3), textcoords='offset points')
+            axes[0, 1].set_xlabel('PC1'); axes[0, 1].set_ylabel('PC2')
+        else:
+            axes[0, 1].text(.5, .5, 'Two PCA directions unavailable', ha='center', transform=axes[0, 1].transAxes)
+        axes[0, 1].set_title('PCA map · terracotta target, teal basket')
+        correlations = frame.drop(columns=target).corrwith(target_returns).sort_values(ascending=False).head(10)
+        axes[0, 2].barh(np.arange(len(correlations)), correlations,
+                       color=[colour['hedged'] if c in weights else colour['other'] for c in correlations.index])
+        axes[0, 2].set_yticks(np.arange(len(correlations)))
+        axes[0, 2].set_yticklabels([c.split(' ')[0] for c in correlations.index])
+        axes[0, 2].invert_yaxis(); axes[0, 2].set_xlabel('Correlation')
+        axes[0, 2].set_title('Fitted correlations · teal basket instruments')
+        phase = slice(None, None, 2) if two_day else slice(None)
+        axes[1, 0].plot(np.expm1(target_returns.iloc[phase].cumsum())*100,
+                        color=colour['target'], label='Target')
+        axes[1, 0].plot(np.expm1(spread.iloc[phase].cumsum())*100,
+                        color=colour['hedged'], label='Hedged spread')
+        axes[1, 0].axhline(0, color='#bccbc6', ls='--', lw=.8)
+        axes[1, 0].legend(); axes[1, 0].set_ylabel('Log-spread proxy (%)')
+        axes[1, 0].set_title('Fitted paths · non-overlapping observations')
+        count = max(5, min(20, len(frame)//3))
+        for values, label, c in [(target_returns, 'Target', colour['target']), (spread, 'Hedged spread', colour['hedged'])]:
+            axes[1, 1].plot(values.rolling(count).std()*annualisation*100, label=label, color=c)
+        axes[1, 1].legend(); axes[1, 1].set_ylabel('Annualised volatility (%)')
+        axes[1, 1].set_title(f'Fitted rolling {count}-row volatility')
+        summary = result.get('cv_summary')
+        if isinstance(summary, pd.DataFrame) and len(summary) and 'avg_r2_oos' in summary:
+            baskets = summary[summary['basket_size'] >= 2]
+            for lb in baskets['lookback'].unique():
+                values = baskets[baskets['lookback'] == lb].groupby('basket_size')['avg_r2_oos'].mean()
+                axes[1, 2].plot(values.index, values.values, 'o-', label=f'{int(lb)}-row lookback')
+            if len(baskets): axes[1, 2].legend()
+            axes[1, 2].set_ylabel('Mean CV R²'); axes[1, 2].set_xlabel('Basket size')
+            axes[1, 2].set_title('Basket-size sensitivity · CV selection diagnostic')
+        else:
+            candidates = result.get('basket_comparison') or []
+            axes[1, 2].bar([str(r['number']) for r in candidates], [r['in_sample_r2'] for r in candidates], color=colour['pick'])
+            axes[1, 2].set_ylabel('In-sample R²'); axes[1, 2].set_xlabel('Basket recipe')
+            axes[1, 2].set_title('Short-window basket fits · no CV evidence')
+        date_format = '%d %b' if (frame.index[-1] - frame.index[0]).days < 150 else '%b %y'
+        for ax in (axes[1, 0], axes[1, 1]):
+            ax.xaxis.set_major_locator(_mdates.AutoDateLocator(maxticks=6))
+            ax.xaxis.set_major_formatter(_mdates.DateFormatter(date_format))
+        figures.append(('PCA, fitted hedge behaviour and basket-size sensitivity', fig))
+
+        fig2, ax2 = plt.subplots(1, 2, figsize=(13, 4.2))
+        ax2[0].barh([c.split(' ')[0] for c in weights.index], weights.values*100,
+                     color=[colour['hedged'] if x >= 0 else colour['target'] for x in weights])
+        ax2[0].invert_yaxis(); ax2[0].axvline(0, color='#b6c8c2', lw=.8)
+        ax2[0].set_xlabel('Per $100 target · positive SHORT, negative LONG')
+        ax2[0].set_title('Current basket hedge weights')
+        candidates = result.get('basket_comparison') or []
+        use_cv = any(np.isfinite(r['cv_r2']) for r in candidates)
+        field = 'cv_r2' if use_cv else 'in_sample_r2'
+        ax2[1].bar([str(r['number']) for r in candidates], [r[field] for r in candidates],
+                   color=[colour['hedged'] if r['selected'] else colour['other'] for r in candidates])
+        for i, candidate in enumerate(candidates):
+            value = candidate[field]
+            if np.isfinite(value):
+                ax2[1].annotate(f'{value:.3f}', (i, value), xytext=(0, 4 if value >= 0 else -12),
+                                textcoords='offset points', ha='center', fontsize=8)
+        ax2[1].margins(y=.12)
+        ax2[1].axhline(0, color='#b6c8c2', lw=.8); ax2[1].set_xlabel('Basket recipe · teal selected')
+        ax2[1].set_ylabel('Mean CV R²' if use_cv else 'In-sample R²')
+        ax2[1].set_title('Alternative baskets · selection diagnostic')
+        figures.append(('Basket weights and alternative-basket comparison', fig2))
+
+        rolling = result.get('rolling_oos')
+        if isinstance(rolling, pd.DataFrame) and len(rolling) and rolling['te_roll'].notna().any():
+            fig3, ax3 = plt.subplots(2, 1, figsize=(13, 6), sharex=True)
+            ax3[0].plot(rolling.index, rolling['te_roll']*100, color=colour['hedged'])
+            threshold = result['ticket'].get('selected_config_worst_window_te', np.nan)
+            if np.isfinite(threshold):
+                ax3[0].axhline(threshold*100, color='#b28b4c', ls='--', label='Selected-config worst window')
+                ax3[0].axhline(threshold*150, color=colour['target'], ls='--', label='Monitoring threshold (1.5× heuristic)')
+                ax3[0].legend(loc='lower left'); ax3[0].margins(y=.22)
+            ax3[0].set_title('Rolling regression tracking error · selected configuration')
+            ax3[0].set_ylabel('Annualised error (%)')
+            ax3[1].plot(rolling.index, rolling['r2_roll'], color=colour['pick'])
+            pooled = result.get('selected_unseen_pooled_r2', np.nan)
+            if np.isfinite(pooled):
+                ax3[1].axhline(pooled, color='#97aaa4', ls='--', label='Selected-config pooled R²')
+                ax3[1].legend(loc='lower left')
+            ax3[1].axhline(0, color='#bccbc6', lw=.8)
+            ax3[1].set_title('Rolling tracking R² · negative values remain visible')
+            ax3[1].set_ylabel('R²')
+            ax3[1].xaxis.set_major_locator(_mdates.AutoDateLocator(maxticks=8))
+            ax3[1].xaxis.set_major_formatter(_mdates.DateFormatter('%b %y'))
+            figures.append(('Rolling stability · conditional on the selected configuration', fig3))
+        for _, figure in figures:
+            for ax in figure.axes:
+                ax.title.set_color('#315a69'); ax.spines['top'].set_visible(False); ax.spines['right'].set_visible(False)
+            figure.tight_layout(pad=1.6)
+    return figures
+
+
+def _report_chart_assets(result, show=False):
+    import base64
+    import io
+    assets = []
+    for title, figure in _report_figures(result):
+        try:
+            buffer = io.BytesIO()
+            figure.savefig(buffer, format='png', dpi=170, bbox_inches='tight', facecolor='white')
+            assets.append({'title': title, 'png': base64.b64encode(buffer.getvalue()).decode('ascii')})
+            if show:
+                import warnings
+                plt.figure(figure.number)
+                with warnings.catch_warnings():
+                    warnings.filterwarnings('ignore', message='FigureCanvasAgg is non-interactive.*', category=UserWarning)
+                    plt.show()
+        finally:
+            plt.close(figure)
+    return assets
 
 
 def _report_number(value, percent=False):
@@ -6830,7 +7010,7 @@ def _report_blocks(result):
     text(t['grade'])
     for reason in t.get('reasons') or []:
         text(reason)
-    table(['EVIDENCE', 'UNSEEN R²', 'VOLATILITY CUT', 'FITTED R²'], [[
+    table(['EVIDENCE', 'UNSEEN R²', 'VOLATILITY CUT', 'IN-SAMPLE R²'], [[
         result['validation_mode'], fmt(t.get('quality_r2')),
         fmt(risk.get('vol_reduction'), True), fmt(result.get('in_sample_r2'))]])
     scope = 'Peers only' if p['candidate_scope'] == 'peers' else 'All eligible candidates'
@@ -6904,10 +7084,12 @@ def _report_blocks(result):
     candidates = result.get('basket_comparison') or []
     if candidates:
         section('Alternative baskets')
+        text(f"{sum(not row['selected'] for row in candidates)} distinct alternatives available · "
+             f"Requested up to {p.get('alternative_baskets', 5)}. Repeated recipes are removed.", True)
         if mode in ('IN-SAMPLE', 'HOLDOUT'):
             text('Short-window baskets are ranked on fitted training data; the reserved holdout, when '
                  'available, is not used to rank alternatives. No CV or independent alternative scores exist.', True)
-            table(['BASKET', 'NAMES', 'TRAINING ROWS', 'METHOD', 'FITTED R²'], [
+            table(['BASKET', 'NAMES', 'TRAINING ROWS', 'METHOD', 'IN-SAMPLE R²'], [
                 [str(row['number']) + (' selected' if row['selected'] else ''), row['basket_size'],
                  row['lookback'], _report_method(row['method']), fmt(row['in_sample_r2'])] for row in candidates])
         else:
@@ -7006,6 +7188,10 @@ def _report_blocks(result):
     if not tail and not path:
         text('Tail and path statistics unavailable for this run.', True)
 
+    if result.get('report_charts'):
+        section('Charts')
+        for chart in result['report_charts']:
+            blocks.append(dict(kind='chart', **chart))
     section('Search settings and data quality')
     search = result.get('search') or {}
     table(['SETTING', 'THIS RUN'], [
@@ -7038,7 +7224,60 @@ def _report_blocks(result):
          'costs, borrow, financing and FX conversion are not modelled. Current universe discovery can introduce '
          'survivorship bias even when historical filters are enabled.', True)
     text(f"Engine revision {result.get('engine_revision')}", True)
-    return blocks
+    return _tidy_report_blocks(blocks)
+
+
+_BRIEF_METHODOLOGY = (
+    'In-sample R² describes the current training fit; unseen scores test earlier selection and refitting. '
+    'Alternative and rolling scores are conditional diagnostics. Spread paths approximate log-return hedges; '
+    'costs, borrow and FX conversion are excluded. Factor, condition and refit-interval diagnostics are descriptive.')
+
+
+def _tidy_report_blocks(blocks):
+    """Keep information visible and gather repeated explanations in one place."""
+    result, notes = [], []
+    explanatory = ('These CV scores selected', 'Each nested window repeats',
+                   'Fitted diagnostic using sequentially', 'Search is limited to',
+                   'Alternative basket scores retain', 'Engine revision')
+    splits = ('. It resamples', ': nominal regressor-count', '. Regression error',
+              '. This descriptive flag', '. These measure stability',
+              '. Descriptive tail averages', '. A log-spread proxy')
+    for original in blocks:
+        block = dict(original)
+        if block['kind'] != 'text':
+            if block.get('headers') == ['FACTOR', 'TARGET BETA', 'SPREAD BETA']:
+                block['title'] = 'Factor exposure in the current fit'
+            result.append(block)
+            continue
+        value = block['text']
+        if value.startswith(explanatory):
+            notes.append(value)
+            continue
+        if value.startswith('Ranked using training and CV data.'):
+            notes.append(value)
+            block['text'] = 'Training and CV ranking · Alternative test scores are conditional diagnostics.'
+        elif value.startswith('Short-window baskets are ranked'):
+            notes.append(value)
+            block['text'] = 'Training-fit ranking · Short-window alternatives are indicative.'
+        elif value.startswith('The basket is the primary hedge;'):
+            notes.append(value)
+            block['text'] = 'The basket is the primary hedge; single instruments are references.'
+        else:
+            for marker in splits:
+                if marker in value:
+                    left, right = value.split(marker, 1)
+                    notes.append(marker.lstrip('. :') + right)
+                    block['text'] = left + (' (heuristic)' if marker.startswith(': nominal') else '')
+                    break
+            if 'Rolling weights are fitted before' in block['text']:
+                left, right = block['text'].split('Rolling weights are fitted before', 1)
+                block['text'] = left.rstrip('. ')
+                notes.append('Rolling weights are fitted before' + right)
+            if "retained in result['excluded']" in block['text']:
+                block['text'] = block['text'].split(';')[0] + '; full list in diagnostics.'
+        result.append(block)
+    result.append(dict(kind='notes', text='Methodology and coverage', notes=notes))
+    return result
 
 
 def _render_compact_sections(result):
@@ -7047,26 +7286,95 @@ def _render_compact_sections(result):
             _section(block['text'].upper())
         elif block['kind'] == 'text':
             _P(block['text'])
+        elif block['kind'] == 'chart':
+            _P(block['title'])
+        elif block['kind'] == 'notes':
+            _section(block['text'].upper())
+            for note in block['notes']:
+                _P(note)
         else:
             _print_table(block['headers'], block['rows'], title=block.get('title'))
 
 
+def _report_html(result):
+    """A self-contained report with a quiet palette and one expandable notes area."""
+    escape = lambda value: _html.escape(str(value))
+    css = '''
+.pca-sheet{font-family:Aptos,"Segoe UI","Helvetica Neue",Arial,sans-serif;color:#263c48;background:#fff;max-width:1060px;margin:16px auto;padding:28px 32px;border:1px solid #e1e8e6;border-radius:12px;line-height:1.5;box-sizing:border-box}
+.pca-sheet h1{font-size:28px;line-height:1.2;font-weight:650;letter-spacing:-.4px;color:#203d47;margin:0 0 14px}
+.pca-sheet h2{font-size:19px;color:#226c67;font-weight:650;margin:28px 0 12px;letter-spacing:-.15px}
+.pca-sheet p{font-size:14px;margin:8px 0;color:#344d58}.pca-sheet .meta{color:#637780;font-size:13px}
+.pca-sheet .verdict{display:inline-block;font-size:13px;font-weight:650;border-radius:5px;padding:7px 12px;background:#edf5f2;color:#27695b;margin:8px 0}.pca-sheet .caution{background:#fbf3e2;color:#806124}.pca-sheet .failed{background:#faeeeb;color:#9a4c3c}
+.pca-sheet .sample{background:#fbf3e2;padding:10px 14px;border-radius:6px;font-size:13px;color:#806124}
+.pca-sheet .metric-grid{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:12px;margin:18px 0 16px}
+.pca-sheet .metric{padding:14px 16px;border:1px solid #dde8e5;border-radius:8px;background:#f5f9f8}.pca-sheet .metric-label{font-size:11px;letter-spacing:.55px;color:#567470;font-weight:600}.pca-sheet .metric-value{font-size:27px;line-height:1.25;font-weight:600;color:#205d58;margin-top:7px}.pca-sheet .metric:first-child .metric-value{font-size:19px;margin-top:11px}
+.pca-sheet .table-wrap{overflow-x:auto;margin:8px 0 16px}.pca-sheet table{width:100%;border-collapse:collapse;font-size:14px;line-height:1.45}.pca-sheet th{text-align:left;background:#eaf2f1;color:#315e5a;font-size:11px;font-weight:650;letter-spacing:.4px;padding:10px 12px;white-space:nowrap;border-bottom:1px solid #d1e1de}.pca-sheet td{padding:9px 12px;border-bottom:1px solid #e7eeec;vertical-align:top}.pca-sheet tr:nth-child(even) td{background:#f8faf9}.pca-sheet td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.pca-sheet tr.selected td{background:#edf6f2}.pca-sheet caption{text-align:left;font-size:14px;font-weight:600;color:#334f58;padding:8px 0 9px}
+.pca-sheet .chart{margin:20px 0}.pca-sheet .chart img{width:100%;height:auto;display:block}.pca-sheet figcaption{font-size:14px;font-weight:600;color:#334f58;margin-bottom:8px}
+.pca-sheet details{margin-top:26px;border-top:1px solid #dce7e4;padding:16px 0 0;color:#60757c}.pca-sheet summary{cursor:pointer;font-size:13px;font-weight:600;color:#426c66}.pca-sheet details p{font-size:13px;color:#60757c;margin:12px 0}
+@media(max-width:680px){.pca-sheet{padding:20px 16px}.pca-sheet .metric-grid{grid-template-columns:repeat(2,1fr)}}
+'''
+    parts = ['<style>'+css+'</style><article class="pca-sheet">']
+    for block in _report_blocks(result):
+        kind = block['kind']
+        if kind == 'title':
+            parts.append('<h1>'+escape(block['text'])+'</h1>')
+        elif kind == 'section':
+            parts.append('<h2>'+escape(block['text'])+'</h2>')
+        elif kind == 'chart':
+            parts.append('<figure class="chart"><figcaption>'+escape(block['title'])+'</figcaption>'
+                         '<img alt="'+escape(block['title'])+'" src="data:image/png;base64,'+block['png']+'"></figure>')
+        elif kind == 'notes':
+            parts.append('<details><summary>Methodology and coverage</summary>')
+            parts.extend('<p>'+escape(note)+'</p>' for note in block['notes'])
+            parts.append('</details>')
+        elif kind == 'text':
+            value = block['text']
+            style = 'meta' if block.get('muted') else ''
+            if value.startswith(('✓','△','✗','?')):
+                style = 'verdict' + (' caution' if value.startswith(('△','?')) else ' failed' if value.startswith('✗') else '')
+            elif value.startswith('ILLUSTRATIVE SAMPLE'):
+                style = 'sample'
+            parts.append(f'<p class="{style}">'+escape(value)+'</p>')
+        elif block['headers'] == ['EVIDENCE', 'UNSEEN R²', 'VOLATILITY CUT', 'IN-SAMPLE R²']:
+            labels = ['Evidence', 'Unseen R²', 'Unseen volatility cut', 'In-sample R²']
+            parts.append('<div class="metric-grid">')
+            for label, value in zip(labels, block['rows'][0]):
+                parts.append('<div class="metric"><div class="metric-label">'+escape(label.upper())+
+                             '</div><div class="metric-value">'+escape(value)+'</div></div>')
+            parts.append('</div>')
+        else:
+            parts.append('<div class="table-wrap"><table>')
+            if block.get('title'):
+                parts.append('<caption>'+escape(block['title'])+'</caption>')
+            parts.append('<thead><tr>'+''.join('<th>'+escape(h)+'</th>' for h in block['headers'])+'</tr></thead><tbody>')
+            for row in block['rows']:
+                chosen = 'selected' if 'selected' in str(row[0]) else ''
+                parts.append(f'<tr class="{chosen}">')
+                for value in row:
+                    is_number = bool(re.fullmatch(r'[+$−\-]?\d+(?:[.,]\d+)*(?:%|×)?', str(value)))
+                    parts.append('<td'+(' class="num"' if is_number else '')+'>'+escape(value)+'</td>')
+                parts.append('</tr>')
+            parts.append('</tbody></table></div>')
+    parts.append('</article>')
+    return ''.join(parts)
+
+
 def _render_compact_report(result):
-    """One notebook document with consistent typography and readable widths."""
-    global _ipy_display
+    global _IN_JUPYTER
     if not _IN_JUPYTER:
         return _render_compact_sections(result)
-    fragments = []
-    original = _ipy_display
-    _ipy_display = lambda item: fragments.append(item.data)
+    import contextlib
+    import io
+    old = _IN_JUPYTER
+    _IN_JUPYTER = False
     try:
-        _render_compact_sections(result)
+        # Preserve the complete text transcript while showing one styled document.
+        with contextlib.redirect_stdout(io.StringIO()):
+            _render_compact_sections(result)
     finally:
-        _ipy_display = original
-    original(_HTML('<div class="pca-report" style="font-family:Arial,sans-serif;'
-                   'max-width:980px;padding:8px 20px 20px;color:#243447;'
-                   'background:#fff;border:1px solid #e4e9ef;border-radius:8px;'
-                   'overflow-x:auto">' + ''.join(fragments) + '</div>'))
+        _IN_JUPYTER = old
+    _ipy_display(_HTML(_report_html(result)))
+
 
 
 from functools import wraps as _wraps
@@ -7109,7 +7417,9 @@ def find_best_hedge(*args, **kwargs):
                             peer_tickers=options['peer_tickers'],
                             basket_size_range=options['basket_size_range'],
                             restrict_to_target_tz=options['restrict_to_target_tz'],
-                            exclude=options['exclude'])
+                            exclude=options['exclude'],
+                            alternative_baskets=options['alternative_baskets'],
+                            show_plots=options['show_plots'])
     result['requested_basket_sizes'] = _basket_sizes(options['basket_size_options'], options['basket_size_range'])
     result['basket_comparison'] = _basket_report_rows(result)
     result['broad_markets'] = [_broad_market_spec(t) for t in result['portfolio_legs']]
@@ -7122,6 +7432,8 @@ def find_best_hedge(*args, **kwargs):
     else:
         status = 'Local broad market ETF unavailable after data and eligibility filters: ' + benchmark
     result['market_reference_status'] = status
+    if options['show_plots']:
+        result['report_charts'] = _report_chart_assets(result, show=compact and not old_jupyter)
     if compact:
         transcript_reset()
         _kv_reset()
@@ -7401,19 +7713,19 @@ def _docx_hedge_report(result, report_text, path):
     section.left_margin = section.right_margin = Inches(.75)
     section.page_width, section.page_height = Inches(8.5), Inches(11)
     base = doc.styles['Normal']
-    base.font.name, base.font.size = 'Arial', Pt(10)
+    base.font.name, base.font.size = 'Calibri', Pt(10.5)
     base.font.color.rgb = RGBColor.from_string('243447')
     base.paragraph_format.space_after = Pt(6)
     base.paragraph_format.line_spacing = 1.12
     for style in ('Title', 'Heading 1', 'Heading 2'):
-        doc.styles[style].font.name = 'Arial'
+        doc.styles[style].font.name = 'Calibri'
         props = doc.styles[style].element.get_or_add_pPr()
         for border in list(props.findall(qn('w:pBdr'))):
             props.remove(border)
     doc.styles['Title'].font.color.rgb = RGBColor(0, 0, 0)
-    doc.styles['Title'].font.size = Pt(22)
-    doc.styles['Heading 1'].font.color.rgb = RGBColor.from_string('1F3F66')
-    doc.styles['Heading 1'].font.size = Pt(14)
+    doc.styles['Title'].font.size = Pt(24)
+    doc.styles['Heading 1'].font.color.rgb = RGBColor.from_string('226C67')
+    doc.styles['Heading 1'].font.size = Pt(15)
     doc.styles['Heading 1'].paragraph_format.space_before = Pt(14)
     doc.styles['Heading 1'].paragraph_format.space_after = Pt(6)
 
@@ -7447,7 +7759,7 @@ def _docx_hedge_report(result, report_text, path):
                 cell.width = Inches(width)
                 props = cell._tc.get_or_add_tcPr()
                 shade = OxmlElement('w:shd')
-                shade.set(qn('w:fill'), '1F3F66' if row_no == 0 else ('F3F6FA' if row_no % 2 else 'FFFFFF'))
+                shade.set(qn('w:fill'), 'E8F1F0' if row_no == 0 else ('F7F9F9' if row_no % 2 else 'FFFFFF'))
                 props.append(shade)
                 margins = OxmlElement('w:tcMar')
                 for edge in ('top', 'left', 'bottom', 'right'):
@@ -7459,11 +7771,13 @@ def _docx_hedge_report(result, report_text, path):
                 for p in cell.paragraphs:
                     p.paragraph_format.space_after = Pt(0)
                     p.paragraph_format.line_spacing = 1.05
+                    # Keep short comparison tables intact at a page boundary.
+                    p.paragraph_format.keep_with_next = len(t.rows) <= 14 and row_no < len(t.rows) - 1
                     for run in p.runs:
-                        run.font.name = 'Arial'
-                        run.font.size = Pt(9)
+                        run.font.name = 'Calibri'
+                        run.font.size = Pt(9.5)
                         run.font.bold = row_no == 0
-                        run.font.color.rgb = RGBColor.from_string('FFFFFF' if row_no == 0 else '243447')
+                        run.font.color.rgb = RGBColor.from_string('22544F' if row_no == 0 else '243447')
         doc.add_paragraph().paragraph_format.space_after = Pt(0)
         return t
 
@@ -7474,17 +7788,31 @@ def _docx_hedge_report(result, report_text, path):
               [1.0, 1.35, 4.65])
 
     params = result.get('params') or {}
-    for block in _report_blocks(result):
+    report_blocks = _report_blocks(result)
+    for block_no, block in enumerate(report_blocks):
         kind = block['kind']
         if kind == 'title':
             p = doc.add_paragraph(block['text'], style='Title')
             p.paragraph_format.space_after = Pt(6)
         elif kind == 'section':
             h = heading(block['text'].replace(' — ', ' ').replace('-', ' '))
-            if block['text'] == 'Search settings and data quality':
-                h.paragraph_format.page_break_before = True
+
         elif kind == 'text':
-            paragraph(block['text'], muted=block.get('muted', False))
+            p = paragraph(block['text'], muted=block.get('muted', False))
+            next_block = report_blocks[block_no + 1] if block_no + 1 < len(report_blocks) else {}
+            if (next_block.get('kind') == 'table' and not next_block.get('title')) or next_block.get('kind') == 'text':
+                p.paragraph_format.keep_with_next = True
+        elif kind == 'chart':
+            import base64
+            import io
+            caption = paragraph(block['title'])
+            caption.paragraph_format.keep_with_next = True
+            for run in caption.runs:
+                run.font.bold = True
+            doc.add_picture(io.BytesIO(base64.b64decode(block['png'])), width=Inches(7.0))
+        elif kind == 'notes':
+            heading('Methodology and coverage')
+            paragraph(_BRIEF_METHODOLOGY, muted=True)
         else:
             if block.get('title'):
                 p = paragraph(block['title'])
@@ -7493,7 +7821,14 @@ def _docx_hedge_report(result, report_text, path):
                     run.font.bold = True
             count = len(block['headers'])
             widths = block.get('widths') or ([2.9, 4.1] if count == 2 else [7.0 / count] * count)
-            table(block['headers'], block['rows'], widths)
+            created = table(block['headers'], block['rows'], widths)
+            next_block = report_blocks[block_no + 1] if block_no + 1 < len(report_blocks) else {}
+            if len(created.rows) <= 14 and next_block.get('kind') == 'text' and next_block.get('text', '').startswith(
+                    ('Training rows', 'Gross hedge')):
+                for cell in created.rows[-1].cells:
+                    for paragraph_in_cell in cell.paragraphs:
+                        paragraph_in_cell.paragraph_format.keep_with_next = True
+                doc.paragraphs[-1].paragraph_format.keep_with_next = True
     if params.get('notional_mm'):
         paragraph(f"Optional target book size ${params['notional_mm']:g} million.", muted=True)
     if params.get('report') == 'full' and report_text:
@@ -7728,6 +8063,7 @@ def hedge_ui(data=None):
     w_report = W.Dropdown(options=[('Structured desk analysis', 'compact'), ('Full diagnostic report', 'full')],
                           value='compact', description='Report', style=LBL,
                           layout=FULL)
+    w_alternatives = W.BoundedIntText(value=5, min=1, max=20, description='Alternative baskets', style=LBL, layout=FULL)
     w_plots = W.Checkbox(value=True, description='Charts', indent=False)
     w_roll = W.Checkbox(value=True, description='Rolling OOS + cadence',
                         indent=False)
@@ -7747,7 +8083,7 @@ def hedge_ui(data=None):
              'come from ridge on real returns'),
         w_cov, w_pcs, w_wins,
         H('Penalties'), w_gross, w_maxgross,
-        H('Output'), w_boot, w_report, W.HBox([w_plots, w_roll]),
+        H('Output'), w_boot, w_report, w_alternatives, W.HBox([w_plots, w_roll]),
         H('Re-hedging'),
         HELP('RE-HEDGE never re-searches the config — that is what makes it '
              'fast. This only sets how many windows it re-validates the refit '
@@ -8148,7 +8484,8 @@ def hedge_ui(data=None):
                 'boot_n': int(w_boot.value),
                 'report': w_report.value,
                 'rolling_oos': w_roll.value,
-                'show_plots': w_plots.value}
+                'show_plots': w_plots.value,
+                'alternative_baskets': w_alternatives.value}
 
     def _run_engine(fn, *args, **kw):
         """[Fix 106] Run the engine with its output STREAMING to the cell.
