@@ -70,7 +70,7 @@ Local market ETF references are scored as their own training-selected family, on
 
 The default notebook and Word reports are concise and structured. Alternative basket recipes and conditional diagnostics are returned explicitly. Equivalent recipes and ETF/market reference displays are deduplicated; the basket remains primary. Full diagnostics remain available, and the Word transcript appendix requires full-report mode.
 
-The suite now has 56 offline checks, including strict peer filtering, discovery provenance, market mapping, range/exact cardinality across CV/nested/refits, optional sizing/preview consistency, quiet download logs, and structured alternative export. These are synthetic/offline checks, not a live-market hedge-quality guarantee.
+The suite now has 58 offline checks, including strict peer filtering, discovery provenance, market mapping, range/exact cardinality across CV/nested/refits, optional sizing/preview consistency, quiet download logs, and structured alternative export. These are synthetic/offline checks, not a live-market hedge-quality guarantee.
 
 The structured report retains the informative diagnostics rather than reducing the analysis to a small summary. Notebook and Word use the same labelled evidence blocks. Drawdown and tail diagnostics now use the coefficient-only spread; drawdown includes the initial zero level and avoids overlapping two-day compounding. Rolling results retain both regression errors and tradable coefficient-only spreads. Condition and staleness flags are explicitly described as heuristics.
 
@@ -83,3 +83,5 @@ The report shows up to five distinct additional basket recipes by default; set `
 Charts are enabled by default and included in the structured notebook, standalone HTML and Word exports. The previous PCA scree/map, correlations, fitted spread path, rolling volatility and basket-size sensitivity views are retained, with basket-weight and alternative-score comparisons. Rolling tracking-error/R² charts appear when available; 1m/2m also get clearly labelled fitted charts. Set `show_plots=False` to omit figures. Charts do not upgrade the validation tier.
 
 Charts lead the report immediately after the title and analysis dates, before the summary and basket tables. The regression checks also verify positive coefficients map to SHORT, negative coefficients to LONG, the spread subtracts the hedge coefficients without a traded intercept, and unvalidated/failed verdicts expose no trade weights.
+
+Notebook analysis runs now print the result after displaying the styled report. The same summary, scores, primary basket, alternatives and informative diagnostics remain visible in text; the printed copy uses a short methodology paragraph. Full notes remain in the report transcript. Rich-display failure falls back to the printed result. Direct calls and the Run button share this path. Regression checks confirm that printing changes neither hedge weights nor nested validation scores.

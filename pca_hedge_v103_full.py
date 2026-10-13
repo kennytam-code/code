@@ -240,7 +240,7 @@ import textwrap as _textwrap
 
 RIDGE_ALPHAS = np.logspace(-4, 2, 25)
 MIN_RETURN_STD = 1e-12
-PCA_REVISION = '2026-10-13-peer-scope-and-report'
+PCA_REVISION = '2026-10-13-printed-report'
 MIN_TRAIN_COVERAGE = 0.90
 
 
@@ -7367,14 +7367,28 @@ def _render_compact_report(result):
     import contextlib
     import io
     old = _IN_JUPYTER
+    printed = io.StringIO()
     _IN_JUPYTER = False
     try:
-        # Preserve the complete text transcript while showing one styled document.
-        with contextlib.redirect_stdout(io.StringIO()):
+        # Keep the complete export transcript and collect the console copy.
+        with contextlib.redirect_stdout(printed):
             _render_compact_sections(result)
     finally:
         _IN_JUPYTER = old
-    _ipy_display(_HTML(_report_html(result)))
+    try:
+        # Charts and the styled report lead the notebook output.
+        _ipy_display(_HTML(_report_html(result)))
+    except Exception:
+        # A rich-display failure must not hide a completed analysis.
+        pass
+    text = printed.getvalue()
+    notes_header = (f"\n{'═' * _TXT_W}\n METHODOLOGY AND COVERAGE\n"
+                    f"{'═' * _TXT_W}\n")
+    body, separator, _ = text.partition(notes_header)
+    if separator:
+        text = body + separator + '\n'.join(
+            '  ' + line for line in _textwrap.wrap(_BRIEF_METHODOLOGY, _TXT_W - 4)) + '\n'
+    print(text, end='')
 
 
 

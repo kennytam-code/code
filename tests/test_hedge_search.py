@@ -712,6 +712,40 @@ class HedgeSearchTests(unittest.TestCase):
         self.assertFalse(engine['_decision_fields'](weights, '? IN-SAMPLE ONLY')['trade_eligible'])
         self.assertTrue(engine['_decision_fields'](weights, '✗ NO VALIDATED HEDGE')['trade_weights'].empty)
 
+    def test_notebook_run_prints_results_after_the_styled_report(self):
+        namespace = engine['find_best_hedge'].__globals__
+        output = io.StringIO()
+        displayed = []
+        def display(html):
+            displayed.append(str(html.data))
+            self.assertEqual(output.getvalue(), '')
+        with patch.dict(namespace, _IN_JUPYTER=True, _ipy_display=display):
+            with contextlib.redirect_stdout(output):
+                result = engine['find_best_hedge']('2889 TT Equity', data=self.dataset, **OPTIONS)
+        text = output.getvalue()
+        self.assertEqual(len(displayed), 1)
+        self.assertIn('UNSEEN R²', text)
+        self.assertIn('IN-SAMPLE R²', text)
+        self.assertIn('PER $100 TARGET', text)
+        self.assertIn('ALTERNATIVE BASKETS', text)
+        self.assertIn('costs, borrow, financing and FX', ' '.join(text.split()))
+        self.assertNotIn('Alternative basket scores retain selection bias', text)
+        self.assertIn('Alternative basket scores retain selection bias', result['report_text'])
+        pd.testing.assert_series_equal(result['weights'], self.result['weights'])
+        self.assertEqual(result['nested_pooled_r2'], self.result['nested_pooled_r2'])
+
+    def test_failed_notebook_display_still_prints_the_result(self):
+        namespace = engine['find_best_hedge'].__globals__
+        for notebook in (False, True):
+            output = io.StringIO()
+            with patch.dict(namespace, _IN_JUPYTER=notebook,
+                            _ipy_display=lambda _: (_ for _ in ()).throw(RuntimeError('Display unavailable'))):
+                with contextlib.redirect_stdout(output):
+                    result = engine['find_best_hedge']('2889 TT Equity', data=self.dataset, **OPTIONS)
+            self.assertIn('UNSEEN R²', output.getvalue())
+            self.assertIn('PER $100 TARGET', output.getvalue())
+            self.assertIn(f"{result['in_sample_r2']:.3f}", output.getvalue())
+
     def test_two_day_cumulative_chart_does_not_double_count_overlap(self):
         curves = []
         def capture():
