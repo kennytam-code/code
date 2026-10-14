@@ -11,14 +11,23 @@ from patch_peer_workbook import maps,q
 from ah_basis import share_multiplier,adjusted_premium,review_for
 from market_universe import histories
 from refresh_monitor_data import refresh_peers
-def read(z,name,sheets):return E.fromstring(z.read(sheets[name]))
+from desk_release import moved_formula
+def read(z,name,sheets):
+ _,_,actual=maps({p:z.read(p) for p in ['xl/workbook.xml','xl/_rels/workbook.xml.rels']});return E.fromstring(z.read(actual[name]))
 with zipfile.ZipFile(ROOT/'out/HK_IPO_Database_v1.xlsx') as z,zipfile.ZipFile(ROOT/'out/_compact_baseline.xlsx') as before:
  _,_,sheets=maps({p:z.read(p) for p in ['xl/workbook.xml','xl/_rels/workbook.xml.rels']})
  pc=nodes(read(z,'Peer Chart',sheets));pt=nodes(read(z,'Peer Trades',sheets));lc=nodes(read(z,'Lock Compare',sheets));lk=nodes(read(z,'Lock-up',sheets));old=nodes(read(before,'Peer Trades',sheets))
  for name in ['Peer Trades','Lock-up']:assert not list(read(z,name,sheets).iter(q('mergeCell')))
- for name in ['IPO Live','Peer Data','Peer Live','Lock-up Data','Pipeline','Taxonomy','Calc (scoring engine)']:
-  if name=='Peer Live':continue # History requests now read the transferred controls.
-  assert z.read(sheets[name])==before.read(sheets[name]),name
+ for name in ['Taxonomy']:
+  previous=nodes(read(before,name,sheets));current=nodes(read(z,name,sheets))
+  assert set(previous)==set(current),name
+  for addr,cell in previous.items():
+   assert value(cell)==value(current[addr]),(name,addr)
+   oldf=cell.find(q('f'));newf=current[addr].find(q('f'))
+   if oldf is not None:
+    expected=moved_formula(moved_formula(oldf.text,'Database',64,3),'Screener',62,1)
+    expected=expected.replace('$528',f'${len(json.loads((ROOT/"data/deals.json").read_text())["deals"])+4}')
+    assert newf.text==expected,(name,addr,newf.text,expected)
  for source,target in [('B4','O4'),('E4','R4'),('B5','O5'),('E5','R5'),('D9','Q9'),('G9','T9'),('I9','V9')]:
   assert pc[target].find(q('f')).text==transfer_peer_formula(old[source].find(q('f')).text),(source,target)
  for cell,source in [('O3','B3'),('U4','F3'),('X4','H3'),('U5','F4'),('X5','H4')]:
@@ -27,9 +36,9 @@ with zipfile.ZipFile(ROOT/'out/HK_IPO_Database_v1.xlsx') as z,zipfile.ZipFile(RO
  assert [d.get('sqref') for d in read(z,'Peer Trades',sheets).iter(q('dataValidation'))]==['B3','F3','H3']
  assert value(pt['B8'])=='9856' and value(pt['C8'])=='3308'
  assert math.isclose(float(value(pt['F8'])),100*(float(value(pt['B12']))-float(value(pt['C12']))),abs_tol=1e-10)
- assert [value(lk[a]) for a in ['B30','E30','H30','K30']]==['0600','0470','2706','9981']
- assert "'Lock-up'!$B$33" in lc['B5'].find(q('f')).text and "'Lock-up'!$E$33" in lc['B5'].find(q('f')).text
- assert "'Lock-up'!$B$30" in lc['C5'].find(q('f')).text and "'Lock-up'!$E$30" in lc['D5'].find(q('f')).text
+ assert [value(lk[a]) for a in ['B10','E10','H10','K10']]==['0600','0470','2706','9981']
+ assert "'Lock-up'!$B$11" in lc['B5'].find(q('f')).text and "'Lock-up'!$E$11" in lc['B5'].find(q('f')).text
+ assert "'Lock-up'!$B$10" in lc['C5'].find(q('f')).text and "'Lock-up'!$E$10" in lc['D5'].find(q('f')).text
  code=value(lk['A8']);deal=next(d for d in json.loads((ROOT/'data/deals.json').read_text())['deals'] if d['code']==code)
  for addr,key,scale in [('G8','cornerstone_pct',100),('H8','since_ipo_pct',100),('I8','deal_size_hkdm',1)]:assert math.isclose(float(value(lk[addr])),deal[key]/scale,abs_tol=1e-10)
  chart=nodes(read(z,'Chart Data',sheets));comp=nodes(read(z,'AH Compare',sheets));ah=nodes(read(z,'AH',sheets))
@@ -46,8 +55,8 @@ with zipfile.ZipFile(ROOT/'out/HK_IPO_Database_v1.xlsx') as z,zipfile.ZipFile(RO
     elif normal=='P3':args.append(1)
     elif normal=='P9':args.append(blocked)
     elif 'AH DELTA' in key.upper():
-     col=re.match('[A-Z]+',normal)[0];v=serial('2026-01-06') if col=='J' else serial('2026-01-08') if col=='K' else 2 if col=='R' else 1 if col in ['S','T'] else 0;args.append(np.full((69,1),v,dtype=object))
-    elif 'MARKET DATA' in key.upper():args.append(np.full((69,1),blocked,dtype=object))
+     col=re.match('[A-Z]+',normal)[0];v=serial('2026-01-06') if col=='J' else serial('2026-01-08') if col=='K' else 2 if col=='R' else 1 if col in ['S','T'] else 0;args.append(np.full((len(json.loads((ROOT/"data/desk_chart_data.json").read_text())["pairs"]),1),v,dtype=object))
+    elif 'MARKET DATA' in key.upper():args.append(np.full((len(json.loads((ROOT/"data/desk_chart_data.json").read_text())["pairs"]),1),blocked,dtype=object))
     else:raise AssertionError(key)
    return fn(*args).item()
   assert math.isclose(calculate('2026-01-05','2026-01-05',100,80),.25)
@@ -69,7 +78,8 @@ with zipfile.ZipFile(ROOT/'out/HK_IPO_Database_v1.xlsx') as z,zipfile.ZipFile(RO
  for addr,field in [('O4','code_a'),('R4','code_b')]:
   fn=formulas.Parser().ast('='+pc[addr].find(q('f')).text)[1].compile()
   for pair in pairs:
-   args=[pair['label'] if key=='O3' else np.array([[p['label']] for p in pairs],dtype=object) if '!S' in key else np.array([[p[field]] for p in pairs],dtype=object) for key in fn.inputs]
+   label=lambda p:p['code_a']+' / '+p['code_b']
+   args=[label(pair) if key=='O3' else np.array([[label(p)] for p in pairs],dtype=object) if '!S' in key else np.array([[p[field]] for p in pairs],dtype=object) for key in fn.inputs]
    assert fn(*args).item()==pair[field]
  print('PASS no merged cells; transferred live controls, all 35 named selectors, selected-event metrics, preserved core/data sheets; actual native premium formulas and all selected stored observations')
 

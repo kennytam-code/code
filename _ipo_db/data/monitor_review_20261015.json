@@ -1,0 +1,48 @@
+{
+  "release_date": "2026-10-15",
+  "ah_peer_snapshot": "2026-10-02",
+  "live_snapshot": "2026-10-14",
+  "live_snapshot_prices": 706,
+  "live_daily_return_observations": 700,
+  "core_deals": 525,
+  "live_roster": 715,
+  "ah_pairs": 70,
+  "peer_pairs": 35,
+  "peer_stocks": 66,
+  "cornerstone_schedules": 397,
+  "bloomberg_formula_count": 11389,
+  "checks": [
+    "Native pre-release candidate opened without repair; all visible tabs reviewed; blank Screener found and repaired",
+    "Final CT_Worksheet sequence / unique rows / table-header agreement / relationship checks passed",
+    "166785 formula package validation; 229 field bindings; 11389 Bloomberg expressions linted",
+    "39243 numeric entries reconciled; 19889 native historical scalar cells and HTML source parity",
+    "All named scoring inputs numeric; actual formulas evaluated across all 525 rows for ESWIN / Red Avenue / pipeline targets",
+    "Every prior Database field preserved except documented verified A/H mapping/precision corrections",
+    "Metadata-aware BQL scalar/headers/date/zero/negative/unavailable fixtures passed",
+    "706 public closes / 700 same-day return observations and sector means reconciled",
+    "Every browser tab navigated; 70 A/H selectors; six panels for 3223/9976/9607; Select all / custom dates passed",
+    "387 browser stocks / all 397 expiry events rendered with finite geometry; future returns remained blank",
+    "All 35 named browser peer selectors / eight horizons passed",
+    "Native combo common-date axes and all stored premium/A/CSI bindings passed",
+    "Peer/legacy incremental refresh and failure retention passed",
+    "Staged native full rebuild completed inside 512 MiB process cap",
+    "Standalone updater contains durable ESWIN/Red Avenue sources, mapping and staged builder",
+    "Future quote refresh guard passed; old review cannot freeze later prices",
+    "Self-contained inline HTML runtime checked; direct file:// preview is blocked by the browser tool",
+    "Cumulative numeric correction journal preserved",
+    "Price precision retains penny quotes; daily changes shown to two decimal places"
+  ],
+  "limits": [
+    "Mac locked before final native re-open after scoring repair / Red Avenue addition; native repaint remains unverified",
+    "Live Bloomberg add-in execution requires the desk terminal",
+    "273 retained financial entries lack fresh independent annual-row confirmation; internal audit preserves their status",
+    "Real missing observations and unconfirmed expiry dates remain unavailable",
+    "Final direct file:// preview blocked by browser tool URL protocol policy"
+  ],
+  "sha256": {
+    "HK_IPO_Database_v1.xlsx": "a3e3ff09ccb2c737b1c7f03ec9a71b0487c6397205d949fa3a26c4ca393481da",
+    "hk_ipo_dashboard.html": "f68fe3f8fc63513acff7e26d843dec7a10c0f6cce6fe3d5befc25ac5e51f2f4e",
+    "hk_ipo_dashboard.zip": "806c87a537ecb77a548541b579a4d75d6482901682dde6f483910b4aa3f6a36c",
+    "hk_ipo.py": "895ce1b6438261bd44819540c3c736e856bb2418e80622cf522c88082ca77848"
+  }
+}

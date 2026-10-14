@@ -1,0 +1,12 @@
+{
+  "allotment": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1008/2026100801417.pdf",
+    "sha256": "8bdccf2479ca38f0cbd1860e2e8871b4d013abb6be2a170e6f6fb6fd5a7410b2",
+    "pages": 29
+  },
+  "prospectus": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0928/2026092800035.pdf",
+    "sha256": "52feead83b1f3b3ae341fdc797705f548a8b7ca06b56857d105d97ba3bbf46a7",
+    "pages": 441
+  }
+}

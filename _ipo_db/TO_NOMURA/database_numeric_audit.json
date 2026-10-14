@@ -1,15 +1,15 @@
 {
-  "reviewed_at": "2026-10-12",
-  "snapshot_asof": "2026-10-02",
-  "stocks": 524,
-  "numeric_values": 39173,
-  "numeric_fields": 105,
+  "reviewed_at": "2026-10-15",
+  "snapshot_asof": "2026-10-14",
+  "stocks": 525,
+  "numeric_values": 39243,
+  "numeric_fields": 109,
   "status_counts": {
-    "Price / benchmark audit reconciled": 14918,
-    "Retained source; not independently re-confirmed": 13156,
-    "Recalculated; input source confidence retained": 4685,
-    "Reviewed primary filing": 5663,
-    "Reviewed primary filing metadata": 751
+    "Price / benchmark audit reconciled": 14928,
+    "Retained source; not independently re-confirmed": 13206,
+    "Recalculated; input source confidence retained": 4691,
+    "Reviewed primary filing": 5665,
+    "Reviewed primary filing metadata": 753
   },
   "errors": [],
   "unconfirmed_financials": [
@@ -1925,7 +1925,7 @@
       "source": "hkex-pdf:financial-summary(RMB)"
     }
   ],
-  "material_changes": 568,
+  "material_changes": 0,
   "subscriptions": {
     "oversub_public_mult": 524,
     "oversub_intl_mult": 521
@@ -1935,10 +1935,10 @@
     "unresolved_name_aliases": 119
   },
   "lockups": {
-    "rows": 1064,
-    "dated": 859,
-    "visible_rows": 396,
-    "visible_stocks": 386,
+    "rows": 1065,
+    "dated": 860,
+    "visible_rows": 397,
+    "visible_stocks": 387,
     "unconfirmed_visible_expiries": 67
   }
 }

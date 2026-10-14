@@ -63,12 +63,13 @@ DATA_FILES = [
 ]
 DATA_FILES += [str(p.relative_to(ROOT)) for p in sorted((ROOT / 'data/ah_study_cache').glob('*.json'))]
 DATA_FILES += ['data/batches/'+n+'.json' for n in ['subscription_review','subscription_manual_review','offer_number_review','financial_number_review','cornerstone_review','cornerstone_name_corrections','lockup_events']]
+DATA_FILES += ['data/batches/latest_listed_review_20261015.json']
 DATA_FILES += ['data/market_supplement.json','data/batches/ah_market_supplement.json','data/batches/desk_source_review.json','data/desk_chart_data.json','data/peer_pairs.json','data/hk_stock_universe.json','data/peer_views_template.json','assets/desk_monitors.js']
 DATA_FILES += ['data/investor_aliases.json', 'data/pipeline_layout.json', 'data/ah_entitlement_reviews.json', 'assets/fflate.min.js', 'assets/fflate.LICENSE']
 DATA_FILES += ['data/monitor_layout.json']
-DATA_FILES += ['data/presentation_template.json','data/ah_reference.json','data/csi300_prices.json']
+DATA_FILES += ['data/presentation_template.json','data/ah_reference.json','data/csi300_prices.json','data/live_snapshot.json']
 # every pipeline module, so the ONE file can also refresh — not just rebuild
-LIB_MODULES = [
+LIB_MODULES = ["staged_native_build", "review_quote_guard",
     "accept_option_capacity", "filing_review", "review_offer_numbers", "review_financial_numbers", "review_cornerstones", "review_lockups", "audit_numbers", "refresh_filing_reviews", "refresh_lockup_windows",
     "incremental", "extract_allocation", "fetch_day1_tape", "analyse_clawback", "make_clawback_note",
     "fill_cornerstones", "fill_banks", "fetch_etnet_ipo", "test_screener_formulas",
@@ -84,7 +85,7 @@ LIB_MODULES = [
     "fetch_h_paths", "ingest_bbg", "audit_formulas", "lint_bbg", "audit_opens",
     "audit_identities", "audit_visual", "audit_prices", "audit_bbg_verify", "audit_fresh",
     "corp_actions", "benchmark_windows", "ah_basis",
-    "refresh_monitor_data", "prepare_monitor_data", "prepare_ah_reference", "reflow_monitors", "adjust_ah_charts", "fix_monitor_requests", "combine_ah_benchmark", "market_universe", "cache_desk_monitors", "build_market_views", "apply_desk_styles", "patch_peer_workbook", "patch_presentation_workbook", "analyse_ah_study", "make_ah_study",
+    "desk_release", "fetch_live_snapshot", "refresh_monitor_data", "prepare_monitor_data", "prepare_ah_reference", "reflow_monitors", "adjust_ah_charts", "fix_monitor_requests", "combine_ah_benchmark", "market_universe", "cache_desk_monitors", "build_market_views", "apply_desk_styles", "patch_peer_workbook", "patch_presentation_workbook", "analyse_ah_study", "make_ah_study",
     "merge_batches", "build_xlsx", "build_dashboard", "make_ah_notebook", "checks",
     "make_weekly_email",
 ]

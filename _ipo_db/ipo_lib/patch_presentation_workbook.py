@@ -53,7 +53,7 @@ def extracted(a,b,row):
  f='"Unavailable"'
  for cell in reversed(choices):f=f'IF(IFERROR(ISNUMBER({cell}),FALSE),{cell},{f})'
  return '='+f
-def patch(source,dest,root):
+def patch(source,dest,root,finish=True):
  root=Path(root)
  template=json.loads((root/'data/presentation_template.json').read_text())
  with zipfile.ZipFile(io.BytesIO(base64.b64decode(template['xlsx_base64']))) as z:new={p:z.read(p) for p in z.namelist()}
@@ -308,7 +308,7 @@ def patch(source,dest,root):
  # Native desk charts use restrained strokes, sparse date labels and no
  # point markers. Screener's BDH date column must use a real date axis.
  A='http://schemas.openxmlformats.org/drawingml/2006/main';a=lambda n:'{'+A+'}'+n
- for path in ['xl/charts/chart9.xml','xl/charts/chartDeskPeer1.xml','xl/charts/chartDeskPeer2.xml']:
+ for path in [p for p in parts if p.startswith('xl/charts/') and p.endswith('.xml') and (b'Screener!' in parts[p] or b"'Screener'!" in parts[p] or b'PeerChart' in parts[p])]:
   if path not in parts:continue
   chart=E.fromstring(parts[path])
   for axis in list(chart.iter(c('catAx')))+list(chart.iter(c('dateAx'))):
@@ -317,7 +317,7 @@ def patch(source,dest,root):
     if child.tag in [c('lblAlgn'),c('tickLblSkip'),c('tickMarkSkip'),c('noMultiLvlLbl'),c('majorGridlines'),c('minorGridlines')]:axis.remove(child)
    n=axis.find(c('numFmt'))
    if n is None:n=E.SubElement(axis,c('numFmt'))
-   n.set('formatCode','dd-mmm' if path.endswith('chart9.xml') else 'mmm-yy');n.set('sourceLinked','0')
+   n.set('formatCode','dd-mmm' if (b'Screener!' in parts[path] or b"'Screener'!" in parts[path]) else 'mmm-yy');n.set('sourceLinked','0')
    if axis.find(c('baseTimeUnit')) is None:E.SubElement(axis,c('baseTimeUnit'),{'val':'days'})
    order=['axId','scaling','delete','axPos','majorGridlines','minorGridlines','title','numFmt','majorTickMark','minorTickMark','tickLblPos','spPr','txPr','crossAx','crosses','crossesAt','auto','lblOffset','baseTimeUnit','majorUnit','majorTimeUnit','minorUnit','minorTimeUnit','extLst'];axis[:]=sorted(axis,key=lambda x:order.index(x.tag.split('}')[-1]) if x.tag.split('}')[-1] in order else 99)
   for k,series in enumerate(chart.iter(c('ser'))):
@@ -337,18 +337,21 @@ def patch(source,dest,root):
     if n.tag in [a('solidFill'),a('noFill'),a('gradFill')]:line.remove(n)
    E.SubElement(E.SubElement(line,a('solidFill')),a('srgbClr'),{'val':'315B7D' if k==0 else '9B4A47'})
    series_order=['idx','order','tx','spPr','marker','dPt','dLbls','trendline','errBars','cat','val','smooth','extLst'];series[:]=sorted(series,key=lambda x:series_order.index(x.tag.split('}')[-1]) if x.tag.split('}')[-1] in series_order else 99)
-  if path.endswith('chart9.xml'):
+  if (b'Screener!' in parts[path] or b"'Screener'!" in parts[path]):
    legend=chart.find('.//'+c('legend'));parent=next((x for x in chart.iter() if legend in list(x)),None) if legend is not None else None
    if parent is not None:parent.remove(legend)
   parts[path]=E.tostring(chart)
  styles.find(q('cellXfs')).set('count',str(len(styles.find(q('cellXfs')))));parts['xl/styles.xml']=E.tostring(styles)
  parts['xl/workbook.xml']=E.tostring(wb);parts['xl/_rels/workbook.xml.rels']=E.tostring(wr);parts['[Content_Types].xml']=E.tostring(content)
- from reflow_monitors import reflow
- from adjust_ah_charts import apply
- reflow(parts,sheets,root)
- from fix_monitor_requests import apply as requests
- from combine_ah_benchmark import apply as benchmark
- requests(parts,sheets,root);apply(parts,sheets,root);benchmark(parts,sheets,root)
+ if finish:
+  from reflow_monitors import reflow
+  from adjust_ah_charts import apply
+  reflow(parts,sheets,root)
+  from fix_monitor_requests import apply as requests
+  from combine_ah_benchmark import apply as benchmark
+  requests(parts,sheets,root);apply(parts,sheets,root);benchmark(parts,sheets,root)
+  from desk_release import apply as finish
+  finish(parts,sheets,root)
  with zipfile.ZipFile(dest,'w',zipfile.ZIP_DEFLATED) as z:
   for path,raw in parts.items():z.writestr(path,raw)
  return Path(dest)

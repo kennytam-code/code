@@ -1,5 +1,5 @@
 {
- "listed_count": 714,
+ "listed_count": 715,
  "pairs": [
   {
    "code": "0668",
@@ -1194,9 +1194,23 @@
    "stored_1m": null,
    "latest_date": "2026-10-02",
    "review": null
+  },
+  {
+   "code": "9607",
+   "name": "RA MATERIALS",
+   "a_ticker": "603650 CH Equity",
+   "h_ticker": "9607 HK Equity",
+   "ipo_date": "2026-09-29",
+   "raw_debut": 39.98,
+   "cache_start": 27272,
+   "cache_rows": 3,
+   "stored_7": null,
+   "stored_1m": null,
+   "latest_date": "2026-10-02",
+   "review": null
   }
  ],
- "ah_cache_end": 27271,
+ "ah_cache_end": 27274,
  "peer": {
   "asof": "2026-10-02",
   "pairs": [

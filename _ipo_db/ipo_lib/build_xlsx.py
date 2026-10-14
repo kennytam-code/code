@@ -308,6 +308,10 @@ def load():
     pipe = pipe + _phip_as_pipeline(ROOT, [str(x.get("name")) for x in pipe])
     from pipeline_dedupe import merge_pipeline
     pipe = merge_pipeline(pipe)      # one row per company (the SHEIN split)
+    listed_codes = {str(d['code']).zfill(4) for d in deals}
+    listed_names = {str(d.get('company_name') or '').strip().lower() for d in deals}
+    pipe = [p for p in pipe if str(p.get('code') or '').zfill(4) not in listed_codes
+            and str(p.get('name') or '').strip().lower() not in listed_names]
     # One stage per row, and the rows sorted by it: what is in its offering
     # window comes first, then hearing-cleared, then filed or reported, then
     # withdrawn. The Screener mirrors these rows by position, so the order
@@ -2437,7 +2441,10 @@ def add_search_keys(wb, deals, pipe):
     screen['A2'] = 'Select a company or type its H code, Bloomberg ticker or full issuer name. Overrides take priority; comps rank same-subsector first.'
 
 
-def main(limit=None, out=None):
+def main(limit=None, out=None, base_only=False, core_only=False):
+    if not limit and not base_only and not core_only:
+        from staged_native_build import build as staged_build
+        return staged_build(ROOT, Path(out) if out else OUT)
     deals, tax, cfg, pipe, counts = load()
     if limit:                      # miniature build, used by the formula test
         keep = {d["code"] for d in deals[:limit]}
@@ -2458,9 +2465,9 @@ def main(limit=None, out=None):
     sheet_bbg(wb, deals, n)
     if limit:
         sheet_ah(wb, deals, as_of)
-    else:
+    elif not core_only:
         from build_market_views import build as build_market_views
-        build_market_views(wb, deals, ROOT)
+        build_market_views(wb, deals, ROOT, defer_peer_history=True)
     sheet_verify_changes(wb, deals, n)
     combine_bbg_sheets(wb, n)
     wb["Scoring Stats"].sheet_state="hidden"
@@ -2495,7 +2502,10 @@ def main(limit=None, out=None):
     # cure is the ignoredErrors element — openpyxl accepts the attribute but
     # never serialises it, so it is injected into the saved sheet XML.
     _suppress_text_number_warning(dest, {"Database": "A5:A600", "Pipeline": "A6:A40"})
-    if not limit:
+    if not limit and not base_only:
+        from patch_peer_workbook import patch as patch_peer
+        peer_stage=dest.with_suffix('.peers.tmp.xlsx')
+        patch_peer(dest,peer_stage,ROOT);peer_stage.replace(dest)
         from apply_desk_styles import apply as apply_desk_styles
         apply_desk_styles(dest, ROOT)
         if (ROOT/'data/presentation_template.json').exists():
@@ -2586,7 +2596,7 @@ def polish_workbook(wb):
             ws.row_dimensions[3].height = 38
         if ws.title in ("SizeBench", "Verification", "Calc (scoring engine)"):
             ws.sheet_state = "hidden"
-    wb.active = wb.sheetnames.index("IPO Live") if "IPO Live" in wb.sheetnames else wb.sheetnames.index("AH")
+    wb.active = wb.sheetnames.index("IPO Live") if "IPO Live" in wb.sheetnames else wb.sheetnames.index("AH") if "AH" in wb.sheetnames else 0
 
 
 def _suppress_text_number_warning(path, sheet_ranges):

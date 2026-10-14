@@ -213,6 +213,10 @@ def load():
     pipe = pipe + _phip_as_pipeline(ROOT, [str(x.get("name")) for x in pipe])
     from pipeline_dedupe import merge_pipeline
     pipe = merge_pipeline(pipe)      # one row per company (the SHEIN split)
+    listed_codes = {str(d['code']).zfill(4) for d in deals}
+    listed_names = {str(d.get('company_name') or '').strip().lower() for d in deals}
+    pipe = [p for p in pipe if str(p.get('code') or '').zfill(4) not in listed_codes
+            and str(p.get('name') or '').strip().lower() not in listed_names]
     return slim, tax, cfg, pipe
 
 
@@ -1223,28 +1227,10 @@ function renderAhDrivers() {
       <b class="${p.prem >= 0 ? "up" : "down"}">${p.prem > 0 ? "+" : ""}${p.prem.toFixed(0)}%</b></li>`;
   $("#ah-drivers").innerHTML = `
    <div class="ahdgrid">
-    <div class="card"><h4>Size is the story — median premium by market cap</h4>${bands.map(bar).join("")}
-      <p class="note">corr(premium, log mktcap) = −0.71 across ${P.length} pairs. The mechanism is
-      H-side access: a top-10% IPO enters Southbound ~10 trading days after listing and an
-      A+H name ~a month after (Midea, CATL, GigaDevice, Innolight all did), while an H-line
-      under HK$5bn may NEVER qualify — so mega H-lines get mainland + global demand and
-      three even trade A BELOW H, while small H-lines sit illiquid under retail-priced A lines.</p></div>
-    <div class="card"><h4>A-venue — mostly a size story in disguise</h4>${vens.map(bar).join("")}
-      <p class="note">Raw venue gaps collapse once size is held: at mega size every venue sits
-      +19–38%; at mid size every venue sits +84–141%. STAR/ChiNext read high mainly because
-      their names are smaller and more thematic, not because of the board itself.</p></div>
-    <div class="card"><h4>Lowest premiums — the globally-priced names</h4><ul class="ahdlist">${lowest.map(li).join("")}</ul>
-      <p class="note">Export/consumer-visible franchises with deep H liquidity. P/E at IPO
-      shows ~no relationship with the premium (corr +0.08): valuation "justification" is
-      not what closes the gap — ownership and flow are.</p></div>
-    <div class="card"><h4>Highest premiums — the A-retail theme names</h4><ul class="ahdlist">${highest.map(li).join("")}</ul>
-      <p class="note">Domestic-policy and theme subsectors top the table (solar +117%,
-      chemicals +117%, 18A biotech +101%, machinery +85%) while consumer electronics +35%
-      and F&B +34% sit at the bottom. Borrow does NOT explain the cross-section — every
-      name here is margin-eligible but A-share borrow has been ~dead for ALL since the
-      relending shutdown (zeroed 2024-09-30; still ~0.7% of the margin book in 2026), and
-      A/H shares are not convertible. Nothing can short the A or convert into it, so the
-      premium is a pure segmentation price set by who can buy the H.</p></div>
+    <div class="card"><h4>Median premium by market cap</h4>${bands.map(bar).join("")}</div>
+    <div class="card"><h4>Median premium by A-share venue</h4>${vens.map(bar).join("")}</div>
+    <div class="card"><h4>Lowest premiums</h4><ul class="ahdlist">${lowest.map(li).join("")}</ul></div>
+    <div class="card"><h4>Highest premiums</h4><ul class="ahdlist">${highest.map(li).join("")}</ul></div>
    </div>`;
 }
 renderAhDrivers();
@@ -1440,7 +1426,7 @@ drawPipeline();
   $("#calendar").innerHTML = upc.length
     ? upc.map(([d, what, who]) =>
         `<span class="calchip"><b>${d.slice(5)}</b> ${who.split(" ")[0]} ${what}</span>`).join("")
-    : `<span class="m">no dated events in the window</span>`;
+    : "";
 })();
 
 // 7) deal picker
@@ -1483,6 +1469,7 @@ const opts = DATA.pipe.map(p => ({ v: "P:" + p.name, t: "▶ " + p.name + "  (pi
   .concat([...deals].sort((a, b) => (b.deal_size_hkdm || 0) - (a.deal_size_hkdm || 0))
     .map(d => ({ v: "D:" + d.code, t: d.name + " (" + d.code + ")" })));
 sel.innerHTML = opts.map(o => `<option value="${o.v}">${o.t}</option>`).join("");
+sel.value = "D:" + [...deals].sort((a,b)=>b.ipo_date.localeCompare(a.ipo_date))[0].code;
 sel.addEventListener("change", () => { renderPick(); labReset(); });
 // the finder drives the picker: type CATL or 3750, land on the deal
 $("#deal-list").innerHTML = deals.map(d =>
@@ -1635,7 +1622,7 @@ function renderBrief(t, comps) {
     <div class="tiles">` + tiles.map(([v, l, cls]) =>
       `<div class="tile ${cls || ""}"><div class="v">${v}</div><div class="l">${l}</div></div>`).join("") +
     preTile + `</div>${implied}
-    <p class="note">Peer stats = the top-${peers.length} comps below; sizes marked estimated carry their press source.</p></div>`;
+    </div>`;
 }
 
 function renderPick() {
@@ -1669,8 +1656,7 @@ function renderPick() {
       <td class="${hit ? "hit" : "fallback"}">${hit ? "subsector" : "sector"}</td></tr>`;
     }).join("") +
     `</tbody></table>
-    <p class="note">top-5 median: P/E ${pe5 ? pe5.toFixed(1) + "x" : "n/m"} · P/S ${ps5 ? ps5.toFixed(1) + "x" : "n/a"} —
-    scoring identical to the Excel screener (weights: subsector ${CFGW.sub} ≫ sector ${CFGW.sec}, size ${CFGW.size}, P/E proximity ${CFGW.pe}, profitability ${CFGW.prof}, A/H ${CFGW.ah}, recency ${CFGW.rec})</p>`;
+    <p class="note">top-5 median: P/E ${pe5 ? pe5.toFixed(1) + "x" : "n/m"} · P/S ${ps5 ? ps5.toFixed(1) + "x" : "n/a"}</p>`;
 }
 renderPick();
 
@@ -1965,10 +1951,7 @@ function renderStrips(chosen, reds, blues) {
     top.map(rowHtml).join("") +
     (rest.length ? `<details class="morefac"><summary>${rest.length} more factors</summary>` +
        rest.map(rowHtml).join("") + `</details>` : "") +
-    `<p class="note">Factors are ordered by how cleanly the red and blue groups separate — the top row is
-     the strongest candidate explanation for why your two camps behaved differently. Each strip is a
-     number line: the grey capsule is where the whole market sits, the coloured bars are the two group
-     medians, and every dot is one comp. Log scale on size, market cap and both subscriptions.</p>`;
+    "";
 }
 
 // 4. returns vs factor — the trading question, with one-click presets
@@ -3006,7 +2989,7 @@ HTML = """<!doctype html>
   <nav id="tabs">
     <a data-tab="screener" class="active">Screener</a><a data-tab="market">Market</a><a data-tab="ah">A / H</a><a data-tab="lockup">Lock-up</a><a data-tab="peers">Peer trades</a><a data-tab="cs">Cornerstones</a><a data-tab="sm">Stabilisers</a><a data-tab="pipeline">Pipeline</a><a data-tab="table">All deals</a>
   </nav>
-  <span class="asof">Main Board IPOs · data as of %%ASOF%% · offline snapshot (Bloomberg-live view: Excel workbook)</span>
+  <span class="asof">Main Board IPOs · updated %%ASOF%% · A/H &amp; peer snapshot %%AHSNAPSHOT%% · Bloomberg live: Excel</span>
   <button class="theme" id="theme">◐ theme</button>
 </header>
 
@@ -3140,7 +3123,7 @@ HTML = """<!doctype html>
 <section id="screener">
   <h2>Screener</h2>
   <div class="filters" id="calendar"></div>
-  <p class="sub">Pick a deal — or type your own. Comps rank subsector-first, same weights as the Excel screener.</p>
+  <p class="sub">Select a deal. Comparisons rank by subsector, then sector.</p>
   <div class="filters"><label>Target deal:</label> <select id="picker"></select>
     <label>find <input id="finder" list="deal-list" size="18"
       placeholder="type a name or code — CATL, 3750, 快手"></label>
@@ -3185,11 +3168,11 @@ HTML = """<!doctype html>
   <h3>Side-by-side matrix</h3>
   <div class="scroll" id="lab-matrix"></div>
 
-  <h3>Which factor separates red from blue? — all factors at once</h3>
+  <h3>Factor comparison</h3>
   <div id="lab-strips"></div>
 
   <div class="row">
-    <div class="chart"><h3>Returns vs factor — where the money is</h3>
+    <div class="chart"><h3>Return vs factor</h3>
       <div class="filters"><label>factor <select id="lab-x"></select></label>
         <label>return <select id="lab-y"></select></label></div>
       <div class="filters" id="lab-presets"></div>
@@ -3202,12 +3185,11 @@ HTML = """<!doctype html>
   <h3>Return paths (vs offer)</h3>
   <div class="sparks" id="lab-paths"></div>
 
-  <h3>Daily price action, listing → 3 months — every chosen comp</h3>
-  <p class="note">Hover any chart for the scan line. Left = rebased on the OFFER (pop included);
-  right = rebased on the day-1 OPEN, the first price you could actually trade.</p>
+  <h3>First three months</h3>
+
   <div class="pathgrid" id="lab-hpaths"></div>
 
-  <h3>A/H price paths since listing — the notebook's charts, offline</h3>
+  <h3>A/H price history</h3>
   <p class="note" id="lab-ah-note"></p>
   <div id="lab-ah"></div>
 </section>

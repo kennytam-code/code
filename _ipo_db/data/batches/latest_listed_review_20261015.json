@@ -1,0 +1,266 @@
+{
+ "batch": "Primary-source ESWIN listing acceptance",
+ "reviewed_at": "2026-10-15",
+ "deals": [
+  {
+   "code": "1256",
+   "name": "ESWIN COMPUTING",
+   "company_name": "Beijing ESWIN Computing Technology Co., Ltd.",
+   "name_cn": "奕斯偉計算",
+   "ipo_date": "2026-10-09",
+   "allotment_link": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1008/2026100801417.pdf",
+   "prospectus_link": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0928/2026092800035.pdf",
+   "allot_announce_dt": "2026-10-08",
+   "final_price": 1.55,
+   "price_range_lo": 1.48,
+   "price_range_hi": 1.59,
+   "offer_shares": 1617310000,
+   "gross_proceeds_hkdm": 2506.8,
+   "net_proceeds_hkdm": 2385.7,
+   "shares_outstanding": 22038743040,
+   "shares_issued_on_listing": 22038743040,
+   "treasury_shares_at_listing": 0,
+   "mktcap_basis": "HKEX:total shares upon listing x final offer price",
+   "mktcap_source": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1008/2026100801417.pdf",
+   "mktcap_source_page": 3,
+   "oversub_public_mult": 9.09,
+   "oversub_intl_mult": 1.95,
+   "public_pct_initial": 10,
+   "public_shares_final": 157022000,
+   "public_alloc_pct": 9.71,
+   "intl_placees": 45,
+   "one_lot_hit_pct": 10.02,
+   "lot_size": 2000,
+   "cornerstone_investors": [
+    "E-Town Shenghai Fund",
+    "Hefei Construction Investment Emerging Industry Equity Investment Fund Partnership Enterprise (L.P.)",
+    "Ocean Fine Industrial Limited",
+    "Chipmore International Trading Company Limited",
+    "Mega Prime Development Limited",
+    "Poly Platinum Enterprises Limited",
+    "CITIC Securities Asset Management (HK) Limited",
+    "Direct Link Resources (Hong Kong) Company Limited",
+    "Eurus Holdings SPC – OAAM Diversified Opportunities VI S.P. (ORIX)",
+    "Grit No.1 Family OFC – Grit No.1 Equity Fund"
+   ],
+   "cornerstone_pct": 46.33,
+   "cornerstone_amt_m": 1161.4987,
+   "cornerstone_amt_ccy": "HKD",
+   "cornerstone_n": 10,
+   "greenshoe_pct": 0.0,
+   "greenshoe_exercised_final": "no option",
+   "greenshoe_shares_exercised": 0,
+   "overallot_shares": 0,
+   "over_allocation_pct": 0,
+   "greenshoe_note": "Offer size adjustment: 47,106,000 new primary H shares. Not a greenshoe; no stabilizing manager or stabilization activities.",
+   "offer_size_adjustment_shares": 47106000,
+   "offer_size_adjustment_pct": 3.0,
+   "offer_period": "2026-09-28 to 2026-10-06",
+   "sponsors": [
+    "CITIC Securities (Hong Kong) Limited",
+    "China Securities (International) Corporate Finance Company Limited"
+   ],
+   "bookrunners": [
+    "CLSA Limited",
+    "China Securities (International) Corporate Finance Company Limited",
+    "Huatai Financial Holdings (Hong Kong) Limited",
+    "GF Securities (Hong Kong) Brokerage Limited",
+    "Huajin Securities (International) Limited",
+    "CMB International Capital Limited",
+    "Lighthouse Capital (HK) Financial Limited"
+   ],
+   "sector": "Technology",
+   "subsector": "Semiconductors",
+   "industry_en": "Semiconductors & Semiconductor Equipment",
+   "listing_regime": "Standard",
+   "is_h_share": "N",
+   "fin_currency": "RMB",
+   "rev_latest": 2825.0488031605855,
+   "ni_latest": -1761.3804322565652,
+   "rev_latest_financial_year": 2025,
+   "ni_latest_financial_year": 2025,
+   "rev_latest_basis": "Revenue",
+   "ni_latest_basis": "Consolidated net income",
+   "profitable_at_ipo": "N",
+   "business_overview": "Fabless RISC-V chip and solution designer for smart devices, vehicles and robotics.",
+   "grey_date": "2026-10-08",
+   "grey_close": 1.575,
+   "grey_return_pct": 1.6129032258064502,
+   "grey_src": "https://www.etnet.com.hk/www/eng/stocks/ci_ipo_detail.php?code=01256&type=listing (Phillip close)",
+   "first_open": 1.54,
+   "first_close": 1.535,
+   "first_date": "2026-10-09",
+   "last_close": 1.43,
+   "last_date": "2026-10-14",
+   "price_asof": "2026-10-14",
+   "day1_open_pop_pct": -0.65,
+   "day1_open_close_pct": -0.32,
+   "first_day_return_pct": -0.97,
+   "since_ipo_pct": -7.74,
+   "day1_high": 1.64,
+   "day1_low": 1.365,
+   "day1_volume": 172184400.0,
+   "benchmark": "HSTECH (Hang Seng TECH ETF)",
+   "bench_day1_pct": 2.6,
+   "alpha_day1_pct": -3.57,
+   "bench_since_pct": 2.3,
+   "alpha_since_pct": -10.04,
+   "alloc_mechanism": "10% initial; no reallocation",
+   "clawback": "NO"
+  },
+  {
+   "code": "9976",
+   "a_share_code": "301308.SZ",
+   "a_premium_ipo_pct": 77.3,
+   "a_close_cny": 358.22,
+   "a_close_date": "2026-09-07",
+   "a_premium_now": 0.7971760824337859,
+   "subsector": "Semiconductors",
+   "ah_note": "A-share 301308.SZ; H listed 8 September 2026",
+   "is_h_share": "Y",
+   "ah_discount_ipo_pct": -43.59842075578116,
+   "a_close_hkd": 418.42999199390414,
+   "cnyhkd": 1.1680810451507568
+  },
+  {
+   "code": "9607",
+   "a_share_code": "603650.SS",
+   "is_h_share": "Y",
+   "a_premium_ipo_pct": 73.92913902347738,
+   "ah_discount_ipo_pct": -42.50532109717293,
+   "a_close_cny": 62.3,
+   "a_close_date": "2026-09-30",
+   "a_close_hkd": 72.90476649999619,
+   "a_premium_now": 0.8081539310514927,
+   "cnyhkd": 1.170220971107483,
+   "ah_note": "A-share 603650.SS listed 27 June 2018; primary prospectus page 12. Premiums use individually dated A/H/FX observations."
+  }
+ ],
+ "evidence": {
+  "1256": {
+   "allotment": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1008/2026100801417.pdf",
+    "sha256": "8bdccf2479ca38f0cbd1860e2e8871b4d013abb6be2a170e6f6fb6fd5a7410b2",
+    "pages": 29
+   },
+   "prospectus": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0928/2026092800035.pdf",
+    "sha256": "52feead83b1f3b3ae341fdc797705f548a8b7ca06b56857d105d97ba3bbf46a7",
+    "pages": 441
+   },
+   "allocations": [
+    {
+     "name": "E-Town Shenghai Fund",
+     "shares": 224382000
+    },
+    {
+     "name": "Hefei Construction Investment Emerging Industry Equity Investment Fund Partnership Enterprise (L.P.)",
+     "shares": 111664000
+    },
+    {
+     "name": "Ocean Fine Industrial Limited",
+     "shares": 100000000
+    },
+    {
+     "name": "Chipmore International Trading Company Limited",
+     "shares": 48386000
+    },
+    {
+     "name": "Mega Prime Development Limited",
+     "shares": 37962000
+    },
+    {
+     "name": "Poly Platinum Enterprises Limited",
+     "shares": 37962000
+    },
+    {
+     "name": "CITIC Securities Asset Management (HK) Limited",
+     "shares": 64516000
+    },
+    {
+     "name": "Direct Link Resources (Hong Kong) Company Limited",
+     "shares": 64516000
+    },
+    {
+     "name": "Eurus Holdings SPC – OAAM Diversified Opportunities VI S.P. (ORIX)",
+     "shares": 21258000
+    },
+    {
+     "name": "Grit No.1 Family OFC – Grit No.1 Equity Fund",
+     "shares": 38708000
+    }
+   ],
+   "cornerstone_reported_groups": 9,
+   "legal_subscribers": 10,
+   "pages": {
+    "offer_shares_price_capital": 3,
+    "subscriptions": 4,
+    "cornerstones": 6,
+    "expiry": 11,
+    "financial_revenue": 15,
+    "financial_loss": 16,
+    "sponsors": 87,
+    "bookrunners": [
+     88,
+     89
+    ]
+   },
+   "notes": [
+    "GBAHIL aggregate is excluded from the legal-subscriber list; Mega Prime and Poly Platinum are its two underlying subscribers, not additional shares.",
+    "46.33% uses the final offer including 3% size adjustment.",
+    "The 1-week and longer returns are not mature; no future prices substituted.",
+    "Only this newly listed record is refreshed through 14 October; legacy historical snapshots retain their actual dates."
+   ]
+  },
+  "9976": {
+   "basis": "Preserves the previously reviewed 301308.SZ mapping and price snapshot; now survives re-merge",
+   "review": "data/batches/longsys_ah_review_20261014.json",
+   "fx_date": "2026-09-07"
+  },
+  "9607": {
+   "mapping_source": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0921/2026092100029.pdf",
+    "pdf_page": 21,
+    "a_listing_date": "2018-06-27"
+   },
+   "price_source_urls": [
+    "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh603650,day,2026-08-25,2026-10-02,50,",
+    "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=hk09607,day,2026-09-29,2026-10-02,50,"
+   ],
+   "raw_h_debut": 39.98,
+   "retained_database_debut": 39.98,
+   "note": "0.02 HKD provider difference retained as a diagnostic; no existing IPO-return field overwritten."
+  }
+ },
+ "field_evidence": {
+  "1256": {
+   "rev_latest": {
+    "value": 2825.0488031605855,
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0928/2026092800035.pdf",
+    "page": 15,
+    "financial_year": 2025,
+    "currency": "RMB",
+    "unit": "RMB million",
+    "native_value": 2431.237,
+    "basis_note": "FY2025 consolidated revenue",
+    "method": "Prospectus RMB thousands / 1000 / 0.8606 RMB per HKD"
+   },
+   "ni_latest": {
+    "value": -1761.3804322565652,
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0928/2026092800035.pdf",
+    "page": 16,
+    "financial_year": 2025,
+    "currency": "RMB",
+    "unit": "RMB million",
+    "native_value": -1515.844,
+    "basis_note": "FY2025 consolidated net loss; loss-maker P/E remains n/m",
+    "method": "Prospectus RMB thousands / 1000 / 0.8606 RMB per HKD"
+   }
+  }
+ },
+ "quote_snapshot_asof": {
+  "1256": "2026-10-14",
+  "9976": "2026-10-02",
+  "9607": "2026-10-02"
+ }
+}

@@ -1,6 +1,6 @@
 {
  "asof": "2026-10-02",
- "pair_count": 69,
+ "pair_count": 70,
  "premium_math": "passed",
  "no_lookahead": "passed",
  "pairs": [
@@ -1739,6 +1739,18 @@
    "missing_aligned_dates": [],
    "incompatible_entitlement_dates": [],
    "pre_common_sessions": 21,
+   "pre_reference_available": true
+  },
+  {
+   "code": "9607",
+   "h_sessions": 3,
+   "aligned_sessions": 3,
+   "first_h": "2026-09-29",
+   "first_a": "2026-08-25",
+   "latest_h": "2026-10-02",
+   "missing_aligned_dates": [],
+   "incompatible_entitlement_dates": [],
+   "pre_common_sessions": 20,
    "pre_reference_available": true
   },
   {

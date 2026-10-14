@@ -46,8 +46,18 @@ def put(doc,addr,v=None,f=None,style=None):
  elif f is not None:n.set('t','str');E.SubElement(n,q('v')).text=''
  place(doc,n);return n
 def sort(doc):
+ # ECMA-376 CT_Worksheet uses a sequence, not an unordered collection.
+ # Inserting validations after pageMargins made Excel discard both monitor
+ # worksheet parts even though their XML was well-formed.
+ order='sheetPr dimension sheetViews sheetFormatPr cols sheetData sheetCalcPr sheetProtection protectedRanges scenarios autoFilter sortState dataConsolidate customSheetViews mergeCells phoneticPr conditionalFormatting dataValidations hyperlinks printOptions pageMargins pageSetup headerFooter rowBreaks colBreaks customProperties cellWatches ignoredErrors smartTags drawing legacyDrawing legacyDrawingHF picture oleObjects controls webPublishItems tableParts extLst'.split()
+ unknown=[n.tag for n in doc if n.tag.split('}')[-1] not in order]
+ assert not unknown,unknown
+ doc[:]=sorted(doc,key=lambda n:order.index(n.tag.split('}')[-1]))
  data=doc.find(q('sheetData'));data[:]=sorted(data,key=lambda r:int(r.get('r')))
- for row in data:row[:]=sorted(row,key=lambda n:ci(re.match('[A-Z]+',n.get('r'))[0]))
+ assert len({r.get('r') for r in data})==len(data),'Duplicate worksheet rows'
+ for row in data:
+  row[:]=sorted(row,key=lambda n:ci(re.match('[A-Z]+',n.get('r'))[0]))
+  assert len({n.get('r') for n in row})==len(row),'Duplicate cells in row '+row.get('r')
  cells=nodes(doc);dim=doc.find(q('dimension'))
  if dim is None:dim=E.Element(q('dimension'));doc.insert(1 if doc.find(q('sheetPr')) is not None else 0,dim)
  if cells:dim.set('ref','A1:'+ec(max(ci(re.match('[A-Z]+',a)[0]) for a in cells))+str(max(int(re.search(r'\d+',a)[0]) for a in cells)))
@@ -105,6 +115,24 @@ def reflow(parts,sheets,root):
    if n.get('t')=='s':
     v=shared[int(n.find(q('v')).text)];style=n.get('s');addr=n.get('r');n.clear();n.set('r',addr);n.set('s',style);n.set('t','inlineStr');E.SubElement(E.SubElement(n,q('is')),q('t')).text=v
   return doc
+ # Paint the two price monitors from the same small Artifact-authored template.
+ # Source values, request formulas, native tables and controls are preserved.
+ for name in ['IPO Live','AH']:
+  if name not in layout_paths:continue
+  original=E.fromstring(parts[sheets[name]]);paint=layout(name);pn=nodes(paint)
+  oldcols=original.find(q('cols'));extra=[deepcopy(n) for n in oldcols if int(n.get('min'))>=16]
+  oldcols[:]=[deepcopy(n) for n in paint.find(q('cols'))]+extra
+  for row in original.find(q('sheetData')):
+   r=int(row.get('r'));pr=next((x for x in paint.find(q('sheetData')) if x.get('r')==str(min(r,80))),None)
+   if pr is not None:
+    for key in ['ht','customHeight']:
+     if key in pr.attrib:row.set(key,pr.get(key))
+   for n in row:
+    col=re.match('[A-Z]+',n.get('r'))[0]
+    if ci(col)>15:continue
+    source=pn.get(col+str(min(r,80)))
+    if source is not None:n.set('s',source.get('s','0'))
+  sort(original);parts[sheets[name]]=E.tostring(original)
  peer=E.fromstring(parts[sheets['Peer Trades']]);old=nodes(peer);calc=E.fromstring(parts[sheets['Peer Chart']])
  # Move the original scalar display builds exactly once into N:Y.
  moved={}
@@ -148,6 +176,9 @@ def reflow(parts,sheets,root):
  dp=drawing_path(parts,sheets['Peer Trades']);drawing=E.fromstring(parts[dp]);anchor(list(drawing)[0],'A16','D33');anchor(list(drawing)[1],'D16','H33');parts[dp]=E.tostring(drawing)
  # Lock-up calculations already live in hidden helpers P onward.
  lock=E.fromstring(parts[sheets['Lock-up']]);old=nodes(lock);visible=layout('Lock-up');new=nodes(visible)
+ # The style template extends to row 80. Replace its empty roster rows before
+ # grafting the existing records, rather than writing a second row 55..80.
+ data=visible.find(q('sheetData'));data[:]=[r for r in data if int(r.get('r'))<55]
  for row in lock.find(q('sheetData')):
   r=int(row.get('r'))
   if r>=55:visible.find(q('sheetData')).append(deepcopy(row))
@@ -213,6 +244,8 @@ def patch_file(source,dest,root):
  from adjust_ah_charts import apply
  from combine_ah_benchmark import apply as benchmark
  root=__import__('pathlib').Path(root);requests(parts,sheets,root);apply(parts,sheets,root);benchmark(parts,sheets,root)
+ from desk_release import apply as finish
+ finish(parts,sheets,root)
  with zipfile.ZipFile(dest,'w',zipfile.ZIP_DEFLATED) as z:
   for p,raw in parts.items():z.writestr(p,raw)
 if __name__=='__main__':

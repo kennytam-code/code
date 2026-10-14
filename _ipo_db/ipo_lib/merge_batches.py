@@ -1053,6 +1053,21 @@ def main():
                 deals[c].pop(f,None);prov[c].pop(f,None)
                 deals[c]['intl_note' if f=='oversub_intl_mult' else 'public_sub_note']=r.get(f+'_note','Not independently established in final allotment filing.')
 
+    # Newly listed issuers accepted from complete final-allotment/prospectus
+    # readings. Apply before derived size/valuation/return computations.
+    latest = load("latest_listed_review_20261015.json")
+    if latest:
+        from review_quote_guard import quote_dates, allowed as review_allowed
+        refreshed_dates = quote_dates({name: load(name+".json") for name in ["prices","ah_study","ah_snapshot","h_paths"]})
+        for row in latest["deals"]:
+            code = row["code"]
+            if code not in deals: continue
+            for field, value in row.items():
+                if field != "code" and value is not None and review_allowed(field, latest.get("quote_snapshot_asof", {}).get(code), refreshed_dates.get(code)):
+                    put(code, field, value, "filing:latest listed primary review", 170, status="xchecked")
+                    evidence = latest.get("field_evidence", {}).get(code, {}).get(field)
+                    if evidence: prov[code][field]["evidence"] = evidence
+
     # --- derived fields (always recomputed, overwrite allowed) ---
     dropped_shares = []
     # pass 1: deal size, because market cap and both multiples are derived from it
@@ -2179,6 +2194,8 @@ def main():
         if not x.get("prospectus_link") and not x.get("doc_note"):
             x["doc_note"] = ("prospectus not on the HKEX per-stock search"
                              + ("; allotment notice linked" if x.get("allotment_link") else ""))
+        if x.get("greenshoe_pct") == 0:
+            x["shoe_note"] = "no over-allotment option"
         if not x.get("stabilization_end_date") and not x.get("shoe_note"):
             x["shoe_note"] = "outcome published; expiry date not in the notice"
         # Bloomberg fills the main P/E where the filings gave nothing: the
@@ -2207,9 +2224,8 @@ def main():
                                 + (f" ({px['code']})" if px.get("code") else ""))
             else:
                 x["ah_note"] = "no A-share listing"
-        elif x.get("ah_discount_ipo_pct") is None:
-            x["ah_note"] = (f"A-share {x['a_share_code'].split('.')[0]} listed after "
-                            "the H IPO, so there is no at-IPO premium; today's is live")
+        elif x.get("ah_discount_ipo_pct") is None and x.get("a_premium_ipo_pct") is None and not x.get("ah_note"):
+            x["ah_note"] = "At-IPO A-share price not established; live quote requires Bloomberg"
         # returns: a blank is either a window that has not elapsed or a line
         # Yahoo has no history for — say which
         if x.get("first_day_return_pct") is None:

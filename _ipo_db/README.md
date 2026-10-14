@@ -1,38 +1,28 @@
 # HK IPO database
 
-Latest workbook and offline dashboard: 14 October 2026. Saved closing-price snapshot: 2 October 2026.
-
-- **IPO Live:** live Bloomberg prices by sector or subsector, with daily changes.
-- **AH:** 69 pairs. E4 selects Stored/Bloomberg; charts combine premium with A-share and CSI 300 returns. Verified capital actions are adjusted on each class's own ex date.
-- **HTML A/H:** compare selected pairs, Select all, and preset/custom date ranges.
-- **Peer Trades:** 35 named product peer pairs. B3 selects the pair; F3 selects the source; H3 selects the horizon; F4/H4 set custom dates.
-- **Lock-up:** filed cornerstone schedules, IPO dates and 30 trading sessions either side of expiry, with selected-stock and cohort curves.
-- **Screener:** verified A-code lookup and clear history output; live TTM PE/PS direct requests with BQL fallback. NTM/FY2027 estimates remain BQL.
-
-Run `python ipo.py refresh` followed by `python ipo.py build`, or use the shipped `hk_ipo.py`. Refresh regenerates monitor histories, comparisons and benchmark references. Source failures remain dated and are reported. Bloomberg mode requires the terminal add-in; the HTML remains an offline snapshot.
-
-See [MAINTENANCE.md](MAINTENANCE.md) for sources, formula conventions and build details.
-
-
-The workbook and offline HTML dashboard cover 524 IPO records. IPO Live and A/H monitoring extend to seven years: 714 listings and 68 A/H pairs. The latest deal-data review is dated 12 October 2026; stored market prices are through 2 October 2026.
+Latest delivery: 14 October 2026. IPO Live has a dated 14 October public closing-quote snapshot. Database, A/H, peer and lock-up histories remain the separately labelled 2 October snapshot.
 
 Use the files in `TO_NOMURA/`:
 
 | File | Purpose |
 |---|---|
-| `HK_IPO_Database_v1.xlsx` | IPO Live, A/H, Lock-up, Peer Trades, Screener and Database, in that order. |
-| `hk_ipo_dashboard.html` | Self-contained charts and filters; about 2.5 MB and no external requests. |
+| `HK_IPO_Database_v1.xlsx` | IPO Live, AH, Lock-up, Peer Trades, Screener and Database. |
+| `hk_ipo_dashboard.html` | Self-contained charts and filters; opens offline. |
 | `hk_ipo_dashboard.zip` | Compressed transfer copy; extract before opening. |
-| `hk_ipo.py` | Standalone build/update script with embedded data and source modules. |
+| `hk_ipo.py` | Standalone updater with embedded data and source modules. |
 | `READ_ME_FIRST.txt` | Desk controls and update instructions. |
 
-IPO Live shows Bloomberg prices and change versus the previous close, with broad-sector and selected-sector/subsector averages. Screener freezes the first two columns. Current P/E and P/S in Excel use the supplied BQL TTM expressions; selected A/H companies also have NTM and FY2027 estimates. Historical IPO valuations remain historical. Live requests require a Bloomberg terminal. Missing replies show `Unavailable`.
+IPO Live: 715 seven-year listings. B4 selects Stored/Bloomberg; B5 selects Sector/Subsector and H34 selects the broad sector for subsector averages. The stored snapshot contains 706 validated prices. Missing/stale daily quotes are excluded from the averages. Bloomberg uses direct LAST_PRICE and PX_YEST_CLOSE.
 
-A/H opens in Stored mode; E4 selects Bloomberg. HTML uses the Screener's chart format, with listing-to-snapshot and three-month views. The CSI 300 panel compares A-share and market performance on the same observed dates around H listing. Sixty-five pairs have pre-IPO A-share history; three listed their A shares later. Missing quotes and mismatched bonus entitlements remain gaps.
+AH: 70 pairs. B4 selects an H or A code and E4 selects Stored/Bloomberg. The selected chart combines A/H premium on the left axis with A-share and CSI 300 price returns on the right, using a common actual-date axis. Comparison controls remain below the selected chart. HTML supports multiple pairs, Select all, preset horizons and custom dates. Real missing observations stay absent; reviewed capital actions retain their separate ex dates.
 
-Lock-up contains 396 cornerstone schedules for 386 companies, IPO dates, filed source links, and price returns over 30 HK trading sessions before and after expiry. Charts support individual stocks, selected comparisons and date-filtered cohorts. Unconfirmed dates and incomplete windows remain unavailable.
+Lock-up: 397 cornerstone schedules for 387 issuers. B4/E4 select an event; B10/E10/H10/K10 select four stocks and B11/E11 filter the expiry-date cohort. The table includes IPO date, cornerstone percentage, since-IPO return, deal size and returns over 30 HK trading sessions before/after expiry. Curves use expiry reference close = 0%. Unconfirmed dates and incomplete windows remain unavailable.
 
-Peer Trades selects one named product peer pair; both securities populate automatically. Source and horizon controls remain, including custom dates. The roster covers 35 pairs / 66 stocks, including established Hong Kong companies outside the IPO database, and shows material business-mix differences. Spread is the difference between the two price returns, in percentage points, from the first common observed session.
+Peer Trades: 35 named product-peer pairs / 66 stocks, including established Hong Kong shares outside the IPO database. B3 selects the pair; F3 selects Stored/Bloomberg; H3 selects the horizon; F4/H4 set custom dates. Both securities populate automatically. Spread is A minus B price return in percentage points from their first common observed session. Actual coverage dates are shown.
+
+Database fundamentals BM:BO and Screener BH:BJ contain live NTM P/E, FY2027 P/E and FY2027 P/S. TTM fields use direct Bloomberg fields with the supplied BQL fallback. BQL extraction locates the requested field rather than mistaking numeric date/period metadata for a multiple. Missing replies show `Unavailable`; historical IPO valuations remain historical.
+
+The workbook opens in native Mac Excel without repair and the changed views were visually checked. Formula fixtures cover negative/zero/missing replies, metadata-bearing BQL responses, all selectors and source bindings. Actual Bloomberg execution still requires the terminal add-in.
 
 ## Conventions
 

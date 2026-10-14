@@ -2,7 +2,7 @@
  "version": 1,
  "asof": "2026-10-02",
  "generated_at": "2026-10-05T15:31:55.674482+00:00",
- "universe_count": 62,
+ "universe_count": 64,
  "eligible_1m_count": 60,
  "errors": [],
  "method": "A premium = raw A(CNY) * dated CNYHKD / raw H(HKD) - 1. Day 1 close to 21st subsequent H-traded session. Prior known A/FX close carried at most 10/5 calendar days; quote dates retained. Different closing times, not executable arbitrage. No dividends. One share per class. First-month H share-scale actions excluded from correlations. Offer reference uses A/FX close before H debut, not book pricing time. Historical company cap at A reference = listing company cap / H offer * pre-debut A * FX; it inherits the listing cap's share-count basis, and is not A-only float cap. Offer value / this cap is a funding-value ratio, not free float. Current company cap at A price is a descriptive, forward-looking proxy, not historical A-float cap. Correlations are exploratory, not causation.",
@@ -232329,6 +232329,96 @@
    "a_runup_start_date": "2026-08-10",
    "a_runup_end_date": "2026-09-07",
    "exclusion": "Missing aligned Day 1 or 21st subsequent H-traded session"
+  },
+  {
+   "code": "9607",
+   "name": "RA MATERIALS",
+   "sector": "Materials/Energy",
+   "subsector": "Chemicals",
+   "a_code": "603650.SS",
+   "ipo_date": "2026-09-29",
+   "offer_hkd": 44.0,
+   "deal_size_hkdm": 2997.22,
+   "size_basis": "gross (stated)",
+   "current_company_cap_at_a_hkdm": 49895.2,
+   "current_cap_date": null,
+   "history": [
+    [
+     "2026-09-29",
+     39.98,
+     63.21,
+     1.1688159704208374,
+     0.8479454099625099,
+     "2026-09-29",
+     "2026-09-29"
+    ],
+    [
+     "2026-09-30",
+     40.2,
+     62.3,
+     1.1705960035324097,
+     0.8141326124395301,
+     "2026-09-30",
+     "2026-09-30"
+    ],
+    [
+     "2026-10-02",
+     40.32,
+     62.3,
+     1.170220971107483,
+     0.8081539310514927,
+     "2026-09-30",
+     "2026-10-02"
+    ]
+   ],
+   "h_history": [
+    [
+     "2026-09-29",
+     39.98
+    ],
+    [
+     "2026-09-30",
+     40.2
+    ],
+    [
+     "2026-10-02",
+     40.32
+    ]
+   ],
+   "eligible_1m": false,
+   "offer_reference_premium_pct": 73.92913902347738,
+   "offer_reference_a_date": "2026-09-28",
+   "offer_reference_fx_date": "2026-09-28",
+   "company_cap_at_a_reference_hkdm": 52360.149799044695,
+   "listing_cap_basis": "derived:price x shares upon listing",
+   "offer_size_to_a_reference_cap_pct": 5.724238779879664,
+   "premium_day1_pct": 84.79454099625099,
+   "day1_h_hkd": 39.98,
+   "day1_a_cny": 63.21,
+   "day1_fx": 1.1688159704208374,
+   "day1_a_date": "2026-09-29",
+   "day1_fx_date": "2026-09-29",
+   "offer_to_day1_change_pp": 10.865401972773611,
+   "latest_date": "2026-10-02",
+   "latest_h_hkd": 40.32,
+   "latest_a_cny": 62.3,
+   "latest_fx": 1.170220971107483,
+   "latest_premium_pct": 80.81539310514927,
+   "latest_a_date": "2026-09-30",
+   "latest_fx_date": "2026-10-02",
+   "a_runup_pre_ipo_pct": 3.9682539682539764,
+   "a_runup_start_date": "2026-08-31",
+   "a_runup_end_date": "2026-09-28",
+   "exclusion": "Missing aligned Day 1 or 21st subsequent H-traded session",
+   "mapping_source": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0921/2026092100029.pdf",
+    "pdf_page": 21,
+    "a_listing_date": "2018-06-27"
+   },
+   "price_source_urls": [
+    "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh603650,day,2026-08-25,2026-10-02,50,",
+    "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=hk09607,day,2026-09-29,2026-10-02,50,"
+   ]
   }
  ]
 }

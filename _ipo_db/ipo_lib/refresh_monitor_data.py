@@ -52,6 +52,9 @@ def refresh_legacy(root,cutoff,get=requests.get):
 
 def main():
  cutoff=histories(ROOT)['asof'];errors=refresh_legacy(ROOT,cutoff)+refresh_peers(ROOT,cutoff)
+ from fetch_live_snapshot import refresh
+ try:refresh(ROOT)
+ except Exception as exc:print('Live snapshot refresh failed; retained dated snapshot:',exc)
  runpy.run_module('prepare_monitor_data',run_name='__main__')
  from prepare_ah_reference import main as reference
  reference()

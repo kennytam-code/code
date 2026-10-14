@@ -55,13 +55,19 @@ def template(wb):
    def chart_title(c):return ''.join(x.text or '' for x in c.title.to_tree().iter() if x.tag.endswith('}t')) if c.title else ''
    t._charts.sort(key=lambda c:'subsector' in chart_title(c).lower())
  src.close();peer_src.close()
+ for book in [src,peer_src]:
+  for saved_sheet in book:saved_sheet._cells.clear()
+ del sources,s,src,peer_src
+ import gc
+ gc.collect()
 
-def build(wb,deals,root=None):
+def build(wb,deals,root=None,defer_peer_history=False):
  global ROOT
  ROOT=Path(root or ROOT);template(wb)
  pd=wb['Peer Data'];cursor=2
- for st in json.loads((ROOT/'data/peer_pairs.json').read_text())['stocks']:
-  for dt,price in st['history']:pd.cell(cursor,1,date.fromisoformat(dt));pd.cell(cursor,2,price);cursor+=1
+ if not defer_peer_history:
+  for st in json.loads((ROOT/'data/peer_pairs.json').read_text())['stocks']:
+   for dt,price in st['history']:pd.cell(cursor,1,date.fromisoformat(dt));pd.cell(cursor,2,price);cursor+=1
  ipo,ah,chart=wb['IPO Live'],wb['AH'],wb['Chart Data']
  md=wb.create_sheet('Market Data');cache=wb.create_sheet('AH History');live=wb.create_sheet('Live History')
  batch=market_histories(ROOT);recs={r['code']:r for r in batch['pairs']};taxonomy=json.loads((ROOT/'data/taxonomy.json').read_text())['sectors'];sectors=list(taxonomy)

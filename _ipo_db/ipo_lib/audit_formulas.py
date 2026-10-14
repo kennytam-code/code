@@ -31,6 +31,7 @@ import build_xlsx as B
 ROOT = Path(__file__).resolve().parent.parent
 WB = ROOT / "out" / "HK_IPO_Database_v1.xlsx"
 DBREF = re.compile(r"Database!\$?([A-Z]{1,2})\$?(\d+)")
+BUILT_FIELDS = {}
 
 # Calc scoring columns -> the Database field each one is defined to read.
 CALC_EXPECT = {
@@ -53,13 +54,15 @@ LIVE_PANEL = ["A price now", "A P/E (TTM)", "H P/E now", "H P/S now",
               "A premium vs H"]
 
 CARD_EXPECT = {"A7": "Sector", "A8": "Subsector", "A9": "Size",
-               "A13": "Target P/E", "A14": "Public sub",
+               "A13": "Offer P/E", "A14": "Public sub",
                # a control written into the comp table's band row (19) is
                # silently overwritten — assert where this one actually lives
-               "C17": "Force-include"}
+               "C17": "Include codes"}
 
 
 def field_of(letter):
+    if BUILT_FIELDS:
+        return BUILT_FIELDS.get(letter, f"<col {letter} out of range>")
     idx = openpyxl.utils.column_index_from_string(letter)
     if 1 <= idx <= len(B.DB_COLS):
         return B.DB_COLS[idx - 1][2]
@@ -71,15 +74,25 @@ def main():
         sys.exit(f"no workbook at {WB} — run build_xlsx.py first")
     wb = openpyxl.load_workbook(WB, read_only=True)
     ws, calc = wb["Screener"], wb["Calc (scoring engine)"]
+    declared = {h: f for _band, h, f, _fmt, _width in B.DB_COLS}
+    declared.update({"P/E TTM live": "pe_now", "P/S TTM live": "ps_now",
+                     "NTM P/E live": "pe_ntm_live", "FY2027 P/E live": "pe_fy2027_live",
+                     "FY2027 P/S live": "ps_fy2027_live"})
+    for row in wb["Database"].iter_rows(min_row=4, max_row=4):
+        for cell in row:
+            if cell.value in declared: BUILT_FIELDS[get_column_letter(cell.column)] = declared[cell.value]
     bad, checked = [], 0
 
     # ---- 1. comp table: every pulled column matches its own header ----------
     hdr_row = 20
     first = 21
     headers = {get_column_letter(c): ws.cell(hdr_row, c).value
-               for c in range(1, len(B.COMP_COLS) + 1)}
+               for c in range(1, ws.max_column + 1)}
+    live_pull = {"TTM P/E live": "pe_now", "TTM P/S live": "ps_now",
+                 "NTM P/E live": "pe_ntm_live", "FY2027 P/E live": "pe_fy2027_live",
+                 "FY2027 P/S live": "ps_fy2027_live"}
     for col, head in headers.items():
-        want = B.COMP_PULL.get(head)
+        want = live_pull.get(head, B.COMP_PULL.get(head))
         if not want:
             continue
         f = ws[f"{col}{first}"].value
