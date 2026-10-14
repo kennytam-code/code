@@ -953,7 +953,11 @@ def _parse_ticker_list(value):
 def _ticker_key(ticker):
     """Upper-case ticker identity with the optional Equity suffix removed."""
     name = ' '.join(str(ticker).upper().split())
-    return name[:-7].strip() if name.endswith(' EQUITY') else name
+    name = name[:-7].strip() if name.endswith(' EQUITY') else name
+    parts = name.split()
+    if len(parts) == 2:
+        name = parts[0] + ' ' + EXCH_MAP.get(parts[1], parts[1])
+    return name
 
 
 def _exclusion_conflicts(exclude, required):
@@ -4085,8 +4089,16 @@ def _filter_candidate_scope(data, legs, columns, scope, include_market, peers=No
     def canonical(t):
         return _fmt_bbg_ticker(str(t).upper().replace(' EQUITY', '')) or str(t)
 
-    columns, excluded = _apply_exclusions(
-        [c for c in columns if c not in legs], exclude)
+    # Alias spellings of an existing leg/hedge are not extra instruments.
+    seen_identities={canonical(t) for t in legs}
+    distinct=[]; alias_removed=[]
+    for c in columns:
+        key=canonical(c)
+        if key in seen_identities:
+            if c not in legs: alias_removed.append(c)
+        else:
+            distinct.append(c); seen_identities.add(key)
+    columns, excluded = _apply_exclusions(distinct, exclude)
     if same_exchange_only:
         target_venue = _same_listing_exchange(legs)
         requested_foreign = [f for f in _parse_ticker_list(forced)
@@ -4160,6 +4172,7 @@ def _filter_candidate_scope(data, legs, columns, scope, include_market, peers=No
                          + ', '.join(outside) + '. Change the filter or required instruments.')
     return {'columns': list(dict.fromkeys(list(legs) + candidates)),
             'excluded': excluded,
+            'alias_duplicates_removed': alias_removed,
             'exchange_removed': exchange_removed,
             'same_exchange_only': bool(same_exchange_only),
             'market_tickers': [c for c in market_tickers if c in candidates],
@@ -4175,14 +4188,19 @@ def _with_reference_returns(frame, data, references, two_day=False, reference_ta
     if not isinstance(prices,pd.DataFrame): return out
     step=2 if two_day else 1
     target_close=_close_utc_of(reference_target or next((c for c in frame if c!=PORTFOLIO_COL),''))
+    present={_ticker_key(c) for c in out}
+    available={_ticker_key(c):c for c in prices}
     for name in references:
-        if name in out or name not in prices: continue
+        identity=_ticker_key(name)
+        if identity in present or identity not in available: continue
+        name=available[identity]
         factor_close=_close_utc_of(name)
         if not two_day and (target_close is None or factor_close is None
                 or _close_gap_hours(target_close,factor_close)>tz_tolerance_hours):
             continue
         values=np.log(prices[name]/prices[name].shift(step)).reindex(out.index)
-        if np.isfinite(values).all() and values.std()>MIN_RETURN_STD: out[name]=values
+        if np.isfinite(values).all() and values.std()>MIN_RETURN_STD:
+            out[name]=values;present.add(identity)
     return out
 
 
@@ -4230,9 +4248,21 @@ def _common_risk_model(frame, target, peers, reference_names=(), max_factors=5):
         factors.append(z / sd)
         labels.append(label)
         return True
+    # Proxies for the same broad-market slot are alternatives, not additional
+    # economic factors. In a short window they must not crowd out the sector.
+    broad_groups = {_ticker_key(ticker): market for market, (_, tickers) in BROAD_MARKET_HEDGES.items()
+                    for ticker in tickers}
+    by_identity={_ticker_key(c):c for c in cols}
+    reference_names=[by_identity.get(_ticker_key(t),t) for t in reference_names]
+    peers=[by_identity.get(_ticker_key(t),t) for t in peers]
+    used_markets = set()
     for name in reference_names:
+        group = broad_groups.get(_ticker_key(name))
+        if group is not None and group in used_markets:
+            continue
         if name in cols and name != target and len(factors) < limit:
-            add(centered[:, cols.index(name)], name)
+            if add(centered[:, cols.index(name)], name) and group is not None:
+                used_markets.add(group)
     eligible = [p for p in dict.fromkeys(peers)
                 if p in cols and p != target and not _is_etf(p)]
     if len(eligible) >= 2 and len(factors) < limit:
@@ -4693,6 +4723,12 @@ def _strict_peer_set(target_ref, references, candidates):
 def _execution_audit(result, data):
     """Observable implementation checks. Unknown borrowing is never marked passed."""
     quotes=(data or {}).get('execution_snapshot') or {}
+    def currency(ticker):
+        value=quotes.get(ticker,{}).get('CRNCY')
+        if value is None or pd.isna(value): return 'unknown'
+        value=str(value).strip().upper()
+        return value if re.fullmatch(r'[A-Z]{3}',value) and value not in ('NAN','N/A') else 'unknown'
+    target_currencies={t:currency(t) for t in result.get('portfolio_legs',[])}
     rows=[]
     for tk,w in result['weights'].items():
         q=quotes.get(tk,{})
@@ -4707,12 +4743,19 @@ def _execution_audit(result, data):
         borrow=('not needed' if w<=0 else 'confirmed by user' if supplied is True
                 else 'unavailable' if supplied is False else 'unknown')
         rows.append({'ticker':tk,'average_daily_shares':volume,'spread_bps':spread,
-                     'currency':str(q.get('CRNCY') or 'unknown'),'borrow':borrow})
+                     'currency':currency(tk),'borrow':borrow})
+    currencies=list(target_currencies.values())+[r['currency'] for r in rows]
+    known=set(currencies)-{'unknown'}
+    currency_status=('mixed' if len(known)>1 else
+                     'unknown' if not target_currencies or 'unknown' in currencies else 'same')
     unknown=any(not np.isfinite(r['average_daily_shares']) or not np.isfinite(r['spread_bps'])
-                or r['borrow']=='unknown' for r in rows)
+                or r['borrow']=='unknown' for r in rows) or currency_status=='unknown'
     unavailable=any(r['borrow']=='unavailable' for r in rows)
     return {'rows':rows,'status':('BORROW UNAVAILABLE' if unavailable else
+            'FX NORMALIZATION REQUIRED' if currency_status=='mixed' else
             'EXECUTION DATA INCOMPLETE' if unknown else 'DESK CHECK REQUIRED'),
+            'currency_status':currency_status,'target_currencies':target_currencies,
+            'currencies':sorted(known),'fx_converted':False,
             'snapshot_date':(data or {}).get('execution_snapshot_date'),
             'order_ready':False}
 
@@ -5408,7 +5451,10 @@ def _find_best_hedge_impl(
     def _factor_context(ctx):
         if 'common_model' not in ctx:
             peer_names=sorted(verified_peer_names)
-            peer_names=[p for p in peer_names if p in ctx['u'] and p not in pf_legs]
+            available={_ticker_key(p):p for p in ctx['u']}
+            leg_ids={_ticker_key(p) for p in pf_legs}
+            peer_names=list(dict.fromkeys(available[_ticker_key(p)] for p in peer_names
+                if _ticker_key(p) in available and _ticker_key(p) not in leg_ids))
             references=list(dict.fromkeys(
                 [c for leg in pf_legs for c in _broad_market_spec(leg)['instruments']] +
                 [c for leg in pf_legs for c in (data.get('sector_tickers_by_target') or {}).get(leg,[])] +
@@ -5566,7 +5612,8 @@ def _find_best_hedge_impl(
         if basket_methods == 'search':
             ctx=_training_context(train,max(8,min(basket_size_options)+2))
             for size,recipes in _joint_context(ctx).items():
-                entries.extend((f'search:{j}',size,row['basket'],0) for j,row in enumerate(recipes))
+                entries.extend((f'search:{j}',size,row['basket'],0) for j,row in enumerate(recipes)
+                    if broad_search or f'search:{j}' in pc_grid)
         if broad_search:
             for ticker in eligible:
                 if not forced or forced == [ticker]:
@@ -5643,7 +5690,7 @@ def _find_best_hedge_impl(
                                         index=ret_tr.index, columns=pca_cols)
                 cap = min(len(pca_cols) - 1, len(ret_tr) - 1)
                 for pc_spec in pc_grid:
-                    if str(pc_spec).startswith('single:') or pc_spec in ('correlation', 'forward'):
+                    if str(pc_spec).startswith(('single:', 'search:')) or pc_spec in ('correlation', 'forward'):
                         continue
                     n_pc = (_n_pc_auto(ret_tr_sc, cap, robust_cov)
                             if pc_spec == 'auto' else int(min(int(pc_spec), cap)))
@@ -8542,6 +8589,10 @@ def _report_blocks(result):
     table(['EVIDENCE','UNSEEN R²','VOLATILITY CUT','IN-SAMPLE R²'],[[
         result['validation_mode'],f(ticket.get('quality_r2')),f(risk.get('vol_reduction'),True),f(result['in_sample_r2'])]])
     text('Current basket uses the full selected window. Unseen scores belong to earlier frozen fits; they do not test today’s refitted weights.',True)
+    execution=result.get('execution_audit') or {}
+    if execution.get('currency_status')=='mixed':
+        text('Local-currency comparison only: '+', '.join(execution['currencies'])+
+             '. FX has not been converted; the spread is not a common-currency portfolio return. Trade weights are withheld pending FX normalization.')
     if result['validation_mode']=='IN-SAMPLE':
         text('Short-window research candidate: no reserved unseen test in this run. Review the exposure and weight-sensitivity checks.')
     else:
@@ -8641,9 +8692,10 @@ def _report_blocks(result):
             text(f"{len(a['classification_missing'])} local listings lack usable industry classifications; peer coverage remains incomplete.",True)
     execution=result.get('execution_audit') or {}
     text(execution.get('status','Execution checks unavailable'))
-    table(['INSTRUMENT','AVG DAILY SHARES','SPREAD bp','BORROW'],[[r['ticker'],
+    table(['INSTRUMENT','CCY','AVG DAILY SHARES','SPREAD bp','BORROW'],[[r['ticker'],r['currency'] if r['currency']!='unknown' else '—',
         f"{r['average_daily_shares']:,.0f}" if np.isfinite(r['average_daily_shares']) else 'unknown',f(r['spread_bps']),r['borrow']]
-        for r in execution.get('rows',[])],widths=[2.9,1.6,1.0,1.5])
+        for r in execution.get('rows',[])],widths=[2.4,.6,1.6,.9,1.5])
+    if execution.get('currency_status')=='unknown': text('Quote currencies are incomplete; common-currency portfolio risk has not been established.',True)
     text('Quotes are a downloaded snapshot. Confirm current liquidity, borrow and financing before implementation.',True)
     audits=result.get('joint_search_audit') or []
     if audits:
@@ -9075,6 +9127,10 @@ def find_best_hedge(*args, **kwargs):
         result['trade_eligible']=False
         result['trade_weights']=result['weights'].iloc[:0].copy()
         result['recommended_action']='BORROW_UNAVAILABLE'
+    elif result['execution_audit']['currency_status']=='mixed':
+        result['trade_eligible']=False
+        result['trade_weights']=result['weights'].iloc[:0].copy()
+        result['recommended_action']='FX_NORMALIZATION_REQUIRED'
     result['params'].update(max_leg=options['max_leg'],search_budget=options['search_budget'])
     result['search']['basket_methods'] = (['joint combination search'] if options['basket_methods']=='search'
         else result['search']['basket_methods'])
@@ -9164,16 +9220,17 @@ def find_best_hedge(*args, **kwargs):
 # An index-rebalance book churns as predictions update, and re-running the
 # full grid plus nested validation for every intraday change is overkill: the
 # expensive part is CONFIG SELECTION, and the config does not change from one
-# day to the next. quick_rehedge pins the config that was already validated
-# and refits the weights only — seconds, and zero Bloomberg calls. Re-run the
+# day to the next. quick_rehedge pins the previously selected config
+# and reapplies its basket-selection rule, then refits weights without Bloomberg calls. Re-run the
 # full find_best_hedge weekly, or whenever the book changes materially.
 def quick_rehedge(book, data, prev_result, show_plots=True, rolling_oos=True,
                   full_validation=False):
-    """Refit hedge weights for an updated book using a previously VALIDATED
+    """Refit hedge weights for an updated book using a previously selected
     config. `prev_result` is the dict returned by a full find_best_hedge run.
 
-    The config is NOT re-searched — that is the point of this path, and it is
-    what makes it seconds instead of minutes. What you can choose:
+    The selected recipe rule and basket size are pinned. The rule may select
+    different instruments on new data; weights are then refitted. This is not a
+    promise to keep the old basket members or its earlier validation. Options:
 
       show_plots       draw the charts (default True)
       rolling_oos      compute the rolling walk-forward curve (default True)

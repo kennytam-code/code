@@ -411,6 +411,90 @@ class ResearchTests(unittest.TestCase):
         self.assertLessEqual(b['weights'].abs().sum(),.4000001)
         self.assertLessEqual(b['weights'].abs().max(),.2000001)
 
+    def test_market_backup_proxies_do_not_displace_sector_factor(self):
+        d=fixture(n=30); f=np.log(d['prices']/d['prices'].shift()).dropna().iloc[-20:]
+        f['006204 TT Equity']=f['0050 TT Equity']+.01*f['2900 TT Equity']
+        f['006208 TT Equity']=f['0050 TT Equity']+.01*f['2901 TT Equity']
+        refs=['006204 TT Equity','0050 TT Equity','006208 TT Equity','0055 TT Equity']
+        model=E['_common_risk_model'](f,d['target'],d['peer_tickers_by_target'][d['target']],refs)
+        self.assertEqual(model['labels'],['006204 TT Equity','0055 TT Equity'])
+        f['006204 TT Equity']=0.
+        model=E['_common_risk_model'](f,d['target'],[],refs)
+        self.assertEqual(model['labels'],['0050 TT Equity','0055 TT Equity'])
+
+    def test_pinned_search_rule_runs_long_validation_and_quick_refit(self):
+        r=run(self.data,sample_window='1y',pc_options=['search:1'],broad_search=False)
+        self.assertEqual(r['params']['pc_spec'],'search:1')
+        self.assertEqual(set(r['nested_validation']['pc_spec']),{'search:1'})
+        with contextlib.redirect_stdout(io.StringIO()):
+            q=E['quick_rehedge'](self.data['target'],self.data,r,show_plots=False,rolling_oos=False)
+        self.assertEqual(q['params']['pc_spec'],'search:1')
+        self.assertEqual(q['params']['basket_size'],r['params']['basket_size'])
+
+    def test_pinned_short_recipe_is_not_replaced_by_search_winner(self):
+        for spec in ('correlation','search:1'):
+            r=run(sample_window='1m',pc_options=[spec],broad_search=False)
+            self.assertEqual(r['params']['pc_spec'],spec)
+            self.assertEqual(r['search']['configurations_scored'],1)
+
+    def test_mixed_currency_result_cannot_supply_trade_weights(self):
+        d=fixture(); names=list(d['prices'].columns)
+        d['execution_snapshot']={n:dict(CRNCY='TWD' if n==d['target'] else 'USD',
+            PX_BID=99,PX_ASK=100,AVERAGE_VOLUME_30D=1000000) for n in names}
+        d['borrow_available']={n:True for n in names}
+        r=run(d,sample_window='3m')
+        self.assertEqual(r['execution_audit']['currency_status'],'mixed')
+        self.assertFalse(r['trade_eligible']);self.assertTrue(r['trade_weights'].empty)
+        self.assertEqual(r['recommended_action'],'FX_NORMALIZATION_REQUIRED')
+        self.assertIn('not a common-currency portfolio return',str(E['_report_blocks'](r)))
+
+    def test_currency_audit_does_not_assume_unknown_currency_matches(self):
+        d={'execution_snapshot':{'target':{'CRNCY':'TWD'},'a':{'CRNCY':np.nan}}}
+        r={'portfolio_legs':['target'],'weights':pd.Series({'a':.5})}
+        self.assertEqual(E['_execution_audit'](r,d)['currency_status'],'unknown')
+        d['execution_snapshot']['a']['CRNCY']='TWD'
+        self.assertEqual(E['_execution_audit'](r,d)['currency_status'],'same')
+
+    def test_constrained_risk_fit_matches_independent_grid_minimum(self):
+        f=pd.DataFrame({'y':np.arange(20)*.001,'a':np.sin(np.arange(20))*.01,
+                        'b':np.cos(np.arange(20))*.01})
+        C=np.array([[1,.8,-.5],[.8,1,-.2],[-.5,-.2,1.]])
+        model={'columns':list(f),'covariance':C,'labels':['market']}
+        fit,_,_=E['_fit_common_risk'](f,'y',['a','b'],model,.6,.4)
+        w=fit.coef_; self.assertGreater(w[0],0);self.assertLess(w[1],0)
+        objective=lambda z: 1-2*z@C[1:,0]+z@C[1:,1:]@z
+        grid=[objective(np.array([a,b])) for a in np.linspace(-.4,.4,101)
+              for b in np.linspace(-.4,.4,101) if abs(a)+abs(b)<=.60000001]
+        self.assertLessEqual(objective(w),min(grid)+1e-7)
+        self.assertAlmostEqual(fit.risk_model_['expected_variance'],objective(w))
+
+    def test_negative_unseen_r2_can_coexist_with_lower_spread_variance(self):
+        x=np.linspace(-.01,.01,30);y=2*x+.1
+        fit=E['_HedgeFit']([2],0)
+        self.assertLess(fit.score(x[:,None],y),0)
+        risk=E['_trade_risk'](y,y-2*x,np.sqrt(252))
+        self.assertAlmostEqual(risk['vol_reduction'],1.)
+
+    def test_listing_aliases_are_one_instrument_but_other_markets_remain_distinct(self):
+        self.assertEqual(E['_ticker_key']('1306 JT Equity'),E['_ticker_key']('1306 JP Equity'))
+        self.assertNotEqual(E['_ticker_key']('1306 JP Equity'),E['_ticker_key']('1306 TT Equity'))
+        names=['7203 JP Equity','7203 JT Equity','1306 JP Equity','1306 JT Equity','1615 JT Equity']
+        scope=E['_filter_candidate_scope']({},['7203 JP Equity'],names,'all',True)
+        self.assertEqual(scope['columns'],['7203 JP Equity','1306 JP Equity','1615 JT Equity'])
+        self.assertEqual(scope['alias_duplicates_removed'],['7203 JT Equity','1306 JT Equity'])
+
+    def test_japanese_factor_aliases_resolve_to_observed_columns(self):
+        rng=np.random.default_rng(9)
+        f=pd.DataFrame(rng.normal(0,.01,(20,3)),columns=['7203 JP Equity','1306 JT Equity','1615 JP Equity'])
+        refs=['1306 JP Equity','1615 JT Equity']
+        m=E['_common_risk_model'](f,'7203 JP Equity',[],refs)
+        self.assertEqual(m['labels'],['1306 JT Equity','1615 JP Equity'])
+        d={'prices':100*np.exp(f.cumsum())}
+        augmented=E['_with_reference_returns'](f.iloc[1:,[0]],d,refs,False,'7203 JP Equity')
+        self.assertEqual(list(augmented),list(f))
+        existing=E['_with_reference_returns'](f.iloc[1:],d,refs,False,'7203 JP Equity')
+        self.assertEqual(list(existing),list(f))
+
     def test_chart_assets_are_created_from_latest_fit(self):
         figures=E['_report_figures'](self.three)
         self.assertGreaterEqual(len(figures),2)
