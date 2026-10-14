@@ -2,7 +2,7 @@
 import sys,json,zipfile,re,math
 from pathlib import Path
 import xml.etree.ElementTree as E
-import numpy as np,formulas
+import numpy as np,formulas,schedula
 ROOT=Path(__file__).resolve().parent.parent;sys.path.insert(0,str(ROOT/'ipo_lib'))
 from patch_peer_workbook import maps,q
 from reflow_monitors import nodes,value,ci,ec
@@ -56,8 +56,8 @@ with zipfile.ZipFile(path) as z:
   fn=formulas.Parser().ast('='+formula)[1].compile();args=[]
   for key in fn.inputs:
    if ':' in key:
-    a,b=key.split(':');ac=ci(re.match('[A-Z]+',a)[0]);bc=ci(re.match('[A-Z]+',b)[0]);ar=int(re.search('[0-9]+',a)[0]);br=int(re.search('[0-9]+',b)[0]);args.append(np.array([[fixture.get(ec(c)+str(r),'') for c in range(ac,bc+1)] for r in range(ar,br+1)],dtype=object))
-   else:args.append(fixture.get(key,''))
+    a,b=key.split(':');ac=ci(re.match('[A-Z]+',a)[0]);bc=ci(re.match('[A-Z]+',b)[0]);ar=int(re.search('[0-9]+',a)[0]);br=int(re.search('[0-9]+',b)[0]);args.append(np.array([[fixture.get(ec(c)+str(r),schedula.EMPTY) for c in range(ac,bc+1)] for r in range(ar,br+1)],dtype=object))
+   else:args.append(fixture.get(key,schedula.EMPTY))
   return fn(*args).item()
  for out,source,helper,field in [('X','P','Y','PE_RATIO'),('AH','Z','AI','PE_RATIO'),('AR','AJ','AS','PX_TO_SALES_RATIO')]:
   start=ci(source)
