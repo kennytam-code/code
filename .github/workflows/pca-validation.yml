@@ -2,9 +2,9 @@ name: PCA hedge validation
 on:
   push:
     branches: [main]
-    paths: ['pca_hedge_v103_full.py', 'pca_hedge_v103_full.ipynb', 'pca_requirements*.txt', 'tests/test_hedge_search.py', '.github/workflows/pca-validation.yml']
+    paths: ['pca_hedge_v103_full.py', 'pca_hedge_v103_full.ipynb', 'pca_hedge_v115_peer_pca_diagnostics.py', 'pca_hedge_v115_peer_pca_diagnostics.ipynb', 'pca_requirements*.txt', 'tests/test_*.py', '.github/workflows/pca-validation.yml']
   pull_request:
-    paths: ['pca_hedge_v103_full.py', 'pca_hedge_v103_full.ipynb', 'pca_requirements*.txt', 'tests/test_hedge_search.py', '.github/workflows/pca-validation.yml']
+    paths: ['pca_hedge_v103_full.py', 'pca_hedge_v103_full.ipynb', 'pca_hedge_v115_peer_pca_diagnostics.py', 'pca_hedge_v115_peer_pca_diagnostics.ipynb', 'pca_requirements*.txt', 'tests/test_*.py', '.github/workflows/pca-validation.yml']
 jobs:
   offline-tests:
     runs-on: ${{ matrix.os }}
@@ -27,4 +27,5 @@ jobs:
       - name: Validate cached-data analysis and notebook
         env:
           MPLBACKEND: Agg
-        run: python -m unittest discover -s tests -p test_hedge_search.py -v
+          PYTHONUTF8: 1
+        run: python -m unittest discover -s tests -p "test_*.py" -v

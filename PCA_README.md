@@ -1,184 +1,112 @@
-# PCA hedge finder
+# PCA hedge research
 
-Find a primary basket hedge and compare it with single-stock and single-ETF references for the same target and past history window using the existing form. Basket candidates are selected using earlier training/CV data; later validation is reported separately. Negative headline unseen tracking R² cannot qualify a supported hedge. A stronger single reference never replaces the basket.
+The current engine is `pca_hedge_v115_peer_pca_diagnostics.py` and its matching notebook. The filename is retained for existing users; its internal revision is **2026-10-14-v116-joint-search-common-risk**. The v103 files are historical and use a different model. Use the current notebook for these changes.
 
-## Setup on another computer
+## Run on another computer
 
-Python 3.12 is tested. Open a notebook in the folder containing these files and install dependencies into that notebook's kernel:
+Python 3.12 is the validation target. Install packages into the notebook's own kernel, then restart it:
 
 ```python
 %pip install -r pca_requirements.txt
 ```
 
-Restart the kernel afterwards. Use `pca_requirements-min.txt` for the reproducible older dependency set. Automated checks cover current and older sets on Windows/Linux; cached-data checks also run locally on macOS.
-
-On a licensed Bloomberg computer, install its Python API separately using the [official instructions](https://professional.bloomberg.com/support/api-library/):
+Open `pca_hedge_v115_peer_pca_diagnostics.ipynb` and run its engine cell, or run:
 
 ```python
-%pip install --index-url=https://blpapi.bloomberg.com/repository/releases/python/simple/ blpapi
+%run pca_hedge_v115_peer_pca_diagnostics.py
 ```
 
-Cached analyses work without `blpapi`. Live discovery/downloads require Bloomberg connectivity and data entitlements; installing packages alone does not provide market data.
+The existing form opens. Enter the target, download/load data, choose one **past analysis window**, and Run. The usual 1m, 2m, 3m, 6m and 1y choices remain. The optional “Also compare” control runs other windows separately; it does not replace the selected primary window. Book size and holding duration remain optional display/risk references.
 
-## Same workflow
+**Download again after upgrading.** Older caches do not establish the new taxonomy verification. An explicit manual peer list can be used with existing downloaded prices, but manual inclusion is a user assumption. Never load a pickle cache from an untrusted source.
 
-Open `pca_hedge_v103_full.ipynb` and run the engine cell, or run the existing script in a notebook:
+Live Bloomberg downloads require an active licensed connection, the Python API and relevant field entitlements. Package installation does not provide these. Follow the [Bloomberg API instructions](https://professional.bloomberg.com/support/api-library/) for your terminal. Cached analysis does not require `blpapi`. Independent exchange-roster retrieval uses public HTTPS endpoints and records unavailable sources when internet access is blocked. `openpyxl` reads HKEX/JPX workbooks and `lxml` reads KIND's HTML download; both are included in the requirements.
+
+`pca_requirements-min.txt` pins an older supported dependency set. Plot styling filters unsupported Matplotlib parameters, including `axes.titlecolor`. Word exports use `python-docx`; charts use Matplotlib. A missing Word dependency produces an explicit text-export fallback. Export paths default to `./hedge_exports`, cache paths to `./hedge_data_cache`; no machine-specific mapped drive is needed.
+
+## What the model does
+
+The default objective estimates common market/sector risk using named ETF directions followed by peer PCA on the residual common variation. The target stock is excluded from peer PCA. Factor loadings are regularized; the covariance includes instrument-specific variance, so minimizing shared exposure cannot treat the hedge stocks' own risk as free. This is a statistical risk model, not an expected-alpha model. Unexplained returns also contain company risk, omitted factors and noise.
+
+The basket is the primary result. Current single-stock, single-ETF and local-market ETF hedges remain references. Joint search screens complementary pairs across eligible names, grows combinations and replaces members; PCA, correlation and forward-selection recipes also remain competing procedures. Small universes screen all subsets; final constrained fits are applied to a shortlist. Larger searches are bounded, and actual screen/fit counts are reported. It does not claim a global optimum. More searching can increase fitting bias, so the historical tests remain separate.
+
+The selected procedure is refitted using the **full chosen analysis window**, including its latest available day. `weights`, `returns`, `current_fit` and headline in-sample R² describe that current fit. Earlier frozen validation fits and weights are retained separately in `validation_weights`, `validation_fit_returns` and `validation_hedge_alternatives`. Unseen scores test those historical procedures; they do not validate today's precise refitted weights.
+
+The factor objective minimizes modelled spread variance, subject to gross/per-leg caps. This can choose a lower tracking R² than ordinary least squares. The report therefore shows actual raw in-sample R², same-basket unconstrained OLS R², fitted volatility reduction, common-factor exposures before/after hedging, and weight sensitivity. OLS is a descriptive reference, not an independently tested alternative. Adjusted R² remains available as a nominal complexity heuristic; it is not an unbiased statistic after model selection or regularization.
+
+Low fitted R² is still a limitation. Under the report's same-date fitted-intercept convention, fitted volatility reduction equals `1 - sqrt(1 - R²)`; these are not independent pieces of evidence. A low-tracking-R² hedge can reduce a particular common exposure when company-specific variation dominates, but fitted exposure reduction alone does not validate future effectiveness. Negative fitted R² means increased fitted spread variance under this convention and remains visible. Residual risk is not automatically alpha.
+
+**Negative scores remain visible.** Negative unseen tracking R² means a poor return-tracking test against its mean-return benchmark. It is not automatically equivalent to increased spread volatility, because tracking also penalizes mean-return errors. Variance/common-risk modes evaluate volatility evidence and report tracking separately; strict tracking mode retains a negative-R² rejection. No unseen observations means an unvalidated research candidate and empty `trade_weights`. `trade_eligible` is a legacy statistical-evidence flag, not order approval; execution checks always remain necessary.
+
+Short windows usually provide descriptive fitted evidence; where enough data exist, a final segment is reserved before the current refit. Longer windows use chronological inner/outer validation when feasible. Missing target dates are diagnosed separately from constant returns. Data errors are not repaired by inventing returns, hiding losses, or forcing R² positive. Alternative baskets are distinct full-window research fits, not independent unseen winners.
+
+## Peers and instruments
+
+Discovery combines Bloomberg direct/second-degree relationships, GICS/BICS industry matching, local broad/sector index members and optional broader listing universes. **Every automatic peer relationship must have industry-group or narrower taxonomy support**; two network links alone do not verify a peer. Broad GICS sector membership alone does not qualify. Company identifiers retain their exchange suffix.
+
+For the six priority markets, independent official rosters extend discovery beyond index constituents. The downloaded current lists still require Bloomberg identifier, industry and price validation:
+
+| Market | Independent source | Coverage / cross-check |
+| --- | --- | --- |
+| Hong Kong | [HKEX securities list](https://www.hkex.com.hk/Services/Trading/Securities/Securities-Lists?sc_lang=en) | Main Board/GEM equity entries; derivatives, funds and duplicate RMB counters excluded. Listing cross-check only: no industry taxonomy in this file. |
+| Australia | [ASX company directory](https://www.asx.com.au/markets/trade-our-cash-market/directory.html) | Published company directory and GICS industry groups; preserves codes beginning with digits. |
+| Japan | [JPX listed securities](https://www.jpx.co.jp/markets/statistics-equities/misc/01.html) | TSE domestic-equity entries and 33-industry classification; supports alphanumeric codes and the current XLSX format. Regional-only listings, foreign stocks and REIT categories are outside this supplemental source. |
+| Taiwan | [TWSE](https://openapi.twse.com.tw/) and [TPEx](https://www.tpex.org.tw/openapi/) | Listed/OTC issuer codes and exchange industry categories. Emerging-stock companies are outside these two sources. |
+| Korea | [KRX KIND](https://kind.krx.co.kr/corpgeneral/corpList.do?method=download&searchType=13) | KOSPI/KOSDAQ issuer entries and industry labels; excludes KONEX from this supplemental source. Six-character identifiers retain leading zeros and allow newer alphanumeric codes. |
+| United States | [Nasdaq Trader directory](https://www.nasdaqtrader.com/trader.aspx?id=symboldirdefs) | Nasdaq and other covered US exchanges; excludes flagged ETFs, test issues and identifiable funds/derivatives/preferred/debt instruments. No industry taxonomy or OTC universe in these files. |
+
+Official industry categories are independent review aids, not interchangeable with Bloomberg taxonomies. The audit records same-category names missing from the verified peer set and verified peers with different official categories; neither is automatically promoted/rejected based only on this cross-check. Listing sources without industry labels cannot independently establish business similarity. Full lists, source timestamps, unmapped identifiers and source errors remain in `peer_coverage[target]`. Truncated HTTP downloads retry once; failures remain explicit and do not crash the whole analysis.
+
+All supported markets can additionally use an existing Bloomberg EQS all-equity screen or a supplied ticker list:
 
 ```python
-%run pca_hedge_v103_full.py
+data = download_hedge_data(
+    '2889 TT Equity',
+    peer_screen='Your existing EQS screen name',  # optional; omit if not configured
+    peer_universe=['5864 TT Equity'],             # optional additional discovery names
+)
 ```
 
-After updating, restart the notebook kernel and run the engine cell again. The result field `engine_revision` reads `2026-10-13-printed-report`; this confirms the new engine is loaded. The form opens automatically. Enter `2889 TT Equity`, load or download data, choose the past history window, then press **Run**. A fresh download is preferable for the reported issue because old caches can contain Bloomberg-generated inactive-day fills.
+The EQS screen must already exist and be accessible. A requested screen failure stops with an explicit error. Additional-universe names are classified before becoming automatic peers. The form accepts a PRIVATE screen; the API additionally accepts `peer_screen_type` and `peer_screen_group`.
 
-Every analysis run prints its result automatically. In a notebook, the styled report and charts appear first, followed by the plain-text result with its summary, scores, basket weights, alternative recipes and diagnostics. The default printed notebook copy uses one brief methodology note; detailed notes remain in the styled report and `result['report_text']`. Full-report mode prints its complete diagnostic transcript. The same behaviour applies to direct `find_best_hedge(...)` calls and the form's **Run** button. If compact rich display is unavailable, the text result still prints. Ordinary Python/terminal runs print their structured report as before.
+There is no universal “all peers” guarantee: business similarity is not a unique classification, and listings, classifications, Bloomberg entitlements and prices can be missing. The report shows source availability, discovered/eligible counts, rejected/unverified relationships, missing classifications/prices and failed expansion requests. Full ticker lists remain in `peer_coverage` and downloaded provenance. Current classifications and present-day rosters still create historical universe bias; index membership checks do not eliminate it.
 
-The main recipe, nested validation, recency comparison and next-best recipes select among baskets with at least two instruments. Single-stock and single-ETF candidates are evaluated separately as references, even if their scores are higher. Their relative performance cannot replace the basket or change its grade. A rejected basket stays rejected; a single reference cannot approve it. Default selection prioritizes volatility reduction; negative headline unseen tracking R² prevents qualification. The optional tracking objective retains additional conservative heuristic gates.
+Scopes are all eligible candidates, focused peers plus relevant ETFs, and strict peers. Strict peers excludes ETFs unless the local broad-market exception is enabled. Diagnostic market exposure can still be measured without permitting that ETF in the basket. In same-day mode, an excluded distant-time-zone ETF is not silently reintroduced as a factor. Market-cap filters are size screens, not proof of liquidity; peers obey them too.
 
-Keep at least one basket size of 2 or more in the existing form. A one-instrument universe cannot produce a basket and gets an explicit diagnostic. `broad_search=False` preserves an explicitly pinned configuration for code users and `quick_rehedge`; it is not an automatic fallback to a single. A missing required `force_include` instrument now stops the constrained fit instead of silently disappearing. An unavailable ETF is reported as unavailable, rather than relabelling a stock as an ETF.
+Local market references follow the listing market: HSI/2800 HK, TAIEX/006204 TT with explicitly labelled Taiwan 50 alternatives, S&P 500/SPY US, TOPIX/1306 JT, CSI 300/510300 CH, KOSPI 200/069500 KS and mapped local proxies for other supported markets. Indices themselves are not executable legs. US sector ETFs are retained in focused mode; selected local sector proxies also exist. A banking sub-sector proxy is not complete financial-sector coverage. Missing/filtered instruments are reported, not replaced by an unrelated ETF. The incorrectly labelled Japanese 1482 bond mapping was removed: it holds US Treasuries with JPY hedging, not Japanese government bonds.
 
-If single references complete CV but no basket does, the engine can return an **unvalidated fitted basket reference** when the training data support one. It keeps `trade_eligible=False`, empty recommendation weights, the failed CV rows and earlier nested diagnostics. A fitted reference is not a successful validation result.
+## Controls and output
 
-Exports default to `hedge_exports` in the working folder; caches default to `hedge_data_cache`. Override `HEDGE_EXPORT_DIR`/`HEDGE_CACHE_DIR`, or select another folder in the form. A mapped network drive is unnecessary.
-
-## Candidate filters and basket sizes
-
-The Candidates tab offers **All eligible candidates** or **Peers only**. Peers means direct Bloomberg peers plus matching BICS/GICS industry peers discovered for the target. Index constituents and second-degree-only peers do not automatically qualify. This is an instrument filter applied before PCA, CV, nested selection, alternatives and final fitting; it does not merely hide names in the report. Current peer classifications still carry historical survivorship/classification bias.
-
-Peers-only turns the local market ETF off by default. Check **Include local broad market ETF** for an explicit exception. Other-sector ETFs remain excluded. Required instruments outside the selected universe produce an actionable constraint error. Existing caches without peer metadata need a new download, or an explicit manual peer list of already-downloaded tickers. Unknown manual names do not silently disappear.
-
-Choose **Require a range or exact size**, then minimum and maximum names. Equal bounds request an exact number. The range is inclusive and includes every integer between the bounds. Unfillable sizes are skipped; the run cannot substitute an instrument count outside the range. Default automatic sizes omit overly large fits according to the existing sample-size heuristic. An explicit range preserves the requested sizes even on short histories, provided fitting is possible; this does not improve validation strength. One-month fits generally remain indicative.
+The form defaults to common-risk mode, joint basket search, 2× maximum gross hedge exposure and 1× per instrument. The API preserves optional caps, so set them explicitly when scripting. A required range is inclusive; equal bounds request an exact count. All current and alternative baskets respect required/excluded names, scope and exposure caps. Requested nonzero legs must be feasible; the model cannot fabricate a basket to meet an impossible request.
 
 ```python
 result = find_best_hedge(
     '2889 TT Equity', data=data,
-    candidate_scope='peers',
-    include_broad_market=False,
-    basket_size_range=(2, 4),  # (3, 3) requests exactly three names
-    sample_window='2m',
-    min_mktcap_usd_mm=1000,
+    sample_window='2m', candidate_scope='peers', include_broad_market=True,
+    basket_size_range=(3, 5), alternative_baskets=5,
+    hedge_objective='factor', basket_methods='search', max_gross=2, max_leg=1,
 )
-# For an older cache, add peer_tickers=['2910 TT Equity', '2911 TT Equity']
 ```
 
-The form offers 1m, 2m, 3m, 6m, 1y and 2y windows. Book size and hedge duration are optional, initially unset and collapsed under sizing/holding-period risk. They change report sizing or risk units, not the normal search or validation-window defaults. The form preview now uses the same validation-window defaults as the engine.
-
-## Local market references
-
-Broad-market ETF proxies enter the permitted basket universe and receive a separate single-market reference comparison. This family is selected using earlier training/CV data before each outer test, just like the other references. Listing venue controls this mapping: Hong Kong-listed China companies use Hong Kong proxies; a US-listed ADR uses the US market reference while its industry discovery can reflect its country of risk. Raw Bloomberg Index levels are discovery benchmarks, not executable hedge legs.
-
-| Listing market | Reference | ETF candidates |
-| --- | --- | --- |
-| Hong Kong | Hang Seng Index | 2800 HK |
-| Taiwan | Taiwan 50 large-cap proxy | 0050 TT, 006208 TT |
-| United States | S&P 500 | SPY US |
-| Japan | TOPIX | 1306 JP |
-| Mainland China | CSI 300 | 510300 CH |
-| Korea | KOSPI 200 | 069500 KS |
-| India | Nifty 50 | NIFTYBEES IN |
-| Germany | DAX | EXS1 GR |
-| United Kingdom | FTSE 100 | ISF LN, VUKE LN |
-| France | CAC 40 | CAC FP |
-| Australia | S&P/ASX 200 | STW AU, IOZ AU |
-
-These are broad local benchmarks or explicitly labelled large-cap proxies, not claims of complete all-stock coverage. In particular, Taiwan 50 is **not TAIEX**. Unknown markets, missing proxy prices, manual exclusions, required-name conflicts or eligibility constraints produce an unavailable reference rather than a foreign-market substitution. Cached runs do not fetch an absent ETF silently. Aliased exchange codes such as JT/JP are resolved consistently. The existing time-zone filters and conservative asynchronous-return treatment still apply. A local listing reduces timing/currency mismatch but does not implement portfolio FX conversion or prove hedge effectiveness.
-
-The approximate cash-close map now uses Japan's 15:30 JST close, following the [JPX schedule](https://www.jpx.co.jp/english/equities/trading/domestic/01.html). Fixed standard-time closes remain a timing heuristic, not a full historical exchange calendar or a complete correction for asynchronous pricing.
-
-Primary source checks: [Tracker Fund and HSI](https://www.trahk.com.hk/en-hk/trahk-fund/), [Taiwan 50 fund](https://www.yuantaetfs.com/product/detail/0050/PD), [TAIEX coverage](https://www.twse.com.tw/en/indices/indices/series.html), [SPY](https://www.ssga.com/us/en/individual/etfs/state-street-spdr-sp-500-etf-trust-spy), [TOPIX ETF](https://nextfunds.jp/lineup/1306/), [CSI 300 ETF](https://english.sse.com.cn/news/newsrelease/c/4970464.shtml), [KODEX 200](https://www.samsungfund.com/fund/search.do?searchText=069500), [Nifty BeES](https://www.nseindia.com/get-quote/equity/NIFTYBEES/Nippon-India-ETF-Nifty-50-BeES), [DAX fund](https://www.ishares.com/uk/individual/en/literature/fact-sheet/daxex-ishares-core-dax-ucits-etf-de-fund-fact-sheet-en-gb.pdf), [FTSE 100 fund](https://www.ishares.com/uk/individual/en/products/251795/ishares-core-ftse-100-ucits-etf), [CAC 40 fund](https://www.amundietf.com/pdfDocuments/kid-priips/FR0007052782/FRA/FRA/20250611), [ASX 200 fund](https://www.ssga.com/au/en_gb/individual/etfs/state-street-spdr-spasx-200-etf-stw).
-
-## Structured desk analysis
-
-The default report presents the verdict and comparable unseen metrics, primary recipe, distinct alternative basket recipes and single-instrument references. Alternative basket R² is explicitly a selected-configuration diagnostic with selection bias; it is not relabelled as independent nested evidence. It never selects a new recommendation by looking at its later scores. Repeated equivalent recipes are collapsed. When the best single ETF is also the local-market reference, the display combines their labels while retaining both result/CSV roles.
-
-The report also retains rolling stability, recent condition flags, matched-date weight staleness, factor exposures, downside behaviour and search/data-quality settings when available. Their sources and limitations are shown beside the numbers.
-
-Notebook tables use a consistent sans-serif font, numerical alignment and spacing. Word uses structured tables and readable headings; its long text appendix is omitted by default. Use `report='full'` for the diagnostic appendix. The exact structured report text is in `result['report_text']`; detailed calculations are retained in `full_report` and `diagnostic_log`. Downloads print a short summary; `download_hedge_data(..., verbose=True)` restores discovery output. No scores are concealed or forced positive.
-
-## Five usual history windows
-
-The one-month, two-month, three-month, six-month and one-year periods mean past analysis windows, not forecasts of future holding periods. After downloading once:
+Charts lead the styled report. It includes the current basket, raw fitted R² for every window, exposure reduction, multiple alternative recipes, single references, historical evidence, sensitivity and coverage/execution checks. The result also prints on Run. Compact and full reports use the same current weights; full adds configuration detail. Word and notebook reports share the same structured content. `diagnostic_log`/`full_report` preserve the legacy calculation log with its earlier-fit context.
 
 ```python
 comparison = compare_history_windows(
-    '2889 TT Equity', UI_STATE['data'],
-    windows=('1m', '2m', '3m', '6m', '1y'),
-    min_mktcap_usd_mm=0,
-    restrict_to_target_tz=True,
+    '2889 TT Equity', data, windows=('1m', '2m', '3m'), max_gross=2, max_leg=1,
 )
-comparison['alternatives_summary']
-comparison['alternative_weights_table'].to_csv('2889_history_weights.csv', index=False)
+comparison['summary']
+comparison['diagnostic_results']['2m']['weights']
+export_result(result)
 ```
 
-Use the appropriate market-cap floor consistently in download and analysis. The notebook's optional comparison cell uses the download's recorded floor. Each period's main row is the basket; stock and ETF references appear separately when available. Their records include `reference_only`. Failed alternatives have blank recommendation weights; full results remain in `diagnostic_results`. One month generally supports only an **indicative** fitted basket, with no unseen score. Longer windows may support holdout, CV or nested validation depending on settings and available observations.
+Optional window comparisons are overlapping historical fits, not independent repeated tests. Borrow availability is unknown unless supplied explicitly in `data['borrow_available']`; a confirmed unavailable short leg prevents eligibility. Bid/ask and average volume are snapshot diagnostics. Costs, financing, taxes, slippage, borrow fees and FX conversion are not modelled. Paths use a log-return spread approximation, not an exact self-financing portfolio backtest. Cross-time-zone two-day returns reduce timing mismatch but do not remove it.
 
-## Missing returns and large universes
+## Validation
 
-Training windows can omit isolated non-finite target-return rows, jointly across every candidate, while retaining their original calendar boundaries. A window needs at least 90% observed target returns and the retained-row floor. Reduced-validation tiers reserve up to 10% of the shortest training lookback for this allowance. Constant targets and substantial missing histories still fail with a distinct diagnostic.
-
-Validation uses the same observed-target dates for every candidate, with at least 90% coverage. It never removes a candidate's own missing test returns to rescue that candidate. All configurations must complete the requested inner folds; incomplete nested evidence cannot qualify the overall hedge. These coverage thresholds are operational heuristics, not statistical confidence guarantees. Scores are conditional on the observed dates, and the run reports missing dates, counts and rejected windows. Missing quotes and their multi-session resumptions are not manufactured daily zero returns.
-
-The short-history search batches single-feature ridge fits using the exact leave-one-out criterion of the original `RidgeCV`, and shares training/PCA work across basket sizes. Single-stock selection does not require PCA; a selected single gets descriptive PCA charts only if charts are enabled. Thin SVD removes the large covariance eigendecomposition and inverse. Isotropic [Ledoit-Wolf shrinkage](https://scikit-learn.org/stable/modules/generated/sklearn.covariance.LedoitWolf.html) preserves sample eigenvectors and changes their eigenvalues; it is covariance regularization, not an outlier-robust estimator. Winsorization remains a separate candidate-selection setting.
-
-The ticket's headline, volatility reduction and worst-window score use nested evidence. Selected-configuration monitoring is labelled separately and cannot approve a failed hedge. A low fitted-to-test gap is a descriptive difference, not proof of generalization. If nested validation is unavailable, the primary verdict is unvalidated; selected-configuration scores remain visible as diagnostics. The result includes its engine revision and detailed diagnostics. The form keeps a running status while the default report suppresses routine progress prints.
-
-## What best means
-
-Every eligible single instrument is evaluated for reference. Requested baskets compete with one another using PCA exposure ranking, absolute correlation ranking and greedy forward selection that considers complementary exposures. Defaults try basket sizes 2, 3, 5 and 7. Forced names, exclusions, time-zone and size settings still apply. Every requested size is exact. A configuration with too few eligible names is skipped rather than shrunk; forced names occupy those slots and cannot enlarge the basket.
-
-The default inner-CV score is:
-
-```text
-mean volatility reduction - 0.5 × fold dispersion - gross_penalty × mean gross
-```
-
-PCA identifies directions of shared return variation ([PCA documentation](https://scikit-learn.org/stable/modules/decomposition.html#pca)); similarity of factor loadings does not itself minimize the target’s residual variance. Ridge fits the hedge ratios after candidate selection. Automatic PC counts use an ideal-noise spectral heuristic, not a formal significance test for dependent, heavy-tailed market returns. These penalties are heuristics, not estimated trading costs. Configurations must complete every requested inner-CV fold. A gross cap applies per CV fit, outer refit and rolling diagnostic refit. Final candidates above the cap do not qualify. Each family is selected again using earlier data before the same outer test period. Outer scores describe the historical **selection procedure**, with instruments and weights refitted between periods; they are not an untouched test of today's exact fixed basket. Today's configuration comes from inner CV and is refitted on its training history.
-
-The search covers a finite downloaded universe and several basket heuristics. It does not exhaust every possible subset or guarantee a global executable optimum. Repeatedly changing settings after viewing outer results also introduces selection bias. See the [nested validation example](https://scikit-learn.org/stable/auto_examples/model_selection/plot_nested_cross_validation_iris.html).
-
-## Reading the statistics
-
-Predictive R² is `1 - squared prediction error / target deviation from the evaluated period's mean`. Negative unseen R² means that tracking test failed. It can coexist with lower volatility when the residual mean is mismatched. The mean-return reference is a scoring benchmark calculated after observing that period, not a forecast available beforehand. See the [R² definition](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.r2_score.html).
-
-Raw fitted R² should be nonnegative for this Ridge fit with an intercept, apart from numerical error; material negative fitted scores raise a diagnostic. The legacy adjusted in-sample field is explicitly labelled a nominal-count **complexity heuristic**, because it does not use Ridge's effective degrees of freedom.
-
-Risk uses the coefficient-only spread `target - X @ weights`; the intercept is not a traded instrument. Volatility reduction and variance reduction are reported separately. Bootstrap intervals resample the errors belonging to the adjacent score. They condition on observed fits and do not rerun the full search, so additional selection and fitting uncertainty is omitted. Predictive R² is not given a Fisher-z correlation interval.
-
-## Result fields
-
-- `best_basket_hedge`, `best_single_hedge`, `best_single_stock_hedge`, `best_single_etf_hedge`: candidate weights, fitted/unseen scores, evidence and `qualified`. Unavailable families return `None`.
-- `broad_market_hedge`, `broad_markets`, `market_reference_status`: local market reference, mapping and availability.
-- `basket_comparison`: distinct alternative recipes and their conditional diagnostic scores.
-- `primary_hedge_family`: `basket` for the default search. Single entries in `hedge_alternatives` have `reference_only=True`; their evidence status is not the main recommendation.
-- `trade_eligible`, `trade_weights`: overall screen and weights; rejected/unvalidated runs have empty trade weights.
-- `candidate_weights`, legacy `weights`: fitted reference weights, including failed candidates.
-- `nested_unseen_returns`, `bootstrap_ci`, `selected_config_bootstrap_ci`: auditable errors and separately identified intervals.
-- `search`, `cv_summary`, `cv_detail`: search scope and selection diagnostics.
-- `training_data_diagnostics`, `evaluation_data_diagnostics`: affected calendar windows, retained rows, missing dates and acceptance.
-- `engine_revision`: the loaded engine version.
-- `fallback_reason`, `prior_nested_validation`: explain the unvalidated fitted-basket fallback and retain earlier nested diagnostics separately from its unavailable headline evidence.
-
-Legacy `best_single`/`best_etf` remain correlation-picked benchmarks; use the new `*_hedge` fields for the broader search. Stock/ETF categories use the instrument mappings. A manually supplied ETF absent from those mappings may be categorized as a stock.
-
-## Verification and limits
+`tests/test_pca_research.py` loads the actual current engine and checks all five windows, complementary combinations, caps/required names, chronological isolation, latest refits, industry verification, official-roster/EQS parsing with mocks, missing/constant prices, UI defaults, plots, printed reports and exact notebook/script parity. `tests/test_hedge_search.py` separately checks the historical v103 engine. GitHub Actions runs both on Windows/Linux with minimum/current dependencies.
 
 ```bash
-python -m unittest discover -s tests -p test_hedge_search.py -v
+python -m unittest discover -s tests -p 'test_*.py' -v
 ```
 
-The 58 offline tests include stronger-single reference cases that must keep a basket primary, holdout chronology, constrained required instruments, an absent ETF, single-only settings, and pinned rehedges. They also include 1,132-candidate short-history coverage, sparse target gaps, rejection of missing hedge test returns, empty nested evidence, consistent rejected-report wording, and numerical equivalence of the faster PCA/single-feature ridge calculations. Existing checks cover matched validation windows, no use of future test returns in prior selection, R² arithmetic, actual-spread risk, interval association, negative-result rejection, price handling, caps, caches, the form, notebook consistency, charts and Word/CSV export. Printed-output checks cover notebook and terminal runs, display failure, and unchanged weights and validation scores. Synthetic ticker labels are not actual 2889 market data.
-
-Live 2889 history and the other computer's Bloomberg session were unavailable. Verify that particular history with a fresh download there. The engine uses adjusted prices and weighted log returns as a P&L approximation. Explicit FX conversion, borrow, fees, financing and turnover costs are outside the optimization. Historical support is evidence for reference, not a guarantee of future performance.
-
-Drawdown now uses the coefficient-only spread, including the starting zero level, rather than subtracting an untradeable fitted intercept. Two-day returns are sampled without overlap before cumulating. The path remains a log-spread approximation, not financed portfolio P&L. Rolling regression tracking error and coefficient-only spread volatility are separate diagnostics.
-
-Short windows retain fitted factor, tail and spread-path diagnostics where computable. These do not upgrade their validation tier. Holdout and recent-condition verdicts describe limited evidence or deterioration without prescribing a trade size.
-
-The fitted cumulative chart also uses non-overlapping two-day returns on a common phase for target and spread. Chart CV sensitivity and monitoring lines are labelled as diagnostics and heuristics.
-
-The report uses a softer slate and teal palette, metric cards, clearer section headings and lighter table bands. In-sample R² is explicitly labelled for every history window, including 1y; it measures the current training fit, whose row count is shown. Repeated explanations are gathered into one expandable notebook methodology section; Word uses one brief methodology paragraph. Detailed notes remain in the result transcript and optional full report.
-
-The report shows up to five distinct additional basket recipes by default; set `alternative_baskets=8` (1–20) or use the form’s Alternative baskets control for more. It scans past duplicate configurations, retains the selected recipe, and respects the requested scope and basket sizes. Fewer alternatives are shown when the tested configurations produce fewer distinct recipes. This is a reporting change and does not rerank the primary basket using alternative test results.
-
-Charts are enabled by default and included in the structured notebook, standalone HTML and Word exports. The previous PCA scree/map, correlations, fitted spread path, rolling volatility and basket-size sensitivity views are retained, with basket-weight and alternative-score comparisons. Rolling tracking-error/R² charts appear when available; 1m/2m also get clearly labelled fitted charts. Set `show_plots=False` to omit figures. Charts do not upgrade the validation tier.
-
-Charts lead the report immediately after the title and analysis dates, before the summary and basket tables. The regression checks also verify positive coefficients map to SHORT, negative coefficients to LONG, the spread subtracts the hedge coefficients without a traded intercept, and unvalidated/failed verdicts expose no trade weights.
+Offline/simulated tests establish software behavior; they cannot establish live Bloomberg field coverage or future profitability. The samples are clearly marked simulated. Statistical references: [factor covariance models](https://docs.mosek.com/portfolio-cookbook/factormodels.html), [R² definition](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.r2_score.html), [Bloomberg EQS API](https://data.bloomberglp.com/professional/sites/10/2017/03/BLPAPI-Core-Developer-Guide.pdf).
