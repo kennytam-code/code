@@ -91,6 +91,7 @@ STAGES = [
     ("lockup-windows", "ipo_lib/refresh_lockup_windows.py", [], "prices"),
     ("merge", "ipo_lib/merge_batches.py", [], "local"),
     ("ah-study", "ipo_lib/analyse_ah_study.py", ["--refresh"], "prices"),
+    ("monitor-data", "ipo_lib/refresh_monitor_data.py", [], "prices"),
 ]
 
 

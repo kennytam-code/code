@@ -1,0 +1,742 @@
+{
+ "batch": "ah_map",
+ "as_of": "2026-08-16",
+ "source_note": "Pairs cross-checked against the AASTOCKS live A+H pairs table (fetched 2026-08-16) plus per-deal press coverage; roster = data/batches/hkex_allotments.json (521 HK IPOs 2021-2026).",
+ "ah_pairs": [
+  {
+   "code": "6127",
+   "name": "JOINN Laboratories",
+   "a_share_code": "603127.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "H listed Feb 2021; CRO safety-evaluation leader"
+  },
+  {
+   "code": "6821",
+   "name": "Asymchem Laboratories",
+   "a_share_code": "002821.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "H listed Dec 2021 (CDMO)"
+  },
+  {
+   "code": "6680",
+   "name": "JL MAG Rare-Earth",
+   "a_share_code": "300748.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "H listed Jan 2022 (NdFeB magnets)"
+  },
+  {
+   "code": "9696",
+   "name": "Tianqi Lithium",
+   "a_share_code": "002466.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Jul 2022, ~US$1.7bn — largest HK IPO of 2022 at pricing"
+  },
+  {
+   "code": "1880",
+   "name": "China Tourism Group Duty Free",
+   "a_share_code": "601888.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Aug 2022, ~US$2.1bn H offering"
+  },
+  {
+   "code": "2402",
+   "name": "Beijing SinoHytec",
+   "a_share_code": "688339.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "H listed Jan 2023 (hydrogen fuel cells); A+H on STAR"
+  },
+  {
+   "code": "2315",
+   "name": "Biocytogen Pharmaceuticals-B",
+   "a_share_code": "688796.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "H first (2022), STAR A-listing followed — now A+H"
+  },
+  {
+   "code": "0300",
+   "name": "Midea Group",
+   "a_share_code": "000333.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Sep 2024, ~US$4.0bn+greenshoe — the deal that opened the A-to-H wave; H priced at a double-digit discount to A"
+  },
+  {
+   "code": "2465",
+   "name": "Jiangsu Lopal Tech",
+   "a_share_code": "603906.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Oct 2024 H listing (LFP cathode/adblue)"
+  },
+  {
+   "code": "6936",
+   "name": "SF Holding",
+   "a_share_code": "002352.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Nov 2024, ~US$750m; first A+H express logistics name"
+  },
+  {
+   "code": "6693",
+   "name": "Chifeng Jilong Gold Mining",
+   "a_share_code": "600988.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Mar 2025 H listing (gold miner)"
+  },
+  {
+   "code": "2865",
+   "name": "Drinda New Energy (JTPV)",
+   "a_share_code": "002865.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "May 2025 H listing (TOPCon solar cells)"
+  },
+  {
+   "code": "3750",
+   "name": "CATL",
+   "a_share_code": "300750.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx",
+    "https://www.ess-news.com/2025/05/20/catl-sees-shares-surge-in-hong-kong-debut/"
+   ],
+   "h_over_a_note": "May 2025, ~US$4.6bn (US$5.3bn w/ shoe) — world's largest listing of 2025; H priced at a slim discount to A and surged on debut"
+  },
+  {
+   "code": "1276",
+   "name": "Jiangsu Hengrui Pharmaceuticals",
+   "a_share_code": "600276.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx",
+    "https://english.sse.com.cn/news/newsrelease/voice/c/c_20250611_10781565.shtml"
+   ],
+   "h_over_a_note": "May 2025, raised ~HK$9.9bn (~US$1.3bn)"
+  },
+  {
+   "code": "2603",
+   "name": "Zhejiang Jihong",
+   "a_share_code": "002803.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "May 2025 H listing (packaging + cross-border e-commerce)"
+  },
+  {
+   "code": "3288",
+   "name": "Foshan Haitian Flavouring & Food",
+   "a_share_code": "603288.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx",
+    "https://english.sse.com.cn/news/newsrelease/voice/c/c_20250611_10781565.shtml"
+   ],
+   "h_over_a_note": "Jun 2025, ~US$1.3bn; condiments leader"
+  },
+  {
+   "code": "2050",
+   "name": "Zhejiang Sanhua Intelligent Controls",
+   "a_share_code": "002050.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx",
+    "https://english.sse.com.cn/news/newsrelease/voice/c/c_20250611_10781565.shtml"
+   ],
+   "h_over_a_note": "Jun 2025 H listing (thermal management/humanoid actuators)"
+  },
+  {
+   "code": "2648",
+   "name": "Anjoy Foods",
+   "a_share_code": "603345.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Jul 2025 H listing (frozen foods)"
+  },
+  {
+   "code": "1304",
+   "name": "Fortior Technology",
+   "a_share_code": "688279.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Jul 2025 H listing (BLDC motor-driver chips)"
+  },
+  {
+   "code": "6613",
+   "name": "Lens Technology",
+   "a_share_code": "300433.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Jul 2025 H listing (cover glass, Apple chain)"
+  },
+  {
+   "code": "2631",
+   "name": "SICC",
+   "a_share_code": "688234.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Aug 2025 H listing (SiC substrates)"
+  },
+  {
+   "code": "0638",
+   "name": "Fibocom Wireless",
+   "a_share_code": "300638.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Oct 2025 H listing (IoT wireless modules)"
+  },
+  {
+   "code": "6031",
+   "name": "Sany Heavy Industry",
+   "a_share_code": "600031.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx",
+    "https://www.cnbc.com/2025/10/28/china-sany-heavy-industry-hong-kong-trading-debut-ipo-listing-trading-shares-price-construction-machinery.html"
+   ],
+   "h_over_a_note": "Oct 2025, ~US$1.72bn"
+  },
+  {
+   "code": "6166",
+   "name": "Cambridge Industries Group (CIG)",
+   "a_share_code": "603083.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Oct 2025 H listing (telecom/AI networking hardware)"
+  },
+  {
+   "code": "9927",
+   "name": "Seres Group",
+   "a_share_code": "601127.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx",
+    "https://cnevpost.com/2025/11/03/seres-raises-1-8-billion-hong-kong-offering/"
+   ],
+   "h_over_a_note": "Nov 2025, HK$14.28bn (~US$1.8bn) — 3rd-largest HK IPO of 2025; flat debut"
+  },
+  {
+   "code": "0699",
+   "name": "Joyson Electronics",
+   "a_share_code": "600699.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Nov 2025 H listing (auto electronics/safety)"
+  },
+  {
+   "code": "2579",
+   "name": "CNGR Advanced Material",
+   "a_share_code": "300919.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Nov 2025 H listing (battery precursor materials)"
+  },
+  {
+   "code": "2691",
+   "name": "Nanhua Futures",
+   "a_share_code": "603093.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Dec 2025 H listing (futures broker)"
+  },
+  {
+   "code": "2676",
+   "name": "NovoSense Microelectronics",
+   "a_share_code": "688052.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Dec 2025 H listing (analog/mixed-signal chips)"
+  },
+  {
+   "code": "3986",
+   "name": "GigaDevice Semiconductor",
+   "a_share_code": "603986.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx",
+    "https://www.caixinglobal.com/2026-01-14/gigadevice-soars-in-hong-kong-debut-as-ai-demand-lifts-memory-chipmakers-102403429.html"
+   ],
+   "h_over_a_note": "Jan 2026, ~US$600m at top of range; closed +37.5% on debut"
+  },
+  {
+   "code": "0501",
+   "name": "OmniVision Integrated Circuits (ex-Will Semiconductor)",
+   "a_share_code": "603501.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx",
+    "https://www.chinadailyhk.com/hk/article/626837"
+   ],
+   "h_over_a_note": "Jan 2026, US$616m offering; rose on debut"
+  },
+  {
+   "code": "9611",
+   "name": "Longcheer Technology",
+   "a_share_code": "603341.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Jan 2026 H listing (smart-device ODM)"
+  },
+  {
+   "code": "9980",
+   "name": "Eastroc Beverage",
+   "a_share_code": "605499.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx",
+    "https://www.chinadailyhk.com/hk/article/628303"
+   ],
+   "h_over_a_note": "Feb 2026, ~HK$10.1bn at HK$248/sh — largest HK IPO of early 2026"
+  },
+  {
+   "code": "3200",
+   "name": "Han's CNC",
+   "a_share_code": "301200.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Feb 2026 H listing (PCB drilling equipment)"
+  },
+  {
+   "code": "2768",
+   "name": "GON Technology (Qingdao Gon Technology)",
+   "a_share_code": "002768.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Feb 2026 H listing (polymer materials)"
+  },
+  {
+   "code": "2714",
+   "name": "Muyuan Foods",
+   "a_share_code": "002714.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx",
+    "https://www.prnewswire.com/apac/news-releases/muyuan-foods-02714hk-listed-on-the-stock-exchange-of-hong-kong-embarking-on-a-new-global-journey-302681148.html"
+   ],
+   "h_over_a_note": "Feb 2026, net proceeds up to HK$12.0bn w/ greenshoe; subdued debut"
+  },
+  {
+   "code": "6809",
+   "name": "Montage Technology",
+   "a_share_code": "688008.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx",
+    "https://news.futunn.com/en/post/73608291/seventeen-a-share-semiconductor-companies-seek-secondary-listings-in-hong"
+   ],
+   "h_over_a_note": "Feb 2026 H listing (memory interface chips)"
+  },
+  {
+   "code": "0470",
+   "name": "Wuxi Lead Intelligent Equipment",
+   "a_share_code": "300450.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Feb 2026 H listing (battery-making equipment)"
+  },
+  {
+   "code": "9981",
+   "name": "Shenzhen Woer Heat-Shrinkable Material",
+   "a_share_code": "002130.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Feb 2026 H listing"
+  },
+  {
+   "code": "2715",
+   "name": "Estun Automation",
+   "a_share_code": "002747.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Mar 2026 H listing (industrial robots)"
+  },
+  {
+   "code": "2692",
+   "name": "Zhaowei Machinery & Electronics",
+   "a_share_code": "003021.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Mar 2026 H listing (micro drive systems/dexterous hands)"
+  },
+  {
+   "code": "3268",
+   "name": "MeiG Smart Technology",
+   "a_share_code": "002881.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Mar 2026 H listing (IoT modules)"
+  },
+  {
+   "code": "2701",
+   "name": "Nations Technologies (NSING)",
+   "a_share_code": "300077.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Mar 2026 H listing (security/MCU chips)"
+  },
+  {
+   "code": "1989",
+   "name": "Delton Technology (Guangdong)",
+   "a_share_code": "001389.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Mar 2026 H listing (PCB)"
+  },
+  {
+   "code": "2476",
+   "name": "Victory Giant Technology (VGT)",
+   "a_share_code": "300476.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx",
+    "https://www.cnbc.com/2026/04/21/nvidia-supplier-victory-giant-sees-shares-soar-60percent-in-hong-kong-debut.html"
+   ],
+   "h_over_a_note": "Apr 2026, HK$20.1bn (~US$2.57bn); +60% debut — Nvidia AI-PCB supplier"
+  },
+  {
+   "code": "3296",
+   "name": "Huaqin Technology",
+   "a_share_code": "603296.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Apr 2026 H listing (smart-hardware ODM)"
+  },
+  {
+   "code": "2493",
+   "name": "Mabwell (Shanghai) Bioscience-B",
+   "a_share_code": "688062.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Apr 2026 H listing (ADC biotech); A+H on STAR"
+  },
+  {
+   "code": "1187",
+   "name": "Cofoe Medical Technology",
+   "a_share_code": "301087.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "May 2026 H listing (home medical devices)"
+  },
+  {
+   "code": "1081",
+   "name": "Dajin Heavy Industry",
+   "a_share_code": "002487.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Jun 2026 H listing (offshore wind towers/monopiles)"
+  },
+  {
+   "code": "6067",
+   "name": "Senior Technology Material",
+   "a_share_code": "300568.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Jun 2026 H listing (battery separators)"
+  },
+  {
+   "code": "3661",
+   "name": "SG Micro",
+   "a_share_code": "300661.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Jun 2026 H listing (analog chips)"
+  },
+  {
+   "code": "1688",
+   "name": "Lingyi iTech",
+   "a_share_code": "002600.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Jun 2026 H listing (consumer-electronics precision parts)"
+  },
+  {
+   "code": "9630",
+   "name": "CFMEE (Circuit Fabology Micro-Electronics Equipment)",
+   "a_share_code": "688630.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Jun 2026 H listing (direct-write lithography equipment)"
+  },
+  {
+   "code": "0668",
+   "name": "Anker Innovations",
+   "a_share_code": "300866.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Jun 2026 H listing (consumer charging/power brands)"
+  },
+  {
+   "code": "6745",
+   "name": "Befar Group",
+   "a_share_code": "601678.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Jul 2026 H listing (chlor-alkali/chemicals)"
+  },
+  {
+   "code": "2475",
+   "name": "Luxshare Precision (Luxshare ICT)",
+   "a_share_code": "002475.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx",
+    "https://macdailynews.com/2026/07/01/apple-supplier-luxshare-set-to-launch-hong-kongs-largest-ipo-of-2026/"
+   ],
+   "h_over_a_note": "Jul 2026, ~US$3.1bn — largest HK IPO of 2026 until Innolight"
+  },
+  {
+   "code": "0537",
+   "name": "RIGOL Technologies",
+   "a_share_code": "688337.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Jul 2026 H listing (electronic test & measurement)"
+  },
+  {
+   "code": "6951",
+   "name": "CCTC (Chaozhou Three-Circle)",
+   "a_share_code": "300408.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx",
+    "https://en.wikipedia.org/wiki/Chaozhou_Three-Circle"
+   ],
+   "h_over_a_note": "Jul 2026 H listing (ceramic components; targeted ~US$1bn)"
+  },
+  {
+   "code": "1377",
+   "name": "DTECH (Guangdong Dtech Technology)",
+   "a_share_code": "301377.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Jul 2026 H listing (PCB drilling tools)"
+  },
+  {
+   "code": "2249",
+   "name": "Nexchip Semiconductor",
+   "a_share_code": "688249.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx"
+   ],
+   "h_over_a_note": "Jul 2026 H listing (foundry)"
+  },
+  {
+   "code": "3308",
+   "name": "Zhongji Innolight",
+   "a_share_code": "300308.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "http://www.aastocks.com/en/stocks/market/ah.aspx",
+    "https://www.chinadailyhk.com/hk/article/637153"
+   ],
+   "h_over_a_note": "Jul 2026 — Hong Kong's largest IPO in seven years (optical transceivers for AI datacenters)"
+  },
+  {
+   "code": "3223",
+   "name": "Ingenic (Beijing Ingenic Semiconductor)",
+   "a_share_code": "300223.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "tencent qt sz300223 name 北京君正; total-cap share count 0.513bn = 0.482bn A + ~31m new H (HK$3,128.7m / HK$100 offer) cross-check",
+    "desk A/H premium study v3 (Ingenic H vs A cohort)"
+   ],
+   "h_over_a_note": "H listed 2026-08-25; fabless CPU/analog+memory (auto)"
+  },
+  {
+   "code": "9976",
+   "name": "LONGSYS",
+   "a_share_code": "301308.SZ",
+   "source": "https://static.cninfo.com.cn/finalpage/2026-09-08/1225554053.PDF"
+  }
+ ],
+ "proxy_for_no_a": [
+  {
+   "code": "9660",
+   "name": "Horizon Robotics",
+   "proxy_a_code": "002920.SZ",
+   "proxy_a_name": "Desay SV Automotive",
+   "rationale": "Leading A-share intelligent-driving domain-controller/ADAS tier-1 — the closest pure-A exposure to the China ADAS adoption curve that Horizon's Journey SoCs ride."
+  },
+  {
+   "code": "2097",
+   "name": "Mixue Group",
+   "proxy_a_code": "603711.SS",
+   "proxy_a_name": "Xiangpiaopiao Food",
+   "rationale": "No A-listed freshly-made-drinks chain exists; Xiangpiaopiao is the A-share mass-market tea-drink franchise/brand play closest to Mixue's price point."
+  },
+  {
+   "code": "1024",
+   "name": "Kuaishou-W",
+   "proxy_a_code": "300413.SZ",
+   "proxy_a_name": "Mango Excellent Media",
+   "rationale": "A-shares have no short-video platform; Mango (Hunan TV streaming/content) is the standard A-share video-platform traffic-and-ads proxy."
+  },
+  {
+   "code": "6181",
+   "name": "Laopu Gold",
+   "proxy_a_code": "002345.SZ",
+   "proxy_a_name": "Chow Hong Ji (CHJ Jewellery)",
+   "rationale": "A-listed fashion/heritage gold jewellery brand with craftsmanship positioning — nearest to Laopu's ancient-gold premium retail model (large-cap alternative: Lao Feng Xiang 600612.SS)."
+  },
+  {
+   "code": "0325",
+   "name": "Bloks Group",
+   "proxy_a_code": "002292.SZ",
+   "proxy_a_name": "Alpha Group",
+   "rationale": "Pop Mart/Bloks-style IP toys have no A pure-play; Alpha is the A-share IP toy and animation-merchandise name."
+  },
+  {
+   "code": "0100",
+   "name": "MiniMax-WP",
+   "proxy_a_code": "300418.SZ",
+   "proxy_a_name": "Kunlun Tech",
+   "rationale": "Owns the in-house Skywork/Tiangong LLM family — the nearest A-share to a pure LLM-developer exposure."
+  },
+  {
+   "code": "9678",
+   "name": "Unisound",
+   "proxy_a_code": "002230.SZ",
+   "proxy_a_name": "iFlytek",
+   "rationale": "Direct A-share competitor in voice AI and speech-centric LLMs (Spark model)."
+  },
+  {
+   "code": "6682",
+   "name": "Fourth Paradigm",
+   "proxy_a_code": "600588.SS",
+   "proxy_a_name": "Yonyou Network",
+   "rationale": "Enterprise-software platform embedding AI into corporate decision/ERP workflows — closest A-share enterprise-AI software exposure."
+  },
+  {
+   "code": "0020",
+   "name": "SenseTime-W",
+   "proxy_a_code": "688327.SS",
+   "proxy_a_name": "CloudWalk Technology",
+   "rationale": "Pure A-share computer-vision AI platform ('AI four dragons' peer) — the direct A analogue."
+  },
+  {
+   "code": "1956",
+   "name": "Wenge AI",
+   "proxy_a_code": "300229.SZ",
+   "proxy_a_name": "TRS Information Technology",
+   "rationale": "A-share NLP/big-data software house serving media and government analytics — same niche as Wenge's decision-intelligence LLM stack."
+  },
+  {
+   "code": "6082",
+   "name": "Biren Technology",
+   "proxy_a_code": "688256.SS",
+   "proxy_a_name": "Cambricon Technologies",
+   "rationale": "The A-share domestic AI-compute (GPGPU/accelerator) pure-play — closest proxy for Biren's training-GPU story."
+  },
+  {
+   "code": "9903",
+   "name": "Iluvatar CoreX",
+   "proxy_a_code": "688256.SS",
+   "proxy_a_name": "Cambricon Technologies",
+   "rationale": "Same domestic AI-accelerator substitution theme; Cambricon is the only liquid A pure-play."
+  },
+  {
+   "code": "0600",
+   "name": "Axera (AI vision/edge SoC)",
+   "proxy_a_code": "603893.SS",
+   "proxy_a_name": "Rockchip Electronics",
+   "rationale": "A-share edge-AI SoC designer — nearest listed comp to Axera's smart-vision/edge inference chips."
+  }
+ ]
+}

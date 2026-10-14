@@ -28,5 +28,8 @@ for name in ['create_presentation_template.mjs','prepare_ah_reference.py','test_
 for name in ['curate_peer_pairs.py','restore_peer_history_ranges.py','test_peer_horizons.py','prepare_peer_visual_probe.py']:add(ROOT/'tools'/name)
 for code in ['0006','0168','0688','0836','1211','1478','3692']:add(ROOT/'data/peer_price_cache'/f'{code}.json')
 add(ROOT/'data/batches/ah_chart_review_20261013.json')
+for name in ['ah_map.json','ah_study.json','longsys_ah_review_20261014.json']:add(ROOT/'data/batches'/name)
+for kind in ['a','h']:add(ROOT/'data/ah_study_cache'/f'{kind}_9976.json')
+for name in ['create_monitor_layout.mjs','test_monitor_revision.py','test_latest_monitor_fixes.py']:add(ROOT/'tools'/name)
 (ROOT/'out/publication_plan.json').write_text(json.dumps(files,indent=2));print('Prepared',len(files),'explicit changed files,',sum(f['bytes'] for f in files)//1024,'KB')
 for f in files:print(f['target'])

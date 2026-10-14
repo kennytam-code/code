@@ -1,6 +1,6 @@
 {
  "asof": "2026-10-02",
- "pair_count": 68,
+ "pair_count": 69,
  "premium_math": "passed",
  "no_lookahead": "passed",
  "pairs": [
@@ -1723,6 +1723,18 @@
    "aligned_sessions": 28,
    "first_h": "2026-08-25",
    "first_a": "2026-07-13",
+   "latest_h": "2026-10-02",
+   "missing_aligned_dates": [],
+   "incompatible_entitlement_dates": [],
+   "pre_common_sessions": 21,
+   "pre_reference_available": true
+  },
+  {
+   "code": "9976",
+   "h_sessions": 18,
+   "aligned_sessions": 18,
+   "first_h": "2026-09-08",
+   "first_a": "2026-07-27",
    "latest_h": "2026-10-02",
    "missing_aligned_dates": [],
    "incompatible_entitlement_dates": [],

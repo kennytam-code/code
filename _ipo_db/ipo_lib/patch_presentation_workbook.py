@@ -343,6 +343,12 @@ def patch(source,dest,root):
   parts[path]=E.tostring(chart)
  styles.find(q('cellXfs')).set('count',str(len(styles.find(q('cellXfs')))));parts['xl/styles.xml']=E.tostring(styles)
  parts['xl/workbook.xml']=E.tostring(wb);parts['xl/_rels/workbook.xml.rels']=E.tostring(wr);parts['[Content_Types].xml']=E.tostring(content)
+ from reflow_monitors import reflow
+ from adjust_ah_charts import apply
+ reflow(parts,sheets,root)
+ from fix_monitor_requests import apply as requests
+ from combine_ah_benchmark import apply as benchmark
+ requests(parts,sheets,root);apply(parts,sheets,root);benchmark(parts,sheets,root)
  with zipfile.ZipFile(dest,'w',zipfile.ZIP_DEFLATED) as z:
   for path,raw in parts.items():z.writestr(path,raw)
  return Path(dest)

@@ -464,7 +464,7 @@
    "cache_start": 4602,
    "cache_rows": 1181,
    "stored_7": 0.3388817547066354,
-   "stored_1m": 0.4987799397304038,
+   "stored_1m": 0.4987799397304036,
    "latest_date": "2026-10-02",
    "review": {
     "a_code": "002821.SZ",
@@ -566,7 +566,7 @@
    "raw_debut": 138.0,
    "cache_start": 10369,
    "cache_rows": 1376,
-   "stored_7": 0.9753349065867525,
+   "stored_7": 0.9753349065867523,
    "stored_1m": 1.261852046717768,
    "latest_date": "2026-10-02",
    "review": {
@@ -1180,9 +1180,23 @@
    "stored_1m": 0.9932670913434285,
    "latest_date": "2026-10-02",
    "review": null
+  },
+  {
+   "code": "9976",
+   "name": "LONGSYS",
+   "a_ticker": "301308 CH Equity",
+   "h_ticker": "9976 HK Equity",
+   "ipo_date": "2026-09-08",
+   "raw_debut": 233.6,
+   "cache_start": 27254,
+   "cache_rows": 18,
+   "stored_7": 0.9951005346862176,
+   "stored_1m": null,
+   "latest_date": "2026-10-02",
+   "review": null
   }
  ],
- "ah_cache_end": 27253,
+ "ah_cache_end": 27271,
  "peer": {
   "asof": "2026-10-02",
   "pairs": [

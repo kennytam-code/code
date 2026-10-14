@@ -1,4 +1,18 @@
-# HK IPO database and market monitors
+# HK IPO database
+
+Latest workbook and offline dashboard: 14 October 2026. Saved closing-price snapshot: 2 October 2026.
+
+- **IPO Live:** live Bloomberg prices by sector or subsector, with daily changes.
+- **AH:** 69 pairs. E4 selects Stored/Bloomberg; charts combine premium with A-share and CSI 300 returns. Verified capital actions are adjusted on each class's own ex date.
+- **HTML A/H:** compare selected pairs, Select all, and preset/custom date ranges.
+- **Peer Trades:** 35 named product peer pairs. B3 selects the pair; F3 selects the source; H3 selects the horizon; F4/H4 set custom dates.
+- **Lock-up:** filed cornerstone schedules, IPO dates and 30 trading sessions either side of expiry, with selected-stock and cohort curves.
+- **Screener:** verified A-code lookup and clear history output; live TTM PE/PS direct requests with BQL fallback. NTM/FY2027 estimates remain BQL.
+
+Run `python ipo.py refresh` followed by `python ipo.py build`, or use the shipped `hk_ipo.py`. Refresh regenerates monitor histories, comparisons and benchmark references. Source failures remain dated and are reported. Bloomberg mode requires the terminal add-in; the HTML remains an offline snapshot.
+
+See [MAINTENANCE.md](MAINTENANCE.md) for sources, formula conventions and build details.
+
 
 The workbook and offline HTML dashboard cover 524 IPO records. IPO Live and A/H monitoring extend to seven years: 714 listings and 68 A/H pairs. The latest deal-data review is dated 12 October 2026; stored market prices are through 2 October 2026.
 

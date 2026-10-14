@@ -552,6 +552,19 @@ table.labtbl thead th .dot { vertical-align: 1px; }
 #peer-pair { max-width: 760px; }
 #peer-table .peer-active { background: var(--surface-2); }
 #peer-table td:nth-child(4) { white-space:normal; max-width:360px; }
+.monitor-metrics { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); margin:12px 0 18px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+.monitor-metrics .tile { border:0; border-radius:0; box-shadow:none; padding:12px 18px 12px 0; background:transparent; }
+.monitor-metrics .v { font-size:23px; font-weight:600; margin:3px 0; }
+.monitor-metrics .l { font-size:12px; letter-spacing:0; text-transform:none; }
+.monitor-metrics p { margin:4px 0 0; font-size:12px; }
+.monitor-status { font-size:12px; color:var(--text-muted); margin:8px 0 12px; }
+#peers .chart,#lockup .chart { border-radius:0; box-shadow:none; border:0; border-top:1px solid var(--line); padding:12px 0; }
+#peers .filters,#lockup .filters { border-radius:0; box-shadow:none; background:transparent; border:0; border-bottom:1px solid var(--line); padding:8px 0 14px; gap:14px; }
+#peers h3,#lockup h3 { font-size:14px; margin:18px 0 10px; }
+#lockup-history-note { text-align:right; }
+#peers .row { gap:28px; }
+#peers #peer-watch { margin:0; font-size:12px; }
+@media(max-width:700px) { .monitor-metrics { grid-template-columns:1fr; } }
 #lab-ah .ah-focus { margin: 8px 0 16px; }
 .ahpane .ktag.kpop, .ahpane .ktag.kex { background: transparent; color: var(--text-muted); border: 1px solid var(--line); }
 .ovleg { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 11.5px;
@@ -1105,7 +1118,7 @@ function renderSelectedLockup() {
   $("#lockup-date-basis").textContent = "IPO "+e.ipo_date;
   $("#lockup-date-basis").title=e.date_basis;
   const source = e.url ? ` <a href="${safeText(e.url)}" target="_blank" rel="noopener">HKEX filing${e.page ? ` · PDF page ${e.page}` : ""}</a>` : "";
-  $("#lockup-history-note").innerHTML = `${safeText(lockupStatus(e))} · prices through ${DATA.lockups.price_asof}${source}`;
+  $("#lockup-history-note").innerHTML = `${safeText(lockupStatus(e))}${source}`;
   $("#lockup-history-note").title = "Day 0 is the last HK trading session on or before expiry. Split-neutral price return; dividends and rights value excluded.";
   for(const id of ["lockup-before","lockup-after"]){const v=id==="lockup-before"?w.before_pct:w.after_pct;$("#"+id).className="v "+(v>0?"up":v<0?"down":"");}
   if (!w.anchor_close || !w.path || !w.path.some(p => Number.isFinite(p[2]))) {
@@ -2204,10 +2217,11 @@ function fullAHPath(d) {
   const old=DATA.ahpaths[d.code],r=AHST[d.code],by=new Map((r.history||[]).map(x=>[x[0],x]));
   const out={...old};for(const key of ["days","dates","h","a_cny","a_hkd","prem","h_perf","a_perf_hkd"])out[key]=[];
   for(const [dt,h] of r.h_history||[]){
-    const v=by.get(dt),valid=!!v&&!old.class_review&&(!r.entitlement_review||(r.entitlement_review.events||[r.entitlement_review]).every(e=>(dt>=e.h_ex_date)===(v[5]>=e.a_ex_date)));
+    const v=by.get(dt),valid=!!v&&!old.class_review;
     const hf=(old.h_actions||[]).filter(e=>e.date<=dt).reduce((a,e)=>a*e.ratio,1)/(old.h_basefactor||1);
-    const af=(r.entitlement_review?(r.entitlement_review.events||[r.entitlement_review]):[]).filter(e=>old.ipo<e.a_ex_date&&e.a_ex_date<=dt).reduce((a,e)=>a*e.ratio,1);
-    out.days.push(Math.round((Date.parse(dt)-Date.parse(old.ipo))/86400000));out.dates.push(dt);out.h.push(h);out.a_cny.push(v?v[2]:null);out.a_hkd.push(valid?v[2]*v[3]:null);out.prem.push(valid?v[4]*100:null);out.h_perf.push(h*hf);out.a_perf_hkd.push(valid?v[2]*v[3]*af:null);
+    const events=r.entitlement_review?(r.entitlement_review.events||[r.entitlement_review]):[],acum=day=>events.filter(e=>e.a_ex_date<=day).reduce((a,e)=>a*e.ratio,1),hcum=day=>events.filter(e=>e.h_ex_date<=day).reduce((a,e)=>a*e.ratio,1);
+    const af=v?acum(v[5])/acum(old.ipo):1,htotal=(old.h_actions||[]).filter(e=>e.date<=r.latest_date).reduce((a,e)=>a*e.ratio,1),atotal=acum(r.latest_a_date||r.latest_date),hadj=h*hf*(old.h_basefactor||1)/htotal,aadj=v?v[2]*acum(v[5])/atotal:null;
+    out.days.push(Math.round((Date.parse(dt)-Date.parse(old.ipo))/86400000));out.dates.push(dt);out.h.push(hadj);out.a_cny.push(aadj);out.a_hkd.push(valid?aadj*v[3]:null);out.prem.push(valid?100*(v[2]*v[3]/h*acum(v[5])/hcum(dt)-1):null);out.h_perf.push(h*hf);out.a_perf_hkd.push(valid?v[2]*v[3]*af:null);
   }
   return out;
 }
@@ -2351,60 +2365,22 @@ function renderAH(chosen, options={}) {
       }
     }, "expop", "Both legs = 100 at their first available open. Split-neutral price performance.");
     }
-    // pane 4: premium with sign fills + the struck level vs the OFFER
-    const ipoLvl = source.class_review ? null : source.offer_premium;
-    ahPanel(g, "A premium over H (+ = A above H)", (svg, W, H, M) => {
-      const Xs = xLead(W, M);
-      daymarks(svg, Xs, M, H);
-      const ok = P.prem.filter(Number.isFinite);
-      svg.dataset.points=ok.length;
-      if(!ok.length){const t=el("text",{x:W/2,y:H/2,"text-anchor":"middle",class:"axlabel"},svg);t.textContent=source.class_review?"A/H share basis requires review":"No aligned A/H/FX observations in this window";return;}
-      const Y = scaleFor(ok.concat([0]).concat(ipoLvl != null ? [ipoLvl] : []), H, M);
-      pathYAxis(svg,Y,W,H,M,'%');
-      if (ipoLvl != null && Number.isFinite(Y(ipoLvl))) {
-        // the tag sits BY its dot, not down on the axis
-        const tl = el("text", { x: Xs(LEAD), y: Y(ipoLvl) + 16, "text-anchor": "middle",
-          class: "m halo" }, svg);
-        tl.textContent = "@offer";
-      }
-      if (ipoLvl != null) {
-        el("line", { x1: M.l, x2: W - M.r, y1: Y(ipoLvl), y2: Y(ipoLvl),
-          stroke: GOLD, "stroke-width": 1.2, "stroke-dasharray": "5,3" }, svg);
-        const tg = el("text", { x: W - M.r, y: Y(ipoLvl) - 4, "text-anchor": "end",
-          class: "m halo", fill: GOLD }, svg);
-        tg.textContent = "@IPO";
-      }
-      el("line", { x1: M.l, x2: W - M.r, y1: Y(0), y2: Y(0), stroke: "var(--mid)", "stroke-width": .8 }, svg);
-      for (let i = 1; i < P.days.length; i++) {
-        if (P.prem[i] == null || P.prem[i - 1] == null) continue;
-        if (!Number.isFinite(P.prem[i]) || !Number.isFinite(P.prem[i-1])) continue;
-        el("polygon", { points:
-          `${Xs(P.days[i-1]).toFixed(1)},${Y(0).toFixed(1)} ${Xs(P.days[i-1]).toFixed(1)},${Y(P.prem[i-1]).toFixed(1)} ` +
-          `${Xs(P.days[i]).toFixed(1)},${Y(P.prem[i]).toFixed(1)} ${Xs(P.days[i]).toFixed(1)},${Y(0).toFixed(1)}`,
-          fill: P.prem[i] >= 0 ? RED : BLUE, "fill-opacity": .06 }, svg);
-      }
-      const pS = premFromIPO(P.days, P.prem, ipoLvl, LEAD) || { days: P.days, ys: P.prem };
-      drawLead(svg, Xs, Y, pS.lead, P.prem.find(v => v != null), "#6C5B7B");
-      pathline(svg, pS.days, pS.ys, Xs, Y, "#6C5B7B", 1.7);
-      const last = ok[ok.length - 1];
-      if (Number.isFinite(last) && Number.isFinite(Y(last))) {
-        // halo + side-aware placement so the tag never sits ON the line
-        const above = Y(last) > (M.t + H - M.b) / 2;
-        let tagY = Y(last) + (above ? -7 : 14);
-        const ipoTagY = ipoLvl == null ? null : Y(ipoLvl) - 4;
-        if (ipoTagY != null && Math.abs(tagY - ipoTagY) < 18) {
-          tagY = ipoTagY + (tagY < ipoTagY ? -18 : 18);
-        }
-        tagY = Math.max(M.t + 10, Math.min(H - M.b - 4, tagY));
-        const t = el("text", { x: W - M.r - 2, y: tagY,
-          "text-anchor": "end", class: "m halo" }, svg);
-        t.textContent = "now " + (last > 0 ? "+" : "") + last.toFixed(0) + "%";
-      }
-      addXhair(svg, W, H, M, Xs, [
-        { name: "A premium", days: pS.days, ys: pS.ys, color: "#6C5B7B" }], "%");
-    }, null, (ipoLvl != null
-      ? `Dashed line: IPO premium ${fmt.pct(ipoLvl)}. Daily A × CNYHKD ÷ H − 1.`
-      : "Daily A premium: (A × FX) ÷ H − 1."));
+    // One time axis; premium is a ratio, market curves are returns on the right axis.
+    const ipoLvl=source.class_review?null:source.offer_premium,trend=(ref?.trend_rows||[]).filter(x=>options.full||x[0]<=new Date(Date.parse(P.ipo)+92*86400000).toISOString().slice(0,10));
+    const marketDays=trend.map(x=>Math.round((Date.parse(x[0])-Date.parse(P.ipo))/86400000)),marketA=trend.map(x=>100*(x[1]/trend[0][1]-1)),marketCSI=trend.map(x=>100*(x[2]/trend[0][2]-1));
+    ahPanel(g,"A/H premium and mainland market",(svg,W,H,M)=>{
+      const begin=Math.min(LEAD,marketDays[0]??0),Xs=v=>M.l+(W-M.l-M.r)*(v-begin)/(span-begin),ok=P.prem.filter(Number.isFinite),Ym=scaleFor([...marketA,...marketCSI,0],H,M),Yp=scaleFor([...ok,0,...(ipoLvl==null?[]:[ipoLvl])],H,M);
+      daymarks(svg,Xs,M,H);svg.dataset.points=ok.length;svg.dataset.benchmarkPoints=trend.length;svg.dataset.axes='premium-left,market-return-right';
+      pathYAxis(svg,Yp,W,H,M,'%');
+      if(Ym.domain)niceTicks(...Ym.domain,4).filter(v=>Ym(v)>=M.t&&Ym(v)<=H-M.b).forEach(v=>{const t=el('text',{x:W-M.r+5,y:Ym(v)+4,'text-anchor':'start',class:'axlabel',fill:'#757f88'},svg);t.textContent=v.toFixed(0)+'%';});
+      if(begin<0){const t=el('text',{x:M.l,y:H-8,'text-anchor':'start',class:'axlabel'},svg);t.textContent=new Date(Date.parse(P.ipo)+begin*86400000).toISOString().slice(0,10);}
+      el('line',{x1:Xs(0),x2:Xs(0),y1:M.t,y2:H-M.b,stroke:'var(--mid)','stroke-dasharray':'4 3'},svg);
+      if(ipoLvl!=null){el('line',{x1:Xs(0),x2:W-M.r,y1:Yp(ipoLvl),y2:Yp(ipoLvl),stroke:GOLD,'stroke-width':1,'stroke-dasharray':'5 3'},svg);}
+      pathline(svg,P.days,P.prem,Xs,Yp,'#6C5B7B',1.9);pathline(svg,marketDays,marketCSI,Xs,Ym,'#757f88',1.6);pathline(svg,marketDays,marketA,Xs,Ym,RED,1.6);
+      if(!ok.length){const t=el('text',{x:W/2,y:M.t+12,'text-anchor':'middle',class:'axlabel'},svg);t.textContent=source.class_review?'A/H share basis requires review':'A/H history unavailable';}
+      addXhair(svg,W,H,M,Xs,[{name:'A/H premium · left',days:P.days,ys:P.prem,color:'#6C5B7B'},{name:'CSI 300 return · right',days:marketDays,ys:marketCSI,color:'#757f88'},{name:'A-share return · right',days:marketDays,ys:marketA,color:RED}],'%');
+    },null,`<span style="color:#6C5B7B">Left: A/H premium</span> · <span style="color:${RED}">Right: A return</span> / <span style="color:#757f88">CSI 300 return</span>${trend.length?' · returns from '+trend[0][0]:''}`);
+
   });
   // overlay: all chosen pairs on one axis — H rebased | A rebased | premium
   if (pairs.length >= 2) {
@@ -3074,7 +3050,7 @@ HTML = """<!doctype html>
   <div id="ah-history"></div><p class="note" id="ah-history-note"></p>
   <p class="note" id="ah-note"></p>
   <div class="scroll" id="ah-tbl"></div>
-  <h3>Compare selected pairs</h3><button id="ah-clear-compare" type="button">Clear selection</button><span class="note" id="ah-compare-count"></span><div class="chart"><div id="ah-compare-chart"></div></div>
+  <h3>Compare selected pairs</h3><div class="monitor-filter"><button id="ah-select-all" type="button">Select all</button><button id="ah-clear-compare" type="button">Clear selection</button><label>Time frame <select id="ah-compare-horizon"><option value="Max">Since listing</option><option value="1M">1 month</option><option value="3M">3 months</option><option value="6M">6 months</option><option value="1Y">1 year</option><option value="3Y">3 years</option><option value="Custom">Custom dates</option></select></label><label>From <input id="ah-compare-from" type="date"></label><label>To <input id="ah-compare-to" type="date"></label></div><span class="note" id="ah-compare-count"></span><div class="chart"><div id="ah-compare-chart"></div></div>
   <details id="ah-comparison"><summary>Compare premiums across all pairs</summary><div class="chart"><div id="chart-ah"></div></div></details>
   <div id="ah-drivers" hidden></div>
 </section>
@@ -3082,15 +3058,14 @@ HTML = """<!doctype html>
 <section id="lockup">
   <h2>Cornerstone lock-up expiries</h2>
   <p class="sub">30 HK trading sessions before and after expiry. Prices through %%AHSNAPSHOT%%.</p>
-  <div class="filters"><label>Search <input id="lockup-q" type="search" placeholder="H code or company name"></label><label>Sector <select id="lockup-sec"></select></label><label>Company <select id="lockup-stock"></select></label></div>
-  <div class="filters"><label>Cornerstone expiry <select id="lockup-event"></select></label></div>
+  <div class="filters"><label>Search <input id="lockup-q" type="search" placeholder="H code or company name"></label><label>Sector <select id="lockup-sec"></select></label><label>Company <select id="lockup-stock"></select></label><label>Expiry <select id="lockup-event"></select></label></div>
   <h3 id="lockup-history-title"></h3>
-  <div class="tiles">
+  <div class="monitor-metrics">
     <div class="tile"><div class="v" id="lockup-before"></div><div class="l">30 trading sessions before</div><p class="note" id="lockup-before-dates"></p></div>
     <div class="tile"><div class="v" id="lockup-after"></div><div class="l">30 trading sessions after</div><p class="note" id="lockup-after-dates"></p></div>
     <div class="tile"><div class="v" id="lockup-date"></div><div class="l">Last day locked</div><p class="note" id="lockup-date-basis"></p></div>
   </div>
-  <div class="chart"><div id="lockup-history"></div><p class="note" id="lockup-history-note"></p></div>
+  <div class="monitor-status" id="lockup-history-note"></div><div class="chart"><div id="lockup-history"></div></div>
   <p class="note" id="lockup-note"></p>
   <h3>Compare expiry performance</h3>
   <div class="filters"><label>View <select id="lockup-compare-mode"><option value="cohort">Cohort average</option><option value="all">All stock curves</option><option value="selected">Selected stocks</option></select></label><label>Expiry from <input id="lockup-compare-from" type="date"></label><label>Expiry to <input id="lockup-compare-to" type="date"></label><label id="lockup-stock-picks">Stocks <select id="lockup-compare-stocks" multiple size="3"></select></label></div>
@@ -3100,9 +3075,9 @@ HTML = """<!doctype html>
 
 <section id="peers">
  <h2>Hong Kong product peers</h2><p class="sub">Prices through %%AHSNAPSHOT%% · live Bloomberg mode in Excel</p>
- <div class="filters"><label>Peer pair <select id="peer-pair"></select></label><label>Horizon <select id="peer-horizon"><option>1M</option><option>3M</option><option>6M</option><option selected>1Y</option><option>3Y</option><option>5Y</option><option>Max</option><option>Custom</option></select></label><label class="peer-custom">From <input id="peer-from" type="date"></label><label class="peer-custom">To <input id="peer-to" type="date"></label></div><h3 id="peer-title"></h3><p class="sub" id="peer-watch"></p><p class="note" id="peer-coverage"></p><div id="peer-summary" class="tiles"></div>
+ <div class="filters"><label>Peer pair <select id="peer-pair"></select></label><label>Horizon <select id="peer-horizon"><option>1M</option><option>3M</option><option>6M</option><option selected>1Y</option><option>3Y</option><option>5Y</option><option>Max</option><option>Custom</option></select></label><label class="peer-custom">From <input id="peer-from" type="date"></label><label class="peer-custom">To <input id="peer-to" type="date"></label></div><h3 id="peer-title"></h3><p class="sub" id="peer-watch"></p><p class="monitor-status" id="peer-coverage"></p><div id="peer-summary" class="monitor-metrics"></div>
  <div class="row"><div class="chart"><h3>Price return · common start = 0%</h3><div id="peer-performance"></div></div><div class="chart"><h3>A − B return spread · percentage points</h3><div id="peer-spread"></div></div></div>
- <p class="note">Both returns start on the first common observed session; split-neutral prices, excluding dividends.</p><div class="scroll" id="peer-table"></div>
+ <div class="scroll" id="peer-table"></div>
 </section>
 
 <section id="analog">
@@ -3410,7 +3385,7 @@ def main():
             raise SystemExit(f"embed drops batch fields {sorted(missing)} — "
                              f"refusing to build a lying dashboard")
     from corp_actions import load_actions, price_factor
-    from ah_basis import review_for, comparable
+    from ah_basis import review_for, comparable, adjusted_premium, share_multiplier
     reference = json.loads((ROOT/'data/ah_reference.json').read_text())
     actions=load_actions(ROOT)
     for r in study['pairs']:
@@ -3420,13 +3395,15 @@ def main():
                  dates=[],days=[],h=[],a_cny=[],a_hkd=[],prem=[],h_perf=[],a_perf_hkd=[])
         basefactor=price_factor(code,actions,ipo)
         for dt,h in hs:
-            v=by.get(dt);valid=bool(v) and comparable(review,dt,v[5]) and not class_review
-            out['dates'].append(dt);out['days'].append((date.fromisoformat(dt)-date.fromisoformat(ipo)).days);out['h'].append(h)
-            out['a_cny'].append(v[2] if v else None);out['a_hkd'].append(v[2]*v[3] if valid else None);out['prem'].append(100*v[4] if valid else None)
+            v=by.get(dt);valid=bool(v) and not class_review
+            adjusted_h=h*price_factor(code,actions,dt)/price_factor(code,actions,r.get('latest_date') or dt)
+            adjusted_a=v[2]*share_multiplier(review,v[5],'a')/share_multiplier(review,r.get('latest_a_date') or r.get('latest_date'),'a') if v else None
+            out['dates'].append(dt);out['days'].append((date.fromisoformat(dt)-date.fromisoformat(ipo)).days);out['h'].append(adjusted_h)
+            out['a_cny'].append(adjusted_a);out['a_hkd'].append(adjusted_a*v[3] if valid else None);out['prem'].append(100*adjusted_premium(review,v) if valid else None)
             out['h_perf'].append(h*price_factor(code,actions,dt)/basefactor)
             afactor=1
             for e in (review.get('events',[review]) if review else []):
-                if ipo<e['a_ex_date']<=dt:afactor*=e['ratio']
+                if v and ipo<e['a_ex_date']<=v[5]:afactor*=e['ratio']
             out['a_perf_hkd'].append(v[2]*v[3]*afactor if valid else None)
         out['h_actions']=actions.get(code,[]);out['h_basefactor']=basefactor
         out['a_pre_runup_pct']=reference['pairs'][code]['pre_a_return_pct']

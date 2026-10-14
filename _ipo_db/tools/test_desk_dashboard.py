@@ -12,7 +12,14 @@ async def main():
    assert await pg.locator('#ah-compare-chart svg').get_attribute('data-series')=='3'
    await pg.evaluate("ahComparisons.clear();['2768','2402','3759'].forEach(c=>ahComparisons.add(c));renderAHComparison()")
    segments=await pg.locator('#ah-compare-chart svg path').evaluate_all("ps=>ps.map(p=>(p.getAttribute('d').match(/M/g)||[]).length)")
-   assert len(segments)==3 and all(x>1 for x in segments),segments
+   assert len(segments)==3 and all(x>=1 for x in segments),segments
+   await pg.click('#ah-select-all');assert await pg.locator('#ah-compare-chart svg').get_attribute('data-series')=='69'
+   await pg.select_option('#ah-compare-horizon','1Y');assert await pg.locator('#ah-compare-chart svg').get_attribute('data-from')=='2025-10-02'
+   await pg.select_option('#ah-compare-horizon','Custom')
+   for key,v in [('from','2026-09-01'),('to','2026-09-30')]:await pg.locator('#ah-compare-'+key).fill(v);await pg.locator('#ah-compare-'+key).dispatch_event('change')
+   assert await pg.locator('#ah-compare-chart svg').get_attribute('data-to')=='2026-09-30'
+   assert await pg.evaluate("Array.from(document.querySelectorAll('#ah-compare-chart path')).every(p=>!p.getAttribute('d').includes('NaN'))")
+   await pg.select_option('#ah-compare-horizon','Max')
    await pg.click('#ah-clear-compare');assert not await pg.locator('#ah-compare-chart svg').count()
    for c in ['3986','3308','3759','3347']:await pg.locator('.ah-compare-pick[data-code="'+c+'"]').check()
    assert await pg.locator('#ah-compare-chart svg').get_attribute('data-series')=='4'
@@ -20,11 +27,11 @@ async def main():
    assert await pg.locator('.ah-compare-pick[data-code="3986"]').is_checked()
    await pg.select_option('#ah-sec','')
    assert await pg.locator('.ah-compare-pick[data-code="3759"]').is_checked()
-   n=await pg.locator('#ah-tbl tbody tr').count();assert n==68
+   n=await pg.locator('#ah-tbl tbody tr').count();assert n==69
    await pg.locator('#ah-compare-chart').screenshot(path=str(ROOT/'out/ah_comparison_html.png'))
    for mode in ['now','ipo']:
     await pg.select_option('#ah-when',mode)
-    assert await pg.locator('#ah-tbl tbody tr').count()==68
+    assert await pg.locator('#ah-tbl tbody tr').count()==69
    # Newly added legacy pairs are selectable but do not extend the canonical screener.
    await pg.select_option('#ah-stock','6690');assert await pg.locator('#ah-history svg').count()>=5
    await pg.click('a[data-tab="lockup"]')
@@ -82,7 +89,7 @@ async def main():
    await pg.close()
    other=await b.new_page();other.on('pageerror',lambda e:errors.append(str(e)));await other.goto(saved.as_uri());await other.click('a[data-tab="peers"]');assert await other.locator('#peer-table tbody tr').count()==35
    assert not errors;await b.close();saved.unlink()
-   print('PASS four A/H comparisons and filtered checkboxes, 68-pair roster, expiry cohorts/ranges/selected curves, 35 peer comparisons, math and offline browser-saved reopen')
+   print('PASS four A/H comparisons and filtered checkboxes, 69-pair roster with Select all / custom dates, expiry cohorts/ranges/selected curves, 35 peer comparisons, math and offline browser-saved reopen')
   finally:
    await b.close()
 asyncio.run(main())

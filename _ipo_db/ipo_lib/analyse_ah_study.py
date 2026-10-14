@@ -166,7 +166,7 @@ def main(refresh=False, h_cache=None):
         fx = yahoo_fx(start, (date.fromisoformat(asof) + timedelta(days=1)).isoformat())
         if not fx:
             raise RuntimeError("No dated CNYHKD history; study cannot be calculated")
-        fxp.write_text(json.dumps(sorted(fx.items())))
+        retained=dict(json.loads(fxp.read_text())) if fxp.exists() else {};retained.update(fx);fxp.write_text(json.dumps(sorted(retained.items())))
     fxrows = json.loads(fxp.read_text())
     errors = []
 

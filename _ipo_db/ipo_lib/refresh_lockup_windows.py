@@ -19,17 +19,19 @@ def main():
   if not dt or dt>cutoff:continue
   w=e.get('windows',{}).get('Trading sessions',{})
   c=e.get('windows',{}).get('Calendar days',{})
-  if w.get('status')=='Complete' and c.get('status')=='Complete' and w.get('path'):continue
+  t=e.get('windows',{}).get('30 trading sessions',{})
+  if w.get('status')=='Complete' and c.get('status')=='Complete' and w.get('path') and t.get('status')=='Complete' and t.get('path'):continue
   by.setdefault(e['code'],[]).append(e)
  for code,events in by.items():
-  start=(date.fromisoformat(min(e['last_day_locked'] for e in events))-timedelta(days=25)).isoformat();end=min(cutoff,(date.fromisoformat(max(e['last_day_locked'] for e in events))+timedelta(days=25)).isoformat());symbol=f'hk{int(code):05d}'
+  start=(date.fromisoformat(min(e['last_day_locked'] for e in events))-timedelta(days=95)).isoformat();end=min(cutoff,(date.fromisoformat(max(e['last_day_locked'] for e in events))+timedelta(days=95)).isoformat());symbol=f'hk{int(code):05d}'
   url=f'https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param={symbol},day,{start},{end},1500,'
   try:
    response=requests.get(url,timeout=30);response.raise_for_status();raw=response.json().get('data',{}).get(symbol,{}).get('day',[])
    if not raw:raise ValueError('No raw daily bars')
    prices={r[0]:float(r[2]) for r in raw if len(r)>5 and float(r[5])>0}
    for e in events:
-    e['windows']={m:window(e['last_day_locked'],sessions,prices,actions.get(code,[]),cutoff,m) for m in ['Trading sessions','Calendar days']};e['price_url']=url;e['price_asof']=cutoff
+    e.setdefault('windows',{}).update({m:window(e['last_day_locked'],sessions,prices,actions.get(code,[]),cutoff,m) for m in ['Trading sessions','Calendar days']});e['price_url']=url;e['price_asof']=cutoff
+    e['windows']['30 trading sessions']=window(e['last_day_locked'],sessions,prices,actions.get(code,[]),cutoff,days=30);e['windows']['30 trading sessions']['price_basis']='Split-neutral raw closes';e['price_url_30']=url
   except Exception as ex:errors.append({'code':code,'error':str(ex)})
   time.sleep(.3)
  data['price_asof']=cutoff;data['refresh_errors']=errors;data['stock_count']=len(D);path.write_text(json.dumps(data,ensure_ascii=True,indent=1));print('Event-window stocks refreshed',len(by),'errors',len(errors),'completed session',cutoff)

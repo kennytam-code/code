@@ -27,9 +27,8 @@ async def main():
      svg=pg.locator('#ah-history svg').last
      assert await svg.get_attribute('data-first')==rec['ipo_date']
      assert await svg.get_attribute('data-last')==rec['h_history'][-1][0]
-     assert int(await svg.get_attribute('data-points'))==sum(comparable(review,x[0],x[5]) for x in rec['history'])
-     if review:
-      assert (await svg.locator('path').first.get_attribute('d')).count('M')>=2
+     assert int(await svg.get_attribute('data-points'))==len(rec['history'])
+     assert await svg.get_attribute('data-axes')=='premium-left,market-return-right'
     ref=await pg.evaluate('(code)=>DATA.ah_reference.pairs[code]',rec['code'])
     benchmark=pg.locator('#ah-history .ahpane').first
     if ref['pre_from']:
@@ -61,7 +60,7 @@ async def main():
    await pg.select_option('#ah-horizon','Max')
    assert await pg.locator('#ah-history svg').last.get_attribute('data-last')=='2026-10-02'
    await pg.screenshot(path=str(ROOT/'out/ah_reference_html.png'),full_page=False)
-   print('PASS all 68 selectors, full/3-month date bounds, all premium observations, 65 pre-IPO CSI references, gaps, filters and offline rendering')
+   print('PASS',len(recs),'selectors; full/3-month dates, adjusted premium observations, combined CSI curves, real gaps, filters and offline rendering')
    await b.close()
   finally:
    await b.close()

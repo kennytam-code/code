@@ -65,7 +65,7 @@ def build(wb,deals,root=None):
  ipo,ah,chart=wb['IPO Live'],wb['AH'],wb['Chart Data']
  md=wb.create_sheet('Market Data');cache=wb.create_sheet('AH History');live=wb.create_sheet('Live History')
  batch=market_histories(ROOT);recs={r['code']:r for r in batch['pairs']};taxonomy=json.loads((ROOT/'data/taxonomy.json').read_text())['sectors'];sectors=list(taxonomy)
- listed=sorted(market_universe(ROOT),key=lambda d:(sectors.index(d['sector']),d['name']));pairs=[d for d in listed if d.get('a_share_code')];hrows={d['code']:8+i for i,d in enumerate(listed)};end=7+len(listed);pend=2+len(pairs)
+ listed=sorted(market_universe(ROOT),key=lambda d:(sectors.index(d['sector']),d['name']));pairs=[d for d in listed if d.get('a_share_code')];order={m['code']:i for i,m in enumerate(json.loads((ROOT/'data/desk_chart_data.json').read_text())['pairs'])};pairs.sort(key=lambda d:order.get(d['code'],len(order)));hrows={d['code']:8+i for i,d in enumerate(listed)};end=7+len(listed);pend=2+len(pairs)
  md['D2']='Live CNYHKD';md['E2']='=IF(AH!$E$4="Bloomberg",BDP("CNYHKD Curncy","LAST_PRICE"),"")'
  md['A7'],md['B7'],md['C7'],md['D7']='Bloomberg H ticker','Previous trading-day close','Sector','Subsector'
  for i,d in enumerate(listed,8):

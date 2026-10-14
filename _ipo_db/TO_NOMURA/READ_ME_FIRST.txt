@@ -14,38 +14,34 @@ THE FILES
   Clawback_Study.docx       the 套路回撥 allocation study
   READ_ME_FIRST.txt         this file
 
-MARKET TABS (13 October 2026)
-  IPO Live: 714 seven-year monitoring listings; live LAST_PRICE and change vs PX_YEST_CLOSE.
-  B5 selects Sector/Subsector classification; H34 chooses the sector
-  for the second, subsector-average chart. The first chart stays broad.
-  AH: E4 selects Stored / Bloomberg; the banner states the active mode.
-  Stored is the default snapshot through 2 October. Bloomberg requests
-  live quotes and histories from H listing to TODAY (terminal required).
-  AH remains the seven-year 68-pair roster; Database / Screener remain 524.
-  AH G/H: 7-day / one-calendar-month premium changes, percentage points.
-  Compare up to four pairs in Excel; select multiple pairs in HTML.
-  HTML A/H uses the Screener chart format, listing-to-snapshot or 3M.
-  CSI 300 compares the A line around H listing on matching observed dates.
-  Pre-IPO A, CSI and A-minus-CSI returns use the same date window.
-  A/H prices retain genuine missing / entitlement gaps; none are filled.
-  Lock-up: filed cornerstone expiry and +/-30 HK trading sessions,
-  with the IPO date, price-return chart and range / stock comparisons.
-  Current P/E and P/S in Database, BBG Verify and Screener use live BQL.
-  Screener also shows selected A/H NTM and FY2027 estimates. Historic IPO
-  multiples remain historic. Unavailable means no usable Bloomberg reply.
-  BQL expressions match the supplied screenshots. Live execution needs
-  a Bloomberg terminal; this Mac validated formula logic with fixtures.
-  Peer Trades: choose a named pair in B3; B4 / E4 fill automatically.
-  H4 = Stored / Bloomberg price source.
-  K4 = horizon (1M / 3M / 6M / 1Y / 3Y / 5Y / Max / Custom).
-  Custom dates: H5 / K5. Max / Custom chart capacity: ten years.
-  35 product peer pairs, including shares outside the IPO database.
-  The roster shows company names, codes and business-mix differences.
-  Stored histories cover 66 stocks through 02-Oct-2026.
-  Charts start at the first shared date within the selected horizon;
-  spread = A return minus B return, percentage points. Missing prices
-  stay unavailable. Actual coverage appears above the charts.
-  HTML provides saved-stock comparisons and the same horizon controls.
+MARKET TABS (14 October 2026)
+  IPO Live: 714 seven-year monitoring listings; live LAST_PRICE and daily
+  change vs PX_YEST_CLOSE. B5 selects Sector/Subsector; H34 chooses the
+  sector for the subsector-average chart.
+  AH: E4 selects Stored / Bloomberg. Stored opens through 2 October;
+  Bloomberg requests current quotes and history through TODAY.
+  69 A/H pairs, including LONGSYS 9976 / 301308. Database/Screener: 524.
+  G/H show seven-day / calendar-month premium changes in percentage points.
+  The selected Excel chart combines premium (left) with A-share and CSI 300
+  price returns (right). Reference history starts before the H listing.
+  Compare four pairs in Excel. HTML has multiple selection, Select all,
+  preset horizons and custom dates, with the six-panel A/H format.
+  Verified share actions are adjusted; genuine missing prices stay absent.
+  Lock-up: B4/E4 select the event. IPO date, cornerstone %, since-IPO
+  return, deal size and +/-30 HK trading sessions are together in one row.
+  Compared codes: B30/E30/H30/K30. Expiry date range: B33/E33.
+  Peer Trades: B3 selects a named direct product peer pair. F3 selects
+  Stored/Bloomberg; H3 selects 1M/3M/6M/1Y/3Y/5Y/Max/Custom.
+  F4/H4 set custom dates. Both company summaries and their charts appear
+  beside each other. 35 pairs / 66 saved stocks, including non-IPO peers.
+  Actual common coverage is shown; spread is A minus B return in pp.
+  Live TTM PE/PS: direct PE_RATIO / PX_TO_SALES_RATIO, with BQL fallback.
+  Selected NTM/FY2027 estimates use the supplied BQL expressions.
+  Unavailable is a missing live reply, never a substituted IPO multiple.
+  Live Bloomberg execution requires the terminal add-in; this Mac checks
+  formula structure and simulated responses without opening Excel.
+  Refresh extends A/H, peer and benchmark data and preserves lock-up
+  windows. Then build regenerates Excel and the offline HTML snapshot.
 
 RETURN METHODS / REVIEW (4 October 2026)
   1w/1m/3m = 5/21/63 traded sessions after debut, not calendar dates.

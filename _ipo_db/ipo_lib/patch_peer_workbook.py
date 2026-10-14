@@ -114,7 +114,7 @@ def patch(source,dest,root):
   if name=='AH':
    cell=next(x for x in doc.iter(q('c')) if x.get('r')=='A5')
    for n in list(cell):cell.remove(n)
-   cell.attrib.pop('t',None);E.SubElement(cell,q('f')).text='IF($E$4="Stored","Stored snapshot through 02-Oct-2026","Bloomberg mode | prices / histories requested through today")'
+   cell.attrib.pop('t',None);cutoff=json.loads((root/'data/desk_chart_data.json').read_text())['peer']['asof'];E.SubElement(cell,q('f')).text=f'IF($E$4="Stored","Stored snapshot through {cutoff}","Bloomberg mode | prices / histories requested through today")'
   parts[sheets[name]]=E.tostring(doc,encoding='utf-8')
  names=wb.find(q('definedNames'));incoming_names=pwb.find(q('definedNames'))
  for n in list(names):

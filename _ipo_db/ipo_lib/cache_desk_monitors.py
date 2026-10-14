@@ -55,7 +55,7 @@ def add_caches(parts,sheets,root):
   put('Peer Trades','B4',selected['code_a']);put('Peer Trades','E4',selected['code_b']);put('Peer Trades','A6',selected['segment']+' | '+selected['watch'])
  code_a=text(cells['Peer Trades'].get('B4'));code_b=text(cells['Peer Trades'].get('E4'));pa=stocks[code_a];pb=stocks[code_b];end=pp['asof'];dt=date.fromisoformat(end);start=dt.replace(year=dt.year-1).isoformat();a_prices=dict(pa['history']);b_prices=dict(pb['history']);dates=[d for d in a_prices if start<=d<=end];shared=[d for d in dates if d in b_prices];base=shared[0] if shared else None;first=dates.index(base)+5 if base else 0
  for addr,v in [('H2',pp['stocks'].index(pa)+1),('H5',pp['stocks'].index(pb)+1),('H3',pa['name']+' ('+code_a+')'),('H4',pb['name']+' ('+code_b+')'),('I2',serial(start)),('K2',serial(end)),('J2',max(1,len(dates))),('J3',first),('H6',sum(d<start for d in a_prices)+1)]:put('Peer Chart',addr,v)
- put('Peer Trades','B5',serial(start));put('Peer Trades','E5',serial(end));put('AH','A5','Stored snapshot through 02-Oct-2026')
+ put('Peer Trades','B5',serial(start));put('Peer Trades','E5',serial(end));put('AH','A5','Stored snapshot through '+end)
  refs.update({'PeerChartDates':[],'PeerChartA':[],'PeerChartB':[],'PeerChartSpread':[]})
  for i,d in enumerate(dates,5):
   a=a_prices[d];b=b_prices.get(d);ra=a/a_prices[base]-1 if base and d>=base and b else None;rb=b/b_prices[base]-1 if base and d>=base and b else None;spread=100*(ra-rb) if ra is not None else None

@@ -60,18 +60,21 @@ with zipfile.ZipFile(ROOT/'out/HK_IPO_Database_v1.xlsx') as z:
   book=openpyxl.load_workbook(buffer)
   for ci,ch in enumerate(book[name]._charts):
    helper=book.create_sheet('Chart '+str(ci))
-   for j,ser in enumerate(ch.series):
+   for j,ser in enumerate([s for group in ch._charts for s in group.series]):
     def values(ref):
      if ref is None:return {}
      if ref.numRef is not None and ref.numRef.numCache is not None:return {p.idx:float(p.v) for p in ref.numRef.numCache.pt}
      if hasattr(ref,'strRef') and ref.strRef is not None and ref.strRef.strCache is not None:return {p.idx:p.v for p in ref.strRef.strCache.pt}
      return {}
-    xs=values(ser.cat);ys=values(ser.val);count=max(max(xs,default=0),max(ys,default=0))+1
+    xs=values(ser.xVal if ser.xVal is not None else ser.cat);ys=values(ser.yVal if ser.yVal is not None else ser.val);count=max(max(xs,default=0),max(ys,default=0))+1
     for i in range(count):
      x=xs.get(i);label=(x if isinstance(x,str) else openpyxl.utils.datetime.from_excel(x).strftime('%d-%b-%y') if x and x>30000 else str(int(x)) if x is not None else None)
-     helper.cell(i+2,j*2+1,label);helper.cell(i+2,j*2+2,ys.get(i))
+     helper.cell(i+2,j*2+1,x if ser.xVal is not None else label);helper.cell(i+2,j*2+2,ys.get(i))
     a=openpyxl.utils.get_column_letter(j*2+1);b=openpyxl.utils.get_column_letter(j*2+2);ser.cat=AxDataSource(strRef=StrRef(f"'Chart {ci}'!${a}$2:${a}${count+1}"));ser.val=NumDataSource(numRef=NumRef(f"'Chart {ci}'!${b}$2:${b}${count+1}"))
+    if ser.xVal is not None:
+     ser.xVal=AxDataSource(numRef=NumRef(f=f"'Chart {ci}'!${a}$2:${a}${count+1}"));ser.yVal=NumDataSource(numRef=NumRef(f=f"'Chart {ci}'!${b}$2:${b}${count+1}"))
     if ser.tx and ser.tx.strRef and ser.tx.strRef.strCache:ser.tx=SeriesLabel(v=ser.tx.strRef.strCache.pt[0].v)
+   if ch.__class__.__name__=='ScatterChart':ch.x_axis.numFmt='mmm-yy';continue
    old=ch.x_axis;ch.x_axis=TextAxis(axId=old.axId,crossAx=old.crossAx,axPos='b',tickLblPos='low',delete=False,tickLblSkip=max(1,count//5),tickMarkSkip=max(1,count//5));helper.sheet_state='hidden'
   book.save(ROOT/'out'/('_presentation_'+name.replace('-','')+'.xlsx'));book.close()
   print('Prepared actual delivered',name,flush=True)
