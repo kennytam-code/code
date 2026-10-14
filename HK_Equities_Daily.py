@@ -7,6 +7,10 @@ Optional unattended invocation: --once --no-open. No email is sent.
 """
 from __future__ import annotations
 
+# Email settings: edit these two lines. {date} inserts the current report date.
+EMAIL_SUBJECT = "IPO, PHIP & Lock-up Update | {date}"
+EMAIL_TO = ""  # Recipient email address(es), separated by commas.
+
 import argparse
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
@@ -718,7 +722,7 @@ def eligibility(row, report):
 
 
 def email_subject(report):
-    return f'IPO, PHIP & Lock-up Update | {parse_date(report["day"]):%d %b %Y}'
+    return EMAIL_SUBJECT.replace('{date}', parse_date(report['day']).strftime('%d %b %Y'))
 
 
 def render_report(report):
@@ -825,6 +829,8 @@ def render_report(report):
 def make_email(report, html_body, text_body):
     message = EmailMessage(policy=SMTP)
     message['Subject'] = email_subject(report)
+    if EMAIL_TO.strip():
+        message['To'] = EMAIL_TO.strip()
     message['Date'] = format_datetime(datetime.now(HK))
     message['Message-ID'] = make_msgid(domain='ipo-daily.local')
     message['X-Unsent'] = '1'
