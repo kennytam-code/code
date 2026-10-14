@@ -1296,7 +1296,7 @@ def _text_table(headers, rows, kinds, title='', note='', indent='  '):
     n = len(headers)
     cells = [[_facts(_clean(r[i])) if kinds[i] == 'read'
               else ([_clean(x) for x in str(r[i]).split('\n')]  # [Fix 116]
-                    if kinds[i] == 'label' else [_clean(r[i])])
+                    if '\n' in str(r[i]) or kinds[i] == 'label' else [_clean(r[i])])
               for i in range(n)] for r in rows]
     w = [max([1, len(_clean(headers[i]))]
              + [max((len(x) for x in row[i]), default=0) for row in cells])
@@ -8367,14 +8367,14 @@ def _report_figures(result):
     spread = target_returns - frame[weights.index] @ weights
     two_day = result.get('two_day_returns', False)
     annualisation = np.sqrt(252 / (2 if two_day else 1))
-    colour = {'target': '#b36b58', 'hedged': '#287b6f', 'pick': '#315a69', 'other': '#b6cbc7'}
-    style = {'font.family': 'DejaVu Sans', 'font.size': 9, 'axes.titlesize': 10,
+    colour = {'target': '#343a43', 'hedged': '#c41230', 'pick': '#536779', 'other': '#c4c8cd'}
+    style = {'font.family': 'sans-serif', 'font.sans-serif': ['Arial', 'DejaVu Sans'], 'font.size': 9, 'axes.titlesize': 10,
              'axes.titleweight': 'bold', 'axes.labelsize': 8,
-             'axes.edgecolor': '#d9e3df', 'axes.labelcolor': '#52666f',
-             'axes.grid': True, 'grid.color': '#eef3f0', 'axes.axisbelow': True,
+             'axes.edgecolor': '#d9d9d9', 'axes.labelcolor': '#60656d',
+             'axes.grid': True, 'grid.color': '#eeeeef', 'axes.axisbelow': True,
              'figure.facecolor': 'white', 'legend.frameon': False,
              'legend.fontsize': 8, 'xtick.labelsize': 8, 'ytick.labelsize': 8,
-             'lines.linewidth': 1.5}
+             'lines.linewidth': 1.5, 'axes.prop_cycle': plt.cycler(color=['#536779','#c41230','#343a43','#9a8870'])}
     figures = []
     with plt.rc_context(_supported_plot_style(style)):
         fig, axes = plt.subplots(2, 3, figsize=(14, 8.5))
@@ -8404,13 +8404,13 @@ def _report_figures(result):
         axes[0, 2].set_yticks(np.arange(len(correlations)))
         axes[0, 2].set_yticklabels([c.split(' ')[0] for c in correlations.index])
         axes[0, 2].invert_yaxis(); axes[0, 2].set_xlabel('Correlation')
-        axes[0, 2].set_title('Fitted correlations · teal basket instruments')
+        axes[0, 2].set_title('Fitted correlations · red basket instruments')
         phase = slice(None, None, 2) if two_day else slice(None)
         axes[1, 0].plot(np.expm1(target_returns.iloc[phase].cumsum())*100,
                         color=colour['target'], label='Target')
         axes[1, 0].plot(np.expm1(spread.iloc[phase].cumsum())*100,
                         color=colour['hedged'], label='Hedged spread')
-        axes[1, 0].axhline(0, color='#bccbc6', ls='--', lw=.8)
+        axes[1, 0].axhline(0, color='#bfc3c9', ls='--', lw=.8)
         axes[1, 0].legend(); axes[1, 0].set_ylabel('Log-spread proxy (%)')
         axes[1, 0].set_title('Fitted paths · non-overlapping observations')
         count = max(5, min(20, len(frame)//3))
@@ -8441,7 +8441,7 @@ def _report_figures(result):
         fig2, ax2 = plt.subplots(1, 2, figsize=(13, 4.2))
         ax2[0].barh([c.split(' ')[0] for c in weights.index], weights.values*100,
                      color=[colour['hedged'] if x >= 0 else colour['target'] for x in weights])
-        ax2[0].invert_yaxis(); ax2[0].axvline(0, color='#b6c8c2', lw=.8)
+        ax2[0].invert_yaxis(); ax2[0].axvline(0, color='#bfc3c9', lw=.8)
         ax2[0].set_xlabel('Per $100 target · positive SHORT, negative LONG')
         ax2[0].set_title('Current basket hedge weights')
         candidates = result.get('basket_comparison') or []
@@ -8455,7 +8455,7 @@ def _report_figures(result):
                 ax2[1].annotate(f'{value:.3f}', (i, value), xytext=(0, 4 if value >= 0 else -12),
                                 textcoords='offset points', ha='center', fontsize=8)
         ax2[1].margins(y=.12)
-        ax2[1].axhline(0, color='#b6c8c2', lw=.8); ax2[1].set_xlabel('Basket recipe · teal selected')
+        ax2[1].axhline(0, color='#bfc3c9', lw=.8); ax2[1].set_xlabel('Basket recipe · red selected')
         ax2[1].set_ylabel('Mean CV R²' if use_cv else 'In-sample R²')
         ax2[1].set_title('Alternative baskets · selection diagnostic')
         figures.append(('Basket weights and alternative-basket comparison', fig2))
@@ -8474,9 +8474,9 @@ def _report_figures(result):
             ax3[1].plot(rolling.index, rolling['r2_roll'], color=colour['pick'])
             pooled = result.get('selected_unseen_pooled_r2', np.nan)
             if np.isfinite(pooled):
-                ax3[1].axhline(pooled, color='#97aaa4', ls='--', label='Selected-config pooled R²')
+                ax3[1].axhline(pooled, color='#969ca5', ls='--', label='Selected-config pooled R²')
                 ax3[1].legend(loc='lower left')
-            ax3[1].axhline(0, color='#bccbc6', lw=.8)
+            ax3[1].axhline(0, color='#bfc3c9', lw=.8)
             ax3[1].set_title('Rolling tracking R² · negative values remain visible')
             ax3[1].set_ylabel('R²')
             ax3[1].xaxis.set_major_locator(_mdates.AutoDateLocator(maxticks=8))
@@ -8484,7 +8484,7 @@ def _report_figures(result):
             figures.append(('Rolling stability · conditional on the selected configuration', fig3))
         for _, figure in figures:
             for ax in figure.axes:
-                ax.title.set_color('#315a69'); ax.spines['top'].set_visible(False); ax.spines['right'].set_visible(False)
+                ax.title.set_color('#30343b'); ax.spines['top'].set_visible(False); ax.spines['right'].set_visible(False)
             figure.tight_layout(pad=1.6)
     return figures
 
@@ -8586,8 +8586,11 @@ def _report_blocks(result):
     for chart in result.get('report_charts') or []: blocks.append(dict(kind='chart',**chart))
     section('Decision overview')
     text(ticket['grade'])
-    table(['EVIDENCE','UNSEEN R²','VOLATILITY CUT','IN-SAMPLE R²'],[[
-        result['validation_mode'],f(ticket.get('quality_r2')),f(risk.get('vol_reduction'),True),f(result['in_sample_r2'])]])
+    evidence_label={'IN-SAMPLE':'Fit only','HOLDOUT':'Single holdout',
+                    'REDUCED':'Short walk-forward','FULL':'Nested walk-forward'}.get(
+                        result['validation_mode'],result['validation_mode'])
+    table(['EVIDENCE','UNSEEN R²','UNSEEN VOL CUT','IN-SAMPLE R²'],[[
+        evidence_label,f(ticket.get('quality_r2')),f(risk.get('vol_reduction'),True),f(result['in_sample_r2'])]])
     text('Current basket uses the full selected window. Unseen scores belong to earlier frozen fits; they do not test today’s refitted weights.',True)
     execution=result.get('execution_audit') or {}
     if execution.get('currency_status')=='mixed':
@@ -8604,12 +8607,14 @@ def _report_blocks(result):
     text(f"{len(w)} instruments · Gross {w.abs().sum():.2f}× · {_report_method(p['pc_spec'])} · {result.get('current_fit_rows',len(result['returns']))} current-fit observations",True)
     if current.get('fit_end') is not None:
         text(f"Current fit {current['fit_start']:%d %b %Y} to {current['fit_end']:%d %b %Y}",True)
-    table(['CURRENT FIT MEASURE','READING'],[
-        ['Raw in-sample R²',f(result['in_sample_r2'])],
-        ['OLS R² for the same instruments and dates',f((result.get('fit_diagnostics') or {}).get('same_basket_ols_r2'))],
-        ['Fitted target volatility annualised',f(fitrisk.get('unhedged_vol_ann'),True)],
-        ['Fitted hedged volatility annualised',f(fitrisk.get('hedged_vol_ann'),True)],
-        ['Fitted volatility reduction',f(fitrisk.get('vol_reduction'),True)]],widths=[5.3,1.7])
+    table(['CURRENT FIT MEASURE','READING','INTERPRETATION'],[
+        ['Raw in-sample R²',f(result['in_sample_r2']),'Return tracking over the selected history'],
+        ['Same basket OLS R²',f((result.get('fit_diagnostics') or {}).get('same_basket_ols_r2')),'Unconstrained fit reference on identical dates'],
+        ['Target volatility annualised',f(fitrisk.get('unhedged_vol_ann'),True),'Total historical volatility before the hedge'],
+        ['Hedged volatility annualised',f(fitrisk.get('hedged_vol_ann'),True),'Total historical volatility of the hedged spread'],
+        ['Fitted volatility reduction',f(fitrisk.get('vol_reduction'),True),'Reduction in standard deviation, before costs']
+        ],widths=[2.5,.9,3.6])
+    text('Fitted R² and fitted volatility reduction reflect the same residual variation. Historical tests provide separate evidence.',True)
     if result['in_sample_r2'] < .5:
         text('Historical tracking is limited. A useful hedge requires evidence of reduced intended risk and stable weights; low R² alone cannot establish that. Unexplained return is not automatically alpha.',True)
     section('Market sector and peer exposures')
@@ -8618,7 +8623,8 @@ def _report_blocks(result):
         table(['COMMON DIRECTION','TARGET bp / 1 SD','HEDGED bp / 1 SD'],[
             [label,f'{a*10000:+.2f}',f'{b*10000:+.2f}'] for label,a,b in expo['rows']],widths=[3.8,1.6,1.6])
         reduction=expo.get('common_variance_reduction',np.nan)
-        text('Fitted common-factor variance reduction '+(f'{reduction:.2%}' if np.isfinite(reduction) else 'unavailable')+'. Named ETF directions enter first; later directions exclude overlap.',True)
+        text('Fitted common-factor variance reduction '+(f'{reduction:.2%}' if np.isfinite(reduction) else 'unavailable')+'. This measures the retained common factors, not total stock risk.',True)
+        text('Exposure is in basis points per one-standard-deviation factor move. Values nearer zero mean less exposure; these are fitted estimates.',True)
     else: text('Common-factor audit unavailable: '+str(expo.get('reason','missing data')),True)
     diag=result.get('peer_pca_diagnostics') or {}
     if diag.get('status')=='ok':
@@ -8629,16 +8635,17 @@ def _report_blocks(result):
     candidates=result.get('basket_comparison') or []
     alts=[r for r in candidates if not r['selected']]
     text(f"{len(alts)} distinct alternatives · Requested up to {p.get('alternative_baskets',5)} · Ranked on training information",True)
-    alternate_metrics=[];alternate_recipes=[]
+    if p.get('hedge_objective')=='factor':
+        text('Selection uses modelled risk, exposure limits and historical validation where available. The highest fitted R² need not win.',True)
+    alternate_metrics=[]
     for row in alts:
         ww=row['weights']; frame=result['returns']; target=PORTFOLIO_COL if result.get('is_portfolio') else result['portfolio_legs'][0]
         fitvol=np.nan
         if set(ww.index)<=set(frame.columns):
             fitvol=_trade_risk(frame[target],frame[target]-frame[ww.index]@ww,np.sqrt(252/(2 if result.get('two_day_returns') else 1))).get('vol_reduction',np.nan)
-        alternate_metrics.append([str(row['number']),f(row['in_sample_r2']),f(fitvol,True),f"{row['gross']:.2f}×",str(row['basket_size'])])
-        alternate_recipes.append(f"Basket {row['number']} · {_report_method(row['method'])}\n"+'; '.join(f"{'SHORT' if x>0 else 'LONG'} ${abs(x)*100:.1f} {t}" for t,x in ww.items()))
-    table(['BASKET','FIT R²','FIT VOL CUT','GROSS','NAMES'],alternate_metrics,widths=[1,1.4,1.8,1.4,1.4])
-    for recipe in alternate_recipes: text(recipe)
+        recipe='\n'.join(f"{'SHORT' if x>0 else 'LONG'} ${abs(x)*100:.1f}  {t}" for t,x in ww.sort_values(key=lambda a:-a.abs()).items())
+        alternate_metrics.append([str(row['number']),recipe,f(row['in_sample_r2']),f(fitvol,True),f"{row['gross']:.2f}×"])
+    table(['ID','POSITIONS PER $100 TARGET','FIT R²','VOL CUT','GROSS'],alternate_metrics,widths=[.55,3.45,.9,1.2,.9])
     section('Single instrument references')
     text('The basket remains the primary result. These are current-fit single-stock and ETF references.',True)
     refs=result.get('current_single_references') or {}
@@ -8658,11 +8665,13 @@ def _report_blocks(result):
         text('Each window has its own fit. The main basket remains the selected analysis window; overlapping windows are not independent tests.',True)
     section('Historical validation')
     if risk.get('n_observations'):
-        table(['UNSEEN MEASURE','READING'],[
-            ['Test observations',risk['n_observations']],['Tracking R²',f(ticket.get('quality_r2'))],
-            ['Target volatility annualised',f(risk.get('unhedged_vol_ann'),True)],
-            ['Hedged volatility annualised',f(risk.get('hedged_vol_ann'),True)],
-            ['Volatility reduction',f(risk.get('vol_reduction'),True)]],widths=[5.3,1.7])
+        table(['HISTORICAL TEST MEASURE','READING','INTERPRETATION'],[
+            ['Test observations',risk['n_observations'],'Unseen rows scored by the historical procedure'],
+            ['Tracking R²',f(ticket.get('quality_r2')),'Prediction error relative to the test-mean benchmark'],
+            ['Target volatility annualised',f(risk.get('unhedged_vol_ann'),True),'Unhedged risk during the test periods'],
+            ['Hedged volatility annualised',f(risk.get('hedged_vol_ann'),True),'Coefficient-only spread risk during those periods'],
+            ['Volatility reduction',f(risk.get('vol_reduction'),True),'Positive means lower test-period volatility before costs']
+            ],widths=[2.5,.9,3.6])
     else: text('No unseen observations were scored in this run.',True)
     nested=result.get('nested_validation')
     if isinstance(nested,pd.DataFrame) and len(nested):
@@ -8722,11 +8731,10 @@ def _report_blocks(result):
 
 
 _BRIEF_METHODOLOGY = (
-    'The model estimates shared risk, not expected alpha; residual risk is not automatically alpha. '
-    'Factor covariance assumes negligible residual co-movement after the retained factors. '
-    'In-sample R² describes the current training fit; unseen scores test earlier selection and refitting. '
-    'Alternative and rolling scores are conditional diagnostics. Spread paths approximate log-return hedges; '
-    'costs, borrow, financing and FX conversion are excluded. Factor, condition and refit-interval diagnostics are descriptive.')
+    'Current-fit statistics describe the selected history; historical tests use earlier frozen selection and weights. '
+    'Factor exposures are estimates, not alpha forecasts or neutrality guarantees. Alternatives and sensitivity checks are descriptive. '
+    'Costs, borrow fees, financing and FX conversion are excluded. Current classifications can bias historical coverage.'
+)
 
 
 def _tidy_report_blocks(blocks):
@@ -8786,8 +8794,7 @@ def _render_compact_sections(result):
             _P(block['title'])
         elif block['kind'] == 'notes':
             _section(block['text'].upper())
-            for note in block['notes']:
-                _P(note)
+            _P(_BRIEF_METHODOLOGY)
         else:
             _print_table(block['headers'], block['rows'], title=block.get('title'))
 
@@ -8795,21 +8802,8 @@ def _render_compact_sections(result):
 def _report_html(result):
     """A self-contained report with a quiet palette and one expandable notes area."""
     escape = lambda value: _html.escape(str(value))
-    css = '''
-.pca-sheet{font-family:Aptos,"Segoe UI","Helvetica Neue",Arial,sans-serif;color:#263c48;background:#fff;max-width:1060px;margin:16px auto;padding:28px 32px;border:1px solid #e1e8e6;border-radius:12px;line-height:1.5;box-sizing:border-box}
-.pca-sheet h1{font-size:28px;line-height:1.2;font-weight:650;letter-spacing:-.4px;color:#203d47;margin:0 0 14px}
-.pca-sheet h2{font-size:19px;color:#226c67;font-weight:650;margin:28px 0 12px;letter-spacing:-.15px}
-.pca-sheet p{font-size:14px;margin:8px 0;color:#344d58}.pca-sheet .meta{color:#637780;font-size:13px}
-.pca-sheet .verdict{display:inline-block;font-size:13px;font-weight:650;border-radius:5px;padding:7px 12px;background:#edf5f2;color:#27695b;margin:8px 0}.pca-sheet .caution{background:#fbf3e2;color:#806124}.pca-sheet .failed{background:#faeeeb;color:#9a4c3c}
-.pca-sheet .sample{background:#fbf3e2;padding:10px 14px;border-radius:6px;font-size:13px;color:#806124}
-.pca-sheet .metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0 16px}
-.pca-sheet .metric{padding:14px 16px;border:1px solid #dde8e5;border-radius:8px;background:#f5f9f8}.pca-sheet .metric-label{font-size:11px;letter-spacing:.55px;color:#567470;font-weight:600}.pca-sheet .metric-value{font-size:27px;line-height:1.25;font-weight:600;color:#205d58;margin-top:7px}.pca-sheet .metric:first-child .metric-value{font-size:19px;margin-top:11px}
-.pca-sheet .table-wrap{overflow-x:auto;margin:8px 0 16px}.pca-sheet table{width:100%;border-collapse:collapse;font-size:14px;line-height:1.45}.pca-sheet th{text-align:left;background:#eaf2f1;color:#315e5a;font-size:11px;font-weight:650;letter-spacing:.4px;padding:10px 12px;white-space:normal;border-bottom:1px solid #d1e1de}.pca-sheet td{padding:9px 12px;border-bottom:1px solid #e7eeec;vertical-align:top}.pca-sheet tr:nth-child(even) td{background:#f8faf9}.pca-sheet td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.pca-sheet tr.selected td{background:#edf6f2}.pca-sheet caption{text-align:left;font-size:14px;font-weight:600;color:#334f58;padding:8px 0 9px}
-.pca-sheet .chart{margin:20px 0}.pca-sheet .chart img{width:100%;height:auto;display:block}.pca-sheet figcaption{font-size:14px;font-weight:600;color:#334f58;margin-bottom:8px}
-.pca-sheet details{margin-top:26px;border-top:1px solid #dce7e4;padding:16px 0 0;color:#60757c}.pca-sheet summary{cursor:pointer;font-size:13px;font-weight:600;color:#426c66}.pca-sheet details p{font-size:13px;color:#60757c;margin:12px 0}
-@media(max-width:680px){.pca-sheet{padding:20px 16px}.pca-sheet .metric-grid{grid-template-columns:repeat(2,1fr)}}
-'''
-    parts = ['<style>'+css+'</style><article class="pca-sheet">']
+    css = '\n.pca-sheet{font-family:Arial,"Helvetica Neue",sans-serif;color:#25282d;background:#fff;max-width:1100px;margin:20px auto;padding:28px 36px;border-top:5px solid #c41230;line-height:1.5;box-sizing:border-box;counter-reset:section}\n.pca-sheet .desk-label{font-size:11px;font-weight:700;letter-spacing:1.5px;color:#b5122c;margin:0 0 10px;text-transform:uppercase}\n.pca-sheet h1{font-size:30px;line-height:1.2;font-weight:700;letter-spacing:-.5px;color:#16191d;margin:0 0 12px}\n.pca-sheet h2{font-size:19px;color:#20242a;font-weight:700;margin:32px 0 12px;counter-increment:section}\n.pca-sheet h2::before{content:counter(section,decimal-leading-zero) "  ";color:#c41230;font-size:14px;margin-right:10px;font-weight:700}\n.pca-sheet p{font-size:14px;margin:9px 0;color:#34383e}.pca-sheet .meta{color:#666b72;font-size:12.5px}\n.pca-sheet .verdict{font-size:16px;font-weight:700;color:#303740;margin:10px 0}.pca-sheet .caution{color:#795b29}.pca-sheet .failed{color:#b5122c}\n.pca-sheet .sample{font-size:12px;font-weight:700;letter-spacing:.3px;color:#795b29}\n.pca-sheet .metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;margin:18px 0 20px;padding:16px 0;border-top:1px solid #bfc2c6;border-bottom:1px solid #d7d9dc}\n.pca-sheet .metric-label{font-size:10px;letter-spacing:.7px;color:#646971;font-weight:700}.pca-sheet .metric-value{font-size:29px;line-height:1.2;font-weight:700;color:#22262d;margin-top:8px;font-variant-numeric:tabular-nums}.pca-sheet .metric:first-child .metric-value{font-size:18px;margin-top:13px}\n.pca-sheet .table-wrap{overflow-x:auto;margin:10px 0 18px}.pca-sheet table{width:100%;border-collapse:collapse;font-size:13px;line-height:1.5;table-layout:fixed}.pca-sheet th{text-align:left;background:#30343b;color:#fff;font-size:10px;font-weight:700;letter-spacing:.35px;padding:10px 11px;white-space:normal;border:1px solid #d9d9d9}.pca-sheet td{padding:10px 11px;border:1px solid #d9d9d9;vertical-align:middle;overflow-wrap:break-word;white-space:pre-line}.pca-sheet tr:nth-child(even) td{background:#f4f5f6}.pca-sheet td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.pca-sheet tr.selected td{background:#faf0f2}.pca-sheet caption{text-align:left;font-size:14px;font-weight:700;color:#30343b;padding:8px 0 10px}\n.pca-sheet .chart{margin:24px 0}.pca-sheet .chart img{width:100%;height:auto;display:block}.pca-sheet figcaption{font-size:12px;font-weight:700;color:#383d45;margin-bottom:10px}\n.pca-sheet details{margin-top:28px;border-top:1px solid #d9d9d9;padding:16px 0 0}.pca-sheet summary{cursor:pointer;font-size:12px;font-weight:700;color:#5c6168}.pca-sheet details p{font-size:12px;color:#666b72;margin:10px 0}\n@media(max-width:680px){.pca-sheet{padding:20px 14px}.pca-sheet h1{font-size:25px}.pca-sheet .metric-grid{grid-template-columns:repeat(2,1fr);gap:20px}.pca-sheet table{min-width:620px}}\n@media print{.pca-sheet{max-width:none;margin:0;padding:0;border-top:0}.pca-sheet h2,.pca-sheet figcaption{break-after:avoid}.pca-sheet figure,.pca-sheet tr{break-inside:avoid}.pca-sheet thead{display:table-header-group}}\n'
+    parts = ['<style>'+css+'</style><article class="pca-sheet"><p class="desk-label">Equity hedge research</p>']
     for block in _report_blocks(result):
         kind = block['kind']
         if kind == 'title':
@@ -8831,7 +8825,7 @@ def _report_html(result):
             elif value.startswith('ILLUSTRATIVE SAMPLE'):
                 style = 'sample'
             parts.append(f'<p class="{style}">'+escape(value).replace('\n','<br>')+'</p>')
-        elif block['headers'] == ['EVIDENCE', 'UNSEEN R²', 'VOLATILITY CUT', 'IN-SAMPLE R²']:
+        elif block['headers'] == ['EVIDENCE', 'UNSEEN R²', 'UNSEEN VOL CUT', 'IN-SAMPLE R²']:
             labels = ['Evidence', 'Unseen R²', 'Unseen volatility cut', 'In-sample R²']
             parts.append('<div class="metric-grid">')
             for label, value in zip(labels, block['rows'][0]):
@@ -8842,6 +8836,9 @@ def _report_html(result):
             parts.append('<div class="table-wrap"><table>')
             if block.get('title'):
                 parts.append('<caption>'+escape(block['title'])+'</caption>')
+            widths=block.get('widths')
+            if widths:
+                parts.append('<colgroup>'+''.join('<col style="width:'+str(100*v/sum(widths))+'%">' for v in widths)+'</colgroup>')
             parts.append('<thead><tr>'+''.join('<th>'+escape(h)+'</th>' for h in block['headers'])+'</tr></thead><tbody>')
             for row in block['rows']:
                 chosen = 'selected' if 'selected' in str(row[0]) else ''
@@ -9323,18 +9320,18 @@ _UI_CSS = """
 }
 .hedge-ui { color: #1d2b3a; line-height: 1.45; }
 .hedge-ui .widget-label {
-  font-size: 12.5px !important; color: #33506d !important;
+  font-size: 12.5px !important; color: #3d424a !important;
   font-weight: 600 !important; letter-spacing: .01em;
 }
 .hedge-ui input, .hedge-ui select, .hedge-ui textarea {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif !important;
   font-size: 12.5px !important; color: #16222e !important;
-  border: 1px solid #cfd8e3 !important; border-radius: 5px !important;
+  border: 1px solid #d3d5d8 !important; border-radius: 5px !important;
   padding: 3px 7px !important; background: #fdfefe !important;
 }
 .hedge-ui input:focus, .hedge-ui textarea:focus, .hedge-ui select:focus {
-  border-color: #4a7fb5 !important; outline: none !important;
-  box-shadow: 0 0 0 2px rgba(74,127,181,.15) !important;
+  border-color: #c41230 !important; outline: none !important;
+  box-shadow: 0 0 0 2px rgba(196,18,48,.12) !important;
 }
 .hedge-ui .widget-hbox, .hedge-ui .widget-vbox { margin: 0 !important; }
 .hedge-ui .widget-text, .hedge-ui .widget-dropdown,
@@ -9352,7 +9349,7 @@ _UI_CSS = """
   padding: 6px 10px 10px 10px;
 }
 .hedge-ui .hui-h {
-  font-size: 11px; font-weight: 700; color: #33506d;
+  font-size: 11px; font-weight: 700; color: #3d424a;
   border-bottom: 1px solid #e2e8f0; margin: 16px 0 8px 0;
   padding-bottom: 4px; text-transform: uppercase; letter-spacing: .07em;
 }
@@ -9362,7 +9359,7 @@ _UI_CSS = """
   line-height: 1.45; max-width: 560px;
 }
 .hedge-ui .hui-title {
-  font-size: 18px; font-weight: 700; color: #16324b;
+  font-size: 18px; font-weight: 700; color: #22262d;
   letter-spacing: -.01em; margin: 2px 0 1px 0;
 }
 .hedge-ui .hui-sub {
@@ -9493,32 +9490,47 @@ def _docx_hedge_report(result, report_text, path):
     section.left_margin = section.right_margin = Inches(.75)
     section.page_width, section.page_height = Inches(8.5), Inches(11)
     base = doc.styles['Normal']
-    base.font.name, base.font.size = 'Calibri', Pt(10.5)
-    base.font.color.rgb = RGBColor.from_string('243447')
+    base.font.name, base.font.size = 'Arial', Pt(11)
+    base.font.color.rgb = RGBColor.from_string('25282D')
     base.paragraph_format.space_after = Pt(6)
     base.paragraph_format.line_spacing = 1.12
     for style in ('Title', 'Heading 1', 'Heading 2'):
-        doc.styles[style].font.name = 'Calibri'
+        doc.styles[style].font.name = 'Arial'
         props = doc.styles[style].element.get_or_add_pPr()
         for border in list(props.findall(qn('w:pBdr'))):
             props.remove(border)
     doc.styles['Title'].font.color.rgb = RGBColor(0, 0, 0)
     doc.styles['Title'].font.size = Pt(24)
-    doc.styles['Heading 1'].font.color.rgb = RGBColor(0,0,0)
+    doc.styles['Heading 1'].font.color.rgb = RGBColor.from_string('B5122C')
     doc.styles['Heading 1'].font.size = Pt(15)
     doc.styles['Heading 1'].paragraph_format.space_before = Pt(14)
     doc.styles['Heading 1'].paragraph_format.space_after = Pt(6)
+
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+    header=section.header.paragraphs[0]
+    header.text='EQUITY HEDGE RESEARCH'
+    for run in header.runs:
+        run.font.name='Arial';run.font.size=Pt(8);run.font.bold=True
+        run.font.color.rgb=RGBColor.from_string('B5122C')
+    footer=section.footer.paragraphs[0]
+    footer.alignment=WD_ALIGN_PARAGRAPH.RIGHT
+    label=str(result.get('target_label',''))+' | '+str(result.get('params',{}).get('sample_window',''))+' | '
+    run=footer.add_run(label);run.font.name='Arial';run.font.size=Pt(8)
+    field=OxmlElement('w:fldSimple');field.set(qn('w:instr'),'PAGE');footer._p.append(field)
 
     def paragraph(text, muted=False):
         p = doc.add_paragraph(text)
         if muted:
             for run in p.runs:
-                run.font.size = Pt(9)
-                run.font.color.rgb = RGBColor.from_string('5B6B7C')
+                run.font.size = Pt(9.5)
+                run.font.color.rgb = RGBColor.from_string('666B72')
         return p
 
+    section_number=0
     def heading(text):
-        return doc.add_paragraph(text, style='Heading 1')
+        nonlocal section_number
+        section_number+=1
+        return doc.add_paragraph(f'{section_number:02d}  '+text, style='Heading 1')
 
     def table(headers, rows, widths):
         t = doc.add_table(rows=1, cols=len(headers))
@@ -9539,7 +9551,7 @@ def _docx_hedge_report(result, report_text, path):
                 cell.width = Inches(width)
                 props = cell._tc.get_or_add_tcPr()
                 shade = OxmlElement('w:shd')
-                shade.set(qn('w:fill'), 'EAF0F5' if row_no == 0 else ('F7F9F9' if row_no % 2 else 'FFFFFF'))
+                shade.set(qn('w:fill'), '30343B' if row_no == 0 else ('F4F5F6' if row_no % 2 else 'FFFFFF'))
                 props.append(shade)
                 margins = OxmlElement('w:tcMar')
                 for edge in ('top', 'left', 'bottom', 'right'):
@@ -9558,16 +9570,20 @@ def _docx_hedge_report(result, report_text, path):
                 from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
                 cell.vertical_alignment=WD_CELL_VERTICAL_ALIGNMENT.CENTER
                 for p in cell.paragraphs:
+                    if row_no and re.fullmatch(r'[+$−\-]?\d+(?:[.,]\d+)*(?:%|×)?',cell.text):
+                        p.alignment=WD_ALIGN_PARAGRAPH.RIGHT
                     p.paragraph_format.space_after = Pt(0)
                     p.paragraph_format.line_spacing = 1.05
                     # Keep short comparison tables intact at a page boundary.
                     p.paragraph_format.keep_with_next = len(t.rows) <= 14 and row_no < len(t.rows) - 1
                     for run in p.runs:
-                        run.font.name = 'Calibri'
+                        run.font.name = 'Arial'
                         run.font.size = Pt(9.5)
                         run.font.bold = row_no == 0
-                        run.font.color.rgb = RGBColor.from_string('000000' if row_no == 0 else '243447')
-        doc.add_paragraph().paragraph_format.space_after = Pt(0)
+                        run.font.color.rgb = RGBColor.from_string('FFFFFF' if row_no == 0 else '25282D')
+        gap=doc.add_paragraph()
+        gap.paragraph_format.space_after=Pt(0)
+        gap.paragraph_format.line_spacing=Pt(4)
         return t
 
     def recipe(weights):
@@ -9589,7 +9605,7 @@ def _docx_hedge_report(result, report_text, path):
         elif kind == 'text':
             p = paragraph(block['text'], muted=block.get('muted', False))
             next_block = report_blocks[block_no + 1] if block_no + 1 < len(report_blocks) else {}
-            if (next_block.get('kind') == 'table' and not next_block.get('title')):
+            if ((next_block.get('kind') == 'table' and not next_block.get('title')) or next_block.get('kind') == 'text'):
                 p.paragraph_format.keep_with_next = True
         elif kind == 'chart':
             import base64
@@ -9601,7 +9617,7 @@ def _docx_hedge_report(result, report_text, path):
             doc.add_picture(io.BytesIO(base64.b64decode(block['png'])), width=Inches(7.0))
         elif kind == 'notes':
             heading('Methodology and coverage')
-            paragraph(_BRIEF_METHODOLOGY, muted=True)
+            paragraph(_BRIEF_METHODOLOGY, muted=True).paragraph_format.keep_together=True
         else:
             if block.get('title'):
                 p = paragraph(block['title'])
@@ -9618,6 +9634,26 @@ def _docx_hedge_report(result, report_text, path):
                     for paragraph_in_cell in cell.paragraphs:
                         paragraph_in_cell.paragraph_format.keep_with_next = True
                 doc.paragraphs[-1].paragraph_format.keep_with_next = True
+    from docx.text.paragraph import Paragraph as _WordParagraph
+    basket_paragraphs=[]
+    collecting=False
+    for element in doc.element.body:
+        if element.tag==qn('w:p'):
+            p=_WordParagraph(element,doc)
+            if p.style.name=='Heading 1':
+                if p.text.endswith('  Current basket'):
+                    collecting=True
+                elif collecting:
+                    break
+        if collecting:
+            if element.tag==qn('w:p'):
+                basket_paragraphs.append(_WordParagraph(element,doc))
+            else:
+                basket_paragraphs.extend(_WordParagraph(p,doc) for p in element.iter(qn('w:p')))
+    for p in basket_paragraphs[:-1]:
+        p.paragraph_format.keep_with_next=True
+    if basket_paragraphs:
+        basket_paragraphs[-1].paragraph_format.keep_with_next=False
     if params.get('notional_mm'):
         paragraph(f"Optional target book size ${params['notional_mm']:g} million.", muted=True)
     if False:  # the structured full report already contains its diagnostics

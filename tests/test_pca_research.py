@@ -167,6 +167,27 @@ class ResearchTests(unittest.TestCase):
         self.assertIn('CURRENT BASKET',buf.getvalue())
         self.assertIn('IN-SAMPLE',buf.getvalue())
 
+    def test_printed_metrics_match_fit_and_unseen_risk_and_preserve_positions(self):
+        r=self.three
+        buf=io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            E['_render_compact_report'](r)
+        printed=buf.getvalue()
+        fitted=printed.split('CURRENT FIT MEASURE',1)[1].split('MARKET SECTOR',1)[0]
+        unseen=printed.split('HISTORICAL TEST MEASURE',1)[1].split('WEIGHT SENSITIVITY',1)[0]
+        for output,risk in [(fitted,r['current_fit_risk']),(unseen,r['trade_risk'])]:
+            for key in ('unhedged_vol_ann','hedged_vol_ann','vol_reduction'):
+                self.assertIn(f"{risk[key]*100:.1f}%",output)
+        self.assertIn(f"{r['in_sample_r2']:.3f}",fitted)
+        self.assertIn(f"{r['ticket']['quality_r2']:.3f}",unseen)
+        alternatives=printed.split('ALTERNATIVE BASKETS',1)[1].split('SINGLE INSTRUMENT REFERENCES',1)[0]
+        for row in r['basket_comparison']:
+            if row['selected']: continue
+            for ticker,weight in row['weights'].items():
+                position=f"{'SHORT' if weight>0 else 'LONG'} ${abs(weight)*100:.1f} {ticker}"
+                self.assertTrue(any(position in ' '.join(line.split()) for line in alternatives.splitlines()),position)
+        self.assertIn('not total stock risk',printed)
+
     def test_complementary_pair_beats_top_individuals(self):
         rng=np.random.default_rng(40);n=80
         common,factor=rng.normal(0,.01,(2,n))

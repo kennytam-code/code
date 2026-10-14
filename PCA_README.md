@@ -88,7 +88,7 @@ result = find_best_hedge(
 )
 ```
 
-Charts lead the styled report. It includes the current basket, raw fitted R² for every window, exposure reduction, multiple alternative recipes, single references, historical evidence, sensitivity and coverage/execution checks. The result also prints on Run. Compact and full reports use the same current weights; full adds configuration detail. Word and notebook reports share the same structured content. `diagnostic_log`/`full_report` preserve the legacy calculation log with its earlier-fit context.
+Charts lead the institutional report, using a white background, red accents, charcoal tables and Arial typography. It includes the current basket, raw fitted R² for every window, exposure reduction, multiple alternative recipes, single references, historical evidence, sensitivity and coverage/execution checks. Key fit and historical-test measures include a brief interpretation. Alternative positions and metrics appear together for comparison. The result also prints on Run. Compact and full reports use the same current weights; full adds configuration detail. Word and notebook reports share the same structured content. `diagnostic_log`/`full_report` preserve the legacy calculation log with its earlier-fit context. The design is inspired by institutional research reports; it does not represent an official Nomura document.
 
 ```python
 comparison = compare_history_windows(
