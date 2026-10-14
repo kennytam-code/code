@@ -69,6 +69,9 @@ with zipfile.ZipFile(path) as z:
    assert evaluate(val[out+'8'].find(q('f')).text,fixture)==datum
    assert evaluate(val[out+'8'].find(q('f')).text,{source+'8':datum,helper+'8':0})==datum
   assert evaluate(val[out+'8'].find(q('f')).text,{source+'8':'#N/A',helper+'8':0})=='Unavailable'
+  # A numeric date in the first cell is table metadata, never a scalar ratio.
+  assert evaluate(val[out+'8'].find(q('f')).text,{source+'8':46000,ec(start+1)+'8':25.6,helper+'8':0})==25.6
+  assert evaluate(val[out+'8'].find(q('f')).text,{source+'8':46000,ec(start+1)+'8':2027,ec(start+2)+'8':25.6,helper+'8':0})=='Unavailable'
  # Two-column responses and unavailable direct fields have the same safe fallback.
  fixture={'C8':'#N/A','AU8':'ID','AV8':'PE_RATIO','AU9':'2170 HK Equity','AV9':21.3}
  fixture['BC8']=evaluate(val['BC8'].find(q('f')).text,fixture)

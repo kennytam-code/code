@@ -27,22 +27,18 @@
     "Peer/legacy incremental refresh and failure retention passed",
     "Staged native full rebuild completed inside 512 MiB process cap",
     "Standalone updater contains durable ESWIN/Red Avenue sources, mapping and staged builder",
-    "Future quote refresh guard passed; old review cannot freeze later prices",
-    "Self-contained inline HTML runtime checked; direct file:// preview is blocked by the browser tool",
-    "Cumulative numeric correction journal preserved",
-    "Price precision retains penny quotes; daily changes shown to two decimal places"
+    "BQL scalar requires one numeric output cell; numeric first-column date / period tables passed rejection/extraction fixtures"
   ],
   "limits": [
     "Mac locked before final native re-open after scoring repair / Red Avenue addition; native repaint remains unverified",
     "Live Bloomberg add-in execution requires the desk terminal",
     "273 retained financial entries lack fresh independent annual-row confirmation; internal audit preserves their status",
-    "Real missing observations and unconfirmed expiry dates remain unavailable",
-    "Final direct file:// preview blocked by browser tool URL protocol policy"
+    "Real missing observations and unconfirmed expiry dates remain unavailable"
   ],
   "sha256": {
-    "HK_IPO_Database_v1.xlsx": "a3e3ff09ccb2c737b1c7f03ec9a71b0487c6397205d949fa3a26c4ca393481da",
+    "HK_IPO_Database_v1.xlsx": "b49515d169d815386319a03495da928a86119d40cf37ebad5589728dfc2f445b",
     "hk_ipo_dashboard.html": "f68fe3f8fc63513acff7e26d843dec7a10c0f6cce6fe3d5befc25ac5e51f2f4e",
-    "hk_ipo_dashboard.zip": "806c87a537ecb77a548541b579a4d75d6482901682dde6f483910b4aa3f6a36c",
-    "hk_ipo.py": "895ce1b6438261bd44819540c3c736e856bb2418e80622cf522c88082ca77848"
+    "hk_ipo_dashboard.zip": "6216231f775423fb0166446055ae81558daad9f1cc8f41bcb9b79dc7ce63dd80",
+    "hk_ipo.py": "9074cdcc1ee111b2963ed8d36a64e722a0586c2c306782f6a22e72d7f372d7d2"
   }
 }

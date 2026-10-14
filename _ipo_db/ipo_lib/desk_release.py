@@ -89,7 +89,7 @@ def valuation_request(doc,row,ticker,query,raw,out,helper,field,direct=None):
  for r in reversed(range(row,row+8)):
   ref=ec(first+1)+str(r);fallback=f'IF(IFERROR(ISNUMBER({ref}),FALSE),{ref},{fallback})'
  fallback=f'IF(COUNTA({ec(first+2)}{row}:{last}{row+7})=0,{fallback},"Unavailable")'
- formula=f'IF(IFERROR(ISNUMBER({raw}{row}),FALSE),{raw}{row},IF({helper}{row}>0,{result},{fallback}))'
+ formula=f'IF(AND(IFERROR(ISNUMBER({raw}{row}),FALSE),COUNTA({raw}{row}:{last}{row+7})=1),{raw}{row},IF({helper}{row}>0,{result},{fallback}))'
  if direct:formula=f'IF(IFERROR(ISNUMBER({direct}{row}),FALSE),{direct}{row},{formula})'
  put(doc,raw+str(row),f=f'IF({ticker}="","",BQL({ticker},"{query}"))')
  put(doc,out+str(row),v='Unavailable',f=formula)
