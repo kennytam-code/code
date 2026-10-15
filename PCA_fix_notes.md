@@ -3,6 +3,7 @@
 Revision 2026-10-15-v117-result-regressions in the existing v115 entry point.
 
 - Fixed the October 15 actual-result failures: constrained Ridge fits now optimize within gross/per-leg limits across all modes and references; zero/dust positions no longer count toward basket size; negligible improvements cannot receive a positive risk-reduction grade.
+- Separated low fitted R² into exposure-cap and objective/regularization gaps against same-date least-squares references; restored descriptive correlation diagnostics for 1m windows.
 - Preserved both market and sector factors when short-window sensitivity removes a few days, preventing a hidden change of factor specification.
 - Closed remaining placeholder-label/sector-conflict peer leaks, made peer-only ETF exclusion absolute, retained classification evidence and exposed constituent identities. Fresh peer-policy-v4 downloads are required for automatic peers.
 - Fixed recipe amounts/line breaks for notebook rendering and Word copying; removed the duplicate plain-text notebook report while retaining terminal output and exports.

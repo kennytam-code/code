@@ -4759,7 +4759,10 @@ def _solve_hedge_qp(H, c, max_gross=None, max_leg=None):
     from scipy.optimize import minimize
     H, c = np.asarray(H, float), np.asarray(c, float)
     k = len(c)
-    w = np.linalg.solve(H, c)
+    try:
+        w = np.linalg.solve(H, c)
+    except np.linalg.LinAlgError:
+        w = np.linalg.lstsq(H, c, rcond=None)[0]
     if ((max_gross is None or np.abs(w).sum() <= max_gross + 1e-10) and
             (max_leg is None or np.abs(w).max() <= max_leg + 1e-10)):
         return w
@@ -8699,11 +8702,15 @@ def _report_blocks(result):
         text(f"Current fit {current['fit_start']:%d %b %Y} to {current['fit_end']:%d %b %Y}",True)
     table(['CURRENT FIT MEASURE','READING','INTERPRETATION'],[
         ['Raw in-sample R²',f(result['in_sample_r2']),'Return tracking over the selected history'],
-        ['Same basket OLS R²',f((result.get('fit_diagnostics') or {}).get('same_basket_ols_r2')),'Unconstrained fit reference on identical dates'],
+        ['Same-name capped fit R²',f((result.get('fit_diagnostics') or {}).get('same_basket_capped_ols_r2')),'Best tracking fit with the same exposure caps'],
+        ['Same-name uncapped OLS R²',f((result.get('fit_diagnostics') or {}).get('same_basket_ols_r2')),'Unconstrained fit reference on identical dates'],
         ['Target volatility annualised',f(fitrisk.get('unhedged_vol_ann'),True),'Total historical volatility before the hedge'],
         ['Hedged volatility annualised',f(fitrisk.get('hedged_vol_ann'),True),'Total historical volatility of the hedged spread'],
         ['Fitted volatility reduction',f(fitrisk.get('vol_reduction'),True),'Reduction in standard deviation, before costs']
         ],widths=[2.5,.9,3.6])
+    fd=result.get('fit_diagnostics') or {}
+    if np.isfinite(fd.get('same_basket_capped_ols_r2',np.nan)):
+        text(f"R² gap on the same names/dates: exposure caps {fd['constraint_r2_gap']:.3f}; objective/regularization {fd['objective_r2_gap']:.3f}. Fit references allow zero legs and are descriptive, not validated alternative baskets.",True)
     text('Fitted R² and fitted volatility reduction reflect the same residual variation. Historical tests provide separate evidence.',True)
     if result['in_sample_r2'] < .5:
         text('Historical tracking is limited. A useful hedge requires evidence of reduced intended risk and stable weights; low R² alone cannot establish that. Unexplained return is not automatically alpha.',True)
@@ -8986,13 +8993,14 @@ def diagnose_in_sample(result):
     for c in cols:
         x = pd.to_numeric(frame[c], errors='coerce')
         pair = pd.concat([target_rets, x], axis=1).replace([np.inf,-np.inf],np.nan).dropna()
-        if len(pair) >= max(30, int(.85 * len(frame))):
+        if len(pair) >= max(8, int(np.ceil(.85 * len(frame)))):
             corr = pair.iloc[:,0].corr(pair.iloc[:,1])
             if np.isfinite(corr):
                 rank.append({'ticker':c, 'corr_squared':float(corr**2),
                              'paired_rows':int(len(pair))})
     rank.sort(key=lambda item:item['corr_squared'],reverse=True)
-    ols_r2 = np.nan
+    ols_r2 = capped_r2 = np.nan
+    capped_error = ''
     if weights is not None and len(weights) and all(t in frame for t in weights.index):
         paired = frame[[target] + list(weights.index)].replace(
             [np.inf, -np.inf], np.nan).dropna()
@@ -9004,8 +9012,21 @@ def diagnose_in_sample(result):
             tss = float(np.sum((y-y.mean())**2))
             if tss > MIN_RETURN_STD**2:
                 ols_r2 = 1.0 - float(np.sum((y-pred)**2))/tss
+                xc, yc = x-x.mean(axis=0), y-y.mean()
+                params=result.get('params') or {}
+                try:
+                    reference_w=_solve_hedge_qp(xc.T@xc,xc.T@yc,
+                        params.get('max_gross'),params.get('max_leg'))
+                    capped_r2=1.0-float(np.sum((yc-xc@reference_w)**2))/tss
+                except (ValueError,RuntimeError,np.linalg.LinAlgError) as err:
+                    capped_error=str(err)
     result_data = {'in_sample_r2': fitted,
                    'same_basket_ols_r2': ols_r2,
+                   'same_basket_capped_ols_r2': capped_r2,
+                   'constraint_r2_gap': ols_r2-capped_r2,
+                   'objective_r2_gap': capped_r2-fitted,
+                   'capped_ols_error': capped_error,
+                   'reference_scope': 'Same dates and names; exposure caps only. Zero legs are allowed in this descriptive reference; it is not a selected alternative basket.',
                    'same_basket_ols_minus_ridge_r2':
                        ols_r2 - fitted if np.isfinite(ols_r2) and np.isfinite(fitted) else np.nan,
                    'unseen_r2': result.get('selected_unseen_r2'),

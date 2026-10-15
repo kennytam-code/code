@@ -700,6 +700,48 @@ class ResearchTests(unittest.TestCase):
             with contextlib.redirect_stdout(buf): render(self.three)
         self.assertIn('CURRENT BASKET',buf.getvalue())
 
+    def test_one_month_has_descriptive_correlation_diagnostics(self):
+        diag=self.one['fit_diagnostics']
+        self.assertLess(diag['fitted_return_rows'],30)
+        self.assertTrue(diag['top_single_name_correlations'])
+        self.assertEqual(diag['top_single_name_correlations'][0]['paired_rows'],len(self.one['returns']))
+
+    def test_fit_gap_separates_caps_from_objective_against_analytic_solution(self):
+        rng=np.random.default_rng(18)
+        x=rng.normal(size=(60,2));x-=x.mean(axis=0)
+        x=np.linalg.qr(x)[0]
+        frame=pd.DataFrame({'T':3*x[:,0]+x[:,1],'A':x[:,0],'B':x[:,1]})
+        weights=pd.Series([.25,.1],index=['A','B'])
+        fitted=1-((3-.25)**2+(1-.1)**2)/10
+        result={'returns':frame,'portfolio_legs':['T'],'weights':weights,
+                'in_sample_r2':fitted,'params':{'max_gross':.7,'max_leg':.5}}
+        d=E['diagnose_in_sample'](result)
+        # Orthogonal equal-norm columns: constrained optimum is (.5,.2).
+        expected=1-((3-.5)**2+(1-.2)**2)/10
+        self.assertAlmostEqual(d['same_basket_ols_r2'],1)
+        self.assertAlmostEqual(d['same_basket_capped_ols_r2'],expected,places=7)
+        self.assertAlmostEqual(d['constraint_r2_gap'],1-expected,places=7)
+        self.assertAlmostEqual(d['objective_r2_gap'],expected-fitted,places=7)
+        pd.testing.assert_series_equal(result['weights'],weights)
+        self.assertEqual(result['in_sample_r2'],fitted)
+
+    def test_capped_fit_reference_handles_duplicate_columns(self):
+        x=np.linspace(-.01,.01,20)
+        frame=pd.DataFrame({'T':3*x,'A':x,'B':x})
+        d=E['diagnose_in_sample']({'returns':frame,'portfolio_legs':['T'],
+            'weights':pd.Series([.2,.2],index=['A','B']),'in_sample_r2':.1,
+            'params':{'max_gross':.5,'max_leg':.4}})
+        self.assertEqual(d['capped_ols_error'],'')
+        self.assertAlmostEqual(d['same_basket_capped_ols_r2'],1-(2.5/3)**2,places=7)
+
+    def test_current_fit_gap_order_and_printed_explanation(self):
+        for r in (self.one,self.three):
+            d=r['fit_diagnostics']
+            self.assertGreaterEqual(d['same_basket_ols_r2']+1e-7,d['same_basket_capped_ols_r2'])
+            self.assertGreaterEqual(d['same_basket_capped_ols_r2']+1e-7,r['in_sample_r2'])
+            self.assertIn('R² gap on the same names/dates',r['report_text'])
+            self.assertIn('Same-name capped fit R²',r['report_text'])
+
     def test_published_notebook_matches_script(self):
         nb=SCRIPT.with_suffix('.ipynb')
         if not nb.exists(): self.skipTest('Notebook is generated at publication')

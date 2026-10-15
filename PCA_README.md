@@ -34,6 +34,8 @@ The selected procedure is refitted using the **full chosen analysis window**, in
 
 The factor objective minimizes modelled spread variance, subject to gross/per-leg caps. This can choose a lower tracking R² than ordinary least squares. The report therefore shows actual raw in-sample R², same-basket unconstrained OLS R², fitted volatility reduction, common-factor exposures before/after hedging, and weight sensitivity. OLS is a descriptive reference, not an independently tested alternative. Adjusted R² remains available as a nominal complexity heuristic; it is not an unbiased statistic after model selection or regularization.
 
+The report separates the same-name fit gap into exposure-cap effects (uncapped OLS minus capped OLS) and objective/regularization effects (capped OLS minus actual fitted R²), on identical dates. The capped reference permits zero legs, so it is a descriptive upper reference, not a selected basket or an unseen test. Short 1m runs also retain their descriptive candidate correlations.
+
 Low fitted R² is still a limitation. Under the report's same-date fitted-intercept convention, fitted volatility reduction equals `1 - sqrt(1 - R²)`; these are not independent pieces of evidence. A low-tracking-R² hedge can reduce a particular common exposure when company-specific variation dominates, but fitted exposure reduction alone does not validate future effectiveness. Negative fitted R² means increased fitted spread variance under this convention and remains visible. Residual risk is not automatically alpha.
 
 **Numerically negligible risk reductions do not earn a positive verdict.** Reductions below 0.05% (the one-decimal display boundary) are labelled no material validated reduction. This tolerance is not a cost hurdle or statistical significance test. Common-factor reduction is displayed alongside the fraction of target variance represented by those factors; near-100% factor reduction can still leave most stock risk.
@@ -107,7 +109,7 @@ Optional window comparisons are overlapping historical fits, not independent rep
 
 ## Validation
 
-`tests/test_pca_research.py` loads the actual current engine and checks all five windows, complementary combinations, caps/required names, chronological isolation, latest refits, industry verification, official-roster/EQS parsing with mocks, missing/constant prices, UI defaults, plots, printed reports and exact notebook/script parity. `tests/test_hedge_search.py` separately checks the historical v103 engine. GitHub Actions runs both on Windows/Linux with Python 3.12 minimum/current dependencies and Python 3.8 legacy dependencies.
+`tests/test_pca_research.py` loads the actual current engine and checks all five windows, complementary combinations, caps/required names, chronological isolation, latest refits, industry verification, official-roster/EQS parsing with mocks, missing/constant prices, UI defaults, plots, printed reports and exact notebook/script parity. `tests/test_hedge_search.py` separately checks the historical v103 engine. GitHub Actions runs both suites on Windows/Linux with Python 3.12 minimum/current dependencies; Python 3.8 legacy jobs validate the current engine only.
 
 ```bash
 python -m unittest discover -s tests -p 'test_*.py' -v
