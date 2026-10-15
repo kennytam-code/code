@@ -16,8 +16,8 @@ def read(z,name,sheets):
  _,_,actual=maps({p:z.read(p) for p in ['xl/workbook.xml','xl/_rels/workbook.xml.rels']});return E.fromstring(z.read(actual[name]))
 with zipfile.ZipFile(ROOT/'out/HK_IPO_Database_v1.xlsx') as z,zipfile.ZipFile(ROOT/'out/_compact_baseline.xlsx') as before:
  _,_,sheets=maps({p:z.read(p) for p in ['xl/workbook.xml','xl/_rels/workbook.xml.rels']})
- pc=nodes(read(z,'Peer Chart',sheets));pt=nodes(read(z,'Peer Trades',sheets));lc=nodes(read(z,'Lock Compare',sheets));lk=nodes(read(z,'Lock-up',sheets));old=nodes(read(before,'Peer Trades',sheets))
- for name in ['Peer Trades','Lock-up']:assert not list(read(z,name,sheets).iter(q('mergeCell')))
+ pc=nodes(read(z,'Peer Chart',sheets));pt=nodes(read(z,'Peer Trades',sheets));old=nodes(read(before,'Peer Trades',sheets))
+ for name in ['Peer Trades']:assert not list(read(z,name,sheets).iter(q('mergeCell')))
  for name in ['Taxonomy']:
   previous=nodes(read(before,name,sheets));current=nodes(read(z,name,sheets))
   assert set(previous)==set(current),name
@@ -36,11 +36,7 @@ with zipfile.ZipFile(ROOT/'out/HK_IPO_Database_v1.xlsx') as z,zipfile.ZipFile(RO
  assert [d.get('sqref') for d in read(z,'Peer Trades',sheets).iter(q('dataValidation'))]==['B3','F3','H3']
  assert value(pt['B8'])=='9856' and value(pt['C8'])=='3308'
  assert math.isclose(float(value(pt['F8'])),100*(float(value(pt['B12']))-float(value(pt['C12']))),abs_tol=1e-10)
- assert [value(lk[a]) for a in ['B10','E10','H10','K10']]==['0600','0470','2706','9981']
- assert "'Lock-up'!$B$11" in lc['B5'].find(q('f')).text and "'Lock-up'!$E$11" in lc['B5'].find(q('f')).text
- assert "'Lock-up'!$B$10" in lc['C5'].find(q('f')).text and "'Lock-up'!$E$10" in lc['D5'].find(q('f')).text
- code=value(lk['A8']);deal=next(d for d in json.loads((ROOT/'data/deals.json').read_text())['deals'] if d['code']==code)
- for addr,key,scale in [('G8','cornerstone_pct',100),('H8','since_ipo_pct',100),('I8','deal_size_hkdm',1)]:assert math.isclose(float(value(lk[addr])),deal[key]/scale,abs_tol=1e-10)
+ assert not {'Lock-up','Lock-up Data','Lock Compare','Lock Matrix'} & set(sheets)
  chart=nodes(read(z,'Chart Data',sheets));comp=nodes(read(z,'AH Compare',sheets));ah=nodes(read(z,'AH',sheets))
  # Execute actual shipped scalar formulas against raw fixtures, including headers/missing dates elsewhere in the retained tests.
  for f,fields,idx,classflag in [(chart['B5'].find(q('f')).text,{'A5':'hdate','C5':'h','D5':'a','E5':'fx','F5':'adate','G5':'fxdate'},'AH!P3','AH!P9'),(comp['G5'].find(q('f')).text,{'A5':'hdate','B5':'h','C5':'a','D5':'fx','E5':'adate','F5':'fxdate'},'H2',None)]:

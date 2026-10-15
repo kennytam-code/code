@@ -72,7 +72,7 @@ print('PASS headered A/H history, exact starting date, today endpoint, stale/wro
 f=load_actions(ROOT)
 assert math.isclose(.56/bbg_factor('2147',f,as_of='2026-10-12'),8.1641025641,abs_tol=1e-9)
 assert math.isclose(.56/bbg_factor('2147',f,as_of='2026-08-26'),11.2,abs_tol=1e-10)
-for name in ['IPO Live','AH','Lock-up','Peer Trades','Screener','Database']:assert src[name].sheet_properties.tabColor is not None
+for name in ['IPO Live','AH','Peer Trades','Screener','Database']:assert src[name].sheet_properties.tabColor is not None
 assert 'Analogs' not in src.sheetnames and 'Verify (BBG)' not in src.sheetnames
 assert src['Scoring Stats'].sheet_state=='hidden'
 print('PASS rights-adjusted 2147 price basis with dated terminal fixture; important tab colours and combined verification',flush=True)

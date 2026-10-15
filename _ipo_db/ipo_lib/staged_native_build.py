@@ -106,7 +106,7 @@ def build(root,dest):
  run(f'from patch_peer_workbook import patch;patch({str(dest)!r},{str(peer)!r},{str(root)!r})');peer.replace(dest)
  run(f'from apply_desk_styles import apply;apply({str(dest)!r},{str(root)!r})')
  run(f'from pathlib import Path;from patch_presentation_workbook import patch;patch(Path({str(dest)!r}),Path({str(staged)!r}),Path({str(root)!r}),finish=False)');staged.replace(dest)
- for mod,fn in [('reflow_monitors','reflow'),('fix_monitor_requests','apply'),('adjust_ah_charts','apply'),('combine_ah_benchmark','apply'),('desk_release','apply')]:
+ for mod,fn in [('reflow_monitors','reflow'),('fix_monitor_requests','apply'),('adjust_ah_charts','apply'),('combine_ah_benchmark','apply'),('desk_release','apply'),('sector_monitor_release','apply')]:
   run(f'from staged_native_build import transform;transform({str(dest)!r},{str(staged)!r},{str(root)!r},{mod!r},{fn!r})');staged.replace(dest)
  for p in [core,mon]:p.unlink(missing_ok=True)
  print('Wrote staged native desk workbook',dest,flush=True);return dest

@@ -1,0 +1,45 @@
+{
+  "release_date": "2026-10-15",
+  "scope": "Sector comparisons, concise stabilisers and HTML-only lock-ups",
+  "core_deals": 525,
+  "ah_pairs": 70,
+  "ah_sectors": 6,
+  "html_lockup_events": 397,
+  "html_lockup_sectors": 8,
+  "workbook_sheets": 29,
+  "visible_workbook_sheets": 11,
+  "snapshot_dates": {
+    "live": "2026-10-14",
+    "ah_peer_histories": "2026-10-02"
+  },
+  "checks": [
+    "Exact final workbook opened in Microsoft Excel without a content-repair prompt; sector table and existing AH charts visually reviewed",
+    "Four Excel lock-up sheets and exclusively owned parts removed; no remaining formula references",
+    "Every unaffected worksheet and retained native chart byte-identical to prior delivery",
+    "Six sector and all-pair formulas independently evaluated against stored values and zero/negative/missing refresh fixtures",
+    "1909 HTML average points independently checked on actual dates and expiry-relative sessions",
+    "All six AH sector selections; Select all 70; Clear; 1Y and custom dates; sector overlays tested in browser",
+    "All eight lock-up sector selections; Select all 397; Clear; expiry-date filters; selected curves and sector overlays tested in browser",
+    "Stabilisers layout reviewed without long explanatory paragraphs",
+    "Native sheet ordering, relationships, charts, styles, merges and validation lists passed",
+    "165457 formula package checks and 19889 historical numeric cell checks passed",
+    "Standalone updater embeds exact current sector template, monitor JS and final build stage"
+  ],
+  "average_method": {
+    "ah": "Equal weight of all eligible pairs in each represented sector on each actual date",
+    "lockup": "Equal weight of available expiry events; expiry close is zero; -30 to +30 Hong Kong trading sessions",
+    "selected_event": "Equal weight of selected observed expiry events; separate expiry dates remain separate events",
+    "missing": "Excluded without zero-fill or interpolation; valid zeros and negative values retained"
+  },
+  "limits": [
+    "Bloomberg live execution requires the terminal add-in; no live Bloomberg execution claimed",
+    "This release does not refresh historical market snapshots or re-audit financial filings",
+    "Unconfirmed/future events without an observed reference close do not contribute invented returns"
+  ],
+  "sha256": {
+    "HK_IPO_Database_v1.xlsx": "79d91c67438bd84f6994b11a4a01486889d2e2320eaea033eae0684b39cb27e5",
+    "hk_ipo_dashboard.html": "e85982902e325ac5a9a7abfe6e99382e80cf8c70438278a75eb1844f9af0ecb0",
+    "hk_ipo_dashboard.zip": "87ea5733c4a8791649db4299631bc5f5466a584611d6d3efaa6a45b337219576",
+    "hk_ipo.py": "048af992c09e5976eb17ed14f9c9a5c7dc0a34a5213cda17344fcb5a8283d10b"
+  }
+}

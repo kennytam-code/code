@@ -320,16 +320,21 @@ table { font-variant-numeric: tabular-nums; }
 #ah-tbl tr.selected td { background: var(--surface-2); font-weight: 600; }
 #lockup-tbl tr.selected td { background: var(--surface-2); font-weight: 600; }
 #lockup-tbl table { table-layout: auto; width: 100%; min-width: 1280px; }
-#lockup-tbl th:nth-child(1) { width:16%; }
-#lockup-tbl th:nth-child(2) { width:8%; }
-#lockup-tbl th:nth-child(3) { width:11%; }
-#lockup-tbl th:nth-child(4),#lockup-tbl th:nth-child(5) { width:8%; }
-#lockup-tbl th:nth-child(6),#lockup-tbl th:nth-child(7),#lockup-tbl th:nth-child(10) { width:7%; }
-#lockup-tbl th:nth-child(8),#lockup-tbl th:nth-child(9) { width:6%; }
-#lockup-tbl th:nth-child(11) { width:12%; }
-#lockup-tbl th:nth-child(12) { width:4%; }
-#lockup-tbl th, #lockup-tbl td { vertical-align: middle; }
-#lockup-tbl td.num, #lockup-tbl td:nth-child(4), #lockup-tbl td:nth-child(5) { white-space: nowrap; }
+#lockup-tbl th:first-child, #lockup-tbl td:first-child { width:40px; text-align:center; }
+#lockup-tbl th:nth-child(2) { min-width:190px; }
+#lockup-tbl th:nth-child(4) { min-width:130px; }
+#lockup-tbl th, #lockup-tbl td { vertical-align:middle; }
+#lockup-tbl td.num, #lockup-tbl td:nth-child(5), #lockup-tbl td:nth-child(6) { white-space:nowrap; }
+.comparison-toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:10px 14px; margin:10px 0; }
+.comparison-toolbar label { display:flex; align-items:center; gap:7px; font-size:12px; color:var(--text-secondary); }
+.comparison-toolbar button, .comparison-toolbar select, .comparison-toolbar input[type=date] { font:inherit; font-size:12px; min-height:32px; border:1px solid var(--line); border-radius:3px; padding:5px 10px; background:var(--surface-1); color:var(--text-primary); }
+.comparison-toolbar button { cursor:pointer; font-weight:600; }
+.comparison-toolbar button:hover:not(:disabled) { border-color:var(--text-secondary); background:var(--surface-2); }
+.comparison-toolbar button:disabled { opacity:.4; cursor:default; }
+.comparison-toolbar input[type=checkbox], .ah-compare-pick, .lockup-compare-pick { accent-color:#8C3038; }
+.comparison-toolbar .check-control { margin-left:4px; }
+.comparison-basis { color:var(--text-muted); font-size:12px; }
+#ah .chart, #lockup .chart, #peers .chart { border-radius:3px; box-shadow:none; }
 #lockup .tiles { grid-template-columns:repeat(3,minmax(0,1fr)); }
 #lockup .tile { border-radius:0; box-shadow:none; padding:16px 20px; }
 #lockup .tile .v { font-size:26px; }
@@ -1178,8 +1183,8 @@ function redrawLockupTab() {
       return af !== bf ? (af ? -1 : 1) : (af ? ad.localeCompare(bd) : bd.localeCompare(ad)) || a.e.code.localeCompare(b.e.code);
     });
   $("#lockup-note").textContent = `${stocks.length} stocks · ${rows.length} cornerstone schedules`;
-  $("#lockup-tbl").innerHTML = `<table class="tbl"><thead><tr><th>Company / H code</th><th>Sector</th><th title="Full company roster; individual expiry dates can cover subsets. Refer to the event filing.">Cornerstones</th><th>IPO date</th><th>Last day locked</th><th class="num">30-session pre</th><th class="num">30-session post</th><th class="num">CS % of offer</th><th class="num">Since IPO %</th><th class="num">Deal HK$m</th><th>Status</th><th>Source</th></tr></thead><tbody>` +
-    rows.map(({e, i}) => {const d = deals.find(d => d.code === e.code), names = d?.cornerstone_investors || [];return `<tr data-event="${i}"><td><button type="button" class="ah-select lockup-select" data-event="${i}">${safeText(e.name)} (${e.code})</button></td><td>${safeText(e.sector)}</td><td title="${safeText(names.join('; '))}">${names.length ? `<details><summary>${safeText(names[0])}${names.length > 1 ? ` +${names.length-1}` : ''}</summary>${safeText(names.join('; '))}</details>` : 'Roster unconfirmed'}</td><td>${e.ipo_date || "—"}</td><td>${e.last_day_locked || "Expiry unconfirmed"}</td><td class="num">${Number.isFinite(e.window.before_pct) ? fmt.pct(e.window.before_pct) : "—"}</td><td class="num">${Number.isFinite(e.window.after_pct) ? fmt.pct(e.window.after_pct) : "—"}</td><td class="num">${d?.cornerstone_pct==null?'—':fmt.pct(d.cornerstone_pct)}</td><td class="num">${d?.since_ipo_pct==null?'—':fmt.pct(d.since_ipo_pct)}</td><td class="num">${d?.deal_size_hkdm==null?'—':fmt.n(d.deal_size_hkdm)}</td><td title="${safeText(e.date_basis)}">${safeText(lockupStatus(e))}</td><td>${e.url ? `<a href="${safeText(e.url)}" target="_blank" rel="noopener" title="${safeText(e.date_basis)}${e.page ? ` · PDF page ${e.page}` : ""}">HKEX</a>` : "—"}</td></tr>`}).join("") + `</tbody></table>`;
+  $("#lockup-tbl").innerHTML = `<table class="tbl"><thead><tr><th>Compare</th><th>Company / H code</th><th>Sector</th><th title="Full company roster; individual expiry dates can cover subsets. Refer to the event filing.">Cornerstones</th><th>IPO date</th><th>Last day locked</th><th class="num">30-session pre</th><th class="num">30-session post</th><th class="num">CS % of offer</th><th class="num">Since IPO %</th><th class="num">Deal HK$m</th><th>Status</th><th>Source</th></tr></thead><tbody>` +
+    rows.map(({e, i}) => {const d = deals.find(d => d.code === e.code), names = d?.cornerstone_investors || [];return `<tr data-event="${i}"><td><input type="checkbox" class="lockup-compare-pick" data-event="${i}" aria-label="Compare ${e.code} expiry ${e.last_day_locked||'unconfirmed'}"></td><td><button type="button" class="ah-select lockup-select" data-event="${i}">${safeText(e.name)} (${e.code})</button></td><td>${safeText(e.sector)}</td><td title="${safeText(names.join('; '))}">${names.length ? `<details><summary>${safeText(names[0])}${names.length > 1 ? ` +${names.length-1}` : ''}</summary>${safeText(names.join('; '))}</details>` : 'Roster unconfirmed'}</td><td>${e.ipo_date || "—"}</td><td>${e.last_day_locked || "Expiry unconfirmed"}</td><td class="num">${Number.isFinite(e.window.before_pct) ? fmt.pct(e.window.before_pct) : "—"}</td><td class="num">${Number.isFinite(e.window.after_pct) ? fmt.pct(e.window.after_pct) : "—"}</td><td class="num">${d?.cornerstone_pct==null?'—':fmt.pct(d.cornerstone_pct)}</td><td class="num">${d?.since_ipo_pct==null?'—':fmt.pct(d.since_ipo_pct)}</td><td class="num">${d?.deal_size_hkdm==null?'—':fmt.n(d.deal_size_hkdm)}</td><td title="${safeText(e.date_basis)}">${safeText(lockupStatus(e))}</td><td>${e.url ? `<a href="${safeText(e.url)}" target="_blank" rel="noopener" title="${safeText(e.date_basis)}${e.page ? ` · PDF page ${e.page}` : ""}">HKEX</a>` : "—"}</td></tr>`}).join("") + `</tbody></table>`;
   renderSelectedLockup();
 }
 $("#lockup-sec").innerHTML = `<option value="">all sectors</option>` + [...new Set(deals.map(d => d.sector))].sort().map(s => `<option>${safeText(s)}</option>`).join("");
@@ -2880,7 +2885,7 @@ function drawSmLeague() {
             .join("; ").replace(/"/g, "&quot;")}" title="show all ${r.deals.length} deals">+${r.deals.length - 2} all ▾</span>`
         : ""}</div></td>
   </tr>`).join("");
-  $("#sm-count").textContent = `${rows.length} managers shown · sorted by ${SM_SORT.replace(/_/g, " ")} — click a header to re-sort`;
+  $("#sm-count").textContent = `${rows.length} managers`;
 }
 document.querySelectorAll("#sm-tbl th[data-k]").forEach(th =>
   th.addEventListener("click", () => {
@@ -3033,7 +3038,9 @@ HTML = """<!doctype html>
   <div id="ah-history"></div><p class="note" id="ah-history-note"></p>
   <p class="note" id="ah-note"></p>
   <div class="scroll" id="ah-tbl"></div>
-  <h3>Compare selected pairs</h3><div class="monitor-filter"><button id="ah-select-all" type="button">Select all</button><button id="ah-clear-compare" type="button">Clear selection</button><label>Time frame <select id="ah-compare-horizon"><option value="Max">Since listing</option><option value="1M">1 month</option><option value="3M">3 months</option><option value="6M">6 months</option><option value="1Y">1 year</option><option value="3Y">3 years</option><option value="Custom">Custom dates</option></select></label><label>From <input id="ah-compare-from" type="date"></label><label>To <input id="ah-compare-to" type="date"></label></div><span class="note" id="ah-compare-count"></span><div class="chart"><div id="ah-compare-chart"></div></div>
+  <h3>Compare selected pairs</h3>
+  <div class="comparison-toolbar"><label>Sector <select id="ah-compare-sector"></select></label><button id="ah-select-sector" type="button">Select sector</button><button id="ah-select-all" type="button">Select all</button><button id="ah-clear-compare" type="button">Clear</button><label class="check-control"><input id="ah-sector-average" type="checkbox">Sector averages</label></div>
+  <div class="comparison-toolbar"><label>Time frame <select id="ah-compare-horizon"><option value="Max">Since listing</option><option value="1M">1 month</option><option value="3M">3 months</option><option value="6M">6 months</option><option value="1Y">1 year</option><option value="3Y">3 years</option><option value="Custom">Custom dates</option></select></label><label>From <input id="ah-compare-from" type="date"></label><label>To <input id="ah-compare-to" type="date"></label></div><span class="note" id="ah-compare-count"></span><div class="chart"><div id="ah-compare-chart"></div></div>
   <details id="ah-comparison"><summary>Compare premiums across all pairs</summary><div class="chart"><div id="chart-ah"></div></div></details>
   <div id="ah-drivers" hidden></div>
 </section>
@@ -3051,7 +3058,8 @@ HTML = """<!doctype html>
   <div class="monitor-status" id="lockup-history-note"></div><div class="chart"><div id="lockup-history"></div></div>
   <p class="note" id="lockup-note"></p>
   <h3>Compare expiry performance</h3>
-  <div class="filters"><label>View <select id="lockup-compare-mode"><option value="cohort">Cohort average</option><option value="all">All stock curves</option><option value="selected">Selected stocks</option></select></label><label>Expiry from <input id="lockup-compare-from" type="date"></label><label>Expiry to <input id="lockup-compare-to" type="date"></label><label id="lockup-stock-picks">Stocks <select id="lockup-compare-stocks" multiple size="3"></select></label></div>
+  <div class="comparison-toolbar"><label>Sector <select id="lockup-compare-sector"></select></label><button id="lockup-select-sector" type="button">Select sector</button><button id="lockup-select-all" type="button">Select all</button><button id="lockup-clear-compare" type="button">Clear</button><label class="check-control"><input id="lockup-sector-average" type="checkbox">Sector averages</label></div>
+  <div class="comparison-toolbar"><label>View <select id="lockup-compare-mode"><option value="average">Selected-event average</option><option value="selected">Selected stock curves</option></select></label><label>Expiry from <input id="lockup-compare-from" type="date"></label><label>Expiry to <input id="lockup-compare-to" type="date"></label><span class="comparison-basis">Equal weight · expiry close = 0%</span></div>
   <p class="note" id="lockup-compare-count"></p><div class="chart"><div id="lockup-compare-chart"></div></div>
   <div class="scroll" id="lockup-tbl"></div>
 </section>
@@ -3255,27 +3263,7 @@ HTML = """<!doctype html>
 </section>
 
 <section id="smleague">
-  <h2>Stabilising-manager league — how the deals each bank defended traded</h2>
-  <p class="note">The stabilising manager is the bank holding the <b>greenshoe and the
-  after-market bid</b>, so this answers a different question from the cornerstone league:
-  not who anchored the deal, but who defended it once it traded. Names come from each
-  deal's own allotment announcement and are grouped by bank family, so
-  "Goldman Sachs (Asia) L.L.C." and "Goldman Sachs International" count once.
-  Returns are simple averages. The <b>DAY 1 block</b> splits the session the manager
-  actually defended: <b>open vs issue</b> is the pop — where the stock opened against the
-  price the bank sold it at; <b>close vs issue</b> is the day-1 return; and
-  <b>open→close</b> is whether that open was <i>held</i> or given back. A negative
-  open→close alongside a positive close is a bank that spent the day supporting a fading
-  stock. The <b>ex-pop legs</b> strip the pop (day-1 close→1w/1m/3m). The <b>shoe
-  columns</b> are the tell — a shoe exercised in full means the price never needed
-  support; a lapsed one means stock was bought back in to hold the line.</p>
-  <p class="note"><b>Read this as deal mix, not as a skill ranking.</b> The banks at the
-  bottom of the table are the ones that lead the large international deals — bigger books,
-  institutionally priced, deliberately less left on the table — while the banks at the top
-  sit on smaller HK retail-driven offerings where pops are structurally larger. A low
-  median here means "defended a tightly-priced deal", not "defended it badly". The
-  comparison worth making is a bank against deals of its OWN size and regime, which is what
-  the screener's comp filters are for.</p>
+  <h2>Stabilisers</h2>
   <div class="filters">
     <label>Find manager <input id="sm-q" type="search" placeholder="bank…"
       style="min-width:260px;padding:5px 8px"></label>
@@ -3287,9 +3275,9 @@ HTML = """<!doctype html>
   <table class="tbl deals lgtbl" id="sm-tbl"><thead>
   <tr class="grp">
     <th colspan="3"></th>
-    <th class="num grpd1" colspan="3">DAY 1 — the session they defended</th>
-    <th class="num grpwith" colspan="3">WITH POP — vs offer</th>
-    <th class="num grpex" colspan="3">EX-POP — from the day-1 close</th>
+    <th class="num grpd1" colspan="3">Day 1</th>
+    <th class="num grpwith" colspan="3">Return from offer</th>
+    <th class="num grpex" colspan="3">Return from day-1 close</th>
     <th class="num" colspan="2">SHOE OUTCOME</th>
     <th></th></tr>
   <tr>

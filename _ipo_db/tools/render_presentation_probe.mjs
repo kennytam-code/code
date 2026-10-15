@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
 import {FileBlob,SpreadsheetFile} from '@oai/artifact-tool';
-for(const [name,range] of [['AH','J1:O54'],['Lock-up','A1:M58'],['Peer Trades','A1:H43']]){
+for(const [name,range] of (process.argv.includes('--sector')?[['AH','J55:O70']]:[['AH','J1:O70'],['Peer Trades','A1:H43']])){
  const wb=await SpreadsheetFile.importXlsx(await FileBlob.load(fileURLToPath(new URL('../out/_presentation_'+name.replace('-','')+'.xlsx',import.meta.url))));
  wb.worksheets.getItem(name).charts.items.forEach((ch,ci)=>{
   ch.series.items.forEach((s,j)=>{const end=s.valuesSource?.match(/\$(\d+)$/)?.[1],col=String.fromCharCode(65+j*2);if(end)s.categoriesSource=`'Chart ${ci}'!$${col}$2:$${col}$${end}`;});

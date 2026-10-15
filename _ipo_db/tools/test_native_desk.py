@@ -29,7 +29,7 @@ with zipfile.ZipFile(path) as z:
    else:depth-=1;n.clear()
   assert order==sorted(order),(name,order)
  print('PASS all native worksheet child sequences, unique rows and unique cells')
- db=nodes(E.fromstring(z.read(s['Database'])));sc=nodes(E.fromstring(z.read(s['Screener'])));val=nodes(E.fromstring(z.read(s['Valuation Data'])));peer=nodes(E.fromstring(z.read(s['Peer Data'])));pt=nodes(E.fromstring(z.read(s['Peer Trades'])));lock=nodes(E.fromstring(z.read(s['Lock-up'])));live=nodes(E.fromstring(z.read(s['IPO Live'])))
+ db=nodes(E.fromstring(z.read(s['Database'])));sc=nodes(E.fromstring(z.read(s['Screener'])));val=nodes(E.fromstring(z.read(s['Valuation Data'])));peer=nodes(E.fromstring(z.read(s['Peer Data'])));pt=nodes(E.fromstring(z.read(s['Peer Trades'])));live=nodes(E.fromstring(z.read(s['IPO Live'])))
  deals=json.loads((ROOT/'data/deals.json').read_text())['deals'];n=len(deals)
  notes=nodes(E.fromstring(z.read(s['Notes'])))
  workbook=E.fromstring(z.read('xl/workbook.xml'))
@@ -86,15 +86,7 @@ with zipfile.ZipFile(path) as z:
  assert moved_range('$A$5:$CC$528',64,3)=='$A$5:$CF$528'
  for i,p in enumerate(json.loads((ROOT/'data/peer_pairs.json').read_text())['pairs'],3):assert value(peer['S'+str(i)])==p['code_a']+' / '+p['code_b']
  assert value(pt['B3'])=='9856 / 3308'
- table=next(E.fromstring(z.read(p)) for p in z.namelist() if p.startswith('xl/tables/') and p.endswith('.xml') and E.fromstring(z.read(p)).get('name')=='LockupEvents');assert table.get('ref')==f'A37:M{37+len([e for e in json.loads((ROOT/"data/batches/lockup_events.json").read_text())["events"] if e["category"]=="Cornerstone" and e["date_basis"]!="No cornerstone tranche"])}';assert [x.get('name') for x in table.find(q('tableColumns'))]==[value(lock[ec(i)+'37']) for i in range(1,14)]
- events=[e for e in json.loads((ROOT/'data/batches/lockup_events.json').read_text())['events'] if e['category']=='Cornerstone' and e['date_basis']!='No cornerstone tranche']
- for row,e in enumerate(events,38):
-  assert value(lock['A'+str(row)])==e['code']
-  w=e.get('windows',{}).get('30 trading sessions',{})
-  for col,key in [('G','before_pct'),('H','after_pct')]:
-   expected=w.get(key);actual=value(lock[col+str(row)])
-   if expected is not None:assert math.isclose(float(actual),expected/100,abs_tol=1e-12)
-   else:assert actual in [None,'']
+ assert not {'Lock-up','Lock-up Data','Lock Compare','Lock Matrix'} & set(s)
  snapshot=json.loads((ROOT/'data/live_snapshot.json').read_text())
  md=nodes(E.fromstring(z.read(s['Market Data'])))
  for addr,cell in live.items():
@@ -130,7 +122,7 @@ with zipfile.ZipFile(path) as z:
   key=value(live['G'+str(r)]);items=groups.get(key,[])
   assert int(value(live['I'+str(r)]))==len(items)
   if items:assert math.isclose(float(value(live['H'+str(r)])),sum(items)/len(items),abs_tol=1e-12)
- print('PASS all forward bindings, selected/comparison fundamentals, sparse ticker lookup, negative/zero/missing replies, peer selectors, all expiry rows and safe off-terminal live display')
+ print('PASS all forward bindings, selected/comparison fundamentals, sparse ticker lookup, negative/zero/missing replies, peer selectors, HTML-only lock-ups and safe off-terminal live display')
  prior=ROOT/'out/desk_prior_release.xlsx'
  if prior.exists():
   with zipfile.ZipFile(prior) as before:

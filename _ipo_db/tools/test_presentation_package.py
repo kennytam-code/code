@@ -25,6 +25,11 @@ def value(n):
  if n.get('t') in ['str','e']:return v.text
  return float(v.text)
 def cells(doc):return {n.get('r'):n for n in doc.iter(q('c'))}
+def close_payload(a,b):
+ if isinstance(a,dict):return isinstance(b,dict) and set(a)==set(b) and all(close_payload(v,b[k]) for k,v in a.items())
+ if isinstance(a,list):return isinstance(b,list) and len(a)==len(b) and all(close_payload(x,y) for x,y in zip(a,b))
+ if isinstance(a,(int,float)) and not isinstance(a,bool):return isinstance(b,(int,float)) and math.isclose(a,b,rel_tol=0,abs_tol=5.1e-9)
+ return a==b
 def col(i):
  result=''
  while i:i,k=divmod(i-1,26);result=chr(65+k)+result
@@ -32,7 +37,7 @@ def col(i):
 with zipfile.ZipFile(ROOT/'out/HK_IPO_Database_v1.xlsx') as z:
  assert z.testzip() is None
  wb,rels,sheets=maps({k:z.read(k) for k in ['xl/workbook.xml','xl/_rels/workbook.xml.rels']})
- assert [s.get('name') for s in wb.find(q('sheets'))][:6]==['IPO Live','AH','Lock-up','Peer Trades','Screener','Database']
+ assert [s.get('name') for s in wb.find(q('sheets'))][:5]==['IPO Live','AH','Peer Trades','Screener','Database']
  assert next(s for s in wb.find(q('sheets')) if s.get('name')=='AH Reference').get('state')=='hidden'
  styles=E.fromstring(z.read('xl/styles.xml'));nf=len(styles.find(q('cellXfs')));nd=len(styles.find(q('dxfs')))
  names=set(z.namelist());formula_count=0;changed_sheets=[]
@@ -93,15 +98,8 @@ with zipfile.ZipFile(ROOT/'out/HK_IPO_Database_v1.xlsx') as z:
    table=E.fromstring(z.read(path))
    if table.get('name')=='LockupEvents':
     assert [x.get('name') for x in table.find(q('tableColumns'))]==[value(lock[col(i)+'37']) for i in range(1,14)]
- assert not list(E.fromstring(z.read(sheets['Lock-up'])).iter(q('mergeCell')))
+ assert not {'Lock-up','Lock-up Data','Lock Compare','Lock Matrix'} & set(sheets)
  c=next(E.fromstring(z.read(p)) for p in z.namelist() if p.startswith('xl/charts/') and p.endswith('.xml') and b'!AHMarketPremium' in z.read(p));cn=lambda x:'{http://schemas.openxmlformats.org/drawingml/2006/chart}'+x
- from reflow_monitors import drawing_path
- package={p:z.read(p) for p in z.namelist()};drawing=drawing_path(package,sheets['Lock-up']);dr=E.fromstring(z.read(drawing.replace('/drawings/','/drawings/_rels/')+'.rels'))
- lockcharts=[r.get('Target').lstrip('/') if r.get('Target').startswith('/') else posixpath.normpath(posixpath.join('xl/drawings',r.get('Target'))) for r in dr if r.get('Type').endswith('/chart')]
- for path in lockcharts:
-  chart=E.fromstring(z.read(path))
-  for ser in chart.iter(cn('ser')):
-   cache=ser.find(cn('cat')).find(cn('strRef')).find(cn('strCache'));assert int(cache.find(cn('ptCount')).get('val'))==61 and [p.find(cn('v')).text for p in cache.findall(cn('pt'))]==[str(i) for i in range(-30,31)]
  assert len(list(c.iter(cn('ser'))))==3 and len(list(c.iter(cn('valAx'))))==3
  assert len(list(c.iter(cn('scatterChart'))))==2
  peer_meta=json.loads((ROOT/'data/peer_pairs.json').read_text());wanted=set();cursor=2
@@ -124,10 +122,8 @@ with zipfile.ZipFile(ROOT/'out/HK_IPO_Database_v1.xlsx') as z:
  events=[x for x in json.loads((ROOT/'data/batches/lockup_events.json').read_text())['events'] if x['category']=='Cornerstone' and x['date_basis']!='No cornerstone tranche']
  assert len(web['lockups']['events'])==len(events) and len(events)>=396
  for i,e in enumerate(events,38):
-  w=e.get('windows',{}).get('30 trading sessions',{});assert value(lock['A'+str(i)])==e['code']
-  for c,k in [('G','before_pct'),('H','after_pct')]:
-   expected=w.get(k);actual=value(lock[c+str(i)])
-   assert (expected is None and actual in [None,'']) or expected is not None and math.isclose(actual,expected/100,abs_tol=1e-12),(e['code'],k)
+  w=e.get('windows',{}).get('30 trading sessions',{});assert web['lockups']['events'][i-38]['code']==e['code']
+  assert close_payload(w,web['lockups']['events'][i-38]['window'])
   if w.get('pre_start_close') and w.get('anchor_close'):assert math.isclose(w['before_pct'],100*(w['anchor_close']/w['pre_start_close']-1),abs_tol=1e-9)
   if w.get('post_end_close') and w.get('anchor_close'):assert math.isclose(w['after_pct'],100*(w['post_end_close']/w['anchor_close']-1),abs_tol=1e-9)
 print('PASS package CRC/relationships/unique drawing IDs/styles/no-overlap/dropdown limits; '+str(formula_count)+' formulas; '+str(numeric)+' historical numeric cells; all HTML records and expiry rows/returns; exact BQL wiring and native CSI chart; historical numeric source parity')

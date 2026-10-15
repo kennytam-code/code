@@ -29,9 +29,12 @@ MARKET TABS (14 October 2026)
   Compare four pairs in Excel. HTML has multiple selection, Select all,
   preset horizons and custom dates, with the six-panel A/H format.
   Verified share actions are adjusted; genuine missing prices stay absent.
-  Lock-up: B4/E4 select the event. IPO date, cornerstone %, since-IPO
-  return, deal size and +/-30 HK trading sessions are together in one row.
-  Compared codes: B10/E10/H10/K10. Expiry date range: B11/E11.
+  AH sector averages: J5 links to J57. IPO/latest premiums and 7-day /
+  1-month changes follow E4; averages use available pairs at equal weight.
+  Lock-up is now HTML-only. Select all / Select sector choose the events;
+  expiry dates narrow the comparison. Selected-event average means the
+  equal-weight return of selected observed events at each trading session.
+  A/H and Lock-up have optional sector-average lines in HTML.
   Peer Trades: B3 selects a named direct product peer pair. F3 selects
   Stored/Bloomberg; H3 selects 1M/3M/6M/1Y/3Y/5Y/Max/Custom.
   F4/H4 set custom dates. Both company summaries and their charts appear

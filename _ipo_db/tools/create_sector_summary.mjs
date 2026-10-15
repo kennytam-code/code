@@ -1,0 +1,38 @@
+import fs from 'node:fs/promises';
+import {Workbook,SpreadsheetFile} from '@oai/artifact-tool';
+const root=new URL('../',import.meta.url);
+const input=JSON.parse(await fs.readFile(new URL('out/sector_summary_inputs.json',root),'utf8'));
+const wb=Workbook.create(),s=wb.worksheets.add('AH');
+s.showGridLines=false;
+s.getRange(`C8:H${input.last}`).values=input.rows;
+s.getRange('J57:O68').format={font:{name:'Arial',size:10,color:'#202D39'},rowHeight:21,verticalAlignment:'center'};
+s.getRange('J:J').format.columnWidth=18;
+s.getRange('K:K').format.columnWidth=9;
+s.getRange('L:O').format.columnWidth=16;
+s.getRange('J57').values=[['Sector averages (equal weight)']];
+s.getRange('J57:O57').format={font:{name:'Arial',size:12,bold:true,color:'#202D39'},rowHeight:26,borders:{bottom:{style:'thin',color:'#8C3038'}}};
+s.getRange('J59:O59').values=[['Sector','Pairs','IPO premium','Latest premium','7-day Δ (pp)','1-month Δ (pp)']];
+s.getRange('J59:O59').format={fill:'#E9EEF2',font:{name:'Arial',size:10,bold:true,color:'#202D39'},wrapText:true,rowHeight:30};
+for(let i=0;i<input.sectors.length;i++){
+ const r=60+i;s.getRange('J'+r).values=[[input.sectors[i]]];
+ s.getRange('K'+r).formulas=[[`=COUNTIF($C$8:$C$${input.last},J${r})`]];
+ for(const [col,source] of [['L','E'],['M','F'],['N','G'],['O','H']])s.getRange(col+r).formulas=[[`=IFERROR(AVERAGEIF($C$8:$C$${input.last},$J${r},$${source}$8:$${source}$${input.last}),"—")`]];
+}
+const total=61+input.sectors.length;
+s.getRange('J'+total).values=[['All sectors']];
+s.getRange('K'+total).formulas=[[`=COUNTA($C$8:$C$${input.last})`]];
+for(const [col,source] of [['L','E'],['M','F'],['N','G'],['O','H']])s.getRange(col+total).formulas=[[`=IFERROR(AVERAGE($${source}$8:$${source}$${input.last}),"—")`]];
+s.getRange(`J${total}:O${total}`).format={font:{name:'Arial',size:10,bold:true,color:'#202D39'},borders:{top:{style:'thin',color:'#8C99A5'}}};
+s.getRange(`K60:O${total}`).format.horizontalAlignment='right';
+s.getRange(`L60:M${total}`).setNumberFormat('0.0%;(0.0%);0.0%');
+s.getRange(`N60:O${total}`).setNumberFormat('0.0;(0.0);0.0');
+for(const [op,color] of [['>','#1E6B45'],['<','#A33434']])s.getRange(`N60:O${total}`).conditionalFormats.addCustom(`AND(ISNUMBER(N60),N60${op}0)`,{font:{color}});
+wb.recalculate();
+console.log((await wb.inspect({kind:'table',range:`AH!J59:O${total}`,include:'values,formulas',tableMaxRows:10,tableMaxCols:6,maxChars:1600})).ndjson);
+console.log((await wb.inspect({kind:'match',searchTerm:'#REF!|#DIV/0!|#VALUE!|#NAME\\?|#NUM!',options:{useRegex:true,maxResults:20},summary:'Sector formula errors'})).ndjson);
+const output=await SpreadsheetFile.exportXlsx(wb),path=new URL('out/sector_summary_template.xlsx',root).pathname;
+await output.save(path);
+await fs.writeFile(new URL('data/sector_summary_template.json',root),JSON.stringify({version:1,xlsx_base64:(await fs.readFile(path)).toString('base64')}));
+const picture=await wb.render({sheetName:'AH',range:`J56:O${total+1}`,scale:1.5,format:'png'});
+await fs.writeFile(new URL('out/sector_summary_preview.png',root),new Uint8Array(await picture.arrayBuffer()));
+console.log('Created and recalculated bounded sector summary');

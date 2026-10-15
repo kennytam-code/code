@@ -10,6 +10,7 @@ from patch_peer_workbook import maps,q,N,R,P,T
 with zipfile.ZipFile(ROOT/'out/HK_IPO_Database_v1.xlsx') as z:
  _,_,sheets=maps({p:z.read(p) for p in ['xl/workbook.xml','xl/_rels/workbook.xml.rels']})
  for name,limit in [('Lock-up',61),('AH',92),('Screener',80),('Peer Trades',45)]:
+  if name not in sheets or len(sys.argv)>1 and name not in sys.argv[1:]:continue
   sp=sheets[name];doc=E.fromstring(z.read(sp));mini={};data=doc.find(q('sheetData'))
   for row in list(data):
    if int(row.get('r'))>limit:data.remove(row);continue
