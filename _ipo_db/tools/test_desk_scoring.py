@@ -16,10 +16,14 @@ def cellvalue(c):
  if v is None or v.text is None:return ''
  return v.text if c.get('t') in ['str','e'] else float(v.text)
 with zipfile.ZipFile(ROOT/'out/HK_IPO_Database_v1.xlsx') as z:
- w,_,s=maps({p:z.read(p) for p in ['xl/workbook.xml','xl/_rels/workbook.xml.rels']});db=nodes(E.fromstring(z.read(s['Database'])));engine=nodes(E.fromstring(z.read(s['Calc (scoring engine)'])));notes=nodes(E.fromstring(z.read(s['Notes'])))
+ w,_,s=maps({p:z.read(p) for p in ['xl/workbook.xml','xl/_rels/workbook.xml.rels']});db=nodes(E.fromstring(z.read(s['Database'])));engine=nodes(E.fromstring(z.read(s['Calc (scoring engine)'])))
  byrow={}
  for addr,cell in db.items():byrow.setdefault(int(re.search('[0-9]+',addr)[0]),{})['DATABASE!'+re.match('[A-Z]+',addr)[0]+'5']=cellvalue(cell)
- weights={n.get('name'):cellvalue(notes[n.text.split('!')[1].replace('$','')]) for n in w.find(q('definedNames')) if n.get('name').startswith('W_')}
+ weights={}
+ for n in w.find(q('definedNames')):
+  if n.get('name').startswith('W_'):
+   sheet,addr=n.text.rsplit('!',1);sheet=sheet.strip("'");assert sheet=='Calc (scoring engine)'
+   weights[n.get('name')]=cellvalue(engine[addr.replace('$','')])
  compiled={col:formulas.Parser().ast('='+engine[col+'5'].find(q('f')).text.replace('ROW()','CURRENTROW'))[1].compile() for col in 'BCDEFGHIJK'}
  deals,tax,cfg,pipe,counts=load();targets=[deals[-1],next(d for d in deals if d['code']=='9607'),pipe[0]]
  for target in targets:

@@ -21,7 +21,8 @@ def chart_data(raw):
   for child in list(parent):
    if child.tag.endswith('}spPr'):parent.remove(child)
  return E.tostring(doc)
-with zipfile.ZipFile(ROOT/'out/_theme_baseline_20261015.xlsx') as old,zipfile.ZipFile(ROOT/'out/HK_IPO_Database_v1.xlsx') as new:
+post=ROOT/'out/_notes_baseline_20261016.xlsx'
+with zipfile.ZipFile(ROOT/'out/_theme_baseline_20261015.xlsx') as old,zipfile.ZipFile(post if post.exists() else ROOT/'out/HK_IPO_Database_v1.xlsx') as new:
  assert set(old.namelist())==set(new.namelist())
  _,_,s=maps({p:new.read(p) for p in ['xl/workbook.xml','xl/_rels/workbook.xml.rels']})
  count=0

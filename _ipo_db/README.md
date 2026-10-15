@@ -39,4 +39,4 @@ python ipo.py check
 
 The standalone updater uses `python hk_ipo.py update` for refresh/build and `build` for stored-data reproduction. Use a clean folder to reproduce the embedded data; existing persistent data is retained. Run one heavy operation at a time, Python capped at 512 MiB and Node at 384 MiB. Full workbooks use the staged native build; visual previews use small projections.
 
-Methods, known issues, source evidence and release checks belong in the repository and audit CSV/JSON, not in extra workbook footnotes. Read START_HERE before changing controls or build stages.
+Methods, known issues, source evidence and release checks belong in the repository and audit CSV/JSON, not in extra workbook footnotes. The Notes sheet has been removed; its eleven named scoring inputs are preserved in the existing hidden calculation sheet. Read START_HERE before changing controls or build stages.

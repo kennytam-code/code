@@ -31,11 +31,12 @@ with zipfile.ZipFile(path) as z:
  print('PASS all native worksheet child sequences, unique rows and unique cells')
  db=nodes(E.fromstring(z.read(s['Database'])));sc=nodes(E.fromstring(z.read(s['Screener'])));val=nodes(E.fromstring(z.read(s['Valuation Data'])));peer=nodes(E.fromstring(z.read(s['Peer Data'])));pt=nodes(E.fromstring(z.read(s['Peer Trades'])));live=nodes(E.fromstring(z.read(s['IPO Live'])))
  deals=json.loads((ROOT/'data/deals.json').read_text())['deals'];n=len(deals)
- notes=nodes(E.fromstring(z.read(s['Notes'])))
+ assert 'Notes' not in s
+ weights=nodes(E.fromstring(z.read(s['Calc (scoring engine)'])))
  workbook=E.fromstring(z.read('xl/workbook.xml'))
  for named in workbook.find(q('definedNames')):
   if named.get('name').startswith('W_'):
-   assert named.text.startswith('Notes!');addr=named.text.split('!')[1].replace('$','');actual=value(notes[addr]);assert actual not in [None,''] and float(actual)>0,(named.get('name'),addr,actual)
+   assert named.text.startswith("'Calc (scoring engine)'!");addr=named.text.split('!')[1].replace('$','');actual=value(weights[addr]);assert actual not in [None,''] and float(actual)>0,(named.get('name'),addr,actual)
  print('PASS every scoring weight remains numeric and positive at its named address')
  # Missing pipeline profitability is unknown, never numeric zero in a Y/N field.
  fn=formulas.Parser().ast('='+sc['B10'].find(q('f')).text)[1].compile()

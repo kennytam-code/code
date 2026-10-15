@@ -2503,3 +2503,19 @@ Live B4 defaults to Stored. fetch_live_snapshot retrieves bounded public batches
 Monitor layout uses compact controls, functional tab colours and numeric-only red/green formatting. Missing text stays neutral. Lock-up comparison controls are B10/E10/H10/K10 and cohort dates B11/E11, above two complete charts; roster header is row 37. The roster uses cornerstone-investor count; legal names remain in Database and canonical evidence. Chart legend formulas must move with controls, not just history helper formulas. AH premium and CSI/A returns share one real calendar X axis with separate Y axes. Peer charts use numeric calendar axes with automatic spacing for short and long horizons. No curves are fitted across unavailable prices or unreviewed corporate actions.
 
 Internal checks: test_native_desk covers schema order/unique rows/field metadata/forward and selected bindings/sector averages/legend references/all 396 event rows and every original Database cell. test_latest_monitor_fixes covers all 69 selectors, 3223/9976, live-history gates, and benchmark source/cache parity. test_monitor_revision covers 35 peer selectors, comparison controls, corporate-action fixtures and refresh failure retention. test_presentation_package streams package relationships, styles, formulas, data/HTML parity and return calculations. Run bounded Python and one heavy operation at a time. Preserve earlier unresolved primary-source confidence items; this presentation repair is not a new filing certification.
+
+## 2026-10-16 — Taxonomy review and removal of Notes
+
+Reviewed the nine-sector / six-tech-group framework for desk monitoring; retain
+its structure. Recorded business-boundary limitations and two confirmed issuer
+assignment errors (2477 and 2321) in data/taxonomy_review_20261016.json. This was a
+review, not a reclassification: source data, stock assignments and HTML unchanged.
+
+Removed the visible Notes sheet as requested. Migrated its eleven numeric W_*
+inputs into the existing hidden Calc (scoring engine)!AT:AV, with the values in
+AU2:AU12. Rebound the defined names without changing weights or scoring formulas.
+The final native build now applies remove_notes.py after desk_theme.py; the
+existing intermediate build still uses Notes before this final migration.
+Artifact-authored header/template: data/note_weight_layout.json. Regression QA
+proves exact preservation of business cells, cached values, formulas, chart and
+drawing parts. Use tools/test_remove_notes.py alongside the scoring/package QA.

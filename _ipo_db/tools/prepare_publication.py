@@ -45,5 +45,6 @@ for name in ['pipeline.json','pipeline_review.json','phip_pipeline.json','newlis
 for p in sorted((ROOT/'data/final_review_20261015').glob('*')):add(p)
 for name in ['create_database_layout.mjs','create_pipeline_layout.mjs','prepare_pipeline_layout.py','render_desk_tables.mjs','test_final_polish.py','test_sector_monitor_release.py','test_selected_averages.mjs','test_sector_comparisons.mjs','test_pipeline_release.mjs','run_release_checks.py']:add(ROOT/'tools'/name)
 for name in ['create_desk_theme.mjs','test_desk_theme.py','render_desk_theme.mjs','package_final_review.py']:add(ROOT/'tools'/name)
+for name in ['create_weight_layout.mjs','test_remove_notes.py']:add(ROOT/'tools'/name)
 (ROOT/'out/publication_plan.json').write_text(json.dumps(files,indent=2));print('Prepared',len(files),'explicit changed files,',sum(f['bytes'] for f in files)//1024,'KB')
 for f in files:print(f['target'])

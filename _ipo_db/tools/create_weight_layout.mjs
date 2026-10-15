@@ -1,0 +1,17 @@
+import fs from 'node:fs/promises';
+import {Workbook, SpreadsheetFile} from '@oai/artifact-tool';
+const root=new URL('../',import.meta.url);
+const rows=JSON.parse(await fs.readFile(new URL('out/note_weights.json',root),'utf8'));
+const wb=Workbook.create(),s=wb.worksheets.add('Weights');
+s.showGridLines=false;
+s.getRange(`A1:C${rows.length+1}`).values=[['Parameter','Value','Meaning'],...rows.map(x=>[x.name,x.value,x.description])];
+s.getRange(`A1:C${rows.length+1}`).format={font:{name:'Arial',size:10},verticalAlignment:'center',rowHeight:23};
+s.getRange('A:A').format.columnWidth=18;s.getRange('B:B').format.columnWidth=12;s.getRange('C:C').format.columnWidth=54;
+s.getRange('A1:C1').format={fill:'#333333',font:{name:'Arial',size:10,color:'#FFFFFF',bold:true}};
+s.getRange(`B2:B${rows.length+1}`).format={fill:'#F0F3F6',font:{name:'Arial',size:10,color:'#245A87'},numberFormat:'0.##'};
+wb.recalculate();
+const out=new URL('out/note_weight_layout.xlsx',root).pathname;await (await SpreadsheetFile.exportXlsx(wb)).save(out);
+await fs.writeFile(new URL('data/note_weight_layout.json',root),JSON.stringify({version:1,parameters:rows.map(x=>x.name),xlsx_base64:(await fs.readFile(out)).toString('base64')}));
+const image=await wb.render({sheetName:'Weights',range:'A1:C12',scale:1,format:'png'});
+await fs.writeFile(new URL('out/note_weight_layout.png',root),new Uint8Array(await image.arrayBuffer()));
+console.log('Authored existing model-weight migration layout; values will be read from the source workbook on each build.');

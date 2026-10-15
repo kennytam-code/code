@@ -1,0 +1,48 @@
+{
+  "date": "2026-10-16",
+  "checks": [
+    {
+      "test": "tools/test_remove_notes.py",
+      "exit": 0,
+      "seconds": 1.3,
+      "log": "out/notes_review_20261016/test_remove_notes.log"
+    },
+    {
+      "test": "tools/test_native_desk.py",
+      "exit": 0,
+      "seconds": 9.2,
+      "log": "out/notes_review_20261016/test_native_desk.log"
+    },
+    {
+      "test": "tools/test_presentation_package.py",
+      "exit": 0,
+      "seconds": 4.3,
+      "log": "out/notes_review_20261016/test_presentation_package.log"
+    },
+    {
+      "test": "ipo_lib/audit_formulas.py",
+      "exit": 0,
+      "seconds": 1.0,
+      "log": "out/notes_review_20261016/audit_formulas.log"
+    },
+    {
+      "test": "tools/test_desk_theme.py",
+      "exit": 0,
+      "seconds": 1.2,
+      "log": "out/notes_review_20261016/test_desk_theme.log"
+    },
+    {
+      "test": "tools/test_desk_scoring.py",
+      "exit": 0,
+      "result": "Executed actual formulas across 526 deals for each of three selected targets; finite scores and correct leading subsector in each case."
+    }
+  ],
+  "notes_sheet_removed": true,
+  "named_inputs_preserved": 11,
+  "business_data_formulas_charts_unchanged": true,
+  "native_excel_open_without_repair": true,
+  "native_screener_rankings_rendered": true,
+  "live_bloomberg_execution": false,
+  "taxonomy_changed": false,
+  "html_changed": false
+}

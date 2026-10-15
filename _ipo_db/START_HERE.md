@@ -21,7 +21,7 @@ footnotes. Put methods and unresolved review notes in repository documents.
 Preserve all data/formulas during design-only changes, and prove preservation.
 
 Excel order: IPO Live, AH, Peer Trades, Screener, Database, Pipeline, leagues and
-support. No Excel Lock-up or Analogs tabs. Keep Lock-up analysis in HTML and the
+support. No Excel Lock-up, Analogs or Notes tabs. Keep Lock-up analysis in HTML and the
 A/H research in Word. Screener freezes its first two columns. Support and helper
 tabs stay at the back/hidden. Do not delete other research in TO_NOMURA.
 
@@ -33,7 +33,7 @@ tabs stay at the back/hidden. Do not delete other research in TO_NOMURA.
 | AH | B4 pair code, E4 Stored/Bloomberg. Premium = A price × CNYHKD / H price − 1. Seven-day and calendar-month changes are percentage points. J5 links to sector averages at J57. |
 | AH charts | Premium left axis; A-share and CSI 300 price returns right axis, common observed dates. Bloomberg requests through TODAY; Stored retains per-pair dates. No invented points or cosmetic interpolation. Reviewed split/bonus factors align each leg on its own ex date. |
 | Peer Trades | B3 named direct product-peer pair; F3 source; H3 horizon; F4/H4 custom dates. Return spread = A minus B price return in percentage points, both rebased at their first common observed session. Keep the product overlap/mix distinction. |
-| Screener | B5 resolves company or code; retain exact numeric aliases such as 9607. F53 reads Database BQ (A code). Notes B26/B27 are numeric named model weights W_SUB/W_SEC: never write prose there. |
+| Screener | B5 resolves company or code; retain exact numeric aliases such as 9607. F53 reads Database BQ (A code). The eleven W_* named model inputs now live in hidden Calc (scoring engine)!AU2:AU12, with names/descriptions in AT/AV. The final workbook has no Notes sheet. Never overwrite these inputs with prose. |
 | Screener form | B7:B14 shows database inputs; C7:C14 contains overrides. D7:D14 retains the effective calculation with display format `;;;`. The seven context outputs moved from H8/H9/H12:H16 to F7/F8/F10:F14 without changing their formulas or values. B5:C5 is the company selector. Top titles and duplicate selection prose are hidden; the real snapshot date stays visible. |
 | Database fundamentals | BJ/BL: live TTM P/E/P/S. BM:BO: NTM P/E, FY2027 P/E, FY2027 P/S. Screener BE/BG/BH:BJ mirrors these. Historical IPO multiples remain separate. |
 | HTML comparisons | Select all and Select sector; Selected average and optional By sector use **only checked stocks**. Unchecked same-sector stocks never enter. Each stock has one weight. For multiple selected lock-up expiries of one stock, mean those observations within the stock first. Missing is excluded, not zero. |
@@ -113,7 +113,7 @@ existing persistent data folder, so use a clean folder to reproduce a release.
 
 Large workbooks must use `staged_native_build`: core and monitors in separate
 processes; native joining; peer history; colours; presentation; reflow; request
-guards; chart axes; CSI combination; desk release; sector release; final polish; desk theme.
+guards; chart axes; CSI combination; desk release; sector release; final polish; desk theme; remove Notes.
 Apply each structural patch once to a fresh baseline. Never re-import/export the
 full workbook for cosmetic work: unsupported native chart/Excel features matter.
 New layout pieces are authored with Artifact Tool and grafted without changing
@@ -129,13 +129,23 @@ checks that were not actually performed. Test dates/horizons with actual and
 missing observations, zero/negative responses and newly appended records.
 
 Bundle with `ipo_lib/make_bundle.py`. Confirm it includes every new module,
-template, cache and accepted source batch, including desk_theme.json / desk_theme.py. Deliver Excel, HTML, ZIP and updater
+template, cache and accepted source batch, including desk_theme.json / desk_theme.py and note_weight_layout.json / remove_notes.py. Deliver Excel, HTML, ZIP and updater
 in TO_NOMURA and the existing GitHub root aliases. Do not overwrite unrelated
 PCA/research files. Preserve Word studies. Compare hashes after copying and verify
 the pushed commit. Keep audit CSV/JSON outside Excel. Update `release_state.json`
 and this handover when controls, conventions, coverage or known limits change.
 
 ## Known limits to retain, not conceal
+
+The 16 October taxonomy review retains the nine broad sectors and six Technology
+groups as a practical daily-monitoring framework; it is not an endorsement of
+every stock assignment or a claim that all members are direct peers. See
+`data/taxonomy_review_20261016.json` for source-backed recommendations and boundary
+issues. The review did not reclassify securities. In particular 2477 (WellCell)
+is currently incorrectly in commercial biopharma and 2321 (Swang Chai Chuan)
+incorrectly in oil/gas/utilities. Correct the persistent classification inputs,
+canonical data and all derived monitor/HTML/Excel outputs together when applying
+the recommendations; do not fix only a displayed workbook cell.
 
 The last full numeric audit had 273 annual revenue/profit entries needing fresh
 primary-row confirmation, 119 unresolved cornerstone name aliases in the earlier

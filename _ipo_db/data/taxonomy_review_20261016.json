@@ -1,0 +1,39 @@
+{
+  "review_date": "2026-10-16",
+  "scope": "Review of the taxonomy structure, full assignment roster and selected primary-source exceptions; not a fresh primary-source audit of every company's revenue mix.",
+  "applied_changes": [],
+  "recommendation": "Retain the nine broad-sector framework and six Technology groups for daily monitoring. Do not treat group membership as evidence of a direct product peer. Review confirmed issuer mismatches separately from changing the taxonomy architecture.",
+  "structure": {"broad_sectors": 9, "subsectors": 38, "technology_subsectors": 6},
+  "classification_principle": {
+    "basis": "Principal business activity and revenue mix, with profit and asset composition where more representative. Listing regime, profitability and A/H status belong in separate fields.",
+    "reference": "https://origin-www.hsi.com.hk/eng/our-services/hsics",
+    "qualification": "The workbook uses a bespoke IPO monitoring taxonomy, not the official Hang Seng Industry Classification."
+  },
+  "confirmed_assignment_findings": [
+    {
+      "code": "2477", "name": "WellCell Holdings",
+      "current": {"sector": "Healthcare", "subsector": "Biopharma commercial"},
+      "recommended": {"sector": "Media & telecom", "subsector": "Telecom"},
+      "evidence": "The issuer's annual report describes telecommunication network support, ICT integration and telecommunication network-related software development, rather than pharmaceutical operations.",
+      "source": "https://www.hkexnews.hk/listedco/listconews/sehk/2024/0419/2024041901294.pdf",
+      "source_location": "Chairman's Statement; Management Discussion and Analysis",
+      "status": "Reviewed recommendation, not applied"
+    },
+    {
+      "code": "2321", "name": "Swang Chai Chuan",
+      "current": {"sector": "Materials/Energy", "subsector": "Oil & gas / utilities"},
+      "recommended": {"sector": "Consumer", "subsector": "Retail / distribution"},
+      "evidence": "The issuer's annual report describes Malaysian FMCG distribution, primarily food and beverages, with supporting logistics and warehousing.",
+      "source": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0429/2025042903191.pdf",
+      "source_location": "Management Discussion and Analysis, printed page 7",
+      "status": "Reviewed recommendation, not applied"
+    }
+  ],
+  "boundary_findings": [
+    {"group": "Hardware & electronics", "assessment": "Useful consolidated monitor group, but household appliances and electronic components have different economics. Do not assume direct comparability."},
+    {"group": "Internet & fintech", "assessment": "Platform commerce/content and financial/credit platforms have different revenue and risk models. Curated direct-peer pairs should distinguish them."},
+    {"group": "Biotech pre-revenue (18A)", "assessment": "The label mixes business stage and listing regime. Verify revenue/commercialisation individually; listing regime alone is insufficient to establish no revenue."},
+    {"group": "Autos (NEV OEM)", "assessment": "The label is narrower than membership including mixed-powertrain manufacturers and electric two-wheelers. Consider a broader vehicle-manufacturer label in a coordinated taxonomy revision."}
+  ],
+  "implementation_requirement": "Any accepted reclassification must update persistent classification inputs and canonical records together, then rebuild all sector monitor averages, Screener context and HTML/Excel outputs. This review itself leaves data and taxonomy unchanged."
+}

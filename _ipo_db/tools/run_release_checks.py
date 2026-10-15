@@ -3,7 +3,7 @@ import os,subprocess,sys,time,json
 from pathlib import Path
 ROOT=Path(__file__).resolve().parent.parent
 out=ROOT/'out/final_review_20261015';out.mkdir(exist_ok=True)
-checks=['tools/test_final_polish.py','tools/test_desk_theme.py','tools/test_native_desk.py','tools/test_presentation_package.py','tools/test_presentation_formulas.py','tools/test_desk_scoring.py','tools/test_sector_monitor_release.py','ipo_lib/audit_formulas.py','ipo_lib/lint_bbg.py','ipo_lib/audit_numbers.py','ipo_lib/audit_prices.py','ipo_lib/checks.py']
+checks=['tools/test_final_polish.py','tools/test_desk_theme.py','tools/test_remove_notes.py','tools/test_native_desk.py','tools/test_presentation_package.py','tools/test_presentation_formulas.py','tools/test_desk_scoring.py','tools/test_sector_monitor_release.py','ipo_lib/audit_formulas.py','ipo_lib/lint_bbg.py','ipo_lib/audit_numbers.py','ipo_lib/audit_prices.py','ipo_lib/checks.py']
 result=[]
 for test in checks:
  start=time.time();log=out/(Path(test).stem+'.final.log')

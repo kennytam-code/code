@@ -9,7 +9,7 @@ clear and usable. Latest feedback rejects brick red and large red blocks on
 Screener; use the official signature-graphic red as an accent with grey/white.
 Remove large per-tab title rows. Preserve useful
 section colours and red/green performance changes. Remove
-generic footnotes from visible Excel/HTML views; keep methods and review notes
+generic footnotes from visible Excel/HTML views; no Notes sheet in the final workbook. Preserve the eleven W_* inputs on the hidden calculation sheet. Keep methods and review notes
 in this repository, not in extra workbook tabs. Formatting never changes data.
 
 Use one heavy operation at a time. Python: 512 MiB; Node: 384 MiB. Never increase
