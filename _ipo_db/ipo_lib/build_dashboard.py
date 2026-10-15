@@ -3039,7 +3039,7 @@ HTML = """<!doctype html>
   <p class="note" id="ah-note"></p>
   <div class="scroll" id="ah-tbl"></div>
   <h3>Compare selected pairs</h3>
-  <div class="comparison-toolbar"><label>Sector <select id="ah-compare-sector"></select></label><button id="ah-select-sector" type="button">Select sector</button><button id="ah-select-all" type="button">Select all</button><button id="ah-clear-compare" type="button">Clear</button><label class="check-control"><input id="ah-sector-average" type="checkbox">Sector averages</label></div>
+  <div class="comparison-toolbar"><label>Sector <select id="ah-compare-sector"></select></label><button id="ah-select-sector" type="button">Select sector</button><button id="ah-select-all" type="button">Select all</button><button id="ah-clear-compare" type="button">Clear</button><label class="check-control"><input id="ah-selected-average" type="checkbox" checked>Selected average</label><label class="check-control"><input id="ah-sector-average" type="checkbox">By sector</label></div>
   <div class="comparison-toolbar"><label>Time frame <select id="ah-compare-horizon"><option value="Max">Since listing</option><option value="1M">1 month</option><option value="3M">3 months</option><option value="6M">6 months</option><option value="1Y">1 year</option><option value="3Y">3 years</option><option value="Custom">Custom dates</option></select></label><label>From <input id="ah-compare-from" type="date"></label><label>To <input id="ah-compare-to" type="date"></label></div><span class="note" id="ah-compare-count"></span><div class="chart"><div id="ah-compare-chart"></div></div>
   <details id="ah-comparison"><summary>Compare premiums across all pairs</summary><div class="chart"><div id="chart-ah"></div></div></details>
   <div id="ah-drivers" hidden></div>
@@ -3058,8 +3058,8 @@ HTML = """<!doctype html>
   <div class="monitor-status" id="lockup-history-note"></div><div class="chart"><div id="lockup-history"></div></div>
   <p class="note" id="lockup-note"></p>
   <h3>Compare expiry performance</h3>
-  <div class="comparison-toolbar"><label>Sector <select id="lockup-compare-sector"></select></label><button id="lockup-select-sector" type="button">Select sector</button><button id="lockup-select-all" type="button">Select all</button><button id="lockup-clear-compare" type="button">Clear</button><label class="check-control"><input id="lockup-sector-average" type="checkbox">Sector averages</label></div>
-  <div class="comparison-toolbar"><label>View <select id="lockup-compare-mode"><option value="average">Selected-event average</option><option value="selected">Selected stock curves</option></select></label><label>Expiry from <input id="lockup-compare-from" type="date"></label><label>Expiry to <input id="lockup-compare-to" type="date"></label><span class="comparison-basis">Equal weight · expiry close = 0%</span></div>
+  <div class="comparison-toolbar"><label>Sector <select id="lockup-compare-sector"></select></label><button id="lockup-select-sector" type="button">Select sector</button><button id="lockup-select-all" type="button">Select all</button><button id="lockup-clear-compare" type="button">Clear</button><label class="check-control"><input id="lockup-sector-average" type="checkbox">By sector</label></div>
+  <div class="comparison-toolbar"><label>View <select id="lockup-compare-mode"><option value="average">Selected average</option><option value="selected">Selected stocks + average</option></select></label><label>Expiry from <input id="lockup-compare-from" type="date"></label><label>Expiry to <input id="lockup-compare-to" type="date"></label><span class="comparison-basis">Equal weight · expiry close = 0%</span></div>
   <p class="note" id="lockup-compare-count"></p><div class="chart"><div id="lockup-compare-chart"></div></div>
   <div class="scroll" id="lockup-tbl"></div>
 </section>

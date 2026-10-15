@@ -1,3 +1,9 @@
+## 15 October 2026 — averages follow the checked stocks
+
+This supersedes the earlier full-sector overlays and event-weighted HTML mean. A/H and Lock-up now share selectedAverages: the overall Selected average and optional By sector curves use only the checked rows surviving the chart date window. Unchecked same-sector stocks must never enter either curve. A/H shows the selected mean by default; Lock-up defaults to Selected average, with Selected stocks + average available. Select sector replaces the selection; unticking any row immediately removes it from the averages.
+
+Each distinct selected stock has one weight per observed date/session. If more than one selected lock-up expiry belongs to the same stock, average its available selected-expiry returns first, then average across selected stocks. Never include unselected expiries. Missing/non-finite values are omitted, not zero-filled; real zeros/negative values remain. The tooltip count is contributing stocks. The workbook sector summary is unchanged. tools/test_selected_averages.mjs executes the actual renderers with an unchecked 900% same-sector outlier, duplicate selected expiries, date bounds and changing selections.
+
 ## 15 October 2026 — sector comparisons and HTML-only lock-ups
 
 This entry supersedes the earlier Excel lock-up controls. The final build applies sector_monitor_release after desk_release. Excel removes Lock-up, Lock-up Data, Lock Compare and Lock Matrix, their exclusively owned native parts, and Chart Data K:O. A:H data and native charts elsewhere remain unchanged. Worksheet-local names are reindexed; remaining formulas must not reference any removed sheet. The source lock-up dataset and all 397 HTML expiry schedules remain.

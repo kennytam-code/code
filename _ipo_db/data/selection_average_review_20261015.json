@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-15",
+  "scope": "HTML selected-stock averages",
+  "checks": [
+    "Actual AH and lock-up renderers exclude unchecked same-sector outlier",
+    "Changing selection and expiry dates immediately recalculates averages",
+    "Overall and By sector averages only include checked stocks",
+    "Each selected stock has one weight; its multiple selected expiry returns are averaged first",
+    "Missing, zero, negative, no selection, one stock and duplicate expiry fixtures passed",
+    "Generated HTML script syntax and controls verified; embedded JS matches source",
+    "All 1909 sector arithmetic/date/alignment regression points passed",
+    "HTML market payload exactly unchanged; standalone updater source parity passed"
+  ],
+  "visual_validation": "Existing layout retained; this correction validated through generated markup and renderer execution tests",
+  "sha256": {
+    "hk_ipo_dashboard.html": "b1888d1a48b91fa7c8271159ced079d5cd3d59af61239daed61a6a976260801d",
+    "hk_ipo_dashboard.zip": "24816daac643cd6f37ccb62d8e3442bed0150cadd4f26f986d9803957cbdb7b3",
+    "hk_ipo.py": "4c629403d64f2d74554f016d9502d1b82aca68b37384a9d74de3d42c284de6e1"
+  }
+}

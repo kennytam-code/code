@@ -14,7 +14,7 @@ function deskLines(box,series,{offset=false,percent=true,label='Comparison'}={})
 
  });
  const focus=el('line',{x1:0,x2:0,y1:M.t,y2:H-M.b,stroke:css('--mid'),'stroke-dasharray':'3 3',visibility:'hidden'},svg);
- svg.addEventListener('mousemove',ev=>{const rect=svg.getBoundingClientRect(),px=(ev.clientX-rect.left)*W/rect.width;if(px<M.l||px>W-M.r){focus.setAttribute('visibility','hidden');hideTT();return;}const v=minX+(px-M.l)/(W-M.r-M.l)*(maxX-minX),point=series.flatMap(s=>s.points).filter(p=>Number.isFinite(p[1])).reduce((b,p)=>Math.abs((offset?p[0]:Date.parse(p[0]))-v)<Math.abs((offset?b[0]:Date.parse(b[0]))-v)?p:b),at=offset?point[0]:Date.parse(point[0]);focus.setAttribute('x1',X(at));focus.setAttribute('x2',X(at));focus.setAttribute('visibility','visible');const rows=series.slice(0,30).map((s,k)=>{const p=s.points.find(p=>(offset?p[0]:Date.parse(p[0]))===at);return `<span style="color:${s.color||deskColors[k%deskColors.length]}">${safeText(s.name)}</span>: ${p&&Number.isFinite(p[1])?p[1].toFixed(2)+(percent?'%':' pp'):'—'}${p&&p[2]!=null?' ('+p[2]+' observations)':''}`;}).join('<br>');showTT(`<b>${offset?'Session ':''}${point[0]}</b>${rows}`,ev);});svg.addEventListener('mouseleave',()=>{focus.setAttribute('visibility','hidden');hideTT();});
+ svg.addEventListener('mousemove',ev=>{const rect=svg.getBoundingClientRect(),px=(ev.clientX-rect.left)*W/rect.width;if(px<M.l||px>W-M.r){focus.setAttribute('visibility','hidden');hideTT();return;}const v=minX+(px-M.l)/(W-M.r-M.l)*(maxX-minX),point=series.flatMap(s=>s.points).filter(p=>Number.isFinite(p[1])).reduce((b,p)=>Math.abs((offset?p[0]:Date.parse(p[0]))-v)<Math.abs((offset?b[0]:Date.parse(b[0]))-v)?p:b),at=offset?point[0]:Date.parse(point[0]);focus.setAttribute('x1',X(at));focus.setAttribute('x2',X(at));focus.setAttribute('visibility','visible');const rows=series.slice(0,30).map((s,k)=>{const p=s.points.find(p=>(offset?p[0]:Date.parse(p[0]))===at);return `<span style="color:${s.color||deskColors[k%deskColors.length]}">${safeText(s.name)}</span>: ${p&&Number.isFinite(p[1])?p[1].toFixed(2)+(percent?'%':' pp'):'—'}${p&&p[2]!=null?' ('+p[2]+' '+(s.countUnit||'observations')+')':''}`;}).join('<br>');showTT(`<b>${offset?'Session ':''}${point[0]}</b>${rows}`,ev);});svg.addEventListener('mouseleave',()=>{focus.setAttribute('visibility','hidden');hideTT();});
 
  const legend=document.createElement('div');legend.className='legend';legend.innerHTML=series.slice(0,12).map((s,k)=>`<span><span class="sw" style="background:${s.color||deskColors[k%deskColors.length]}"></span>${safeText(s.name)}</span>`).join('')+(series.length>12?`<span>+${series.length-12} stocks; hover a curve for details</span>`:'');box.appendChild(legend);
 }
@@ -27,9 +27,18 @@ function averageSeries(series,name,color,offset=false){
  series.forEach(s=>s.points.forEach(p=>{if(!sums.has(p[0]))sums.set(p[0],[0,0]);if(Number.isFinite(p[1])){const v=sums.get(p[0]);v[0]+=p[1];v[1]++;}}));
  return {name,color,mean:true,points:[...sums].sort((a,b)=>offset?a[0]-b[0]:a[0].localeCompare(b[0])).map(([date,[sum,n]])=>[date,n?sum/n:null,n])};
 }
+function selectedAverages(series,bySector=false,offset=false){
+ const groups=new Map();
+ series.forEach(s=>{if(!groups.has(s.code))groups.set(s.code,[]);groups.get(s.code).push(s);});
+ // Each selected stock has one weight, even with several selected expiry dates.
+ const stocks=[...groups.values()].map(group=>({...averageSeries(group,group[0].name,null,offset),code:group[0].code,sector:group[0].sector,mean:false}));
+ const overall={...averageSeries(stocks,'Selected average','#303A45',offset),countUnit:'stocks'};
+ const sectors=bySector?[...new Set(stocks.map(s=>s.sector))].sort().map((sector,i)=>({...averageSeries(stocks.filter(s=>s.sector===sector),sector+' · selected average',deskColors[i%deskColors.length],offset),countUnit:'stocks'})):[];
+ return {overall,sectors};
+}
 function ahSeries(d,from,to){
  const r=AHST[d.code]||{},by=new Map((r.history||[]).map(p=>[p[0],p]));
- return {name:d.name+' ('+d.code+')',sector:d.sector,points:(r.h_history||r.history||[]).filter(h=>h[0]>=from&&h[0]<=to).map(h=>{const p=by.get(h[0]);return[h[0],p&&!d.classReview&&validAHPoint(r,p)?adjustedAHPoint(r,p):null];})};
+ return {name:d.name+' ('+d.code+')',code:d.code,sector:d.sector,points:(r.h_history||r.history||[]).filter(h=>h[0]>=from&&h[0]<=to).map(h=>{const p=by.get(h[0]);return[h[0],p&&!d.classReview&&validAHPoint(r,p)?adjustedAHPoint(r,p):null];})};
 }
 function sectorOptions(rows){return '<option value="">All sectors</option>'+[...new Set(rows.map(d=>d.sector).filter(Boolean))].sort().map(s=>`<option>${safeText(s)}</option>`).join('');}
 $('#ah-compare-sector').innerHTML=sectorOptions(ahDeals);
@@ -41,20 +50,19 @@ function renderAHComparison(){
  document.querySelectorAll('.ah-compare-pick').forEach(x=>x.checked=ahComparisons.has(x.dataset.code));
  if(!from||!to||from>to){$('#ah-compare-chart').innerHTML='';$('#ah-compare-count').textContent='Choose a valid date range.';return;}
  const rows=ahDeals.filter(d=>ahComparisons.has(d.code)),stocks=rows.map(d=>ahSeries(d,from,to));
- const sectors=[...new Set(rows.map(d=>d.sector))].sort();
- const means=$('#ah-sector-average').checked?sectors.map((sector,i)=>averageSeries(ahDeals.filter(d=>d.sector===sector).map(d=>ahSeries(d,from,to)),sector+' average',deskColors[i%deskColors.length])):[];
- deskLines($('#ah-compare-chart'),[...means,...stocks],{label:'Selected A/H premiums and sector averages'});
- $('#ah-compare-count').textContent=`${rows.length} selected pairs · ${from==='1900-01-01'?'since listing':from} to ${to}`+(means.length?' · sector averages: all available pairs, equal weight':'');
- const svg=$('#ah-compare-chart svg');if(svg){svg.dataset.from=from;svg.dataset.to=to;svg.dataset.selected=rows.length;svg.dataset.averages=means.length;}
+ const averages=selectedAverages(stocks,$('#ah-sector-average').checked),means=[...($('#ah-selected-average').checked?[averages.overall]:[]),...averages.sectors];
+ deskLines($('#ah-compare-chart'),[...means,...stocks],{label:'Selected A/H premiums and selected-stock averages'});
+ $('#ah-compare-count').textContent=`${rows.length} selected pairs · ${from==='1900-01-01'?'since listing':from} to ${to}`+(means.length?' · averages use selected stocks only':'');
+ const svg=$('#ah-compare-chart svg');if(svg){svg.dataset.from=from;svg.dataset.to=to;svg.dataset.selected=rows.length;svg.dataset.averages=means.length;svg.dataset.averageScope='selected';}
 }
 $('#ah-tbl').addEventListener('change',ev=>{if(ev.target.matches('.ah-compare-pick')){const code=ev.target.dataset.code;ev.target.checked?ahComparisons.add(code):ahComparisons.delete(code);renderAHComparison();}});
 $('#ah-select-all').addEventListener('click',()=>{ahDeals.forEach(d=>ahComparisons.add(d.code));$('#ah-sec').value='';fillAhSubs();redrawAHTab();$('#ah-compare-sector').value='';renderAHComparison();});
 $('#ah-select-sector').addEventListener('click',()=>{const sector=$('#ah-compare-sector').value;if(!sector)return;ahComparisons.clear();ahDeals.filter(d=>d.sector===sector).forEach(d=>ahComparisons.add(d.code));$('#ah-sec').value=sector;fillAhSubs();redrawAHTab();renderAHComparison();});
-for(const id of ['ah-compare-horizon','ah-compare-from','ah-compare-to','ah-compare-sector','ah-sector-average'])$('#'+id).addEventListener('change',renderAHComparison);
+for(const id of ['ah-compare-horizon','ah-compare-from','ah-compare-to','ah-compare-sector','ah-selected-average','ah-sector-average'])$('#'+id).addEventListener('change',renderAHComparison);
 $('#ah-clear-compare').addEventListener('click',()=>{ahComparisons.clear();renderAHComparison();});renderAHComparison();
 const lockComparisons=new Set(LOCKUPS.map((e,i)=>i));
 $('#lockup-compare-sector').innerHTML=sectorOptions(LOCKUPS);
-function lockSeries(e){return {name:e.name+' ('+e.code+') · '+e.last_day_locked,sector:e.sector,points:e.window.path.map(p=>[p[0],Number.isFinite(p[2])?100*(p[2]/e.window.anchor_close-1):null])};}
+function lockSeries(e){return {name:e.name+' ('+e.code+') · '+e.last_day_locked,code:e.code,sector:e.sector,points:e.window.path.map(p=>[p[0],Number.isFinite(p[2])?100*(p[2]/e.window.anchor_close-1):null])};}
 function renderLockComparison(){
  const mode=$('#lockup-compare-mode').value,from=$('#lockup-compare-from').value,to=$('#lockup-compare-to').value;
  $('#lockup-select-sector').disabled=!$('#lockup-compare-sector').value;
@@ -62,12 +70,12 @@ function renderLockComparison(){
  if(from&&to&&from>to){$('#lockup-compare-chart').innerHTML='';$('#lockup-compare-count').textContent='Choose a valid expiry-date range.';return;}
  const dated=LOCKUPS.map((e,i)=>({e,i})).filter(x=>x.e.last_day_locked&&(!from||x.e.last_day_locked>=from)&&(!to||x.e.last_day_locked<=to));
  const selected=dated.filter(x=>lockComparisons.has(x.i)),events=selected.filter(x=>x.e.window.anchor_close>0&&x.e.window.path.some(p=>Number.isFinite(p[2])));
- const stocks=events.map(({e})=>lockSeries(e)),sectors=[...new Set(selected.map(x=>x.e.sector))].sort();
- const means=$('#lockup-sector-average').checked?sectors.map((sector,i)=>averageSeries(dated.filter(x=>x.e.sector===sector&&x.e.window.anchor_close>0).map(({e})=>lockSeries(e)),sector+' average',deskColors[i%deskColors.length],true)):[];
- const average=averageSeries(stocks,'Selected-event average','#303A45',true),series=mode==='average'?[average,...means]:[...means,...stocks];
+ const stocks=events.map(({e})=>lockSeries(e)),averages=selectedAverages(stocks,$('#lockup-sector-average').checked,true);
+ const means=averages.sectors,series=[averages.overall,...means,...(mode==='selected'?stocks:[])];
  deskLines($('#lockup-compare-chart'),series,{offset:true,label:'Price return from expiry close across 30 trading sessions before and after'});
- $('#lockup-compare-count').textContent=`${lockComparisons.size} selected events · ${selected.length} dated in range · ${events.length} with prices`+(means.length?' · sector averages: all events in date range':'');
- const svg=$('#lockup-compare-chart svg');if(svg){svg.dataset.selected=selected.length;svg.dataset.observed=events.length;svg.dataset.averages=means.length;}
+ const selectedStocks=new Set([...lockComparisons].map(i=>LOCKUPS[i].code)).size,observedStocks=new Set(events.map(x=>x.e.code)).size;
+ $('#lockup-compare-count').textContent=`${selectedStocks} selected stocks · ${selected.length} expiries in range · ${observedStocks} stocks with prices · averages use selected stocks only`;
+ const svg=$('#lockup-compare-chart svg');if(svg){svg.dataset.selected=selected.length;svg.dataset.observed=events.length;svg.dataset.averages=means.length+1;svg.dataset.averageScope='selected';}
 }
 $('#lockup-tbl').addEventListener('change',ev=>{if(ev.target.matches('.lockup-compare-pick')){const i=Number(ev.target.dataset.event);ev.target.checked?lockComparisons.add(i):lockComparisons.delete(i);renderLockComparison();}});
 $('#lockup-select-all').addEventListener('click',()=>{LOCKUPS.forEach((e,i)=>lockComparisons.add(i));$('#lockup-sec').value='';$('#lockup-q').value='';redrawLockupTab();$('#lockup-compare-sector').value='';renderLockComparison();});
