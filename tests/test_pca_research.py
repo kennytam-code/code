@@ -20,7 +20,7 @@ def fixture(n=420,seed=12):
     return {'target':names[0],'prices':pd.DataFrame(100*np.exp(r.cumsum(0)),index=pd.bdate_range('2024-01-01',periods=n),columns=names),
         'price_observations':'ACTIVE_DAYS_ONLY','peer_policy_version':4,'peer_tickers_by_target':{names[0]:names[3:]},
         'factor_tickers_by_target':{names[0]:['0055 TT Equity']},'sector_tickers_by_target':{names[0]:['0055 TT Equity']}}
-OPTIONS=dict(show_plots=False,rolling_oos=False,boot_n=0,min_mktcap_usd_mm=0,
+OPTIONS=dict(show_plots=False,rolling_oos=False,boot_n=0,min_mktcap_usd_mm=0,candidate_scope='focused',
              basket_size_options=(3,),alternative_baskets=3,max_gross=2,max_leg=1)
 def run(data=None,**kw):
     with contextlib.redirect_stdout(io.StringIO()):
@@ -32,7 +32,7 @@ class ResearchTests(unittest.TestCase):
         cls.data=fixture();cls.one=run(cls.data,sample_window='1m');cls.three=run(cls.data,sample_window='3m')
 
     def test_actual_revision_loaded(self):
-        self.assertIn('v117',E['PCA_REVISION'])
+        self.assertIn('v118',E['PCA_REVISION'])
 
     def test_short_window_search_has_multiple_distinct_baskets(self):
         rows=self.one['basket_comparison']
@@ -669,8 +669,8 @@ class ResearchTests(unittest.TestCase):
         r=run(d,sample_window='2m',candidate_scope='peers',force_include=[peer])
         self.assertNotIn('_analysis_data',r)
         row=next(x for x in r['basket_identity_audit'] if x[0]==peer)
-        self.assertEqual(row[1:],['Illustrative financial peer','Banks','Verified peer'])
-        self.assertIn('Peer stocks only',str(E['_report_blocks'](r)))
+        self.assertEqual(row[1:],['Illustrative financial peer','Banks','Strict peer'])
+        self.assertIn('Strict peer stocks',str(E['_report_blocks'](r)))
 
     def test_replacement_current_rule_cannot_inherit_historical_trade_flag(self):
         options={'sample_window':'3m','basket_size_options':(3,5)}

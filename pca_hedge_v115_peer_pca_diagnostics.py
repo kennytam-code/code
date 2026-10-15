@@ -256,7 +256,7 @@ import textwrap as _textwrap
 
 RIDGE_ALPHAS = np.logspace(-4, 2, 25)
 MIN_RETURN_STD = 1e-12
-PCA_REVISION = '2026-10-15-v117-result-regressions'
+PCA_REVISION = '2026-10-15-v118-cross-market-sector-search'
 MIN_TRAIN_COVERAGE = 0.90
 
 
@@ -835,7 +835,7 @@ _INSTRUMENT_MAP_HASH = _hashlib.md5(
          + sorted((str(k), tuple(v)) for k, v in CONTROL_ETFS.items())
          + sorted((str(k), tuple(v)) for k, v in BROAD_MARKET_HEDGES.items())
          + sorted((str(k), tuple(v)) for k, v in SECTOR_INSTRUMENTS.items())
-         + [('peer_scope_logic', '2026-10-15-strict-peers-v4')]
+         + [('peer_scope_logic', '2026-10-15-peers-v4-sector-v1')]
          ).encode()).hexdigest()[:12]
 
 
@@ -1886,6 +1886,183 @@ def _peer_industry_supported(target_ref, peer_ref):
 
 
 
+"""Inserted into the standalone engine; no external runtime module required."""
+
+
+def _listing_market_key(ticker):
+    exchange = _exch_of(_fmt_bbg_ticker(str(ticker)) or str(ticker))
+    return EXCH_TO_MARKET.get(exchange, exchange)
+
+
+def _discover_sector_stocks(target, references, candidates, registry_audit=(),
+                            sector_members=(), sector_key='Broad'):
+    """Broader local-sector eligibility, distinct from narrow business peers.
+
+    Compare labels only within the same classification scheme. A known sector
+    conflict wins over index/category fallbacks. Unknown labels never match.
+    Current classifications are research-universe metadata, not historical facts.
+    """
+    target_ref = references.get(target, {})
+    fields = ('GICS_SECTOR_NAME', 'BICS_LEVEL_1_SECTOR_NAME')
+    schemes = {}
+    for source in registry_audit:
+        if source.get('status') == 'received' and source.get('industry_scheme'):
+            schemes.setdefault(source['industry_scheme'], {}).update(source.get('industries', {}))
+    target_key = _ticker_key(_fmt_bbg_ticker(target) or target)
+    members = {_ticker_key(_fmt_bbg_ticker(t) or t) for t in sector_members}
+    accepted, audit, seen = [], [], set()
+    for ticker in sorted(set(candidates) - {target}):
+        key = _ticker_key(_fmt_bbg_ticker(ticker) or ticker)
+        if key == target_key or key in seen:
+            continue
+        seen.add(key)
+        ref = references.get(ticker, {})
+        support, reason = [], ''
+        if _listing_market_key(ticker) != _listing_market_key(target):
+            reason = 'different listing market'
+        elif _is_etf(ticker):
+            reason = 'ETF; controlled separately'
+        else:
+            pairs = [(field, target_ref.get(field), ref.get(field)) for field in fields
+                     if _usable_industry(target_ref.get(field)) and _usable_industry(ref.get(field))]
+            if any(not _same_industry(a, b) for _, a, b in pairs):
+                reason = 'known sector classification conflict'
+            else:
+                support = [field + ': ' + str(a) for field, a, b in pairs if _same_industry(a, b)]
+                for scheme, labels in schemes.items():
+                    # Official schemes can have a different level of detail.
+                    # They qualify this broader scope, never the strict-peer set.
+                    if _same_industry(labels.get(target), labels.get(ticker)):
+                        support.append(scheme + ': ' + str(labels[target]))
+                if sector_key != 'Broad' and key in members:
+                    support.append('mapped local sector index: ' + str(sector_key))
+                if not support:
+                    reason = 'no verified same-sector evidence'
+        eligible = bool(support) and not reason
+        if eligible:
+            accepted.append(ticker)
+        audit.append({'ticker': ticker, 'eligible': eligible,
+                      'reason': 'same-market sector stock' if eligible else reason,
+                      'evidence': support,
+                      'sector': ref.get('GICS_SECTOR_NAME') or ref.get('BICS_LEVEL_1_SECTOR_NAME') or '',
+                      'industry': ref.get('GICS_INDUSTRY_NAME') or ref.get('BICS_LEVEL_3_INDUSTRY_NAME') or ''})
+    return accepted, audit
+
+
+def _sector_stock_names(data, legs):
+    lists = (data or {}).get('sector_stock_tickers_by_target') or {}
+    if (data or {}).get('sector_scope_policy_version') != 1 or any(t not in lists for t in legs):
+        raise ValueError('Same-sector scope requires a fresh v118 download. Old caches do not contain verified sector-stock eligibility; re-download or explicitly select strict peers.')
+    return list(dict.fromkeys(t for leg in legs for t in lists[leg]
+                             if _listing_market_key(t) == _listing_market_key(leg)
+                             and not _is_etf(t) and t not in legs))
+
+
+def _risk_equity_names(data, legs, scope):
+    """Use the declared stock universe consistently in the common-risk model."""
+    if scope in ('sector', 'sector_focused'):
+        return _sector_stock_names(data, legs)
+    if (data or {}).get('peer_policy_version') != 4:
+        return []
+    return list(dict.fromkeys(t for leg in legs for t in
+                ((data or {}).get('peer_tickers_by_target') or {}).get(leg, [])))
+
+
+def _sector_search_audit(result, data, exclude=()):
+    """Disjoint reasons for each discovered sector stock, through current search."""
+    if result.get('params', {}).get('candidate_scope') not in ('sector', 'sector_focused'):
+        return {}
+    prices = (data or {}).get('prices')
+    if not isinstance(prices, pd.DataFrame):
+        return {}
+    audits = result.get('joint_search_audit') or []
+    current = max(audits, key=lambda a: (a['end'], a['rows'])) if audits else None
+    identity = lambda t: _ticker_key(_fmt_bbg_ticker(t) or t)
+    searched = {identity(t) for t in current['eligible_tickers']} if current and 'eligible_tickers' in current else None
+    analysis = {identity(t) for t in result['prices'].columns}
+    selected = {identity(t) for t in result['weights'].index}
+    alternatives = {identity(t) for row in result.get('basket_comparison') or [] for t in row['weights'].index}
+    price_names = {identity(t): t for t in prices}
+    by_target = {}
+    for target in result['portfolio_legs']:
+        discovery = ((data or {}).get('peer_discovery_by_target') or {}).get(target, {})
+        rows = []
+        rejected = []
+        capped = {identity(t) for t in discovery.get('market_cap_filtered') or []}
+        previously_excluded = {identity(t) for t in discovery.get('manual_excluded') or []}
+        for original in discovery.get('sector_stock_audit') or []:
+            row = dict(original)
+            ticker = row['ticker']
+            key = identity(ticker)
+            if not row['eligible']:
+                rejected.append(row)
+                continue
+            _, excluded = _apply_exclusions([ticker], exclude)
+            if excluded or key in previously_excluded:
+                status = 'manual exclusion'
+            elif key in capped:
+                status = 'download market-cap screen'
+            elif key not in price_names or not prices[price_names[key]].notna().any():
+                status = 'missing downloaded prices'
+            elif key not in analysis:
+                status = 'analysis scope / size / timing filter'
+            elif searched is not None and key not in searched:
+                status = 'window history / variance / as-of eligibility'
+            elif key in selected:
+                status = 'selected basket'
+            elif key in alternatives:
+                status = 'alternative basket'
+            else:
+                status = 'searched; not selected' if searched is not None else 'available; search list unavailable'
+            row['status'] = status
+            rows.append(row)
+        counts = {}
+        for row in rows:
+            counts[row['status']] = counts.get(row['status'], 0) + 1
+        by_target[target] = {'rows': rows, 'counts': counts, 'classification_rejected': rejected,
+                             'discovered_sector_stocks': len(rows),
+                             'searched_stocks': [r['ticker'] for r in rows if r['status'] in
+                                ('selected basket', 'alternative basket', 'searched; not selected')],
+                             'search_audit_available': searched is not None}
+    return by_target
+
+
+def _sector_etf_references(result, frame, peers, references, options):
+    """Same-date descriptive ETF comparisons without admitting ETFs to search."""
+    if options['candidate_scope'] != 'sector':
+        return
+    legs = result['portfolio_legs']
+    target = PORTFOLIO_COL if result.get('is_portfolio') else legs[0]
+    markets = {_listing_market_key(t) for t in legs}
+    available = {_ticker_key(t): t for t in frame}
+    names = list(dict.fromkeys(available[_ticker_key(t)] for t in references
+                 if _ticker_key(t) in available and _is_etf(t)
+                 and _listing_market_key(t) in markets))
+    names, _ = _apply_exclusions(names, options['exclude'])
+    market_ids = {_ticker_key(t) for leg in legs for t in _broad_market_spec(leg)['instruments']}
+    try:
+        model = (_common_risk_model(frame, target, peers, references)
+                 if options['hedge_objective'] == 'factor' else None)
+    except ValueError:
+        return
+    for ticker in names:
+        try:
+            fit, r2, _ = (_fit_common_risk(frame, target, [ticker], model,
+                            options['max_gross'], options['max_leg']) if model is not None
+                         else _fit_basket(frame, target, [ticker], options['max_gross'], options['max_leg']))
+        except (ValueError, RuntimeError, np.linalg.LinAlgError):
+            continue
+        weight = float(fit.coef_[0])
+        score = ((fit.risk_model_['variance_reduction'] if model is not None else r2)
+                 - options['gross_penalty'] * abs(weight))
+        families = ['single_etf'] + (['single_market'] if _ticker_key(ticker) in market_ids else [])
+        for family in families:
+            old = result['current_single_references'].get(family)
+            if old is None or score > old['score']:
+                result['current_single_references'][family] = dict(
+                    ticker=ticker, weight=weight, r2=r2, score=score, reference_only=True)
+
+
 def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
                            min_mktcap_usd_mm=5000, meta=None, exclude=None,
                            additional_universe=None):
@@ -1893,6 +2070,7 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
 
     ref_fields = [
         'COUNTRY_ISO',
+        'BICS_LEVEL_1_SECTOR_NAME',
         'BICS_LEVEL_2_INDUSTRY_GROUP_NAME',
         'BICS_LEVEL_3_INDUSTRY_NAME',
         'BICS_LEVEL_4_SUB_INDUSTRY_NAME',
@@ -2130,6 +2308,18 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
     print(f'    ├─ local broader BICS L2 peers: {len(local_bics2_peers)}; '
           f'GICS sector-only context (NOT peers): {len(local_sector_context)}')
 
+    # Broader sector stocks are a separate declared scope, not narrow peers.
+    # Apply this to every market and industry; no target-specific ticker list.
+    sector_pool = sorted(set(local_members + peer_matches + industry_matches))
+    missing_sector = [t for t in sector_pool if t not in pool_ref_data]
+    if missing_sector:
+        pool_ref_data.update(bbg_ref_multi(session, missing_sector, ref_fields))
+    pool_ref_data[target_ticker] = tgt_ref
+    sector_stocks, sector_stock_audit = _discover_sector_stocks(
+        target_ticker, pool_ref_data, sector_pool, registry_audit,
+        sector_members, sector_key)
+    print(f'    ├─ verified same-market sector stocks: {len(sector_stocks)} before size/exclusion screens')
+
     # These are optional proxies for PCA to consider, not factors to impose.
     sector_etfs = list(SECTOR_INSTRUMENTS.get((EXCH_TO_MARKET.get(_exch_of(target_ticker),market), sector_key), []))
     if sector_etfs:
@@ -2152,6 +2342,7 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
         'Bloomberg 2nd degree (unverified, audit only)': list(second_degree_unverified),
         'Local BICS L2 peers': list(local_bics2_peers),
         'Local GICS sector context': list(local_sector_context),
+        'Same-market sector stocks': list(sector_stocks),
         'Target sector ETFs': list(sector_etfs),
         'Theme/exposure ETFs': list(exp_instruments),
         'Control ETFs': list(all_etfs),
@@ -2175,7 +2366,9 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
         meta['target_usd_cap_mm'] = target_usd_cap
         meta['effective_mktcap_floor_mm'] = effective_floor
         meta['peer_tickers'] = sorted(set(peer_matches + industry_matches + local_bics2_peers) - {target_ticker})
-        meta['classification_evidence'] = {t: pool_ref_data.get(t, {}) for t in meta['peer_tickers']}
+        meta['sector_stock_tickers'] = list(sector_stocks)
+        meta['sector_stock_audit'] = sector_stock_audit
+        meta['classification_evidence'] = {t: pool_ref_data.get(t, {}) for t in set(meta['peer_tickers']) | set(sector_stocks)}
         meta['classification_evidence'][target_ticker] = tgt_ref
         meta['broad_market'] = broad_spec
         meta['index_ticker'] = local_index_ticker  # legacy / primary index
@@ -2186,7 +2379,7 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
         meta['broad_index_ticker'] = broad_index_ticker
         meta['non_index_shorts'] = (
             set(peer_matches) |
-            set(industry_matches + local_bics2_peers) |
+            set(industry_matches + local_bics2_peers + sector_stocks) |
             set(all_etfs) |
             set(exp_instruments + sector_etfs))      # [Fix 119]
         meta['exposure_tags'] = sorted(_tags)                # [Fix 119]
@@ -2201,7 +2394,7 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
     # and a colliding foreign listing silently displaced the local instrument.
     merged, seen_full = [], set()
     for tk in (exp_instruments + sector_etfs + local_members + peer_matches
-               + industry_matches + local_bics2_peers + all_etfs):
+               + industry_matches + local_bics2_peers + sector_stocks + all_etfs):
         key = _ticker_key(tk)
         if key != _ticker_key(target_ticker) and key not in seen_full:
             merged.append(tk)
@@ -2238,12 +2431,12 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
             # [Fix 35] correct units in the message ('$50mm', not '$0bn') and
             # report how many names passed only because their cap was unknown
             if dropped or unknown:
-                print(f"    ├─ liquidity filter: dropped {dropped} names below "
+                print(f"    ├─ market-cap screen: dropped {dropped} names below "
                       f"{_fmt_mktcap(effective_floor)} market cap"
                       + (f" ({unknown} unknown caps kept)" if unknown else ""))
             merged = kept
         except Exception as e:
-            print(f"    ⚠ liquidity filter skipped ({e})")
+            print(f"    ⚠ market-cap screen skipped ({e})")
 
     if meta is not None:
         meta['cap_filtered'] = cap_removed
@@ -2252,9 +2445,10 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
         # Metadata must NEVER re-introduce filtered peers into Peers-only.
         meta['peer_tickers'], _ = _apply_exclusions(meta['peer_tickers'], exclude)
         meta['peer_tickers'] = [tk for tk in meta['peer_tickers'] if tk in merged]
+        meta['sector_stock_tickers'] = [tk for tk in sector_stocks if tk in merged]
         meta['non_index_shorts'] = {tk for tk in merged
                                     if tk in set(peer_matches + industry_matches +
-                                                 local_bics2_peers + all_etfs + exp_instruments + sector_etfs)}
+                                                 local_bics2_peers + sector_stocks + all_etfs + exp_instruments + sector_etfs)}
     if manual_removed:
         print(f'    ├─ excluded {len(manual_removed)} candidates during discovery')
     print(f"    ✓ final merged universe: {len(merged)} candidates")
@@ -3790,7 +3984,9 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
            'portfolio': {'legs': legs, 'weights': pf_w,
                          'is_portfolio': is_portfolio, 'label': label},
            'peer_tickers_by_target': {m['target']: m['peer_tickers'] for m in disc_meta},
-           'peer_policy_version': 4,  # second-degree taxonomy-gated at discovery
+           'peer_policy_version': 4,  # narrow peers retain the existing verification
+           'sector_scope_policy_version': 1,
+           'sector_stock_tickers_by_target': {m['target']: list(m.get('sector_stock_tickers', [])) for m in disc_meta},
            'sector_tickers_by_target': {m['target']: list(m.get('source_candidates',{}).get('Target sector ETFs',[])) for m in disc_meta},
            'factor_tickers_by_target': {m['target']: sorted(set(
                m.get('source_candidates', {}).get('Theme/exposure ETFs', []) +
@@ -3805,6 +4001,8 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
                for m in disc_meta},
            'peer_discovery_by_target': {m['target']: {
                'classification_evidence': m.get('classification_evidence', {}),
+               'sector_stock_audit': m.get('sector_stock_audit', []),
+               'source_candidates': m.get('source_candidates', {}),
                'raw_peers': m.get('peer_raw', []),
                'taxonomy_rejected': m.get('taxonomy_rejected', []),
                'taxonomy_unknown': m.get('taxonomy_unknown', []),
@@ -4113,9 +4311,19 @@ def _filter_candidate_scope(data, legs, columns, scope, include_market, peers=No
     broad = [_broad_market_spec(t) for t in legs]
     market_ids = {canonical(t) for m in broad for t in m['instruments']}
     market_tickers = [c for c in columns if canonical(c) in market_ids and c not in legs]
-    if scope == 'peers':
+    if scope in ('peers', 'sector'):
         include_market = False
-    if scope in ('peers', 'focused'):
+    if scope in ('sector', 'sector_focused'):
+        sector_names = _sector_stock_names(data, legs)
+        ids = {canonical(t) for t in sector_names}
+        if scope == 'sector_focused':
+            ids.update(canonical(t) for leg in legs for t in
+                       (data.get('factor_tickers_by_target') or {}).get(leg, []))
+            if include_market:
+                ids |= market_ids
+        candidates = [c for c in columns if canonical(c) in ids and c not in legs
+                      and (scope != 'sector' or not _is_etf(c))]
+    elif scope in ('peers', 'focused'):
         manual_peer_list = _parse_ticker_list(peers)
         by_target = data.get('peer_tickers_by_target') or {}
         automatic = [p for t in legs for p in by_target.get(t, [])]
@@ -4279,7 +4487,7 @@ def _common_risk_model(frame, target, peers, reference_names=(), max_factors=5):
             for j in range(min(len(s), limit-len(factors))):
                 if s[j]**2 / max(n-1, 1) <= threshold:
                     break
-                add(U[:, j]*s[j], f'Peer PC{j+1} after named factors')
+                add(U[:, j]*s[j], f'Equity PC{j+1} after named factors')
     if not factors:
         raise ValueError('No supported common factors: include a market/sector ETF or more verified peers')
     F = np.column_stack(factors)
@@ -4445,6 +4653,7 @@ def _joint_basket_search(frame, target, universe, sizes, forced=(), keep=6,
         final[size]=sorted(recipes,key=lambda x:(-x['score'],tuple(x['basket'])))[:keep]
     counts['surrogate_subsets']=len(cache)
     counts['eligible_names']=p
+    counts['eligible_tickers']=list(names)
     counts['global_optimum_claimed']=False
     counts['budget_scope']='growth and replacement attempts per size; excludes pair and seed screening'
     return final,counts
@@ -4813,9 +5022,14 @@ def _peer_identity_rows(result, data):
     """Show business identities for every current or alternative basket member."""
     target = result['portfolio_legs'][0]
     provenance = ((data or {}).get('peer_discovery_by_target') or {}).get(target, {})
-    classifications = provenance.get('classification_evidence') or {}
+    classifications = {}
+    for leg in result['portfolio_legs']:
+        classifications.update((((data or {}).get('peer_discovery_by_target') or {}).get(leg, {}).get('classification_evidence') or {}))
+    sector_names = set(t for leg in result['portfolio_legs'] for t in
+        ((data or {}).get('sector_stock_tickers_by_target') or {}).get(leg, []))
     snapshot = (data or {}).get('execution_snapshot') or {}
-    automatic = set(((data or {}).get('peer_tickers_by_target') or {}).get(target, []))
+    automatic = set(t for leg in result['portfolio_legs'] for t in
+        ((data or {}).get('peer_tickers_by_target') or {}).get(leg, []))
     tickers = list(result['weights'].index)
     for row in result.get('basket_comparison') or []:
         tickers.extend(row['weights'].index)
@@ -4825,7 +5039,8 @@ def _peer_identity_rows(result, data):
         label = next((ref[f] for f in ('GICS_INDUSTRY_NAME', 'BICS_LEVEL_3_INDUSTRY_NAME',
                                        'BICS_LEVEL_2_INDUSTRY_GROUP_NAME')
                       if _usable_industry(ref.get(f))), 'not recorded')
-        kind = 'Factor ETF' if _is_etf(ticker) else 'Verified peer' if ticker in automatic else 'Manual / broad-universe'
+        kind = ('Factor ETF' if _is_etf(ticker) else 'Strict peer' if ticker in automatic
+                else 'Same-market sector stock' if ticker in sector_names else 'Manual / broad-universe')
         rows.append([ticker, snapshot.get(ticker, {}).get('NAME', 'not recorded'), label, kind])
     return rows
 
@@ -4919,7 +5134,7 @@ def _find_best_hedge_impl(
     hedge_objective='factor',     # 'variance' (risk reduction) or 'tracking' (strict R2)
     basket_methods='search',      # 'pca' (default) or 'all' (PCA + two comparators)
     broad_search=True,            # select a basket; score all eligible singles as references
-    candidate_scope='focused',    # 'focused', 'peers', or broad 'all'
+    candidate_scope='sector',     # local sector stocks; ETFs require sector_focused
     include_broad_market=None,    # default: on for all, off for peers only
     peer_tickers=None,            # manual peer list for older caches
     basket_size_range=None,       # inclusive (min, max); exact number when equal
@@ -4938,9 +5153,9 @@ def _find_best_hedge_impl(
             or not 1 <= alternative_baskets <= 20):
         raise ValueError('alternative_baskets must be an integer from 1 to 20')
     basket_size_options = _basket_sizes(basket_size_options, basket_size_range)
-    if candidate_scope not in ('all', 'peers', 'focused'):
-        raise ValueError("candidate_scope must be 'focused', 'peers' or 'all'")
-    if candidate_scope == 'peers':
+    if candidate_scope not in ('all', 'peers', 'focused', 'sector', 'sector_focused'):
+        raise ValueError("candidate_scope must be 'sector', 'sector_focused', 'peers', 'focused' or 'all'")
+    if candidate_scope in ('peers', 'sector'):
         include_broad_market = False
     elif include_broad_market is None:
         include_broad_market = True
@@ -5072,11 +5287,7 @@ def _find_best_hedge_impl(
     pm_union = set().union(*pm_snaps.values()) if pm_snaps else set()
     pm_exempt = set(data.get('non_index_shorts') or [])
     pm_active = bool(pm_snaps)
-    verified_peer_names = set().union(*(
-        set((data.get('peer_tickers_by_target') or {}).get(t, []))
-        for t in pf_legs))
-    if data.get('peer_policy_version') != 4:
-        verified_peer_names=set()
+    verified_peer_names = set(_risk_equity_names(data, pf_legs, candidate_scope))
     if peer_tickers is not None:
         verified_peer_names.update(_resolve_force_include(
             peer_tickers, prices.columns, target_ticker)[0])
@@ -5221,7 +5432,7 @@ def _find_best_hedge_impl(
                    <= tz_tolerance_hours]
         do_restrict = (restrict_to_target_tz is True or
                        (restrict_to_target_tz == 'auto' and
-                        (candidate_scope in ('peers', 'focused') or len(same_tz) >= 30)))
+                        (candidate_scope in ('peers', 'focused', 'sector', 'sector_focused') or len(same_tz) >= 30)))
     if do_restrict and len(same_tz) < len(others):
         # [Fix 40] forced names survive the restriction; if a forced name is
         # cross-timezone the async detection below flips to 2-day returns
@@ -8673,7 +8884,7 @@ def _report_blocks(result):
     if result.get('illustrative_sample'):
         text('ILLUSTRATIVE SAMPLE — simulated prices, not a live hedge recommendation.')
     if span: text(f"Analysis window {p.get('sample_window') or 'downloaded history'} · {span[0]:%d %b %Y} to {span[1]:%d %b %Y} · {span[2]} return observations",True)
-    scope_label={'peers':'Peer stocks only — ETFs excluded','focused':'Peers + relevant ETFs','all':'Broad universe — other industries allowed'}.get(p['candidate_scope'],p['candidate_scope'])
+    scope_label={'sector':'Same-market sector stocks — ETFs excluded','sector_focused':'Same-market sector stocks + relevant ETFs','peers':'Strict peer stocks — ETFs excluded','focused':'Strict peers + relevant ETFs','all':'Broad universe — other industries allowed'}.get(p['candidate_scope'],p['candidate_scope'])
     text('Candidate scope: '+scope_label,True)
     for chart in result.get('report_charts') or []: blocks.append(dict(kind='chart',**chart))
     section('Decision overview')
@@ -8783,9 +8994,18 @@ def _report_blocks(result):
         str(r['sign_changes']) if r['sign_changes'] is not None else 'unavailable'] for r in result.get('current_sensitivity',[])],widths=[2.6,2.9,1.5])
     text('Sensitivity refits keep the selected names and remove a small block of days. They are descriptive checks, not independent validation.',True)
     section('Universe coverage and execution')
+    for target,a in (result.get('sector_search_audit') or {}).items():
+        table(['SECTOR STOCK SEARCH','COUNT'],
+              [['Verified local sector stocks before screens',a['discovered_sector_stocks']]]+
+              [[status,count] for status,count in a['counts'].items()],target,widths=[5.3,1.7])
+        if a['search_audit_available']:
+            text('Stocks actually searched: '+(', '.join(a['searched_stocks']) or 'none'),True)
+        else:
+            text('Current search list is unavailable for this selection method; available prices alone do not prove participation.',True)
+        text('Sector stocks share a broader classification than strict peers. Current classifications do not establish historical membership; full per-stock evidence and rejection reasons are retained in sector_search_audit.',True)
     table(['INSTRUMENT','COMPANY','INDUSTRY','ELIGIBILITY'],result.get('basket_identity_audit') or [],widths=[1.6,2,2.1,1.3])
     for target,a in (result.get('peer_coverage') or {}).items():
-        table(['PEER COVERAGE','COUNT'],[['Discovered relationships',a['raw_discovered']],['Available after filters',a['available_count']],
+        table(['STRICT PEER COVERAGE','COUNT'],[['Discovered relationships',a['raw_discovered']],['Available after filters',a['available_count']],
             ['Rejected or unverified taxonomy',len(a.get('taxonomy_rejected',[]))+len(a.get('taxonomy_unknown',[]))],
             ['Missing downloaded prices',len(a['missing_prices'])],['Failed second-degree queries',len(a['failed_second_degree_requests'])]],target,widths=[5.3,1.7])
         text('Coverage: '+str(a.get('coverage','unknown'))+'. A full-market EQS screen or supplied ticker universe can extend index coverage.',True)
@@ -9218,9 +9438,7 @@ def find_best_hedge(*args, **kwargs):
         result['trade_weights']=result['weights'].iloc[:0].copy()
         result['recommended_action']='CURRENT_RECIPE_REVIEW_REQUIRED'
     result['fit_diagnostics'] = diagnose_in_sample(result)
-    peers=list(dict.fromkeys(p for leg in result['portfolio_legs'] for p in
-        ((options['data'] or {}).get('peer_tickers_by_target') or {}).get(leg,[])))
-    if (options['data'] or {}).get('peer_policy_version')!=4: peers=[]
+    peers=_risk_equity_names(options['data'],result['portfolio_legs'],options['candidate_scope'])
     if options['peer_tickers']:
         peers += _resolve_force_include(options['peer_tickers'],result['prices'].columns,result['portfolio_legs'][0])[0]
     refs=list(dict.fromkeys([t for leg in result['portfolio_legs'] for t in _broad_market_spec(leg)['instruments']] +
@@ -9228,6 +9446,7 @@ def find_best_hedge(*args, **kwargs):
         [t for leg in result['portfolio_legs'] for t in ((options['data'] or {}).get('factor_tickers_by_target') or {}).get(leg,[])]))
     target_name=PORTFOLIO_COL if result.get('is_portfolio') else result['portfolio_legs'][0]
     audit_frame=_with_reference_returns(result['returns'],options['data'],refs,result.get('two_day_returns',False),result['portfolio_legs'][0],options['tz_tolerance_hours'])
+    _sector_etf_references(result,audit_frame,peers,refs,options)
     result['common_exposures']=_factor_exposure_audit(audit_frame,target_name,result['weights'],peers,refs)
     result['current_sensitivity']=_weight_sensitivity(audit_frame,target_name,result['weights'],peers,refs,
         options['hedge_objective'],options['max_gross'],options['max_leg'])
@@ -9291,7 +9510,7 @@ def find_best_hedge(*args, **kwargs):
            if peer_diag['status'] == 'ok' else peer_diag['reason']))
     scope = options['candidate_scope']
     market = options['include_broad_market']
-    market = False if scope == 'peers' else (True if market is None else bool(market))
+    market = False if scope in ('peers', 'sector') else (True if market is None else bool(market))
     result['params'].update(candidate_scope=scope, include_broad_market=market,
                             peer_tickers=options['peer_tickers'],
                             basket_size_range=options['basket_size_range'],
@@ -9303,6 +9522,7 @@ def find_best_hedge(*args, **kwargs):
     result['requested_basket_sizes'] = _basket_sizes(options['basket_size_options'], options['basket_size_range'])
     result['basket_comparison'] = _basket_report_rows(result)
     result['basket_identity_audit'] = _peer_identity_rows(result,options['data'])
+    result['sector_search_audit'] = _sector_search_audit(result, options['data'], options['exclude'])
     result['broad_markets'] = [_broad_market_spec(t) for t in result['portfolio_legs']]
     result['broad_market_hedge'] = result.get('hedge_alternatives', {}).get('single_market')
     benchmark = '; '.join(dict.fromkeys(m['benchmark'] for m in result['broad_markets']))
@@ -9949,10 +10169,12 @@ def hedge_ui(data=None):
     w_mktcap = W.FloatText(value=1000.0, description='Min mkt cap ($mm)',
                            style=LBL, layout=FULL)
     w_scope = W.Dropdown(options=[
-        ('Peer stocks only', 'peers'),
-        ('Peers + relevant ETFs', 'focused'),
+        ('Same-market sector stocks', 'sector'),
+        ('Same-market sector stocks + ETFs', 'sector_focused'),
+        ('Strict peer stocks only', 'peers'),
+        ('Strict peers + relevant ETFs', 'focused'),
         ('Broad universe (exploratory)', 'all')],
-        value='focused', description='Candidate universe', style=LBL, layout=FULL)
+        value='sector', description='Candidate universe', style=LBL, layout=FULL)
     w_scope_help = W.HTML()
     w_market = W.Checkbox(value=True, description='OPTIONAL: add a local broad-market ETF', indent=False)
     w_peers = W.Text(value='', description='Manual peer list', style=LBL, layout=FULL,
@@ -10425,11 +10647,14 @@ def hedge_ui(data=None):
 
     def _scope_changed(_=None):
         descriptions = {
+            'sector': ('<b>Same-market sector stocks (default).</b> Compare verified stocks from the target’s broader sector in its listing market. '
+                       'Banks, insurers and other financial businesses can compete for a financial target; the same classification rule applies across markets and industries. ETFs remain references.'),
+            'sector_focused': ('<b>Same-market sector stocks + relevant ETFs.</b> The same broader stock pool, with target-specific sector/factor ETFs and optionally the local market ETF allowed in the basket.'),
             'peers': ('<b>1 — Verified peer stocks only.</b> Direct Bloomberg peers, '
                       'corroborated second-degree peers and BICS/GICS related stocks. '
                       'No target-specific factor ETFs or unrelated index constituents. '
                       'ETFs are excluded from the final basket in this mode.'),
-            'focused': ('<b>2 — Peers + relevant factor instruments (default).</b> '
+            'focused': ('<b>Strict peers + relevant factor instruments.</b> '
                         'All eligible peer stocks PLUS ETFs mapped to the target’s '
                         'own taxonomy (e.g. rates or semiconductors). Does NOT '
                         'add every sector/index member or global style ETF.'),
@@ -10441,10 +10666,10 @@ def hedge_ui(data=None):
                               "border-left:3px solid #547399;padding:8px 10px'>"
                               + descriptions[w_scope.value]
                               + '<br><b>Same exchange</b> and <b>Exclude</b> '
-                                'apply in ALL modes. To allow ETFs, select peers + ETFs.'
+                                'apply in ALL modes. ETF inclusion requires an explicitly labelled + ETFs scope.'
                                 '</div>')
-        w_market.disabled = w_scope.value == 'peers'
-        w_market.value = w_scope.value != 'peers'
+        w_market.disabled = w_scope.value in ('peers', 'sector')
+        w_market.value = w_scope.value not in ('peers', 'sector')
         _refresh_tier()
 
     def _size_changed(_=None):

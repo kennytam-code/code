@@ -1,6 +1,11 @@
-# PCA v117 changes
+# PCA v118 changes
 
-Revision 2026-10-15-v117-result-regressions in the existing v115 entry point.
+Revision 2026-10-15-v118-cross-market-sector-search in the existing v115 entry point.
+
+- Fixed the cross-market discovery/search disconnect: verified local sector stocks can now enter the actual search even when their narrow business classification differs. Added separate stock-only and ETF-inclusive sector scopes; strict-peer scopes are preserved.
+- Default form/API scope is same-market sector stocks. Current single-ETF and local-market ETF references remain separate from the primary basket.
+- Added per-stock eligibility evidence, actual-search names and disjoint rejection-stage counts. Size, price-history, exposure-cap and exclusion rules remain enforced; no fitted score or specific stock is forced.
+- Added six-market/multi-sector synthetic integration tests, the 31-sector/9-peer regression, unknown/conflicting classification checks, listing aliases, old-cache refusal and ETF-reference isolation. Live Bloomberg reruns remain unverified.
 
 - Fixed the October 15 actual-result failures: constrained Ridge fits now optimize within gross/per-leg limits across all modes and references; zero/dust positions no longer count toward basket size; negligible improvements cannot receive a positive risk-reduction grade.
 - Separated low fitted R² into exposure-cap and objective/regularization gaps against same-date least-squares references; restored descriptive correlation diagnostics for 1m windows.
