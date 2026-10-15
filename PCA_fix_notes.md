@@ -1,7 +1,12 @@
-# PCA v116 changes
+# PCA v117 changes
 
-Revision 2026-10-14-v116-joint-search-common-risk in the existing v115 entry point.
+Revision 2026-10-15-v117-result-regressions in the existing v115 entry point.
 
+- Fixed the October 15 actual-result failures: constrained Ridge fits now optimize within gross/per-leg limits across all modes and references; zero/dust positions no longer count toward basket size; negligible improvements cannot receive a positive risk-reduction grade.
+- Preserved both market and sector factors when short-window sensitivity removes a few days, preventing a hidden change of factor specification.
+- Closed remaining placeholder-label/sector-conflict peer leaks, made peer-only ETF exclusion absolute, retained classification evidence and exposed constituent identities. Fresh peer-policy-v4 downloads are required for automatic peers.
+- Fixed recipe amounts/line breaks for notebook rendering and Word copying; removed the duplicate plain-text notebook report while retaining terminal output and exports.
+- Added Python 3.8 dependency pins and Windows/Linux CI jobs matching the environment shown in the result document.
 - Added complementary-pair, growth and replacement basket search with distinct alternatives and an explicit bounded-search audit.
 - Added a market/sector/peer factor covariance objective with diagonal specific risk, constrained weights and target-excluded peer PCA. Raw in-sample R² remains visible; no positive score is manufactured.
 - Separated complete-window current weights from frozen historical validation weights, including full reports, alternatives, charts and quick refits.

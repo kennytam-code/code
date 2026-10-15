@@ -1,4 +1,4 @@
-"""Offline checks of the v116 production engine, including chronological isolation."""
+"""Offline checks of the v117 production engine, including actual-result regressions."""
 import contextlib,io,os,runpy,unittest,json,tempfile
 from pathlib import Path
 from unittest.mock import patch
@@ -18,7 +18,7 @@ def fixture(n=420,seed=12):
     names=['2889 TT Equity','0050 TT Equity','0055 TT Equity']+[f'{2900+i} TT Equity' for i in range(7)]
     r=np.column_stack([common+rng.normal(0,.004,n),market,market+sector]+[common+rng.normal(0,.006,n) for _ in range(7)])
     return {'target':names[0],'prices':pd.DataFrame(100*np.exp(r.cumsum(0)),index=pd.bdate_range('2024-01-01',periods=n),columns=names),
-        'price_observations':'ACTIVE_DAYS_ONLY','peer_policy_version':3,'peer_tickers_by_target':{names[0]:names[3:]},
+        'price_observations':'ACTIVE_DAYS_ONLY','peer_policy_version':4,'peer_tickers_by_target':{names[0]:names[3:]},
         'factor_tickers_by_target':{names[0]:['0055 TT Equity']},'sector_tickers_by_target':{names[0]:['0055 TT Equity']}}
 OPTIONS=dict(show_plots=False,rolling_oos=False,boot_n=0,min_mktcap_usd_mm=0,
              basket_size_options=(3,),alternative_baskets=3,max_gross=2,max_leg=1)
@@ -32,7 +32,7 @@ class ResearchTests(unittest.TestCase):
         cls.data=fixture();cls.one=run(cls.data,sample_window='1m');cls.three=run(cls.data,sample_window='3m')
 
     def test_actual_revision_loaded(self):
-        self.assertIn('v116',E['PCA_REVISION'])
+        self.assertIn('v117',E['PCA_REVISION'])
 
     def test_short_window_search_has_multiple_distinct_baskets(self):
         rows=self.one['basket_comparison']
@@ -116,14 +116,14 @@ class ResearchTests(unittest.TestCase):
 
     def test_legacy_cache_cannot_claim_verified_peers(self):
         d=fixture();d['peer_policy_version']=2
-        with self.assertRaisesRegex(ValueError,'fresh v116 download'):
+        with self.assertRaisesRegex(ValueError,'fresh v117 download'):
             run(d,sample_window='1m')
         r=run(d,sample_window='1m',peer_tickers=d['peer_tickers_by_target'][d['target']])
         self.assertTrue(len(r['weights'])>=2)
 
     def test_sector_etf_survives_focused_filter(self):
         self.assertIn('XLF US Equity',E['SECTOR_INSTRUMENTS'][('US','Financials')])
-        d={'peer_policy_version':3,'peer_tickers_by_target':{'JPM US Equity':['BAC US Equity']},
+        d={'peer_policy_version':4,'peer_tickers_by_target':{'JPM US Equity':['BAC US Equity']},
            'factor_tickers_by_target':{'JPM US Equity':E['SECTOR_INSTRUMENTS'][('US','Financials')]}}
         names=['JPM US Equity','BAC US Equity','XLF US Equity','SPY US Equity']
         kept=E['_filter_candidate_scope'](d,['JPM US Equity'],names,'focused',True)
@@ -184,7 +184,7 @@ class ResearchTests(unittest.TestCase):
         for row in r['basket_comparison']:
             if row['selected']: continue
             for ticker,weight in row['weights'].items():
-                position=f"{'SHORT' if weight>0 else 'LONG'} ${abs(weight)*100:.1f} {ticker}"
+                position=f"{'SHORT' if weight>0 else 'LONG'} {abs(weight)*100:.1f} {ticker}"
                 self.assertTrue(any(position in ' '.join(line.split()) for line in alternatives.splitlines()),position)
         self.assertIn('not total stock risk',printed)
 
@@ -193,9 +193,9 @@ class ResearchTests(unittest.TestCase):
         common,factor=rng.normal(0,.01,(2,n))
         f=pd.DataFrame({'y':factor+rng.normal(0,.0001,n),'a':4*common+factor,'b':4*common-factor,
             'c':factor+rng.normal(0,.008,n),'d':factor+rng.normal(0,.009,n),'e':factor+rng.normal(0,.010,n)})
-        recipes,audit=E['_joint_basket_search'](f,'y',list(f.columns[1:]),(3,),keep=4)
-        self.assertTrue({'a','b'}<=set(recipes[3][0]['basket']))
-        self.assertGreater(recipes[3][0]['fit'][1],.99)
+        recipes,audit=E['_joint_basket_search'](f,'y',list(f.columns[1:]),(2,),keep=4)
+        self.assertTrue({'a','b'}<=set(recipes[2][0]['basket']))
+        self.assertGreater(recipes[2][0]['fit'][1],.99)
         self.assertEqual(audit['surrogate_subsets'],10)
 
     def test_covariance_objective_handles_collinearity(self):
@@ -534,6 +534,171 @@ class ResearchTests(unittest.TestCase):
         self.assertTrue(result[3]);self.assertTrue(result[5])
         self.assertEqual(audit['pairs_screened'],3160)
         self.assertFalse(audit['global_optimum_claimed'])
+
+    def test_error_placeholders_never_establish_peer_identity(self):
+        for label in ('-', 'N.A.', 'Not Applicable', '#N/A Field Not Applicable',
+                      '#N/A Invalid Field', 'not available', 'None', 'nan', '－'):
+            target={'BICS_LEVEL_4_SUB_INDUSTRY_NAME':label,'GICS_INDUSTRY_NAME':'Banks'}
+            ship={'BICS_LEVEL_4_SUB_INDUSTRY_NAME':label,'GICS_INDUSTRY_NAME':'Marine Transportation'}
+            self.assertFalse(E['_peer_industry_supported'](target,ship),label)
+            self.assertFalse(E['_same_industry'](label,label),label)
+
+    def test_explicit_sector_conflict_blocks_broader_industry_match(self):
+        a={'BICS_LEVEL_2_INDUSTRY_GROUP_NAME':'Leasing','GICS_SECTOR_NAME':'Financials'}
+        b={'BICS_LEVEL_2_INDUSTRY_GROUP_NAME':'Leasing','GICS_SECTOR_NAME':'Industrials'}
+        self.assertFalse(E['_peer_industry_supported'](a,b))
+        b['GICS_SECTOR_NAME']='Financials'
+        self.assertTrue(E['_peer_industry_supported'](a,b))
+
+    def test_discovery_rejects_unrelated_stock_through_all_peer_paths(self):
+        target,peer,ship='2889 TT Equity','2883 TT Equity','2637 TT Equity'
+        ref={'COUNTRY_ISO':'TW','GICS_SECTOR_NAME':'Financials',
+             'GICS_INDUSTRY_NAME':'Banks','BICS_LEVEL_2_INDUSTRY_GROUP_NAME':'Banks',
+             'BICS_LEVEL_4_SUB_INDUSTRY_NAME':'#N/A Field Not Applicable'}
+        refs={target:ref,peer:dict(ref),ship:dict(ref,GICS_SECTOR_NAME='Industrials',
+                                               GICS_INDUSTRY_NAME='Marine Transportation',
+                                               BICS_LEVEL_2_INDUSTRY_GROUP_NAME='Transport')}
+        fn=E['auto_discover_universe'];g=fn.__globals__;meta={}
+        stubs={'bbg_ref_single':lambda *a,**k:ref,
+               'bbg_ref_multi':lambda session,tickers,*a,**k:{t:refs[t] for t in tickers if t in refs},
+               '_public_equity_universe':lambda *a:([target,peer,ship],[]),
+               '_index_members':lambda *a:('TWSE Index',[target,peer,ship]),
+               '_sector_index_members':lambda *a:(['TWSEBKI Index'],[target,peer]),
+               'bbg_bulk':lambda *a,**k:[{'Peer Ticker':peer},{'Peer Ticker':ship}]}
+        with patch.dict(g,stubs),contextlib.redirect_stdout(io.StringIO()):
+            broad=fn(None,target,min_mktcap_usd_mm=0,meta=meta)
+        self.assertIn(ship,broad)  # downloaded broad members are not automatically peers
+        self.assertEqual(meta['peer_tickers'],[peer])
+        self.assertIn(ship,meta['taxonomy_rejected'])
+        self.assertEqual(meta['classification_evidence'][peer]['GICS_INDUSTRY_NAME'],'Banks')
+
+    def test_peer_mode_never_admits_etfs_even_with_market_checkbox(self):
+        d=fixture()
+        d['peer_tickers_by_target'][d['target']].append('0055 TT Equity')
+        r=run(d,sample_window='1m',candidate_scope='peers',include_broad_market=True,
+              peer_tickers=['0050 TT Equity'])
+        self.assertFalse(r['params']['include_broad_market'])
+        for row in r['basket_comparison']:
+            self.assertFalse(any(E['_is_etf'](t) for t in row['weights'].index))
+
+    def test_ridge_reference_with_large_beta_obeys_cap_without_aborting(self):
+        rng=np.random.default_rng(78)
+        x=rng.normal(0,.005,100)
+        frame=pd.DataFrame({'y':3*x+rng.normal(0,.0001,100),'x':x})
+        fit,r2,_=E['_fit_basket'](frame,'y',['x'],.7,.4)
+        self.assertAlmostEqual(fit.coef_[0],.4,places=6)
+        self.assertGreater(r2,0)
+        self.assertAlmostEqual(float((frame.y-fit.predict(frame[['x']].to_numpy())).mean()),0,places=10)
+
+    def test_constrained_ridge_beats_clipping_and_matches_independent_grid(self):
+        rng=np.random.default_rng(881)
+        a=rng.normal(0,.01,70);b=.7*a+rng.normal(0,.008,70)
+        frame=pd.DataFrame({'y':2*a-.9*b+rng.normal(0,.002,70),'a':a,'b':b})
+        fit,_,_=E['_fit_basket'](frame,'y',['a','b'],.8,.5)
+        X=frame[['a','b']].to_numpy();X-=X.mean(0)
+        y=frame.y.to_numpy();y-=y.mean()
+        loss=lambda w: float(np.sum((y-X@w)**2)+fit.alpha_*np.sum((w*X.std(0))**2))
+        grid=[loss(np.array([u,v])) for u in np.linspace(-.5,.5,101)
+              for v in np.linspace(-.5,.5,101) if abs(u)+abs(v)<=.80000001]
+        self.assertLessEqual(loss(fit.coef_),min(grid)+1e-9)
+
+    def test_all_objectives_cap_current_alternative_and_reference_positions(self):
+        for objective in ('tracking','variance','factor'):
+            r=run(sample_window='3m',hedge_objective=objective,max_leg=.12,max_gross=.3)
+            weights=[r['weights'],r['validation_weights']]+[x['weights'] for x in r['basket_comparison']]
+            for w in weights:
+                self.assertLessEqual(w.abs().max(),.1200001)
+                self.assertLessEqual(w.abs().sum(),.3000001)
+                self.assertTrue(E['_meaningful_basket'](w))
+            for row in r['current_single_references'].values():
+                self.assertLessEqual(abs(row['weight']),.1200001)
+
+    def test_dust_legs_do_not_count_as_a_three_name_basket(self):
+        self.assertFalse(E['_meaningful_basket']([.317,.00001,-.00002]))
+        self.assertTrue(E['_meaningful_basket']([.317,.02,-.03]))
+        for r in (self.one,self.three):
+            for row in r['basket_comparison']:
+                self.assertGreaterEqual(row['weights'].abs().min(),.01-1e-9)
+
+    def test_sector_etf_plus_dust_does_not_crowd_out_real_peer_baskets(self):
+        rng=np.random.default_rng(74);factor=rng.normal(0,.01,45)
+        f=pd.DataFrame({'y':.5*factor+rng.normal(0,.02,45),'0055 TT Equity':factor,
+                        **{f'p{i}':factor+rng.normal(0,.012,45) for i in range(6)}})
+        m=E['_common_risk_model'](f,'y',[f'p{i}' for i in range(6)],['0055 TT Equity'])
+        recipes,_=E['_joint_basket_search'](f,'y',list(f.columns[1:]),[3],factor_model=m)
+        self.assertTrue(recipes[3])
+        for row in recipes[3]: self.assertTrue(E['_meaningful_basket'](row['fit'][0].coef_))
+
+    def test_rounded_zero_risk_reduction_cannot_receive_positive_verdict(self):
+        for vr in (-1e-12,0,1e-12,.00049):
+            grade,_=E['_ticket_verdict'](-1e-12,-1e-12,0,None,False,np.nan,np.nan,False,
+                                        vol_red=vr,objective='variance')
+            self.assertTrue(grade.startswith('✗'),(vr,grade))
+
+    def test_short_sensitivity_preserves_market_and_sector_factor_slots(self):
+        rng=np.random.default_rng(17)
+        f=pd.DataFrame(rng.normal(0,.01,(19,3)),columns=['y','0050 TT Equity','0055 TT Equity'])
+        for sub in (f,f.iloc[5:],f.iloc[:-5]):
+            m=E['_common_risk_model'](sub,'y',[],list(f.columns[1:]))
+            self.assertEqual(m['labels'],list(f.columns[1:]))
+
+    def test_report_leg_text_survives_math_delimiters_and_copy(self):
+        html=E['_report_html'](self.three)
+        self.assertIn('tex2jax_ignore',html)
+        self.assertIn('style="text-align:left"',html)
+        rows=[b for b in E['_report_blocks'](self.three) if b.get('headers',[])[:2]==['ID','POSITIONS PER 100 TARGET']]
+        self.assertTrue(rows)
+        for row in rows[0]['rows']:
+            self.assertNotIn('$',row[1])
+            self.assertIn('<br>',html)
+        self.assertIn('target\'s fitted total variance',str(E['_report_blocks'](self.three)))
+
+    def test_notebook_displays_one_report_and_retains_printable_transcript(self):
+        render=E['_render_compact_report'];g=render.__globals__
+        visible=[];buf=io.StringIO()
+        with patch.dict(g,{'_IN_JUPYTER':True,'_ipy_display':visible.append,'_HTML':lambda x:x}):
+            with contextlib.redirect_stdout(buf): render(self.three)
+        self.assertEqual(len(visible),1)
+        self.assertEqual(buf.getvalue(),'')
+        self.assertIn('CURRENT BASKET',self.three['report_text'])
+
+    def test_constituent_identity_audit_survives_private_data_removal(self):
+        d=fixture();peer='2901 TT Equity'
+        d['execution_snapshot']={peer:{'NAME':'Illustrative financial peer'}}
+        d['peer_discovery_by_target']={d['target']:{'classification_evidence':{peer:{'GICS_INDUSTRY_NAME':'Banks'}}}}
+        r=run(d,sample_window='2m',candidate_scope='peers',force_include=[peer])
+        self.assertNotIn('_analysis_data',r)
+        row=next(x for x in r['basket_identity_audit'] if x[0]==peer)
+        self.assertEqual(row[1:],['Illustrative financial peer','Banks','Verified peer'])
+        self.assertIn('Peer stocks only',str(E['_report_blocks'](r)))
+
+    def test_replacement_current_rule_cannot_inherit_historical_trade_flag(self):
+        options={'sample_window':'3m','basket_size_options':(3,5)}
+        full_rows=len(run(**options)['returns'])
+        fn=E['_fit_common_risk'];search_fn=E['_joint_basket_search'];g=E['find_best_hedge'].__globals__
+        def search(frame,*args,**kw):
+            recipes,audit=search_fn(frame,*args,**kw)
+            # Ensure the historically selected rule is not itself a search rank.
+            if len(frame)<full_rows: recipes={size:[] for size in recipes}
+            return recipes,audit
+        with patch.dict(g,{'_joint_basket_search':search}): base=run(**options)
+        def fit(frame,target,basket,*args,**kw):
+            if (len(frame)>len(base['validation_fit_returns']) and
+                    set(basket)==set(base['weights'].index)):
+                raise RuntimeError('Simulated current recipe no longer meaningful')
+            return fn(frame,target,basket,*args,**kw)
+        with patch.dict(g,{'_fit_common_risk':fit,'_joint_basket_search':search}): r=run(**options)
+        self.assertTrue(r['current_recipe_changed'])
+        self.assertFalse(r['trade_eligible'])
+        self.assertTrue(r['trade_weights'].empty)
+        self.assertIn('CURRENT RECIPE CHANGED',r['ticket']['grade'])
+        self.assertEqual(r['ticket']['quality_r2'],base['ticket']['quality_r2'])
+
+    def test_rich_display_failure_prints_completed_report(self):
+        render=E['_render_compact_report'];g=render.__globals__;buf=io.StringIO()
+        with patch.dict(g,{'_IN_JUPYTER':True,'_ipy_display':lambda x:(_ for _ in ()).throw(RuntimeError('display')),'_HTML':lambda x:x}):
+            with contextlib.redirect_stdout(buf): render(self.three)
+        self.assertIn('CURRENT BASKET',buf.getvalue())
 
     def test_published_notebook_matches_script(self):
         nb=SCRIPT.with_suffix('.ipynb')

@@ -256,7 +256,7 @@ import textwrap as _textwrap
 
 RIDGE_ALPHAS = np.logspace(-4, 2, 25)
 MIN_RETURN_STD = 1e-12
-PCA_REVISION = '2026-10-14-v116-joint-search-common-risk'
+PCA_REVISION = '2026-10-15-v117-result-regressions'
 MIN_TRAIN_COVERAGE = 0.90
 
 
@@ -835,7 +835,7 @@ _INSTRUMENT_MAP_HASH = _hashlib.md5(
          + sorted((str(k), tuple(v)) for k, v in CONTROL_ETFS.items())
          + sorted((str(k), tuple(v)) for k, v in BROAD_MARKET_HEDGES.items())
          + sorted((str(k), tuple(v)) for k, v in SECTOR_INSTRUMENTS.items())
-         + [('peer_scope_logic', '2026-10-14-strict-peers-v3')]
+         + [('peer_scope_logic', '2026-10-15-strict-peers-v4')]
          ).encode()).hexdigest()[:12]
 
 
@@ -1869,25 +1869,21 @@ def _pit_index_membership(session, index_tickers, start, end, freq_days=91):
 
 
 def _peer_industry_supported(target_ref, peer_ref):
-    """A second-degree Bloomberg link is NOT automatically an industry peer.
+    """Strict peers need industry agreement without an explicit sector conflict.
 
-    Require agreement at BICS industry group or narrower, or at GICS
-    industry or narrower. Broad GICS SECTOR alone is deliberately insufficient.
-    A missing reference cannot verify the link and is kept for audit only.
+    A missing/error label is never a match. Conflicting known sector labels
+    require manual review rather than automatic admission through another field.
     """
-    fields = ('BICS_LEVEL_4_SUB_INDUSTRY_NAME',
-              'BICS_LEVEL_3_INDUSTRY_NAME',
-              'BICS_LEVEL_2_INDUSTRY_GROUP_NAME',
-              'GICS_SUB_INDUSTRY_NAME', 'GICS_INDUSTRY_NAME')
-    for field in fields:
+    for field in ('GICS_SECTOR_NAME', 'BICS_LEVEL_1_SECTOR_NAME'):
         a, b = target_ref.get(field), peer_ref.get(field)
-        if (a is not None and b is not None
-                and not pd.isna(a) and not pd.isna(b)
-                and str(a).strip().casefold() not in ('','n/a','na','unknown','not available')
-                and str(b).strip().casefold() not in ('','n/a','na','unknown','not available')
-                and str(a).strip().casefold() == str(b).strip().casefold()):
-            return True
-    return False
+        if _usable_industry(a) and _usable_industry(b) and not _same_industry(a, b):
+            return False
+    return any(_same_industry(target_ref.get(field), peer_ref.get(field))
+               for field in ('BICS_LEVEL_4_SUB_INDUSTRY_NAME',
+                             'BICS_LEVEL_3_INDUSTRY_NAME',
+                             'BICS_LEVEL_2_INDUSTRY_GROUP_NAME',
+                             'GICS_SUB_INDUSTRY_NAME', 'GICS_INDUSTRY_NAME'))
+
 
 
 def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
@@ -2040,7 +2036,7 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
                      _same_industry(tgt_bics_lvl3,d.get('BICS_LEVEL_3_INDUSTRY_NAME'))
         gics_match = _same_industry(tgt_gics_sub,d.get('GICS_SUB_INDUSTRY_NAME')) or \
                      _same_industry(tgt_gics_ind,d.get('GICS_INDUSTRY_NAME'))
-        if bics_match or gics_match:
+        if (bics_match or gics_match) and _peer_industry_supported(tgt_ref, d):
             industry_matches.append(tk)
     print(f"    ├─ industry matches captured: {len(industry_matches)} names")
 
@@ -2127,7 +2123,7 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
         same_bics2 = _same_industry(tgt_bics_lvl2,d.get('BICS_LEVEL_2_INDUSTRY_GROUP_NAME'))
         same_sector = (tgt_gics_sec != 'Broad' and
                        d.get('GICS_SECTOR_NAME') == tgt_gics_sec)
-        if same_bics2:
+        if same_bics2 and _peer_industry_supported(tgt_ref, d):
             local_bics2_peers.append(tk)
         elif same_sector:
             local_sector_context.append(tk)
@@ -2179,6 +2175,8 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
         meta['target_usd_cap_mm'] = target_usd_cap
         meta['effective_mktcap_floor_mm'] = effective_floor
         meta['peer_tickers'] = sorted(set(peer_matches + industry_matches + local_bics2_peers) - {target_ticker})
+        meta['classification_evidence'] = {t: pool_ref_data.get(t, {}) for t in meta['peer_tickers']}
+        meta['classification_evidence'][target_ticker] = tgt_ref
         meta['broad_market'] = broad_spec
         meta['index_ticker'] = local_index_ticker  # legacy / primary index
         meta['index_tickers'] = list(dict.fromkeys(
@@ -3328,10 +3326,11 @@ def _ticket_verdict(quality, worst_r2, overfit_gap, min_sim, trend,
                                        trend, ref_pca, ref_simple, roll_breach)
     if vol_red is None or not np.isfinite(vol_red):
         return '? INSUFFICIENT OOS EVIDENCE', ['no valid unseen volatility comparison']
-    if vol_red <= 0:
-        return '✗ NO VALIDATED RISK REDUCTION', [
+    if vol_red < 0.0005:
+        return '✗ NO MATERIAL VALIDATED RISK REDUCTION', [
             f'unseen coefficient-only spread volatility reduction {vol_red*100:.1f}% '
-            'versus the unhedged target; no improvement before costs']
+            'versus the unhedged target; below the 0.05% display-materiality threshold '
+            '(not a statistical significance or cost test)']
     reasons = [f'unseen coefficient-only spread reduced volatility {vol_red*100:.1f}% '
                'before costs']
     cautions = []
@@ -3432,30 +3431,26 @@ def _mask_stale(prices, max_flat_days=7, observed=None):
     return out
 
 
-def _fit_basket(returns, target, basket):
-    """[Fix 11/59] RidgeCV handles the highly collinear baskets this method
-    produces. Returns (model, in-sample R², residuals).
+def _fit_basket(returns, target, basket, max_gross=None, max_leg=None):
+    """Vol-standardized RidgeCV followed by a constrained fit at its chosen alpha.
 
-    [Fix 59] The regressors are vol-standardized before the fit. RidgeCV
-    applies ONE penalty to all coefficients, so on raw returns a 45-vol small
-    cap and an 11-vol index ETF face very different EFFECTIVE shrinkage and
-    the penalty quietly tilts baskets toward high-vol names. Scaling each
-    column by its own standard deviation equalizes the penalty; dividing the
-    fitted coefficients by the same scale afterwards gives an EXACTLY
-    equivalent model in raw-return space, so .predict / .score and every
-    downstream call site (weights, gross, per-$100 sizing) are unchanged in
-    meaning — only the shrinkage is fairer."""
-    X = returns[basket].values
-    y = returns[target].values
+    The alpha is selected on training rows. Bounds apply during optimization,
+    including single references, rather than aborting after an unconstrained fit.
+    """
+    X, y = returns[basket].to_numpy(dtype=float), returns[target].to_numpy(dtype=float)
     sd = X.std(axis=0)
-    sd[sd < 1e-12] = 1.0                  # constant column → no rescaling
+    sd[sd < 1e-12] = 1.0
     reg = RidgeCV(alphas=RIDGE_ALPHAS).fit(X / sd, y)
-    reg.coef_ = reg.coef_ / sd            # map back to raw-return space
-    raw_r2 = float(reg.score(X, y))
-    if not np.isfinite(raw_r2) or raw_r2 < -1e-8:
-        raise RuntimeError(f'Unexpected raw fitted R²={raw_r2}: check return '
-                           'alignment, finite inputs and coefficient scaling')
-    return reg, raw_r2, y - reg.predict(X)
+    xc, yc = X-X.mean(axis=0), y-y.mean()
+    H = xc.T @ xc + float(reg.alpha_) * np.diag(sd**2)
+    w = _solve_hedge_qp(H, xc.T @ yc, max_gross, max_leg)
+    reg.coef_ = w
+    reg.intercept_ = float(y.mean() - X.mean(axis=0) @ w)
+    r2 = float(reg.score(X, y))
+    if not np.isfinite(r2) or r2 < -1e-8:
+        raise RuntimeError('Unexpected fitted Ridge R²; inspect return alignment and solver')
+    return reg, r2, y-reg.predict(X)
+
 
 
 
@@ -3795,7 +3790,7 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
            'portfolio': {'legs': legs, 'weights': pf_w,
                          'is_portfolio': is_portfolio, 'label': label},
            'peer_tickers_by_target': {m['target']: m['peer_tickers'] for m in disc_meta},
-           'peer_policy_version': 3,  # second-degree taxonomy-gated at discovery
+           'peer_policy_version': 4,  # second-degree taxonomy-gated at discovery
            'sector_tickers_by_target': {m['target']: list(m.get('source_candidates',{}).get('Target sector ETFs',[])) for m in disc_meta},
            'factor_tickers_by_target': {m['target']: sorted(set(
                m.get('source_candidates', {}).get('Theme/exposure ETFs', []) +
@@ -3809,6 +3804,7 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
                         'Local GICS sector context')}
                for m in disc_meta},
            'peer_discovery_by_target': {m['target']: {
+               'classification_evidence': m.get('classification_evidence', {}),
                'raw_peers': m.get('peer_raw', []),
                'taxonomy_rejected': m.get('taxonomy_rejected', []),
                'taxonomy_unknown': m.get('taxonomy_unknown', []),
@@ -3845,7 +3841,7 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
                            'same_exchange_only': bool(same_exchange_only),
                            'exclude': sorted(_ticker_key(t) for t in exclude),
                            'instrument_map': _INSTRUMENT_MAP_HASH,  # [Fix 119]
-                           'peer_policy_version': 3,
+                           'peer_policy_version': 4,
                            'force_include': sorted(_ticker_key(t) for t in force_include)}}
     if cache:                                                 # [Fix 88]
         try:
@@ -3955,7 +3951,7 @@ def _alternative_evidence(weights, raw_r2, ys, residuals, spreads, ann,
         status = 'FAILED — final weights exceed gross cap'
     elif objective == 'tracking' and quality < 0:
         status = 'FAILED — negative unseen tracking R²'
-    elif risk.get('vol_reduction', 0) <= 0:
+    elif risk.get('vol_reduction', 0) < 0.0005:
         status = 'FAILED — no unseen volatility reduction'
     else:
         status = 'SUPPORTED — historical unseen test'
@@ -4117,13 +4113,15 @@ def _filter_candidate_scope(data, legs, columns, scope, include_market, peers=No
     broad = [_broad_market_spec(t) for t in legs]
     market_ids = {canonical(t) for m in broad for t in m['instruments']}
     market_tickers = [c for c in columns if canonical(c) in market_ids and c not in legs]
+    if scope == 'peers':
+        include_market = False
     if scope in ('peers', 'focused'):
         manual_peer_list = _parse_ticker_list(peers)
         by_target = data.get('peer_tickers_by_target') or {}
         automatic = [p for t in legs for p in by_target.get(t, [])]
-        if data.get('peer_policy_version') != 3 and automatic:
+        if data.get('peer_policy_version') != 4 and automatic:
             if not manual_peer_list:
-                raise ValueError('Strict peers require a fresh v116 download or an explicit manual peer list; old caches have unverified relationships')
+                raise ValueError('Strict peers require a fresh v117 download or an explicit manual peer list; old caches have unverified relationships')
             automatic=[]
         if not automatic and not manual_peer_list:
             raise ValueError('Peer-focused mode has no eligible peers. Re-download with '
@@ -4161,7 +4159,8 @@ def _filter_candidate_scope(data, legs, columns, scope, include_market, peers=No
             ids.update(canonical(t) for t in factors)
         if include_market:
             ids |= market_ids
-        candidates = [c for c in columns if canonical(c) in ids and c not in legs]
+        candidates = [c for c in columns if canonical(c) in ids and c not in legs
+                      and (scope != 'peers' or not _is_etf(c))]
     else:
         candidates = [c for c in columns if c not in legs and
                       (include_market or canonical(c) not in market_ids)]
@@ -4234,7 +4233,7 @@ def _common_risk_model(frame, target, peers, reference_names=(), max_factors=5):
         raise ValueError('Factor covariance needs at least eight complete training rows')
     centered = X - X.mean(axis=0)
     factors, labels = [], []
-    limit = min(max_factors, max(1, (n-1)//8))
+    limit = min(max_factors, max(2, (n-1)//8), n-3)
     def add(values, label):
         z = np.asarray(values, dtype=float).copy()
         z -= z.mean()
@@ -4295,40 +4294,20 @@ def _common_risk_model(frame, target, peers, reference_names=(), max_factors=5):
 
 
 def _fit_common_risk(frame, target, basket, model, max_gross=None, max_leg=None):
-    """Minimize modelled variance of target minus hedge, including hedge-specific risk."""
-    from scipy.optimize import minimize
+    """Minimize modelled spread variance within the exposure limits."""
     ix = [model['columns'].index(t) for t in basket]
     ti = model['columns'].index(target)
     C = model['covariance']
     H, c = C[np.ix_(ix, ix)], C[ix, ti]
     scale = max(float(C[ti, ti]), 1e-12)
-    H = H + np.eye(len(ix))*scale*1e-6
-    w = np.linalg.solve(H, c)
-    if ((max_gross is not None and np.abs(w).sum() > max_gross) or
-            (max_leg is not None and np.abs(w).max() > max_leg)):
-        bounds = [(-max_leg, max_leg)]*len(ix) if max_leg is not None else None
-        cons = ([{'type': 'ineq', 'fun': lambda z: max_gross-np.abs(z).sum()}]
-                if max_gross is not None else [])
-        start = np.clip(w, -max_leg, max_leg) if max_leg is not None else w.copy()
-        if max_gross is not None and np.abs(start).sum() > max_gross:
-            start *= max_gross/np.abs(start).sum()
-        opt = minimize(lambda z: float(z@H@z-2*c@z)/scale, start,
-                       jac=lambda z: (2*H@z-2*c)/scale, method='SLSQP',
-                       bounds=bounds, constraints=cons,
-                       options={'ftol': 1e-10, 'maxiter': 300})
-        if not opt.success:
-            raise RuntimeError('Constrained factor hedge failed: ' + str(opt.message))
-        w = opt.x
-    if max_gross is not None and np.abs(w).sum() > max_gross+1e-7:
-        raise RuntimeError('Gross exposure constraint failed')
-    if max_leg is not None and np.abs(w).max() > max_leg+1e-7:
-        raise RuntimeError('Per-instrument exposure constraint failed')
+    w = _solve_hedge_qp(H + np.eye(len(ix))*scale*1e-6, c, max_gross, max_leg)
     X, y = frame[basket].to_numpy(), frame[target].to_numpy()
-    expected = float(C[ti,ti] - 2*w@c + w@C[np.ix_(ix, ix)]@w)
+    expected = float(C[ti, ti] - 2*w@c + w@H@w)
     fit = _HedgeFit(w, y.mean()-X.mean(axis=0)@w,
                     {'variance_reduction': 1-expected/scale,
                      'expected_variance': expected, 'factor_labels': model['labels']})
     return fit, fit.score(X, y), y-fit.predict(X)
+
 
 
 def _joint_basket_search(frame, target, universe, sizes, forced=(), keep=6,
@@ -4374,6 +4353,7 @@ def _joint_basket_search(frame, target, universe, sizes, forced=(), keep=6,
                 w *= max_gross/np.abs(w).sum()
             explained = (2*w@c[a]-w@G[np.ix_(a,a)]@w)/max(total,1e-12)
             score = explained - gross_penalty*np.abs(w).sum() - len(a)/max(n,1)*.02
+            if not _meaningful_basket(w): score = -np.inf
         except np.linalg.LinAlgError:
             score = -np.inf
         cache[key] = float(score)
@@ -4447,13 +4427,13 @@ def _joint_basket_search(frame, target, universe, sizes, forced=(), keep=6,
             basket=[names[i] for i in b]
             try:
                 fitted=(_fit_common_risk(frame,target,basket,factor_model,max_gross,max_leg)
-                        if factor_model is not None else _fit_basket(frame,target,basket))
+                        if factor_model is not None else _fit_basket(frame,target,basket,max_gross,max_leg))
                 reg,r2,_=fitted
                 gross=float(np.abs(reg.coef_).sum())
                 if max_gross is not None and gross>max_gross+1e-7: continue
                 if max_leg is not None and np.abs(reg.coef_).max()>max_leg+1e-7: continue
                 # A requested size means meaningful nonzero hedge legs.
-                if np.any(np.abs(reg.coef_)<1e-6): continue
+                if not _meaningful_basket(reg.coef_): continue
                 if factor_model is not None:
                     score=reg.risk_model_['variance_reduction']-gross_penalty*gross-.02*size/n
                 else:
@@ -4484,7 +4464,8 @@ def _factor_exposure_audit(frame, target, weights, peers, references):
     return {'status':'ok','rows':[[label,float(a),float(b)]
             for label,a,b in zip(m['labels'],before,after)],
             'common_variance_reduction':1-v1/v0 if v0>1e-14 else np.nan,
-            'factor_count':len(before),'n_observations':len(frame)}
+            'factor_count':len(before),'n_observations':len(frame),
+            'target_factor_share':v0/max(float(frame[target].var(ddof=0)),1e-14)}
 
 
 def _weight_sensitivity(frame,target,weights,peers,references,objective,max_gross,max_leg):
@@ -4498,7 +4479,7 @@ def _weight_sensitivity(frame,target,weights,peers,references,objective,max_gros
                 m=_common_risk_model(sub,target,peers,references)
                 fit,_,_=_fit_common_risk(sub,target,list(weights.index),m,max_gross,max_leg)
             else:
-                fit,_,_=_fit_basket(sub,target,list(weights.index))
+                fit,_,_=_fit_basket(sub,target,list(weights.index),max_gross,max_leg)
             rows.append({'perturbation':label,'rows':len(sub),
                 'max_weight_change':float(np.max(np.abs(fit.coef_-weights.values))),
                 'gross':float(np.abs(fit.coef_).sum()),
@@ -4510,9 +4491,18 @@ def _weight_sensitivity(frame,target,weights,peers,references,objective,max_gros
 
 
 def _usable_industry(value):
-    return (value is not None and not pd.isna(value) and
-            str(value).strip().casefold() not in
-            ('', '-', '－', 'n/a', 'na', 'nan', 'none', 'unknown', 'not available', 'not applic'))
+    """Reject Bloomberg error strings and placeholder labels as classifications."""
+    if value is None or not isinstance(value, str) and pd.isna(value):
+        return False
+    text = str(value).strip().casefold()
+    compact = re.sub(r'[\s./_#\-－]+', '', text)
+    if compact in ('', 'na', 'nan', 'none', 'null', 'unknown', 'notavailable',
+                   'notapplic', 'notapplicable', 'notspecified', 'unclassified'):
+        return False
+    return not (text.startswith(('#', 'n/a', 'n.a.')) or
+                any(x in text for x in ('field not', 'not applicable', 'not available',
+                                        'invalid field', 'not entitled')))
+
 
 
 def _same_industry(a, b):
@@ -4760,6 +4750,84 @@ def _execution_audit(result, data):
             'order_ready':False}
 
 
+def _solve_hedge_qp(H, c, max_gross=None, max_leg=None):
+    """Convex quadratic fit with actual L1 gross and per-leg bounds.
+
+    Auxiliary absolute-value variables make the gross constraint linear and
+    differentiable, including at zero. No post-fit clipping of trade weights.
+    """
+    from scipy.optimize import minimize
+    H, c = np.asarray(H, float), np.asarray(c, float)
+    k = len(c)
+    w = np.linalg.solve(H, c)
+    if ((max_gross is None or np.abs(w).sum() <= max_gross + 1e-10) and
+            (max_leg is None or np.abs(w).max() <= max_leg + 1e-10)):
+        return w
+    scale = max(float(np.max(np.diag(H))), float(np.max(np.abs(c))), 1e-12)
+    Q, b = H / scale, c / scale
+    start = np.clip(w, -max_leg, max_leg) if max_leg is not None else w.copy()
+    if max_gross is not None and np.abs(start).sum() > max_gross:
+        start *= max_gross / np.abs(start).sum()
+    bounds = [(-max_leg, max_leg)] * k if max_leg is not None else [(None, None)] * k
+    if max_gross is None:
+        x0, constraints = start, []
+        fun = lambda z: float(z @ Q @ z - 2 * b @ z)
+        jac = lambda z: 2 * Q @ z - 2 * b
+    else:
+        # u >= w, u >= -w, sum(u) <= gross.
+        A = np.block([[-np.eye(k), np.eye(k)], [np.eye(k), np.eye(k)]])
+        A = np.vstack([A, np.r_[np.zeros(k), -np.ones(k)]])
+        rhs = np.r_[np.zeros(2*k), max_gross]
+        constraints = [{'type': 'ineq', 'fun': lambda z: A @ z + rhs,
+                        'jac': lambda z: A}]
+        x0 = np.r_[start, np.abs(start)]
+        bounds += [(0, None)] * k
+        fun = lambda z: float(z[:k] @ Q @ z[:k] - 2 * b @ z[:k])
+        jac = lambda z: np.r_[2 * Q @ z[:k] - 2 * b, np.zeros(k)]
+    opt = minimize(fun, x0, jac=jac, method='SLSQP', bounds=bounds,
+                   constraints=constraints, options={'ftol': 1e-11, 'maxiter': 500})
+    if not opt.success:
+        raise RuntimeError('Constrained hedge optimization failed: ' + str(opt.message))
+    w = opt.x[:k]
+    if ((max_gross is not None and np.abs(w).sum() > max_gross + 1e-7) or
+            (max_leg is not None and np.abs(w).max() > max_leg + 1e-7)):
+        raise RuntimeError('Constrained hedge optimizer returned infeasible weights')
+    return w
+
+
+
+def _meaningful_basket(weights):
+    """A counted basket leg must carry at least 1 per 100 units of target.
+
+    Reject dust recipes instead of forcing extra risk just to fill a size request.
+    This is a disclosed position-materiality convention, not a significance test.
+    """
+    return len(weights) < 2 or bool(np.all(np.abs(weights) >= .01 - 1e-9))
+
+
+
+def _peer_identity_rows(result, data):
+    """Show business identities for every current or alternative basket member."""
+    target = result['portfolio_legs'][0]
+    provenance = ((data or {}).get('peer_discovery_by_target') or {}).get(target, {})
+    classifications = provenance.get('classification_evidence') or {}
+    snapshot = (data or {}).get('execution_snapshot') or {}
+    automatic = set(((data or {}).get('peer_tickers_by_target') or {}).get(target, []))
+    tickers = list(result['weights'].index)
+    for row in result.get('basket_comparison') or []:
+        tickers.extend(row['weights'].index)
+    rows = []
+    for ticker in dict.fromkeys(tickers):
+        ref = classifications.get(ticker, {})
+        label = next((ref[f] for f in ('GICS_INDUSTRY_NAME', 'BICS_LEVEL_3_INDUSTRY_NAME',
+                                       'BICS_LEVEL_2_INDUSTRY_GROUP_NAME')
+                      if _usable_industry(ref.get(f))), 'not recorded')
+        kind = 'Factor ETF' if _is_etf(ticker) else 'Verified peer' if ticker in automatic else 'Manual / broad-universe'
+        rows.append([ticker, snapshot.get(ticker, {}).get('NAME', 'not recorded'), label, kind])
+    return rows
+
+
+
 def _find_best_hedge_impl(
     target_ticker,
     candidates=None,
@@ -4869,8 +4937,10 @@ def _find_best_hedge_impl(
     basket_size_options = _basket_sizes(basket_size_options, basket_size_range)
     if candidate_scope not in ('all', 'peers', 'focused'):
         raise ValueError("candidate_scope must be 'focused', 'peers' or 'all'")
-    if include_broad_market is None:
-        include_broad_market = candidate_scope != 'peers'
+    if candidate_scope == 'peers':
+        include_broad_market = False
+    elif include_broad_market is None:
+        include_broad_market = True
     if hedge_objective not in ('variance', 'tracking', 'factor'):
         raise ValueError("hedge_objective must be 'variance' or 'tracking'")
     if basket_methods not in ('pca', 'all', 'search'):
@@ -5002,7 +5072,7 @@ def _find_best_hedge_impl(
     verified_peer_names = set().union(*(
         set((data.get('peer_tickers_by_target') or {}).get(t, []))
         for t in pf_legs))
-    if data.get('peer_policy_version') != 3:
+    if data.get('peer_policy_version') != 4:
         verified_peer_names=set()
     if peer_tickers is not None:
         verified_peer_names.update(_resolve_force_include(
@@ -5467,10 +5537,7 @@ def _find_best_hedge_impl(
         if hedge_objective == 'factor':
             ctx=_training_context(frame,max(8,len(basket)+2))
             return _fit_common_risk(ctx['tr'],target,basket,_factor_context(ctx),max_gross,max_leg)
-        fit=_fit_basket(frame,target,basket)
-        if max_leg is not None and np.abs(fit[0].coef_).max()>max_leg+1e-7:
-            raise RuntimeError('Per-instrument exposure limit exceeded')
-        return fit
+        return _fit_basket(frame,target,basket,max_gross,max_leg)
 
     def _joint_context(ctx):
         if 'joint' not in ctx:
@@ -5484,7 +5551,24 @@ def _find_best_hedge_impl(
 
     def _latest_snapshot(spec,size):
         # The validation calculations are complete before this full-window refit.
-        fitted=_select_and_fit(rets,spec,size)
+        original_rule=(str(spec),int(size))
+        try:
+            fitted=_select_and_fit(rets,spec,size)
+        except RuntimeError:
+            if basket_methods != 'search' or not broad_search:
+                raise
+            # The frozen validation is untouched. A full-window refit can have
+            # a different feasible size/recipe; find one using current-fit rows.
+            ctx=_training_context(rets,max(8,min(basket_size_options)+2))
+            feasible=[(row['score'],k,j) for k,items in _joint_context(ctx).items()
+                      for j,row in enumerate(items)]
+            if not feasible:
+                raise ValueError('No meaningful basket for the requested size and limits. '
+                                 'Every counted leg needs at least 1 per 100 target. '
+                                 'Try fewer names, peers-only, or a broader verified peer list.')
+            _,size,order=max(feasible)
+            spec=f'search:{order}'
+            fitted=_select_and_fit(rets,spec,size)
         tr,rank,basket,reg,r2,resid,npc,pca,lds=fitted
         w=pd.Series(reg.coef_,index=basket)
         ctx=_training_context(rets,max(8,size+2))
@@ -5536,6 +5620,7 @@ def _find_best_hedge_impl(
         return dict(weights=w,basket=basket,returns=tr,in_sample_r2=r2,current_single_references=singles,
             in_sample_r2_adj=_short_window_fit_score(r2,len(tr),len(basket),float(w.abs().sum()),gross_penalty)[1],
             chart_pca=pca,chart_loadings=lds,basket_candidates=recipes,
+            current_recipe_spec=spec,current_recipe_changed=(str(spec),int(size))!=original_rule,
             fit_start=tr.index[0],fit_end=tr.index[-1],fit_rows=len(tr),
             fitted_risk=_trade_risk(tr[target_ticker],tr[target_ticker]-tr[basket]@w,ann_sqrt))
 
@@ -5574,13 +5659,15 @@ def _find_best_hedge_impl(
         basket = _forced_basket(ranked, ok, bsize)
         if not basket:
             raise RuntimeError('No valid hedge candidates in this window')
-        if len(basket) == 1 and hedge_objective != 'factor':
+        if len(basket) == 1 and hedge_objective != 'factor' and max_leg is None and max_gross is None:
             if ctx['single_fits'] is None:
                 ctx['single_fits'] = _fit_single_candidates(tr, target_ticker, u)
             reg, r2, resid = ctx['single_fits'][basket[0]]
         else:
             reg, r2, resid = _fit_active(tr, target_ticker, basket)
-        if enforce_gross and max_gross is not None and np.abs(reg.coef_).sum() > max_gross:
+        if not _meaningful_basket(reg.coef_):
+            raise RuntimeError('Basket has a leg below 1 per 100 target; try fewer names or another eligible basket')
+        if enforce_gross and max_gross is not None and np.abs(reg.coef_).sum() > max_gross+1e-7:
             raise RuntimeError('Refit exceeds the requested gross cap')
         return tr, rank, basket, reg, r2, resid, n_pc, pca, lds
 
@@ -5716,8 +5803,8 @@ def _find_best_hedge_impl(
                         continue
                     seen.add(key)
                     try:
-                        reg,r2_tr,_=(_fit_active(ret_tr,target_ticker,basket)
-                            if hedge_objective=='factor' or len(basket)>1 else single_fits[basket[0]])
+                        reg,r2_tr,_=_fit_active(ret_tr,target_ticker,basket)
+                        if not _meaningful_basket(reg.coef_): continue
                     except RuntimeError:
                         continue
                     if max_gross is not None and np.abs(reg.coef_).sum() > max_gross:
@@ -5899,7 +5986,7 @@ def _find_best_hedge_impl(
                 continue
             short_trials.append((score, short_pc, int(short_size), fitted))
         if not short_trials:
-            raise ValueError(f'Cannot fit on {len(fit_rets)} rows: '
+            raise ValueError(f'No meaningful basket on {len(fit_rets)} rows (minimum leg 1 per 100 target). Try fewer names or review peers: '
                              + '; '.join(short_errors[:3]))
         primary_trials = ([t for t in short_trials if len(t[3][2]) >= 2]
                           if broad_search else short_trials)
@@ -8583,6 +8670,8 @@ def _report_blocks(result):
     if result.get('illustrative_sample'):
         text('ILLUSTRATIVE SAMPLE — simulated prices, not a live hedge recommendation.')
     if span: text(f"Analysis window {p.get('sample_window') or 'downloaded history'} · {span[0]:%d %b %Y} to {span[1]:%d %b %Y} · {span[2]} return observations",True)
+    scope_label={'peers':'Peer stocks only — ETFs excluded','focused':'Peers + relevant ETFs','all':'Broad universe — other industries allowed'}.get(p['candidate_scope'],p['candidate_scope'])
+    text('Candidate scope: '+scope_label,True)
     for chart in result.get('report_charts') or []: blocks.append(dict(kind='chart',**chart))
     section('Decision overview')
     text(ticket['grade'])
@@ -8601,10 +8690,11 @@ def _report_blocks(result):
     else:
         for reason in (ticket.get('reasons') or [])[:3]: text(reason,True)
     section('Current basket')
-    table(['ACTION','PER $100 TARGET','INSTRUMENT'],[
-        ['SHORT' if x>0 else 'LONG',f'${abs(x)*100:.1f}',t]
+    text('Sizing: hedge notional per 100 units of target notional, in the same currency. Each counted basket leg must be at least 1 unit; smaller positions are rejected, not padded.',True)
+    table(['ACTION','PER 100 TARGET','INSTRUMENT'],[
+        ['SHORT' if x>0 else 'LONG',f'{abs(x)*100:.1f}',t]
         for t,x in w.sort_values(key=lambda a:-a.abs()).items()],widths=[.8,1.4,4.8])
-    text(f"{len(w)} instruments · Gross {w.abs().sum():.2f}× · {_report_method(p['pc_spec'])} · {result.get('current_fit_rows',len(result['returns']))} current-fit observations",True)
+    text(f"{len(w)} instruments · Gross {w.abs().sum():.2f}× · {_report_method(result.get('current_recipe_spec',p['pc_spec']))} · {result.get('current_fit_rows',len(result['returns']))} current-fit observations",True)
     if current.get('fit_end') is not None:
         text(f"Current fit {current['fit_start']:%d %b %Y} to {current['fit_end']:%d %b %Y}",True)
     table(['CURRENT FIT MEASURE','READING','INTERPRETATION'],[
@@ -8624,6 +8714,7 @@ def _report_blocks(result):
             [label,f'{a*10000:+.2f}',f'{b*10000:+.2f}'] for label,a,b in expo['rows']],widths=[3.8,1.6,1.6])
         reduction=expo.get('common_variance_reduction',np.nan)
         text('Fitted common-factor variance reduction '+(f'{reduction:.2%}' if np.isfinite(reduction) else 'unavailable')+'. This measures the retained common factors, not total stock risk.',True)
+        text(f"These retained factors account for approximately {expo.get('target_factor_share',np.nan):.1%} of the target's fitted total variance. Removing them does not remove the remaining stock risk.",True)
         text('Exposure is in basis points per one-standard-deviation factor move. Values nearer zero mean less exposure; these are fitted estimates.',True)
     else: text('Common-factor audit unavailable: '+str(expo.get('reason','missing data')),True)
     diag=result.get('peer_pca_diagnostics') or {}
@@ -8643,9 +8734,9 @@ def _report_blocks(result):
         fitvol=np.nan
         if set(ww.index)<=set(frame.columns):
             fitvol=_trade_risk(frame[target],frame[target]-frame[ww.index]@ww,np.sqrt(252/(2 if result.get('two_day_returns') else 1))).get('vol_reduction',np.nan)
-        recipe='\n'.join(f"{'SHORT' if x>0 else 'LONG'} ${abs(x)*100:.1f}  {t}" for t,x in ww.sort_values(key=lambda a:-a.abs()).items())
+        recipe='\n'.join(f"{'SHORT' if x>0 else 'LONG'} {abs(x)*100:.1f}  {t}" for t,x in ww.sort_values(key=lambda a:-a.abs()).items())
         alternate_metrics.append([str(row['number']),recipe,f(row['in_sample_r2']),f(fitvol,True),f"{row['gross']:.2f}×"])
-    table(['ID','POSITIONS PER $100 TARGET','FIT R²','VOL CUT','GROSS'],alternate_metrics,widths=[.55,3.45,.9,1.2,.9])
+    table(['ID','POSITIONS PER 100 TARGET','FIT R²','VOL CUT','GROSS'],alternate_metrics,widths=[.55,3.45,.9,1.2,.9])
     section('Single instrument references')
     text('The basket remains the primary result. These are current-fit single-stock and ETF references.',True)
     refs=result.get('current_single_references') or {}
@@ -8653,8 +8744,8 @@ def _report_blocks(result):
     for key,label in [('single_stock','Single stock'),('single_etf','Single ETF'),('single_market','Local market ETF')]:
         row=refs.get(key)
         if row:
-            reference_rows.append([label,row['ticker'],('SHORT ' if row['weight']>0 else 'LONG ')+f"${abs(row['weight'])*100:.1f}",f(row['r2'])])
-    table(['REFERENCE','INSTRUMENT','PER $100','FIT R²'],reference_rows,widths=[1.4,3,1.5,1.1])
+            reference_rows.append([label,row['ticker'],('SHORT ' if row['weight']>0 else 'LONG ')+f"{abs(row['weight'])*100:.1f}",f(row['r2'])])
+    table(['REFERENCE','INSTRUMENT','PER 100','FIT R²'],reference_rows,widths=[1.4,3,1.5,1.1])
     if not refs: text('Single references unavailable under this run’s scope.',True)
     comparison=(result.get('history_comparison') or {}).get('summary')
     if isinstance(comparison,pd.DataFrame) and len(comparison):
@@ -8680,11 +8771,12 @@ def _report_blocks(result):
     elif result.get('validation_mode')=='HOLDOUT':
         text('Historical selection excluded the reserved final segment. After that test, the current basket and alternatives were fitted using the full selected window; their fitted scores are not unseen evidence.',True)
     section('Weight sensitivity')
-    table(['REFIT CHECK','MAX LEG CHANGE PER $100','SIGN CHANGES'],[[r['perturbation'],
-        f"${r['max_weight_change']*100:.1f}" if np.isfinite(r['max_weight_change']) else 'unavailable',
+    table(['REFIT CHECK','MAX LEG CHANGE PER 100','SIGN CHANGES'],[[r['perturbation'],
+        f"{r['max_weight_change']*100:.1f}" if np.isfinite(r['max_weight_change']) else 'unavailable',
         str(r['sign_changes']) if r['sign_changes'] is not None else 'unavailable'] for r in result.get('current_sensitivity',[])],widths=[2.6,2.9,1.5])
     text('Sensitivity refits keep the selected names and remove a small block of days. They are descriptive checks, not independent validation.',True)
     section('Universe coverage and execution')
+    table(['INSTRUMENT','COMPANY','INDUSTRY','ELIGIBILITY'],result.get('basket_identity_audit') or [],widths=[1.6,2,2.1,1.3])
     for target,a in (result.get('peer_coverage') or {}).items():
         table(['PEER COVERAGE','COUNT'],[['Discovered relationships',a['raw_discovered']],['Available after filters',a['available_count']],
             ['Rejected or unverified taxonomy',len(a.get('taxonomy_rejected',[]))+len(a.get('taxonomy_unknown',[]))],
@@ -8692,7 +8784,7 @@ def _report_blocks(result):
         text('Coverage: '+str(a.get('coverage','unknown'))+'. A full-market EQS screen or supplied ticker universe can extend index coverage.',True)
         for src in a.get('listing_registry_audit',[]):
             text(f"{src['source']} issuer roster: {src['status']} · {src['count']} candidates"+
-                 (f" · {src.get('industry_count',0)} with independent industry labels" if src.get('status')=='received' else ''),True)
+                 (f" · {src.get('industry_count',0)} with independent industry labels" if src.get('status')=='received' else ' · '+str(src.get('reason','source unavailable'))[:180]),True)
         for check in a.get('independent_peer_crosscheck',[]):
             if check.get('status')=='available':
                 text(f"{check['scheme']} cross-check: {len(check['same_category'])} in the same category; {len(check['needs_review'])} additional names need review. Category agreement does not automatically establish a peer.",True)
@@ -8714,7 +8806,7 @@ def _report_blocks(result):
     if p.get('report')=='full':
         section('Detailed validation configuration')
         table(['SETTING','VALUE'],[['Validation lookback',p.get('lookback')],
-            ['Current fit rows',result.get('current_fit_rows')],['Recipe rule',_report_method(p['pc_spec'])],
+            ['Current fit rows',result.get('current_fit_rows')],['Recipe rule',_report_method(result.get('current_recipe_spec',p['pc_spec']))],
             ['Requested basket sizes',str(result.get('requested_basket_sizes'))],
             ['Point-in-time size / membership',str(result.get('pit_size_active'))+' / '+str(result.get('pit_members_active'))]])
         for key,label in [('training_data_diagnostics','Training data'),('evaluation_data_diagnostics','Test data')]:
@@ -8802,8 +8894,8 @@ def _render_compact_sections(result):
 def _report_html(result):
     """A self-contained report with a quiet palette and one expandable notes area."""
     escape = lambda value: _html.escape(str(value))
-    css = '\n.pca-sheet{font-family:Arial,"Helvetica Neue",sans-serif;color:#25282d;background:#fff;max-width:1100px;margin:20px auto;padding:28px 36px;border-top:5px solid #c41230;line-height:1.5;box-sizing:border-box;counter-reset:section}\n.pca-sheet .desk-label{font-size:11px;font-weight:700;letter-spacing:1.5px;color:#b5122c;margin:0 0 10px;text-transform:uppercase}\n.pca-sheet h1{font-size:30px;line-height:1.2;font-weight:700;letter-spacing:-.5px;color:#16191d;margin:0 0 12px}\n.pca-sheet h2{font-size:19px;color:#20242a;font-weight:700;margin:32px 0 12px;counter-increment:section}\n.pca-sheet h2::before{content:counter(section,decimal-leading-zero) "  ";color:#c41230;font-size:14px;margin-right:10px;font-weight:700}\n.pca-sheet p{font-size:14px;margin:9px 0;color:#34383e}.pca-sheet .meta{color:#666b72;font-size:12.5px}\n.pca-sheet .verdict{font-size:16px;font-weight:700;color:#303740;margin:10px 0}.pca-sheet .caution{color:#795b29}.pca-sheet .failed{color:#b5122c}\n.pca-sheet .sample{font-size:12px;font-weight:700;letter-spacing:.3px;color:#795b29}\n.pca-sheet .metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;margin:18px 0 20px;padding:16px 0;border-top:1px solid #bfc2c6;border-bottom:1px solid #d7d9dc}\n.pca-sheet .metric-label{font-size:10px;letter-spacing:.7px;color:#646971;font-weight:700}.pca-sheet .metric-value{font-size:29px;line-height:1.2;font-weight:700;color:#22262d;margin-top:8px;font-variant-numeric:tabular-nums}.pca-sheet .metric:first-child .metric-value{font-size:18px;margin-top:13px}\n.pca-sheet .table-wrap{overflow-x:auto;margin:10px 0 18px}.pca-sheet table{width:100%;border-collapse:collapse;font-size:13px;line-height:1.5;table-layout:fixed}.pca-sheet th{text-align:left;background:#30343b;color:#fff;font-size:10px;font-weight:700;letter-spacing:.35px;padding:10px 11px;white-space:normal;border:1px solid #d9d9d9}.pca-sheet td{padding:10px 11px;border:1px solid #d9d9d9;vertical-align:middle;overflow-wrap:break-word;white-space:pre-line}.pca-sheet tr:nth-child(even) td{background:#f4f5f6}.pca-sheet td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.pca-sheet tr.selected td{background:#faf0f2}.pca-sheet caption{text-align:left;font-size:14px;font-weight:700;color:#30343b;padding:8px 0 10px}\n.pca-sheet .chart{margin:24px 0}.pca-sheet .chart img{width:100%;height:auto;display:block}.pca-sheet figcaption{font-size:12px;font-weight:700;color:#383d45;margin-bottom:10px}\n.pca-sheet details{margin-top:28px;border-top:1px solid #d9d9d9;padding:16px 0 0}.pca-sheet summary{cursor:pointer;font-size:12px;font-weight:700;color:#5c6168}.pca-sheet details p{font-size:12px;color:#666b72;margin:10px 0}\n@media(max-width:680px){.pca-sheet{padding:20px 14px}.pca-sheet h1{font-size:25px}.pca-sheet .metric-grid{grid-template-columns:repeat(2,1fr);gap:20px}.pca-sheet table{min-width:620px}}\n@media print{.pca-sheet{max-width:none;margin:0;padding:0;border-top:0}.pca-sheet h2,.pca-sheet figcaption{break-after:avoid}.pca-sheet figure,.pca-sheet tr{break-inside:avoid}.pca-sheet thead{display:table-header-group}}\n'
-    parts = ['<style>'+css+'</style><article class="pca-sheet"><p class="desk-label">Equity hedge research</p>']
+    css = '\n.pca-sheet{font-family:Arial,"Helvetica Neue",sans-serif;color:#25282d;background:#fff;max-width:1100px;margin:20px auto;padding:28px 36px;border-top:5px solid #c41230;line-height:1.5;box-sizing:border-box;counter-reset:section}\n.pca-sheet .desk-label{font-size:11px;font-weight:700;letter-spacing:1.5px;color:#b5122c;margin:0 0 10px;text-transform:uppercase}\n.pca-sheet h1{font-size:30px;line-height:1.2;font-weight:700;letter-spacing:-.5px;color:#16191d;margin:0 0 12px}\n.pca-sheet h2{font-size:19px;color:#20242a;font-weight:700;margin:32px 0 12px;counter-increment:section}\n.pca-sheet h2::before{content:counter(section,decimal-leading-zero) "  ";color:#c41230;font-size:14px;margin-right:10px;font-weight:700}\n.pca-sheet p{font-size:14px;margin:9px 0;color:#34383e}.pca-sheet .meta{color:#666b72;font-size:12.5px}\n.pca-sheet .verdict{font-size:16px;font-weight:700;color:#303740;margin:10px 0}.pca-sheet .caution{color:#795b29}.pca-sheet .failed{color:#b5122c}\n.pca-sheet .sample{font-size:12px;font-weight:700;letter-spacing:.3px;color:#795b29}\n.pca-sheet .metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;margin:18px 0 20px;padding:16px 0;border-top:1px solid #bfc2c6;border-bottom:1px solid #d7d9dc}\n.pca-sheet .metric-label{font-size:10px;letter-spacing:.7px;color:#646971;font-weight:700}.pca-sheet .metric-value{font-size:29px;line-height:1.2;font-weight:700;color:#22262d;margin-top:8px;font-variant-numeric:tabular-nums}.pca-sheet .metric:first-child .metric-value{font-size:18px;margin-top:13px}\n.pca-sheet .table-wrap{overflow-x:auto;margin:10px 0 18px}.pca-sheet table{width:100%;border-collapse:collapse;font-size:13px;line-height:1.5;table-layout:fixed}.pca-sheet th{text-align:left;background:#30343b;color:#fff;font-size:10px;font-weight:700;letter-spacing:.35px;padding:10px 11px;white-space:normal;border:1px solid #d9d9d9}.pca-sheet td{text-align:left;padding:10px 11px;border:1px solid #d9d9d9;vertical-align:middle;overflow-wrap:break-word;white-space:pre-line}.pca-sheet tr:nth-child(even) td{background:#f4f5f6}.pca-sheet td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.pca-sheet tr.selected td{background:#faf0f2}.pca-sheet caption{text-align:left;font-size:14px;font-weight:700;color:#30343b;padding:8px 0 10px}\n.pca-sheet .chart{margin:24px 0}.pca-sheet .chart img{width:100%;height:auto;display:block}.pca-sheet figcaption{font-size:12px;font-weight:700;color:#383d45;margin-bottom:10px}\n.pca-sheet details{margin-top:28px;border-top:1px solid #d9d9d9;padding:16px 0 0}.pca-sheet summary{cursor:pointer;font-size:12px;font-weight:700;color:#5c6168}.pca-sheet details p{font-size:12px;color:#666b72;margin:10px 0}\n@media(max-width:680px){.pca-sheet{padding:20px 14px}.pca-sheet h1{font-size:25px}.pca-sheet .metric-grid{grid-template-columns:repeat(2,1fr);gap:20px}.pca-sheet table{min-width:620px}}\n@media print{.pca-sheet{max-width:none;margin:0;padding:0;border-top:0}.pca-sheet h2,.pca-sheet figcaption{break-after:avoid}.pca-sheet figure,.pca-sheet tr{break-inside:avoid}.pca-sheet thead{display:table-header-group}}\n'
+    parts = ['<style>'+css+'</style><article class="pca-sheet tex2jax_ignore mathjax_ignore"><p class="desk-label">Equity hedge research</p>']
     for block in _report_blocks(result):
         kind = block['kind']
         if kind == 'title':
@@ -8845,7 +8937,7 @@ def _report_html(result):
                 parts.append(f'<tr class="{chosen}">')
                 for value in row:
                     is_number = bool(re.fullmatch(r'[+$−\-]?\d+(?:[.,]\d+)*(?:%|×)?', str(value)))
-                    parts.append('<td'+(' class="num"' if is_number else '')+'>'+escape(value)+'</td>')
+                    parts.append('<td'+(' class="num"' if is_number else '')+' style="text-align:'+('right' if is_number else 'left')+'">'+escape(value).replace('\n','<br>')+'</td>')
                 parts.append('</tr>')
             parts.append('</tbody></table></div>')
     parts.append('</article>')
@@ -8853,34 +8945,24 @@ def _report_html(result):
 
 
 def _render_compact_report(result):
+    """One visible notebook report, with a complete printable transcript retained."""
     global _IN_JUPYTER
     if not _IN_JUPYTER:
         return _render_compact_sections(result)
-    import contextlib
-    import io
-    old = _IN_JUPYTER
-    printed = io.StringIO()
+    import contextlib, io
+    old, printed = _IN_JUPYTER, io.StringIO()
     _IN_JUPYTER = False
     try:
-        # Keep the complete export transcript and collect the console copy.
         with contextlib.redirect_stdout(printed):
             _render_compact_sections(result)
     finally:
         _IN_JUPYTER = old
+    result['report_text'] = printed.getvalue()
     try:
-        # Charts and the styled report lead the notebook output.
         _ipy_display(_HTML(_report_html(result)))
     except Exception:
-        # A rich-display failure must not hide a completed analysis.
-        pass
-    text = printed.getvalue()
-    notes_header = (f"\n{'═' * _TXT_W}\n METHODOLOGY AND COVERAGE\n"
-                    f"{'═' * _TXT_W}\n")
-    body, separator, _ = text.partition(notes_header)
-    if separator:
-        text = body + separator + '\n'.join(
-            '  ' + line for line in _textwrap.wrap(_BRIEF_METHODOLOGY, _TXT_W - 4)) + '\n'
-    print(text, end='')
+        print(printed.getvalue(), end='')
+
 
 
 
@@ -8977,14 +9059,14 @@ def diagnose_peer_pca_replication(result, data=None, manual_peers=None):
     discovered = []
     for leg in legs:
         leg_candidates = list(peer_lists.get(leg) or [])
-        if data.get('peer_policy_version') != 3:
+        if data.get('peer_policy_version') != 4:
             # Old cache included unverified 2nd-degree peers. Accept only
             # independently sourced links, never reconstruct from all columns.
             provenance = source_lists.get(leg) or {}
             trusted = (set(provenance.get('Bloomberg 1st degree') or []) |
                        set(provenance.get('BICS/GICS industry') or []) |
                        set(provenance.get('Local BICS L2 peers') or []))
-            leg_candidates = [t for t in leg_candidates if t in trusted]
+            leg_candidates = []  # legacy taxonomy rules accepted error labels
         discovered.extend(leg_candidates)
     discovered.extend(_parse_ticker_list(manual_peers))
     if not discovered:
@@ -9103,12 +9185,21 @@ def find_best_hedge(*args, **kwargs):
     result['candidate_weights']=result['weights'].copy()
     result['trade_weights']=(result['weights'].copy() if result.get('trade_eligible') else result['weights'].iloc[:0].copy())
     result['current_single_references']=current.get('current_single_references',{})
+    result['current_recipe_spec']=current.get('current_recipe_spec',result['params']['pc_spec'])
     result['current_fit_rows']=current.get('fit_rows',len(result['returns']))
     result['current_fit_risk']=current.get('fitted_risk',{})
+    result['current_recipe_changed']=bool(current.get('current_recipe_changed'))
+    if result['current_recipe_changed']:
+        result['validation_ticket']=dict(result['ticket'])
+        result['ticket']=dict(result['ticket'],grade='? CURRENT RECIPE CHANGED — RESEARCH ONLY',
+            reasons=['The validated rule had no meaningful full-window basket. The current recipe was reselected on fitting rows only; earlier tests do not validate this replacement.']+list(result['ticket'].get('reasons') or []))
+        result['trade_eligible']=False
+        result['trade_weights']=result['weights'].iloc[:0].copy()
+        result['recommended_action']='CURRENT_RECIPE_REVIEW_REQUIRED'
     result['fit_diagnostics'] = diagnose_in_sample(result)
     peers=list(dict.fromkeys(p for leg in result['portfolio_legs'] for p in
         ((options['data'] or {}).get('peer_tickers_by_target') or {}).get(leg,[])))
-    if (options['data'] or {}).get('peer_policy_version')!=3: peers=[]
+    if (options['data'] or {}).get('peer_policy_version')!=4: peers=[]
     if options['peer_tickers']:
         peers += _resolve_force_include(options['peer_tickers'],result['prices'].columns,result['portfolio_legs'][0])[0]
     refs=list(dict.fromkeys([t for leg in result['portfolio_legs'] for t in _broad_market_spec(leg)['instruments']] +
@@ -9179,7 +9270,7 @@ def find_best_hedge(*args, **kwargs):
            if peer_diag['status'] == 'ok' else peer_diag['reason']))
     scope = options['candidate_scope']
     market = options['include_broad_market']
-    market = scope != 'peers' if market is None else bool(market)
+    market = False if scope == 'peers' else (True if market is None else bool(market))
     result['params'].update(candidate_scope=scope, include_broad_market=market,
                             peer_tickers=options['peer_tickers'],
                             basket_size_range=options['basket_size_range'],
@@ -9190,6 +9281,7 @@ def find_best_hedge(*args, **kwargs):
                             show_plots=options['show_plots'])
     result['requested_basket_sizes'] = _basket_sizes(options['basket_size_options'], options['basket_size_range'])
     result['basket_comparison'] = _basket_report_rows(result)
+    result['basket_identity_audit'] = _peer_identity_rows(result,options['data'])
     result['broad_markets'] = [_broad_market_spec(t) for t in result['portfolio_legs']]
     result['broad_market_hedge'] = result.get('hedge_alternatives', {}).get('single_market')
     benchmark = '; '.join(dict.fromkeys(m['benchmark'] for m in result['broad_markets']))
@@ -9556,7 +9648,7 @@ def _docx_hedge_report(result, report_text, path):
                 margins = OxmlElement('w:tcMar')
                 for edge in ('top', 'left', 'bottom', 'right'):
                     margin = OxmlElement('w:' + edge)
-                    margin.set(qn('w:w'), '80')
+                    margin.set(qn('w:w'), '40' if compact_appendix and edge in ('top','bottom') else '80')
                     margin.set(qn('w:type'), 'dxa')
                     margins.append(margin)
                 props.append(margins)
@@ -9593,6 +9685,7 @@ def _docx_hedge_report(result, report_text, path):
               [1.0, 1.35, 4.65])
 
     params = result.get('params') or {}
+    compact_appendix=False
     report_blocks = _report_blocks(result)
     for block_no, block in enumerate(report_blocks):
         kind = block['kind']
@@ -9600,10 +9693,12 @@ def _docx_hedge_report(result, report_text, path):
             p = doc.add_paragraph(block['text'], style='Title')
             p.paragraph_format.space_after = Pt(6)
         elif kind == 'section':
+            if block['text']=='Universe coverage and execution': compact_appendix=True
             h = heading(block['text'].replace(' — ', ' ').replace('-', ' '))
 
         elif kind == 'text':
             p = paragraph(block['text'], muted=block.get('muted', False))
+            if compact_appendix: p.paragraph_format.space_after=Pt(3)
             next_block = report_blocks[block_no + 1] if block_no + 1 < len(report_blocks) else {}
             if ((next_block.get('kind') == 'table' and not next_block.get('title')) or next_block.get('kind') == 'text'):
                 p.paragraph_format.keep_with_next = True
@@ -9833,9 +9928,9 @@ def hedge_ui(data=None):
     w_mktcap = W.FloatText(value=1000.0, description='Min mkt cap ($mm)',
                            style=LBL, layout=FULL)
     w_scope = W.Dropdown(options=[
-        ('1 · Verified peer stocks ONLY (no factor ETFs)', 'peers'),
-        ('2 · Verified peers + target-relevant factor ETFs (default)', 'focused'),
-        ('3 · Broad universe (all downloaded eligible securities)', 'all')],
+        ('Peer stocks only', 'peers'),
+        ('Peers + relevant ETFs', 'focused'),
+        ('Broad universe (exploratory)', 'all')],
         value='focused', description='Candidate universe', style=LBL, layout=FULL)
     w_scope_help = W.HTML()
     w_market = W.Checkbox(value=True, description='OPTIONAL: add a local broad-market ETF', indent=False)
@@ -10312,7 +10407,7 @@ def hedge_ui(data=None):
             'peers': ('<b>1 — Verified peer stocks only.</b> Direct Bloomberg peers, '
                       'corroborated second-degree peers and BICS/GICS related stocks. '
                       'No target-specific factor ETFs or unrelated index constituents. '
-                      'The optional broad-market ETF below is OFF by default.'),
+                      'ETFs are excluded from the final basket in this mode.'),
             'focused': ('<b>2 — Peers + relevant factor instruments (default).</b> '
                         'All eligible peer stocks PLUS ETFs mapped to the target’s '
                         'own taxonomy (e.g. rates or semiconductors). Does NOT '
@@ -10325,9 +10420,9 @@ def hedge_ui(data=None):
                               "border-left:3px solid #547399;padding:8px 10px'>"
                               + descriptions[w_scope.value]
                               + '<br><b>Same exchange</b> and <b>Exclude</b> '
-                                'apply in ALL modes. The broad-market ETF '
-                                'checkbox is an explicit exception to peer-only stocks.'
+                                'apply in ALL modes. To allow ETFs, select peers + ETFs.'
                                 '</div>')
+        w_market.disabled = w_scope.value == 'peers'
         w_market.value = w_scope.value != 'peers'
         _refresh_tier()
 
