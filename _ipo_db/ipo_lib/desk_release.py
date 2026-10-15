@@ -104,6 +104,8 @@ def live_snapshot(parts,sheets,root):
  dv=live.find(q('dataValidations'));E.SubElement(E.SubElement(dv,q('dataValidation'),{'type':'list','allowBlank':'0','showErrorMessage':'1','sqref':'B4'}),q('formula1')).text='"Stored,Bloomberg"';dv.set('count',str(len(dv)))
  changes={};sectors={};subsectors={}
  from datetime import date
+ from market_universe import load as load_monitor_roster
+ listing_dates={d['code']:d['ipo_date'][:10] for d in load_monitor_roster(root)}
  for addr,old in ln.items():
   if not re.fullmatch('A[0-9]+',addr) or int(addr[1:])<8:continue
   r=int(addr[1:]);ticker=value(old)
@@ -112,7 +114,8 @@ def live_snapshot(parts,sheets,root):
   last=quote.get('last');previous=quote.get('previous_close');fresh=quote.get('quote_time','')[:10]==data['asof']
   change=last/previous-1 if fresh and last and previous else None
   put(market,'BS'+str(r),v=previous if fresh else None);put(market,'BT'+str(r),v=last);put(market,'BU'+str(r),v=quote.get('quote_time',''))
-  put(market,'B'+str(r),v=previous if fresh else None,f=f'IF(\'IPO Live\'!$B$4="Bloomberg",IFERROR(BDP(\'IPO Live\'!$A{r},"PX_YEST_CLOSE"),""),BS{r})',style=mn['B'+str(r)].get('s'))
+  ipo=listing_dates[code];y,m,day=map(int,ipo.split('-'))
+  put(market,'B'+str(r),v=previous if fresh else None,f=f'IF(\'IPO Live\'!$B$4="Bloomberg",IF(TODAY()<=DATE({y},{m},{day}),"",IFERROR(BDP(\'IPO Live\'!$A{r},"PX_YEST_CLOSE"),"")),BS{r})',style=mn['B'+str(r)].get('s'))
   put(live,'D'+str(r),v=last if last is not None else 'Unavailable',f=f'IF($A{r}="","",IF($B$4="Bloomberg",IFERROR(BDP($A{r},"LAST_PRICE"),"Unavailable"),IF(ISNUMBER(\'Market Data\'!BT{r}),\'Market Data\'!BT{r},"Unavailable")))',style=ln['D'+str(r)].get('s'))
   put(live,'E'+str(r),v=change,f=ln['E'+str(r)].find(q('f')).text,style=ln['E'+str(r)].get('s'))
   changes[r]=change
@@ -402,7 +405,8 @@ def support_tab_clarity(parts,sheets,root,n):
  for name in ['Pipeline','CS League','SM League','Taxonomy','Notes','BBG Verify']:
   doc=E.fromstring(parts[sheets[name]]);ns=nodes(doc)
   if name=='Pipeline':
-   put(doc,'A2',v='Pipeline · filed / reported terms',style=ns['A2'].get('s'))
+   from pipeline_dedupe import status_asof
+   put(doc,'A2',v='Status checked '+status_asof(root),style=ns['A2'].get('s'))
   if name in ['CS League','SM League']:
    put(doc,'A2',v='Equal-weight returns · day-1 hit = close above offer',style=ns['A2'].get('s'))
    cols=doc.find(q('cols'))
@@ -477,7 +481,7 @@ def apply(parts,sheets,root):
   if f is not None:f.text=f.text.replace('not listed yet','Not in Database')
   if v is not None and v.text=='not listed yet':v.text='Not in Database'
  for addr,label in [('A8','Subsector'),('A11','A/H pair (Y/N)'),('A12','IPO date'),('A13','Offer P/E (x)'),('A17','Cornerstone filter'),('C17','Include codes'),('C18','Comps to show')]:put(screen,addr,v=label,style=sn[addr].get('s'))
- for addr in ['B11','D11','B13','D13']:
+ for addr in ['B10','D10','B11','D11','B13','D13']:
   old=sn[addr];f=old.find(q('f')).text;put(screen,addr,v='' if value(old) in ['0','0.0',None,''] else value(old),f=f'IFERROR(IF(({f})=0,"",{f}),"")',style=old.get('s'))
  for row in screen.find(q('sheetData')):
   r=int(row.get('r'));ht=14 if r==2 else 28 if r==5 else 22 if r in [3,4,6,15,19] else 19 if 7<=r<=18 else 32 if r==20 else 20 if 21<=r<=35 else None

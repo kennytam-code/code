@@ -1,0 +1,87 @@
+{
+  "release_date": "2026-10-16",
+  "handover": "START_HERE.md",
+  "counts": {
+    "database_screener": 526,
+    "live_universe": 716,
+    "ah_pairs": 71,
+    "peer_pairs": 35,
+    "peer_stocks": 66,
+    "pipeline_rows": 15,
+    "html_lockup_events": 398,
+    "html_lockup_stocks": 388
+  },
+  "dates": {
+    "pipeline_status_checked": "2026-10-15",
+    "live_fetch": "2026-10-15",
+    "live_saved_quotes": 707,
+    "live_current_quotes": 701,
+    "live_daily_returns": 700,
+    "ah_pair_latest_dates": {
+      "2026-10-02": 70,
+      "2026-10-15": 1
+    }
+  },
+  "validation": {
+    "python_checks_passed": 12,
+    "javascript_checks": [
+      "selected averages",
+      "sector comparisons",
+      "pipeline actual renderer"
+    ],
+    "numeric_entries": 39303,
+    "internal_numeric_failures": 0,
+    "existing_525_stock_numeric_changes": 0,
+    "native_excel_open": "Final file opened without content-repair prompt; Live, AH, Peer Trades and Screener visually inspected. Database and Pipeline also visually inspected; final Screener form rechecked.",
+    "other_tabs_style_preservation": "13 sheets: business values, formulas and caches preserved, including seven relocated Screener outputs; requested titles removed; chart data, axes, drawing anchors and relationships unchanged",
+    "small_projection_review": [
+      "Database",
+      "Pipeline",
+      "IPO Live",
+      "AH",
+      "Peer Trades",
+      "Screener",
+      "CS League",
+      "SM League",
+      "Taxonomy",
+      "Notes",
+      "BBG Verify",
+      "Scoring Stats",
+      "SizeBench",
+      "Verification"
+    ],
+    "fresh_browser_visual_review": false,
+    "live_bloomberg_execution": false,
+    "bundle_parity": "All embedded source modules and existing data/template files match their inputs"
+  },
+  "known_limits": {
+    "financial_cells_needing_primary_followup": 273,
+    "earlier_cornerstone_aliases_unresolved": 119,
+    "undated_visible_lockup_events": 67,
+    "market_dates": "Most historical series remain 2 October; a new quote/listing does not refresh them all.",
+    "browser": "Current HTML data and actual renderer functions checked locally; no fresh browser visual pass.",
+    "bloomberg": "Formula fixtures passed; terminal/add-in responses remain unverified."
+  },
+  "deliverables": {
+    "HK_IPO_Database_v1.xlsx": {
+      "bytes": 7844701,
+      "sha256": "ca7d1439428e54bdb1fa58fdd0a2071058090b0034ef518e519df9cc9f0ef2f5"
+    },
+    "hk_ipo_dashboard.html": {
+      "bytes": 2922548,
+      "sha256": "0b2523197c967dca1b0829a7094fe714488c3790641b514dae00b576136f7d53"
+    },
+    "hk_ipo_dashboard.zip": {
+      "bytes": 2100980,
+      "sha256": "0399628af346233da62ab29d08ede9889aac974305cb3592a3b34d34dc935dd9"
+    },
+    "hk_ipo.py": {
+      "bytes": 15335516,
+      "sha256": "666f26f741b22c586fc6cc4d05d15b44d68c25f69ccc40f7907821eee0232aaf"
+    },
+    "READ_ME_FIRST.txt": {
+      "bytes": 3707,
+      "sha256": "7d8875681d847ffd73217a05c606e0d198a0b35709075491136a98a9b17178b8"
+    }
+  }
+}

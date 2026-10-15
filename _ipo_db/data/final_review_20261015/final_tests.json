@@ -1,0 +1,74 @@
+[
+  {
+    "test": "tools/test_final_polish.py",
+    "exit": 0,
+    "seconds": 3.5,
+    "log": "out/final_review_20261015/test_final_polish.final.log"
+  },
+  {
+    "test": "tools/test_desk_theme.py",
+    "exit": 0,
+    "seconds": 1.2,
+    "log": "out/final_review_20261015/test_desk_theme.final.log"
+  },
+  {
+    "test": "tools/test_native_desk.py",
+    "exit": 0,
+    "seconds": 9.6,
+    "log": "out/final_review_20261015/test_native_desk.final.log"
+  },
+  {
+    "test": "tools/test_presentation_package.py",
+    "exit": 0,
+    "seconds": 4.6,
+    "log": "out/final_review_20261015/test_presentation_package.final.log"
+  },
+  {
+    "test": "tools/test_presentation_formulas.py",
+    "exit": 0,
+    "seconds": 4.5,
+    "log": "out/final_review_20261015/test_presentation_formulas.final.log"
+  },
+  {
+    "test": "tools/test_desk_scoring.py",
+    "exit": 0,
+    "seconds": 11.2,
+    "log": "out/final_review_20261015/test_desk_scoring.final.log"
+  },
+  {
+    "test": "tools/test_sector_monitor_release.py",
+    "exit": 0,
+    "seconds": 1.5,
+    "log": "out/final_review_20261015/test_sector_monitor_release.final.log"
+  },
+  {
+    "test": "ipo_lib/audit_formulas.py",
+    "exit": 0,
+    "seconds": 1.1,
+    "log": "out/final_review_20261015/audit_formulas.final.log"
+  },
+  {
+    "test": "ipo_lib/lint_bbg.py",
+    "exit": 0,
+    "seconds": 3.6,
+    "log": "out/final_review_20261015/lint_bbg.final.log"
+  },
+  {
+    "test": "ipo_lib/audit_numbers.py",
+    "exit": 0,
+    "seconds": 0.5,
+    "log": "out/final_review_20261015/audit_numbers.final.log"
+  },
+  {
+    "test": "ipo_lib/audit_prices.py",
+    "exit": 0,
+    "seconds": 0.3,
+    "log": "out/final_review_20261015/audit_prices.final.log"
+  },
+  {
+    "test": "ipo_lib/checks.py",
+    "exit": 0,
+    "seconds": 0.1,
+    "log": "out/final_review_20261015/checks.final.log"
+  }
+]

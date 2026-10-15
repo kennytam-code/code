@@ -1,6 +1,6 @@
 {
  "batch": "benchmark_prices",
- "asof": "2026-10-14",
+ "asof": "2026-10-15",
  "benchmarks": {
   "Hang Seng Index": {
    "ticker": "^HSI",
@@ -11507,11 +11507,24 @@
     [
      "2026-10-14",
      4.086
+    ],
+    [
+     "2026-10-15",
+     3.982
     ]
    ],
    "src": "Yahoo Finance unadjusted Close",
    "fetched_at": "2026-10-03T16:10:57+00:00",
-   "latest_quote_source": "Tencent 3033.HK daily closes, 8–14 October 2026; Yahoo 8/9/12 October cross-check"
+   "latest_quote_source": "Tencent 3033.HK daily closes, 8–14 October 2026; Yahoo 8/9/12 October cross-check",
+   "incremental_sources": [
+    {
+     "url": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=hk03033,day,2026-10-14,2026-10-15,10,",
+     "dates": [
+      "2026-10-14",
+      "2026-10-15"
+     ]
+    }
+   ]
   },
   "China Biotech ETF (HS biotech proxy)": {
    "ticker": "2820.HK",

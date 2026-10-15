@@ -2,7 +2,7 @@
  "batch": "hkex_allotments",
  "source": "hkexnews titleSearchServlet t2=15100 Allotment Results",
  "fetched_at": "2026-10-03T15:14:10+00:00",
- "count": 535,
+ "count": 536,
  "deals": [
   {
    "code": "9600",
@@ -5888,6 +5888,16 @@
    "file_link": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1008/2026100801417.pdf",
    "file_info": "Single-File",
    "news_id": null
+  },
+  {
+   "code": "2636",
+   "board": "Main",
+   "stock_name_short": "TRANSSION",
+   "allot_announce_dt": "2026-10-14",
+   "ipo_date_est": "2026-10-15",
+   "title": "ANNOUNCEMENT OF FINAL OFFER PRICE AND ALLOTMENT RESULTS",
+   "file_link": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1014/2026101401159.pdf",
+   "file_info": "PDF"
   }
  ]
 }

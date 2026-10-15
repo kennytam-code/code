@@ -1,0 +1,10 @@
+import fs from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+import {FileBlob,SpreadsheetFile} from '@oai/artifact-tool';
+const root=new URL('../',import.meta.url),name=process.argv[2];
+const ranges={'IPO Live':'A1:I16',AH:'A1:H19','Peer Trades':'A1:H13',Screener:'A2:H24',Database:'A1:Q13',Pipeline:'A1:K16','CS League':'A1:J11','SM League':'A1:J11',Taxonomy:'A1:E11',Notes:'A1:B13','BBG Verify':'A1:H10','Scoring Stats':'A1:F13',SizeBench:'A1:I10',Verification:'A1:G10'};
+if(!ranges[name])throw Error('Specify one supported sheet');
+const wb=await SpreadsheetFile.importXlsx(await FileBlob.load(fileURLToPath(new URL('out/_presentation_'+name+'.xlsx',root))));
+const image=await wb.render({sheetName:name,range:ranges[name],scale:1,format:'png'});
+await fs.writeFile(new URL('out/theme_'+name+'.png',root),new Uint8Array(await image.arrayBuffer()));
+console.log('Rendered',name);

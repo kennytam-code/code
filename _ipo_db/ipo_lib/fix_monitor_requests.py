@@ -64,7 +64,7 @@ def apply(parts,sheets,root):
    f.text=re.sub(r"((?:'Market Data'|'AH Delta')!\$([A-Z]+)\$3:\$\2\$)\d+",lambda m:m[1]+str(end),f.text or '')
   if name=='AH':
    put(doc,'P10',v=0,f='IFERROR(IF(AND($E$4="Bloomberg",$P$3>0,COUNT(\'Live History\'!$A$5:$A$2204)>0,COUNT(\'Live History\'!$D$5:$D$2204)>0,COUNT(\'Live History\'!$G$5:$G$2204)>0,MIN(\'Live History\'!$A$5:$A$2204)>=$P$6,MAX(\'Live History\'!$A$5:$A$2204)<=TODAY(),MAX(\'Live History\'!$A$5:$A$2204)>=MIN(TODAY()-8,$P$17)),1,0),0)')
-   put(doc,'A5',v=f'{len(meta)} A/H pairs · Stored through {histories(root)["asof"]}',f=f'IF($E$4="Stored","{len(meta)} A/H pairs | Stored through {histories(root)["asof"]}","{len(meta)} A/H pairs | Bloomberg through TODAY")',style=nodes(doc)['A5'].get('s'))
+   put(doc,'A5',v=f'{len(meta)} A/H pairs | Stored dates vary by stock',f=f'IF($E$4="Stored","{len(meta)} A/H pairs | Stored dates vary by stock","{len(meta)} A/H pairs | Bloomberg through TODAY")',style=nodes(doc)['A5'].get('s'))
    put(doc,'P13',v=1,f="IFERROR(MATCH(MIN('Live History'!$A$5:$A$2204),'Live History'!$A$5:$A$2204,0),1)")
    # Snapshot agreement remains a diagnostic, never a prerequisite for a live chart.
   if name=='AH Compare':

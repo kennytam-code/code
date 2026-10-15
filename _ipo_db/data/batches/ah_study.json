@@ -1,8 +1,8 @@
 {
  "version": 1,
- "asof": "2026-10-02",
- "generated_at": "2026-10-05T15:31:55.674482+00:00",
- "universe_count": 64,
+ "asof": "2026-10-15",
+ "generated_at": "2026-10-15T14:48:40.372676+00:00",
+ "universe_count": 65,
  "eligible_1m_count": 60,
  "errors": [],
  "method": "A premium = raw A(CNY) * dated CNYHKD / raw H(HKD) - 1. Day 1 close to 21st subsequent H-traded session. Prior known A/FX close carried at most 10/5 calendar days; quote dates retained. Different closing times, not executable arbitrage. No dividends. One share per class. First-month H share-scale actions excluded from correlations. Offer reference uses A/FX close before H debut, not book pricing time. Historical company cap at A reference = listing company cap / H offer * pre-debut A * FX; it inherits the listing cap's share-count basis, and is not A-only float cap. Offer value / this cap is a funding-value ratio, not free float. Current company cap at A price is a descriptive, forward-looking proxy, not historical A-float cap. Correlations are exploratory, not causation.",
@@ -232419,6 +232419,61 @@
     "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh603650,day,2026-08-25,2026-10-02,50,",
     "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=hk09607,day,2026-09-29,2026-10-02,50,"
    ]
+  },
+  {
+   "code": "2636",
+   "name": "TRANSSION",
+   "sector": "Technology",
+   "subsector": "Hardware & electronics",
+   "a_code": "688036.SS",
+   "ipo_date": "2026-10-15",
+   "offer_hkd": 35.3,
+   "deal_size_hkdm": 3058.7,
+   "size_basis": "gross (stated)",
+   "current_company_cap_at_a_hkdm": null,
+   "current_cap_date": null,
+   "history": [
+    [
+     "2026-10-15",
+     33.28,
+     48.2,
+     1.1715999841690063,
+     0.6968485347640057,
+     "2026-10-15",
+     "2026-10-15"
+    ]
+   ],
+   "h_history": [
+    [
+     "2026-10-15",
+     33.28
+    ]
+   ],
+   "eligible_1m": false,
+   "offer_reference_premium_pct": 60.42279827358365,
+   "offer_reference_a_date": "2026-10-14",
+   "offer_reference_fx_date": "2026-10-13",
+   "company_cap_at_a_reference_hkdm": 70097.54381963375,
+   "listing_cap_basis": "derived:price x shares upon listing",
+   "offer_size_to_a_reference_cap_pct": 4.363490977473141,
+   "premium_day1_pct": 69.68485347640056,
+   "day1_h_hkd": 33.28,
+   "day1_a_cny": 48.2,
+   "day1_fx": 1.1715999841690063,
+   "day1_a_date": "2026-10-15",
+   "day1_fx_date": "2026-10-15",
+   "offer_to_day1_change_pp": 9.26205520281691,
+   "latest_date": "2026-10-15",
+   "latest_h_hkd": 33.28,
+   "latest_a_cny": 48.2,
+   "latest_fx": 1.1715999841690063,
+   "latest_premium_pct": 69.68485347640056,
+   "latest_a_date": "2026-10-15",
+   "latest_fx_date": "2026-10-15",
+   "a_runup_pre_ipo_pct": -6.883918241419207,
+   "a_runup_start_date": "2026-09-14",
+   "a_runup_end_date": "2026-10-14",
+   "exclusion": "Missing aligned Day 1 or 21st subsequent H-traded session"
   }
  ]
 }

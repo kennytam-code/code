@@ -1,15 +1,15 @@
 {
-  "reviewed_at": "2026-10-15",
-  "snapshot_asof": "2026-10-14",
-  "stocks": 525,
-  "numeric_values": 39243,
+  "reviewed_at": "2026-10-16",
+  "snapshot_asof": "2026-10-15",
+  "stocks": 526,
+  "numeric_values": 39303,
   "numeric_fields": 109,
   "status_counts": {
-    "Price / benchmark audit reconciled": 14928,
-    "Retained source; not independently re-confirmed": 13206,
-    "Recalculated; input source confidence retained": 4691,
-    "Reviewed primary filing": 5665,
-    "Reviewed primary filing metadata": 753
+    "Price / benchmark audit reconciled": 14938,
+    "Retained source; not independently re-confirmed": 13228,
+    "Recalculated; input source confidence retained": 4701,
+    "Reviewed primary filing": 5681,
+    "Reviewed primary filing metadata": 755
   },
   "errors": [],
   "unconfirmed_financials": [
@@ -1927,18 +1927,18 @@
   ],
   "material_changes": 0,
   "subscriptions": {
-    "oversub_public_mult": 524,
-    "oversub_intl_mult": 521
+    "oversub_public_mult": 526,
+    "oversub_intl_mult": 523
   },
   "cornerstone": {
     "percentage_checks": 196,
     "unresolved_name_aliases": 119
   },
   "lockups": {
-    "rows": 1065,
-    "dated": 860,
-    "visible_rows": 397,
-    "visible_stocks": 387,
+    "rows": 1066,
+    "dated": 861,
+    "visible_rows": 398,
+    "visible_stocks": 388,
     "unconfirmed_visible_expiries": 67
   }
 }

@@ -1,5 +1,5 @@
 {
- "batch": "Primary-source ESWIN listing acceptance",
+ "batch": "Primary-source newly listed acceptance",
  "reviewed_at": "2026-10-15",
  "deals": [
   {
@@ -134,6 +134,117 @@
    "a_premium_now": 0.8081539310514927,
    "cnyhkd": 1.170220971107483,
    "ah_note": "A-share 603650.SS listed 27 June 2018; primary prospectus page 12. Premiums use individually dated A/H/FX observations."
+  },
+  {
+   "code": "2636",
+   "name": "TRANSSION",
+   "company_name": "Shenzhen Transsion Holdings Co., Ltd.",
+   "name_cn": "傳音控股",
+   "ipo_date": "2026-10-15",
+   "allotment_link": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1014/2026101401159.pdf",
+   "prospectus_link": "https://iis.aastocks.com/20261007/12364441-0.PDF",
+   "allot_announce_dt": "2026-10-14",
+   "final_price": 35.3,
+   "price_range_lo": 35.3,
+   "price_range_hi": 38.8,
+   "offer_shares": 86648300,
+   "gross_proceeds_hkdm": 3058.7,
+   "net_proceeds_hkdm": 2968.0,
+   "shares_outstanding": 1237832845,
+   "shares_issued_on_listing": 1237832845,
+   "treasury_shares_at_listing": 0,
+   "mktcap_basis": "HKEX:total shares upon listing x final offer price",
+   "mktcap_source": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1014/2026101401159.pdf",
+   "mktcap_source_page": 3,
+   "oversub_public_mult": 4.46,
+   "oversub_intl_mult": 2.55,
+   "public_pct_initial": 10,
+   "public_shares_final": 8664900,
+   "public_alloc_pct": 10,
+   "intl_placees": 51,
+   "one_lot_hit_pct": 100,
+   "lot_size": 100,
+   "cornerstone_investors": [
+    "GIC Private Limited",
+    "E Fund Management Co., Ltd.",
+    "E Fund Management (Hong Kong) Co., Limited",
+    "Golden Link Worldwide Limited",
+    "Integrated Core Strategies (Asia) Pte. Ltd.",
+    "Brilliant Partners Fund LP",
+    "China Core Fund",
+    "Singularity Master Fund",
+    "Singularity Winners Master Fund",
+    "Guotai Haitong Junxiang Jinjia QDII No. 1 Collective Asset Management Plan (BOC Wealth)",
+    "Longsys Investment Co., Limited",
+    "Digimoc Holdings Limited",
+    "HOSIN Global (HK) Electronics Co., Limited",
+    "Keysida Electronics Company (Hong Kong) Limited"
+   ],
+   "cornerstone_pct": 40.72,
+   "cornerstone_amt_m": 1245.48637,
+   "cornerstone_amt_ccy": "HKD",
+   "cornerstone_n": 14,
+   "greenshoe_pct": 15.0,
+   "overallot_shares": 12997200,
+   "over_allocation_pct": 15.0,
+   "greenshoe_exercised_final": "pending",
+   "stabilizing_manager": "CLSA Limited",
+   "offer_period": "2026-10-07 to 2026-10-12",
+   "sponsors": [
+    "CITIC Securities (Hong Kong) Limited"
+   ],
+   "sector": "Technology",
+   "subsector": "Hardware & electronics",
+   "industry_en": "IT Hardware",
+   "listing_regime": "Standard",
+   "is_h_share": "Y",
+   "a_share_code": "688036.SS",
+   "fin_currency": "RMB",
+   "rev_latest": 76224.5624636839,
+   "ni_latest": 2998.9970947123766,
+   "rev_latest_financial_year": 2025,
+   "ni_latest_financial_year": 2025,
+   "rev_latest_basis": "Revenue; HKDm at prospectus RMB0.8605 per HKD",
+   "ni_latest_basis": "Profit attributable to owners; HKDm at prospectus RMB0.8605 per HKD",
+   "profitable_at_ipo": "Y",
+   "business_overview": "Mobile phones under TECNO, Infinix and itel, plus mobile Internet services and IoT devices.",
+   "grey_date": "2026-10-14",
+   "grey_close": 34.78,
+   "grey_return_pct": -1.473087818696872,
+   "grey_src": "https://www.etnet.com.hk/www/eng/stocks/ci_ipo_news_detail.php?newsid=ETE361014212&code=2636 (Phillip close)",
+   "first_open": 34.96,
+   "first_close": 33.28,
+   "first_date": "2026-10-15",
+   "last_close": 33.28,
+   "last_date": "2026-10-15",
+   "price_asof": "2026-10-15",
+   "day1_open_pop_pct": -0.96,
+   "day1_open_close_pct": -4.81,
+   "first_day_return_pct": -5.72,
+   "since_ipo_pct": -5.72,
+   "day1_high": 34.96,
+   "day1_low": 32.72,
+   "day1_volume": 11476700,
+   "alloc_mechanism": "10% initial; no reallocation",
+   "clawback": "NO",
+   "a_premium_ipo_pct": 60.42279827358365,
+   "a_premium_now": 0.6968485347640057,
+   "a_close_cny": 48.2,
+   "a_close_date": "2026-10-15",
+   "ah_note": "A/H ratio from dated A, H and FX closes; one H session available.",
+   "bookrunners": [
+    "CLSA Limited",
+    "J.P. Morgan Securities (Asia Pacific) Limited",
+    "China International Capital Corporation Hong Kong Securities Limited",
+    "Haitong International Securities Company Limited",
+    "Deutsche Bank AG, Hong Kong Branch",
+    "BOCI Asia Limited",
+    "CMBC Securities Company Limited",
+    "GF Securities (Hong Kong) Brokerage Limited",
+    "Daiwa Capital Markets Hong Kong Limited",
+    "Futu Securities International (Hong Kong) Limited",
+    "Tiger Brokers (HK) Global Limited"
+   ]
   }
  ],
  "evidence": {
@@ -256,11 +367,137 @@
     "basis_note": "FY2025 consolidated net loss; loss-maker P/E remains n/m",
     "method": "Prospectus RMB thousands / 1000 / 0.8606 RMB per HKD"
    }
+  },
+  "2636": {
+   "final_price": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1014/2026101401159.pdf",
+    "page": 3,
+    "value": 35.3,
+    "basis": "Final allotment announcement; over-allocation is not option exercise"
+   },
+   "price_range_hi": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1014/2026101401159.pdf",
+    "page": 3,
+    "value": 38.8,
+    "basis": "Final allotment announcement; over-allocation is not option exercise"
+   },
+   "offer_shares": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1014/2026101401159.pdf",
+    "page": 3,
+    "value": 86648300,
+    "basis": "Final allotment announcement; over-allocation is not option exercise"
+   },
+   "shares_outstanding": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1014/2026101401159.pdf",
+    "page": 3,
+    "value": 1237832845,
+    "basis": "Final allotment announcement; over-allocation is not option exercise"
+   },
+   "shares_issued_on_listing": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1014/2026101401159.pdf",
+    "page": 3,
+    "value": 1237832845,
+    "basis": "Final allotment announcement; over-allocation is not option exercise"
+   },
+   "gross_proceeds_hkdm": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1014/2026101401159.pdf",
+    "page": 4,
+    "value": 3058.7,
+    "basis": "Final allotment announcement; over-allocation is not option exercise"
+   },
+   "net_proceeds_hkdm": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1014/2026101401159.pdf",
+    "page": 4,
+    "value": 2968.0,
+    "basis": "Final allotment announcement; over-allocation is not option exercise"
+   },
+   "oversub_public_mult": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1014/2026101401159.pdf",
+    "page": 4,
+    "value": 4.46,
+    "basis": "Final allotment announcement; over-allocation is not option exercise"
+   },
+   "public_shares_final": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1014/2026101401159.pdf",
+    "page": 4,
+    "value": 8664900,
+    "basis": "Final allotment announcement; over-allocation is not option exercise"
+   },
+   "public_alloc_pct": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1014/2026101401159.pdf",
+    "page": 4,
+    "value": 10,
+    "basis": "Final allotment announcement; over-allocation is not option exercise"
+   },
+   "oversub_intl_mult": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1014/2026101401159.pdf",
+    "page": 5,
+    "value": 2.55,
+    "basis": "Final allotment announcement; over-allocation is not option exercise"
+   },
+   "intl_placees": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1014/2026101401159.pdf",
+    "page": 5,
+    "value": 51,
+    "basis": "Final allotment announcement; over-allocation is not option exercise"
+   },
+   "cornerstone_pct": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1014/2026101401159.pdf",
+    "page": 11,
+    "value": 40.72,
+    "basis": "Final allotment announcement; over-allocation is not option exercise"
+   },
+   "cornerstone_amt_m": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1014/2026101401159.pdf",
+    "page": 11,
+    "value": 1245.48637,
+    "basis": "Final allotment announcement; over-allocation is not option exercise"
+   },
+   "rev_latest": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1007/12364453/2026100700099.pdf",
+    "page": 5,
+    "value": 76224.5624636839,
+    "financial_year": 2025,
+    "currency": "RMB",
+    "unit": "thousand",
+    "native_value": 65591236,
+    "basis": "Revenue; HKDm at prospectus RMB0.8605 per HKD",
+    "conversion_source": "https://iis.aastocks.com/20261007/12364441-0.PDF",
+    "conversion_page": 61
+   },
+   "ni_latest": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1007/12364453/2026100700099.pdf",
+    "page": 5,
+    "value": 2998.9970947123766,
+    "financial_year": 2025,
+    "currency": "RMB",
+    "unit": "thousand",
+    "native_value": 2580637,
+    "basis": "Profit attributable to owners; HKDm at prospectus RMB0.8605 per HKD",
+    "conversion_source": "https://iis.aastocks.com/20261007/12364441-0.PDF",
+    "conversion_page": 61
+   },
+   "cornerstone_investors": {
+    "url": "https://iis.aastocks.com/20261007/12364441-0.PDF",
+    "page": "224–227",
+    "basis": "Named legal subscribers; two funds each for Brilliance and CloudAlpha; BOC Wealth held through its named QDII plan. Allocation group totals from final allotment page 11."
+   },
+   "a_share_code": {
+    "url": "https://iis.aastocks.com/20261007/12364441-0.PDF",
+    "page": 23,
+    "basis": "Shanghai STAR issuer A-share code 688036"
+   },
+   "bookrunners": {
+    "url": "https://iis.aastocks.com/20261007/12364441-0.PDF",
+    "page": "74–75",
+    "basis": "Parties involved in the Global Offering; all named joint bookrunners"
+   }
   }
  },
  "quote_snapshot_asof": {
   "1256": "2026-10-14",
   "9976": "2026-10-02",
-  "9607": "2026-10-02"
+  "9607": "2026-10-02",
+  "2636": "2026-10-15"
  }
 }

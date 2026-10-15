@@ -7,7 +7,9 @@ ROOT=Path(__file__).resolve().parent.parent;sys.path.insert(0,str(ROOT/'ipo_lib'
 from patch_peer_workbook import maps,q
 from reflow_monitors import nodes,value,ci,ec
 from sector_monitor_release import REMOVED
-with zipfile.ZipFile(ROOT/'out/HK_IPO_Database_v1.xlsx') as z,zipfile.ZipFile(ROOT/'out/_sector_baseline_20261015.xlsx') as before:
+sector_output=ROOT/'out/_polish_baseline_20261015.xlsx'
+if not sector_output.exists():sector_output=ROOT/'out/HK_IPO_Database_v1.xlsx'
+with zipfile.ZipFile(sector_output) as z,zipfile.ZipFile(ROOT/'out/_sector_baseline_20261015.xlsx') as before:
  _,_,s=maps({p:z.read(p) for p in ['xl/workbook.xml','xl/_rels/workbook.xml.rels']})
  _,_,old=maps({p:before.read(p) for p in ['xl/workbook.xml','xl/_rels/workbook.xml.rels']})
  assert not REMOVED & set(s)

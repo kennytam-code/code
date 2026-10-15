@@ -1544,9 +1544,7 @@ def sheet_pipeline(wb, pipe):
     # ---- the LIVE HKEX application queue (auto-refreshed, not hand-picked) ----
     import json as _json
     r0 = 9 + len(pipe)
-    put(ws, f"A{r0}", "HKEX APPLICATION QUEUE", SECT)
-    put(ws, f"A{r0+1}", "PHIP posted = hearing cleared, usually days to weeks from launch; those rows "
-                        "are also in the table above. Refreshed on every run.", SUB)
+    put(ws, f"A{r0}", "LATEST APPLICATIONS", SECT)
     try:
         phip = _json.loads((ROOT / "data" / "batches" / "phip_pipeline.json").read_text())
         apps = phip.get("applications", [])
@@ -1554,7 +1552,7 @@ def sheet_pipeline(wb, pipe):
         apps = []
     for col, h in [('A','Applicant'),('C','Stage'),('D','First filed'),('E','Latest filing'),('F','Days in process'),('G','Document')]:
         hdr(ws, f"{col}{r0+2}", h)
-    shown = [a for a in apps if a.get("has_phip")] + [a for a in apps if not a.get("has_phip")][:30]
+    shown = [a for a in apps if not a.get("has_phip")][:30]
     for i, a in enumerate(shown):
         r = r0 + 3 + i
         stage = a.get("stage", "")
@@ -1571,9 +1569,6 @@ def sheet_pipeline(wb, pipe):
         if a.get("doc_link"):
             put(ws, f"G{r}", f'=HYPERLINK("{a["doc_link"]}","open filing")',
                 font=Font(name=ARIAL, size=10, color="000000FF", underline="single"))
-    put(ws, f"A{r0 + 4 + len(shown)}",
-        f"{len([a for a in apps if a.get('has_phip')])} PHIP-stage applications of {len(apps)} live; "
-        f"PHIPs plus the 30 most recent application proofs shown.", NOTE)
     return ws
 
 
@@ -2364,7 +2359,7 @@ def apply_pipeline_layout(wb, pipe):
         row = 6 + index
         for col in range(1, 31):
             copy_style(source.cell(6 + index % 2, col), row)
-        target.row_dimensions[row].height = 64 if len(str(deal.get('expected_timing') or '')) > 70 else 48
+        target.row_dimensions[row].height = 36
     for key, dimension in source.column_dimensions.items():
         target.column_dimensions[key] = copy(dimension)
         target.column_dimensions[key].parent = target
@@ -2380,8 +2375,8 @@ def apply_pipeline_layout(wb, pipe):
         if merged.min_row >= 9 + source_count:
             shifted.shift(row_shift=delta)
         target.merge_cells(str(shifted))
-    snapshot = json.loads((ROOT / 'data/deals.json').read_text())['as_of']
-    target['A2'] = f'Pipeline snapshot {snapshot}. Expand columns M:AD for investors, banks and notes. Blue cells feed the Screener.'
+    from pipeline_dedupe import status_asof
+    target['A2'] = 'Status checked ' + status_asof(ROOT)
     target.column_dimensions.group('M', 'AD', hidden=True)
     target.column_dimensions['AE'].collapsed = True
     target.auto_filter.ref = f'A5:AD{5 + count}'

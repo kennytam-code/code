@@ -37,6 +37,12 @@ with zipfile.ZipFile(path) as z:
   if named.get('name').startswith('W_'):
    assert named.text.startswith('Notes!');addr=named.text.split('!')[1].replace('$','');actual=value(notes[addr]);assert actual not in [None,''] and float(actual)>0,(named.get('name'),addr,actual)
  print('PASS every scoring weight remains numeric and positive at its named address')
+ # Missing pipeline profitability is unknown, never numeric zero in a Y/N field.
+ fn=formulas.Parser().ast('='+sc['B10'].find(q('f')).text)[1].compile()
+ for picked,expected in [('missing',''),('profitable','Y'),('loss','N')]:
+  args=[picked if k in ['B5','SELECTEDDEAL'] else np.array([['missing'],['profitable'],['loss']],dtype=object) if k=='ALLDEALS' else np.array([[0],['Y'],['N']],dtype=object) for k in fn.inputs]
+  assert fn(*args).item()==expected,(picked,fn.inputs)
+ assert value(sc['B10']) in [None,'','Y','N']
  for col,title in [('BM','NTM P/E live'),('BN','FY2027 P/E live'),('BO','FY2027 P/S live')]:assert value(db[col+'4'])==title
  assert f'Database!$BQ$5:$BQ${n+4}' in sc['F53'].find(q('f')).text
  for i,d in enumerate(deals):
@@ -96,7 +102,7 @@ with zipfile.ZipFile(path) as z:
    assert math.isclose(float(value(live['D'+str(row)])),quote['last'],abs_tol=1e-12)
    assert value(md['BU'+str(row)])==quote['quote_time']
    change=value(live['E'+str(row)])
-   if quote['quote_time'][:10]==snapshot['asof']:assert math.isclose(float(change),quote['last']/quote['previous_close']-1,abs_tol=1e-12)
+   if quote['quote_time'][:10]==snapshot['asof'] and quote.get('previous_close'):assert math.isclose(float(change),quote['last']/quote['previous_close']-1,abs_tol=1e-12)
    else:assert change in [None,'']
  assert value(live['B4'])=='Stored'
  assert 'BDP(Q3,"LAST_PRICE")' in md['AD3'].find(q('f')).text

@@ -1,0 +1,21 @@
+import fs from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+import {gunzipSync} from 'node:zlib';
+const root=new URL('../',import.meta.url),html=fs.readFileSync(new URL('out/hk_ipo_dashboard.html',root),'utf8');
+const data=JSON.parse(gunzipSync(Buffer.from(html.match(/<script id="ipo-payload" type="application\/octet-stream">([A-Za-z0-9+/=]+)<\/script>/)[1],'base64')));
+const controls=new Map(),element=id=>{if(!controls.has(id))controls.set(id,{value:id==='#pipe-stage'?'Active':'',innerHTML:'',textContent:'',addEventListener(){}});return controls.get(id);};
+const context=vm.createContext({DATA:data,$:element,topComps:()=>[],safeText:String,fmt:{pct:String,hkd:String}});
+const normal=html.slice(html.indexOf('function normalCode(q)'),html.indexOf('function matchesDealSearch'));
+vm.runInContext(normal,context);
+vm.runInContext(html.slice(html.indexOf('const isPulled ='),html.indexOf('// IPO calendar strip')),context);
+const count=()=>Number(element('#pipe-count').textContent.split(' ')[0]);
+assert.equal(count(),data.pipe.filter(p=>!p.withdrawn&&!p.postponed&&!p.watchlist&&!/^\s*(WITHDRAWN|POSTPONED)/i.test(p.status||'')).length);
+assert(!element('#cards').innerHTML.includes('RedNote'));
+element('#pipe-stage').value='';context.drawPipeline();assert.equal(count(),data.pipe.length);
+for(const query of ['6157','06157','6157 HK Equity']){element('#pipe-q').value=query;context.drawPipeline();assert.equal(count(),1);assert(element('#cards').innerHTML.includes('Slender West Lake'));}
+element('#pipe-q').value='2636';context.drawPipeline();assert.equal(count(),0);
+element('#pipe-q').value='';element('#pipe-stage').value='Watchlist';context.drawPipeline();assert.equal(count(),data.pipe.filter(p=>p.watchlist).length);
+assert(!html.includes('Every investor below anchored at least one Main Board IPO'));
+assert(data.pipeline_asof>='2026-10-15');
+console.log('PASS actual Pipeline renderer: active/watchlist separation, listed exclusion, code aliases, status date and removed cornerstone prose');

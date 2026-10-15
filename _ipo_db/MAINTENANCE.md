@@ -1,3 +1,49 @@
+## 16 October 2026 — latest user correction: colour and Screener form
+
+This supersedes the red-header draft immediately below. The user rejected its
+brick-red tone and large red fields, and requested no per-tab title rows.
+Reference now inspected: Nomura Americas Recruiting Brochure, page 15, at
+https://www.nomura.com/amhr-recruiting-brochure/files/assets/common/downloads/Nomura_Americas_Recruiting_Brochure.pdf
+The principal signature-graphic red renders as CB2125 in the PDF preview; this is
+a sampled working colour, not a claimed official sRGB specification. The public
+corporate description calls the colour Heartful Red. Nomura Plus is no longer
+the style reference. Screener now has grey headers and a source/override form on
+the left, with seven context outputs on the right. Effective cells D7:D14 retain
+their formulas under display format `;;;`; inputs and scoring references do not
+move. The context-output mapping is tested. Large tab titles are cleared, their
+rows hidden without shifting chart anchors or formulas. Database data is intact.
+
+## 15 October 2026 — red-led visual direction
+
+Latest user direction supersedes the earlier navy/grey emphasis: use elegant
+Nomura-inspired red prominently. Official visual reference inspected:
+https://plus.nomuraholdings.com/en/latest/20260424-FY202603-4Q-Highlights.html
+The public page uses red rules and accents, white space and pale warm table fills.
+Our adapted desk palette uses A9322C red, 8F2D2D deep red, white and warm grey;
+it is not an official internal Nomura template. Database retains useful section
+colours; returns remain green/red and comparison curves stay distinguishable.
+Artifact-authored profiles now apply red titles/headers and warm input/row shading
+throughout the desk. HTML navigation, table headers and charts follow the palette
+without gradients or rounded pill navigation. No business data or formulas change.
+
+## 15 October 2026 — all other desk tabs restyled
+
+The final desk_theme stage applies an Artifact-authored style profile to 13 other visible/support sheets. It standardises Arial typography, red headers, warm input shading, alternating rows, long-name wrapping and native chart line/grid colours. Screener subsector/industry widths are expanded. Native chart data, axes, anchors, formulas, cached cell values and worksheet order are unchanged; test_desk_theme checks those separately from the earlier Database polish. All visible sheets were inspected as bounded actual-cell projections or in native Excel. Native Excel opened the final book without content repair; Live, AH, Peer Trades and Screener were rechecked.
+
+Screener's unknown pipeline profitability now stays blank rather than rendering a numeric zero in a Y/N field. AH's summary says stored dates vary by stock: 70 pairs end 2 October and the new 2636 pair ends 15 October. Keep actual chart dates. Formula and UI fixtures pass locally, but actual Bloomberg add-in execution remains untested on this Mac.
+
+## 15 October 2026 — final desk review and Database presentation
+
+Read START_HERE.md and data/release_state.json first. They are the current handover and supersede obsolete counts/control locations below.
+
+Database typography, widths, alignment, header heights and muted section bands were restyled using an Artifact-authored small template and a native XML graft. The final-polish test compares every cell value/formula against the immediate pre-polish workbook. Existing 525-stock numeric values also match the saved pre-review database. Removed generic footnotes are explicit cells, never a length-based deletion of data, legal names or source notes.
+
+Separately, the source review appends Transsion 2636 (15-Oct debut) and adds Slender West Lake 6157's offering terms. Official AP/PHIP feeds are checked on 15 October. The final roster is 526 core / 716 Live / 71 A/H. HTML has 398 cornerstone events for 388 companies; Excel has no Lock-up sheets. Existing historical prices were not advanced by this incremental review. Live has 701 current 15-Oct closing quotes, six stale observations and nine missing securities. The 700 valid daily returns exclude the new IPO. On IPO day Tencent's reference is the offer price; stored and Bloomberg daily-change formulas now exclude that reference from previous-close and sector daily-return calculations.
+
+The new accepted batch, dated evidence manifest and per-provider JSON retain source provenance. An over-allocation is not exercised greenshoe. New Transsion financials use the explicit prospectus currency conversion. Pipeline press ideas are Watchlist, postponed/withdrawn names stay separate, and the official application queue is limited to 30 recent entries. Rebuild final_polish once after sector_monitor_release; package its module and database_layout template.
+
+The final checks cover the native package, retained charts, live formula fixtures, source parity and selected-only comparison means. Bloomberg live execution still requires a terminal. Primary-source gaps remain in the separate numeric/name audit; a clean arithmetic result does not certify every input.
+
 ## 15 October 2026 — averages follow the checked stocks
 
 This supersedes the earlier full-sector overlays and event-weighted HTML mean. A/H and Lock-up now share selectedAverages: the overall Selected average and optional By sector curves use only the checked rows surviving the chart date window. Unchecked same-sector stocks must never enter either curve. A/H shows the selected mean by default; Lock-up defaults to Selected average, with Selected stocks + average available. Select sector replaces the selection; unticking any row immediately removes it from the averages.

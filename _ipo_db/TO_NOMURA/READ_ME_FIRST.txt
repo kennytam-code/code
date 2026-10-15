@@ -1,117 +1,71 @@
-HK IPO DATABASE
-===============
+HK IPO DATABASE — 16 OCTOBER 2026
 
-PUT THESE FILES IN:  G:\FIN_COMM\DeltaOne\Kenny\ECM\
+Desk folder: G:\FIN_COMM\DeltaOne\Kenny\ECM\
 
-THE FILES
-  HK_IPO_Database_v1.xlsx   the workbook — IPO Live, AH trend and Screener
-  hk_ipo_dashboard.html     the charts — double-click, works offline
-  hk_ipo_dashboard.zip      smaller transfer copy; extract before opening
-  hk_ipo.py                 updates everything (Jupyter, one command)
-  ah_peers.ipynb            A/H price charts live off Bloomberg
-  AH_Premium_Study.docx     updated 62-pair A/H study (6 October)
-  Grey_Market_vs_Day1.docx  the grey market against day 1, every deal
-  Clawback_Study.docx       the 套路回撥 allocation study
-  READ_ME_FIRST.txt         this file
+OPEN
+  HK_IPO_Database_v1.xlsx   Excel desk views
+  hk_ipo_dashboard.html    Offline dashboard; no companion folder needed
+  hk_ipo_dashboard.zip     Smaller transfer copy; extract before opening
+  hk_ipo.py                Standalone updater
+  Existing Word studies are separate dated research.
 
-MARKET TABS (14 October 2026)
-  IPO Live: 715 seven-year monitoring listings. B4 selects Stored/Bloomberg.
-  Stored quotes: 14 October 2026; unavailable or stale daily quotes
-  do not enter sector means. Bloomberg uses LAST_PRICE / PX_YEST_CLOSE.
-  B5 selects Sector/Subsector; H34 chooses the
-  sector for the subsector-average chart.
-  AH: E4 selects Stored / Bloomberg. Stored opens through 2 October;
-  Bloomberg requests current quotes and history through TODAY.
-  70 A/H pairs, including LONGSYS 9976 / 301308. Database/Screener: 525.
-  G/H show seven-day / calendar-month premium changes in percentage points.
-  The selected Excel chart combines premium (left) with A-share and CSI 300
-  price returns (right). Reference history starts before the H listing.
-  Compare four pairs in Excel. HTML has multiple selection, Select all,
-  preset horizons and custom dates, with the six-panel A/H format.
-  Verified share actions are adjusted; genuine missing prices stay absent.
-  AH sector averages: J5 links to J57. IPO/latest premiums and 7-day /
-  1-month changes follow E4; averages use available pairs at equal weight.
-  Lock-up is now HTML-only. Select all / Select sector choose the events;
-  expiry dates narrow the comparison. Selected average uses only the
-  stocks you check. By sector splits that same selection. Unchecked
-  stocks never enter either average. Each selected stock has one weight.
-  Peer Trades: B3 selects a named direct product peer pair. F3 selects
-  Stored/Bloomberg; H3 selects 1M/3M/6M/1Y/3Y/5Y/Max/Custom.
-  F4/H4 set custom dates. Both company summaries and their charts appear
-  beside each other. 35 pairs / 66 saved stocks, including non-IPO peers.
-  Actual common coverage is shown; spread is A minus B return in pp.
-  Live TTM PE/PS: direct PE_RATIO / PX_TO_SALES_RATIO, with BQL fallback.
-  Database fundamentals BM:BO and Screener BH:BJ show live NTM P/E,
-  FY2027 P/E and FY2027 P/S using the supplied BQL expressions.
-  BQL replies are read by requested field, excluding date/period metadata.
-  Unavailable is a missing live reply, never a substituted IPO multiple.
-  Live Bloomberg execution requires the terminal add-in; this Mac checks
-  formula logic with fixtures; the delivered workbook was also opened
-  and visually inspected in native Excel without a repair prompt.
-  Refresh updates the Live snapshot, A/H, peer and benchmark data and
-  preserves lock-up
-  windows. Then build regenerates Excel and the offline HTML snapshot.
+CONTROLS
+  IPO Live — B4 Stored/Bloomberg; B5 Sector/Subsector; H34 broad sector
+  for the subsector chart. 716 listings, 701 current 15-Oct quotes; 707 saved quotes in total.
+  Green/red is change against the previous trading close. Missing/stale
+  quotes and IPO-day offer-price references do not enter daily averages.
 
-RETURN METHODS / REVIEW (4 October 2026)
-  1w/1m/3m = 5/21/63 traded sessions after debut, not calendar dates.
-  Benchmark index Day-1 = sector index return from previous close to
-  listing close; the index named on each deal is used. Prices as of
-  shows the actual last traded date, including suspended stocks.
-  Other Word studies and weekly email are 3 October carryovers; they were
-  not regenerated with the expanded grey-market sample.
+  AH — B4 H/A code; E4 Stored/Bloomberg. 71 pairs. J5 links to the
+  sector table at J57. Premium is A price x CNYHKD / H price - 1;
+  seven-day / one-month changes are percentage points. The chart combines
+  premium with A-share and CSI 300 returns on separate axes. Bloomberg
+  requests through TODAY; stored histories show their actual dates.
+  Excel compares four pairs; HTML supports multiple selection, Select all,
+  Select sector, selected-stock means and preset/custom date ranges.
 
-TO JUST USE IT
-  Open the .xlsx -> SCREENER tab. Pick a deal from the dropdown, or
-  type your own terms in the TYPE TO OVERRIDE column — comps re-rank
-  as you type. The comp table carries EVERY Database column (terms,
-  demand, all returns incl. ex-pop, A-premium at IPO and today,
-  HSAHP at IPO, banks, cornerstone) plus the score and why.
-  Rank modes: standard (subsector first) / cornerstone overlap first /
-  demand-similar first. A-share filter screens A+H or non-A only.
+  Peer Trades — B3 named product-peer pair; F3 source; H3 horizon;
+  F4/H4 custom dates. Both stocks populate automatically. 35 pairs / 66
+  stocks. Spread is A minus B price return from their first common session.
 
-  Sign conventions: A-premium = A over H - 1 (+ = A trades ABOVE H).
-  Ex-pop columns (teal) start at the day-1 CLOSE; the charts' ex-pop
-  panels rebase at the day-1 OPEN — the first tradeable print.
+  Screener — B5 company or code. First two columns are frozen.
+  B7:B14 shows database inputs; C7:C14 accepts overrides. Selected-deal
+  outputs sit on the right. Large tab title rows have been removed.
+  Database fundamentals contain live TTM PE/PS, NTM PE and FY2027 PE/PS;
+  Screener mirrors them. Historical IPO multiples remain separate.
 
-TO UPDATE IT (Jupyter, ONE command)
-  To reproduce this delivery exactly, run hk_ipo.py in a clean folder.
-  An existing persistent data folder is retained for your own updates.
-  %run hk_ipo.py update      <- fetch + parse + prices + gates +
-                                rebuild, ends with a VERDICT block
-  %run hk_ipo.py update --skip aastocks   <- if a site is blocked
-  %run hk_ipo.py status      <- what is in the database now
-  A stage that fails keeps its previous data — the files stay usable;
-  they just do not gain that stage's update.
+  Pipeline — status checked 15 October. New offering 6157 is included;
+  listed 2636 is now in the 526-stock Database/Screener. Active deals come
+  first; watchlist and withdrawn/postponed rows are separated/collapsed.
 
-BLOOMBERG (terminal only)
-  The BBG Verify tab fills itself on the terminal (CP036/CP037 subs,
-  shoe, P/E at listing, A-share P/E at H-IPO, HSAHP Index at IPO —
-  verify one HSAHP cell before trusting that column, it is new).
-  To feed the numbers back: let the tab compute, paste-VALUES into
-  bbg.xlsx (one sheet, headers on row 4), put it next to the repo,
-  then on the build machine: python ipo_lib/ingest_bbg.py + update.
-  Combined BBG Verify: subscriptions, shoe, valuation and price checks.
-  Bloomberg supersedes scrapes; reviewed HKEX figures take priority.
+  Lock-up — HTML only. 398 cornerstone events / 388 stocks. Exactly
+  30 HK trading sessions before/after expiry. Selected average includes
+  only checked stocks, one weight per stock. By sector splits that same
+  selection. Future or unconfirmed dates and unavailable prices stay blank.
 
-THE DASHBOARD
-  Copy the delivered HTML file directly. It embeds compressed data and
-  opens offline with no companion folder. All stored histories remain.
-  If the shared drive reports no space, try the ZIP transfer copy
-  or open a local copy. Compression cannot clear a full server quota;
-  the shared drive owner may need to free space. Browser-saved HTML
-  was also checked to reopen offline. Quotes remain dated snapshots.
+DATA DATES AND CHECKS
+  Live quotes and the new IPO are dated 15 October. Older histories retain
+  their own dates, mostly 2 October; this is not a blanket market refresh.
+  Corporate-action adjustments use reviewed factors, not curve smoothing.
+  Price returns exclude cash dividends. IPO 1w/1m/3m use 5/21/63 sessions.
 
-  Screener tab: pick or type a target, Deal Brief (base rate + worst
-  peer = your downside), paint comps red/blue, factor strips, plot
-  anything vs anything, daily price action for every comp (offer-
-  rebased AND open-rebased), and the six A/H panes per pair incl.
-  A-share month-before -> month-after. Hover any chart for the scan
-  line with every series' value. It is a snapshot — it cannot reach
-  Bloomberg; the live layer is the Excel BDP/BDH cells + the notebook.
+  Native workbook structure, formula bindings, price/return arithmetic,
+  stored data parity and comparison functions are checked locally.
+  Bloomberg PE/PS and history queries still require a terminal/add-in to
+  verify live responses. Off-terminal Unavailable is not an invented ratio.
+  Audit CSV/JSON records remaining primary-source follow-up outside Excel.
 
-  ah_peers.ipynb: run all cells, a form appears — type codes, draw.
-  H rebased on the OFFER (100 = what subscribers paid).
+UPDATE (JUPYTER)
+  %run hk_ipo.py status
+  %run hk_ipo.py update      fetch, parse, validate and rebuild
+  %run hk_ipo.py build       reproduce stored data without a market refresh
 
-IF PACKAGES ARE EVER MISSING
-  pip install requests beautifulsoup4 lxml openpyxl pypdf yfinance
-  (blocked network: add --trusted-host pypi.org --trusted-host files.pythonhosted.org)
+  Run in a clean folder to reproduce the embedded release. An existing
+  persistent data folder is retained for your updates. A failed provider
+  keeps its previously dated cache; it does not make that cache current.
+  Shared drive full: use ZIP for transfer or open a local copy. A full
+  server quota still needs space freed by its owner.
+
+HANDOVER
+  In the repository, read START_HERE.md then data/release_state.json.
+  AGENTS.md directs a new AI to these files. MAINTENANCE.md is history.
+  Keep source review notes there, not as explanatory workbook footnotes.

@@ -142666,6 +142666,19 @@
    ],
    "source": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=hk01256,day,2026-10-09,2026-10-14,20,",
    "complete": false
+  },
+  {
+   "code": "2636",
+   "ipo": "2026-10-15",
+   "open0": 34.96,
+   "closes": [
+    [
+     0,
+     33.28
+    ]
+   ],
+   "source": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=hk02636,day,2026-08-25,2026-10-15,320,",
+   "complete": false
   }
  ]
 }

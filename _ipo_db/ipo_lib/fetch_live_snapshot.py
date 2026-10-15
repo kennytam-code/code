@@ -12,7 +12,7 @@ from market_universe import load
 ROOT=Path(__file__).resolve().parent.parent
 
 def refresh(root=ROOT):
- root=Path(root);codes=sorted({str(d['code']).zfill(4) for d in load(root)})
+ root=Path(root);roster={str(d['code']).zfill(4):d for d in load(root)};codes=sorted(roster)
  quotes={};errors=[];session=requests.Session()
  for start in range(0,len(codes),60):
   batch=codes[start:start+60];url='https://qt.gtimg.cn/q='+','.join('hk'+c.zfill(5) for c in batch)
@@ -24,7 +24,9 @@ def refresh(root=ROOT):
     price,previous=float(fields[3]),float(fields[4]);stamp=datetime.strptime(fields[30],'%Y/%m/%d %H:%M:%S')
     if not all(math.isfinite(x) and x>0 for x in [price,previous]):continue
     # Stale/suspended names keep their dated price but do not enter today's mean.
-    quotes[code]={'last':price,'previous_close':previous,'quote_time':stamp.isoformat(sep=' '),'source':'Tencent HK quote'}
+    debut=stamp.date().isoformat()<=roster[code]['ipo_date'][:10]
+    quotes[code]={'last':price,'previous_close':None if debut else previous,'quote_time':stamp.isoformat(sep=' '),'source':'Tencent HK quote'}
+    if debut:quotes[code]['reference_note']='IPO day: provider reference is the offer price, not a previous trading close'
   except (requests.RequestException,ValueError) as exc:errors.append({'codes':batch,'error':str(exc)})
  asof=max((v['quote_time'][:10] for v in quotes.values()),default=None)
  if not quotes:raise RuntimeError('No validated public closing quotes; retained prior snapshot')

@@ -2,7 +2,7 @@
 from pathlib import Path
 import hashlib,json,subprocess
 ROOT=Path(__file__).resolve().parent.parent
-PUB=Path('/private/tmp/hkipo_publish_20261011')
+PUB=Path('/private/tmp/hkipo_publish_20261016')
 files=[]
 def add(p,relative=None):
  if not p.is_file():return
@@ -13,7 +13,7 @@ def add(p,relative=None):
  if old.returncode==0 and hashlib.sha256(old.stdout).hexdigest()==h(p):return
  if any(f['target']==rel for f in files):return
  files.append({'source':str(p),'target':rel,'sha256':h(p),'bytes':p.stat().st_size})
-for name in ['MAINTENANCE.md','README.md','ipo.py']:add(ROOT/name)
+for name in ['AGENTS.md','START_HERE.md','MAINTENANCE.md','README.md','ipo.py']:add(ROOT/name)
 for directory in ['ipo_lib','assets']:
  for p in sorted((ROOT/directory).glob('*')):
   if p.suffix in ['.py','.js','.LICENSE']:add(p)
@@ -39,5 +39,11 @@ for name in ['latest_listed_review_20261015.json','hkex_allotments.json','h_path
 for p in sorted((ROOT/'data/eswin_review_20261015').glob('*.json')):add(p)
 for p in sorted((ROOT/'data/red_avenue_review_20261015').glob('*.json')):add(p)
 for kind in ['a','h']:add(ROOT/'data/ah_study_cache'/f'{kind}_9607.json')
+for kind in ['a','h']:add(ROOT/'data/ah_study_cache'/f'{kind}_2636.json')
+add(ROOT/'data/ah_study_cache/cnyhkd.json')
+for name in ['pipeline.json','pipeline_review.json','phip_pipeline.json','newlistings.json']:add(ROOT/'data/batches'/name)
+for p in sorted((ROOT/'data/final_review_20261015').glob('*')):add(p)
+for name in ['create_database_layout.mjs','create_pipeline_layout.mjs','prepare_pipeline_layout.py','render_desk_tables.mjs','test_final_polish.py','test_sector_monitor_release.py','test_selected_averages.mjs','test_sector_comparisons.mjs','test_pipeline_release.mjs','run_release_checks.py']:add(ROOT/'tools'/name)
+for name in ['create_desk_theme.mjs','test_desk_theme.py','render_desk_theme.mjs','package_final_review.py']:add(ROOT/'tools'/name)
 (ROOT/'out/publication_plan.json').write_text(json.dumps(files,indent=2));print('Prepared',len(files),'explicit changed files,',sum(f['bytes'] for f in files)//1024,'KB')
 for f in files:print(f['target'])

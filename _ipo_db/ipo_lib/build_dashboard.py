@@ -224,29 +224,29 @@ CSS = """
 :root { color-scheme: light dark; }
 .viz-root {
   color-scheme: light;
-  --surface-1:#fcfcfb; --surface-2:#f4f4f2; --line:#dddcd8;
+  --surface-1:#ffffff; --surface-2:#f4f5f6; --line:#dddfe2; --brand:#cb2125;
   --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#8a897f;
-  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100;
-  --s5:#e87ba4; --s6:#008300; --s7:#4a3aa7; --s8:#e34948;
-  --pos:#eb6834; --neg:#2a78d6; --mid:#8a897f;
+  --s1:#cb2125; --s2:#315b7d; --s3:#39745c; --s4:#9b7943;
+  --s5:#87677e; --s6:#427b6f; --s7:#68748b; --s8:#b47150;
+  --pos:#25734e; --neg:#ad3636; --mid:#8a817a;
 }
 @media (prefers-color-scheme: dark) {
   :root:where(:not([data-theme="light"])) .viz-root {
     color-scheme: dark;
-    --surface-1:#1a1a19; --surface-2:#242423; --line:#3a3a38;
+    --surface-1:#1a1a19; --surface-2:#242423; --line:#3a3a38; --brand:#e0877e;
     --text-primary:#ffffff; --text-secondary:#c3c2b7; --text-muted:#8a897f;
-    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
-    --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
-    --pos:#d95926; --neg:#3987e5;
+    --s1:#e0877e; --s2:#80a5c0; --s3:#72ad92; --s4:#bd9e68;
+    --s5:#b99bae; --s6:#77afa3; --s7:#a0a7c1; --s8:#d19c7d;
+    --pos:#72ba91; --neg:#ed9292;
   }
 }
 :root[data-theme="dark"] .viz-root {
   color-scheme: dark;
-  --surface-1:#1a1a19; --surface-2:#242423; --line:#3a3a38;
+  --surface-1:#1a1a19; --surface-2:#242423; --line:#3a3a38; --brand:#e0877e;
   --text-primary:#ffffff; --text-secondary:#c3c2b7; --text-muted:#8a897f;
-  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
-  --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
-  --pos:#d95926; --neg:#3987e5;
+  --s1:#e0877e; --s2:#80a5c0; --s3:#72ad92; --s4:#bd9e68;
+  --s5:#b99bae; --s6:#77afa3; --s7:#a0a7c1; --s8:#d19c7d;
+  --pos:#72ba91; --neg:#ed9292;
 }
 * { box-sizing: border-box; margin: 0; }
 body.viz-root { background: var(--surface-1); color: var(--text-primary);
@@ -257,18 +257,16 @@ header.top { position: sticky; top: 0; z-index: 9;
   border-bottom: 1px solid var(--line); padding: 10px 24px; display: flex;
   gap: 18px; align-items: center; flex-wrap: wrap; }
 header.top::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px;
-  height: 2px; background: linear-gradient(90deg, var(--s1), var(--s3) 34%,
-  var(--s4) 67%, var(--s2)); opacity: .55; }
+  height: 3px; background: var(--brand); }
 header.top h1 { font-size: 17px; letter-spacing: -.01em; display: flex;
   align-items: center; gap: 8px; }
-header.top h1::before { content: ""; width: 10px; height: 10px; border-radius: 3px;
-  background: linear-gradient(135deg, var(--s1), var(--s3)); }
-#tabs { display: flex; gap: 2px; background: var(--surface-2); border-radius: 999px;
+header.top h1 { color:var(--brand); }
+header.top h1::before { content: ""; width: 4px; height: 22px; background:var(--brand); }
+#tabs { display: flex; gap: 2px; background: var(--surface-2); border-radius: 3px;
   padding: 3px; border: 1px solid var(--line); }
-#tabs a { cursor: pointer; padding: 6px 15px; border-radius: 999px; font-weight: 600;
+#tabs a { cursor: pointer; padding: 6px 15px; border-radius: 2px; font-weight: 600;
   font-size: 13px; transition: background .12s, color .12s; }
-#tabs a.active { background: var(--surface-1); color: var(--text-primary);
-  box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+#tabs a.active { background:var(--surface-1); color:var(--brand); box-shadow:inset 0 -2px 0 var(--brand); }
 header.top nav a { color: var(--text-secondary); text-decoration: none;
   margin-right: 12px; font-size: 12.5px; }
 header.top nav a:hover { color: var(--text-primary); }
@@ -294,15 +292,15 @@ h3 { font-size: 14.5px; font-weight: 700; letter-spacing: .01em; margin: 34px 0 
   gap: 12px; margin: 16px 0 8px; }
 .tile { background: var(--surface-1); border: 1px solid var(--line);
   box-shadow: 0 1px 2px rgba(0,0,0,.04);
-  border-radius: 10px; padding: 12px 16px; min-width: 150px; }
+  border-radius: 2px; padding: 12px 16px; min-width: 150px; }
 .tile .v { font-size: 24px; font-weight: 700; letter-spacing: -.02em;
   font-variant-numeric: tabular-nums; }
 .tile .l { font-size: 11px; color: var(--text-secondary); text-transform: uppercase;
   letter-spacing: .06em; margin-top: 2px; }
 .row { display: flex; gap: 22px; flex-wrap: wrap; }
 .chart { flex: 1 1 460px; min-width: 340px; background: var(--surface-1);
-  border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px 10px;
-  box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+  border: 1px solid var(--line); border-radius: 2px; padding: 14px 16px 10px;
+  box-shadow: none; }
 .chart h3 { font-size: 13px; margin: 0 0 6px; }
 .chart .note { font-size: 11.5px; color: var(--text-muted); margin-bottom: 6px; }
 .legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11.5px;
@@ -331,7 +329,7 @@ table { font-variant-numeric: tabular-nums; }
 .comparison-toolbar button { cursor:pointer; font-weight:600; }
 .comparison-toolbar button:hover:not(:disabled) { border-color:var(--text-secondary); background:var(--surface-2); }
 .comparison-toolbar button:disabled { opacity:.4; cursor:default; }
-.comparison-toolbar input[type=checkbox], .ah-compare-pick, .lockup-compare-pick { accent-color:#8C3038; }
+.comparison-toolbar input[type=checkbox], .ah-compare-pick, .lockup-compare-pick { accent-color:var(--brand); }
 .comparison-toolbar .check-control { margin-left:4px; }
 .comparison-basis { color:var(--text-muted); font-size:12px; }
 #ah .chart, #lockup .chart, #peers .chart { border-radius:3px; box-shadow:none; }
@@ -387,7 +385,7 @@ svg .lbl { fill: var(--text-primary); font-weight: 600; }
 #pipeline .cards { display:block; }
 #pipeline .pipeline-row { border-radius:0; box-shadow:none; padding:0; margin:0; border:0; border-bottom:1px solid var(--line); }
 #pipeline .pipeline-row:hover { transform:none; box-shadow:none; }
-#pipeline .pipeline-row summary, .pipeline-head { display:grid; grid-template-columns:minmax(220px,2fr) 125px 145px minmax(155px,1.3fr) 110px 95px; gap:14px; align-items:center; padding:16px 12px; }
+#pipeline .pipeline-row summary, .pipeline-head { display:grid; grid-template-columns:minmax(230px,2fr) 120px 140px minmax(155px,1.3fr) 110px 95px; gap:16px; align-items:center; padding:12px; }
 #pipeline .pipeline-row summary { cursor:pointer; list-style:none; font-size:12px; }
 #pipeline .pipeline-row summary::-webkit-details-marker { display:none; }
 #pipeline .pipeline-head { font-size:11px; text-transform:uppercase; letter-spacing:.04em; background:var(--surface-2); border-bottom:1px solid var(--line); }
@@ -479,8 +477,8 @@ select, input { background: var(--surface-2); color: var(--text-primary);
 .more:hover { background: color-mix(in srgb, var(--s1) 22%, transparent); }
 .tbl.deals tbody tr { height: 30px; }
 .tbl .mono { font-variant-numeric: tabular-nums; color: var(--text-secondary); }
-.tbl td.up { color: #217346; } .tbl td.down { color: #b53939; }
-.tile .v.up { color: #217346; } .tile .v.down { color: #b53939; }
+.tbl td.up { color: var(--pos); } .tbl td.down { color: var(--neg); }
+.tile .v.up { color: var(--pos); } .tile .v.down { color: var(--neg); }
 .calchip { background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px;
   padding: 4px 10px; font-size: 12.5px; }
 .calchip b { color: var(--s2); }
@@ -498,7 +496,7 @@ select, input { background: var(--surface-2); color: var(--text-primary);
 .brief h3 { margin: 0 0 8px; }
 .tile.hot .v { color: var(--s2); }
 .tile.good .v { color: var(--s3); }
-.tile.bad .v { color: var(--s2); }
+.tile.bad .v { color: var(--neg); }
 .tile.primary { border: 2px solid var(--s1); background: color-mix(in srgb, var(--s1) 7%, var(--surface-1)); }
 .tile.primary .v { font-size: 28px; color: var(--s1); }
 .labchk { display:inline-flex; gap:5px; align-items:center; background: var(--surface-2);
@@ -589,7 +587,7 @@ table.labtbl thead th .dot { vertical-align: 1px; }
 .axlabel { font-size: 11px; fill: var(--text-secondary); }
 .sparks { display: grid; grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
   gap: 12px; margin-bottom: 6px; }
-.spark { background: var(--surface-1); border: 1px solid var(--line); border-radius: 10px;
+.spark { background: var(--surface-1); border: 1px solid var(--line); border-radius: 2px;
   padding: 8px 10px 6px; }
 .spark svg { width: 100%; }
 .spark .l { font-size: 11.5px; color: var(--text-secondary); display: block; margin-top: 2px; }
@@ -598,17 +596,17 @@ table.labtbl thead th .dot { vertical-align: 1px; }
 .chart.wide { flex: 1 1 100%; }
 .filters { display: flex; align-items: center; gap: 12px 18px; flex-wrap: wrap;
   padding: 13px 16px; background: var(--surface-2); border: 1px solid var(--line);
-  border-radius: 12px; margin: 0 0 18px; }
+  border-radius: 3px; margin: 0 0 18px; }
 .filters select, .filters input { background: var(--surface-1); color: var(--text-primary);
-  border: 1px solid var(--line); border-radius: 7px; padding: 5px 8px; font-size: 12.5px; }
+  border: 1px solid var(--line); border-radius: 3px; padding: 5px 8px; font-size: 12.5px; }
 .filters label { font-size: 12px; color: var(--text-secondary); display: inline-flex;
   align-items: center; gap: 6px; }
 table.tbl { border-collapse: collapse; width: 100%; font-size: 12px; }
 /* NB: no generic sticky here — a viewport-sticky header detaches from its
    columns and slides under the nav. Stickiness belongs ONLY to tables inside
    their own scroll container (.tbl.deals has its own rule). */
-table.tbl th { text-align: left; border-bottom: 2px solid var(--line);
-  padding: 5px 8px; background: var(--surface-1); }
+table.tbl th { text-align: left; border-bottom: 2px solid var(--brand);
+  padding: 7px 8px; background: var(--surface-2); }
 table.tbl td { border-bottom: 1px solid var(--line); padding: 4px 8px; }
 table.tbl tr:hover td { background: var(--surface-2); }
 .num { text-align: right; font-variant-numeric: tabular-nums; }
@@ -838,7 +836,7 @@ function scatterXY(container, pts, opts) {
   pts.forEach(p => {
     const c = el("circle", { cx: x(opts.logX ? Math.max(0.3, p.x) : p.x),
       cy: y(Math.max(opts.ylo ?? -1e9, Math.min(opts.yhi ?? 1e9, p.y))), r: 4,
-      fill: p.col || (p.up ? css("--s3") : css("--s2")), "fill-opacity": 0.55,
+      fill: p.col || (p.up ? css("--pos") : css("--neg")), "fill-opacity": 0.55,
       stroke: css("--surface-1"), "stroke-width": 1 }, svg);
     hover(c, () => p.tip);
   });
@@ -1305,7 +1303,7 @@ function analogBars(container, rows) {
     const cx = M.l + i * bw + bw * 0.18, w = bw * 0.64;
     const y0 = y(Math.max(0, r.med)), y1 = y(Math.min(0, r.med));
     const rect = el("rect", { x: cx, y: y0, width: w, height: Math.max(1, y1 - y0),
-      rx: 3, fill: r.med >= 0 ? css("--s3") : css("--s2") }, svg);
+      rx: 3, fill: r.med >= 0 ? css("--pos") : css("--neg") }, svg);
     hover(rect, () => `<b>${r.lbl} subscribed</b>median day-1 ${fmt.pct(r.med)}<br>` +
       `closed up ${r.hit}% of the time<br><span class="m">n = ${r.n} deals</span>`);
     const lab = el("text", { x: cx + w / 2, y: y0 - 5, "text-anchor": "middle", class: "lbl" }, svg);
@@ -1354,11 +1352,11 @@ const pipeOrder = [...DATA.pipe].sort((a, b) => {
     : /PHIP/i.test(p.status || "") ? 2 : 3;
   return rank(a) - rank(b) || String(a.name).localeCompare(String(b.name));
 });
-const pipelineStage = p => isPulled(p) ? "Withdrawn / postponed" : isOffering(p) ? "Offering" : /PHIP/i.test(p.status || "") ? "Hearing cleared" : "Filed / reported";
+const pipelineStage = p => isPulled(p) ? "Withdrawn / postponed" : isOffering(p) ? "Offering" : /PHIP/i.test(p.status || "") ? "Hearing cleared" : p.watchlist ? "Watchlist" : "Filed / reported";
 function drawPipeline() {
 const q = $("#pipe-q").value.trim().toLowerCase(), stage = $("#pipe-stage").value;
-const shown = pipeOrder.filter(p => (!stage || pipelineStage(p) === stage) && (!q || [p.name, p.name_cn, p.sector, p.subsector].some(v => String(v || "").toLowerCase().includes(q)) || normalCode(p.expected_code) === normalCode(q) && normalCode(q)));
-$("#pipe-count").textContent = `${shown.length} deals · snapshot ${DATA.as_of} · click a company to expand terms`;
+const shown = pipeOrder.filter(p => (stage === "Active" ? !isPulled(p) && !p.watchlist : !stage || pipelineStage(p) === stage) && (!q || [p.name, p.name_cn, p.sector, p.subsector].some(v => String(v || "").toLowerCase().includes(q)) || normalCode(p.expected_code || p.code) === normalCode(q) && normalCode(q)));
+$("#pipe-count").textContent = `${shown.length} deals · status checked ${DATA.pipeline_asof}`;
 $("#cards").innerHTML = shown.map(p => {
   const comps = topComps({ name: p.name, sector: p.sector, subsector: p.subsector,
     size: p.expected_size_hkdm, profitable: p.profitable_at_ipo, is_h: p.is_h_share,
@@ -1402,7 +1400,7 @@ $("#cards").innerHTML = shown.map(p => {
     : (p.expected_size_hkdm ? fmt.hkd(p.expected_size_hkdm) : null);
   const price = p.range_lo && p.range_hi ? `HK$${p.range_lo}–${p.range_hi}` : p.range_hi ? `≤ HK$${p.range_hi}` : "—";
   return `<details class="card pipeline-row"><summary>
-    <span class="pipe-name">${safeText(p.name)}${p.expected_code ? ` (${safeText(p.expected_code)})` : ""}<small>${safeText(p.name_cn || "")} · details ▾</small></span>
+    <span class="pipe-name">${safeText(p.name)}${p.expected_code ? ` (${safeText(p.expected_code)})` : ""}<small>${safeText(p.name_cn || "")} ▾</small></span>
     <span>${pipelineStage(p)}</span><span>${safeText(p.expected_timing || "Not announced")}</span>
     <span>${safeText(p.subsector || p.sector || "Unclassified")}</span><span class="num">${size || "Not guided"}</span><span class="num">${price}</span>
     </summary><div class="pipe-body"><p class="meta">${safeText(p.status || "")} · ${p.is_h_share ? "A+H" : "H-only"}${p.profitable_at_ipo != null ? " · " + ((p.profitable_at_ipo === true || p.profitable_at_ipo === "Y") ? "Profitable" : "Loss-making") : ""}</p>
@@ -2514,7 +2512,7 @@ function renderPaths(chosen) {
       return path; };
     const last = known[known.length - 1];
     const lastO = yo ? [...yo].reverse().find(v => v != null) : null;
-    const col = paintOf(d) ? paintColor(d) : (last >= 0 ? "var(--s3)" : "var(--s2)");
+    const col = paintOf(d) ? paintColor(d) : (last >= 0 ? "var(--pos)" : "var(--neg)");
     return `<div class="spark"><svg viewBox="0 0 150 56">
       <line x1="8" x2="142" y1="${py(0)}" y2="${py(0)}" stroke="var(--mid)" stroke-width="0.7"/>
       ${yo ? `<path d="${draw(yo)}" fill="none" stroke="var(--text-muted)" stroke-width="1.4"
@@ -2644,7 +2642,7 @@ function redrawExplorer() {
     ck === "ah" ? [["A/H pair", "var(--s7)"], ["no A-line", "var(--mid)"]] :
     ck === "shoe" ? [["greenshoe in the deal", "var(--s6)"], ["no greenshoe", "var(--s8)"]] :
     ck === "size" ? Object.entries(SIZECOL).concat([["no size on file", "var(--mid)"]]) :
-    [["closed above offer", "var(--s3)"], ["below", "var(--s2)"]];
+    [["closed above offer", "var(--pos)"], ["below", "var(--neg)"]];
   $("#ex-legend").innerHTML = legend.map(([l2, c2]) =>
     `<span><span class="sw" style="background:${c2}"></span>${l2}</span>`).join("");
   const pts = deals.filter(d => inRange(d) && d[xk] != null && d[yk] != null
@@ -3123,7 +3121,7 @@ HTML = """<!doctype html>
 <section id="pipeline">
   <h2>Active pipeline</h2>
   <p class="sub">Key terms at a glance; expand a company for its investors, banks, business and source filing. Sizes are indicative.</p>
-  <div class="filters"><label>Search <input id="pipe-q" type="search" placeholder="H code or company name"></label><label>Stage <select id="pipe-stage"><option value="">All stages</option><option>Offering</option><option>Hearing cleared</option><option>Filed / reported</option><option>Withdrawn / postponed</option></select></label><span class="note" id="pipe-count"></span></div>
+  <div class="filters"><label>Search <input id="pipe-q" type="search" placeholder="H code or company name"></label><label>Stage <select id="pipe-stage"><option>Active</option><option value="">All stages</option><option>Offering</option><option>Hearing cleared</option><option>Filed / reported</option><option>Watchlist</option><option>Withdrawn / postponed</option></select></label><span class="note" id="pipe-count"></span></div>
   <div class="pipeline-head"><span>Company</span><span>Stage</span><span>Listing / timing</span><span>Subsector</span><span class="num">Expected size</span><span class="num">Price range</span></div>
   <div class="cards" id="cards"></div>
 </section>
@@ -3228,11 +3226,6 @@ HTML = """<!doctype html>
 
 <section id="csleague">
   <h2>Cornerstone league — how deals anchored by each investor traded</h2>
-  <p class="note">Every investor below anchored at least one Main Board IPO in the book.
-  Returns are simple averages across their deals: <b>day-1 pop</b> = offer→close;
-  the <b>ex-pop legs</b> strip the pop (day-1 close→1w/1m/3m). Hit = share of their
-  deals that closed day-1 above offer. Same grouping key the Screener uses, so
-  "GIC Private Limited" and "GIC" count as one house.</p>
   <div class="filters">
     <label>Find investor / stock <input id="cs-q" type="search" placeholder="Investor, company or H code"
       style="min-width:260px;padding:5px 8px"></label>
@@ -3417,7 +3410,8 @@ def main():
             raise SystemExit(
                 f"{_nm} is empty but data/deals.json has {_src} — the field is "
                 f"missing from KEEP, so it never reached the embed")
-    blob = json.dumps({"as_of": as_of, "deals": deals, "pipe": pipe, "cfg": cfg,
+    from pipeline_dedupe import status_asof
+    blob = json.dumps({"as_of": as_of, "pipeline_asof": status_asof(ROOT), "deals": deals, "pipe": pipe, "cfg": cfg,
                        "market_deals":[{k:d.get(k) for k in ["code","name","sector","subsector","a_share_code","ipo_date"]} for d in market_deals(ROOT)], "peer_pairs":json.loads((ROOT/"data/peer_pairs.json").read_text()), "hk_stocks":json.loads((ROOT/"data/hk_stock_universe.json").read_text())["stocks"], "ah_asof":study["asof"], "ahpaths": paths, "ahstudy": ahstudy, "ah_reference":reference, "hpaths": hpaths, "cs_league": league,
                        "stab_league": smleague, "lockups": lockups},
                       ensure_ascii=False, separators=(",", ":"))

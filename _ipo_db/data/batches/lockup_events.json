@@ -158348,6 +158348,57 @@
      "path": []
     }
    }
+  },
+  {
+   "category": "Cornerstone",
+   "last_day_locked": "2027-04-14",
+   "first_day_after": "2027-04-15",
+   "date_basis": "Explicit last locked day in final allotment filing",
+   "page": 11,
+   "snippet": "Lock-up ends on and includes April 14, 2027; disposal permitted after that date.",
+   "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1014/2026101401159.pdf",
+   "sha256": "f8ed7d96229422d6788a17a6701dfc0ca059ed1d639e9be6c2ca1cf770f36729",
+   "code": "2636",
+   "name": "TRANSSION",
+   "sector": "Technology",
+   "windows": {
+    "Trading sessions": {
+     "status": "Upcoming expiry",
+     "pre_start": null,
+     "anchor": null,
+     "post_end": null,
+     "pre_start_close": null,
+     "anchor_close": null,
+     "post_end_close": null,
+     "before_pct": null,
+     "after_pct": null,
+     "path": []
+    },
+    "Calendar days": {
+     "status": "Upcoming expiry",
+     "pre_start": null,
+     "anchor": null,
+     "post_end": null,
+     "pre_start_close": null,
+     "anchor_close": null,
+     "post_end_close": null,
+     "before_pct": null,
+     "after_pct": null,
+     "path": []
+    },
+    "30 trading sessions": {
+     "status": "Upcoming expiry",
+     "pre_start": null,
+     "anchor": null,
+     "post_end": null,
+     "pre_start_close": null,
+     "anchor_close": null,
+     "post_end_close": null,
+     "before_pct": null,
+     "after_pct": null,
+     "path": []
+    }
+   }
   }
  ],
  "method": "Last day locked; anchor last HK session on/before expiry; ±7 HK sessions (or calendar-day option). Exact endpoint closes required; split-neutral price returns; no dividend/rights value; not evidence of actual selling.",

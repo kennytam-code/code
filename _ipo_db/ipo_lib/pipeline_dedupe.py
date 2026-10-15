@@ -27,6 +27,17 @@ LIVE_ONLY = {"code", "status", "expected_timing", "doc_link", "prospectus_link"}
 # the analyst judgment layer — curated wins
 HAND_WINS = ("sector", "subsector")
 
+def status_asof(root):
+    """Independent pipeline check date; never borrow a price snapshot date."""
+    import json
+    p = Path(root) / 'data/batches/pipeline_review.json'
+    reviewed = json.loads(p.read_text()).get('checked_at', '') if p.exists() else ''
+    fetched = []
+    for name in ['newlistings.json','phip_pipeline.json']:
+        source = Path(root) / 'data/batches' / name
+        fetched.append(json.loads(source.read_text()).get('fetched_at', '')[:10] if source.exists() else '')
+    return max(reviewed, min(fetched)) or 'Not checked'
+
 
 def company_key(name):
     """Distinctive key for a company name ('Shein Group' == 'SHEIN Global')."""
@@ -102,10 +113,12 @@ def merge_pipeline(rows):
             # being set (Forms Syntron 6700, 2026-09-17)
             r["status"] = f"POSTPONED — offering and listing postponed {w['date']}"
             r["postponed"] = True
+            r["expected_timing"] = "Timetable pending"
             r["classification_note"] = (r.get("classification_note") or w.get("src", ""))[:160]
         elif w:
             r["status"] = f"WITHDRAWN — offering pulled {w['date']}"
             r["withdrawn"] = True
+            r["expected_timing"] = "Withdrawn " + w['date']
             r["classification_note"] = (r.get("classification_note") or w.get("src", ""))[:160]
     out, by_key = [], {}
     for r in rows:

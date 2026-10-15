@@ -1,0 +1,194 @@
+{
+ "batch": "newlistings",
+ "source": "www2 New Listings Main Board",
+ "fetched_at": "2026-10-15T14:45:10.752832+00:00",
+ "count": 3,
+ "deals": [
+  {
+   "code": "6700",
+   "name": "Shenzhen Forms Syntron Information Co., Ltd.",
+   "announcement_links": [
+    "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0914/2026091400001.pdf"
+   ],
+   "prospectus_links": [
+    "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0914/2026091400005.pdf"
+   ],
+   "allotment_links": [],
+   "status": "OFFERING — closes 2026-09-17",
+   "name_cn": "四方精創",
+   "sponsors": [
+    "CMB International Capital Limited",
+    "Guosen Securities (HK) Capital Company Limited"
+   ],
+   "bookrunners": [
+    "CMB International Capital Limited",
+    "Guosen Securities (HK) Capital Company Limited",
+    "Victory Securities Company Limited",
+    "Emperio Securities And Assets Management Limited"
+   ],
+   "syndicate": {
+    "Joint Sponsors": [
+     "CMB International Capital Limited",
+     "Guosen Securities (HK) Capital Company Limited"
+    ],
+    "Overall Coordinators": [
+     "CMB International Capital Limited",
+     "Guosen Securities (HK) Capital Company Limited"
+    ],
+    "Joint Lead Managers": [
+     "CMB International Capital Limited",
+     "Guosen Securities (HK) Capital Company Limited",
+     "Futu Securities International (Hong Kong) Limited",
+     "Get Nice Securities Limited",
+     "Harmonia Capital Limited",
+     "Innovax Securities Limited"
+    ],
+    "Joint Bookrunners": [
+     "Victory Securities Company Limited",
+     "Sheung Wan, Hong Kong Emperio Securities And Assets Management Limited"
+    ]
+   },
+   "greenshoe_pct": 15.0,
+   "greenshoe_snip": "tion). The number of H Shares to be issued pursuant to the full exercise of the over-allotment option shall not exceed 15% of the total number of H Shares to be o",
+   "cornerstone_pct": 12.61,
+   "cornerstone_amt_m": 119.6,
+   "cornerstone_amt_ccy": "HKD",
+   "cornerstone_investors": [
+    "Mr. Cheng Chi Heng",
+    "Successful Lotus",
+    "Thalassa Capital",
+    "Yeebo Alpha"
+   ],
+   "range_hi": 16.0,
+   "range_note": "maximum price only (final struck at or below)",
+   "lot_size": 100,
+   "offer_shares": 58961100.0,
+   "rev_latest": 694.2,
+   "ni_latest": 81.7,
+   "is_ah_applicant": true,
+   "a_share_venue": "Shenzhen ChiNext",
+   "a_share_code": "300468.SZ",
+   "business_overview": "We are an established fintech service provider in the banking industry based in the Greater Bay Area, delivering fintech software development services, consulting services, and system integration services to banks, regulatory authorities and other financial institutions across Chinese Mainland and Hong Kong to support their continuous digital transformation. Our comprehensive service offerings comprise three principal segments: (i) Fintech Software Development services :",
+   "subsector": "Internet & fintech",
+   "subsector_src": "keyword classifier (provisional)",
+   "sector": "Technology",
+   "size_at_cap_hkdm": 943.4,
+   "_rejected": [
+    "mktcap_lo_hkdm",
+    "mktcap_hi_hkdm",
+    "pe_expected_lo",
+    "pe_expected_hi",
+    "ps_expected_lo",
+    "ps_expected_hi"
+   ],
+   "mktcap_note": "stated market cap rejected: HK$824m is below the HK$943m offering itself",
+   "offer_period": "2026-09-14 - 2026-09-17",
+   "listing_date": "2026-09-22",
+   "industry_en": "Application Software",
+   "a_price_now": 20.51,
+   "a_mktcap_bn_cny": 10.88,
+   "a_pe_ttm": 24.86,
+   "fx_now": 1.1707,
+   "h_cap_vs_a_pct": -33.4,
+   "pe_at_h_cap": 16.6
+  },
+  {
+   "code": "2523",
+   "name": "EKH LIMITED",
+   "announcement_links": [
+    "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0708/2026070801370.pdf",
+    "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0630/2026063000011.pdf"
+   ],
+   "prospectus_links": [
+    "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0630/2026063000027.pdf",
+    "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0630/2026063000027.pdf"
+   ],
+   "allotment_links": [],
+   "status": "OFFERING NOW",
+   "name_cn": "永康控股",
+   "sponsors": [
+    "Quam Capital Limited",
+    "Alliance Capital Partners Limited"
+   ],
+   "bookrunners": [
+    "Quam Securities Limited",
+    "CEB International Capital Corporation Limited",
+    "CMB International Capital Limited",
+    "Eddid Securities and Futures Limited",
+    "Grand China Securities Limited",
+    "Orient Securities (Hong Kong) Limited",
+    "SBI E2-Capital Securities Limited",
+    "SPDB International Capital Limited",
+    "uSmart Securities Limited"
+   ],
+   "syndicate": {
+    "Joint Sponsors": [
+     "Quam Capital Limited",
+     "Alliance Capital Partners Limited"
+    ],
+    "Sponsor-Overall Coordinator": [
+     "Quam Securities Limited"
+    ],
+    "Overall Coordinator": [
+     "and Sole Global Coordinator Quam Securities Limited"
+    ],
+    "Joint Bookrunners": [
+     "Managers CEB International Capital Corporation Limited",
+     "CMB International Capital Limited",
+     "Eddid Securities and Futures Limited",
+     "Grand China Securities Limited",
+     "Orient Securities (Hong Kong) Limited",
+     "Quam Securities Limited",
+     "SBI E2-Capital Securities Limited",
+     "SPDB International Capital Limited",
+     "uSmart Securities Limited"
+    ]
+   },
+   "cornerstone_pct": 0,
+   "cornerstone_note": "no cornerstone tranche (no cornerstone section in the prospectus)",
+   "range_lo": 2.2,
+   "range_hi": 2.68,
+   "offer_shares": 51600000.0,
+   "mktcap_lo_hkdm": 964.9,
+   "mktcap_hi_hkdm": 1175.4,
+   "rev_latest": 164.1,
+   "ni_latest": 14.6,
+   "business_overview": "We provide services and products to both ends of the shipping supply chain including container shipping lines and direct customers (as well as those i n the middle such as freight forwarders). As such, we play different roles in the various logistic services we provide resulting in the overlap of some of our customers and suppliers. For example, we provide container depot services to container shipping lines and container leasing companies (as our customer) and they may sell us used containers in respect of our container sales services (as our supplier).",
+   "subsector": "Logistics",
+   "subsector_src": "keyword classifier (provisional)",
+   "sector": "Industrials",
+   "size_at_cap_hkdm": 138.3,
+   "pe_expected_lo": 66.1,
+   "pe_expected_hi": 80.5,
+   "ps_expected_lo": 5.9,
+   "ps_expected_hi": 7.2,
+   "error": "too many values to unpack (expected 2)",
+   "expected_net_hkdm": 126,
+   "restored_note": "restored from the 2026-08-20 build after a failed re-parse overwrote the batch"
+  },
+  {
+   "code": "6157",
+   "name": "Jiangsu Slender West Lake Culture and Tourism Co., Ltd.",
+   "name_cn": "瘦西湖文旅",
+   "status": "OFFERING — closes 2026-10-20",
+   "listing_date": "2026-10-23",
+   "offer_period": "2026-10-14 to 2026-10-20",
+   "range_lo": 3.92,
+   "range_hi": 5.07,
+   "offer_shares": 44760000,
+   "lot_size": 1000,
+   "sector": "Consumer",
+   "subsector": "Consumer services / education",
+   "prospectus_links": [
+    "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1014/2026101400023.pdf"
+   ],
+   "announcement_links": [
+    "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1014/2026101400007.pdf"
+   ],
+   "allotment_links": [],
+   "reviewed_at": "2026-10-15",
+   "business_overview": "Tourist boat services and related tourism operations in Yangzhou.",
+   "size_at_cap_hkdm": 226.9332
+  }
+ ]
+}

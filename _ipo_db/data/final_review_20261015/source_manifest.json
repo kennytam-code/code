@@ -1,0 +1,98 @@
+[
+  {
+    "file": "phip.json",
+    "url": "https://www1.hkexnews.hk/ncms/json/eds/appactive_appphip_sehk_e.json",
+    "sha256": "a4c4d056c360c46b0294e0c5f6849873759f53a1aeb7ed1a786838d537ad04f6",
+    "bytes": 8501
+  },
+  {
+    "file": "applications.json",
+    "url": "https://www1.hkexnews.hk/ncms/json/eds/appactive_app_sehk_e.json",
+    "sha256": "93d5f1ac3b0192d2b2783575a50afb04940e3802c0853ac366de247f449d2584",
+    "bytes": 194766
+  },
+  {
+    "file": "2636_allotment.pdf",
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1014/2026101401159.pdf",
+    "sha256": "f8ed7d96229422d6788a17a6701dfc0ca059ed1d639e9be6c2ca1cf770f36729",
+    "bytes": 244425
+  },
+  {
+    "file": "6157_prospectus.pdf",
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1014/2026101400023.pdf",
+    "sha256": "cc25588930d424e1d7b221547d07aa1dd15ed7417637dcbfc861e899bf8d3131",
+    "bytes": 7039679
+  },
+  {
+    "file": "6157_notice.pdf",
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1014/2026101400007.pdf",
+    "sha256": "31aec3b0f1e4fc261dfb6d3a47fe7e697253dbb646f02dfa09cc4e20fbe14adb",
+    "bytes": 602027
+  },
+  {
+    "file": "2636_documents.html",
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1007/2026100700096.htm",
+    "sha256": "3331aefd94ae4685669e8fca47281d04fd60004640098398327997882573beeb",
+    "bytes": 13937
+  },
+  {
+    "file": "2636_accountants.pdf",
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1007/12364453/2026100700099.pdf",
+    "sha256": "cb662a9fa0c84540830ffc7d0681289fe3d616be7f1a9108011175ff5a3f772d",
+    "bytes": 656631
+  },
+  {
+    "file": "hk02636.json",
+    "url": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=hk02636,day,2026-08-25,2026-10-15,320,",
+    "sha256": "f9b0ffd30a38787459489c908883ecb3bb561d1345a074574ac0a11419220a15",
+    "bytes": 1500
+  },
+  {
+    "file": "sh688036.json",
+    "url": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh688036,day,2026-08-25,2026-10-15,320,",
+    "sha256": "61dfb75fd2ba1cf657ef24ec1ed9088ad11c2855f472b8d04a886255104b8fef",
+    "bytes": 3772
+  },
+  {
+    "file": "sh000300.json",
+    "url": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh000300,day,2026-08-25,2026-10-15,320,",
+    "sha256": "c0e989623f6bc5bbd4a87b3df42fb76df776d8d70149c1954a287aacd61db56f",
+    "bytes": 3974
+  },
+  {
+    "file": "2636_quote.txt",
+    "url": "https://qt.gtimg.cn/q=hk02636,sh688036,whHKDCNY",
+    "sha256": "b48f36a7e825b0ad43b4db64eb50303ace9982e8f1a949e87e9a1108a3094094",
+    "bytes": 1115
+  },
+  {
+    "file": "cnyhkd.json",
+    "url": "https://query1.finance.yahoo.com/v8/finance/chart/CNYHKD=X?period1=1790899200&period2=1792195200&interval=1d",
+    "sha256": "a539fe8c85fe33f80aeb29e29e83b7ef927e7fdfdf4b0a7bdf450a667c2a145d",
+    "bytes": 2307
+  },
+  {
+    "file": "2636_etnet.html",
+    "url": "https://www.etnet.com.hk/www/eng/stocks/ci_ipo_detail.php?code=02636&type=listing",
+    "sha256": "d7226db215e3fdcf55a6004c51577b24836ecb0308fe12aa22cea0f70ce511d1",
+    "bytes": 148856
+  },
+  {
+    "file": "2636_prospectus.pdf",
+    "url": "https://iis.aastocks.com/20261007/12364441-0.PDF",
+    "sha256": "dd9e6f70d1ce8b0ff6e598632aa9f9cbd4328b9cf8ad787750b40a5a6f603208",
+    "bytes": 8830644
+  },
+  {
+    "file": "2636_grey.html",
+    "url": "https://www.etnet.com.hk/www/eng/stocks/ci_ipo_news_detail.php?newsid=ETE361014212&code=2636",
+    "sha256": "b37f82c22da916ab66243c79e880a0cd83fb0f7991c53148520d54de8fcd3132",
+    "bytes": 109171
+  },
+  {
+    "file": "hk03033.json",
+    "url": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=hk03033,day,2026-10-14,2026-10-15,10,",
+    "sha256": "f562c998c34d62d5229f1bd9c2586f1f8a1ecba136d4ce4ebd107de2b54867bd",
+    "bytes": 1567
+  }
+]

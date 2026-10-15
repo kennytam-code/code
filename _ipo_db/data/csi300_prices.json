@@ -2,7 +2,7 @@
  "name": "CSI 300",
  "code": "000300",
  "bloomberg_ticker": "SHSZ300 Index",
- "asof": "2026-10-02",
+ "asof": "2026-10-15",
  "closes": [
   [
    "2019-01-02",
@@ -7523,6 +7523,30 @@
   [
    "2026-09-30",
    4357.62
+  ],
+  [
+   "2026-10-08",
+   4310.28
+  ],
+  [
+   "2026-10-09",
+   4317.25
+  ],
+  [
+   "2026-10-12",
+   4287.98
+  ],
+  [
+   "2026-10-13",
+   4275.68
+  ],
+  [
+   "2026-10-14",
+   4217.68
+  ],
+  [
+   "2026-10-15",
+   4166.01
   ]
  ],
  "source_urls": [
@@ -7533,7 +7557,8 @@
   "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh000300,day,2023-01-01,2023-12-31,320,",
   "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh000300,day,2024-01-01,2024-12-31,320,",
   "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh000300,day,2025-01-01,2025-12-31,320,",
-  "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh000300,day,2026-01-01,2026-12-31,320,"
+  "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh000300,day,2026-01-01,2026-12-31,320,",
+  "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh000300,day,2026-08-25,2026-10-15,320,"
  ],
  "methodology": "https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/detail/files/en/000300_Index_Methodology_en.pdf",
  "retrieved_at": "2026-10-13T13:40:11.643976+00:00"

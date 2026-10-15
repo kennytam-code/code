@@ -9,14 +9,15 @@ ROOT=Path(__file__).resolve().parent.parent;sys.path.insert(0,str(ROOT/'ipo_lib'
 from patch_peer_workbook import maps,q,N,R,P,T
 with zipfile.ZipFile(ROOT/'out/HK_IPO_Database_v1.xlsx') as z:
  _,_,sheets=maps({p:z.read(p) for p in ['xl/workbook.xml','xl/_rels/workbook.xml.rels']})
- for name,limit in [('Lock-up',61),('AH',92),('Screener',80),('Peer Trades',45)]:
+ for name,limit in [('Lock-up',61),('AH',92),('Screener',80),('Peer Trades',45),('Database',13),('Pipeline',28),('IPO Live',46),('CS League',13),('SM League',13),('Taxonomy',14),('Notes',16),('BBG Verify',12),('Scoring Stats',13),('SizeBench',13),('Verification',13)]:
   if name not in sheets or len(sys.argv)>1 and name not in sys.argv[1:]:continue
   sp=sheets[name];doc=E.fromstring(z.read(sp));mini={};data=doc.find(q('sheetData'))
   for row in list(data):
    if int(row.get('r'))>limit:data.remove(row);continue
    for cell in list(row):
     col=re.match('[A-Z]+',cell.get('r'))[0]
-    if openpyxl.utils.column_index_from_string(col)>15:row.remove(cell);continue
+    maxcol=84 if name=='Database' else 30 if name=='Pipeline' else 15
+    if openpyxl.utils.column_index_from_string(col)>maxcol:row.remove(cell);continue
     f=cell.find(q('f'))
     if f is not None:cell.remove(f)
     if cell.get('t')=='str':

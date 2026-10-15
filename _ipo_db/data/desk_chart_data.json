@@ -1,5 +1,5 @@
 {
- "listed_count": 715,
+ "listed_count": 716,
  "pairs": [
   {
    "code": "0668",
@@ -1208,9 +1208,23 @@
    "stored_1m": null,
    "latest_date": "2026-10-02",
    "review": null
+  },
+  {
+   "code": "2636",
+   "name": "TRANSSION",
+   "a_ticker": "688036 CH Equity",
+   "h_ticker": "2636 HK Equity",
+   "ipo_date": "2026-10-15",
+   "raw_debut": 33.28,
+   "cache_start": 27275,
+   "cache_rows": 1,
+   "stored_7": null,
+   "stored_1m": null,
+   "latest_date": "2026-10-15",
+   "review": null
   }
  ],
- "ah_cache_end": 27274,
+ "ah_cache_end": 27275,
  "peer": {
   "asof": "2026-10-02",
   "pairs": [
