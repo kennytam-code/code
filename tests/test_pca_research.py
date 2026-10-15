@@ -595,8 +595,8 @@ class ResearchTests(unittest.TestCase):
         a=rng.normal(0,.01,70);b=.7*a+rng.normal(0,.008,70)
         frame=pd.DataFrame({'y':2*a-.9*b+rng.normal(0,.002,70),'a':a,'b':b})
         fit,_,_=E['_fit_basket'](frame,'y',['a','b'],.8,.5)
-        X=frame[['a','b']].to_numpy();X-=X.mean(0)
-        y=frame.y.to_numpy();y-=y.mean()
+        X=frame[['a','b']].to_numpy(copy=True);X-=X.mean(0)
+        y=frame.y.to_numpy(copy=True);y-=y.mean()
         loss=lambda w: float(np.sum((y-X@w)**2)+fit.alpha_*np.sum((w*X.std(0))**2))
         grid=[loss(np.array([u,v])) for u in np.linspace(-.5,.5,101)
               for v in np.linspace(-.5,.5,101) if abs(u)+abs(v)<=.80000001]
