@@ -256,7 +256,7 @@ import textwrap as _textwrap
 
 RIDGE_ALPHAS = np.logspace(-4, 2, 25)
 MIN_RETURN_STD = 1e-12
-PCA_REVISION = '2026-10-17-v119-short-window-factor-coverage'
+PCA_REVISION = '2026-10-17-v120-residual-covariance'
 MIN_TRAIN_COVERAGE = 0.90
 
 
@@ -4473,13 +4473,47 @@ def _factor_proxy_group(ticker):
     return ('instrument', key)
 
 
-def _common_risk_model(frame, target, peers, reference_names=(), max_factors=5):
+def _regularized_residual_covariance(residual, total_variance, columns, calibration_names):
+    """Shrink residual correlations toward zero using training observations only.
+
+    Standardization makes the Ledoit-Wolf identity target a diagonal covariance
+    in return units, preserving unequal instrument variances. Estimate one
+    shrinkage intensity on the actual eligible target/hedge universe; extra
+    reference-only price columns must not change it. This is a regularization
+    estimate, not a significance test or proof of stable residual relationships.
+    """
+    from sklearn.covariance import ledoit_wolf_shrinkage
+    n = len(residual)
+    sample = residual.T @ residual / n
+    raw_variance = np.maximum(np.diag(sample), 0.0)
+    # Fully explained reference factors have numerical residuals only. Never
+    # standardize these into artificial unit-variance signals.
+    active = raw_variance > np.maximum(total_variance * 1e-10, 1e-24)
+    calibration = set(calibration_names)
+    selected = [i for i, c in enumerate(columns) if c in calibration and active[i]]
+    shrinkage = 1.0
+    if len(selected) >= 2:
+        z = residual[:, selected] / np.sqrt(raw_variance[selected])
+        shrinkage = float(ledoit_wolf_shrinkage(z, assume_centered=True))
+        if not np.isfinite(shrinkage):
+            raise ValueError('Residual covariance shrinkage is not finite')
+        shrinkage = float(np.clip(shrinkage, 0.0, 1.0))
+    covariance = (1.0 - shrinkage) * sample
+    covariance += np.diag(shrinkage * raw_variance)
+    # Numerical floor only, not the old 1% artificial risk on explained ETFs.
+    floor = np.maximum(total_variance, np.max(total_variance) * 1e-12) * 1e-10
+    covariance += np.diag(np.maximum(floor - raw_variance, 0.0))
+    return covariance, shrinkage, [columns[i] for i in selected]
+
+
+def _common_risk_model(frame, target, peers, reference_names=(), max_factors=5, covariance_names=None):
     """Training-only factor covariance with explicit reference coverage.
 
     Reserve capacity for stock co-movements instead of letting a list of ETFs
     consume every slot. A short window supports up to three regularized factors;
-    this dimension rule is a heuristic, not a significance test. Specific risk
-    remains diagonal, so omitted residual co-movement remains a model limitation.
+    this dimension rule is a heuristic, not a significance test. Factor
+    projection is orthogonal; remaining co-movements enter through a shrunk
+    residual covariance instead of being assumed exactly zero.
     """
     n = len(frame)
     cols = list(frame.columns)
@@ -4563,15 +4597,29 @@ def _common_risk_model(frame, target, peers, reference_names=(), max_factors=5):
     if not factors:
         raise ValueError('No supported common factors: include a market/sector ETF or more verified peers')
     F = np.column_stack(factors)
-    B = np.linalg.solve(F.T @ F + 2.0*np.eye(F.shape[1]), F.T @ centered)
+    # Exact projection makes F' residual zero. Shrinking loadings here and
+    # then discarding factor/residual cross terms understated fitted variance.
+    B = np.linalg.lstsq(F, centered, rcond=None)[0]
     residual = centered - F @ B
-    specific = np.maximum(np.mean(residual**2, axis=0), 0.01*np.var(centered, axis=0))
-    covariance = B.T @ (F.T @ F / n) @ B + np.diag(specific)
+    common = B.T @ (F.T @ F / n) @ B
+    if covariance_names is None:
+        covariance_names = [target] + [c for c in cols if c not in refs]
+    covariance_names = list(dict.fromkeys(c for c in covariance_names if c in cols))
+    residual_covariance, shrinkage, calibration = _regularized_residual_covariance(
+        residual, np.var(centered, axis=0), cols, covariance_names)
+    specific = np.diag(residual_covariance).copy()
+    covariance = common + residual_covariance
+    covariance = (covariance + covariance.T) / 2
     return {'columns': cols, 'covariance': covariance, 'loadings': B,
             'specific_variance': specific, 'factors': F, 'labels': labels,
             'target': target, 'rows': n, 'peer_count': len(eligible),
             'reference_audit': audit, 'factor_limit': limit,
-            'equity_pc_count': pc_count}
+            'equity_pc_count': pc_count, 'peer_names': eligible,
+            'covariance_names': covariance_names,
+            'residual_covariance': residual_covariance,
+            'residual_shrinkage': shrinkage,
+            'residual_calibration_names': calibration,
+            'covariance_method': 'orthogonal factors + shrunk residual correlations'}
 
 
 
@@ -4733,9 +4781,9 @@ def _joint_basket_search(frame, target, universe, sizes, forced=(), keep=6,
     return final,counts
 
 
-def _factor_exposure_audit(frame, target, weights, peers, references):
+def _factor_exposure_audit(frame, target, weights, peers, references, model=None):
     try:
-        m=_common_risk_model(frame,target,peers,references)
+        m=model if model is not None else _common_risk_model(frame,target,peers,references)
     except ValueError as err:
         return {'status':'unavailable','reason':str(err),'rows':[]}
     ti=m['columns'].index(target)
@@ -4750,10 +4798,12 @@ def _factor_exposure_audit(frame, target, weights, peers, references):
             'factor_count':len(before),'n_observations':len(frame),
             'target_factor_share':v0/max(float(frame[target].var(ddof=0)),1e-14),
             'reference_audit':m['reference_audit'], 'factor_limit':m['factor_limit'],
-            'equity_pc_count':m['equity_pc_count']}
+            'equity_pc_count':m['equity_pc_count'],
+            'residual_shrinkage':m['residual_shrinkage'],
+            'covariance_method':m['covariance_method']}
 
 
-def _weight_sensitivity(frame,target,weights,peers,references,objective,max_gross,max_leg):
+def _weight_sensitivity(frame,target,weights,peers,references,objective,max_gross,max_leg,covariance_names=None):
     """Delete recent/early blocks and refit a FIXED basket; descriptive sensitivity."""
     rows=[]
     block=min(5,max(1,len(frame)//5))
@@ -4761,7 +4811,7 @@ def _weight_sensitivity(frame,target,weights,peers,references,objective,max_gros
         if len(sub)<max(8,len(weights)+2): continue
         try:
             if objective=='factor':
-                m=_common_risk_model(sub,target,peers,references)
+                m=_common_risk_model(sub,target,peers,references,covariance_names=covariance_names)
                 fit,_,_=_fit_common_risk(sub,target,list(weights.index),m,max_gross,max_leg)
             else:
                 fit,_,_=_fit_basket(sub,target,list(weights.index),max_gross,max_leg)
@@ -5817,7 +5867,8 @@ def _find_best_hedge_impl(
                 if _ticker_key(p) in available and _ticker_key(p) not in leg_ids))
             references=_ordered_factor_references(data,pf_legs)
             factor_frame=_with_reference_returns(ctx['tr'],data,references,two_day,pf_legs[0],tz_tolerance_hours)
-            ctx['common_model']=_common_risk_model(factor_frame,target_ticker,peer_names,references)
+            ctx['common_model']=_common_risk_model(factor_frame,target_ticker,peer_names,references,
+                covariance_names=[target_ticker]+ctx['u'])
         return ctx['common_model']
 
     def _fit_active(frame, target, basket):
@@ -5926,6 +5977,7 @@ def _find_best_hedge_impl(
                 tracking_reference['reason']=str(err)
         return dict(weights=w,basket=basket,returns=tr,in_sample_r2=r2,current_single_references=singles,
             tracking_basket_reference=tracking_reference,
+            common_model=_factor_context(ctx) if hedge_objective=='factor' else None,
             in_sample_r2_adj=_short_window_fit_score(r2,len(tr),len(basket),float(w.abs().sum()),gross_penalty)[1],
             chart_pca=pca,chart_loadings=lds,basket_candidates=recipes,
             current_recipe_spec=spec,current_recipe_changed=(str(spec),int(size))!=original_rule,
@@ -9007,15 +9059,13 @@ def _report_blocks(result):
         text(f"Current fit {current['fit_start']:%d %b %Y} to {current['fit_end']:%d %b %Y}",True)
     table(['CURRENT FIT MEASURE','READING','INTERPRETATION'],[
         ['Raw in-sample R²',f(result['in_sample_r2']),'Return tracking over the selected history'],
-        ['Same-name capped fit R²',f((result.get('fit_diagnostics') or {}).get('same_basket_capped_ols_r2')),'Best tracking fit with the same exposure caps'],
-        ['Same-name uncapped OLS R²',f((result.get('fit_diagnostics') or {}).get('same_basket_ols_r2')),'Unconstrained fit reference on identical dates'],
         ['Target volatility annualised',f(fitrisk.get('unhedged_vol_ann'),True),'Total historical volatility before the hedge'],
         ['Hedged volatility annualised',f(fitrisk.get('hedged_vol_ann'),True),'Total historical volatility of the hedged spread'],
         ['Fitted volatility reduction',f(fitrisk.get('vol_reduction'),True),'Reduction in standard deviation, before costs']
         ],widths=[2.5,.9,3.6])
     fd=result.get('fit_diagnostics') or {}
-    if np.isfinite(fd.get('same_basket_capped_ols_r2',np.nan)):
-        text(f"R² gap on the same names/dates: exposure caps {fd['constraint_r2_gap']:.3f}; objective/regularization {fd['objective_r2_gap']:.3f}. Fit references allow zero legs and are descriptive, not validated alternative baskets.",True)
+    if p.get('report')=='full' and np.isfinite(fd.get('same_basket_capped_ols_r2',np.nan)):
+        text(f"Diagnostic only: reweighting the same names to maximize past tracking gives R² {fd['same_basket_capped_ols_r2']:.3f} within exposure caps. This is not the primary basket's score or an unseen result.",True)
     text('Fitted R² and fitted volatility reduction reflect the same residual variation. Historical tests provide separate evidence.',True)
     if result['in_sample_r2'] < .5:
         text('Historical tracking is limited. A useful hedge requires evidence of reduced intended risk and stable weights; low R² alone cannot establish that. Unexplained return is not automatically alpha.',True)
@@ -9037,6 +9087,8 @@ def _report_blocks(result):
         text('Fitted common-factor variance reduction '+(f'{reduction:.2%}' if np.isfinite(reduction) else 'unavailable')+'. This measures the retained common factors, not total stock risk.',True)
         text(f"These retained factors account for approximately {expo.get('target_factor_share',np.nan):.1%} of the target's fitted total variance. Removing them does not remove the remaining stock risk.",True)
         text('Exposure is in basis points per one-standard-deviation factor move. Values nearer zero mean less exposure; these are fitted estimates.',True)
+        if p.get('report')=='full':
+            text(f"Residual correlation shrinkage toward zero: {expo.get('residual_shrinkage',np.nan):.1%}. Estimated using fitting rows only; this is regularization strength, not confidence.",True)
         coverage=expo.get('reference_audit') or []
         text(f"Factor coverage: {expo['factor_count']}/{expo.get('factor_limit','?')} directions retained, including {expo.get('equity_pc_count',0)} equity PCA directions. Narrow taxonomy exposures take priority over parent-sector proxies; PCA capacity is reserved when stock data support it.",True)
         omitted=[r for r in coverage if r['status'] not in ('retained','alternate proxy for retained group')]
@@ -9151,7 +9203,7 @@ def _report_blocks(result):
     blocks.append(dict(kind='notes',text='Methodology and coverage',notes=[
         'The model estimates shared risk, not expected alpha. Residual return contains company risk, omitted factors and hedge-instrument risk. PCA directions are uncorrelated in the fitted sample, not generally independent.',
         'Current in-sample statistics use the full selected analysis window. Validation statistics use earlier frozen selection and weights. Searching more baskets can overfit; no global optimum or future performance is guaranteed.',
-        'Factor weights minimize a regularized factor covariance estimate with diagonal specific risk. This assumes residual co-movements are negligible after the retained factors; omitted common risks remain possible.',
+        'Factor weights minimize covariance from orthogonal market/sector/equity factors plus shrunk residual correlations. Shrinkage is estimated on training data; residual relationships may be unstable and are not alpha forecasts.',
         'Reported returns use a log-spread approximation. Trading costs, financing and FX conversion are excluded. Local listing does not establish domestic underlying exposure or eliminate FX risk. Current peer classifications can bias historical universe coverage.',
         'Engine revision '+str(result.get('engine_revision'))]))
     return blocks
@@ -9554,9 +9606,13 @@ def find_best_hedge(*args, **kwargs):
     target_name=PORTFOLIO_COL if result.get('is_portfolio') else result['portfolio_legs'][0]
     audit_frame=_with_reference_returns(result['returns'],options['data'],refs,result.get('two_day_returns',False),result['portfolio_legs'][0],options['tz_tolerance_hours'])
     _sector_etf_references(result,audit_frame,peers,refs,options)
-    result['common_exposures']=_factor_exposure_audit(audit_frame,target_name,result['weights'],peers,refs)
+    common_model=current.get('common_model')
+    if common_model is not None:
+        peers=common_model['peer_names']
+    result['common_exposures']=_factor_exposure_audit(audit_frame,target_name,result['weights'],peers,refs,model=common_model)
     result['current_sensitivity']=_weight_sensitivity(audit_frame,target_name,result['weights'],peers,refs,
-        options['hedge_objective'],options['max_gross'],options['max_leg'])
+        options['hedge_objective'],options['max_gross'],options['max_leg'],
+        covariance_names=common_model['covariance_names'] if common_model is not None else None)
     result['execution_audit']=_execution_audit(result,options['data'])
     if result['execution_audit']['status']=='BORROW UNAVAILABLE':
         result['trade_eligible']=False
@@ -9626,6 +9682,14 @@ def find_best_hedge(*args, **kwargs):
                             exclude=options['exclude'],
                             alternative_baskets=options['alternative_baskets'],
                             show_plots=options['show_plots'])
+    # Freeze the complete input snapshot before another UI run can change data.
+    # Diagnostics never alter fitting or turn a successful analysis into failure.
+    result['diagnostic_run_options']={k:v for k,v in options.items() if k not in ('data','session')}
+    try:
+        result['_diagnostic_inputs_json']=_diagnostic_json({
+            'data':options['data'], 'run_options':result['diagnostic_run_options']})
+    except (TypeError,ValueError) as err:
+        result['diagnostic_export_error']=str(err)
     result['requested_basket_sizes'] = _basket_sizes(options['basket_size_options'], options['basket_size_range'])
     result['basket_comparison'] = _basket_report_rows(result)
     result['basket_identity_audit'] = _peer_identity_rows(result,options['data'])
@@ -10112,6 +10176,153 @@ def _docx_hedge_report(result, report_text, path):
     return path
 
 
+def _diagnostic_pack(value):
+    """JSON-only market-data transport; never serialize executable objects."""
+    from datetime import date as _date
+    if value is None or isinstance(value, (str, bool, int)):
+        return value
+    if value is pd.NaT or value is pd.NA:
+        return {'type': 'missing'}
+    if isinstance(value, np.generic):
+        return _diagnostic_pack(value.item())
+    if isinstance(value, float):
+        return value if np.isfinite(value) else {'type': 'float', 'value': repr(value)}
+    if isinstance(value, (pd.Timestamp, datetime, _date)):
+        return {'type': 'timestamp', 'value': value.isoformat()}
+    if isinstance(value, pd.DataFrame):
+        return {'type': 'frame', 'index': _diagnostic_pack(value.index),
+                'columns': _diagnostic_pack(value.columns),
+                'values': _diagnostic_pack(value.to_numpy().tolist())}
+    if isinstance(value, pd.Series):
+        return {'type': 'series', 'index': _diagnostic_pack(value.index),
+                'name': _diagnostic_pack(value.name),
+                'values': _diagnostic_pack(value.tolist())}
+    if isinstance(value, pd.Index):
+        return {'type': 'index', 'name': _diagnostic_pack(value.name),
+                'datetime': isinstance(value, pd.DatetimeIndex),
+                'values': _diagnostic_pack(value.tolist())}
+    if isinstance(value, np.ndarray):
+        return {'type': 'array', 'values': _diagnostic_pack(value.tolist())}
+    if isinstance(value, dict):
+        return {'type': 'dict', 'items': [[_diagnostic_pack(k), _diagnostic_pack(v)]
+                                        for k, v in value.items()]}
+    if isinstance(value, (list, tuple, set, frozenset)):
+        kind = 'tuple' if isinstance(value, tuple) else 'set' if isinstance(value, (set, frozenset)) else 'list'
+        values = sorted(value, key=repr) if kind == 'set' else value
+        return {'type': kind, 'values': [_diagnostic_pack(v) for v in values]}
+    raise TypeError('Diagnostic export does not support ' + type(value).__name__)
+
+
+def _diagnostic_unpack(value):
+    """Decode a fixed set of data types. No pickle, eval or class imports."""
+    if not isinstance(value, dict):
+        return value
+    kind = value.get('type')
+    if kind == 'missing':
+        return np.nan
+    if kind == 'float':
+        if value['value'] not in ('nan', 'inf', '-inf'):
+            raise ValueError('Invalid diagnostic float')
+        return float(value['value'])
+    if kind == 'timestamp':
+        return pd.Timestamp(value['value'])
+    if kind == 'dict':
+        return {_diagnostic_unpack(k): _diagnostic_unpack(v) for k, v in value['items']}
+    if kind in ('list', 'tuple', 'set', 'array'):
+        items = [_diagnostic_unpack(v) for v in value['values']]
+        return {'list': list, 'tuple': tuple, 'set': set, 'array': np.array}[kind](items)
+    if kind == 'index':
+        items = _diagnostic_unpack(value['values'])
+        cls = pd.DatetimeIndex if value['datetime'] else pd.Index
+        return cls(items, name=_diagnostic_unpack(value['name']))
+    if kind == 'frame':
+        return pd.DataFrame(_diagnostic_unpack(value['values']),
+                            index=_diagnostic_unpack(value['index']),
+                            columns=_diagnostic_unpack(value['columns']))
+    if kind == 'series':
+        return pd.Series(_diagnostic_unpack(value['values']),
+                         index=_diagnostic_unpack(value['index']),
+                         name=_diagnostic_unpack(value['name']))
+    raise ValueError('Unknown diagnostic data type')
+
+
+def _diagnostic_json(value):
+    import json
+    return json.dumps(_diagnostic_pack(value), ensure_ascii=False, allow_nan=False,
+                      separators=(',', ':'))
+
+
+def export_hedge_diagnostics(result, out_dir=None):
+    """Export one reproducible local ZIP of the captured data and run settings.
+
+    Captures all downloaded history, not just the selected window. No terminal,
+    account credentials, executable cache or source code is included; nothing
+    is uploaded. One archive can be used to rerun 1m/2m/3m from the same history.
+    """
+    import os, json, hashlib, platform, zipfile
+    inputs = result.get('_diagnostic_inputs_json')
+    if not inputs:
+        raise ValueError('Run the updated engine first. ' + result.get('diagnostic_export_error', ''))
+    folder, warn = _export_folder(out_dir)
+    if warn:
+        print('  ' + warn)
+    stamp = datetime.now().strftime('%Y%m%d-%H%M%S-%f')
+    path = os.path.join(folder, 'PCA_diagnostics_' + _slug(result.get('target_label') or 'hedge') + '_' + stamp + '.zip')
+    fields = ('engine_revision', 'portfolio_legs', 'params', 'weights',
+              'in_sample_r2', 'fit_diagnostics', 'common_exposures',
+              'validation_mode', 'validation_weights', 'holdout_r2',
+              'selected_unseen_r2', 'sector_search_audit', 'joint_search_audit')
+    snapshot = {key: result.get(key) for key in fields}
+    comparison = (result.get('history_comparison') or {}).get('diagnostic_results') or {}
+    snapshot['comparison_windows'] = {
+        window: {'run_options': item.get('diagnostic_run_options'),
+                 'in_sample_r2': item.get('in_sample_r2'), 'weights': item.get('weights')}
+        for window, item in comparison.items()}
+    import sklearn, scipy
+    environment = dict(schema_version=1, engine_revision=result.get('engine_revision'),
+                       python=platform.python_version(), platform=platform.system(),
+                       numpy=np.__version__, pandas=pd.__version__, sklearn=sklearn.__version__,
+                       scipy=scipy.__version__, inputs_sha256=hashlib.sha256(inputs.encode('utf-8')).hexdigest())
+    with zipfile.ZipFile(path, 'w', compression=zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr('inputs.json', inputs)
+        archive.writestr('environment.json', json.dumps(environment, indent=2))
+        archive.writestr('result.json', _diagnostic_json(snapshot))
+        archive.writestr('report.txt', result.get('report_text', ''))
+        archive.writestr('fitted_returns.csv', result['returns'].to_csv(float_format='%.17g'))
+        archive.writestr('README.txt',
+            'PCA diagnostic package: downloaded prices, discovery metadata, filters, settings and fitted output.\n'
+            'Contains market data; exported locally only. No upload is performed.\n'
+            'The input snapshot was captured at analysis time, so later UI/data changes do not alter this run.\n'
+            'Load using load_hedge_diagnostics(path); it returns data, run_options, environment and result.\n'
+            'Replay with find_best_hedge(data=bundle["data"], **bundle["run_options"]).\n'
+            'For window comparisons, change sample_window to 1m, 2m or 3m on the same downloaded history.\n')
+    print('  Diagnostic ZIP: ' + path)
+    return path
+
+
+def load_hedge_diagnostics(path):
+    """Load inert JSON inputs from our ZIP without extracting files or executing code."""
+    import json, hashlib, zipfile
+    with zipfile.ZipFile(path) as archive:
+        for name in ('inputs.json', 'environment.json', 'result.json'):
+            if archive.getinfo(name).file_size > 512 * 1024 * 1024:
+                raise ValueError('Diagnostic file exceeds the 512 MB limit')
+        environment = json.loads(archive.read('environment.json'))
+        if environment.get('schema_version') != 1:
+            raise ValueError('Unsupported diagnostic schema')
+        raw = archive.read('inputs.json')
+        if hashlib.sha256(raw).hexdigest() != environment.get('inputs_sha256'):
+            raise ValueError('Diagnostic inputs failed their integrity check')
+        inputs = _diagnostic_unpack(json.loads(raw))
+        snapshot = _diagnostic_unpack(json.loads(archive.read('result.json')))
+    if not isinstance(inputs.get('data', {}).get('prices'), pd.DataFrame):
+        raise ValueError('Diagnostic package has no price table')
+    if 'data' in inputs['run_options'] or 'session' in inputs['run_options']:
+        raise ValueError('Invalid embedded run options')
+    inputs.update(environment=environment, result=snapshot)
+    return inputs
+
+
 def export_result(result, report_text='', out_dir=None, also_csv=True):
     r"""[Fix 95/103] Export a finished hedge as a WORD DOCUMENT.
 
@@ -10428,6 +10639,8 @@ def hedge_ui(data=None):
                        tooltip='refit weights only, pinned to the last '
                                'validated config — seconds, no API calls',
                        layout=W.Layout(width='170px', height='42px'))
+    b_diagnostics = W.Button(description='Export diagnostics', icon='file-archive-o',
+        tooltip='Save one local ZIP with prices, peers, exact settings and results for review')
     b_export = W.Button(description='Export Word', icon='file-word-o',
                         tooltip='writes a Word report of this hedge to the '
                                 'Export folder on the Data tab',
@@ -11005,6 +11218,18 @@ def hedge_ui(data=None):
             except Exception as e:
                 _status(f"export failed: {e}", 'err')
 
+    def on_diagnostics(_):
+        with out:
+            if UI_STATE['result'] is None:
+                _status('run an analysis first, then export its diagnostic ZIP', 'warn')
+                return
+            try:
+                path=export_hedge_diagnostics(UI_STATE['result'],
+                    out_dir=(w_expdir.value.strip() or None))
+                _status('Diagnostic ZIP saved: '+path, 'ok')
+            except Exception as err:
+                _status('diagnostic export failed: '+str(err), 'err')
+
     def on_code(_):
         with out:
             clear_output()
@@ -11017,7 +11242,7 @@ def hedge_ui(data=None):
     # [Fix 106] every action goes through _guard: single-flight, buttons
     # disabled for the duration, elapsed time reported. b_refresh and b_code
     # are instant and read-only, so they stay unguarded.
-    _ACTION_BTNS.extend([b_load, b_dl, b_run, b_quick, b_export])
+    _ACTION_BTNS.extend([b_load, b_dl, b_run, b_quick, b_export, b_diagnostics])
     b_load.on_click(_guard(on_load, 'loading cache', 'Load selected'))
     b_refresh.on_click(_refresh_cache)
     b_dl.on_click(_guard(on_download, 'downloading from Bloomberg',
@@ -11025,6 +11250,7 @@ def hedge_ui(data=None):
     b_run.on_click(_guard(on_run, 'running the hedge', 'RUN HEDGE'))
     b_quick.on_click(_guard(on_quick, 're-hedging', 'RE-HEDGE (fast)'))
     b_export.on_click(_guard(on_export, 'writing the report', 'Export Word'))
+    b_diagnostics.on_click(_guard(on_diagnostics, 'saving diagnostic inputs', 'Export diagnostics'))
     b_code.on_click(on_code)
     w_scope.observe(_scope_changed, names='value')
     w_basket_mode.observe(_size_changed, names='value')
@@ -11055,7 +11281,7 @@ def hedge_ui(data=None):
                "<b>Export Word</b> writes the hedge report to the "
                "folder set on the Data tab.</div>"),
         tabs, w_fit,
-        W.HBox([b_run, b_quick, b_export, b_code],
+        W.HBox([b_run, b_quick, b_export, b_diagnostics, b_code],
                layout=W.Layout(margin='12px 0 2px 0')),
         w_status, out])
     root.add_class('hedge-ui')

@@ -32,7 +32,7 @@ class ResearchTests(unittest.TestCase):
         cls.data=fixture();cls.one=run(cls.data,sample_window='1m');cls.three=run(cls.data,sample_window='3m')
 
     def test_actual_revision_loaded(self):
-        self.assertIn('v119',E['PCA_REVISION'])
+        self.assertIn('v120',E['PCA_REVISION'])
 
     def test_short_window_search_has_multiple_distinct_baskets(self):
         rows=self.one['basket_comparison']
@@ -454,7 +454,7 @@ class ResearchTests(unittest.TestCase):
 
     def test_pinned_short_recipe_is_not_replaced_by_search_winner(self):
         for spec in ('correlation','search:1'):
-            r=run(sample_window='1m',pc_options=[spec],broad_search=False)
+            r=run(sample_window='1m',pc_options=[spec],broad_search=False,candidate_scope='peers')
             self.assertEqual(r['params']['pc_spec'],spec)
             self.assertEqual(r['search']['configurations_scored'],1)
 
@@ -739,8 +739,9 @@ class ResearchTests(unittest.TestCase):
             d=r['fit_diagnostics']
             self.assertGreaterEqual(d['same_basket_ols_r2']+1e-7,d['same_basket_capped_ols_r2'])
             self.assertGreaterEqual(d['same_basket_capped_ols_r2']+1e-7,r['in_sample_r2'])
-            self.assertIn('R² gap on the same names/dates',r['report_text'])
-            self.assertIn('Same-name capped fit R²',r['report_text'])
+            self.assertNotIn('Same-name capped fit R²',r['report_text'])
+            full=E['_report_blocks'](dict(r,params=dict(r['params'],report='full')))
+            self.assertTrue(any('Diagnostic only: reweighting the same names' in b.get('text','') for b in full))
 
     def test_published_notebook_matches_script(self):
         nb=SCRIPT.with_suffix('.ipynb')

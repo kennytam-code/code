@@ -1,3 +1,14 @@
+# PCA v120 changes
+
+Revision 2026-10-17-v120-residual-covariance in the existing v115 entry point.
+
+- Retain regularized residual co-movements after market/sector/equity PCA instead of assuming every off-diagonal residual covariance is zero. Estimate Ledoit-Wolf shrinkage on standardized training residuals from the eligible target/hedge universe. Preserve original return units and marginal variances; reference-only prices cannot alter calibration.
+- Use orthogonal least-squares factor projection. The old penalized loadings left nonzero factor/residual cross terms which were then omitted from covariance, understating fitted marginal variances. Retain numerical stabilization in the constrained optimizer.
+- Use the fitted primary model for the exposure report, including its actual training-eligible PCA and residual-calibration names. Holdout and nested folds continue to estimate independently from training rows.
+- Keep current-basket R² prominent; move hypothetical same-name reweighting scores out of the compact main table. Preserve fit diagnostics and a labelled tracking-basket reference.
+- Add Export diagnostics and safe JSON/CSV ZIP loading. Freeze downloaded inputs and exact options at run time. Archive round-trip tests reproduce 1m/2m/3m weights and scores without Bloomberg, and reject modified inputs.
+- Added checks for variance accounting, factor/residual orthogonality, positive covariance, return-unit invariance, reference-only-column isolation, omitted-relationship recovery on independent simulated rows, and noise-only targets. Synthetic checks are not a live 2889 result or proof of trading improvement.
+
 # PCA v119 changes
 
 Revision 2026-10-17-v119-short-window-factor-coverage in the existing v115 entry point.
