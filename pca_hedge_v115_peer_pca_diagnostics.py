@@ -256,7 +256,7 @@ import textwrap as _textwrap
 
 RIDGE_ALPHAS = np.logspace(-4, 2, 25)
 MIN_RETURN_STD = 1e-12
-PCA_REVISION = '2026-10-15-v118-cross-market-sector-search'
+PCA_REVISION = '2026-10-17-v119-short-window-factor-coverage'
 MIN_TRAIN_COVERAGE = 0.90
 
 
@@ -696,7 +696,7 @@ HEDGE_EXPOSURES = {
 # the 85%-history rule, so a typo degrades the hedge without ever erroring.
 MARKET_INSTRUMENTS = {
     # ── Australia (ASX) ──────────────────────────────────────────────────────
-    ('AU', 'GOLD'):         ['PMGOLD AU Equity'],   # Global X Gold Bullion
+    ('AU', 'GOLD'):         ['PMGOLD AU Equity'],   # Perth Mint Gold structured product
     ('AU', 'BASE_METALS'):  ['MVR AU Equity',       # VanEck Aus Resources
                              'OZR AU Equity'],      # SPDR ASX 200 Resources
     ('AU', 'ENERGY'):       ['FUEL AU Equity'],     # BetaShares Global Energy
@@ -835,7 +835,7 @@ _INSTRUMENT_MAP_HASH = _hashlib.md5(
          + sorted((str(k), tuple(v)) for k, v in CONTROL_ETFS.items())
          + sorted((str(k), tuple(v)) for k, v in BROAD_MARKET_HEDGES.items())
          + sorted((str(k), tuple(v)) for k, v in SECTOR_INSTRUMENTS.items())
-         + [('peer_scope_logic', '2026-10-15-peers-v4-sector-v1')]
+         + [('peer_scope_logic', '2026-10-17-peers-v4-sector-v1-exposure-plurals')]
          ).encode()).hexdigest()[:12]
 
 
@@ -858,7 +858,9 @@ def _exposure_tags(*taxonomy_strings):
             continue
         low = str(s).lower()
         for key, tg in HEDGE_EXPOSURES.items():
-            if re.search(r'\b' + re.escape(key) + (r'\w*' if key in ('refin', 'utilit') else r'\b'), low):
+            suffix = (r'\w*' if key in ('refin', 'utilit', 'homebuild', 'home build')
+                      else r'(?:s|ing)?\b' if key == 'bank' else r's?\b')
+            if re.search(r'\b' + re.escape(key) + suffix, low):
                 tags.update(tg)
     return tags
 
@@ -4426,22 +4428,70 @@ class _HedgeFit:
         return float(r2_score(y, self.predict(X)))
 
 
-def _common_risk_model(frame, target, peers, reference_names=(), max_factors=5):
-    """Low-dimensional training-only factor covariance, with diagonal specific risk.
+def _ordered_factor_references(data, legs):
+    """Prioritize economic specificity using taxonomy, never target returns.
 
-    Named market/sector returns enter first. Peer PCs use returns residualized
-    against those factors. The target NEVER enters peer PCA. Orthogonalization
-    avoids counting the same market movement twice; it does not imply independence.
-    Specific returns are retained as risk, never labelled alpha forecasts.
+    Market proxies come first. Subindustry exposures precede parent-industry
+    exposures and sector fallbacks. Existing v118 caches contain this evidence.
+    Every mapped reference remains available for the coverage audit.
+    """
+    data = data or {}
+    names = [t for leg in legs for t in _broad_market_spec(leg)['instruments']]
+    for leg in legs:
+        available = list((data.get('factor_tickers_by_target') or {}).get(leg, []))
+        ids = {_ticker_key(t): t for t in available}
+        discovery = (data.get('peer_discovery_by_target') or {}).get(leg, {})
+        ref = (discovery.get('classification_evidence') or {}).get(leg, {})
+        market = EXCH_TO_MARKET.get(_exch_of(leg), _exch_of(leg))
+        # Narrow labels have priority even if the download stored tickers sorted.
+        for field in ('GICS_SUB_INDUSTRY_NAME', 'BICS_LEVEL_4_SUB_INDUSTRY_NAME',
+                      'GICS_INDUSTRY_NAME', 'BICS_LEVEL_3_INDUSTRY_NAME',
+                      'BICS_LEVEL_2_INDUSTRY_GROUP_NAME'):
+            label = ref.get(field)
+            if not _usable_industry(label):
+                continue
+            for tag in sorted(_exposure_tags(label)):
+                for ticker in MARKET_INSTRUMENTS.get((market, tag), []):
+                    names.append(ids.get(_ticker_key(ticker), ticker))
+        names.extend((data.get('sector_tickers_by_target') or {}).get(leg, []))
+        names.extend(available)
+    return list(dict.fromkeys(names))
+
+
+def _factor_proxy_group(ticker):
+    """Proxy alternatives share one slot; stocks are never grouped by symbol."""
+    key = _ticker_key(ticker)
+    for market, (_, names) in BROAD_MARKET_HEDGES.items():
+        if any(_ticker_key(t) == key for t in names):
+            return ('market', market)
+    for (market, tag), names in MARKET_INSTRUMENTS.items():
+        if any(_ticker_key(t) == key for t in names):
+            return ('exposure', market, tag)
+    for (market, sector), names in SECTOR_INSTRUMENTS.items():
+        if any(_ticker_key(t) == key for t in names):
+            return ('sector', market, sector)
+    return ('instrument', key)
+
+
+def _common_risk_model(frame, target, peers, reference_names=(), max_factors=5):
+    """Training-only factor covariance with explicit reference coverage.
+
+    Reserve capacity for stock co-movements instead of letting a list of ETFs
+    consume every slot. A short window supports up to three regularized factors;
+    this dimension rule is a heuristic, not a significance test. Specific risk
+    remains diagonal, so omitted residual co-movement remains a model limitation.
     """
     n = len(frame)
     cols = list(frame.columns)
     X = frame.to_numpy(dtype=float)
     if not np.isfinite(X).all() or n < 8:
         raise ValueError('Factor covariance needs at least eight complete training rows')
+    if not isinstance(max_factors, (int, np.integer)) or max_factors < 1:
+        raise ValueError('max_factors must be a positive integer')
     centered = X - X.mean(axis=0)
     factors, labels = [], []
-    limit = min(max_factors, max(2, (n-1)//8), n-3)
+    limit = min(max_factors, max(3, (n-1)//8), n-3)
+
     def add(values, label):
         z = np.asarray(values, dtype=float).copy()
         z -= z.mean()
@@ -4455,23 +4505,40 @@ def _common_risk_model(frame, target, peers, reference_names=(), max_factors=5):
         factors.append(z / sd)
         labels.append(label)
         return True
-    # Proxies for the same broad-market slot are alternatives, not additional
-    # economic factors. In a short window they must not crowd out the sector.
-    broad_groups = {_ticker_key(ticker): market for market, (_, tickers) in BROAD_MARKET_HEDGES.items()
-                    for ticker in tickers}
-    by_identity={_ticker_key(c):c for c in cols}
-    reference_names=[by_identity.get(_ticker_key(t),t) for t in reference_names]
-    peers=[by_identity.get(_ticker_key(t),t) for t in peers]
-    used_markets = set()
-    for name in reference_names:
-        group = broad_groups.get(_ticker_key(name))
-        if group is not None and group in used_markets:
-            continue
-        if name in cols and name != target and len(factors) < limit:
-            if add(centered[:, cols.index(name)], name) and group is not None:
-                used_markets.add(group)
+
+    by_identity = {_ticker_key(c): c for c in cols}
+    refs = list(dict.fromkeys(by_identity.get(_ticker_key(t), t) for t in reference_names))
+    peers = [by_identity.get(_ticker_key(t), t) for t in peers]
     eligible = [p for p in dict.fromkeys(peers)
-                if p in cols and p != target and not _is_etf(p)]
+                if p in cols and p != target and not _is_etf(p)
+                and frame[p].std() > MIN_RETURN_STD]
+    named_limit = max(1, limit-1) if len(eligible) >= 2 else limit
+    audit, used_groups = [], set()
+
+    def try_reference(row):
+        name = row['instrument']
+        group = _factor_proxy_group(name)
+        if name not in cols:
+            row['status'] = 'unavailable on aligned training dates'
+        elif name == target:
+            row['status'] = 'target excluded'
+        elif group in used_groups:
+            row['status'] = 'alternate proxy for retained group'
+        elif add(centered[:, cols.index(name)], name):
+            row['status'] = 'retained'
+            used_groups.add(group)
+        else:
+            row['status'] = 'constant or collinear'
+
+    for name in refs:
+        row = {'instrument': name, 'status': 'factor budget'}
+        audit.append(row)
+        # Diagnose unavailable/backup references even after the budget is full.
+        if (len(factors) < named_limit or name not in cols or name == target
+                or _factor_proxy_group(name) in used_groups):
+            try_reference(row)
+
+    pc_count = 0
     if len(eligible) >= 2 and len(factors) < limit:
         P = frame[eligible].to_numpy(dtype=float, copy=True)
         P -= P.mean(axis=0)
@@ -4481,24 +4548,31 @@ def _common_risk_model(frame, target, peers, reference_names=(), max_factors=5):
         sd = P.std(axis=0)
         P = P[:, sd > 1e-10] / sd[sd > 1e-10]
         if P.shape[1] >= 2:
-            U, s, _ = np.linalg.svd(P, full_matrices=False)
-            # Retain only directions exceeding an ideal-noise spectral heuristic.
+            U, singular, _ = np.linalg.svd(P, full_matrices=False)
             threshold = (1 + np.sqrt(P.shape[1] / n))**2
-            for j in range(min(len(s), limit-len(factors))):
-                if s[j]**2 / max(n-1, 1) <= threshold:
+            for j in range(min(len(singular), limit-len(factors))):
+                if singular[j]**2 / max(n-1, 1) <= threshold:
                     break
-                add(U[:, j]*s[j], f'Equity PC{j+1} after named factors')
+                pc_count += int(add(U[:, j]*singular[j], f'Equity PC{j+1} after named factors'))
+    # If no supported equity direction uses a reserved slot, try other named
+    # groups. Do not force a noise PC merely to fill the model.
+    for row in audit:
+        if row['status'] == 'factor budget':
+            if len(factors) < limit or _factor_proxy_group(row['instrument']) in used_groups:
+                try_reference(row)
     if not factors:
         raise ValueError('No supported common factors: include a market/sector ETF or more verified peers')
     F = np.column_stack(factors)
-    # A small fixed loading penalty stabilizes short windows without tuning on test data.
     B = np.linalg.solve(F.T @ F + 2.0*np.eye(F.shape[1]), F.T @ centered)
     residual = centered - F @ B
     specific = np.maximum(np.mean(residual**2, axis=0), 0.01*np.var(centered, axis=0))
     covariance = B.T @ (F.T @ F / n) @ B + np.diag(specific)
     return {'columns': cols, 'covariance': covariance, 'loadings': B,
             'specific_variance': specific, 'factors': F, 'labels': labels,
-            'target': target, 'rows': n, 'peer_count': len(eligible)}
+            'target': target, 'rows': n, 'peer_count': len(eligible),
+            'reference_audit': audit, 'factor_limit': limit,
+            'equity_pc_count': pc_count}
+
 
 
 def _fit_common_risk(frame, target, basket, model, max_gross=None, max_leg=None):
@@ -4674,7 +4748,9 @@ def _factor_exposure_audit(frame, target, weights, peers, references):
             for label,a,b in zip(m['labels'],before,after)],
             'common_variance_reduction':1-v1/v0 if v0>1e-14 else np.nan,
             'factor_count':len(before),'n_observations':len(frame),
-            'target_factor_share':v0/max(float(frame[target].var(ddof=0)),1e-14)}
+            'target_factor_share':v0/max(float(frame[target].var(ddof=0)),1e-14),
+            'reference_audit':m['reference_audit'], 'factor_limit':m['factor_limit'],
+            'equity_pc_count':m['equity_pc_count']}
 
 
 def _weight_sensitivity(frame,target,weights,peers,references,objective,max_gross,max_leg):
@@ -5739,10 +5815,7 @@ def _find_best_hedge_impl(
             leg_ids={_ticker_key(p) for p in pf_legs}
             peer_names=list(dict.fromkeys(available[_ticker_key(p)] for p in peer_names
                 if _ticker_key(p) in available and _ticker_key(p) not in leg_ids))
-            references=list(dict.fromkeys(
-                [c for leg in pf_legs for c in _broad_market_spec(leg)['instruments']] +
-                [c for leg in pf_legs for c in (data.get('sector_tickers_by_target') or {}).get(leg,[])] +
-                [c for leg in pf_legs for c in (data.get('factor_tickers_by_target') or {}).get(leg,[])]))
+            references=_ordered_factor_references(data,pf_legs)
             factor_frame=_with_reference_returns(ctx['tr'],data,references,two_day,pf_legs[0],tz_tolerance_hours)
             ctx['common_model']=_common_risk_model(factor_frame,target_ticker,peer_names,references)
         return ctx['common_model']
@@ -5831,7 +5904,28 @@ def _find_best_hedge_impl(
                     if family not in singles or score>singles[family]['score']:
                         singles[family]=dict(ticker=ticker,weight=sw,r2=sr2,score=score)
             except (ValueError,RuntimeError,np.linalg.LinAlgError): continue
+        tracking_reference = {'status':'not requested for this objective'}
+        if hedge_objective == 'factor':
+            # This comparison runs AFTER validation, only on the current fitting
+            # frame. It cannot affect selection, frozen tests, or trade flags.
+            tracking_reference = {'status':'no feasible comparison basket'}
+            try:
+                tracking_rows, tracking_audit = _joint_basket_search(
+                    tr,target_ticker,ctx['u'],[len(w)],forced=forced,keep=1,
+                    budget=search_budget,gross_penalty=0.,max_gross=max_gross,
+                    max_leg=max_leg,factor_model=None)
+                choices = tracking_rows.get(len(w), [])
+                if choices:
+                    item = max(choices,key=lambda x:x['fit'][1])
+                    tw = pd.Series(item['fit'][0].coef_,index=item['basket'])
+                    tracking_reference = dict(status='ok',weights=tw,r2=item['fit'][1],
+                        fit_start=tr.index[0],fit_end=tr.index[-1],rows=len(tr),
+                        fitted_risk=_trade_risk(tr[target_ticker],tr[target_ticker]-tr[tw.index]@tw,ann_sqrt),
+                        search_audit=tracking_audit,reference_only=True)
+            except (ValueError,RuntimeError,np.linalg.LinAlgError) as err:
+                tracking_reference['reason']=str(err)
         return dict(weights=w,basket=basket,returns=tr,in_sample_r2=r2,current_single_references=singles,
+            tracking_basket_reference=tracking_reference,
             in_sample_r2_adj=_short_window_fit_score(r2,len(tr),len(basket),float(w.abs().sum()),gross_penalty)[1],
             chart_pca=pca,chart_loadings=lds,basket_candidates=recipes,
             current_recipe_spec=spec,current_recipe_changed=(str(spec),int(size))!=original_rule,
@@ -8925,6 +9019,15 @@ def _report_blocks(result):
     text('Fitted R² and fitted volatility reduction reflect the same residual variation. Historical tests provide separate evidence.',True)
     if result['in_sample_r2'] < .5:
         text('Historical tracking is limited. A useful hedge requires evidence of reduced intended risk and stable weights; low R² alone cannot establish that. Unexplained return is not automatically alpha.',True)
+    tracking=result.get('tracking_basket_reference') or {}
+    if tracking.get('status')=='ok':
+        tw=tracking['weights']
+        recipe='\n'.join(f"{'SHORT' if x>0 else 'LONG'} {abs(x)*100:.1f}  {t}" for t,x in tw.sort_values(key=lambda a:-a.abs()).items())
+        table(['FITTED TRACKING COMPARISON','FIT R²','VOL CUT','GROSS'],[[recipe,
+            f(tracking['r2']),f(tracking['fitted_risk'].get('vol_reduction'),True),f"{tw.abs().sum():.2f}×"]],widths=[4,.9,1.2,.9])
+        text('Separate regularized tracking search on the same dates, eligible universe, basket size and exposure caps. Fitted reference only; it has no separate unseen test and does not replace the primary basket.',True)
+    elif p.get('hedge_objective')=='factor':
+        text('Tracking comparison unavailable: '+str(tracking.get('reason',tracking.get('status','not recorded'))),True)
     section('Market sector and peer exposures')
     expo=result.get('common_exposures') or {}
     if expo.get('status')=='ok':
@@ -8934,6 +9037,11 @@ def _report_blocks(result):
         text('Fitted common-factor variance reduction '+(f'{reduction:.2%}' if np.isfinite(reduction) else 'unavailable')+'. This measures the retained common factors, not total stock risk.',True)
         text(f"These retained factors account for approximately {expo.get('target_factor_share',np.nan):.1%} of the target's fitted total variance. Removing them does not remove the remaining stock risk.",True)
         text('Exposure is in basis points per one-standard-deviation factor move. Values nearer zero mean less exposure; these are fitted estimates.',True)
+        coverage=expo.get('reference_audit') or []
+        text(f"Factor coverage: {expo['factor_count']}/{expo.get('factor_limit','?')} directions retained, including {expo.get('equity_pc_count',0)} equity PCA directions. Narrow taxonomy exposures take priority over parent-sector proxies; PCA capacity is reserved when stock data support it.",True)
+        omitted=[r for r in coverage if r['status'] not in ('retained','alternate proxy for retained group')]
+        if omitted:
+            table(['MAPPED REFERENCE NOT RETAINED','REASON'],[[r['instrument'],r['status']] for r in omitted],widths=[3.4,3.6])
     else: text('Common-factor audit unavailable: '+str(expo.get('reason','missing data')),True)
     diag=result.get('peer_pca_diagnostics') or {}
     if diag.get('status')=='ok':
@@ -8956,7 +9064,7 @@ def _report_blocks(result):
         alternate_metrics.append([str(row['number']),recipe,f(row['in_sample_r2']),f(fitvol,True),f"{row['gross']:.2f}×"])
     table(['ID','POSITIONS PER 100 TARGET','FIT R²','VOL CUT','GROSS'],alternate_metrics,widths=[.55,3.45,.9,1.2,.9])
     section('Single instrument references')
-    text('The basket remains the primary result. These are current-fit single-stock and ETF references.',True)
+    text('The basket remains the primary result. Single references use the selected objective; they are not ranked solely by fitted tracking R².',True)
     refs=result.get('current_single_references') or {}
     reference_rows=[]
     for key,label in [('single_stock','Single stock'),('single_etf','Single ETF'),('single_market','Local market ETF')]:
@@ -9426,6 +9534,7 @@ def find_best_hedge(*args, **kwargs):
     result['candidate_weights']=result['weights'].copy()
     result['trade_weights']=(result['weights'].copy() if result.get('trade_eligible') else result['weights'].iloc[:0].copy())
     result['current_single_references']=current.get('current_single_references',{})
+    result['tracking_basket_reference']=current.get('tracking_basket_reference',{})
     result['current_recipe_spec']=current.get('current_recipe_spec',result['params']['pc_spec'])
     result['current_fit_rows']=current.get('fit_rows',len(result['returns']))
     result['current_fit_risk']=current.get('fitted_risk',{})
@@ -9441,9 +9550,7 @@ def find_best_hedge(*args, **kwargs):
     peers=_risk_equity_names(options['data'],result['portfolio_legs'],options['candidate_scope'])
     if options['peer_tickers']:
         peers += _resolve_force_include(options['peer_tickers'],result['prices'].columns,result['portfolio_legs'][0])[0]
-    refs=list(dict.fromkeys([t for leg in result['portfolio_legs'] for t in _broad_market_spec(leg)['instruments']] +
-        [t for leg in result['portfolio_legs'] for t in ((options['data'] or {}).get('sector_tickers_by_target') or {}).get(leg,[])] +
-        [t for leg in result['portfolio_legs'] for t in ((options['data'] or {}).get('factor_tickers_by_target') or {}).get(leg,[])]))
+    refs=_ordered_factor_references(options['data'],result['portfolio_legs'])
     target_name=PORTFOLIO_COL if result.get('is_portfolio') else result['portfolio_legs'][0]
     audit_frame=_with_reference_returns(result['returns'],options['data'],refs,result.get('two_day_returns',False),result['portfolio_legs'][0],options['tz_tolerance_hours'])
     _sector_etf_references(result,audit_frame,peers,refs,options)

@@ -1,6 +1,12 @@
-# PCA v118 changes
+# PCA v119 changes
 
-Revision 2026-10-15-v118-cross-market-sector-search in the existing v115 entry point.
+Revision 2026-10-17-v119-short-window-factor-coverage in the existing v115 entry point.
+
+- Fixed short-window factor starvation seen in the supplied GMD report: prioritize specific taxonomy exposures before parent-sector fallbacks, share proxy-family slots, and reserve equity PCA capacity. The target remains excluded from PCA, and training folds build their own factors.
+- Added a factor-coverage audit and a separately labelled current-fit tracking-basket comparison. The comparison obeys the same scope, exclusions, required instruments, size and caps, and cannot overwrite the primary basket or historical validation.
+- Added synthetic gold-miner, cross-market taxonomy, missing-proxy, target-exclusion, covariance, constrained-comparison and holdout-isolation regressions. These reproduce the failure mechanism, not the user's live Bloomberg returns.
+- Corrected the PMGOLD description to Perth Mint Gold. Existing v118 sector-policy caches remain usable; restart the kernel to load the repaired model.
+- Fixed exposure keyword matching for plural industry labels such as Semiconductors, Banks, Airlines and Precious Metals. Newly recognized mapped factors appear in the coverage audit even when an older cache lacks their prices.
 
 - Fixed the cross-market discovery/search disconnect: verified local sector stocks can now enter the actual search even when their narrow business classification differs. Added separate stock-only and ETF-inclusive sector scopes; strict-peer scopes are preserved.
 - Default form/API scope is same-market sector stocks. Current single-ETF and local-market ETF references remain separate from the primary basket.
