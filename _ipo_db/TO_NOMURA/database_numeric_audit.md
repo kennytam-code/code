@@ -1,4 +1,4 @@
-# Database numeric review — 2026-10-16
+# Database numeric review — 2026-10-17
 
 Reviewed all 526 listed stocks and 39,303 scalar numeric entries across 109 fields. Latest individual quote date: 2026-10-15; older histories retain their own dates. This is a source-confidence ledger, not a blanket certification.
 
@@ -10,7 +10,7 @@ Annual financials use the latest full fiscal year disclosed in the IPO filing. O
 
 Base offer size excludes over-allocation; where the filing's gross proceeds include it, the printed amount and basis are retained separately. P/E and P/S are recalculated after financial corrections; losses and zero revenue do not produce numeric multiples.
 
-The internal lock-up evidence retains 1066 group/date rows, with 861 filed or explicitly derived dates. HTML shows 398 cornerstone events for 388 companies, including IPO dates; Excel has no Lock-up sheets. Unrelated holder restrictions and no-cornerstone placeholders are excluded. Company cornerstones is the full company roster; a particular expiry can apply to a subset, established by the linked event filing. There are 67 events with no established expiry: they keep blank dates, returns and charts. Returns use exactly 30 HK trading sessions before and after the last session on or before the last locked day. Selected averages use only selected stocks, giving each stock one weight; multiple selected expiries for a stock are averaged first. Missing observations and future endpoints stay blank.
+The internal lock-up evidence retains 1066 group/date rows, with 861 filed or derived dates. HTML shows 161 completed historical cornerstone events for 158 companies; Excel has no Lock-up sheets. Only source-reviewed dates with complete 30-session endpoints enter this sample. Unconfirmed dates, ambiguous generic six-month terms, unrelated holder restrictions, future events, unfinished observation windows and missing endpoints are excluded. See data/lockup_review_20261017 for the source/price review and exclusions. This is a selected observable historical sample, not every IPO. Company cornerstones is the full company roster; a particular expiry can apply to a subset established by the linked filing. Returns use exactly 30 HK trading sessions either side of the last session on or before the last locked day, including half-day sessions. Selected averages use only selected stocks, giving each stock one weight; multiple selected expiries for one stock are averaged first. Interior missing prices remain gaps and are excluded from that date's average.
 
 Bloomberg formulas are linted and their surrounding arithmetic is evaluated with simulated quotes. Execution by a Bloomberg terminal/add-in remains a desk check. Sources retain individual observation dates; the newest database quote is 2026-10-15. An incremental new listing does not refresh every historical series.
 

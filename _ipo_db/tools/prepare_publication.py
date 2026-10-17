@@ -28,6 +28,8 @@ for name in ['create_presentation_template.mjs','prepare_ah_reference.py','test_
 for name in ['curate_peer_pairs.py','restore_peer_history_ranges.py','test_peer_horizons.py','prepare_peer_visual_probe.py']:add(ROOT/'tools'/name)
 for code in ['0006','0168','0688','0836','1211','1478','3692']:add(ROOT/'data/peer_price_cache'/f'{code}.json')
 add(ROOT/'data/batches/ah_chart_review_20261013.json')
+for name in ['test_comparison_scope.mjs','render_comparison_scope.mjs','fetch_lockup_review.py','review_lockup_tables.py','audit_lockup_dates.py','check_lockup_prices.py','check_lockup_listing_dates.py','accept_lockup_history.py','test_historical_lockups.py','package_chart_scope.py']:add(ROOT/'tools'/name)
+for p in sorted((ROOT/'data/lockup_review_20261017').glob('*')):add(p)
 for name in ['ah_map.json','ah_study.json','longsys_ah_review_20261014.json']:add(ROOT/'data/batches'/name)
 for kind in ['a','h']:add(ROOT/'data/ah_study_cache'/f'{kind}_9976.json')
 for name in ['create_monitor_layout.mjs','test_monitor_revision.py','test_latest_monitor_fixes.py','test_native_desk.py']:add(ROOT/'tools'/name)

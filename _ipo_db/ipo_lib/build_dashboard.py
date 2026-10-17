@@ -14,6 +14,7 @@ weights from screener_config.json).
 import json
 from datetime import date
 from pathlib import Path
+from historical_lockups import historical_events
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "out" / "hk_ipo_dashboard.html"
@@ -332,6 +333,14 @@ table { font-variant-numeric: tabular-nums; }
 .comparison-toolbar input[type=checkbox], .ah-compare-pick, .lockup-compare-pick { accent-color:var(--brand); }
 .comparison-toolbar .check-control { margin-left:4px; }
 .comparison-basis { color:var(--text-muted); font-size:12px; }
+.comparison-pager { display:flex; align-items:center; justify-content:flex-end; gap:12px; margin:8px 0; font-size:12px; color:var(--text-secondary); }
+.comparison-pager[hidden] { display:none; }
+.comparison-pager button { font:inherit; padding:5px 12px; border:1px solid var(--line); border-radius:3px; background:var(--surface-1); color:var(--text-primary); cursor:pointer; }
+.comparison-pager button:disabled { opacity:.4; cursor:default; }
+#ah-tbl, #lockup-tbl { max-height:420px; overflow:auto; border:1px solid var(--line); }
+#ah-tbl th, #lockup-tbl th { position:sticky; top:0; z-index:1; background:var(--surface-1); }
+.comparison-legend { gap:6px 16px; padding-top:8px; border-top:1px solid var(--line); }
+.comparison-legend span { cursor:default; }
 #ah .chart, #lockup .chart, #peers .chart { border-radius:3px; box-shadow:none; }
 #lockup .tiles { grid-template-columns:repeat(3,minmax(0,1fr)); }
 #lockup .tile { border-radius:0; box-shadow:none; padding:16px 20px; }
@@ -1090,7 +1099,7 @@ $("#ah-tbl").addEventListener("click", ev => {const b = ev.target.closest(".ah-s
 // Filed lock-ups: the same event windows and closes used by the Excel sheet.
 const LOCKUPS = (DATA.lockups || {}).events || [];
 let selectedLockup = -1;
-const lockupStatus = e => !e.last_day_locked ? "Expiry unconfirmed" : e.window.status || e.date_basis;
+const lockupStatus = e => {const gaps=(e.window.path||[]).filter(p=>!Number.isFinite(p[2])).length;return gaps?`Price gaps (${gaps})`:"Complete";};
 function chooseLockup(code) {
   const candidates = LOCKUPS.map((e, i) => ({e, i})).filter(x => x.e.code === code);
   const past = candidates.filter(x => x.e.last_day_locked && x.e.last_day_locked <= DATA.lockups.price_asof);
@@ -1104,7 +1113,7 @@ function renderSelectedLockup() {
   box.innerHTML = "";
   if (!e) {
     $("#lockup-event").innerHTML = "";
-    $("#lockup-history-title").textContent = "No matching cornerstone schedule";
+    $("#lockup-history-title").textContent = "No completed historical events in this selection";
     for (const id of ["lockup-before", "lockup-after", "lockup-date"]) $("#" + id).textContent = "—";
     for (const id of ["lockup-before-dates", "lockup-after-dates", "lockup-date-basis", "lockup-history-note"]) $("#" + id).textContent = "";
     return;
@@ -1180,7 +1189,7 @@ function redrawLockupTab() {
       const af = ad > DATA.lockups.price_asof, bf = bd > DATA.lockups.price_asof;
       return af !== bf ? (af ? -1 : 1) : (af ? ad.localeCompare(bd) : bd.localeCompare(ad)) || a.e.code.localeCompare(b.e.code);
     });
-  $("#lockup-note").textContent = `${stocks.length} stocks · ${rows.length} cornerstone schedules`;
+  $("#lockup-note").textContent = `${stocks.length} stocks · ${rows.length} completed historical events`;
   $("#lockup-tbl").innerHTML = `<table class="tbl"><thead><tr><th>Compare</th><th>Company / H code</th><th>Sector</th><th title="Full company roster; individual expiry dates can cover subsets. Refer to the event filing.">Cornerstones</th><th>IPO date</th><th>Last day locked</th><th class="num">30-session pre</th><th class="num">30-session post</th><th class="num">CS % of offer</th><th class="num">Since IPO %</th><th class="num">Deal HK$m</th><th>Status</th><th>Source</th></tr></thead><tbody>` +
     rows.map(({e, i}) => {const d = deals.find(d => d.code === e.code), names = d?.cornerstone_investors || [];return `<tr data-event="${i}"><td><input type="checkbox" class="lockup-compare-pick" data-event="${i}" aria-label="Compare ${e.code} expiry ${e.last_day_locked||'unconfirmed'}"></td><td><button type="button" class="ah-select lockup-select" data-event="${i}">${safeText(e.name)} (${e.code})</button></td><td>${safeText(e.sector)}</td><td title="${safeText(names.join('; '))}">${names.length ? `<details><summary>${safeText(names[0])}${names.length > 1 ? ` +${names.length-1}` : ''}</summary>${safeText(names.join('; '))}</details>` : 'Roster unconfirmed'}</td><td>${e.ipo_date || "—"}</td><td>${e.last_day_locked || "Expiry unconfirmed"}</td><td class="num">${Number.isFinite(e.window.before_pct) ? fmt.pct(e.window.before_pct) : "—"}</td><td class="num">${Number.isFinite(e.window.after_pct) ? fmt.pct(e.window.after_pct) : "—"}</td><td class="num">${d?.cornerstone_pct==null?'—':fmt.pct(d.cornerstone_pct)}</td><td class="num">${d?.since_ipo_pct==null?'—':fmt.pct(d.since_ipo_pct)}</td><td class="num">${d?.deal_size_hkdm==null?'—':fmt.n(d.deal_size_hkdm)}</td><td title="${safeText(e.date_basis)}">${safeText(lockupStatus(e))}</td><td>${e.url ? `<a href="${safeText(e.url)}" target="_blank" rel="noopener" title="${safeText(e.date_basis)}${e.page ? ` · PDF page ${e.page}` : ""}">HKEX</a>` : "—"}</td></tr>`}).join("") + `</tbody></table>`;
   renderSelectedLockup();
@@ -3037,15 +3046,16 @@ HTML = """<!doctype html>
   <p class="note" id="ah-note"></p>
   <div class="scroll" id="ah-tbl"></div>
   <h3>Compare selected pairs</h3>
-  <div class="comparison-toolbar"><label>Sector <select id="ah-compare-sector"></select></label><button id="ah-select-sector" type="button">Select sector</button><button id="ah-select-all" type="button">Select all</button><button id="ah-clear-compare" type="button">Clear</button><label class="check-control"><input id="ah-selected-average" type="checkbox" checked>Selected average</label><label class="check-control"><input id="ah-sector-average" type="checkbox">By sector</label></div>
+  <div class="comparison-toolbar"><label>Sector <select id="ah-compare-sector"></select></label><button id="ah-select-sector" type="button">Select sector</button><button id="ah-select-all" type="button">Select all</button><button id="ah-clear-compare" type="button">Clear</button><label>View <select id="ah-compare-mode"><option value="stocks">Stocks</option><option value="average">Selected average</option><option value="sector">Sector averages</option></select></label></div>
   <div class="comparison-toolbar"><label>Time frame <select id="ah-compare-horizon"><option value="Max">Since listing</option><option value="1M">1 month</option><option value="3M">3 months</option><option value="6M">6 months</option><option value="1Y">1 year</option><option value="3Y">3 years</option><option value="Custom">Custom dates</option></select></label><label>From <input id="ah-compare-from" type="date"></label><label>To <input id="ah-compare-to" type="date"></label></div><span class="note" id="ah-compare-count"></span><div class="chart"><div id="ah-compare-chart"></div></div>
-  <details id="ah-comparison"><summary>Compare premiums across all pairs</summary><div class="chart"><div id="chart-ah"></div></div></details>
+  <div class="comparison-pager" id="ah-compare-pager" hidden><button id="ah-compare-prev" type="button" aria-label="Previous A/H lines">Previous</button><span id="ah-compare-page" aria-live="polite"></span><button id="ah-compare-next" type="button" aria-label="Next A/H lines">Next</button></div>
+  <details id="ah-comparison"><summary>Premium ranking · filtered pairs</summary><div class="chart"><div id="chart-ah"></div></div></details>
   <div id="ah-drivers" hidden></div>
 </section>
 
 <section id="lockup">
-  <h2>Cornerstone lock-up expiries</h2>
-  <p class="sub">30 HK trading sessions before and after expiry. Prices through %%AHSNAPSHOT%%.</p>
+  <h2>Historical cornerstone expiries</h2>
+  <p class="sub">Completed ±30 trading-session windows · prices through %%LOCKUPSNAPSHOT%%</p>
   <div class="filters"><label>Search <input id="lockup-q" type="search" placeholder="H code or company name"></label><label>Sector <select id="lockup-sec"></select></label><label>Company <select id="lockup-stock"></select></label><label>Expiry <select id="lockup-event"></select></label></div>
   <h3 id="lockup-history-title"></h3>
   <div class="monitor-metrics">
@@ -3056,9 +3066,10 @@ HTML = """<!doctype html>
   <div class="monitor-status" id="lockup-history-note"></div><div class="chart"><div id="lockup-history"></div></div>
   <p class="note" id="lockup-note"></p>
   <h3>Compare expiry performance</h3>
-  <div class="comparison-toolbar"><label>Sector <select id="lockup-compare-sector"></select></label><button id="lockup-select-sector" type="button">Select sector</button><button id="lockup-select-all" type="button">Select all</button><button id="lockup-clear-compare" type="button">Clear</button><label class="check-control"><input id="lockup-sector-average" type="checkbox">By sector</label></div>
-  <div class="comparison-toolbar"><label>View <select id="lockup-compare-mode"><option value="average">Selected average</option><option value="selected">Selected stocks + average</option></select></label><label>Expiry from <input id="lockup-compare-from" type="date"></label><label>Expiry to <input id="lockup-compare-to" type="date"></label><span class="comparison-basis">Equal weight · expiry close = 0%</span></div>
+  <div class="comparison-toolbar"><label>Sector <select id="lockup-compare-sector"></select></label><button id="lockup-select-sector" type="button">Select sector</button><button id="lockup-select-all" type="button">Select all</button><button id="lockup-clear-compare" type="button">Clear</button></div>
+  <div class="comparison-toolbar"><label>View <select id="lockup-compare-mode"><option value="average">Selected average</option><option value="stocks">Stocks</option><option value="sector">Sector averages</option></select></label><label>Expiry from <input id="lockup-compare-from" type="date"></label><label>Expiry to <input id="lockup-compare-to" type="date"></label><span class="comparison-basis">Expiry close = 0%</span></div>
   <p class="note" id="lockup-compare-count"></p><div class="chart"><div id="lockup-compare-chart"></div></div>
+  <div class="comparison-pager" id="lockup-compare-pager" hidden><button id="lockup-compare-prev" type="button" aria-label="Previous lock-up lines">Previous</button><span id="lockup-compare-page" aria-live="polite"></span><button id="lockup-compare-next" type="button" aria-label="Next lock-up lines">Next</button></div>
   <div class="scroll" id="lockup-tbl"></div>
 </section>
 
@@ -3322,8 +3333,7 @@ def main():
     lockup_batch = json.loads((ROOT / 'data/batches/lockup_events.json').read_text())
     lockups = {'price_asof': lockup_batch['price_asof'], 'events': [
         {**{k: e.get(k) for k in ('code', 'name', 'sector', 'category', 'last_day_locked', 'date_basis', 'page', 'url')}, 'ipo_date': next(d['ipo_date'] for d in deals if d['code'] == e['code']),
-         'window': e.get('windows', {}).get('30 trading sessions', {})} for e in lockup_batch['events']
-         if e['category'] == 'Cornerstone' and e['date_basis'] != 'No cornerstone tranche']}
+         'window': e.get('windows', {}).get('30 trading sessions', {})} for e in historical_events(lockup_batch, ROOT)]}
     # daily A/H paths (Tencent + FX) so the reference notebook's charts render
     # offline inside the Lab — keyed by code, arrays only
     paths = {}
@@ -3430,7 +3440,7 @@ def main():
     payload = base64.b64encode(gzip.compress(blob.encode('utf-8'), compresslevel=9, mtime=0)).decode('ascii')
     js = JS + BODY_JS + (ROOT / "assets/desk_monitors.js").read_text()
     html = (HTML.replace("%%CSS%%", CSS).replace("%%JS%%", js)
-                .replace("%%ASOF%%", as_of).replace("%%AHSNAPSHOT%%", study['asof'])
+                .replace("%%ASOF%%", as_of).replace("%%AHSNAPSHOT%%", study['asof']).replace("%%LOCKUPSNAPSHOT%%", lockup_batch['price_asof'])
                 .replace("%%DECODER%%", (ROOT / 'assets/fflate.min.js').read_text())
                 .replace("%%PAYLOAD%%", payload))
     OUT.parent.mkdir(exist_ok=True)

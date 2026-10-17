@@ -25,5 +25,5 @@ for(const sector of new Set(data.lockups.events.map(e=>e.sector))){
  for(const [offset,value,n] of mean.points){assert(offset>=-30&&offset<=30);const values=series.map(s=>s.points.find(p=>p[0]===offset)?.[1]).filter(Number.isFinite);assert.equal(n,values.length);assert.equal(value,n?values.reduce((a,b)=>a+b,0)/n:null);if(offset===0&&n)assert(Math.abs(value)<1e-12);checked++;}
 }
 assert(!html.includes('Cohort average'));assert(!html.includes('the session they defended'));assert(!html.includes('who defended it once it traded'));
-for(const id of ['ah-select-all','ah-select-sector','ah-sector-average','lockup-select-all','lockup-select-sector','lockup-clear-compare','lockup-sector-average'])assert(html.includes('id="'+id+'"'));
+for(const id of ['ah-select-all','ah-select-sector','ah-compare-mode','lockup-select-all','lockup-select-sector','lockup-clear-compare','lockup-compare-mode'])assert(html.includes('id="'+id+'"'));
 console.log(`PASS ${checked} observed sector-average points, missing/zero/negative cases, 1Y bounds and expiry-zero alignment; concise labels and all controls present`);

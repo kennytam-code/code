@@ -1,0 +1,55 @@
+{
+  "reviewed_at": "2026-10-17",
+  "blocked_codes": {
+    "2567": {
+      "reason": "Subsequent cornerstone lock-up extension: original company-level date cannot represent all holders. Excluded pending holder-specific reconciliation and amended-date price windows.",
+      "sources": [
+        "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1015/2025101500355.pdf"
+      ]
+    },
+    "2565": {
+      "reason": "Subsequent cornerstone lock-up extension: original company-level date cannot represent all holders. Excluded pending holder-specific reconciliation and amended-date price windows.",
+      "sources": [
+        "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1126/2025112601244.pdf",
+        "https://www.hkexnews.hk/listedco/listconews/sehk/2026/0428/2026042802518_c.pdf"
+      ]
+    },
+    "2592": {
+      "reason": "Subsequent cornerstone lock-up extension: original company-level date cannot represent all holders. Excluded pending holder-specific reconciliation and amended-date price windows.",
+      "sources": [
+        "https://www.hkexnews.hk/listedco/listconews/sehk/2026/0102/2026010200693.pdf"
+      ]
+    },
+    "2629": {
+      "reason": "Subsequent cornerstone lock-up extension: original company-level date cannot represent all holders. Excluded pending holder-specific reconciliation and amended-date price windows.",
+      "sources": [
+        "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1113/2025111300477_c.pdf"
+      ]
+    },
+    "2655": {
+      "reason": "Subsequent cornerstone lock-up extension: original company-level date cannot represent all holders. Excluded pending holder-specific reconciliation and amended-date price windows.",
+      "sources": [
+        "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0612/2026061202296.pdf"
+      ]
+    },
+    "2889": {
+      "reason": "Subsequent cornerstone lock-up extension: original company-level date cannot represent all holders. Excluded pending holder-specific reconciliation and amended-date price windows.",
+      "sources": [
+        "https://www.hkexnews.hk/listedco/listconews/sehk/2026/0330/2026033000008_c.pdf"
+      ]
+    }
+  },
+  "scope": "Targeted English/Chinese HKEX amendment searches; not an exhaustive legal-title search for every issuer.",
+  "followup_sources": [
+    {
+      "code": "1541",
+      "url": "https://www.hkexnews.hk/listedco/listconews/sehk/2024/0306/2024030601730_c.pdf",
+      "finding": "Subsequent announcement explicitly confirms 4 March 2024 as the last day. Not admitted in this release: requires accepting the new source and independent window review."
+    },
+    {
+      "code": "2431",
+      "url": "https://www.hkexnews.hk/listedco/listconews/sehk/2025/0826/2025082601814.pdf",
+      "finding": "KCH extension/revised limited-disposal undertaking; this issuer already has no displayed dated event."
+    }
+  ]
+}

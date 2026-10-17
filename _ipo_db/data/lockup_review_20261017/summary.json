@@ -1,0 +1,34 @@
+{
+  "review_date": "2026-10-17",
+  "price_asof": "2026-10-02",
+  "primary_files": 259,
+  "historical_dates_checked": 264,
+  "date_confirmed": 193,
+  "displayed_events": 161,
+  "displayed_stocks": 158,
+  "exclusions": {
+    "Undated": 67,
+    "Exact date not confirmed": 70,
+    "Incomplete or unverified 30-session price window": 26,
+    "Subsequent extension / holder-scope review": 6,
+    "Future expiry": 67
+  },
+  "holder_group_corrections": [
+    {
+      "code": "6911",
+      "date": "2024-12-21",
+      "old": "Cornerstone",
+      "new": "Controller",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/1221/2023122101314.pdf",
+      "page": 3
+    }
+  ],
+  "displayed_source_bases": {
+    "verified explicit inclusive term": 41,
+    "verified printed date": 120
+  },
+  "displayed_events_with_interior_gaps": 21,
+  "restored_complete_windows": 9,
+  "added_displayed_observations": 198,
+  "price_validation": "All displayed prices have consistent relative moves against overlapping stored Yahoo observations; half-day/missing closes recovered from raw Tencent daily bars. No terminal verification. No interpolation. Full-sample selection requires confirmed dates and complete endpoints; it is not an unbiased universe of every IPO."
+}

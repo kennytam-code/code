@@ -1,5 +1,5 @@
 {
-  "reviewed_at": "2026-10-16",
+  "reviewed_at": "2026-10-17",
   "snapshot_asof": "2026-10-15",
   "stocks": 526,
   "numeric_values": 39303,
@@ -1937,8 +1937,8 @@
   "lockups": {
     "rows": 1066,
     "dated": 861,
-    "visible_rows": 398,
-    "visible_stocks": 388,
-    "unconfirmed_visible_expiries": 67
+    "visible_rows": 161,
+    "visible_stocks": 158,
+    "unconfirmed_visible_expiries": 0
   }
 }

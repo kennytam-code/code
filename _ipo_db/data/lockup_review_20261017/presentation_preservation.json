@@ -1,0 +1,5 @@
+{
+  "baseline_commit": "d6bd4fdfdbf282ef5b0b2457f1fa1cc9035a0581",
+  "non_lockup_payload_sha256": "ff91b41dcf6f8e54459175520b7ac573300eb0d6c55f38f366a57a8d8c95f57a",
+  "scope": "Dated 17 October presentation-only regression for all data outside lockups. Update deliberately for an authorized future data refresh."
+}

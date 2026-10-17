@@ -2519,3 +2519,36 @@ existing intermediate build still uses Notes before this final migration.
 Artifact-authored header/template: data/note_weight_layout.json. Regression QA
 proves exact preservation of business cells, cached values, formulas, chart and
 drawing parts. Use tools/test_remove_notes.py alongside the scoring/package QA.
+
+
+## 2026-10-17 — scoped comparisons and historical-only lock-ups
+
+A/H and Lock-up sector/subsector/search controls now constrain the actual plotted
+selection and average inputs. Stocks, Selected average and Sector averages are
+exclusive views. Individual/sector lines paginate at six with complete legends,
+hover values and explicit counts. Genuine missing prices remain gaps; isolated
+observations render as dots. No stock-plus-average overlay.
+
+Re-read 259 HKEX primary PDFs for 264 past-dated candidates and checked listing
+inputs. Retained only printed cornerstone dates or explicit inclusive six-month
+clauses. 6911's 21-Dec-2024 event was a controller restriction and is corrected.
+The 70 generic/ambiguous boundary dates stay internal, as do 67 undated and 67
+future entries. Second-source raw Tencent closes were compared against stored
+Yahoo relative movements, applying existing split factors without splicing
+providers. Recovered complete endpoints for nine events. Twenty-six candidates
+still lack finished/verified endpoints. Follow-up HKEX searches found extensions
+for 2565, 2567, 2592, 2629, 2655 and 2889; their original company-level dates are
+withheld pending holder-specific reconciliation. Targeted amendment searches are
+not an exhaustive legal-title audit of every issuer. See lockup_amendments.json.
+
+Final visible sample: 161 events / 158 stocks, 120 printed dates and 41 explicit
+inclusive-term dates. 198 missing observed closes recovered within this sample;
+21 events retain real interior gaps. Prices still stop at 2-Oct-2026. This is a
+selected complete-endpoint sample, not every IPO or proof of a causal expiry
+effect. The full evidence, exclusions, source hashes and prior windows are in
+data/lockup_review_20261017, outside Excel.
+
+Tests run against actual renderer/control functions with lightweight adapters;
+SVG charts rendered/reviewed, without a fresh full browser pass. Excel unchanged
+SHA256 cb2e93c2c229640b7aab886d94f2216fd9c6d41393f9faac1fb27a10eabf96e2.
+No live Bloomberg execution and no unrelated database or taxonomy changes.

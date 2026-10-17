@@ -13,7 +13,7 @@ ROOT=Path(__file__).resolve().parent.parent
 MONTHS='January February March April May June July August September October November December'.split()
 MONTH=r'(?:'+'|'.join(MONTHS)+r')'
 DATE=re.compile(r'('+MONTH+r')\s+(\d{1,2})\s*,?\s*(20\d{2})|(\d{1,2})\s+('+MONTH+r')\s*,?\s*(20\d{2})',re.I)
-GROUP=re.compile(r'(?im)^[ \t]*(Cornerstone Investors?|Controlling Shareholders?|Single Largest[^\n]*Shareholders?|Pre-IPO Investors?[^\n]*|Other (?:Existing )?Shareholders?[^\n]*|Directors|Senior Management|Pathfinder[^\n]*|Key Persons?[^\n]*)[ \t]*$')
+GROUP=re.compile(r'(?im)^[ \t]*(Cornerstone Investors?|Controlling Shareholders?(?:\s+Group)?|Single Largest[^\n]*Shareholders?(?:\s+Group)?|Pre-IPO Investors?[^\n]*|(?:Other (?:Existing )?|Existing )Shareholders?[^\n]*|Directors|Senior Management|Pathfinder[^\n]*|Key Persons?[^\n]*)[ \t]*$')
 
 def iso(m):
     month,day,year=(m.group(1),m.group(2),m.group(3)) if m.group(1) else (m.group(5),m.group(4),m.group(6))
@@ -28,6 +28,9 @@ def events_from_pages(pages,ipo_date):
         block=text[g.end():end]
         caption=re.search(r'Last\s+day\s+subject|Expiry\s+date|lock.up\s+(?:expiry|expiration)',block,re.I)
         if not caption or caption.start()>1500:continue
+        # An allocation roster headed "Cornerstone Investors" is not a
+        # lock-up table. A later LOCK-UP section starts a new holder context.
+        if re.search(r'(?m)^[ \t]*LOCK.UP[ \t]+UNDERTAKINGS[ \t]*$',block[:caption.start()]):continue
         # End at the table's footnotes/explanation or next announcement
         # section. Underwriting termination and greenshoe dates are not
         # investor lock-up expiries.

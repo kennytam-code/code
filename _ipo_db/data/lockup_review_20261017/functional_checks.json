@@ -1,0 +1,8 @@
+{
+  "checks": 6773,
+  "ah_pairs": 71,
+  "lockup_events": 161,
+  "unrelated_payload_unchanged": true,
+  "real_browser": false,
+  "passed": true
+}

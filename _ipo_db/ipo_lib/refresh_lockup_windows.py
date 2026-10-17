@@ -31,7 +31,11 @@ def main():
    prices={r[0]:float(r[2]) for r in raw if len(r)>5 and float(r[5])>0}
    for e in events:
     e.setdefault('windows',{}).update({m:window(e['last_day_locked'],sessions,prices,actions.get(code,[]),cutoff,m) for m in ['Trading sessions','Calendar days']});e['price_url']=url;e['price_asof']=cutoff
-    e['windows']['30 trading sessions']=window(e['last_day_locked'],sessions,prices,actions.get(code,[]),cutoff,days=30);e['windows']['30 trading sessions']['price_basis']='Split-neutral raw closes';e['price_url_30']=url
+    # A missing legacy seven-day window must not overwrite a reviewed,
+    # completed thirty-session history with a less complete provider response.
+    existing=e['windows'].get('30 trading sessions',{})
+    if existing.get('status')!='Complete' or not e.get('price_review_30'):
+     e['windows']['30 trading sessions']=window(e['last_day_locked'],sessions,prices,actions.get(code,[]),cutoff,days=30);e['windows']['30 trading sessions']['price_basis']='Split-neutral raw closes';e['price_url_30']=url
   except Exception as ex:errors.append({'code':code,'error':str(ex)})
   time.sleep(.3)
  data['price_asof']=cutoff;data['refresh_errors']=errors;data['stock_count']=len(D);path.write_text(json.dumps(data,ensure_ascii=True,indent=1));print('Event-window stocks refreshed',len(by),'errors',len(errors),'completed session',cutoff)

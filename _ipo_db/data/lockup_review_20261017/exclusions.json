@@ -1,0 +1,1418 @@
+[
+  {
+    "code": "1440",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2125",
+    "expiry": "2021-07-14",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2158",
+    "expiry": "2021-07-14",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "9608",
+    "expiry": "2021-07-17",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "6668",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2160",
+    "expiry": "2021-08-03",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "1024",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2170",
+    "expiry": "2021-08-07",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2187",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "6608",
+    "expiry": "2021-09-29",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "9959",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "6622",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "3658",
+    "expiry": "2021-11-24",
+    "reason": "Incomplete or unverified 30-session price window",
+    "date_basis": "Derived from filed inclusive six-month term"
+  },
+  {
+    "code": "2618",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "9982",
+    "expiry": "2021-11-29",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2171",
+    "expiry": "2021-12-17",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "9858",
+    "expiry": "2021-12-17",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2155",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "0013",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2150",
+    "expiry": "2021-12-29",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "0606",
+    "expiry": "2022-01-01",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "1965",
+    "expiry": "2022-01-07",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2162",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2177",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2137",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2192",
+    "expiry": "2022-01-14",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "9960",
+    "expiry": "2022-01-15",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2205",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "6609",
+    "expiry": "2022-02-19",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "6669",
+    "expiry": "2022-02-23",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2216",
+    "expiry": "2022-03-23",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "9889",
+    "expiry": "2022-03-28",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "6628",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2256",
+    "expiry": "2022-04-14",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2252",
+    "expiry": "2022-05-01",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2197",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "1948",
+    "expiry": "2022-05-07",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2210",
+    "expiry": "2022-05-09",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "9899",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "1228",
+    "expiry": "2022-06-09",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2273",
+    "expiry": "2022-06-09",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2279",
+    "expiry": "2022-06-12",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "9699",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "6633",
+    "expiry": "2022-06-15",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2285",
+    "expiry": "2022-06-29",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2257",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "0020",
+    "expiry": "2022-06-29",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2260",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2121",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "9878",
+    "expiry": "2022-08-17",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "6639",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "9638",
+    "expiry": "2022-09-29",
+    "reason": "Incomplete or unverified 30-session price window",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2325",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "6667",
+    "expiry": "2022-12-21",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2246",
+    "expiry": "2022-12-23",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2167",
+    "expiry": "2022-12-29",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "9955",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2361",
+    "expiry": "2023-01-11",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2385",
+    "expiry": "2023-01-11",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "6661",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2418",
+    "expiry": "2023-01-14",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "1204",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2172",
+    "expiry": "2023-01-14",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "9857",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2152",
+    "expiry": "2023-02-23",
+    "reason": "Incomplete or unverified 30-session price window",
+    "date_basis": "Derived from filed inclusive six-month term"
+  },
+  {
+    "code": "1880",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2315",
+    "expiry": "2023-02-28",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "9886",
+    "expiry": "2023-03-13",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2350",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "9863",
+    "expiry": "2023-03-28",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2602",
+    "expiry": "2023-03-28",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "3931",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "9877",
+    "expiry": "2023-04-09",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "1489",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2422",
+    "expiry": "2023-04-16",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "6610",
+    "expiry": "2023-04-17",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "6696",
+    "expiry": "2023-05-08",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2420",
+    "expiry": "2023-05-10",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2245",
+    "expiry": "2023-05-31",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2407",
+    "expiry": "2023-06-11",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2440",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "1244",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "9985",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "6929",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2427",
+    "expiry": "2023-06-28",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "6698",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2425",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "6955",
+    "expiry": "2023-06-29",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2411",
+    "expiry": "2023-07-15",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2455",
+    "expiry": "2023-07-16",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2306",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2482",
+    "expiry": "2023-09-08",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "9636",
+    "expiry": "2023-09-09",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2409",
+    "expiry": "2023-09-28",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2439",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2415",
+    "expiry": "2023-10-26",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2416",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2487",
+    "expiry": "2023-12-11",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "9885",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2481",
+    "expiry": "2024-01-09",
+    "reason": "Incomplete or unverified 30-session price window",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "3650",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "6683",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2271",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "1541",
+    "expiry": "2024-03-04",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2496",
+    "expiry": "2024-03-24",
+    "reason": "Incomplete or unverified 30-session price window",
+    "date_basis": "Derived from filed inclusive six-month term"
+  },
+  {
+    "code": "9690",
+    "expiry": "2024-03-25",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "9686",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "9890",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "1973",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "9676",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "1519",
+    "expiry": "2024-04-26",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2517",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2429",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2268",
+    "expiry": "2024-05-16",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2520",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "6911",
+    "expiry": "2024-06-21",
+    "reason": "Incomplete or unverified 30-session price window",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "2498",
+    "expiry": "2024-07-04",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2529",
+    "expiry": "2024-11-16",
+    "reason": "Incomplete or unverified 30-session price window",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "2898",
+    "expiry": "2024-11-23",
+    "reason": "Incomplete or unverified 30-session price window",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "0917",
+    "expiry": "2024-11-26",
+    "reason": "Incomplete or unverified 30-session price window",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "1354",
+    "expiry": "2025-07-02",
+    "reason": "Incomplete or unverified 30-session price window",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "0300",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "9639",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2567",
+    "expiry": "2025-10-15",
+    "reason": "Subsequent extension / holder-scope review",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "2563",
+    "expiry": "2025-04-30",
+    "reason": "Incomplete or unverified 30-session price window",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "2519",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2570",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2431",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2577",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2610",
+    "expiry": "2025-09-24",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2625",
+    "expiry": "2025-09-29",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "6831",
+    "expiry": "2025-11-15",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2629",
+    "expiry": "2025-11-23",
+    "reason": "Subsequent extension / holder-scope review",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "1276",
+    "expiry": "2025-11-22",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2565",
+    "expiry": "2025-11-26",
+    "reason": "Subsequent extension / holder-scope review",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "2621",
+    "expiry": "2025-11-29",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "9881",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "3288",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2619",
+    "expiry": "2028-06-24",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "2619",
+    "expiry": "2030-06-24",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "2592",
+    "expiry": "2026-01-02",
+    "reason": "Subsequent extension / holder-scope review",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "2648",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "6613",
+    "expiry": "2026-01-08",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2631",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "6960",
+    "expiry": "2026-08-25",
+    "reason": "Incomplete or unverified 30-session price window",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "2889",
+    "expiry": "2026-03-30",
+    "reason": "Subsequent extension / holder-scope review",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "6687",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "0638",
+    "expiry": "2026-04-21",
+    "reason": "Incomplete or unverified 30-session price window",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "9927",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "0699",
+    "expiry": "2026-05-05",
+    "reason": "Incomplete or unverified 30-session price window",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "2655",
+    "expiry": "2026-06-15",
+    "reason": "Subsequent extension / holder-scope review",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "2657",
+    "expiry": "2026-06-29",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "6082",
+    "expiry": "2027-01-01",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "2513",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "3636",
+    "expiry": "2029-01-09",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "0501",
+    "expiry": "2026-07-11",
+    "reason": "Incomplete or unverified 30-session price window",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "3986",
+    "expiry": "2026-07-12",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "9980",
+    "expiry": "2026-08-02",
+    "reason": "Exact date not confirmed",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "2720",
+    "expiry": "2027-02-09",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "2706",
+    "expiry": "2026-11-12",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "2706",
+    "expiry": "2027-01-12",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "2715",
+    "expiry": "2026-09-08",
+    "reason": "Incomplete or unverified 30-session price window",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "2692",
+    "expiry": "2026-09-08",
+    "reason": "Incomplete or unverified 30-session price window",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "3268",
+    "expiry": "2026-09-09",
+    "reason": "Incomplete or unverified 30-session price window",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "1989",
+    "expiry": "2026-09-19",
+    "reason": "Incomplete or unverified 30-session price window",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "2701",
+    "expiry": "2026-09-22",
+    "reason": "Incomplete or unverified 30-session price window",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "3355",
+    "expiry": "2026-09-22",
+    "reason": "Incomplete or unverified 30-session price window",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "2632",
+    "expiry": "2026-09-23",
+    "reason": "Incomplete or unverified 30-session price window",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "2726",
+    "expiry": "2027-09-29",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "6636",
+    "expiry": "2026-12-31",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "1021",
+    "expiry": "2026-09-29",
+    "reason": "Incomplete or unverified 30-session price window",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "0664",
+    "expiry": "2026-09-30",
+    "reason": "Incomplete or unverified 30-session price window",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "6656",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "0068",
+    "expiry": "2026-10-16",
+    "reason": "Incomplete or unverified 30-session price window",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "3277",
+    "expiry": "2026-10-16",
+    "reason": "Incomplete or unverified 30-session price window",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "2476",
+    "expiry": "2026-10-20",
+    "reason": "Future expiry",
+    "date_basis": "Derived from filed inclusive six-month term"
+  },
+  {
+    "code": "3296",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "2493",
+    "expiry": "2026-10-27",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "1879",
+    "expiry": "2026-10-27",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "6810",
+    "expiry": "2026-10-28",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "6810",
+    "expiry": "2027-03-28",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "1609",
+    "expiry": "2026-11-04",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "1187",
+    "expiry": "2026-11-05",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "1236",
+    "expiry": "2026-11-10",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "7630",
+    "expiry": "2026-11-12",
+    "reason": "Future expiry",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "7666",
+    "expiry": "2026-11-12",
+    "reason": "Future expiry",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "1511",
+    "expiry": "2026-11-19",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "7688",
+    "expiry": "2026-11-19",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "6872",
+    "expiry": "2026-11-21",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "3310",
+    "expiry": "2026-11-26",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "3388",
+    "expiry": "2026-11-28",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "1081",
+    "expiry": "2026-12-04",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "1779",
+    "expiry": "2026-12-04",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "6658",
+    "expiry": "2027-03-14",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "6675",
+    "expiry": "2026-12-16",
+    "reason": "Future expiry",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "6132",
+    "expiry": "2026-12-22",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "6067",
+    "expiry": "2026-12-22",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "2335",
+    "expiry": "2026-12-23",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "6106",
+    "expiry": "2026-12-24",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "1956",
+    "expiry": "2026-12-25",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "3661",
+    "expiry": "2026-12-25",
+    "reason": "Future expiry",
+    "date_basis": "Derived from filed inclusive six-month term"
+  },
+  {
+    "code": "1688",
+    "expiry": "2026-12-25",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "9630",
+    "expiry": "2026-12-25",
+    "reason": "Future expiry",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "6228",
+    "expiry": "2026-12-25",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "2672",
+    "expiry": "2027-06-28",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "1191",
+    "expiry": "2026-12-28",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "9637",
+    "expiry": "2026-12-28",
+    "reason": "Future expiry",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "6915",
+    "expiry": "2026-12-29",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "3952",
+    "expiry": "2026-12-29",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "6715",
+    "expiry": "2026-12-29",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "0668",
+    "expiry": "2027-01-01",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "2667",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "6880",
+    "expiry": "2027-01-07",
+    "reason": "Future expiry",
+    "date_basis": "Derived from filed inclusive six-month term"
+  },
+  {
+    "code": "7687",
+    "expiry": "2027-01-07",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "3752",
+    "expiry": null,
+    "reason": "Undated",
+    "date_basis": "Expiry not established from available allotment filing"
+  },
+  {
+    "code": "0537",
+    "expiry": "2027-01-08",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "2475",
+    "expiry": "2027-01-08",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "6951",
+    "expiry": "2027-01-08",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "1377",
+    "expiry": "2027-01-08",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "6745",
+    "expiry": "2027-01-09",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "2249",
+    "expiry": "2027-01-09",
+    "reason": "Future expiry",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "3308",
+    "expiry": "2027-01-29",
+    "reason": "Future expiry",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "3223",
+    "expiry": "2027-02-24",
+    "reason": "Future expiry",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "0625",
+    "expiry": "2027-02-28",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "9615",
+    "expiry": "2027-02-28",
+    "reason": "Future expiry",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "9976",
+    "expiry": "2027-03-07",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "3231",
+    "expiry": "2027-06-08",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "6727",
+    "expiry": "2027-03-20",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "9856",
+    "expiry": "2027-03-21",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "9607",
+    "expiry": "2027-03-28",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "3228",
+    "expiry": "2027-03-28",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "3757",
+    "expiry": "2027-03-28",
+    "reason": "Future expiry",
+    "date_basis": "Derived from filed six-month term; release at six-month anniversary"
+  },
+  {
+    "code": "6731",
+    "expiry": "2027-03-28",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "6802",
+    "expiry": "2027-03-29",
+    "reason": "Future expiry",
+    "date_basis": "Printed last day locked"
+  },
+  {
+    "code": "1256",
+    "expiry": "2027-04-08",
+    "reason": "Future expiry",
+    "date_basis": "Explicit last locked day in final allotment filing"
+  },
+  {
+    "code": "2636",
+    "expiry": "2027-04-14",
+    "reason": "Future expiry",
+    "date_basis": "Explicit last locked day in final allotment filing"
+  }
+]

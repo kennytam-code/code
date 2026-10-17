@@ -1,0 +1,32 @@
+[
+  {
+    "test": "tools/test_historical_lockups.py",
+    "passed": true,
+    "output": "PASS 161 historical events / 9821 session slots: filed dates, listing inputs, holder boundaries, raw prices, split factors, exact \u00b130 endpoints, return math, payload and unchanged Excel",
+    "browser": false
+  },
+  {
+    "test": "tools/test_comparison_scope.mjs",
+    "passed": true,
+    "output": "PASS 6773 assertions/observations across 71 A/H pairs and 161 lock-up events: scopes, both selector directions, averages, all pages, custom dates, search, clear and off-sector stale selections; unrelated embedded data unchanged.",
+    "browser": false
+  },
+  {
+    "test": "tools/test_selected_averages.mjs",
+    "passed": true,
+    "output": "PASS averages: one weight per selected stock, duplicate expiries, missing/zero/negative values; mutually exclusive stocks/selected average/sector modes; shipped JS compiles.",
+    "browser": false
+  },
+  {
+    "test": "tools/test_sector_comparisons.mjs",
+    "passed": true,
+    "output": "PASS 1909 observed sector-average points, missing/zero/negative cases, 1Y bounds and expiry-zero alignment; concise labels and all controls present",
+    "browser": false
+  },
+  {
+    "test": "tools/render_comparison_scope.mjs",
+    "passed": true,
+    "output": "PASS 5 actual SVG renders: clean numeric geometry, one path per line, full legends/tooltips, expiry reference and genuine gaps preserved; no browser launched.",
+    "browser": false
+  }
+]

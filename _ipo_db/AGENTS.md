@@ -12,6 +12,15 @@ section colours and red/green performance changes. Remove
 generic footnotes from visible Excel/HTML views; no Notes sheet in the final workbook. Preserve the eleven W_* inputs on the hidden calculation sheet. Keep methods and review notes
 in this repository, not in extra workbook tabs. Formatting never changes data.
 
+HTML A/H and Lock-up comparison lines must obey the active sector/subsector/search
+scope. Stocks, Selected average and Sector averages are separate views. No
+stock-plus-average overlay; at most six lines per page, with complete legends.
+Lock-up is a historical study only: source-confirmed cornerstone dates and
+completed ±30-session return endpoints. Use historical_lockups.historical_events;
+do not restore unconfirmed/future rows or derive an exact date from a generic
+six-month phrase. Primary review: data/lockup_date_review.json. Never allow an
+allocation roster heading to absorb a subsequent controller lock-up table.
+
 Use one heavy operation at a time. Python: 512 MiB; Node: 384 MiB. Never increase
 these limits to rescue a failed build. Use the staged native build and bounded
 Artifact projections. Preserve unrelated files, user work and Word studies.

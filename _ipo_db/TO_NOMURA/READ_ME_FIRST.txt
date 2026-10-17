@@ -1,4 +1,4 @@
-HK IPO DATABASE — 16 OCTOBER 2026
+HK IPO DATABASE — 17 OCTOBER 2026
 
 Desk folder: G:\FIN_COMM\DeltaOne\Kenny\ECM\
 
@@ -21,7 +21,9 @@ CONTROLS
   premium with A-share and CSI 300 returns on separate axes. Bloomberg
   requests through TODAY; stored histories show their actual dates.
   Excel compares four pairs; HTML supports multiple selection, Select all,
-  Select sector, selected-stock means and preset/custom date ranges.
+  Select sector and preset/custom dates. Sector/subsector filters restrict
+  the plotted selection. Stocks, Selected average and Sector averages are
+  separate views; individual lines are paginated in groups of six.
 
   Peer Trades — B3 named product-peer pair; F3 source; H3 horizon;
   F4/H4 custom dates. Both stocks populate automatically. 35 pairs / 66
@@ -37,10 +39,12 @@ CONTROLS
   listed 2636 is now in the 526-stock Database/Screener. Active deals come
   first; watchlist and withdrawn/postponed rows are separated/collapsed.
 
-  Lock-up — HTML only. 398 cornerstone events / 388 stocks. Exactly
-  30 HK trading sessions before/after expiry. Selected average includes
-  only checked stocks, one weight per stock. By sector splits that same
-  selection. Future or unconfirmed dates and unavailable prices stay blank.
+  Lock-up — HTML only. 161 completed historical events / 158 stocks.
+  Confirmed cornerstone dates and exactly 30 HK trading sessions either
+  side, prices through 2 October. Unconfirmed/future dates and unfinished
+  or unverifiable return windows are excluded. Interior missing prices
+  remain gaps. Selected average includes only checked stocks, one weight
+  per stock. Stocks and average lines are shown in separate views.
 
 DATA DATES AND CHECKS
   Live quotes and the new IPO are dated 15 October. Older histories retain

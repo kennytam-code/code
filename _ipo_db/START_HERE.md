@@ -36,8 +36,8 @@ tabs stay at the back/hidden. Do not delete other research in TO_NOMURA.
 | Screener | B5 resolves company or code; retain exact numeric aliases such as 9607. F53 reads Database BQ (A code). The eleven W_* named model inputs now live in hidden Calc (scoring engine)!AU2:AU12, with names/descriptions in AT/AV. The final workbook has no Notes sheet. Never overwrite these inputs with prose. |
 | Screener form | B7:B14 shows database inputs; C7:C14 contains overrides. D7:D14 retains the effective calculation with display format `;;;`. The seven context outputs moved from H8/H9/H12:H16 to F7/F8/F10:F14 without changing their formulas or values. B5:C5 is the company selector. Top titles and duplicate selection prose are hidden; the real snapshot date stays visible. |
 | Database fundamentals | BJ/BL: live TTM P/E/P/S. BM:BO: NTM P/E, FY2027 P/E, FY2027 P/S. Screener BE/BG/BH:BJ mirrors these. Historical IPO multiples remain separate. |
-| HTML comparisons | Select all and Select sector; Selected average and optional By sector use **only checked stocks**. Unchecked same-sector stocks never enter. Each stock has one weight. For multiple selected lock-up expiries of one stock, mean those observations within the stock first. Missing is excluded, not zero. |
-| Lock-up (HTML only) | Last locked day, first unlocked day, IPO date, cornerstone %, deal size, since-IPO return. Exactly 30 HK trading sessions either side. Future/unconfirmed endpoints stay blank. |
+| HTML comparisons | Active sector/subsector/search filters restrict both individual lines and mean inputs. Select all selects only that scope. Stocks, Selected average and Sector averages are mutually exclusive views. Six lines per page with full legend/tooltip. Means use **only checked stocks**, each stock one weight; multiple selected expiries of one stock are averaged within that stock first. Missing is excluded, not zero. |
+| Lock-up (HTML only) | Historical, source-confirmed cornerstone expiries with complete ±30 HK-session endpoints. 161 events / 158 stocks in the 17 October release, prices through 2 October. Future/undated/ambiguous dates and incomplete or unverified price windows are excluded, not blank rows. Interior price gaps remain visible. Date shown is the last day locked; day 0 is the last HK session on/before it. |
 | IPO returns | 1w/1m/3m are 5/21/63 traded sessions after debut. Ex-pop table returns start at day-1 close. Offer returns start at the offer price. Price performance excludes cash dividends. |
 
 ## Data authority and refresh dependencies
@@ -70,8 +70,21 @@ Sources, SHA256 hashes and the new market observations are under
 
 Corporate actions are not permission to invent smooth histories. Keep raw prices
 and apply verified entitlement factors; record missing or incompatible dates.
-Unconfirmed cornerstone expiries stay undated. No-cornerstone rows are excluded
-from the HTML event roster, while full restriction evidence stays in the batch.
+The HTML sample is selected by `historical_lockups.historical_events` using
+`data/lockup_date_review.json`. New code/date/source-hash combinations need primary
+review before appearing. An elapsed date alone is not confirmation. A generic
+six-month phrase without an exact end date/inclusive start remains excluded.
+Subsequent amendments take precedence over the original schedule.
+`data/lockup_amendments.json` blocks six issuer-level dates (2565, 2567, 2592,
+2629, 2655, 2889) pending holder-specific reconciliation of filed extensions.
+Do not restore them from an old prospectus. The targeted English/Chinese
+amendment search is not an exhaustive legal-title search for every issuer.
+Preserve `data/lockup_review_20261017` (source pages, listing-date proofs, prior
+windows and independent price checks). 6911's 21-Dec-2024 row is a controller
+restriction; its cornerstone date is 21-Jun-2024. The parser now stops at the
+controller-group header. Do not revert the category or replace a reviewed
+complete 30-session history while refreshing an incomplete legacy seven-day
+window. Keep the full evidence internally, including excluded records.
 
 ## Bloomberg valuation contract
 
@@ -123,7 +136,10 @@ For release QA, set `IPO_QA_BASELINES=1` before the staged build, then run
 `tools/run_release_checks.py` sequentially. It checks native XML/relationships,
 valuation fixtures, Screener scoring, prices/returns, sector math and style-only
 preservation. Also run `tools/test_selected_averages.mjs` and
-`tools/test_sector_comparisons.mjs`, render the changed views, and open the exact
+`tools/test_sector_comparisons.mjs`, `tools/test_comparison_scope.mjs` and
+`tools/test_historical_lockups.py`. `tools/render_comparison_scope.mjs` checks and
+renders the actual SVG functions without launching a browser. Render changed
+views, and open the exact
 final workbook in native Excel to check for repair. Do not claim browser/native
 checks that were not actually performed. Test dates/horizons with actual and
 missing observations, zero/negative responses and newly appended records.
@@ -134,6 +150,9 @@ in TO_NOMURA and the existing GitHub root aliases. Do not overwrite unrelated
 PCA/research files. Preserve Word studies. Compare hashes after copying and verify
 the pushed commit. Keep audit CSV/JSON outside Excel. Update `release_state.json`
 and this handover when controls, conventions, coverage or known limits change.
+HTML-only delivery uses `tools/package_chart_scope.py`; it verifies the unchanged
+Excel hash and does not rebuild the workbook. That script packages the updater
+and changed HTML/audits, preserving all other deliverables.
 
 ## Known limits to retain, not conceal
 
@@ -149,7 +168,11 @@ the recommendations; do not fix only a displayed workbook cell.
 
 The last full numeric audit had 273 annual revenue/profit entries needing fresh
 primary-row confirmation, 119 unresolved cornerstone name aliases in the earlier
-filing-name audit, and 67 undated visible lock-up events. The audit JSON/CSV is the
+filing-name audit. The 67 undated lock-up events are now internal evidence only,
+along with 70 dates whose precise boundary needs confirmation. Twenty-six other
+past, date-confirmed events lack a finished or independently checked 30-session
+price window. These exclusions make the visible sample selective; do not describe
+it as every IPO or an unbiased estimate of an expiry effect. The audit JSON/CSV is the
 authority for current counts. Internal arithmetic consistency is not proof of
 all underlying inputs. Older A/H and peer histories can be older than the newest
 Live/new-listing quote. Keep their actual dates visible. Word studies are separate
