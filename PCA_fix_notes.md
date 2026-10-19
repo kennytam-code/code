@@ -1,3 +1,15 @@
+# PCA v121 changes
+
+Revision 2026-10-19-v121-data-integrity in the existing v115 entry point.
+
+- Fix listing-download resilience with official Taiwan CSV alternatives and verified HTTPS; retain errors and source provenance. Never claim an unavailable official source was checked successfully.
+- Defer current-cap discovery pruning when historical caps are requested. Convert historical caps using dated FX, exclude unknown/stale historical size data at active gates, and explain an unverifiable relative target-size band. Preserve old-cache reproducibility with visible limitations.
+- Recover only verified, already-downloaded legacy cap exclusions; preserve manual exclusions, per-fit size gates and stock/ETF scope.
+- Request alternative volume fields and observed-session historical volume, retaining errors and unknowns. Date current reference snapshots independently of the analysis window.
+- Disclose effective primary-model settings and disable unrelated legacy PCA controls for joint search.
+- Surface data gaps and weight sensitivity beside headline results; improve Word pagination without changing weights, objective or scores.
+- Add synthetic download-error, HTTPS fallback, dated-FX, stale-cap, cache restoration, diagnostic-export and temporal-isolation regressions. Private user data are not included in the repository.
+
 # PCA v120 changes
 
 Revision 2026-10-17-v120-residual-covariance in the existing v115 entry point.

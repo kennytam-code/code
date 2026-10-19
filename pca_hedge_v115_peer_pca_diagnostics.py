@@ -256,7 +256,7 @@ import textwrap as _textwrap
 
 RIDGE_ALPHAS = np.logspace(-4, 2, 25)
 MIN_RETURN_STD = 1e-12
-PCA_REVISION = '2026-10-17-v120-residual-covariance'
+PCA_REVISION = '2026-10-19-v121-data-integrity'
 MIN_TRAIN_COVERAGE = 0.90
 
 
@@ -1581,7 +1581,7 @@ def _drain_events(session, on_message, timeout_ms=60000):
             break
 
 
-def bbg_hist_field(session, tickers, field, start, end):
+def bbg_hist_field(session, tickers, field, start, end, active_days=False, errors=None):
     """[Fix 44] Generic historical BDH for a single numeric field (e.g.
     'CUR_MKT_CAP'). Same batching / draining as bbg_hist; returns a DataFrame
     keyed by full ticker. Used to build point-in-time market-cap paths so the
@@ -1598,17 +1598,23 @@ def bbg_hist_field(session, tickers, field, start, end):
         req.set("periodicitySelection", "DAILY")
         req.set("startDate", start)
         req.set("endDate", end)
-        req.set("nonTradingDayFillOption", "NON_TRADING_WEEKDAYS")
-        req.set("nonTradingDayFillMethod", "PREVIOUS_VALUE")
+        req.set("nonTradingDayFillOption", "ACTIVE_DAYS_ONLY" if active_days else "NON_TRADING_WEEKDAYS")
+        if not active_days:
+            req.set("nonTradingDayFillMethod", "PREVIOUS_VALUE")
         session.sendRequest(req)
 
         def on_msg(msg):
+            if msg.hasElement('responseError'):
+                raise RuntimeError('Bloomberg historical request: '+str(msg.getElement('responseError')))
             if not msg.hasElement("securityData"):
                 return
             sd = msg.getElement("securityData")
             sec = sd.getElementAsString("security")
+            _bbg_field_errors(sd, sec, errors)
             if sd.hasElement("securityError"):
                 bad.append(sec)
+                return
+            if not sd.hasElement("fieldData"):
                 return
             fda = sd.getElement("fieldData")
             recs = []
@@ -1725,7 +1731,7 @@ def bbg_bulk(session, ticker, field, overrides=None):
     return rows
 
 
-def bbg_ref_multi(session, tickers, fields, overrides=None):
+def bbg_ref_multi(session, tickers, fields, overrides=None, errors=None):
     """BDP reference data for many tickers → {full_ticker: {field: value}}.
     [Fix 25] `overrides` is an optional {fieldId: value} dict."""
     svc = session.getService("//blp/refdata")
@@ -1746,13 +1752,19 @@ def bbg_ref_multi(session, tickers, fields, overrides=None):
         session.sendRequest(req)
 
         def on_msg(msg):
+            if msg.hasElement('responseError'):
+                raise RuntimeError('Bloomberg reference request: '+str(msg.getElement('responseError')))
             if not msg.hasElement("securityData"):
                 return
             arr = msg.getElement("securityData")
             for j in range(arr.numValues()):
                 sd = arr.getValueAsElement(j)
                 sec = sd.getElementAsString("security")
+                _bbg_field_errors(sd, sec, errors)
                 if sd.hasElement("securityError"):
+                    continue
+                if not sd.hasElement("fieldData"):
+                    result[sec] = {}
                     continue
                 fd = sd.getElement("fieldData")
                 result[sec] = {}
@@ -2002,7 +2014,7 @@ def _sector_search_audit(result, data, exclude=()):
             _, excluded = _apply_exclusions([ticker], exclude)
             if excluded or key in previously_excluded:
                 status = 'manual exclusion'
-            elif key in capped:
+            elif key in capped and ticker not in ((data or {}).get('restored_cap_candidates') or {}).get(target, []):
                 status = 'download market-cap screen'
             elif key not in price_names or not prices[price_names[key]].notna().any():
                 status = 'missing downloaded prices'
@@ -2067,7 +2079,7 @@ def _sector_etf_references(result, frame, peers, references, options):
 
 def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
                            min_mktcap_usd_mm=5000, meta=None, exclude=None,
-                           additional_universe=None):
+                           additional_universe=None, defer_cap_filter=False):
     print(f"  Auto-discovering universe for {target_ticker}...")
 
     ref_fields = [
@@ -2410,7 +2422,7 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
     # spurious loading similarity. CRNCY_ADJ_MKT_CAP with a USD override is
     # reported in USD millions; parse failures are kept (fail-open) so a
     # field-permission issue cannot wipe out the universe.
-    if effective_floor and merged:
+    if effective_floor and merged and not defer_cap_filter:
         try:
             liq = bbg_ref_multi(session, merged, ['CRNCY_ADJ_MKT_CAP'],
                                 overrides={'EQY_FUND_CRNCY': 'USD'})
@@ -2441,6 +2453,7 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
             print(f"    ⚠ market-cap screen skipped ({e})")
 
     if meta is not None:
+        meta['download_cap_filter_deferred'] = bool(defer_cap_filter)
         meta['cap_filtered'] = cap_removed
         meta['verified_peers_cap_exempt'] = sorted(set(merged) & peer_cap_exempt)
         meta['manual_filtered'] = manual_removed
@@ -3777,7 +3790,8 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
                 m = {}
                 uni += auto_discover_universe(
                     session, leg, min_mktcap_usd_mm=min_mktcap_usd_mm, meta=m,
-                    exclude=exclude, additional_universe=extra_universe)
+                    exclude=exclude, additional_universe=extra_universe,
+                    defer_cap_filter=fetch_mktcap_hist)
                 disc_meta.append(m)
             seen, candidates = set(), []
             leg_full = {_ticker_key(leg) for leg in legs}
@@ -3791,7 +3805,8 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
             m = {}
             candidates = auto_discover_universe(
                 session, legs[0], min_mktcap_usd_mm=min_mktcap_usd_mm, meta=m,
-                exclude=exclude, additional_universe=extra_universe)
+                exclude=exclude, additional_universe=extra_universe,
+                defer_cap_filter=fetch_mktcap_hist)
             disc_meta = [m]
 
     candidates, removed = _apply_exclusions(candidates, exclude)   # [Fix 36]
@@ -3882,39 +3897,32 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
         print(f"  ⚠ market-cap download skipped ({e}) — the cap filter will "
               f"be unavailable in find_best_hedge")
 
-    # [Fix 44] historical market-cap PATHS (local ccy from Bloomberg), rescaled
-    # to approx-USD by matching each name's latest point to its current USD cap.
+    # Historical market caps use dated FX, never today's cap/FX scaling.
     mktcap_hist = pd.DataFrame()
+    mktcap_hist_audit = {'errors': [], 'missing_currency_or_fx': []}
     if fetch_mktcap_hist:
         try:
             hist_local = bbg_hist_field(session, list(prices.columns),
-                                        'CUR_MKT_CAP', start_dt, end_dt)
-            scaled = {}
-            for c in hist_local.columns:
-                s = hist_local[c].dropna()
-                if s.empty:
-                    continue
-                cur_usd = mktcap.get(c)
-                last_local = float(s.iloc[-1])
-                if cur_usd and last_local:
-                    scaled[c] = hist_local[c] * (cur_usd / last_local)   # ≈ USD
-                else:
-                    # Never compare local-currency market caps to a USD floor.
-                    # Omit the history so _cap_asof uses the current USD cap or fail-open.
-                    continue
-            mktcap_hist = pd.DataFrame(scaled)
-            print(f"  ✓ point-in-time market-cap paths for "
+                                        'CUR_MKT_CAP', start_dt, end_dt,
+                                        errors=mktcap_hist_audit['errors'])
+            currencies = bbg_ref_multi(session, list(hist_local.columns), ['CRNCY'],
+                                      errors=mktcap_hist_audit['errors'])
+            ccys = {str(q.get('CRNCY', '')).strip().upper() for q in currencies.values()}
+            pairs = sorted(c+'USD Curncy' for c in ccys if c != 'USD' and re.fullmatch(r'[A-Z]{3}', c))
+            fx = (bbg_hist_field(session, pairs, 'PX_LAST', start_dt, end_dt,
+                                active_days=True, errors=mktcap_hist_audit['errors'])
+                  if pairs else pd.DataFrame())
+            mktcap_hist, missing_fx = _historical_caps_usd(hist_local, currencies, fx)
+            mktcap_hist_audit['missing_currency_or_fx'] = missing_fx
+            print(f"  ✓ dated-FX USD market-cap paths for "
                   f"{mktcap_hist.shape[1]} tickers")
         except Exception as e:
-            print(f"  ⚠ historical market-cap download skipped ({e}) — the size "
-                  f"filter will fall back to today's caps (look-ahead)")
+            mktcap_hist_audit['errors'].append({'field': 'historical cap/FX', 'reason': str(e)})
+            print(f"  ⚠ historical market-cap download unavailable ({e}); historical size eligibility cannot be verified")
 
-    try:
-        execution_snapshot=bbg_ref_multi(session,list(prices.columns),
-            ['PX_BID','PX_ASK','AVERAGE_VOLUME_30D','CRNCY','NAME'])
-    except Exception as err:
-        execution_snapshot={}
-        print('Execution reference data unavailable: '+str(err))
+    # BDP quotes are current, even for a historical analysis end date.
+    execution_asof = pd.Timestamp.now(tz='UTC').strftime('%Y%m%d')
+    execution_snapshot, execution_data_audit = _download_execution_snapshot(session,list(prices.columns),execution_asof)
     # [Fix 119] carry the exposure verdict with the data. Merged across legs so
     # a book reports the union of what its legs need.
     _exp = {'tags': set(), 'resolved': {}, 'unresolved': {}}
@@ -4020,6 +4028,7 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
                'expansion_failed': m.get('peer_expansion_failed', []),
                'manual_excluded': m.get('manual_filtered', []),
                'market_cap_filtered': m.get('cap_filtered', []),
+               'download_cap_filter_deferred': m.get('download_cap_filter_deferred', False),
                'verified_peers_cap_exempt': m.get('verified_peers_cap_exempt', [])}
                for m in disc_meta},
            'same_exchange_only_download': bool(same_exchange_only),
@@ -4029,9 +4038,12 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
            'effective_mktcap_floor_by_target': {m['target']: m.get('effective_mktcap_floor_mm') for m in disc_meta},
            'broad_markets': [m['broad_market'] for m in disc_meta],
            'prices': prices, 'price_observations': 'ACTIVE_DAYS_ONLY',
-           'execution_snapshot': execution_snapshot, 'execution_snapshot_date': end_dt,
+           'execution_snapshot': execution_snapshot, 'execution_snapshot_date': execution_asof,
+           'execution_data_audit': execution_data_audit,
            'mktcap_usd_mm': mktcap,
            'mktcap_hist': mktcap_hist,
+           'mktcap_hist_method': 'historical local cap x dated FX' if fetch_mktcap_hist else 'not requested',
+           'mktcap_hist_audit': mktcap_hist_audit,
            'pit_members': pit_members,                        # [Fix 49]
            'non_index_shorts': sorted(non_index_shorts),
            'exposures': _exp,                                 # [Fix 119]
@@ -4862,9 +4874,18 @@ def _parse_public_roster(source, payload):
         if not set(columns)<=set(frame.columns):
             raise ValueError(f'{source} roster schema changed; missing '+str(sorted(set(columns)-set(frame.columns))))
     if source in ('TWSE','TPEx'):
-        rows=json.loads(payload)
+        if isinstance(payload, bytes):
+            try: raw = payload.decode('utf-8-sig')
+            except UnicodeDecodeError: raw = payload.decode('cp950')
+        else:
+            raw = payload
+        if raw.lstrip().startswith(('[', '{')):
+            rows=json.loads(raw)
+        else:
+            rows=list(csv.DictReader(io.StringIO(raw)))
         if not isinstance(rows,list) or not rows: raise ValueError('Empty or invalid issuer roster')
-        field='公司代號' if source=='TWSE' else 'SecuritiesCompanyCode'
+        field='公司代號' if '公司代號' in rows[0] else 'SecuritiesCompanyCode'
+        if field not in rows[0]: raise ValueError('Issuer company-code column missing')
         for row in rows:
             if not isinstance(row,dict): raise ValueError('Unexpected issuer row schema')
             code=str(row.get(field,'')).strip()
@@ -4924,6 +4945,8 @@ def _parse_public_roster(source, payload):
             if not re.fullmatch(r'[0-9A-Z]{6}',code): unmapped.append(code);continue
             add(code,'KS',row['회사명'],row['업종'])
     elif source in ('Nasdaq listed','Other US exchanges'):
+        if payload.lstrip().lower().startswith((b'<html',b'<!doctype')):
+            raise ValueError('Official directory returned an HTML access/challenge page, not a symbol list; use an accessible official connection or a Bloomberg EQS universe')
         rows=csv.DictReader(payload.decode('utf-8-sig').splitlines(),delimiter='|')
         codefield='Symbol' if source=='Nasdaq listed' else 'ACT Symbol'
         if not {codefield,'Security Name','ETF','Test Issue'}<=set(rows.fieldnames or []):
@@ -4947,9 +4970,203 @@ def _parse_public_roster(source, payload):
     return sorted(records),audit
 
 
+def _bbg_field_errors(element, security, errors):
+    """Keep vendor field/security errors alongside optional download diagnostics."""
+    if errors is None:
+        return
+    if element.hasElement('securityError'):
+        errors.append(dict(security=security, field=None, reason=str(element.getElement('securityError'))))
+    if element.hasElement('fieldExceptions'):
+        items = element.getElement('fieldExceptions')
+        for i in range(items.numValues()):
+            item = items.getValueAsElement(i)
+            errors.append(dict(security=security, field=item.getElementAsString('fieldId'),
+                               reason=str(item.getElement('errorInfo'))))
+
+
+def _positive_number(value, allow_zero=False):
+    try:
+        number = float(value)
+        return number if np.isfinite(number) and (number >= 0 if allow_zero else number > 0) else None
+    except (ValueError, TypeError):
+        return None
+
+
+def _download_execution_snapshot(session, tickers, end):
+    """Reference-volume aliases, then observed-session historical fallback.
+
+    Never fill missing volume with yesterday's volume. Retain error reasons,
+    source, session count and last observation instead of inventing liquidity.
+    """
+    errors, metadata = [], {}
+    fields = ['PX_BID', 'PX_ASK', 'VOLUME_AVG_30D', 'AVERAGE_VOLUME_30D', 'CRNCY', 'NAME']
+    try:
+        quotes = bbg_ref_multi(session, tickers, fields, errors=errors)
+    except Exception as err:  # optional vendor diagnostics must not abort price analysis
+        quotes = {}
+        errors.append(dict(security=None, field='reference request', reason=str(err)))
+    missing = []
+    for ticker in tickers:
+        quote = quotes.setdefault(ticker, {})
+        for field in ('VOLUME_AVG_30D', 'AVERAGE_VOLUME_30D'):
+            value = _positive_number(quote.get(field), allow_zero=True)
+            if value is not None:
+                quote['PCA_AVG_DAILY_VOLUME'] = value
+                metadata[ticker] = dict(source=field, sessions=None, asof=str(end))
+                break
+        else:
+            missing.append(ticker)
+    if missing:
+        start = (pd.Timestamp(end) - pd.Timedelta(days=75)).strftime('%Y%m%d')
+        try:
+            volume = bbg_hist_field(session, missing, 'PX_VOLUME', start, end,
+                                    active_days=True, errors=errors)
+            for ticker in missing:
+                if ticker not in volume:
+                    continue
+                values = pd.to_numeric(volume[ticker], errors='coerce')
+                values = values.loc[values.index <= pd.Timestamp(end)]
+                values = values[np.isfinite(values) & (values >= 0)].tail(30)
+                if len(values) < 20 or (pd.Timestamp(end)-values.index[-1]).days > 7:
+                    continue
+                quotes[ticker]['PCA_AVG_DAILY_VOLUME'] = float(values.mean())
+                metadata[ticker] = dict(source='PX_VOLUME observed-session mean',
+                    sessions=len(values), asof=values.index[-1].isoformat())
+        except Exception as err:
+            errors.append(dict(security=None, field='PX_VOLUME', reason=str(err)))
+    for ticker in tickers:
+        if ticker not in metadata:
+            metadata[ticker] = dict(source='unavailable', sessions=0, asof=None)
+    return quotes, dict(volume=metadata, errors=errors)
+
+
+def _historical_caps_usd(local_caps, currencies, fx_prices):
+    """Convert local cap paths using contemporaneous CCYUSD observations.
+
+    Backward alignment only, with a seven-calendar-day age bound. A current
+    FX quote must never rescale every historical observation.
+    """
+    converted, missing = {}, []
+    for ticker in local_caps:
+        ccy = str(currencies.get(ticker, {}).get('CRNCY', '')).strip().upper()
+        local = pd.to_numeric(local_caps[ticker], errors='coerce')
+        if ccy == 'USD':
+            converted[ticker] = local.where(local > 0)
+            continue
+        pair = ccy+'USD Curncy'
+        if not re.fullmatch(r'[A-Z]{3}', ccy) or pair not in fx_prices:
+            missing.append(ticker)
+            continue
+        rates = pd.to_numeric(fx_prices[pair], errors='coerce')
+        rates = rates[np.isfinite(rates) & (rates > 0)].sort_index()
+        rates = rates[~rates.index.duplicated(keep='last')]
+        aligned = rates.reindex(local.index, method='ffill', tolerance=pd.Timedelta(days=7))
+        values = (local*aligned).where(local > 0)
+        if values.notna().any():
+            converted[ticker] = values
+        else:
+            missing.append(ticker)
+    return pd.DataFrame(converted, index=local_caps.index), sorted(missing)
+
+
+def _roster_ssl_context():
+    """Verify HTTPS using OS roots and an optional administrator-provided CA."""
+    import ssl, os
+    context = ssl.create_default_context()
+    bundle = os.environ.get('HEDGE_CA_BUNDLE')
+    if bundle:
+        context.load_verify_locations(cafile=bundle)
+    return context
+
+
+def _restore_cached_sector_candidates(data):
+    """Recover verified, already-downloaded names removed by an old cap screen.
+
+    Eligibility is still checked at each fit date. Missing prices are never
+    synthesized; explicit exclusions remain exclusions. The input cache is not
+    mutated, and names without recorded sector verification are not promoted.
+    """
+    if data.get('sector_scope_policy_version') != 1:
+        return data
+    prices = data.get('prices')
+    if not isinstance(prices, pd.DataFrame):
+        return data
+    restored, lists = {}, dict(data.get('sector_stock_tickers_by_target') or {})
+    for target, discovery in (data.get('peer_discovery_by_target') or {}).items():
+        capped = set(discovery.get('market_cap_filtered') or [])
+        excluded = discovery.get('manual_excluded') or []
+        allowed = [row['ticker'] for row in discovery.get('sector_stock_audit') or []
+                   if row.get('eligible') and row['ticker'] in capped
+                   and row['ticker'] in prices and prices[row['ticker']].notna().any()]
+        allowed, _ = _apply_exclusions(allowed, excluded)
+        added = sorted(set(allowed)-set(lists.get(target, [])))
+        if added:
+            lists[target] = list(dict.fromkeys(lists.get(target, [])+added))
+            restored[target] = added
+    if not restored:
+        return data
+    result = dict(data, sector_stock_tickers_by_target=lists,
+                  restored_cap_candidates=restored)
+    # These verified sector names need no index membership to be candidates.
+    result['non_index_shorts'] = sorted(set(data.get('non_index_shorts') or []) |
+                                       {t for names in restored.values() for t in names})
+    return result
+
+
+def _run_data_quality(result, data, options):
+    """Keep known coverage/implementation limits beside the headline metrics."""
+    data = data or {}
+    discovery = data.get('peer_discovery_by_target') or {}
+    sources = [row for leg in result['portfolio_legs'] for row in
+               discovery.get(leg, {}).get('listing_registry_audit', [])]
+    missing_sources = sorted(set(row['source'] for row in sources if row.get('status') != 'received'))
+    notes = []
+    if missing_sources:
+        notes.append('Listing coverage incomplete: '+', '.join(missing_sources)+
+                     '. See source status below.')
+    execution = result.get('execution_audit') or {}
+    missing_volume = [row['ticker'] for row in execution.get('rows', [])
+                      if not np.isfinite(row['average_daily_shares'])]
+    if missing_volume:
+        notes.append('Average volume unavailable for '+str(len(missing_volume))+
+                     ' basket legs; liquidity/capacity are unverified.')
+    sensitive = [row for row in result.get('current_sensitivity', [])
+                 if row.get('max_weight_change', 0) >= .10 or row.get('sign_changes', 0)]
+    if sensitive:
+        notes.append('Weight sensitivity: removing a small date block changes one leg by up to '+
+                     f"{100*max(row['max_weight_change'] for row in sensitive):.1f} per 100 target; inspect the sensitivity table.")
+    historical = []
+    if discovery:
+        historical.append('current classifications/listing discovery')
+    if any(d.get('market_cap_filtered') for d in discovery.values()):
+        historical.append('legacy download-time market-cap screen')
+    if options.get('pit_size') and data.get('mktcap_hist_method') != 'historical local cap x dated FX':
+        historical.append('legacy or unspecified historical cap conversion')
+    if historical:
+        limits = (['current classifications'] if discovery else [])
+        if any('legacy' in item for item in historical):
+            limits.append('legacy size data')
+        notes.append('Historical universe uses '+' and '.join(limits)+
+                     '; it is not fully point-in-time.')
+    settings = dict(objective=options['hedge_objective'], search=options['basket_methods'])
+    if options['hedge_objective'] == 'factor':
+        settings.update(covariance='orthogonal factors + shrunk residual correlations',
+                        main_model_returns='unclipped',
+                        pca_controls_scope=('descriptive PCA only' if options['basket_methods']=='search'
+                                            else 'PCA candidate ranking and descriptive PCA; not factor covariance'))
+    else:
+        settings.update(covariance='regularized return fit',
+                        main_model_returns='unclipped',
+                        pca_controls_scope=('descriptive PCA only' if options['basket_methods']=='search'
+                                            else 'PCA candidate ranking and descriptive PCA'))
+    return dict(notes=notes, missing_listing_sources=missing_sources,
+                missing_volume=missing_volume, historical_universe_limits=historical,
+                effective_model_settings=settings)
+
+
 def _public_equity_universe(market):
     """Independent listing coverage for priority markets; failures remain visible."""
-    import urllib.request,http.client,zipfile
+    import urllib.request,http.client,zipfile,ssl
     sources={
         'TW':[('TWSE','https://openapi.twse.com.tw/v1/opendata/t187ap03_L'),
               ('TPEx','https://www.tpex.org.tw/openapi/v1/mopsfin_t187ap03_O')],
@@ -4959,23 +5176,37 @@ def _public_equity_universe(market):
         'KR':[('KRX KIND','https://kind.krx.co.kr/corpgeneral/corpList.do?method=download&searchType=13')],
         'US':[('Nasdaq listed','https://www.nasdaqtrader.com/dynamic/SymDir/nasdaqlisted.txt'),
               ('Other US exchanges','https://www.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt')]}
+    fallback={
+        'TWSE':'https://mopsfin.twse.com.tw/opendata/t187ap03_L.csv',
+        'TPEx':'https://mopsfin.twse.com.tw/opendata/t187ap03_O.csv'}
     names,audit=[],[]
     for label,url in sources.get(market,[]):
-        try:
+        failures=[]
+        received=False
+        for endpoint in [url]+([fallback[label]] if label in fallback else []):
             for attempt in range(2):
                 try:
-                    req=urllib.request.Request(url,headers={'User-Agent':'PCA equity research/1.0'})
-                    with urllib.request.urlopen(req,timeout=15) as response:
+                    req=urllib.request.Request(endpoint,headers={'User-Agent':'PCA equity research/1.0'})
+                    with urllib.request.urlopen(req,timeout=15,context=_roster_ssl_context()) as response:
                         payload=response.read()
+                    tickers,detail=_parse_public_roster(label,payload)
+                    names.extend(tickers)
+                    audit.append(dict(detail,source=label,status='received',url=endpoint,
+                                      attempts=failures,
+                                      retrieved_at=pd.Timestamp.now(tz='UTC').isoformat()))
+                    received=True
                     break
-                except http.client.IncompleteRead:
-                    if attempt: raise
-            tickers,detail=_parse_public_roster(label,payload)
-            names.extend(tickers)
-            audit.append(dict(detail,source=label,status='received',url=url,
-                              retrieved_at=pd.Timestamp.now(tz='UTC').isoformat()))
-        except (OSError,ValueError,TypeError,ImportError,http.client.HTTPException,zipfile.BadZipFile) as err:
-            audit.append({'source':label,'status':'unavailable','count':0,'reason':str(err),'url':url})
+                except (OSError,ValueError,TypeError,ImportError,http.client.HTTPException,zipfile.BadZipFile) as err:
+                    failures.append({'url':endpoint,'reason':str(err)})
+                    if (isinstance(err,(ValueError,TypeError,ImportError,ssl.SSLCertVerificationError))
+                            or isinstance(getattr(err,'reason',None),ssl.SSLCertVerificationError)):
+                        break
+            if received: break
+        if not received:
+            reason=failures[-1]['reason'] if failures else 'No source available'
+            audit.append({'source':label,'status':'unavailable','count':0,'reason':reason,'url':url,
+                          'attempts':failures,
+                          'remedy':'Check network access and OS trust roots. For an approved corporate CA, set HEDGE_CA_BUNDLE to its PEM file; HTTPS verification remains enabled. An existing Bloomberg EQS screen or explicit peer universe can supplement coverage.'})
     return sorted(set(names)),audit
 
 
@@ -5062,13 +5293,19 @@ def _execution_audit(result, data):
                 v=float(q.get(k))
                 return v if np.isfinite(v) else np.nan
             except (ValueError,TypeError): return np.nan
-        bid,ask,volume=finite('PX_BID'),finite('PX_ASK'),finite('AVERAGE_VOLUME_30D')
+        bid,ask=finite('PX_BID'),finite('PX_ASK')
+        volume=np.nan
+        for key in ('PCA_AVG_DAILY_VOLUME','VOLUME_AVG_30D','AVERAGE_VOLUME_30D'):
+            value=_positive_number(q.get(key),allow_zero=True)
+            if value is not None:
+                volume=value;break
         spread=(ask-bid)/((ask+bid)/2)*1e4 if 0<bid<=ask else np.nan
         supplied=(data or {}).get('borrow_available',{}).get(tk)
         borrow=('not needed' if w<=0 else 'confirmed by user' if supplied is True
                 else 'unavailable' if supplied is False else 'unknown')
         rows.append({'ticker':tk,'average_daily_shares':volume,'spread_bps':spread,
-                     'currency':currency(tk),'borrow':borrow})
+                     'currency':currency(tk),'borrow':borrow,
+                     'volume_detail':((data or {}).get('execution_data_audit') or {}).get('volume',{}).get(tk,{})})
     currencies=list(target_currencies.values())+[r['currency'] for r in rows]
     known=set(currencies)-{'unknown'}
     currency_status=('mixed' if len(known)>1 else
@@ -5681,7 +5918,12 @@ def _find_best_hedge_impl(
             s = caps_hist[c]
             s = s[s.index <= asof].dropna()
             if len(s):
+                if data.get('mktcap_hist_method') == 'historical local cap x dated FX':
+                    if (pd.Timestamp(asof)-s.index[-1]).days > 7 or not np.isfinite(s.iloc[-1]) or s.iloc[-1] <= 0:
+                        return None
                 return float(s.iloc[-1])
+        if pit_size and data.get('mktcap_hist_method') == 'historical local cap x dated FX':
+            return None
         return caps.get(c)                        # fallback: current USD cap
 
     def _target_cap_asof(asof):
@@ -5716,6 +5958,9 @@ def _find_best_hedge_impl(
                 tgt_cap = (_num / _den) if _den > 0 else None
             else:
                 tgt_cap = _cap_asof(target_ticker_single, asof)
+            if tgt_cap is None and pit_size and data.get('mktcap_hist_method') == 'historical local cap x dated FX':
+                raise ValueError('Historical target market cap is unavailable as of '+str(asof)+
+                                 '; the requested relative size band cannot be verified. Download cap/FX data again or remove the size band.')
         out = []
         for c in universe:
             if _is_etf(c) or c in forced :
@@ -5732,6 +5977,8 @@ def _find_best_hedge_impl(
                     continue          # not an index member as-of this window
             mc = _cap_asof(c, asof)
             if mc is None:
+                if (floor_asof or size_band) and pit_size and data.get('mktcap_hist_method') == 'historical local cap x dated FX':
+                    continue
                 out.append(c)                     # fail-open
                 continue
             if size_band and tgt_cap:
@@ -9041,6 +9288,9 @@ def _report_blocks(result):
     table(['EVIDENCE','UNSEEN R²','UNSEEN VOL CUT','IN-SAMPLE R²'],[[
         evidence_label,f(ticket.get('quality_r2')),f(risk.get('vol_reduction'),True),f(result['in_sample_r2'])]])
     text('Current basket uses the full selected window. Unseen scores belong to earlier frozen fits; they do not test today’s refitted weights.',True)
+    quality=result.get('data_quality') or {}
+    if quality.get('notes'):
+        table(['REVIEW ITEM','STATUS'],[[str(i+1),note] for i,note in enumerate(quality['notes'])],widths=[.8,6.2])
     execution=result.get('execution_audit') or {}
     if execution.get('currency_status')=='mixed':
         text('Local-currency comparison only: '+', '.join(execution['currencies'])+
@@ -9055,6 +9305,8 @@ def _report_blocks(result):
         ['SHORT' if x>0 else 'LONG',f'{abs(x)*100:.1f}',t]
         for t,x in w.sort_values(key=lambda a:-a.abs()).items()],widths=[.8,1.4,4.8])
     text(f"{len(w)} instruments · Gross {w.abs().sum():.2f}× · {_report_method(result.get('current_recipe_spec',p['pc_spec']))} · {result.get('current_fit_rows',len(result['returns']))} current-fit observations",True)
+    if p.get('hedge_objective')=='factor' and p.get('report')=='full':
+        text('Model: common factors plus shrunk residual correlations, fitted on unclipped returns. Legacy PCA controls apply to PCA diagnostics/ranking, not this covariance fit.',True)
     if current.get('fit_end') is not None:
         text(f"Current fit {current['fit_start']:%d %b %Y} to {current['fit_end']:%d %b %Y}",True)
     table(['CURRENT FIT MEASURE','READING','INTERPRETATION'],[
@@ -9554,6 +9806,8 @@ def find_best_hedge(*args, **kwargs):
     bound = inspect.signature(_find_best_hedge_impl).bind(*args, **kwargs)
     bound.apply_defaults()
     options = bound.arguments
+    if options['data'] is not None:
+        options['data'] = _restore_cached_sector_candidates(options['data'])
     if options['report'] not in ('compact', 'full'):
         raise ValueError("report must be 'compact' or 'full'")
     compact = True  # capture legacy calculations in both presentation modes
@@ -9569,7 +9823,7 @@ def find_best_hedge(*args, **kwargs):
     try:
         with rich_capture as rich:
             with contextlib.redirect_stdout(capture) if compact else contextlib.nullcontext():
-                result = _find_best_hedge_impl(*args, **kwargs)
+                result = _find_best_hedge_impl(*bound.args, **bound.kwargs)
     finally:
         _IN_JUPYTER = old_jupyter
     options['data']=result.pop('_analysis_data',options['data'])
@@ -9694,6 +9948,8 @@ def find_best_hedge(*args, **kwargs):
     result['basket_comparison'] = _basket_report_rows(result)
     result['basket_identity_audit'] = _peer_identity_rows(result,options['data'])
     result['sector_search_audit'] = _sector_search_audit(result, options['data'], options['exclude'])
+    result['data_quality'] = _run_data_quality(result, options['data'], options)
+    result['effective_model_settings'] = result['data_quality']['effective_model_settings']
     result['broad_markets'] = [_broad_market_spec(t) for t in result['portfolio_legs']]
     result['broad_market_hedge'] = result.get('hedge_alternatives', {}).get('single_market')
     benchmark = '; '.join(dict.fromkeys(m['benchmark'] for m in result['broad_markets']))
@@ -10145,6 +10401,11 @@ def _docx_hedge_report(result, report_text, path):
     basket_paragraphs=[]
     collecting=False
     for element in doc.element.body:
+        # Keep the executable primary recipe with its fit measures, but let
+        # the separate tracking comparison flow independently across pages.
+        if collecting and element.tag==qn('w:tbl'):
+            if 'FITTED TRACKING COMPARISON' in ''.join(element.itertext()):
+                break
         if element.tag==qn('w:p'):
             p=_WordParagraph(element,doc)
             if p.style.name=='Heading 1':
@@ -10271,7 +10532,8 @@ def export_hedge_diagnostics(result, out_dir=None):
     fields = ('engine_revision', 'portfolio_legs', 'params', 'weights',
               'in_sample_r2', 'fit_diagnostics', 'common_exposures',
               'validation_mode', 'validation_weights', 'holdout_r2',
-              'selected_unseen_r2', 'sector_search_audit', 'joint_search_audit')
+              'selected_unseen_r2', 'sector_search_audit', 'joint_search_audit',
+              'data_quality', 'effective_model_settings', 'execution_audit', 'current_sensitivity')
     snapshot = {key: result.get(key) for key in fields}
     comparison = (result.get('history_comparison') or {}).get('diagnostic_results') or {}
     snapshot['comparison_windows'] = {
@@ -10553,7 +10815,7 @@ def hedge_ui(data=None):
     w_pcs = W.Text(value='auto', description='PCs (auto or list)',
                    style=LBL, layout=FULL)
     w_wins = W.FloatText(value=0.01, step=0.005,
-                         description='Winsorize (0=off)', style=LBL,
+                         description='PCA clipping only', style=LBL,
                          layout=FULL)
     w_gross = W.FloatText(value=0.02, step=0.01,
                           description='Gross penalty', style=LBL, layout=FULL)
@@ -10576,12 +10838,25 @@ def hedge_ui(data=None):
         options=[('Fast — 1 validation window', 'fast'),
                  ('Full — same 3 windows as RUN HEDGE', 'full')],
         value='fast', description='RE-HEDGE depth', style=LBL, layout=FULL)
+    w_model_scope = W.HTML()
+    def _model_control_scope(_=None):
+        diagnostic_only = w_method.value == 'search'
+        for control in (w_cov,w_pcs,w_wins):
+            control.disabled = diagnostic_only
+        w_model_scope.value = (
+            "<div class='hui-help'>Joint search uses its own covariance/return fit on unclipped returns. "
+            "The disabled legacy PCA controls only affect descriptive PCA charts and diagnostics; "
+            "they do not control the primary basket.</div>" if diagnostic_only else
+            "<div class='hui-help'>These controls affect PCA candidate ranking and diagnostics. "
+            "Hedge weights use unclipped returns; common-risk covariance uses its own residual shrinkage.</div>")
+    w_method.observe(_model_control_scope,names='value')
+    _model_control_scope()
     tab_model = W.VBox([
         H('Hedge objective'), w_objective,
         HELP('Common-risk mode fits market/sector exposures and peer factors, including hedge-specific risk. Short windows provide descriptive research; unseen evaluation uses earlier frozen fits. In-sample R² remains visible.'),
         H('Factor model'),
         HELP('Joint search screens complementary pairs, grows combinations and swaps members. The search is bounded and reports its actual coverage; alternatives are distinct baskets.'),
-        w_method, w_cov, w_pcs, w_wins,
+        w_method, w_model_scope, w_cov, w_pcs, w_wins,
         H('Penalties'), w_gross, w_maxgross, w_maxleg,
         H('Output'), w_boot, w_report, w_alternatives, W.HBox([w_plots, w_roll]),
         H('Re-hedging'),

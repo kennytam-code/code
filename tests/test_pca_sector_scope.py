@@ -81,6 +81,12 @@ class SectorScopeTests(unittest.TestCase):
         broad=E['_filter_candidate_scope'](d,[target],[target]+stocks,'sector',True)
         self.assertEqual(len(narrow['columns'])-1,9)
         self.assertEqual(len(broad['columns'])-1,23)
+        deferred={}
+        with patch.dict(fn.__globals__,stubs),contextlib.redirect_stdout(io.StringIO()):
+            fn(None,target,min_mktcap_usd_mm=1000,meta=deferred,defer_cap_filter=True)
+        self.assertEqual(len(deferred['sector_stock_tickers']),31)
+        self.assertEqual(deferred['cap_filtered'],[])
+        self.assertTrue(deferred['download_cap_filter_deferred'])
 
     def test_download_retains_sector_metadata_through_analysis(self):
         d,stocks,unrelated=self.sector_data()
@@ -94,7 +100,7 @@ class SectorScopeTests(unittest.TestCase):
         fn=E['_download_hedge_data_impl']
         stubs={'auto_discover_universe':discovery,
                'bbg_hist':lambda session,names,*a:d['prices'][names].copy(),
-               'bbg_ref_multi':lambda session,names,*a,**kw:{t:{'CRNCY_ADJ_MKT_CAP':2000,'CRNCY':'TWD'} for t in names}}
+               'bbg_ref_multi':lambda session,names,*a,**kw:{t:{'CRNCY_ADJ_MKT_CAP':2000,'CRNCY':'TWD','VOLUME_AVG_30D':1000000} for t in names}}
         with patch.dict(fn.__globals__,stubs),contextlib.redirect_stdout(io.StringIO()):
             downloaded=fn(target,session=object(),fetch_mktcap_hist=False,fetch_pit_members=False,cache=False)
             result=E['find_best_hedge'](target,data=downloaded,**dict(OPTIONS,candidate_scope='sector',sample_window='1m'))

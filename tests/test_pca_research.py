@@ -32,7 +32,7 @@ class ResearchTests(unittest.TestCase):
         cls.data=fixture();cls.one=run(cls.data,sample_window='1m');cls.three=run(cls.data,sample_window='3m')
 
     def test_actual_revision_loaded(self):
-        self.assertIn('v120',E['PCA_REVISION'])
+        self.assertIn('v121',E['PCA_REVISION'])
 
     def test_short_window_search_has_multiple_distinct_baskets(self):
         rows=self.one['basket_comparison']
@@ -227,16 +227,23 @@ class ResearchTests(unittest.TestCase):
         self.assertTrue(all(r['status']=='unavailable' for r in audit))
 
     def test_registry_malformed_schema_is_not_silently_partial(self):
-        with patch('urllib.request.urlopen',side_effect=[io.BytesIO(b'[{"changed":"2889"}]'),OSError('offline')]):
+        def fetch(req,**kwargs):
+            if 'openapi.twse' in req.full_url:
+                return io.BytesIO(b'[{"changed":"2889"}]')
+            raise OSError('offline')
+        with patch('urllib.request.urlopen',side_effect=fetch):
             names,audit=E['_public_equity_universe']('TW')
         self.assertEqual(names,[]);self.assertEqual(audit[0]['status'],'unavailable')
 
     def test_partial_roster_download_retries_once_then_reports_failure(self):
         from http.client import IncompleteRead
-        good=io.BytesIO(b'[{"SecuritiesCompanyCode":"5864"}]')
-        with patch('urllib.request.urlopen',side_effect=[IncompleteRead(b'a'),IncompleteRead(b'b'),good]) as fetch:
+        def receive(req,**kwargs):
+            if 'tpex.org.tw' in req.full_url:
+                return io.BytesIO(b'[{"SecuritiesCompanyCode":"5864"}]')
+            raise IncompleteRead(b'a')
+        with patch('urllib.request.urlopen',side_effect=receive) as fetch:
             names,audit=E['_public_equity_universe']('TW')
-        self.assertEqual(fetch.call_count,3)
+        self.assertEqual(fetch.call_count,5)
         self.assertEqual(names,['5864 TT Equity'])
         self.assertEqual(audit[0]['status'],'unavailable')
 
