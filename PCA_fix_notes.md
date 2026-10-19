@@ -1,3 +1,13 @@
+# PCA v122 changes
+
+Revision 2026-10-20-v122-residual-review in the existing v115 entry point.
+
+- Add training-only chronological calibration of residual shrinkage for joint factor search, with fresh factor estimation, date-specific eligibility and basket search in every inner block. Preserve gross/per-leg limits, required names and meaningful basket sizes. Fall back explicitly when history or comparisons are insufficient.
+- Keep calibration evidence distinct from outer historical tests. Preserve the existing estimator with `residual_policy='estimated'`; the new optional argument is appended to preserve positional API compatibility.
+- Attribute each fitted error to retained-factor mismatch, target returns outside the factors and hedge returns outside the factors. Print the largest error dates, retain all observations and export a daily reconciliation CSV.
+- Accept sourced event context as descriptive metadata only; do not identify alpha or claim an event caused a return. Reuse the primary factor model for stock-only runs' ETF references and freeze the selected residual policy in weight-sensitivity diagnostics.
+- Add temporal-isolation, matched-block risk, PSD/variance, fallback, cap, attribution-reconciliation and diagnostic-export regressions. No private holdings or market-data files are included in this release.
+
 # PCA v121 changes
 
 Revision 2026-10-19-v121-data-integrity in the existing v115 entry point.
