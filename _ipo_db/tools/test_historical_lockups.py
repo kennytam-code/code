@@ -66,5 +66,6 @@ probe=copy.deepcopy(B);probe['events']=[copy.deepcopy(visible[0])]
 probe['events'][0]['last_day_locked']='2099-01-01';assert not historical_events(probe,ROOT)
 probe['events'][0]=copy.deepcopy(visible[0]);probe['events'][0]['sha256']='unreviewed';assert not historical_events(probe,ROOT)
 probe['events'][0]=copy.deepcopy(visible[0]);probe['events'][0]['windows']['30 trading sessions']['status']='Missing close / suspended';assert not historical_events(probe,ROOT)
-assert hashlib.sha256((ROOT/'TO_NOMURA/HK_IPO_Database_v1.xlsx').read_bytes()).hexdigest()=='cb2e93c2c229640b7aab886d94f2216fd9c6d41393f9faac1fb27a10eabf96e2'
-print(f'PASS {len(visible)} historical events / {observations} session slots: filed dates, listing inputs, holder boundaries, raw prices, split factors, exact ±30 endpoints, return math, payload and unchanged Excel')
+release=json.loads((ROOT/'data/release_state.json').read_text())
+assert hashlib.sha256((ROOT/'TO_NOMURA/HK_IPO_Database_v1.xlsx').read_bytes()).hexdigest()==release['deliverables']['HK_IPO_Database_v1.xlsx']['sha256']
+print(f'PASS {len(visible)} historical events / {observations} session slots: filed dates, listing inputs, holder boundaries, raw prices, split factors, exact ±30 endpoints, return math, payload and delivered Excel hash')

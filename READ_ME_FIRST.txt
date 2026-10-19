@@ -1,4 +1,8 @@
-HK IPO DATABASE — 17 OCTOBER 2026
+HK IPO DATABASE — 19 OCTOBER 2026
+
+GITHUB MAIN DOWNLOADS
+  Excel: https://github.com/kennytam-code/code/raw/refs/heads/main/HK_IPO_Database_v1.xlsx
+  HTML: https://github.com/kennytam-code/code/raw/refs/heads/main/hk_ipo_dashboard.html
 
 Desk folder: G:\FIN_COMM\DeltaOne\Kenny\ECM\
 
@@ -20,6 +24,9 @@ CONTROLS
   seven-day / one-month changes are percentage points. The chart combines
   premium with A-share and CSI 300 returns on separate axes. Bloomberg
   requests through TODAY; stored histories show their actual dates.
+  Navy = premium (left axis); teal = A-share return (right axis);
+  amber dashed = CSI 300 return (right axis). The 19 October update
+  changes chart presentation only; all prices and formulas are preserved.
   Excel compares four pairs; HTML supports multiple selection, Select all,
   Select sector and preset/custom dates. Sector/subsector filters restrict
   the plotted selection. Stocks, Selected average and Sector averages are

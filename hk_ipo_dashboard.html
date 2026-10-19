@@ -345,6 +345,13 @@ table.labtbl thead th .dot { vertical-align: 1px; }
 .ahpane { background: var(--surface-1); border: 1px solid var(--line); border-radius: 4px; padding: 14px 16px 10px; }
 .ahpane h4 { margin: 0 0 4px; font-size: 12px; color: var(--text-secondary); font-weight: 600; }
 .ahpane svg { width: 100%; }
+.ahpane.ah-market { grid-column:1 / -1; padding:18px 20px 12px; }
+.ah-market h4 { color:var(--text-primary); font-size:14px; margin-bottom:10px; }
+.ah-market-legend { display:flex; flex-wrap:wrap; gap:10px 26px; align-items:center; margin:0 0 12px; font-size:12px; }
+.ah-market-legend span { display:inline-flex; align-items:center; gap:7px; }
+.ah-market-legend i { display:inline-block; width:26px; height:0; border-top:3px solid; }
+.ah-market-base { margin-left:auto; color:var(--text-secondary); font-size:11px; }
+@media(max-width:760px){.ahpane.ah-market{padding:14px 10px 8px}.ah-market-base{margin-left:0}}
 .ahpane.withpop, .ahpane.expop { background: var(--surface-1); }
 #lockup-stock-picks[hidden] { display: none; }
 #peers .peer-custom[hidden] { display: none; }
@@ -2183,6 +2190,7 @@ function renderHist(chosen) {
 
 // 6. the reference notebook's A/H charts, from the embedded daily paths -------
 const AHP = DATA.ahpaths || {};
+const AHCHART={premium:'#1D4E89',a:'#16857A',csi:'#B17816'};
 function pathline(svg, xs, ys, X, Y, color, w) {
   let dstr = "", started = false;
   xs.forEach((x, i) => {
@@ -2278,12 +2286,13 @@ function daymarks(svg, X, M, H) {
 }
 function ahPanel(host, title, draw, kind, subtitle) {
   const card = document.createElement("div");
-  card.className = "ahpane" + (kind === "pop" ? " withpop" : kind === "expop" ? " expop" : "");
+  card.className = "ahpane" + (kind === "pop" ? " withpop" : kind === "expop" ? " expop" : kind === 'market' ? ' ah-market' : "");
   card.innerHTML = `<h4>${title}${kind === "pop" ? ' <span class="ktag kpop">incl. pop</span>'
     : kind === "expop" ? ' <span class="ktag kex">ex-pop</span>' : ""}</h4>` +
     (subtitle ? `<p class="psub">${subtitle}</p>` : "");
   host.appendChild(card);
-  const W = fitW(card, 560), H = 270, M = { l: 58, r: 58, t: 20, b: 34 };
+  if(kind==='market')host.insertBefore(card,host.firstChild);
+  const W = fitW(card, kind==='market'?1080:560), H = kind==='market'?340:270, M = { l: 58, r: 58, t: kind==='market'?38:20, b: kind==='market'?40:34 };
   const svg = el("svg", { viewBox: `0 0 ${W} ${H}` }, card);
   draw(svg, W, H, M);
   return svg;
@@ -2301,6 +2310,37 @@ function pathYAxis(svg,Y,W,H,M,unit=''){
   el('line',{x1:M.l,x2:W-M.r,y1:Y(v),y2:Y(v),class:'gridline'},svg);
   const t=el('text',{x:M.l-8,y:Y(v)+4,'text-anchor':'end',class:'axlabel'},svg);t.textContent=(Math.abs(v)>=100?v.toFixed(0):v.toFixed(1))+unit;
  });
+}
+function drawAHMarket(svg,W,H,M,P,source,trend,span,LEAD){
+  const marketDays=trend.map(x=>Math.round((Date.parse(x[0])-Date.parse(P.ipo))/86400000));
+  const marketA=trend.map(x=>100*(x[1]/trend[0][1]-1)),marketCSI=trend.map(x=>100*(x[2]/trend[0][2]-1));
+  const begin=Math.min(LEAD,marketDays[0]??0),end=Math.max(1,span,marketDays.at(-1)??0);
+  const X=v=>M.l+(W-M.l-M.r)*(v-begin)/(end-begin),ok=P.prem.filter(Number.isFinite);
+  const Yp=scaleFor([...ok,0],H,M),Ym=scaleFor([...marketA,...marketCSI,0],H,M);
+  svg.dataset.points=ok.length;svg.dataset.benchmarkPoints=trend.length;svg.dataset.axes='premium-left,market-return-right';svg.dataset.ipo=P.ipo;
+  const axis=(Y,side,color)=>niceTicks(...Y.domain,5).filter(v=>Y(v)>=M.t&&Y(v)<=H-M.b).forEach(v=>{
+    if(side==='left')el('line',{x1:M.l,x2:W-M.r,y1:Y(v),y2:Y(v),stroke:'#E5E9EE','stroke-width':.8},svg);
+    const t=el('text',{x:side==='left'?M.l-10:W-M.r+10,y:Y(v)+4,'text-anchor':side==='left'?'end':'start','font-size':12,fill:color},svg);t.textContent=v.toFixed(Math.abs(v)<1&&v!==0?1:0)+'%';
+  });
+  axis(Yp,'left',AHCHART.premium);axis(Ym,'right','#54616E');
+  for(const [x,text,anchor,color] of [[M.l,'Premium (%)','start',AHCHART.premium],[W-M.r,'Price return (%)','end','#54616E']]){
+    const t=el('text',{x,y:16,'text-anchor':anchor,'font-size':12,'font-weight':600,fill:color},svg);t.textContent=text;
+  }
+  const dateAt=n=>new Date(Date.parse(P.ipo)+n*86400000).toISOString().slice(0,10);
+  const ticks=W<600?3:5;
+  for(let i=0;i<ticks;i++){
+    const d=begin+(end-begin)*i/(ticks-1),t=el('text',{x:X(d),y:H-12,'text-anchor':i===0?'start':i===ticks-1?'end':'middle','font-size':11,fill:'#626E7B'},svg);
+    t.textContent=dateAt(d);
+  }
+  if(begin<0){el('line',{x1:X(0),x2:X(0),y1:M.t,y2:H-M.b,stroke:'#AEB7C2','stroke-width':1,'stroke-dasharray':'3 4'},svg);const t=el('text',{x:X(0)+5,y:M.t+12,'font-size':10,fill:'#626E7B'},svg);t.textContent='H IPO';}
+  const series=[{name:'CSI 300 return (right)',days:marketDays,ys:marketCSI,color:AHCHART.csi,dash:'7 4',w:2.1},{name:'A-share return (right)',days:marketDays,ys:marketA,color:AHCHART.a,w:2.1},{name:'A/H premium (left)',days:P.days,ys:P.prem,color:AHCHART.premium,w:2.8}];
+  for(const s of series){
+    const Y=s.color===AHCHART.premium?Yp:Ym,p=pathline(svg,s.days,s.ys,X,Y,s.color,s.w);p.setAttribute('stroke-linejoin','round');p.setAttribute('stroke-linecap','round');p.setAttribute('data-name',s.name);if(s.dash)p.setAttribute('stroke-dasharray',s.dash);
+    const connected=(i,j)=>j>=0&&j<s.days.length&&Number.isFinite(s.ys[j])&&Math.abs(s.days[i]-s.days[j])<=10;
+    s.days.forEach((d,i)=>{if(Number.isFinite(s.ys[i])&&!connected(i,i-1)&&!connected(i,i+1))el('circle',{cx:X(d),cy:Y(s.ys[i]),r:3,fill:s.color,'data-isolated-point':'true'},svg);});
+  }
+  if(!ok.length){const t=el('text',{x:W/2,y:M.t+15,'text-anchor':'middle','font-size':12,fill:'#626E7B'},svg);t.textContent=source.class_review?'A/H share basis requires review':'A/H history unavailable';}
+  addXhair(svg,W,H,M,X,[series[2],series[1],series[0]],'%');
 }
 function fullAHPath(d) {
   const old=DATA.ahpaths[d.code],r=AHST[d.code],by=new Map((r.history||[]).map(x=>[x[0],x]));
@@ -2324,7 +2364,7 @@ function renderAH(chosen, options={}) {
     const selector=label.querySelector('select');selector.value=labAHFocus;selector.addEventListener('change',()=>{labAHFocus=selector.value;renderAH(chosen,options);});pairs=pairs.filter(d=>d.code===labAHFocus);
   }
   $(options.note || "#lab-ah-note").textContent=pairs.length ? `${pairs.length} A/H ${pairs.length===1?"pair":"pairs"} · prices through ${DATA.ah_asof}` : "No A/H price history for this selection.";
-  const AHP=paths, RED="#9b4a47",BLUE="#315b7d",GOLD="#a18347";
+  const AHP=paths, RED=AHCHART.a,BLUE=AHCHART.premium,GOLD="#a18347";
   pairs.forEach(d => {
     const source=options.full?fullAHPath(d):AHP[d.code], take=source.days.map((v,i)=>[v,i]).filter(x=>options.full||x[0]<=92).map(x=>x[1]);
     const P={...source};for(const key of ["days","h","a_cny","a_hkd","prem","h_perf","a_perf_hkd"])P[key]=take.map(i=>source[key][i]);
@@ -2338,7 +2378,7 @@ function renderAH(chosen, options={}) {
       svg.setAttribute("data-ipo",P.ipo);svg.setAttribute("data-first",P.ipo);svg.setAttribute("data-last",P.dates[take.at(-1)]||P.ipo);
     };
     const wrap=document.createElement("div");wrap.className="ahstock";
-    wrap.innerHTML=`<div class="ovleg"><span><i class="sw" style="background:${BLUE}"></i>H shares (HKD)</span><span><i class="sw" style="background:${RED}"></i>A shares</span><span><i class="sw" style="background:#757f88"></i>CSI 300</span><span>H listed ${P.ipo} · offer HK$${P.offer}</span></div><div class="ahwrap"><div class="ahgrid"></div></div>`;
+    wrap.innerHTML=`<div class="ovleg"><span><i class="sw" style="background:${BLUE}"></i>H shares (HKD)</span><span><i class="sw" style="background:${RED}"></i>A shares</span><span><i class="sw" style="background:${AHCHART.csi}"></i>CSI 300</span><span>H listed ${P.ipo} · offer HK$${P.offer}</span></div><div class="ahwrap"><div class="ahgrid"></div></div>`;
     host.appendChild(wrap);const g=wrap.querySelector(".ahgrid");
     const ref=(DATA.ah_reference?.pairs||{})[d.code],common=ref?.rows||[];
     if(common.length>1 && ref.pre_from){
@@ -2349,8 +2389,8 @@ function renderAH(chosen, options={}) {
         niceTicks(Math.min(...a,...b),Math.max(...a,...b),4).forEach(v=>{el("line",{x1:M.l,x2:W-M.r,y1:Y(v),y2:Y(v),class:"gridline"},svg);const t=el("text",{x:M.l-6,y:Y(v)+3,"text-anchor":"end",class:"axlabel"},svg);t.textContent=v.toFixed(0);});
         [-30,-15,0,15,30].forEach(n=>{const t=el("text",{x:Xp(n),y:H-8,"text-anchor":"middle",class:"axlabel"},svg);t.textContent=n===0?"H IPO":(n>0?"+":"")+n+"d";});
         el("line",{x1:Xp(0),x2:Xp(0),y1:M.t,y2:H-M.b,stroke:"var(--mid)","stroke-dasharray":"4 3"},svg);
-        pathline(svg,days,a,Xp,Y,RED,1.9);pathline(svg,days,b,Xp,Y,"#757f88",1.8);svg.dataset.ipo=P.ipo;svg.dataset.common=common.length;
-        addXhair(svg,W,H,M,Xp,[{name:"A shares",days,ys:a,color:RED},{name:"CSI 300",days,ys:b,color:"#757f88"}],"idx");
+        pathline(svg,days,a,Xp,Y,RED,2.2);pathline(svg,days,b,Xp,Y,AHCHART.csi,2.1).setAttribute('stroke-dasharray','7 4');svg.dataset.ipo=P.ipo;svg.dataset.common=common.length;
+        addXhair(svg,W,H,M,Xp,[{name:"A shares",days,ys:a,color:RED},{name:"CSI 300",days,ys:b,color:AHCHART.csi}],"idx");
       },null,`${ref.pre_from} to ${ref.pre_to}: A ${fmt.pct(ref.pre_a_return_pct)}, CSI ${fmt.pct(ref.pre_csi_return_pct)}, A − CSI ${ref.pre_excess_pp.toFixed(1)} pp. Both = 100 on the first common date.`);
     } else {
       const card=document.createElement("div");card.className="ahpane";card.innerHTML=`<h4>A shares vs CSI 300 · before H listing</h4><p class="note">A-line observations start ${ref?.a_first_observation||"after H listing"}; pre-IPO comparison unavailable.</p>`;g.appendChild(card);
@@ -2455,20 +2495,9 @@ function renderAH(chosen, options={}) {
     }, "expop", "Both legs = 100 at their first available open. Split-neutral price performance.");
     }
     // One time axis; premium is a ratio, market curves are returns on the right axis.
-    const ipoLvl=source.class_review?null:source.offer_premium,trend=(ref?.trend_rows||[]).filter(x=>options.full||x[0]<=new Date(Date.parse(P.ipo)+92*86400000).toISOString().slice(0,10));
-    const marketDays=trend.map(x=>Math.round((Date.parse(x[0])-Date.parse(P.ipo))/86400000)),marketA=trend.map(x=>100*(x[1]/trend[0][1]-1)),marketCSI=trend.map(x=>100*(x[2]/trend[0][2]-1));
-    ahPanel(g,"A/H premium and mainland market",(svg,W,H,M)=>{
-      const begin=Math.min(LEAD,marketDays[0]??0),Xs=v=>M.l+(W-M.l-M.r)*(v-begin)/(span-begin),ok=P.prem.filter(Number.isFinite),Ym=scaleFor([...marketA,...marketCSI,0],H,M),Yp=scaleFor([...ok,0,...(ipoLvl==null?[]:[ipoLvl])],H,M);
-      daymarks(svg,Xs,M,H);svg.dataset.points=ok.length;svg.dataset.benchmarkPoints=trend.length;svg.dataset.axes='premium-left,market-return-right';
-      pathYAxis(svg,Yp,W,H,M,'%');
-      if(Ym.domain)niceTicks(...Ym.domain,4).filter(v=>Ym(v)>=M.t&&Ym(v)<=H-M.b).forEach(v=>{const t=el('text',{x:W-M.r+5,y:Ym(v)+4,'text-anchor':'start',class:'axlabel',fill:'#757f88'},svg);t.textContent=v.toFixed(0)+'%';});
-      if(begin<0){const t=el('text',{x:M.l,y:H-8,'text-anchor':'start',class:'axlabel'},svg);t.textContent=new Date(Date.parse(P.ipo)+begin*86400000).toISOString().slice(0,10);}
-      el('line',{x1:Xs(0),x2:Xs(0),y1:M.t,y2:H-M.b,stroke:'var(--mid)','stroke-dasharray':'4 3'},svg);
-      if(ipoLvl!=null){el('line',{x1:Xs(0),x2:W-M.r,y1:Yp(ipoLvl),y2:Yp(ipoLvl),stroke:GOLD,'stroke-width':1,'stroke-dasharray':'5 3'},svg);}
-      pathline(svg,P.days,P.prem,Xs,Yp,'#6C5B7B',1.9);pathline(svg,marketDays,marketCSI,Xs,Ym,'#757f88',1.6);pathline(svg,marketDays,marketA,Xs,Ym,RED,1.6);
-      if(!ok.length){const t=el('text',{x:W/2,y:M.t+12,'text-anchor':'middle',class:'axlabel'},svg);t.textContent=source.class_review?'A/H share basis requires review':'A/H history unavailable';}
-      addXhair(svg,W,H,M,Xs,[{name:'A/H premium · left',days:P.days,ys:P.prem,color:'#6C5B7B'},{name:'CSI 300 return · right',days:marketDays,ys:marketCSI,color:'#757f88'},{name:'A-share return · right',days:marketDays,ys:marketA,color:RED}],'%');
-    },null,`<span style="color:#6C5B7B">Left: A/H premium</span> · <span style="color:${RED}">Right: A return</span> / <span style="color:#757f88">CSI 300 return</span>${trend.length?' · returns from '+trend[0][0]:''}`);
+    const trend=(ref?.trend_rows||[]).filter(x=>options.full||x[0]<=new Date(Date.parse(P.ipo)+92*86400000).toISOString().slice(0,10));
+    ahPanel(g,'A/H premium and mainland market',(svg,W,H,M)=>drawAHMarket(svg,W,H,M,P,source,trend,span,LEAD),'market',
+      `<span class="ah-market-legend"><span><i style="border-color:${AHCHART.premium}"></i>Premium (left)</span><span><i style="border-color:${AHCHART.a}"></i>A-share return (right)</span><span><i style="border-color:${AHCHART.csi};border-top-style:dashed"></i>CSI 300 return (right)</span><span class="ah-market-base">${trend.length?'Returns from '+trend[0][0]:''}</span></span>`);
 
   });
   // overlay: all chosen pairs on one axis — H rebased | A rebased | premium
@@ -3081,6 +3110,7 @@ function redraw() {
 }
 // Monitoring comparisons share the same dated observations as the workbook.
 const deskColors=['#315b7d','#9b4a47','#55745d','#927d54','#6b617d','#397a80'];
+const ahCompareColors=['#1D4E89','#16857A','#B17816','#6F5598','#B2505D','#486873'];
 function deskLines(box,series,{offset=false,percent=true,label='Comparison'}={}){
  box.innerHTML='';const vals=series.flatMap(s=>s.points.filter(p=>Number.isFinite(p[1])).map(p=>p[1])),xs=series.flatMap(s=>s.points.map(p=>offset?p[0]:Date.parse(p[0]+'T00:00:00Z')).filter(Number.isFinite));
  if(!vals.length||!xs.length){box.innerHTML='<p class="note">No observed prices for this selection.</p>';return;}
@@ -3092,7 +3122,7 @@ function deskLines(box,series,{offset=false,percent=true,label='Comparison'}={})
  if(offset)el('line',{x1:X(0),x2:X(0),y1:M.t,y2:H-M.b,stroke:css('--mid'),'stroke-dasharray':'4 4'},svg);
  series.forEach((s,k)=>{let path='',started=false,last=null;const color=s.color||deskColors[k%deskColors.length];
   s.points.forEach(p=>{const x=offset?p[0]:Date.parse(p[0]+'T00:00:00Z');if(!Number.isFinite(p[1])){started=false;last=x;return;}if(!offset&&last!=null&&x-last>10*86400000)started=false;path+=`${started?'L':'M'}${X(x).toFixed(2)},${Y(p[1]).toFixed(2)} `;started=true;last=x;});
-  const line=el('path',{d:path,fill:'none',stroke:color,'stroke-width':s.mean?2.5:2,'stroke-dasharray':'none',opacity:1,'data-name':s.name,'data-code':s.code||'','data-sector':s.sector||'','data-average':s.mean?'true':'false'},svg);
+  const line=el('path',{d:path,fill:'none',stroke:color,'stroke-width':s.mean?2.7:2.2,'stroke-dasharray':s.dash||'none','stroke-linejoin':'round','stroke-linecap':'round',opacity:1,'data-name':s.name,'data-code':s.code||'','data-sector':s.sector||'','data-average':s.mean?'true':'false'},svg);
   const joined=(a,b)=>a&&b&&Number.isFinite(a[1])&&Number.isFinite(b[1])&&(offset||Date.parse(b[0])-Date.parse(a[0])<=10*86400000);
   s.points.forEach((p,i)=>{if(Number.isFinite(p[1])&&!joined(s.points[i-1],p)&&!joined(p,s.points[i+1]))el('circle',{cx:X(offset?p[0]:Date.parse(p[0]+'T00:00:00Z')),cy:Y(p[1]),r:2.8,fill:color,'data-isolated-point':'true','data-name':s.name},svg);});
 
@@ -3100,7 +3130,7 @@ function deskLines(box,series,{offset=false,percent=true,label='Comparison'}={})
  const focus=el('line',{x1:0,x2:0,y1:M.t,y2:H-M.b,stroke:css('--mid'),'stroke-dasharray':'3 3',visibility:'hidden'},svg);
  svg.addEventListener('mousemove',ev=>{const rect=svg.getBoundingClientRect(),px=(ev.clientX-rect.left)*W/rect.width;if(px<M.l||px>W-M.r){focus.setAttribute('visibility','hidden');hideTT();return;}const v=minX+(px-M.l)/(W-M.r-M.l)*(maxX-minX),point=series.flatMap(s=>s.points).filter(p=>Number.isFinite(p[1])).reduce((b,p)=>Math.abs((offset?p[0]:Date.parse(p[0]))-v)<Math.abs((offset?b[0]:Date.parse(b[0]))-v)?p:b),at=offset?point[0]:Date.parse(point[0]);focus.setAttribute('x1',X(at));focus.setAttribute('x2',X(at));focus.setAttribute('visibility','visible');const rows=series.map((s,k)=>{const p=s.points.find(p=>(offset?p[0]:Date.parse(p[0]))===at);return `<span style="color:${s.color||deskColors[k%deskColors.length]}">${safeText(s.name)}</span>: ${p&&Number.isFinite(p[1])?p[1].toFixed(2)+(percent?'%':' pp'):'—'}${p&&p[2]!=null?' ('+p[2]+' '+(s.countUnit||'observations')+')':''}`;}).join('<br>');showTT(`<b>${offset?'Session ':''}${point[0]}</b>${rows}`,ev);});svg.addEventListener('mouseleave',()=>{focus.setAttribute('visibility','hidden');hideTT();});
 
- const legend=document.createElement('div');legend.className='legend comparison-legend';legend.innerHTML=series.map((s,k)=>`<span><span class="sw" style="background:${s.color||deskColors[k%deskColors.length]}"></span>${safeText(s.name)}</span>`).join('');box.appendChild(legend);
+ const legend=document.createElement('div');legend.className='legend comparison-legend';legend.innerHTML=series.map((s,k)=>`<span><span class="sw" style="height:0;width:24px;border-top:3px ${s.dash?'dashed':'solid'} ${s.color||deskColors[k%deskColors.length]};background:none"></span>${safeText(s.name)}</span>`).join('');box.appendChild(legend);
 }
 const ahComparisons=new Set(['3986','3308','3759']);
 function validAHPoint(s,p){return Number.isFinite(p[4]);}
@@ -3149,7 +3179,8 @@ function renderComparisonPage(prefix,series,options){
  $('#'+prefix+'-compare-next').disabled=comparisonPages[prefix]===pages-1;
  $('#'+prefix+'-compare-page').textContent=available.length?`Lines ${start+1}–${start+shown.length} of ${available.length} · page ${comparisonPages[prefix]+1}/${pages}`:'No lines';
  const box=$('#'+prefix+'-compare-chart');
- deskLines(box,shown.map((s,i)=>({...s,color:s.mean&&available.length===1?'#303A45':deskColors[i%deskColors.length]})),options);
+ const palette=prefix==='ah'?ahCompareColors:deskColors;
+ deskLines(box,shown.map((s,i)=>({...s,color:s.mean&&available.length===1?'#303A45':palette[i%palette.length],dash:prefix==='ah'&&i>=3?'7 3':undefined})),options);
  const svg=$('#'+prefix+'-compare-chart svg');if(svg){svg.dataset.totalSeries=available.length;svg.dataset.page=comparisonPages[prefix]+1;}
  return {available,shown,svg};
 }

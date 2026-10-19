@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "changed_parts": [
+    "xl/drawings/monitor_drawing2.xml",
+    "xl/charts/monitor_chart3.xml",
+    "xl/charts/monitor_chart4.xml"
+  ],
+  "all_cells_formulas_and_caches_unchanged": true,
+  "chart_bindings_points_scales_unchanged": true,
+  "style_patch_idempotent": true,
+  "sha256": "f1addb5e2a65878a8ccc78108521a8bab2da5c463b12add0d662e04898a6ec56"
+}

@@ -14,6 +14,8 @@ def add(p,relative=None):
  if any(f['target']==rel for f in files):return
  files.append({'source':str(p),'target':rel,'sha256':h(p),'bytes':p.stat().st_size})
 for name in ['AGENTS.md','START_HERE.md','MAINTENANCE.md','README.md','ipo.py']:add(ROOT/name)
+add(ROOT/'GITHUB_README.md')
+add(ROOT/'GITHUB_README.md','README.md')
 for directory in ['ipo_lib','assets']:
  for p in sorted((ROOT/directory).glob('*')):
   if p.suffix in ['.py','.js','.LICENSE']:add(p)
@@ -48,5 +50,7 @@ for p in sorted((ROOT/'data/final_review_20261015').glob('*')):add(p)
 for name in ['create_database_layout.mjs','create_pipeline_layout.mjs','prepare_pipeline_layout.py','render_desk_tables.mjs','test_final_polish.py','test_sector_monitor_release.py','test_selected_averages.mjs','test_sector_comparisons.mjs','test_pipeline_release.mjs','run_release_checks.py']:add(ROOT/'tools'/name)
 for name in ['create_desk_theme.mjs','test_desk_theme.py','render_desk_theme.mjs','package_final_review.py']:add(ROOT/'tools'/name)
 for name in ['create_weight_layout.mjs','test_remove_notes.py']:add(ROOT/'tools'/name)
+for name in ['create_ah_chart_style.mjs','test_ah_readability.py','test_ah_market_render.mjs','run_ah_readability_checks.py','package_ah_readability.py']:add(ROOT/'tools'/name)
+for p in sorted((ROOT/'data/ah_readability_20261019').glob('*.json')):add(p)
 (ROOT/'out/publication_plan.json').write_text(json.dumps(files,indent=2));print('Prepared',len(files),'explicit changed files,',sum(f['bytes'] for f in files)//1024,'KB')
 for f in files:print(f['target'])

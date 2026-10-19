@@ -1,5 +1,5 @@
 {
-  "release_date": "2026-10-17",
+  "release_date": "2026-10-19",
   "handover": "START_HERE.md",
   "counts": {
     "database_screener": 526,
@@ -33,7 +33,7 @@
     "numeric_entries": 39303,
     "internal_numeric_failures": 0,
     "existing_525_stock_numeric_changes": 0,
-    "native_excel_open": "Final Notes-free workbook opened in native Excel without a content-repair prompt; all ten visible sheet tabs present, Screener form and rankings rendered. Earlier unchanged views retain their prior visual review.",
+    "native_excel_open": "19 October final workbook opened in native Microsoft Excel without a content-repair prompt; combined A/H and comparison charts visually reviewed at 90% zoom and after scrolling. View-only installation; no live Bloomberg execution.",
     "other_tabs_style_preservation": "13 sheets: business values, formulas and caches preserved, including seven relocated Screener outputs; requested titles removed; chart data, axes, drawing anchors and relationships unchanged",
     "small_projection_review": [
       "Database",
@@ -182,6 +182,80 @@
       ],
       "full_browser_review": false,
       "excel_unchanged": true
+    },
+    "ah_chart_readability": {
+      "date": "2026-10-19",
+      "checks": [
+        {
+          "test": "tools/test_ah_readability.py",
+          "passed": true,
+          "seconds": 0.4,
+          "log": "out/ah_readability_20261019/test_ah_readability.log"
+        },
+        {
+          "test": "tools/test_native_desk.py",
+          "passed": true,
+          "seconds": 9.1,
+          "log": "out/ah_readability_20261019/test_native_desk.log"
+        },
+        {
+          "test": "tools/test_presentation_package.py",
+          "passed": true,
+          "seconds": 4.3,
+          "log": "out/ah_readability_20261019/test_presentation_package.log"
+        },
+        {
+          "test": "tools/test_ah_market_render.mjs",
+          "passed": true,
+          "seconds": 1.3,
+          "log": "out/ah_readability_20261019/test_ah_market_render.log"
+        },
+        {
+          "test": "tools/test_comparison_scope.mjs",
+          "passed": true,
+          "seconds": 0.6,
+          "log": "out/ah_readability_20261019/test_comparison_scope.log"
+        },
+        {
+          "test": "tools/test_selected_averages.mjs",
+          "passed": true,
+          "seconds": 0.0,
+          "log": "out/ah_readability_20261019/test_selected_averages.log"
+        }
+      ],
+      "workbook": {
+        "passed": true,
+        "changed_parts": [
+          "xl/drawings/monitor_drawing2.xml",
+          "xl/charts/monitor_chart3.xml",
+          "xl/charts/monitor_chart4.xml"
+        ],
+        "all_cells_formulas_and_caches_unchanged": true,
+        "chart_bindings_points_scales_unchanged": true,
+        "style_patch_idempotent": true,
+        "sha256": "f1addb5e2a65878a8ccc78108521a8bab2da5c463b12add0d662e04898a6ec56"
+      },
+      "html": {
+        "passed": true,
+        "render_cases": 142,
+        "entire_payload_unchanged": true,
+        "all_observations_and_gaps_preserved": true,
+        "actual_svg_function": true,
+        "browser": false
+      },
+      "native_excel": {
+        "date": "2026-10-19",
+        "sha256": "f1addb5e2a65878a8ccc78108521a8bab2da5c463b12add0d662e04898a6ec56",
+        "opened_without_repair": true,
+        "combined_and_comparison_charts_reviewed": true,
+        "zoom_percent": 90,
+        "scrolling_checked": true,
+        "view_only_installation": true,
+        "live_bloomberg_execution": false
+      },
+      "market_data_refreshed": false,
+      "live_bloomberg_execution": false,
+      "bundle_existing_data_preserved": true
     }
   },
   "known_limits": {
@@ -196,24 +270,24 @@
   },
   "deliverables": {
     "HK_IPO_Database_v1.xlsx": {
-      "bytes": 7840238,
-      "sha256": "cb2e93c2c229640b7aab886d94f2216fd9c6d41393f9faac1fb27a10eabf96e2"
+      "bytes": 7840692,
+      "sha256": "f1addb5e2a65878a8ccc78108521a8bab2da5c463b12add0d662e04898a6ec56"
     },
     "hk_ipo_dashboard.html": {
-      "bytes": 2858815,
-      "sha256": "0cf873b22047c06201b84a0f5e83d8c77ba66ce58c0cd26813ddc5fdf51abf73"
+      "bytes": 2861386,
+      "sha256": "4bff6b3b7ec3d2afe7fa21539b18b9c77762c58b3d98275023c3c473f28f33b2"
     },
     "hk_ipo_dashboard.zip": {
-      "bytes": 2050254,
-      "sha256": "8c8422214a4695163da18ee4589a32f2bb905d3dba3314e0eb942f9ebb047535"
+      "bytes": 2051174,
+      "sha256": "730127d67840d37bdeab0c8253ef965e711601943b82f6d777158cf77f7ef0a5"
     },
     "hk_ipo.py": {
-      "bytes": 15339100,
-      "sha256": "9da0c235b3a6f996060b0ccd9e951cca69b6b9b1cc8eb9a2eca0eed03f16d127"
+      "bytes": 15344584,
+      "sha256": "d5a5cd34d0b4d0be3e0246eee1c4052bd72590f8da882c927845331170dfab4c"
     },
     "READ_ME_FIRST.txt": {
-      "bytes": 3992,
-      "sha256": "605ebd904a386c98ed8afb6e10cc563041aad1ca5db705c4d60cf26003a91e77"
+      "bytes": 4402,
+      "sha256": "da31c93eaa886d30a5f306d81d673a836c55762bc4ae804a4b37656fd96706f4"
     }
   }
 }

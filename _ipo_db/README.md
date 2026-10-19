@@ -1,13 +1,13 @@
 # HK IPO database
 
-**16 October 2026 delivery; market/pipeline review dated 15 October.** Start with [START_HERE.md](START_HERE.md) when maintaining this project. It is the current handover for an analyst or a new AI session; [data/release_state.json](data/release_state.json) records coverage, dates and validation limits. Older MAINTENANCE entries are historical.
+**19 October 2026 chart update; market/pipeline review dated 15 October.** [Download Excel from main](https://github.com/kennytam-code/code/raw/refs/heads/main/HK_IPO_Database_v1.xlsx). Start with [START_HERE.md](START_HERE.md) when maintaining this project. It is the current handover for an analyst or a new AI session; [data/release_state.json](data/release_state.json) records coverage, dates and validation limits. Older MAINTENANCE entries are historical.
 
 Use the files in `TO_NOMURA/`:
 
 | File | Purpose |
 |---|---|
-| `HK_IPO_Database_v1.xlsx` | IPO Live, AH, Peer Trades, Screener, Database and Pipeline. |
-| `hk_ipo_dashboard.html` | Self-contained offline charts and filters, including Lock-up. |
+| [Download Excel](https://github.com/kennytam-code/code/raw/refs/heads/main/HK_IPO_Database_v1.xlsx) | IPO Live, AH, Peer Trades, Screener, Database and Pipeline. |
+| [Download HTML](https://github.com/kennytam-code/code/raw/refs/heads/main/hk_ipo_dashboard.html) | Self-contained offline charts and filters, including Lock-up. |
 | `hk_ipo_dashboard.zip` | Compressed transfer copy; extract before opening. |
 | `hk_ipo.py` | Standalone updater with embedded data and source modules. |
 | `READ_ME_FIRST.txt` | Desk controls and update instructions. |
@@ -17,6 +17,8 @@ The Database/Screener contain 526 IPOs, including Transsion 2636. The design pas
 IPO Live covers 716 seven-year listings. The 15 October closing snapshot has 701 current quotes (707 saved quotes, including six stale observations). B4 selects Stored/Bloomberg, B5 selects Sector/Subsector, and H34 selects the broad sector for subsector averages. Bloomberg uses LAST_PRICE and PX_YEST_CLOSE. Stale or absent previous closes are excluded from daily averages; an IPO's offer price is not treated as yesterday's close.
 
 AH covers 71 pairs. B4 selects the H or A code and E4 selects Stored/Bloomberg. The selected chart combines premium on the left axis with A-share and CSI 300 returns on the right. J5 links to sector averages at J57. HTML sector/subsector filters restrict all comparison inputs. Stocks, Selected average and Sector averages are separate views, with at most six lines per page. Select all applies to the current scope. Each selected stock has one weight. Genuine missing observations are not invented or smoothed; verified share actions use their own ex dates.
+
+A/H charts use navy for premium, teal for A-share return and an amber dashed line for CSI 300. Both axes are named. The HTML combined chart occupies a full row; the Excel chart sits below the frozen table header. The 19 October changes affect presentation only, preserving all observations, cells, formulas and Bloomberg requests.
 
 Lock-up is HTML-only and historical: 161 source-confirmed events for 158 issuers with completed 30-HK-session endpoints, prices through 2 October 2026. Unconfirmed/future dates and incomplete or unverified price windows are excluded. The 17 October review re-read 259 primary filings, corrected a controller event misclassified as cornerstone (6911), and recovered 198 missing price observations in the visible sample. Six original schedules affected by later extensions are withheld pending holder-specific reconciliation. Interior gaps remain visible. Selected average uses only checked stocks; multiple selected expiries are first averaged within each stock. The sample is selective, not every IPO. Evidence and exclusions are in `data/lockup_review_20261017`.
 

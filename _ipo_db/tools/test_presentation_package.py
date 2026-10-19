@@ -119,8 +119,9 @@ with zipfile.ZipFile(ROOT/'out/HK_IPO_Database_v1.xlsx') as z:
   for offset in [0,len(s['history'])-1]:assert math.isclose(value(pd['B'+str(cursor+offset)]),s['history'][offset][1],abs_tol=1e-12)
   cursor+=len(s['history'])
  pc=sparse(sheets['Peer Chart'],{'E5'});assert str(cursor-1) in pc['E5'].find(q('f')).text
- events=[x for x in json.loads((ROOT/'data/batches/lockup_events.json').read_text())['events'] if x['category']=='Cornerstone' and x['date_basis']!='No cornerstone tranche']
- assert len(web['lockups']['events'])==len(events) and len(events)>=396
+ from historical_lockups import historical_events
+ events=historical_events(json.loads((ROOT/'data/batches/lockup_events.json').read_text()),ROOT)
+ assert len(web['lockups']['events'])==len(events)==json.loads((ROOT/'data/release_state.json').read_text())['counts']['html_lockup_events']
  for i,e in enumerate(events,38):
   w=e.get('windows',{}).get('30 trading sessions',{});assert web['lockups']['events'][i-38]['code']==e['code']
   assert close_payload(w,web['lockups']['events'][i-38]['window'])

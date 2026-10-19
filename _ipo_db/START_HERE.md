@@ -129,6 +129,14 @@ processes; native joining; peer history; colours; presentation; reflow; request
 guards; chart axes; CSI combination; desk release; sector release; final polish; desk theme; remove Notes.
 Apply each structural patch once to a fresh baseline. Never re-import/export the
 full workbook for cosmetic work: unsupported native chart/Excel features matter.
+The final `ah_chart_style` stage must run after `desk_theme` and `remove_notes`:
+navy premium, teal A-share return, amber dashed CSI 300, explicit axis titles and
+top legends. Its first chart starts below the frozen header so the chart scrolls
+as one object. Otherwise the generic theme overrides the semantic line colors.
+Use `data/ah_chart_style.json`, authored by `tools/create_ah_chart_style.mjs`.
+HTML uses the same three styles in a full-width combined panel and distinct
+comparison colors/line styles. Preserve the underlying observations and gaps.
+
 New layout pieces are authored with Artifact Tool and grafted without changing
 business data. Use small cached projections for rendering.
 
@@ -150,9 +158,16 @@ in TO_NOMURA and the existing GitHub root aliases. Do not overwrite unrelated
 PCA/research files. Preserve Word studies. Compare hashes after copying and verify
 the pushed commit. Keep audit CSV/JSON outside Excel. Update `release_state.json`
 and this handover when controls, conventions, coverage or known limits change.
-HTML-only delivery uses `tools/package_chart_scope.py`; it verifies the unchanged
-Excel hash and does not rebuild the workbook. That script packages the updater
-and changed HTML/audits, preserving all other deliverables.
+`tools/package_chart_scope.py` reproduces the archived 17 October HTML-only
+release and pins that older Excel hash. Do not use it to package the current
+workbook. Keep its historical validation record.
+
+The 19 October presentation-only release uses `tools/package_ah_readability.py`.
+Its baseline is the 17 October workbook. Only two A/H chart parts and the first
+chart's top drawing anchor change; every worksheet and native formula is
+byte-identical. `tools/test_ah_market_render.mjs` checks all 71 pairs at desktop
+and narrow widths and compares the entire embedded dataset to the prior HTML.
+These are actual SVG-function checks, not a browser rendering certification.
 
 ## Known limits to retain, not conceal
 

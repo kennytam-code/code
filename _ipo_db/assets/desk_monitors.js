@@ -1,5 +1,6 @@
 // Monitoring comparisons share the same dated observations as the workbook.
 const deskColors=['#315b7d','#9b4a47','#55745d','#927d54','#6b617d','#397a80'];
+const ahCompareColors=['#1D4E89','#16857A','#B17816','#6F5598','#B2505D','#486873'];
 function deskLines(box,series,{offset=false,percent=true,label='Comparison'}={}){
  box.innerHTML='';const vals=series.flatMap(s=>s.points.filter(p=>Number.isFinite(p[1])).map(p=>p[1])),xs=series.flatMap(s=>s.points.map(p=>offset?p[0]:Date.parse(p[0]+'T00:00:00Z')).filter(Number.isFinite));
  if(!vals.length||!xs.length){box.innerHTML='<p class="note">No observed prices for this selection.</p>';return;}
@@ -11,7 +12,7 @@ function deskLines(box,series,{offset=false,percent=true,label='Comparison'}={})
  if(offset)el('line',{x1:X(0),x2:X(0),y1:M.t,y2:H-M.b,stroke:css('--mid'),'stroke-dasharray':'4 4'},svg);
  series.forEach((s,k)=>{let path='',started=false,last=null;const color=s.color||deskColors[k%deskColors.length];
   s.points.forEach(p=>{const x=offset?p[0]:Date.parse(p[0]+'T00:00:00Z');if(!Number.isFinite(p[1])){started=false;last=x;return;}if(!offset&&last!=null&&x-last>10*86400000)started=false;path+=`${started?'L':'M'}${X(x).toFixed(2)},${Y(p[1]).toFixed(2)} `;started=true;last=x;});
-  const line=el('path',{d:path,fill:'none',stroke:color,'stroke-width':s.mean?2.5:2,'stroke-dasharray':'none',opacity:1,'data-name':s.name,'data-code':s.code||'','data-sector':s.sector||'','data-average':s.mean?'true':'false'},svg);
+  const line=el('path',{d:path,fill:'none',stroke:color,'stroke-width':s.mean?2.7:2.2,'stroke-dasharray':s.dash||'none','stroke-linejoin':'round','stroke-linecap':'round',opacity:1,'data-name':s.name,'data-code':s.code||'','data-sector':s.sector||'','data-average':s.mean?'true':'false'},svg);
   const joined=(a,b)=>a&&b&&Number.isFinite(a[1])&&Number.isFinite(b[1])&&(offset||Date.parse(b[0])-Date.parse(a[0])<=10*86400000);
   s.points.forEach((p,i)=>{if(Number.isFinite(p[1])&&!joined(s.points[i-1],p)&&!joined(p,s.points[i+1]))el('circle',{cx:X(offset?p[0]:Date.parse(p[0]+'T00:00:00Z')),cy:Y(p[1]),r:2.8,fill:color,'data-isolated-point':'true','data-name':s.name},svg);});
 
@@ -19,7 +20,7 @@ function deskLines(box,series,{offset=false,percent=true,label='Comparison'}={})
  const focus=el('line',{x1:0,x2:0,y1:M.t,y2:H-M.b,stroke:css('--mid'),'stroke-dasharray':'3 3',visibility:'hidden'},svg);
  svg.addEventListener('mousemove',ev=>{const rect=svg.getBoundingClientRect(),px=(ev.clientX-rect.left)*W/rect.width;if(px<M.l||px>W-M.r){focus.setAttribute('visibility','hidden');hideTT();return;}const v=minX+(px-M.l)/(W-M.r-M.l)*(maxX-minX),point=series.flatMap(s=>s.points).filter(p=>Number.isFinite(p[1])).reduce((b,p)=>Math.abs((offset?p[0]:Date.parse(p[0]))-v)<Math.abs((offset?b[0]:Date.parse(b[0]))-v)?p:b),at=offset?point[0]:Date.parse(point[0]);focus.setAttribute('x1',X(at));focus.setAttribute('x2',X(at));focus.setAttribute('visibility','visible');const rows=series.map((s,k)=>{const p=s.points.find(p=>(offset?p[0]:Date.parse(p[0]))===at);return `<span style="color:${s.color||deskColors[k%deskColors.length]}">${safeText(s.name)}</span>: ${p&&Number.isFinite(p[1])?p[1].toFixed(2)+(percent?'%':' pp'):'—'}${p&&p[2]!=null?' ('+p[2]+' '+(s.countUnit||'observations')+')':''}`;}).join('<br>');showTT(`<b>${offset?'Session ':''}${point[0]}</b>${rows}`,ev);});svg.addEventListener('mouseleave',()=>{focus.setAttribute('visibility','hidden');hideTT();});
 
- const legend=document.createElement('div');legend.className='legend comparison-legend';legend.innerHTML=series.map((s,k)=>`<span><span class="sw" style="background:${s.color||deskColors[k%deskColors.length]}"></span>${safeText(s.name)}</span>`).join('');box.appendChild(legend);
+ const legend=document.createElement('div');legend.className='legend comparison-legend';legend.innerHTML=series.map((s,k)=>`<span><span class="sw" style="height:0;width:24px;border-top:3px ${s.dash?'dashed':'solid'} ${s.color||deskColors[k%deskColors.length]};background:none"></span>${safeText(s.name)}</span>`).join('');box.appendChild(legend);
 }
 const ahComparisons=new Set(['3986','3308','3759']);
 function validAHPoint(s,p){return Number.isFinite(p[4]);}
@@ -68,7 +69,8 @@ function renderComparisonPage(prefix,series,options){
  $('#'+prefix+'-compare-next').disabled=comparisonPages[prefix]===pages-1;
  $('#'+prefix+'-compare-page').textContent=available.length?`Lines ${start+1}–${start+shown.length} of ${available.length} · page ${comparisonPages[prefix]+1}/${pages}`:'No lines';
  const box=$('#'+prefix+'-compare-chart');
- deskLines(box,shown.map((s,i)=>({...s,color:s.mean&&available.length===1?'#303A45':deskColors[i%deskColors.length]})),options);
+ const palette=prefix==='ah'?ahCompareColors:deskColors;
+ deskLines(box,shown.map((s,i)=>({...s,color:s.mean&&available.length===1?'#303A45':palette[i%palette.length],dash:prefix==='ah'&&i>=3?'7 3':undefined})),options);
  const svg=$('#'+prefix+'-compare-chart svg');if(svg){svg.dataset.totalSeries=available.length;svg.dataset.page=comparisonPages[prefix]+1;}
  return {available,shown,svg};
 }
