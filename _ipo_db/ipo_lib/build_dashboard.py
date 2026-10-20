@@ -1058,8 +1058,11 @@ function renderSelectedAH() {
   if (!d) {$("#ah-history").innerHTML=""; return;}
   $("#ah-stock").value=d.code;
   document.querySelectorAll("#ah-tbl tr[data-code]").forEach(r=>r.classList.toggle("selected",r.dataset.code===d.code));
-  $("#ah-history-title").textContent=`${d.name} · A ${d.a_share_code} / H ${d.code}`;
-  renderAH([d], {host:"#ah-history",note:"#ah-history-note",full:$("#ah-horizon").value==="Max"});
+  $("#ah-history-title").textContent=`${d.name} · ${d.code} HK / ${d.a_share_code.split(".")[0]} CH`;
+  const stat=(label,v,unit,change=false)=>`<div><span>${label}</span><strong class="${change&&v>0?'up':change&&v<0?'down':''}">${Number.isFinite(v)?(change&&v>0?'+':'')+v.toFixed(1)+unit:'—'}</strong></div>`;
+  $('#ah-selected-metrics').innerHTML=stat('Premium',d.a_premium_now==null?null:100*d.a_premium_now,'%')+stat('7 days',d.delta7,' pp',true)+stat('1 month',d.delta1m,' pp',true)+`<div><span>H listing</span><strong>${d.ipo_date}</strong></div>`;
+  $("#ah-horizon").disabled=$("#ah-detail-mode").value==="around";
+  renderAH([d], {host:"#ah-history",note:"#ah-history-note",full:$("#ah-horizon").value==="Max",deskMode:$("#ah-detail-mode").value});
 }
 function ahMode() { const el = document.querySelector("#ah-when"); return el ? el.value : "now"; }
 function redrawAHTab() {
@@ -1074,7 +1077,7 @@ function redrawAHTab() {
   $("#chart-ah").innerHTML = "";
   if (ah.length) divergingBars($("#chart-ah"), ah, {});
   else $("#chart-ah").innerHTML = "<p class='note'>no A+H pairs in this slice</p>";
-  $("#ah-note").textContent = `${rows.length} of ${ahDeals.length} IPO A/H pairs · ${ahAll.length} available premiums · ${rows.length - ahAll.length} unavailable or under review. Seven-year IPO monitoring universe.`;
+  $("#ah-note").textContent = `${rows.length} pairs · ${ahAll.length} with premium data`;
   $("#ah-stock").innerHTML = rows.map(d => `<option value="${d.code}">${d.name} (${d.code})</option>`).join("");
   if (!rows.some(d => d.code === selectedAhCode)) selectedAhCode = rows.length ? rows[0].code : "";
   $("#ah-tbl").innerHTML = `<table class="tbl"><thead><tr><th>Compare</th><th>Name</th><th>H</th><th>A</th>
@@ -1099,6 +1102,7 @@ $("#ah-sec").addEventListener("change", () => { fillAhSubs(); redrawAHTab(); });
 $("#ah-sub").addEventListener("change", redrawAHTab);
 $("#ah-when").addEventListener("change", redrawAHTab);
 $("#ah-horizon").addEventListener("change",renderSelectedAH);
+$("#ah-detail-mode").addEventListener("change",renderSelectedAH);
 $("#ah-stock").addEventListener("change", () => {selectedAhCode = $("#ah-stock").value; renderSelectedAH();});
 $("#ah-tbl").addEventListener("click", ev => {const b = ev.target.closest(".ah-select"); if (b) {selectedAhCode = b.dataset.code; renderSelectedAH(); $("#ah-history-title").scrollIntoView({block: "nearest"});}});
 // Initialized after the shared chart helpers.
@@ -1484,19 +1488,20 @@ function findDeal(q) {
       || deals.find(d => matchesDealSearch(d, q));
 }
 const sel = $("#picker");
-const opts = DATA.pipe.map(p => ({ v: "P:" + p.name, t: "▶ " + p.name + "  (pipeline)" }))
-  .concat([...deals].sort((a, b) => (b.deal_size_hkdm || 0) - (a.deal_size_hkdm || 0))
-    .map(d => ({ v: "D:" + d.code, t: d.name + " (" + d.code + ")" })));
+const opts = [...deals].sort((a,b)=>Number(a.code)-Number(b.code))
+  .map(d=>({v:'D:'+d.code,t:d.code+' · '+d.name}))
+  .concat(DATA.pipe.map(p=>({v:'P:'+p.name,t:'▶ '+p.name+' (pipeline)'})));
 sel.innerHTML = opts.map(o => `<option value="${o.v}">${o.t}</option>`).join("");
 sel.value = "D:" + [...deals].sort((a,b)=>b.ipo_date.localeCompare(a.ipo_date))[0].code;
-sel.addEventListener("change", () => { renderPick(); labReset(); });
+sel.addEventListener("change", () => { $("#finder-status").textContent="";renderPick(); labReset(); });
 // the finder drives the picker: type CATL or 3750, land on the deal
 $("#deal-list").innerHTML = deals.map(d =>
-  `<option value="${safeText(d.name)} (${d.code})" label="${safeText(d.name_full || d.name)}">`).join("");
+  `<option value="${d.code}" label="${safeText(d.name)}">`).join("");
 const finder = $("#finder");
 const jumpTo = () => {
   const hit = findDeal(finder.value);
-  if (!hit) return;
+  if (!hit) {$("#finder-status").textContent=finder.value.trim()?"Code or company not found":"";return;}
+  $("#finder-status").textContent="";
   sel.value = "D:" + hit.code;
   finder.value = "";
   renderPick(); labReset();
@@ -2217,20 +2222,21 @@ function pathYAxis(svg,Y,W,H,M,unit=''){
   const t=el('text',{x:M.l-8,y:Y(v)+4,'text-anchor':'end',class:'axlabel'},svg);t.textContent=(Math.abs(v)>=100?v.toFixed(0):v.toFixed(1))+unit;
  });
 }
-function drawAHMarket(svg,W,H,M,P,source,trend,span,LEAD){
+function drawAHMarket(svg,W,H,M,P,source,trend,span,LEAD,mode="all"){
   const marketDays=trend.map(x=>Math.round((Date.parse(x[0])-Date.parse(P.ipo))/86400000));
   const marketA=trend.map(x=>100*(x[1]/trend[0][1]-1)),marketCSI=trend.map(x=>100*(x[2]/trend[0][2]-1));
-  const begin=Math.min(LEAD,marketDays[0]??0),end=Math.max(1,span,marketDays.at(-1)??0);
+  const begin=mode==='premium'?Math.min(0,P.days[0]??0):Math.min(LEAD,marketDays[0]??0),end=Math.max(1,span,mode==='premium'?0:marketDays.at(-1)??0);
   const X=v=>M.l+(W-M.l-M.r)*(v-begin)/(end-begin),ok=P.prem.filter(Number.isFinite);
-  const Yp=scaleFor([...ok,0],H,M),Ym=scaleFor([...marketA,...marketCSI,0],H,M);
+  const Yp=scaleFor(mode==='premium'&&ok.length?ok:[...ok,0],H,M),Ym=scaleFor([...(mode==='all'?marketA:[]),...marketCSI,0],H,M);
+  const showMarket=mode!=='premium';
   svg.dataset.points=ok.length;svg.dataset.benchmarkPoints=trend.length;svg.dataset.axes='premium-left,market-return-right';svg.dataset.ipo=P.ipo;
   const axis=(Y,side,color)=>niceTicks(...Y.domain,5).filter(v=>Y(v)>=M.t&&Y(v)<=H-M.b).forEach(v=>{
     if(side==='left')el('line',{x1:M.l,x2:W-M.r,y1:Y(v),y2:Y(v),stroke:'#E5E9EE','stroke-width':.8},svg);
-    const t=el('text',{x:side==='left'?M.l-10:W-M.r+10,y:Y(v)+4,'text-anchor':side==='left'?'end':'start','font-size':12,fill:color},svg);t.textContent=v.toFixed(Math.abs(v)<1&&v!==0?1:0)+'%';
+    const t=el('text',{x:side==='left'?M.l-10:W-M.r+10,y:Y(v)+4,'text-anchor':side==='left'?'end':'start','font-size':12,fill:color,style:`fill:${color};font-size:12px`},svg);t.textContent=v.toFixed(Math.abs(v)<1&&v!==0?1:0)+'%';
   });
-  axis(Yp,'left',AHCHART.premium);axis(Ym,'right','#54616E');
-  for(const [x,text,anchor,color] of [[M.l,'Premium (%)','start',AHCHART.premium],[W-M.r,'Price return (%)','end','#54616E']]){
-    const t=el('text',{x,y:16,'text-anchor':anchor,'font-size':12,'font-weight':600,fill:color},svg);t.textContent=text;
+  axis(Yp,'left',AHCHART.premium);if(showMarket)axis(Ym,'right',AHCHART.csi);
+  for(const [x,text,anchor,color] of [[M.l,'Premium (%)','start',AHCHART.premium],[W-M.r,showMarket?(mode==='all'?'Price return (%)':'CSI 300 return (%)'):'','end',AHCHART.csi]]){
+    const t=el('text',{x,y:16,'text-anchor':anchor,'font-size':12,'font-weight':600,fill:color,style:`fill:${color};font-size:12px;font-weight:600`},svg);t.textContent=text;
   }
   const dateAt=n=>new Date(Date.parse(P.ipo)+n*86400000).toISOString().slice(0,10);
   const ticks=W<600?3:5;
@@ -2239,14 +2245,14 @@ function drawAHMarket(svg,W,H,M,P,source,trend,span,LEAD){
     t.textContent=dateAt(d);
   }
   if(begin<0){el('line',{x1:X(0),x2:X(0),y1:M.t,y2:H-M.b,stroke:'#AEB7C2','stroke-width':1,'stroke-dasharray':'3 4'},svg);const t=el('text',{x:X(0)+5,y:M.t+12,'font-size':10,fill:'#626E7B'},svg);t.textContent='H IPO';}
-  const series=[{name:'CSI 300 return (right)',days:marketDays,ys:marketCSI,color:AHCHART.csi,dash:'7 4',w:2.1},{name:'A-share return (right)',days:marketDays,ys:marketA,color:AHCHART.a,w:2.1},{name:'A/H premium (left)',days:P.days,ys:P.prem,color:AHCHART.premium,w:2.8}];
+  const series=[{name:'CSI 300 return (right)',days:marketDays,ys:marketCSI,color:AHCHART.csi,dash:'7 4',w:2.1},{name:'A-share return (right)',days:marketDays,ys:marketA,color:AHCHART.a,w:2.1},{name:'A/H premium (left)',days:P.days,ys:P.prem,color:AHCHART.premium,w:2.8}].filter(s=>s.color===AHCHART.premium||showMarket&&(mode==='all'||s.color===AHCHART.csi));
   for(const s of series){
     const Y=s.color===AHCHART.premium?Yp:Ym,p=pathline(svg,s.days,s.ys,X,Y,s.color,s.w);p.setAttribute('stroke-linejoin','round');p.setAttribute('stroke-linecap','round');p.setAttribute('data-name',s.name);if(s.dash)p.setAttribute('stroke-dasharray',s.dash);
     const connected=(i,j)=>j>=0&&j<s.days.length&&Number.isFinite(s.ys[j])&&Math.abs(s.days[i]-s.days[j])<=10;
     s.days.forEach((d,i)=>{if(Number.isFinite(s.ys[i])&&!connected(i,i-1)&&!connected(i,i+1))el('circle',{cx:X(d),cy:Y(s.ys[i]),r:3,fill:s.color,'data-isolated-point':'true'},svg);});
   }
   if(!ok.length){const t=el('text',{x:W/2,y:M.t+15,'text-anchor':'middle','font-size':12,fill:'#626E7B'},svg);t.textContent=source.class_review?'A/H share basis requires review':'A/H history unavailable';}
-  addXhair(svg,W,H,M,X,[series[2],series[1],series[0]],'%');
+  addXhair(svg,W,H,M,X,[...series].reverse(),'%');
 }
 function fullAHPath(d) {
   const old=DATA.ahpaths[d.code],r=AHST[d.code],by=new Map((r.history||[]).map(x=>[x[0],x]));
@@ -2264,6 +2270,20 @@ let labAHFocus=null;
 function renderAH(chosen, options={}) {
   const host = $(options.host || "#lab-ah"); host.innerHTML="";
   const paths=DATA.ahpaths || {};let pairs=chosen.filter(d=>paths[d.code]);
+  const mode=options.deskMode;
+  const panel=(g,title,draw,kind,subtitle)=>{
+    if(mode){
+      const accepted={premium:'A/H premium and mainland market',market:'A/H premium and mainland market',around:'A shares vs CSI 300 · around H listing',hkd:'Prices in HKD',open:'Performance from first open'};
+      if(title!==accepted[mode])return;
+      if(mode==='premium'){title='A/H premium';subtitle=`<span class="ah-market-legend"><span><i style="border-color:${AHCHART.premium}"></i>A/H premium</span></span>`;}
+      if(mode==='market'){title='A/H premium · CSI 300';subtitle=subtitle.replace(/<span><i style="border-color:#16857A"><\/i>A-share return \(right\)<\/span>/,'');}
+      if(mode==='hkd')subtitle=`<span class="ah-market-legend"><span><i style="border-color:${AHCHART.premium}"></i>H shares</span><span><i style="border-color:${AHCHART.a}"></i>A shares in HKD</span></span>`;
+      if(mode==='around')subtitle=`<span class="ah-market-legend"><span><i style="border-color:${AHCHART.a}"></i>A shares</span><span><i style="border-color:${AHCHART.csi};border-top-style:dashed"></i>CSI 300</span></span>`;
+      if(mode==='open')subtitle=`<span class="ah-market-legend"><span><i style="border-color:${AHCHART.premium}"></i>H shares</span><span><i style="border-color:${AHCHART.a}"></i>A shares</span><span class="ah-market-base">First available open = 100</span></span>`;
+      kind='market';
+    }
+    return ahPanel(g,title,draw,kind,subtitle);
+  };
   if(!options.host&&pairs.length>1){
     if(!pairs.some(d=>d.code===labAHFocus))labAHFocus=pairs[0].code;
     const label=document.createElement('label');label.className='ah-focus';label.innerHTML='A/H company <select id="lab-ah-stock">'+pairs.map(d=>`<option value="${d.code}">${safeText(d.name)} (${d.code})</option>`).join('')+'</select>';host.appendChild(label);
@@ -2283,14 +2303,15 @@ function renderAH(chosen, options={}) {
       marks.filter(x=>x[0]<=span).forEach(([n,label])=>{el("line",{x1:Xs(n),x2:Xs(n),y1:M.t,y2:H-M.b,class:"gridline"},svg);const t=el("text",{x:Xs(n),y:H-8,"text-anchor":"middle",class:"axlabel"},svg);t.textContent=label;});
       svg.setAttribute("data-ipo",P.ipo);svg.setAttribute("data-first",P.ipo);svg.setAttribute("data-last",P.dates[take.at(-1)]||P.ipo);
     };
-    const wrap=document.createElement("div");wrap.className="ahstock";
+    const wrap=document.createElement("div");wrap.className="ahstock"+(mode?" ah-desk-detail":"");
     wrap.innerHTML=`<div class="ovleg"><span><i class="sw" style="background:${BLUE}"></i>H shares (HKD)</span><span><i class="sw" style="background:${RED}"></i>A shares</span><span><i class="sw" style="background:${AHCHART.csi}"></i>CSI 300</span><span>H listed ${P.ipo} · offer HK$${P.offer}</span></div><div class="ahwrap"><div class="ahgrid"></div></div>`;
     host.appendChild(wrap);const g=wrap.querySelector(".ahgrid");
     const ref=(DATA.ah_reference?.pairs||{})[d.code],common=ref?.rows||[];
+    if(mode)$(options.note).textContent=mode==='around'&&common.length?`${common[0][0]} to ${common.at(-1)[0]} · first common close = 100`:`${P.ipo} to ${P.dates?.[take.at(-1)]||AHST[d.code]?.latest_date||DATA.ah_asof} · saved daily closes`;
     if(common.length>1 && ref.pre_from){
       const days=common.map(x=>Math.round((Date.parse(x[0])-Date.parse(P.ipo))/86400000));
       const a=common.map(x=>100*x[1]/common[0][1]),b=common.map(x=>100*x[2]/common[0][2]);
-      ahPanel(g,"A shares vs CSI 300 · around H listing",(svg,W,H,M)=>{
+      panel(g,"A shares vs CSI 300 · around H listing",(svg,W,H,M)=>{
         const Xp=v=>M.l+(W-M.l-M.r)*(v+31)/62,Y=scaleFor([...a,...b,100],H,M);
         niceTicks(Math.min(...a,...b),Math.max(...a,...b),4).forEach(v=>{el("line",{x1:M.l,x2:W-M.r,y1:Y(v),y2:Y(v),class:"gridline"},svg);const t=el("text",{x:M.l-6,y:Y(v)+3,"text-anchor":"end",class:"axlabel"},svg);t.textContent=v.toFixed(0);});
         [-30,-15,0,15,30].forEach(n=>{const t=el("text",{x:Xp(n),y:H-8,"text-anchor":"middle",class:"axlabel"},svg);t.textContent=n===0?"H IPO":(n>0?"+":"")+n+"d";});
@@ -2298,11 +2319,11 @@ function renderAH(chosen, options={}) {
         pathline(svg,days,a,Xp,Y,RED,2.2);pathline(svg,days,b,Xp,Y,AHCHART.csi,2.1).setAttribute('stroke-dasharray','7 4');svg.dataset.ipo=P.ipo;svg.dataset.common=common.length;
         addXhair(svg,W,H,M,Xp,[{name:"A shares",days,ys:a,color:RED},{name:"CSI 300",days,ys:b,color:AHCHART.csi}],"idx");
       },null,`${ref.pre_from} to ${ref.pre_to}: A ${fmt.pct(ref.pre_a_return_pct)}, CSI ${fmt.pct(ref.pre_csi_return_pct)}, A − CSI ${ref.pre_excess_pp.toFixed(1)} pp. Both = 100 on the first common date.`);
-    } else {
+    } else if(!mode||mode==='around') {
       const card=document.createElement("div");card.className="ahpane";card.innerHTML=`<h4>A shares vs CSI 300 · before H listing</h4><p class="note">A-line observations start ${ref?.a_first_observation||"after H listing"}; pre-IPO comparison unavailable.</p>`;g.appendChild(card);
     }
     // pane 1: native levels, twin axes (A CNY left red, H HKD right blue)
-    ahPanel(g, "Price levels, native currency", (svg, W, H, M) => {
+    panel(g, "Price levels, native currency", (svg, W, H, M) => {
       const Xs = X(W, M);
       daymarks(svg, Xs, M, H);
       const Ya = scaleFor(P.a_cny, H, M), Yh = scaleFor(P.h, H, M);
@@ -2328,7 +2349,7 @@ function renderAH(chosen, options={}) {
     }, null, `<span style="color:${RED}">left axis ¥ (A)</span> · ` +
        `<span style="color:${BLUE}">right axis HK$ (H)</span>`);
     // pane 2: both legs in HKD, gap shaded by premium sign
-    ahPanel(g, "Prices in HKD", (svg, W, H, M) => {
+    panel(g, "Prices in HKD", (svg, W, H, M) => {
       const Xs = X(W, M);
       daymarks(svg, Xs, M, H);
       const all = P.h.concat(P.a_hkd.filter(v => v != null));
@@ -2352,7 +2373,7 @@ function renderAH(chosen, options={}) {
     { const P={...source,days:take.map(i=>source.days[i]),h:take.map(i=>source.h_perf[i]),a_hkd:take.map(i=>source.a_perf_hkd[i])};
     // pane 3: rebased WITH the pop — 100 = the OFFER (pre-listing), so the
     // H line's very first dot already sits its day-1 return above/below 100
-    ahPanel(g, "Performance from H offer", (svg, W, H, M) => {
+    panel(g, "Performance from H offer", (svg, W, H, M) => {
       const Xs = X(W, M);
       daymarks(svg, Xs, M, H);
       const a0 = aOpen0HKD(P) || P.a_hkd.find(v => v != null);
@@ -2375,7 +2396,7 @@ function renderAH(chosen, options={}) {
     }, "pop", "H = 100 at offer; A = 100 at its first open or close. Split-neutral price performance.");
     // pane 3b: EX-POP — 100 = the day-1 OPEN, the first print you could
     // actually TRADE; the tiny day-0 step is the intraday open→close move
-    ahPanel(g, "Performance from first open", (svg, W, H, M) => {
+    panel(g, "Performance from first open", (svg, W, H, M) => {
       const Xs = X(W, M);
       daymarks(svg, Xs, M, H);
       const hOS = openStart(P.days, P.h, hOpen0(P, d.code));
@@ -2402,7 +2423,7 @@ function renderAH(chosen, options={}) {
     }
     // One time axis; premium is a ratio, market curves are returns on the right axis.
     const trend=(ref?.trend_rows||[]).filter(x=>options.full||x[0]<=new Date(Date.parse(P.ipo)+92*86400000).toISOString().slice(0,10));
-    ahPanel(g,'A/H premium and mainland market',(svg,W,H,M)=>drawAHMarket(svg,W,H,M,P,source,trend,span,LEAD),'market',
+    panel(g,'A/H premium and mainland market',(svg,W,H,M)=>drawAHMarket(svg,W,H,M,P,source,trend,span,LEAD,mode||"all"),'market',
       `<span class="ah-market-legend"><span><i style="border-color:${AHCHART.premium}"></i>Premium (left)</span><span><i style="border-color:${AHCHART.a}"></i>A-share return (right)</span><span><i style="border-color:${AHCHART.csi};border-top-style:dashed"></i>CSI 300 return (right)</span><span class="ah-market-base">${trend.length?'Returns from '+trend[0][0]:''}</span></span>`);
 
   });
@@ -2418,7 +2439,7 @@ function renderAH(chosen, options={}) {
     host.appendChild(wrap);
     const g = wrap.querySelector(".pathgrid");
     const palette = palette0;
-    const mk = (title, series, base, kind, subt, lead) => ahPanel(g, title, (svg, W, H, M) => {
+    const mk = (title, series, base, kind, subt, lead) => panel(g, title, (svg, W, H, M) => {
       const Xs = lead ? xLead(W, M) : (v => M.l + (W - M.l - M.r) * v / 92);
       daymarks(svg, Xs, M, H);
       const flat = series.flatMap(s => s.ys.filter(v => v != null)).concat([base])
@@ -3022,7 +3043,32 @@ HTML = """<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>HK IPO Dashboard — 2021–2026 + Pipeline</title>
-<style>%%CSS%%</style>
+<style>%%CSS%%
+/* A/H desk: one analysis at a time, bounded watchlist and explicit chart keys. */
+#ah .filters{gap:16px;margin:12px 0;align-items:end}
+#ah .filters label{font-size:11px;letter-spacing:.02em;color:var(--text-muted)}
+#ah .filters select{display:block;margin-top:5px;min-height:34px}
+#ah h2{font-size:24px;margin-bottom:4px}
+#ah-history-title{font-size:17px;margin:22px 0 14px;font-weight:600}
+.ah-desk-metrics{display:flex;flex-wrap:wrap;gap:0;margin:0 0 10px;border-block:1px solid var(--line);padding:14px 0}
+.ah-desk-metrics>div{min-width:140px;padding:0 28px;border-right:1px solid var(--line)}
+.ah-desk-metrics>div:first-child{padding-left:0}.ah-desk-metrics>div:last-child{border:0}
+.ah-desk-metrics span{display:block;font-size:11px;color:var(--text-muted);margin-bottom:6px}
+.ah-desk-metrics strong{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+.ah-desk-detail>.ovleg{display:none}#ah .ah-desk-detail .ahgrid{display:block}
+#ah .ah-desk-detail .ahpane{border:0;padding:12px 0 0;background:transparent}
+#ah .ah-desk-detail .ahpane h4{font-size:13px;font-weight:600}
+#ah-history-note{margin:4px 0 20px;font-size:11px}
+#ah-tbl{max-height:330px;border:1px solid var(--line);border-radius:4px;margin:10px 0 24px}
+#ah-tbl thead th{position:sticky;top:0;z-index:1;background:var(--surface-1)}
+#ah .comparison-toolbar{gap:10px;margin:9px 0}
+#ah-compare-chart .comparison-legend{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 18px;padding:12px 0;border-top:1px solid var(--line)}
+#ah-compare-chart .comparison-legend>span{display:flex;gap:8px;align-items:center;line-height:1.4;font-size:12px}
+#ah-compare-chart .comparison-legend .sw{flex-shrink:0}
+#ah-comparison{margin-top:20px}
+@media(max-width:700px){.ah-desk-metrics>div{min-width:45%;padding:8px 12px!important;border:0}.ah-desk-metrics strong{font-size:17px}#ah-compare-chart .comparison-legend{grid-template-columns:1fr}}
+
+</style>
 </head>
 <body class="viz-root">
 <header class="top">
@@ -3062,15 +3108,16 @@ HTML = """<!doctype html>
 </section>
 
 <section id="ah">
-  <h2>A premium over H — dual-listed deals</h2>
-  <p class="sub">A premium = (A×CNY→HKD) ÷ H − 1. Snapshot through %%AHSNAPSHOT%%; live Bloomberg prices are in Excel.</p>
-  <div class="filters"><label>show <select id="ah-when">
+  <h2>A/H monitor</h2>
+  <p class="sub">Saved prices through %%AHSNAPSHOT%%</p>
+  <div class="filters"><label>Table premium <select id="ah-when">
       <option value="now">A premium — snapshot</option>
       <option value="ipo">A premium — at IPO (vs H offer)</option></select></label>
     <label>sector <select id="ah-sec"></select></label>
     <label>subsector <select id="ah-sub"></select></label></div>
-  <div class="filters"><label>Company <select id="ah-stock"></select></label><label>History <select id="ah-horizon"><option value="Max">Listing to snapshot</option><option value="3M">First 3 months</option></select></label></div>
+  <div class="filters"><label>Company <select id="ah-stock"></select></label><label>History <select id="ah-horizon"><option value="Max">Listing to snapshot</option><option value="3M">First 3 months</option></select></label><label>Chart <select id="ah-detail-mode"><option value="premium">Premium</option><option value="market">Premium + CSI 300</option><option value="around">A-share vs CSI 300 · around IPO</option><option value="hkd">A / H prices in HKD</option><option value="open">A / H performance from first open</option></select></label></div>
   <h3 id="ah-history-title"></h3>
+  <div id="ah-selected-metrics" class="ah-desk-metrics"></div>
   <div id="ah-history"></div><p class="note" id="ah-history-note"></p>
   <p class="note" id="ah-note"></p>
   <div class="scroll" id="ah-tbl"></div>
@@ -3170,9 +3217,8 @@ HTML = """<!doctype html>
   <h2>Screener</h2>
   <div class="filters" id="calendar"></div>
   <p class="sub">Select a deal. Comparisons rank by subsector, then sector.</p>
-  <div class="filters"><label>Target deal:</label> <select id="picker"></select>
-    <label>find <input id="finder" list="deal-list" size="18"
-      placeholder="type a name or code — CATL, 3750, 快手"></label>
+  <div class="filters"><label>H code <input id="finder" list="deal-list" size="18" placeholder="9607 · code or company"></label>
+    <label>Target <select id="picker"></select></label><span id="finder-status" role="status" class="down"></span>
     <span class="note">…or override any field:</span></div>
   <datalist id="deal-list"></datalist>
   <div class="filters" id="override">

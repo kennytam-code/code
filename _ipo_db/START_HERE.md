@@ -33,8 +33,8 @@ tabs stay at the back/hidden. Do not delete other research in TO_NOMURA.
 | AH | B4 pair code, E4 Stored/Bloomberg. Premium = A price × CNYHKD / H price − 1. Seven-day and calendar-month changes are percentage points. J5 links to sector averages at J57. |
 | AH charts | Premium left axis; A-share and CSI 300 price returns right axis, common observed dates. Bloomberg requests through TODAY; Stored retains per-pair dates. No invented points or cosmetic interpolation. Reviewed split/bonus factors align each leg on its own ex date. |
 | Peer Trades | B3 named direct product-peer pair; F3 source; H3 horizon; F4/H4 custom dates. Return spread = A minus B price return in percentage points, both rebased at their first common observed session. Keep the product overlap/mix distinction. |
-| Screener | B5 resolves company or code; retain exact numeric aliases such as 9607. F53 reads Database BQ (A code). The eleven W_* named model inputs now live in hidden Calc (scoring engine)!AU2:AU12, with names/descriptions in AT/AV. The final workbook has no Notes sheet. Never overwrite these inputs with prose. |
-| Screener form | B7:B14 shows database inputs; C7:C14 contains overrides. D7:D14 retains the effective calculation with display format `;;;`. The seven context outputs moved from H8/H9/H12:H16 to F7/F8/F10:F14 without changing their formulas or values. B5:C5 is the company selector. Top titles and duplicate selection prose are hidden; the real snapshot date stays visible. |
+| Screener | B5 is code-first: numeric-sorted H-code dropdown plus uncoded pipeline names; E5:F5 shows the resolved company. Free typing still accepts company names, leading zeros and Bloomberg tickers; retain exact numeric aliases such as 9607. F53 reads Database BQ (A code). The eleven W_* named model inputs now live in hidden Calc (scoring engine)!AU2:AU12, with names/descriptions in AT/AV. The final workbook has no Notes sheet. Never overwrite these inputs with prose. |
+| Screener form | B7:B14 shows database inputs; C7:C14 contains overrides. D7:D14 retains the effective calculation with display format `;;;`. The seven context outputs moved from H8/H9/H12:H16 to F7/F8/F10:F14 without changing their formulas or values. B5:C5 is the code/pipeline selector; E5:F5 shows the resolved company. Top titles and duplicate selection prose are hidden; the real snapshot date stays visible. |
 | Database fundamentals | BJ/BL: live TTM P/E/P/S. BM:BO: NTM P/E, FY2027 P/E, FY2027 P/S. Screener BE/BG/BH:BJ mirrors these. Historical IPO multiples remain separate. |
 | HTML comparisons | Active sector/subsector/search filters restrict both individual lines and mean inputs. Select all selects only that scope. Stocks, Selected average and Sector averages are mutually exclusive views. Six lines per page with full legend/tooltip. Means use **only checked stocks**, each stock one weight; multiple selected expiries of one stock are averaged within that stock first. Missing is excluded, not zero. |
 | Lock-up (HTML only) | Historical, source-confirmed cornerstone expiries with complete ±30 HK-session endpoints. 161 events / 158 stocks in the 17 October release, prices through 2 October. Future/undated/ambiguous dates and incomplete or unverified price windows are excluded, not blank rows. Interior price gaps remain visible. Date shown is the last day locked; day 0 is the last HK session on/before it. |
@@ -129,7 +129,7 @@ processes; native joining; peer history; colours; presentation; reflow; request
 guards; chart axes; CSI combination; desk release; sector release; final polish; desk theme; remove Notes.
 Apply each structural patch once to a fresh baseline. Never re-import/export the
 full workbook for cosmetic work: unsupported native chart/Excel features matter.
-The final `ah_chart_style` stage must run after `desk_theme` and `remove_notes`:
+The `ah_chart_style` stage must run after `desk_theme` and `remove_notes`:
 navy premium, teal A-share return, amber dashed CSI 300, explicit axis titles and
 top legends. Its first chart starts below the frozen header so the chart scrolls
 as one object. Otherwise the generic theme overrides the semantic line colors.
@@ -192,3 +192,27 @@ authority for current counts. Internal arithmetic consistency is not proof of
 all underlying inputs. Older A/H and peer histories can be older than the newest
 Live/new-listing quote. Keep their actual dates visible. Word studies are separate
 dated research and are not automatically rewritten by a data refresh.
+
+## 20 October: code selector and single-analysis A/H view
+
+Apply `screener_code_selector` after the existing final native stages. It uses
+`data/screener_code_layout.json` (Artifact-authored), creates AllTargetCodes in
+hidden Calc AW3 onward, and retains SelectedDeal and all downstream scoring
+formulas. B5 accepts 9607, 09607, 9607 HK Equity, exact names and pipeline names.
+E5:F5 displays the matched company or Code not found. HTML Screener also puts the
+code finder first, with code-valued suggestions and a visible invalid-query state.
+
+HTML A/H shows one full-width analysis at a time: Premium (default), Premium +
+CSI 300, A-share vs CSI around IPO, prices in HKD, or performance from first open.
+Premium alone starts at listing and scales to its observed range; CSI uses its
+explicit separate return axis. No smoothing or observation changes. Summary
+changes are seven **calendar days** and one calendar month (existing definition),
+in percentage points. The table is bounded; comparisons retain scoped selections,
+exclusive stock/average modes and six-line pages. Company-history dates remain
+pair-specific. The around-IPO analysis has its own fixed window.
+
+Check `tools/test_screener_code.py`, `tools/test_screener_ah_html.mjs`, native desk,
+package and comparison checks. 1,595 identifier formula cases; 426 actual SVG
+cases; 40 detail-control cases. These HTML checks use a small DOM adapter, not a
+fresh browser visual run. Native Excel opens without repair; the Mac is View Only,
+so interactive code edits and Bloomberg responses are not certified live.

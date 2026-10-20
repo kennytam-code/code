@@ -1,0 +1,17 @@
+import fs from 'node:fs/promises';
+import {Workbook,SpreadsheetFile} from '@oai/artifact-tool';
+const root=new URL('../',import.meta.url),out=new URL('out/screener_ah_20261020/',root);
+const wb=Workbook.create(),s=wb.worksheets.add('Code selector');
+s.showGridLines=false;s.getRange('A1:F4').format.font={name:'Arial',size:11,color:'#263442'};
+s.getRange('A1:F4').format.columnWidth=18;s.getRange('A1:F4').format.rowHeight=28;
+s.getRange('A2').values=[['H code / pipeline']];
+s.getRange('B2:C2').merge();s.getRange('B2').values=[['9607']];
+s.getRange('B2:C2').format.fill='#EEF3F7';s.getRange('B2:C2').format.font={name:'Arial',size:12,color:'#1D4E89',bold:true};
+s.getRange('E2:F2').merge();s.getRange('E2').formulas=[['=IF(B2="9607","RA MATERIALS","")']];
+s.getRange('E2:F2').format.font={name:'Arial',size:11,color:'#263442',bold:true};
+wb.recalculate();
+console.log((await wb.inspect({kind:'table',range:'Code selector!A2:F2',include:'values,formulas',maxChars:1200})).ndjson);
+const preview=await wb.render({sheetName:s.name,range:'A1:F3',scale:1.5,format:'png'});
+await fs.writeFile(new URL('selector.png',out),new Uint8Array(await preview.arrayBuffer()));
+const file=await SpreadsheetFile.exportXlsx(wb);await file.save(new URL('selector.xlsx',out).pathname);
+await fs.writeFile(new URL('data/screener_code_layout.json',root),JSON.stringify({xlsx_base64:(await fs.readFile(new URL('selector.xlsx',out))).toString('base64')})+'\n');

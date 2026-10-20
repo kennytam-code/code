@@ -1,6 +1,6 @@
 # HK IPO database
 
-**19 October 2026 chart update; market/pipeline review dated 15 October.** [Download Excel from main](https://github.com/kennytam-code/code/raw/refs/heads/main/HK_IPO_Database_v1.xlsx). Start with [START_HERE.md](START_HERE.md) when maintaining this project. It is the current handover for an analyst or a new AI session; [data/release_state.json](data/release_state.json) records coverage, dates and validation limits. Older MAINTENANCE entries are historical.
+**20 October 2026 Screener and A/H update; market/pipeline review dated 15 October.** [Download Excel from main](https://github.com/kennytam-code/code/raw/refs/heads/main/HK_IPO_Database_v1.xlsx). Start with [START_HERE.md](START_HERE.md) when maintaining this project. It is the current handover for an analyst or a new AI session; [data/release_state.json](data/release_state.json) records coverage, dates and validation limits. Older MAINTENANCE entries are historical.
 
 Use the files in `TO_NOMURA/`:
 
@@ -42,3 +42,5 @@ python ipo.py check
 The standalone updater uses `python hk_ipo.py update` for refresh/build and `build` for stored-data reproduction. Use a clean folder to reproduce the embedded data; existing persistent data is retained. Run one heavy operation at a time, Python capped at 512 MiB and Node at 384 MiB. Full workbooks use the staged native build; visual previews use small projections.
 
 Methods, known issues, source evidence and release checks belong in the repository and audit CSV/JSON, not in extra workbook footnotes. The Notes sheet has been removed; its eleven named scoring inputs are preserved in the existing hidden calculation sheet. Read START_HERE before changing controls or build stages.
+
+Screener B5 now offers H codes first and displays the resolved company beside it. HTML uses code-first search too. A/H details show one selected analysis at a time, with a clear Premium / Premium + CSI 300 control; multi-pair comparisons and all stored observations remain intact.

@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "lookup_cases": 1595,
+  "codes": 529,
+  "dropdown_entries": 541,
+  "changed_parts": [
+    "xl/styles.xml",
+    "xl/workbook.xml",
+    "xl/worksheets/sheet1.xml",
+    "xl/worksheets/sheet12.xml"
+  ],
+  "all_existing_business_cells_formulas_and_charts_preserved": true,
+  "live_bloomberg_execution": false,
+  "sha256": "16b40499cf7ce05741655d0a86a6bf2772b0bf606d56d4dde0a5dae534ba1588"
+}

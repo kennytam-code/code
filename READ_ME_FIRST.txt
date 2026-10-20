@@ -1,4 +1,4 @@
-HK IPO DATABASE — 19 OCTOBER 2026
+HK IPO DATABASE — 20 OCTOBER 2026
 
 GITHUB MAIN DOWNLOADS
   Excel: https://github.com/kennytam-code/code/raw/refs/heads/main/HK_IPO_Database_v1.xlsx
@@ -32,11 +32,17 @@ CONTROLS
   the plotted selection. Stocks, Selected average and Sector averages are
   separate views; individual lines are paginated in groups of six.
 
+  HTML AH — one full-width chart at a time. Use Chart to select Premium,
+  Premium + CSI 300, around-IPO market context, HKD prices or performance.
+  Premium changes use seven calendar days / one calendar month, in pp.
+
   Peer Trades — B3 named product-peer pair; F3 source; H3 horizon;
   F4/H4 custom dates. Both stocks populate automatically. 35 pairs / 66
   stocks. Spread is A minus B price return from their first common session.
 
-  Screener — B5 company or code. First two columns are frozen.
+  Screener — B5 H code / pipeline; E5 shows the resolved company.
+  Type 9607, 09607, or a company name. First two columns are frozen.
+  HTML Screener also offers code-first search.
   B7:B14 shows database inputs; C7:C14 accepts overrides. Selected-deal
   outputs sit on the right. Large tab title rows have been removed.
   Database fundamentals contain live TTM PE/PS, NTM PE and FY2027 PE/PS;

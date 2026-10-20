@@ -52,5 +52,7 @@ for name in ['create_desk_theme.mjs','test_desk_theme.py','render_desk_theme.mjs
 for name in ['create_weight_layout.mjs','test_remove_notes.py']:add(ROOT/'tools'/name)
 for name in ['create_ah_chart_style.mjs','test_ah_readability.py','test_ah_market_render.mjs','run_ah_readability_checks.py','package_ah_readability.py']:add(ROOT/'tools'/name)
 for p in sorted((ROOT/'data/ah_readability_20261019').glob('*.json')):add(p)
+for name in ['create_screener_code_layout.mjs','test_screener_code.py','test_screener_ah_html.mjs','package_screener_ah.py']:add(ROOT/'tools'/name)
+for p in sorted((ROOT/'data/screener_ah_20261020').glob('*.json')):add(p)
 (ROOT/'out/publication_plan.json').write_text(json.dumps(files,indent=2));print('Prepared',len(files),'explicit changed files,',sum(f['bytes'] for f in files)//1024,'KB')
 for f in files:print(f['target'])

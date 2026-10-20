@@ -106,7 +106,7 @@ def build(root,dest):
  run(f'from patch_peer_workbook import patch;patch({str(dest)!r},{str(peer)!r},{str(root)!r})');peer.replace(dest)
  run(f'from apply_desk_styles import apply;apply({str(dest)!r},{str(root)!r})')
  run(f'from pathlib import Path;from patch_presentation_workbook import patch;patch(Path({str(dest)!r}),Path({str(staged)!r}),Path({str(root)!r}),finish=False)');staged.replace(dest)
- for mod,fn in [('reflow_monitors','reflow'),('fix_monitor_requests','apply'),('adjust_ah_charts','apply'),('combine_ah_benchmark','apply'),('desk_release','apply'),('sector_monitor_release','apply'),('final_polish','apply'),('desk_theme','apply'),('remove_notes','apply'),('ah_chart_style','apply')]:
+ for mod,fn in [('reflow_monitors','reflow'),('fix_monitor_requests','apply'),('adjust_ah_charts','apply'),('combine_ah_benchmark','apply'),('desk_release','apply'),('sector_monitor_release','apply'),('final_polish','apply'),('desk_theme','apply'),('remove_notes','apply'),('ah_chart_style','apply'),('screener_code_selector','apply')]:
   if os.environ.get('IPO_QA_BASELINES')=='1' and mod in ['sector_monitor_release','final_polish','desk_theme','remove_notes']:
    (root/'out').mkdir(exist_ok=True)
    baseline={'sector_monitor_release':'_sector_baseline_20261015.xlsx','final_polish':'_polish_baseline_20261015.xlsx','desk_theme':'_theme_baseline_20261015.xlsx','remove_notes':'_notes_baseline_20261016.xlsx'}[mod]

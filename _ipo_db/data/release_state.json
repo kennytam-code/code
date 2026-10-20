@@ -1,5 +1,5 @@
 {
-  "release_date": "2026-10-19",
+  "release_date": "2026-10-20",
   "handover": "START_HERE.md",
   "counts": {
     "database_screener": 526,
@@ -33,7 +33,7 @@
     "numeric_entries": 39303,
     "internal_numeric_failures": 0,
     "existing_525_stock_numeric_changes": 0,
-    "native_excel_open": "19 October final workbook opened in native Microsoft Excel without a content-repair prompt; combined A/H and comparison charts visually reviewed at 90% zoom and after scrolling. View-only installation; no live Bloomberg execution.",
+    "native_excel_open": "20 October final workbook opened in native Microsoft Excel without a content-repair prompt; Screener selector, resolved name and rankings visually reviewed. View-only installation; interactive edits and live Bloomberg responses not tested.",
     "other_tabs_style_preservation": "13 sheets: business values, formulas and caches preserved, including seven relocated Screener outputs; requested titles removed; chart data, axes, drawing anchors and relationships unchanged",
     "small_projection_review": [
       "Database",
@@ -256,6 +256,72 @@
       "market_data_refreshed": false,
       "live_bloomberg_execution": false,
       "bundle_existing_data_preserved": true
+    },
+    "screener_ah_controls": {
+      "date": "2026-10-20",
+      "checks": [
+        {
+          "test": "tools/test_screener_code.py",
+          "passed": true
+        },
+        {
+          "test": "tools/test_screener_ah_html.mjs",
+          "passed": true
+        },
+        {
+          "test": "tools/test_native_desk.py",
+          "passed": true
+        },
+        {
+          "test": "tools/test_presentation_package.py",
+          "passed": true
+        },
+        {
+          "test": "tools/test_comparison_scope.mjs",
+          "passed": true
+        },
+        {
+          "test": "tools/test_selected_averages.mjs",
+          "passed": true
+        }
+      ],
+      "workbook": {
+        "passed": true,
+        "lookup_cases": 1595,
+        "codes": 529,
+        "dropdown_entries": 541,
+        "changed_parts": [
+          "xl/styles.xml",
+          "xl/workbook.xml",
+          "xl/worksheets/sheet1.xml",
+          "xl/worksheets/sheet12.xml"
+        ],
+        "all_existing_business_cells_formulas_and_charts_preserved": true,
+        "live_bloomberg_execution": false,
+        "sha256": "16b40499cf7ce05741655d0a86a6bf2772b0bf606d56d4dde0a5dae534ba1588"
+      },
+      "html": {
+        "passed": true,
+        "render_cases": 426,
+        "detail_control_cases": 40,
+        "html_code_search_cases": 2104,
+        "entire_payload_unchanged": true,
+        "all_observations_and_gaps_preserved": true,
+        "actual_svg_function": true,
+        "browser": false
+      },
+      "native_excel": {
+        "date": "2026-10-20",
+        "sha256": "16b40499cf7ce05741655d0a86a6bf2772b0bf606d56d4dde0a5dae534ba1588",
+        "opened_without_repair": true,
+        "screener_selector_and_resolved_name_visually_reviewed": true,
+        "rankings_rendered": true,
+        "view_only_installation": true,
+        "native_interactive_code_edit_tested": false,
+        "live_bloomberg_execution": false
+      },
+      "market_data_refreshed": false,
+      "all_existing_updater_inputs_preserved": true
     }
   },
   "known_limits": {
@@ -270,24 +336,24 @@
   },
   "deliverables": {
     "HK_IPO_Database_v1.xlsx": {
-      "bytes": 7840692,
-      "sha256": "f1addb5e2a65878a8ccc78108521a8bab2da5c463b12add0d662e04898a6ec56"
+      "bytes": 7845218,
+      "sha256": "16b40499cf7ce05741655d0a86a6bf2772b0bf606d56d4dde0a5dae534ba1588"
     },
     "hk_ipo_dashboard.html": {
-      "bytes": 2861386,
-      "sha256": "4bff6b3b7ec3d2afe7fa21539b18b9c77762c58b3d98275023c3c473f28f33b2"
+      "bytes": 2866361,
+      "sha256": "1fe5e69c1ed3b5b3862b314293c54e2ccdce1e2eaec2ad91527d2037cc7c74dd"
     },
     "hk_ipo_dashboard.zip": {
-      "bytes": 2051174,
-      "sha256": "730127d67840d37bdeab0c8253ef965e711601943b82f6d777158cf77f7ef0a5"
+      "bytes": 2052305,
+      "sha256": "2caadff9901d98a7c8a9626aba37c53517426a2a9d0e4bd3662d7f4c8edaf92a"
     },
     "hk_ipo.py": {
-      "bytes": 15344584,
-      "sha256": "d5a5cd34d0b4d0be3e0246eee1c4052bd72590f8da882c927845331170dfab4c"
+      "bytes": 15354684,
+      "sha256": "082c84af40dec8806d934ae290c85e54f4b7265cd32b7ccbd822476a889b491f"
     },
     "READ_ME_FIRST.txt": {
-      "bytes": 4402,
-      "sha256": "da31c93eaa886d30a5f306d81d673a836c55762bc4ae804a4b37656fd96706f4"
+      "bytes": 4743,
+      "sha256": "5c311eeb816be09671ad086e959b118d5cc63b3e6d581ea6b2adb8e820df2b3a"
     }
   }
 }

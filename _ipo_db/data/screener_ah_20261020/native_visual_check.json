@@ -1,0 +1,10 @@
+{
+  "date": "2026-10-20",
+  "sha256": "16b40499cf7ce05741655d0a86a6bf2772b0bf606d56d4dde0a5dae534ba1588",
+  "opened_without_repair": true,
+  "screener_selector_and_resolved_name_visually_reviewed": true,
+  "rankings_rendered": true,
+  "view_only_installation": true,
+  "native_interactive_code_edit_tested": false,
+  "live_bloomberg_execution": false
+}

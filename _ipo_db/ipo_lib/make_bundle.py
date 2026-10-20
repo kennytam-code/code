@@ -69,12 +69,12 @@ DATA_FILES += ['data/investor_aliases.json', 'data/pipeline_layout.json', 'data/
 DATA_FILES += ['data/monitor_layout.json']
 DATA_FILES += ['data/sector_summary_template.json']
 DATA_FILES += ['data/database_layout.json','data/desk_theme.json','data/note_weight_layout.json']
-DATA_FILES += ['data/ah_chart_style.json']
+DATA_FILES += ['data/ah_chart_style.json','data/screener_code_layout.json']
 DATA_FILES += ['data/lockup_date_review.json','data/lockup_amendments.json']
 DATA_FILES += ['data/batches/pipeline_review.json']
 DATA_FILES += ['data/presentation_template.json','data/ah_reference.json','data/csi300_prices.json','data/live_snapshot.json']
 # every pipeline module, so the ONE file can also refresh — not just rebuild
-LIB_MODULES = ["staged_native_build", "review_quote_guard", "sector_monitor_release", "final_polish", "desk_theme", "remove_notes", "historical_lockups", "ah_chart_style",
+LIB_MODULES = ["staged_native_build", "review_quote_guard", "sector_monitor_release", "final_polish", "desk_theme", "remove_notes", "historical_lockups", "ah_chart_style", "screener_code_selector",
     "accept_option_capacity", "filing_review", "review_offer_numbers", "review_financial_numbers", "review_cornerstones", "review_lockups", "audit_numbers", "refresh_filing_reviews", "refresh_lockup_windows",
     "incremental", "extract_allocation", "fetch_day1_tape", "analyse_clawback", "make_clawback_note",
     "fill_cornerstones", "fill_banks", "fetch_etnet_ipo", "test_screener_formulas",
