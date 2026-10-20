@@ -111,7 +111,7 @@ class ResidualCovarianceTests(unittest.TestCase):
         self.assertEqual([row[0] for row in audit['rows']], model['labels'])
         self.assertNotIn('Same-name capped fit R²', result['report_text'])
         self.assertNotIn('Same-name uncapped OLS R²', result['report_text'])
-        self.assertIn('FITTED TRACKING COMPARISON', result['report_text'])
+        self.assertIn('BASKET METHOD', result['report_text'])
         self.assertTrue(np.isfinite(result['fit_diagnostics']['same_basket_capped_ols_r2']))
 
 

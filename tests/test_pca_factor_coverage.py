@@ -69,7 +69,7 @@ class FactorCoverageTests(unittest.TestCase):
         self.assertIn('PMGOLD AU Equity',[r[0] for r in result['common_exposures']['rows']])
         self.assertGreater(result['in_sample_r2'],.85)
         self.assertIn('MAPPED REFERENCE NOT RETAINED',result['report_text'])
-        self.assertIn('FITTED TRACKING COMPARISON',result['report_text'])
+        self.assertIn('BASKET METHOD',result['report_text'])
 
     def test_priority_uses_subindustry_in_different_markets(self):
         for target, sector, narrow, broad, theme in [

@@ -256,7 +256,7 @@ import textwrap as _textwrap
 
 RIDGE_ALPHAS = np.logspace(-4, 2, 25)
 MIN_RETURN_STD = 1e-12
-PCA_REVISION = '2026-10-20-v122-residual-review'
+PCA_REVISION = '2026-10-20-v123-estimator-selection'
 MIN_TRAIN_COVERAGE = 0.90
 
 
@@ -1993,6 +1993,7 @@ def _sector_search_audit(result, data, exclude=()):
     current = max(audits, key=lambda a: (a['end'], a['rows'])) if audits else None
     identity = lambda t: _ticker_key(_fmt_bbg_ticker(t) or t)
     searched = {identity(t) for t in current['eligible_tickers']} if current and 'eligible_tickers' in current else None
+    exclusions = {identity(row['ticker']):row for row in (current or {}).get('eligibility_exclusions',[])}
     analysis = {identity(t) for t in result['prices'].columns}
     selected = {identity(t) for t in result['weights'].index}
     alternatives = {identity(t) for row in result.get('basket_comparison') or [] for t in row['weights'].index}
@@ -2021,7 +2022,9 @@ def _sector_search_audit(result, data, exclude=()):
             elif key not in analysis:
                 status = 'analysis scope / size / timing filter'
             elif searched is not None and key not in searched:
-                status = 'window history / variance / as-of eligibility'
+                detail=exclusions.get(key,{})
+                status = detail.get('reason','window history / variance / as-of eligibility')
+                row['eligibility_detail']=detail
             elif key in selected:
                 status = 'selected basket'
             elif key in alternatives:
@@ -4658,7 +4661,7 @@ def _residual_model_variant(model, frame, policy):
                 estimated_residual_shrinkage=base)
 
 
-def _choose_residual_policy(folds):
+def _choose_residual_policy(folds, policies=('estimated', 'half', 'none')):
     """Conservative paired chronological comparison, not a significance test.
 
     Each fold must contain all policies on identical test dates. A switch needs
@@ -4666,13 +4669,15 @@ def _choose_residual_policy(folds):
     both 2% of baseline risk and one block standard error. These are disclosed
     stability heuristics; three blocks do not establish statistical confidence.
     """
-    policies = ('estimated', 'half', 'none')
+    policies = tuple(policies)
+    if not policies or policies[0] != 'estimated' or len(set(policies)) != len(policies):
+        raise ValueError('Policy comparison needs a unique estimated baseline first')
     valid = [f for f in folds if all(np.isfinite(f.get('loss', {}).get(p, np.nan))
                                     for p in policies)]
     result = {'selected_policy':'estimated', 'folds':folds,
               'comparable_folds':len(valid), 'status':'insufficient_comparable_folds',
               'selection_uses':'training-only chronological spread variance',
-              'independent_performance_claim':False, 'candidates':[]}
+              'independent_performance_claim':False, 'candidate_policies':list(policies), 'candidates':[]}
     if len(valid) < 3:
         return result
     # Pool centered sums of squares, so a nearly flat validation block cannot
@@ -4700,8 +4705,48 @@ def _choose_residual_policy(folds):
             qualifying.append((float(loss.mean()), policies.index(policy), policy))
     if qualifying:
         result['selected_policy'] = min(qualifying)[2]
-        result['status'] = 'reduced_shrinkage'
+        result['status'] = ('tracking_selected' if result['selected_policy']=='tracking' else 'reduced_shrinkage')
     return result
+
+
+def _estimator_model(model, frame, policy):
+    """Keep a factor projection for diagnostics when Ridge supplies hedge weights."""
+    if policy == 'tracking':
+        return dict(model, hedge_estimator='tracking', residual_policy='estimated')
+    return dict(_residual_model_variant(model, frame, policy), hedge_estimator='factor')
+
+
+def _estimator_fit_score(fit, r2, n, size, gross, penalty):
+    risk = getattr(fit, 'risk_model_', None) or {}
+    if risk.get('estimator') == 'tracking' or not risk:
+        return _short_window_fit_score(r2, n, size, gross, penalty)[0]
+    return risk['variance_reduction']-penalty*gross-.02*size/n
+
+
+def _matched_method_summary(folds):
+    """All methods on every identical outer test row; failures stay visible."""
+    methods=('selected','factor','tracking')
+    out={'status':'no_reserved_test','methods':{},'folds':folds}
+    if not folds:
+        return out
+    if any(f.get('status')!='ok' for f in folds):
+        return dict(out,status='incomplete_matched_comparison')
+    dates=[date for f in sorted(folds,key=lambda f:f['test_start']) for date in f['test_dates']]
+    if len(set(dates)) != len(dates):
+        return dict(out,status='overlapping_test_dates')
+    y=np.concatenate([np.asarray(f['target_returns']) for f in folds])
+    tss=float(np.sum((y-y.mean())**2))
+    if not np.isfinite(tss) or tss<=MIN_RETURN_STD**2:
+        return dict(out,status='no_test_target_variance')
+    for method in methods:
+        error=np.concatenate([np.asarray(f['methods'][method]['prediction_errors']) for f in folds])
+        spread=np.concatenate([np.asarray(f['methods'][method]['spread_returns']) for f in folds])
+        out['methods'][method]={'r2':1-float(error@error)/tss,
+            'vol_reduction':1-float(np.std(spread))/float(np.std(y)),
+            'rows':len(y),'windows':len(folds)}
+    out.update(status='ok',test_start=min(dates),test_end=max(dates),rows=len(y),
+               uses='reserved historical tests; not used to choose the current estimator')
+    return out
 
 
 def _hedge_error_attribution(frame, target, weights, model, event_evidence=None):
@@ -4768,7 +4813,11 @@ def _hedge_error_attribution(frame, target, weights, model, event_evidence=None)
 
 
 def _fit_common_risk(frame, target, basket, model, max_gross=None, max_leg=None):
-    """Minimize modelled spread variance within the exposure limits."""
+    """Fit the training-selected estimator within the exposure limits."""
+    if model.get('hedge_estimator') == 'tracking':
+        fit,r2,residual=_fit_basket(frame,target,basket,max_gross,max_leg)
+        fit.risk_model_={'estimator':'tracking','variance_reduction':r2}
+        return fit,r2,residual
     ix = [model['columns'].index(t) for t in basket]
     ti = model['columns'].index(target)
     C = model['covariance']
@@ -4796,6 +4845,9 @@ def _joint_basket_search(frame, target, universe, sizes, forced=(), keep=6,
     This is a search heuristic, never a claim of a global optimum.
     """
     import itertools, math
+    tracking_estimator = bool(factor_model is not None and factor_model.get('hedge_estimator')=='tracking')
+    if tracking_estimator:
+        factor_model=None
     names = list(dict.fromkeys(universe))
     required = tuple(sorted(names.index(t) for t in forced))
     if len(required) != len(set(forced)):
@@ -4903,6 +4955,8 @@ def _joint_basket_search(frame, target, universe, sizes, forced=(), keep=6,
                 fitted=(_fit_common_risk(frame,target,basket,factor_model,max_gross,max_leg)
                         if factor_model is not None else _fit_basket(frame,target,basket,max_gross,max_leg))
                 reg,r2,_=fitted
+                if tracking_estimator:
+                    reg.risk_model_={'estimator':'tracking','variance_reduction':r2}
                 gross=float(np.abs(reg.coef_).sum())
                 if max_gross is not None and gross>max_gross+1e-7: continue
                 if max_leg is not None and np.abs(reg.coef_).max()>max_leg+1e-7: continue
@@ -5281,9 +5335,12 @@ def _run_data_quality(result, data, options):
             limits.append('legacy size data')
         notes.append('Historical universe uses '+' and '.join(limits)+
                      '; it is not fully point-in-time.')
-    settings = dict(objective=options['hedge_objective'], search=options['basket_methods'])
+    settings = dict(objective=options['hedge_objective'], search=options['basket_methods'],
+                    estimator_policy=options.get('estimator_policy','factor'),
+                    selected_estimator=result.get('selected_estimator'))
     if options['hedge_objective'] == 'factor':
-        settings.update(covariance='orthogonal factors + shrunk residual correlations',
+        settings.update(covariance=('regularized return fit' if result.get('selected_estimator')=='tracking'
+                         else 'orthogonal factors + shrunk residual correlations'),
                         residual_policy_requested=options.get('residual_policy','estimated'),
                         residual_policy_selected=(result.get('residual_calibration') or {}).get('selected_policy','estimated'),
                         main_model_returns='unclipped',
@@ -5639,8 +5696,11 @@ def _find_best_hedge_impl(
     alternative_baskets=5,       # distinct additional recipes to display (1–20)
     same_exchange_only=False,     # strict listing venue (2889 TT -> TT only)
     search_budget=3000, max_leg=None,
-    residual_policy='validated',  # training-only calibration; 'estimated' keeps base shrinkage
+    residual_policy='validated',  # training-only residual calibration
+    estimator_policy='validated', # compare factor and tracking; 'factor' reproduces v122
 ):
+    if estimator_policy not in ('validated','factor'):
+        raise ValueError("estimator_policy must be 'validated' or 'factor'")
     if residual_policy not in ('validated','estimated'):
         raise ValueError("residual_policy must be 'validated' or 'estimated'")
     exclude = _parse_ticker_list(exclude)
@@ -6243,6 +6303,7 @@ def _find_best_hedge_impl(
         return ctx['pca'][pc_spec]
 
     search_audits={}
+    method_validation_folds=[]
     def _factor_context(ctx, calibrate=True):
         key = 'common_model' if calibrate else 'base_common_model'
         if key not in ctx:
@@ -6258,7 +6319,11 @@ def _find_best_hedge_impl(
                 covariance_names=[target_ticker]+ctx['u'])
             audit={'selected_policy':'estimated','status':'standard_estimator', 'folds':[],
                    'independent_performance_claim':False}
-            if calibrate and residual_policy == 'validated' and basket_methods == 'search':
+            compare_estimators = estimator_policy == 'validated'
+            policies = ('estimated','half','none') if residual_policy == 'validated' else ('estimated',)
+            if compare_estimators:
+                policies += ('tracking',)
+            if calibrate and len(policies)>1 and basket_methods == 'search':
                 raw=ctx['raw']
                 step=2 if two_day else 1
                 width=max(5*step,len(raw)//10)
@@ -6282,8 +6347,8 @@ def _find_best_hedge_impl(
                             row['test_rows']=len(test)
                             row['train_end']=inner['tr'].index[-1]
                             row['test_end']=test.index[-1]
-                            for policy in ('estimated','half','none'):
-                                varied=_residual_model_variant(inner_model,inner['factor_frame'],policy)
+                            for policy in policies:
+                                varied=_estimator_model(inner_model,inner['factor_frame'],policy)
                                 recipes,_=_joint_basket_search(inner['tr'],target_ticker,inner['u'],
                                     basket_size_options,forced,keep=1,budget=search_budget,
                                     gross_penalty=gross_penalty,max_gross=max_gross,max_leg=max_leg,
@@ -6302,11 +6367,16 @@ def _find_best_hedge_impl(
                             row['error']=str(err)
                             row['loss']={}
                         folds.append(row)
-                    audit=_choose_residual_policy(folds)
+                    audit=_choose_residual_policy(folds,policies)
                 else:
                     audit.update(status='insufficient_history',minimum_rows=minimum+3*width+gap)
-            ctx[key]=_residual_model_variant(base,factor_frame,audit['selected_policy'])
-            ctx[key]['residual_calibration']=audit
+            audit.update(candidate_policies=list(policies),gross_penalty=gross_penalty,
+                         basket_sizes=list(basket_size_options),exposure_caps={'gross':max_gross,'per_leg':max_leg})
+            ctx[key]=_estimator_model(base,factor_frame,audit['selected_policy'])
+            ctx[key]['estimator_calibration']=audit
+            ctx[key]['residual_calibration']=(audit if audit['selected_policy']!='tracking' else
+                dict(status='not_used_by_tracking_estimator',selected_policy='estimated',folds=[],candidates=[],
+                     independent_performance_claim=False))
         return ctx[key]
 
     def _fit_active(frame, target, basket):
@@ -6324,9 +6394,94 @@ def _find_best_hedge_impl(
             audit.update(start=ctx['tr'].index[0],end=ctx['tr'].index[-1],rows=len(ctx['tr']))
             if model is not None:
                 audit['residual_calibration']=model.get('residual_calibration',{})
+                audit['estimator_calibration']=model.get('estimator_calibration',{})
                 audit['residual_shrinkage']=model['residual_shrinkage']
+            audit['eligibility_exclusions']=_eligibility_audit(ctx)
             search_audits[(audit['start'],audit['end'])]=audit
         return ctx['joint']
+
+    def _comparison_fits(ctx, size):
+        """Fixed-family references with the selected training size and SAME penalty."""
+        key=('method_comparison',int(size))
+        if key not in ctx:
+            base=_factor_context(ctx,calibrate=False)
+            methods={}
+            for policy in ('factor','tracking'):
+                try:
+                    model=_estimator_model(base,ctx['factor_frame'],
+                                           'estimated' if policy=='factor' else 'tracking')
+                    rows,search_audit=_joint_basket_search(ctx['tr'],target_ticker,ctx['u'],[size],forced,
+                        keep=1,budget=search_budget,gross_penalty=gross_penalty,
+                        max_gross=max_gross,max_leg=max_leg,factor_model=model)
+                    if not rows.get(size):
+                        raise ValueError('No feasible comparison basket')
+                    methods[policy]=dict(status='ok',search_audit=search_audit,**rows[size][0])
+                except (ValueError,RuntimeError,np.linalg.LinAlgError) as err:
+                    methods[policy]={'status':'unavailable','reason':str(err)}
+            ctx[key]=methods
+        return ctx[key]
+
+    def _record_method_test(train, selected_basket, selected_fit, test):
+        if hedge_objective!='factor':
+            return
+        ctx=_training_context(train,max(8,len(selected_basket)+2))
+        row={'train_start':ctx['tr'].index[0],'train_end':ctx['tr'].index[-1],
+             'test_start':test.index[0],'test_end':test.index[-1],
+             'test_dates':list(test.index),'test_rows':len(test),'methods':{},'status':'ok',
+             'eligible_tickers':list(ctx['u']),'basket_size':len(selected_basket),
+             'gross_penalty':gross_penalty,'exposure_caps':{'gross':max_gross,'per_leg':max_leg}}
+        fits=dict(_comparison_fits(ctx,len(selected_basket)))
+        fits['selected']={'status':'ok','basket':selected_basket,'fit':(selected_fit,None,None)}
+        for label,item in fits.items():
+            if item['status']!='ok':
+                row['status']='incomplete';row['methods'][label]=item;continue
+            fit=item['fit'][0];basket=item['basket']
+            r2,vol_cut=_eval_on_window(fit,basket,test)
+            if not np.isfinite(r2):
+                row['status']='incomplete';row['methods'][label]={'status':'unavailable'};continue
+            y=test[target_ticker].to_numpy();x=test[basket].to_numpy()
+            row['methods'][label]={'status':'ok','weights':pd.Series(fit.coef_,index=basket),
+                'r2':r2,'vol_reduction':vol_cut,'intercept':float(fit.intercept_),
+                'prediction_errors':(y-fit.predict(x)).tolist(),
+                'spread_returns':(y-x@fit.coef_).tolist()}
+        row['target_returns']=test[target_ticker].to_numpy().tolist()
+        method_validation_folds.append(row)
+
+    def _current_method_fits(ctx, size):
+        if hedge_objective!='factor':
+            return {}
+        out={}
+        for label,item in _comparison_fits(ctx,size).items():
+            if item['status']!='ok':
+                out[label]=item;continue
+            fit,r2,_=item['fit'];w=pd.Series(fit.coef_,index=item['basket'])
+            out[label]={'status':'ok','weights':w,'r2':r2,'rows':len(ctx['tr']),
+                'fit_start':ctx['tr'].index[0],'fit_end':ctx['tr'].index[-1],
+                'fitted_risk':_trade_risk(ctx['tr'][target_ticker],ctx['tr'][target_ticker]-ctx['tr'][w.index]@w,ann_sqrt),
+                'gross_penalty':gross_penalty,'reference_only':True,'search_audit':item['search_audit']}
+        return out
+
+    def _eligibility_audit(ctx):
+        out=[];asof=ctx['tr'].index[-1]
+        floor=_effective_mktcap_floor(min_mktcap_usd_mm,_target_cap_asof(asof))
+        for ticker in universe:
+            if ticker in ctx['u']:
+                continue
+            reason='as-of universe eligibility'
+            mc=_cap_asof(ticker,asof)
+            if ticker not in ctx['tr']:
+                values=ctx['raw'].get(ticker,pd.Series(dtype=float))
+                reason=('incomplete training returns' if not len(values) or not np.isfinite(values).all()
+                        else 'zero or negligible training variance')
+            elif mc is None and floor:
+                reason='historical market cap unavailable'
+            elif mc is not None and mc<floor and not size_band:
+                reason='below historical market-cap floor'
+            elif size_band:
+                reason='outside historical size band or membership'
+            out.append({'ticker':ticker,'reason':reason,'asof':asof,
+                        'market_cap_usd_mm':mc,'minimum_market_cap_usd_mm':floor})
+        return out
 
     def _latest_snapshot(spec,size):
         # The validation calculations are complete before this full-window refit.
@@ -6396,28 +6551,10 @@ def _find_best_hedge_impl(
                     if family not in singles or score>singles[family]['score']:
                         singles[family]=dict(ticker=ticker,weight=sw,r2=sr2,score=score)
             except (ValueError,RuntimeError,np.linalg.LinAlgError): continue
-        tracking_reference = {'status':'not requested for this objective'}
-        if hedge_objective == 'factor':
-            # This comparison runs AFTER validation, only on the current fitting
-            # frame. It cannot affect selection, frozen tests, or trade flags.
-            tracking_reference = {'status':'no feasible comparison basket'}
-            try:
-                tracking_rows, tracking_audit = _joint_basket_search(
-                    tr,target_ticker,ctx['u'],[len(w)],forced=forced,keep=1,
-                    budget=search_budget,gross_penalty=0.,max_gross=max_gross,
-                    max_leg=max_leg,factor_model=None)
-                choices = tracking_rows.get(len(w), [])
-                if choices:
-                    item = max(choices,key=lambda x:x['fit'][1])
-                    tw = pd.Series(item['fit'][0].coef_,index=item['basket'])
-                    tracking_reference = dict(status='ok',weights=tw,r2=item['fit'][1],
-                        fit_start=tr.index[0],fit_end=tr.index[-1],rows=len(tr),
-                        fitted_risk=_trade_risk(tr[target_ticker],tr[target_ticker]-tr[tw.index]@tw,ann_sqrt),
-                        search_audit=tracking_audit,reference_only=True)
-            except (ValueError,RuntimeError,np.linalg.LinAlgError) as err:
-                tracking_reference['reason']=str(err)
+        method_fits=_current_method_fits(ctx,len(w))
+        tracking_reference=method_fits.get('tracking',{'status':'not requested for this objective'})
         return dict(weights=w,basket=basket,returns=tr,in_sample_r2=r2,current_single_references=singles,
-            tracking_basket_reference=tracking_reference,
+            tracking_basket_reference=tracking_reference,method_comparison=method_fits,
             common_model=_factor_context(ctx) if hedge_objective=='factor' else None,
             in_sample_r2_adj=_short_window_fit_score(r2,len(tr),len(basket),float(w.abs().sum()),gross_penalty)[1],
             chart_pca=pca,chart_loadings=lds,basket_candidates=recipes,
@@ -6751,6 +6888,8 @@ def _find_best_hedge_impl(
     # [Fix 79] layout, and return the same result-dict shape as a full run.
     def _short_sample_result(val_mode, hold_rows, fallback_reason=None,
                              cv_summary=None, cv_detail=None, prior_nested=None):
+        if fallback_reason:
+            method_validation_folds.clear()
         fit_rets = rets.iloc[:rows - hold_rows - (purge if hold_rows else 0)]
         short_context = _training_context(fit_rets, max(5, min(basket_size_options) + 2))
         fit_rets = short_context['tr']
@@ -6782,7 +6921,7 @@ def _find_best_hedge_impl(
             # The HOLDOUT tail remains unseen until AFTER choosing a recipe.
             score, _ = _short_window_fit_score(short_r2,len(fit_rets),len(short_basket),gross,gross_penalty)
             if hedge_objective == 'factor':
-                score=short_reg.risk_model_['variance_reduction']-gross_penalty*gross-.02*len(short_basket)/len(fit_rets)
+                score=_estimator_fit_score(short_reg,short_r2,len(fit_rets),len(short_basket),gross,gross_penalty)
             if not np.isfinite(score):
                 continue
             short_trials.append((score, short_pc, int(short_size), fitted))
@@ -6834,6 +6973,7 @@ def _find_best_hedge_impl(
         if hold_rows:
             s_test, _ = _prepare_evaluation(rets.iloc[rows - hold_rows:])
             s_r2_h, s_vr_h = _eval_on_window(s_reg, s_basket, s_test)
+            _record_method_test(fit_rets,s_basket,s_reg,s_test)
             if not np.isnan(s_r2_h):
                 _rh = (s_test[target_ticker].values
                        - s_reg.predict(s_test[s_basket].values))
@@ -7071,6 +7211,7 @@ def _find_best_hedge_impl(
         return {
             '_analysis_data':data,
             'current_fit':current_fit,'joint_search_audit':list(search_audits.values()),
+            'method_validation':_matched_method_summary(method_validation_folds),
             'training_data_diagnostics': pd.DataFrame(training_diagnostics),
             'evaluation_data_diagnostics': pd.DataFrame(evaluation_diagnostics),
             'engine_revision': PCA_REVISION,
@@ -7116,7 +7257,7 @@ def _find_best_hedge_impl(
             'trade_risk': (primary_item or {}).get('trade_risk', {}),
             'in_sample_r2_adj': s_r2_adj,                  # descriptive heuristic
             'short_window_selection_score': s_selection_score,
-            'short_window_selection_rule': ('factor_covariance_risk_reduction_minus_penalties' if hedge_objective=='factor' else 'nominal_adjusted_fit_r2_minus_gross_penalty'),
+            'short_window_selection_rule': ('factor_covariance_risk_reduction_minus_penalties' if hedge_objective=='factor' and getattr(s_reg,'risk_model_',{}).get('estimator')!='tracking' else 'nominal_adjusted_fit_r2_minus_gross_penalty'),
             'validation_mode': val_mode,
             'descriptive_size_exception': bool(_tier.get('descriptive_size_exception')),
             'effective_basket_sizes': tuple(basket_size_options),
@@ -7213,6 +7354,7 @@ def _find_best_hedge_impl(
             if max_gross is not None and np.abs(reg_j.coef_).sum() > max_gross:
                 raise RuntimeError('Outer refit exceeds the requested gross cap')
             r2_j, vr_j = _eval_on_window(reg_j, bkt_j, outer_test)
+            _record_method_test(inner.iloc[-lb_j:],bkt_j,reg_j,outer_test)
         except RuntimeError as e:
             _P(f"  outer window {j}: refit failed ({e}) — skipped")
             continue
@@ -9163,6 +9305,7 @@ def _find_best_hedge_impl(
     return {
         '_analysis_data':data,
         'current_fit':_latest_snapshot(best_pc_spec,best_bsize),'joint_search_audit':list(search_audits.values()),
+        'method_validation':_matched_method_summary(method_validation_folds),
         'training_data_diagnostics': pd.DataFrame(training_diagnostics),
         'evaluation_data_diagnostics': pd.DataFrame(evaluation_diagnostics),
         'engine_revision': PCA_REVISION,
@@ -9500,7 +9643,10 @@ def _report_blocks(result):
         for t,x in w.sort_values(key=lambda a:-a.abs()).items()],widths=[.8,1.4,4.8])
     text(f"{len(w)} instruments · Gross {w.abs().sum():.2f}× · {_report_method(result.get('current_recipe_spec',p['pc_spec']))} · {result.get('current_fit_rows',len(result['returns']))} current-fit observations",True)
     if p.get('hedge_objective')=='factor' and p.get('report')=='full':
-        text('Model: common factors plus shrunk residual correlations, fitted on unclipped returns. Legacy PCA controls apply to PCA diagnostics/ranking, not this covariance fit.',True)
+        if result.get('selected_estimator')=='tracking':
+            text('Model: constrained Ridge return tracking, selected using earlier-to-later training blocks. Factors remain descriptive exposure diagnostics.',True)
+        else:
+            text('Model: common factors plus calibrated residual correlations, fitted on unclipped returns. Legacy PCA controls apply to PCA diagnostics/ranking, not this covariance fit.',True)
     if current.get('fit_end') is not None:
         text(f"Current fit {current['fit_start']:%d %b %Y} to {current['fit_end']:%d %b %Y}",True)
     table(['CURRENT FIT MEASURE','READING','INTERPRETATION'],[
@@ -9515,13 +9661,42 @@ def _report_blocks(result):
     text('Fitted R² and fitted volatility reduction reflect the same residual variation. Historical tests provide separate evidence.',True)
     if result['in_sample_r2'] < .5:
         text('Historical tracking is limited. A useful hedge requires evidence of reduced intended risk and stable weights; low R² alone cannot establish that. Unexplained return is not automatically alpha.',True)
+    methods=result.get('method_comparison') or {}
+    comparison=result.get('method_validation') or {}
+    scores=comparison.get('methods',{})
+    if methods:
+        selected_score=scores.get('selected',{})
+        rows=[['Selected rule',f(result['in_sample_r2']),f(selected_score.get('r2')),
+               f(selected_score.get('vol_reduction'),True),f"{w.abs().sum():.2f}×"]]
+        for policy,label in [('factor','Factor baseline'),('tracking','Return tracking')]:
+            item=methods.get(policy,{})
+            if item.get('status')!='ok':
+                rows.append([label,'unavailable','—','—','—']);continue
+            iw=item['weights'];score=scores.get(policy,{})
+            same_fit=set(iw.index)==set(w.index) and np.allclose(iw.reindex(w.index),w,rtol=1e-9,atol=1e-10)
+            same_test=(not scores or (np.isclose(score.get('r2',np.nan),selected_score.get('r2',np.nan),rtol=1e-9,atol=1e-10)
+                       and np.isclose(score.get('vol_reduction',np.nan),selected_score.get('vol_reduction',np.nan),rtol=1e-9,atol=1e-10)))
+            if same_fit and same_test:
+                rows[0][0]=label+' (selected)'
+            else:
+                rows.append([label,f(item['r2']),f(score.get('r2')),f(score.get('vol_reduction'),True),f"{iw.abs().sum():.2f}×"])
+        table(['BASKET METHOD','CURRENT FIT R²','TEST R²','TEST VOL CUT','GROSS'],rows,widths=[2.4,1.3,1.1,1.3,.9])
+        text('Current-fit columns use the same history. Each test column uses its own earlier frozen basket; references share the primary training dates, basket size, universe, exposure caps and gross penalty.',True)
+        if comparison.get('status')=='ok':
+            text(f"Matched historical test: {comparison['test_start']:%d %b %Y} to {comparison['test_end']:%d %b %Y} · {comparison['rows']} observations · pooled scores.",True)
+            if len(comparison.get('folds',[]))==1:
+                fold=comparison['folds'][0]
+                text(f"Frozen fit: {fold['train_start']:%d %b %Y} to {fold['train_end']:%d %b %Y}.",True)
+        elif comparison.get('status')=='no_reserved_test':
+            text('No reserved historical test is available for either method in this short window.',True)
+        else:
+            text('Matched method tests unavailable: '+str(comparison.get('status','not recorded'))+'. Failed comparisons are not silently omitted.',True)
     tracking=result.get('tracking_basket_reference') or {}
     if tracking.get('status')=='ok':
         tw=tracking['weights']
         recipe='\n'.join(f"{'SHORT' if x>0 else 'LONG'} {abs(x)*100:.1f}  {t}" for t,x in tw.sort_values(key=lambda a:-a.abs()).items())
-        table(['FITTED TRACKING COMPARISON','FIT R²','VOL CUT','GROSS'],[[recipe,
-            f(tracking['r2']),f(tracking['fitted_risk'].get('vol_reduction'),True),f"{tw.abs().sum():.2f}×"]],widths=[4,.9,1.2,.9])
-        text('Separate regularized tracking search on the same dates, eligible universe, basket size and exposure caps. Fitted reference only; it has no separate unseen test and does not replace the primary basket.',True)
+        if not (set(tw.index)==set(w.index) and np.allclose(tw.reindex(w.index),w,atol=1e-10)):
+            table(['RETURN-TRACKING BASKET','GROSS'],[[recipe,f"{tw.abs().sum():.2f}×"]],widths=[6,1])
     elif p.get('hedge_objective')=='factor':
         text('Tracking comparison unavailable: '+str(tracking.get('reason',tracking.get('status','not recorded'))),True)
     section('Market sector and peer exposures')
@@ -9546,23 +9721,23 @@ def _report_blocks(result):
         text(f"Peer-only PCA reference: {diag['peer_count']} peers, {diag['n_components']} components, fitted R² {diag['peer_factor_r2']:.3f}. This is a diagnostic, not a hedgeability ceiling.",True)
     exposures=result.get('exposures') or {}
     if exposures.get('unresolved'): text('Unmapped target exposures: '+', '.join(sorted(exposures['unresolved'])),True)
-    residual_check=result.get('residual_calibration') or {}
+    residual_check=result.get('model_selection') or result.get('residual_calibration') or {}
     attribution=result.get('hedge_error_attribution') or {}
     if residual_check or attribution.get('status')=='ok':
         section('Residual risk review')
     if residual_check:
         status=residual_check.get('status')
         selected=residual_check.get('selected_policy','estimated')
-        labels={'estimated':'Standard estimated shrinkage','half':'Half estimated shrinkage','none':'No residual shrinkage'}
+        labels={'estimated':'Factor: estimated shrinkage','half':'Factor: half shrinkage','none':'Factor: no shrinkage','tracking':'Return tracking (Ridge)'}
         if status=='insufficient_history':
-            text('Residual calibration: standard estimator retained; this window has too few observations for three chronological comparison blocks.',True)
+            text('Method selection: factor baseline retained because this window has too few observations for three chronological comparison blocks. The tracking fit remains visible; no reliable method winner is established.',True)
         elif status=='insufficient_comparable_folds':
-            text('Residual calibration: standard estimator retained; fewer than three complete matched comparison blocks.',True)
+            text('Method selection: factor baseline retained; fewer than three complete matched comparison blocks. No reliable method winner is established.',True)
         elif status=='standard_estimator':
-            text('Residual calibration: standard estimator used; automatic comparison is available for joint factor search.',True)
+            text('Method selection: requested estimator retained; automatic comparison is available for joint factor search.',True)
         else:
-            text('Residual calibration: '+labels[selected]+'. Selection used earlier-to-later blocks inside the fitting window; these are tuning results, not another unseen test.',True)
-            table(['RESIDUAL ESTIMATOR','TUNING RISK RATIO','SELECTED'],[
+            text('Method selection: '+labels[selected]+'. Selection used earlier-to-later blocks inside the fitting window; these are tuning results, not another unseen test.',True)
+            table(['ESTIMATOR','TUNING RISK RATIO','SELECTED'],[
                 [labels[row['policy']],f(row['mean_loss']),'Yes' if row['policy']==selected else '']
                 for row in residual_check.get('candidates',[])],widths=[3.5,2,1.5])
             text('Risk ratio pools centered sums of squares from matched blocks; lower is better, 1 means no variance reduction.',True)
@@ -9652,6 +9827,15 @@ def _report_blocks(result):
             text('Stocks actually searched: '+(', '.join(a['searched_stocks']) or 'none'),True)
         else:
             text('Current search list is unavailable for this selection method; available prices alone do not prove participation.',True)
+        rejected=[row for row in a['rows'] if row.get('eligibility_detail')]
+        if rejected:
+            table(['EXCLUDED INSTRUMENT','REASON','CAP USD m','FLOOR USD m'],[
+                [row['ticker'],row['status'],
+                 ('—' if row['eligibility_detail'].get('market_cap_usd_mm') is None else f"{row['eligibility_detail']['market_cap_usd_mm']:,.0f}"),
+                 f"{row['eligibility_detail']['minimum_market_cap_usd_mm']:,.0f}"]
+                for row in rejected[:12]],widths=[1.8,3,1.1,1.1])
+            if len(rejected)>12:
+                text(f"Showing 12 of {len(rejected)} training-eligibility exclusions; full list in exported diagnostics.",True)
         text('Sector stocks share a broader classification than strict peers. Current classifications do not establish historical membership; full per-stock evidence and rejection reasons are retained in sector_search_audit.',True)
     table(['INSTRUMENT','COMPANY','INDUSTRY','ELIGIBILITY'],result.get('basket_identity_audit') or [],widths=[1.6,2,2.1,1.3])
     for target,a in (result.get('peer_coverage') or {}).items():
@@ -9680,6 +9864,8 @@ def _report_blocks(result):
         a=max(audits,key=lambda a:(a['end'],a['rows']))
         text(f"Current search: {a['eligible_names']} eligible names; {a['pairs_screened']:,} pairs screened; {a['surrogate_subsets']:,} distinct subset screens; {a['exact_fits']} final fits. Growth/replacement budget {p.get('search_budget',3000):,} per size, plus pair and seed screening.",True)
     text(f"Scope {p['candidate_scope']} · Objective {p['hedge_objective']} · Gross cap {p.get('max_gross') or 'off'} · Per-leg cap {p.get('max_leg') or 'off'}",True)
+    text('Requested basket sizes: '+str(result.get('requested_basket_sizes'))+' · Actually searched: '+str(result.get('effective_basket_sizes'))+'. Automatic sizes may be reduced by the training-history rule; an explicit basket range is honoured.',True)
+    text(f"Configured market-cap floor: USD {p.get('min_mktcap_usd_mm',0):,.0f}m · Gross selection penalty: {p.get('gross_penalty',0):g}",True)
     if p.get('report')=='full':
         section('Detailed validation configuration')
         table(['SETTING','VALUE'],[['Validation lookback',p.get('lookback')],
@@ -9693,7 +9879,7 @@ def _report_blocks(result):
     blocks.append(dict(kind='notes',text='Methodology and coverage',notes=[
         'The model estimates shared risk, not expected alpha. Residual return contains company risk, omitted factors and hedge-instrument risk. PCA directions are uncorrelated in the fitted sample, not generally independent.',
         'Current in-sample statistics use the full selected analysis window. Validation statistics use earlier frozen selection and weights. Searching more baskets can overfit; no global optimum or future performance is guaranteed.',
-        'Factor weights minimize covariance from orthogonal market/sector/equity factors plus shrunk residual correlations. Shrinkage is estimated on training data; residual relationships may be unstable and are not alpha forecasts.',
+        'Automatic joint search compares factor covariance and Ridge tracking within training-only chronological blocks. Method selection, constraints and historical tests do not guarantee future performance. Short windows retain the factor baseline when there is insufficient comparison evidence.',
         'Reported returns use a log-spread approximation. Trading costs, financing and FX conversion are excluded. Local listing does not establish domestic underlying exposure or eliminate FX risk. Current peer classifications can bias historical universe coverage.',
         'Engine revision '+str(result.get('engine_revision'))]))
     return blocks
@@ -10079,6 +10265,7 @@ def find_best_hedge(*args, **kwargs):
     result['trade_weights']=(result['weights'].copy() if result.get('trade_eligible') else result['weights'].iloc[:0].copy())
     result['current_single_references']=current.get('current_single_references',{})
     result['tracking_basket_reference']=current.get('tracking_basket_reference',{})
+    result['method_comparison']=current.get('method_comparison',{})
     result['current_recipe_spec']=current.get('current_recipe_spec',result['params']['pc_spec'])
     result['current_fit_rows']=current.get('fit_rows',len(result['returns']))
     result['current_fit_risk']=current.get('fitted_risk',{})
@@ -10103,10 +10290,12 @@ def find_best_hedge(*args, **kwargs):
         peers=common_model['peer_names']
     result['common_exposures']=_factor_exposure_audit(audit_frame,target_name,result['weights'],peers,refs,model=common_model)
     result['current_sensitivity']=_weight_sensitivity(audit_frame,target_name,result['weights'],peers,refs,
-        options['hedge_objective'],options['max_gross'],options['max_leg'],
+        ('tracking' if common_model is not None and common_model.get('hedge_estimator')=='tracking' else options['hedge_objective']),options['max_gross'],options['max_leg'],
         covariance_names=common_model['covariance_names'] if common_model is not None else None,
         residual_variant=common_model.get('residual_policy','estimated') if common_model is not None else 'estimated')
     result['residual_calibration']=common_model.get('residual_calibration',{}) if common_model is not None else {}
+    result['model_selection']=common_model.get('estimator_calibration',{}) if common_model is not None else {}
+    result['selected_estimator']=common_model.get('hedge_estimator','factor') if common_model is not None else 'tracking'
     result['hedge_error_attribution']=_hedge_error_attribution(
         audit_frame,target_name,result['weights'],common_model,(options['data'] or {}).get('event_evidence'))
     result['execution_audit']=_execution_audit(result,options['data'])
@@ -10119,7 +10308,7 @@ def find_best_hedge(*args, **kwargs):
         result['trade_weights']=result['weights'].iloc[:0].copy()
         result['recommended_action']='FX_NORMALIZATION_REQUIRED'
     result['params'].update(max_leg=options['max_leg'],search_budget=options['search_budget'],
-                            residual_policy=options['residual_policy'])
+                            residual_policy=options['residual_policy'],estimator_policy=options['estimator_policy'])
     result['search']['basket_methods'] = (['joint combination search'] if options['basket_methods']=='search'
         else result['search']['basket_methods'])
     # Preserve old API evidence explicitly; current reference weights live in
@@ -10271,6 +10460,7 @@ def quick_rehedge(book, data, prev_result, show_plots=True, rolling_oos=True,
         notional_mm=p.get('notional_mm'),              # [Fix 72]
         hedge_objective=p.get('hedge_objective', 'variance'),
         residual_policy=p.get('residual_policy','estimated'),
+        estimator_policy=p.get('estimator_policy','factor'),
         boot_n=p.get('boot_n', 2000),                  # [Fix 70]
         rolling_oos=rolling_oos,                       # [Fix 71]
         sample_window=p.get('sample_window'),          # [Fix 76]
@@ -10546,6 +10736,8 @@ def _docx_hedge_report(result, report_text, path):
         for values in rows:
             for cell, value in zip(t.add_row().cells, values):
                 cell.text = str(value)
+        short_table = sum(max(len(cell.text.splitlines()) or 1 for cell in row.cells)
+                          for row in t.rows) <= 14
         for row_no, row in enumerate(t.rows):
             tr = row._tr.get_or_add_trPr()
             tr.append(OxmlElement('w:cantSplit'))
@@ -10580,7 +10772,7 @@ def _docx_hedge_report(result, report_text, path):
                     p.paragraph_format.line_spacing = 1.05
                     # Keep short comparison tables intact at a page boundary.
                     p.paragraph_format.keep_with_next = (row_no == 0 or
-                        (not compact_appendix and len(t.rows) <= 14 and row_no < len(t.rows) - 1))
+                        (not compact_appendix and short_table and row_no < len(t.rows) - 1))
                     for run in p.runs:
                         run.font.name = 'Arial'
                         run.font.size = Pt(9.5)
@@ -10649,7 +10841,7 @@ def _docx_hedge_report(result, report_text, path):
         # Keep the executable primary recipe with its fit measures, but let
         # the separate tracking comparison flow independently across pages.
         if collecting and element.tag==qn('w:tbl'):
-            if 'FITTED TRACKING COMPARISON' in ''.join(element.itertext()):
+            if 'BASKET METHOD' in ''.join(element.itertext()):
                 break
         if element.tag==qn('w:p'):
             p=_WordParagraph(element,doc)
@@ -10779,7 +10971,8 @@ def export_hedge_diagnostics(result, out_dir=None):
               'validation_mode', 'validation_weights', 'holdout_r2',
               'selected_unseen_r2', 'sector_search_audit', 'joint_search_audit',
               'data_quality', 'effective_model_settings', 'execution_audit', 'current_sensitivity',
-              'residual_calibration', 'hedge_error_attribution')
+              'residual_calibration', 'hedge_error_attribution', 'model_selection',
+              'selected_estimator', 'method_comparison', 'method_validation')
     snapshot = {key: result.get(key) for key in fields}
     comparison = (result.get('history_comparison') or {}).get('diagnostic_results') or {}
     snapshot['comparison_windows'] = {
@@ -11051,7 +11244,7 @@ def hedge_ui(data=None):
 
     # ── Model tab (factor / fitting knobs) ─────────────────────────────────
     w_objective = W.Dropdown(
-        options=[('Hedge common market and sector risk', 'factor'),('Reduce volatility', 'variance'), ('Track returns (strict R²)', 'tracking')],
+        options=[('Compare factor and tracking baskets', 'factor'),('Reduce volatility', 'variance'), ('Track returns (strict R²)', 'tracking')],
         value='factor', description='Hedge objective', style=LBL, layout=FULL)
     w_method = W.Dropdown(
         options=[('Joint basket search (recommended)', 'search'),('PCA ranking only', 'pca'),
@@ -11102,7 +11295,7 @@ def hedge_ui(data=None):
     _model_control_scope()
     tab_model = W.VBox([
         H('Hedge objective'), w_objective,
-        HELP('Common-risk mode fits market/sector exposures and peer factors, including hedge-specific risk. Short windows provide descriptive research; unseen evaluation uses earlier frozen fits. In-sample R² remains visible.'),
+        HELP('Automatic comparison chooses between factor covariance and Ridge tracking using training-only time blocks. Short histories may be insufficient to choose reliably. Reserved tests evaluate earlier frozen baskets. In-sample R² remains visible.'),
         H('Factor model'),
         HELP('Joint search screens complementary pairs, grows combinations and swaps members. The search is bounded and reports its actual coverage; alternatives are distinct baskets.'),
         w_method, w_model_scope, w_cov, w_pcs, w_wins,

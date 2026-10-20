@@ -1,3 +1,14 @@
+# PCA v123 changes
+
+Revision 2026-10-20-v123-estimator-selection in the existing v115 entry point.
+
+- Let constrained Ridge tracking compete with factor covariance inside training-only chronological estimator selection. Preserve basket priority, constraints, candidate scopes and the existing form workflow; short histories explicitly retain a fallback, not a claimed method winner.
+- Use identical gross selection penalties for factor/tracking comparison, correcting the earlier zero-penalty descriptive reference. Keep the final reserved tests outside method selection.
+- Report current fitted scores beside matched frozen historical R² and spread-volatility reduction. Keep every matched test row and preserve failure statuses. Export comparison recipes and estimator-selection evidence for independent recomputation.
+- Dispatch the selected estimator consistently through search, final fitting, same-date ETF references and sensitivity. Factor projections remain descriptive when Ridge supplies the weights.
+- Print actual searched basket sizes and concrete historical market-cap/return-history exclusions. Preserve negative results and source-coverage failures.
+- Add synthetic checks for genuine tracking selection, temporal isolation, constraints, required names, no-test fallback, two-day purge, pooled-score reconciliation and diagnostic export. Test results do not establish live performance improvement.
+
 # PCA v122 changes
 
 Revision 2026-10-20-v122-residual-review in the existing v115 entry point.
