@@ -1,0 +1,747 @@
+{
+  "title": "Microintelligence IPO trader brief",
+  "research_date": "2026-10-20",
+  "market_date": "2026-10-20 close, Asia/Hong_Kong",
+  "fx_hkd_to_cny": 0.85628,
+  "fx_basis": "20 October official central parity, not closing spot",
+  "scope": "Standalone Word study. No workbook, dashboard, canonical IPO database, release state or older Word study changed.",
+  "issuer": {
+    "name": "Changzhou Microintelligence Co., Ltd",
+    "name_cn": "微億智造",
+    "code": "03275",
+    "as_of": "2026-10-20",
+    "offer_price_hkd": [
+      16.63,
+      19.05,
+      21.46
+    ],
+    "midpoint_basis": "issuer-stated rounded midpoint HK$19.05; exact arithmetic midpoint is HK$19.045",
+    "pre_issue_shares": 335481556,
+    "base_offer_new_shares": 37275800,
+    "post_issue_total_shares": 372757356,
+    "greenshoe_max_new_shares": 5591300,
+    "greenshoe_status": "option granted; not assumed exercised",
+    "offer_dates": [
+      "2026-10-20",
+      "2026-10-23 12:00 Asia/Hong_Kong"
+    ],
+    "expected_pricing_date": "2026-10-26",
+    "expected_listing_date": "2026-10-28",
+    "board_lot": 100,
+    "sponsor": "Orient Capital (Hong Kong) Limited",
+    "stabilising_manager": "Orient Securities (Hong Kong) Limited",
+    "net_proceeds_mid_hkdm": 641.5,
+    "proceeds_pct": {
+      "R&D": 60.3,
+      "overseas_network": 10.6,
+      "M&A": 14.7,
+      "capacity": 4.4,
+      "working_capital": 10.0
+    },
+    "cornerstone": {
+      "legal_name": "Elbe Rhein Investment Limited",
+      "legal_name_cn": "易北萊茵投資有限公司",
+      "owner": "Mr. Liu Jonas",
+      "type": "Hong Kong incorporated private investment and asset-management company focused on technology and intelligent manufacturing",
+      "commitment_hkdm": 15.7,
+      "shares_low_mid_high": [
+        943700,
+        823800,
+        731300
+      ],
+      "lockup": "six months from listing, both dates inclusive; no calendar expiry inferred",
+      "computed_offer_pct_low_mid_high": [
+        2.531669340429984,
+        2.2100129306413274,
+        1.9618626562005377
+      ]
+    },
+    "financials_cnym": {
+      "FY2025": {
+        "revenue": 795.504,
+        "gross_profit": 385.372,
+        "operating_profit": 47.133,
+        "owner_profit": 5.066,
+        "adjusted_profit": 48.726,
+        "ocf": 140.952,
+        "redemption_interest": 23.419,
+        "share_payments": 4.659,
+        "listing_expense": 15.582
+      },
+      "5M2025": {
+        "revenue": 345.636,
+        "gross_profit": 170.015,
+        "operating_profit": 33.632,
+        "owner_profit": 7.06,
+        "adjusted_profit": 23.913,
+        "ocf": -107.987,
+        "redemption_interest": 16.563,
+        "share_payments": 0.29,
+        "listing_expense": 0
+      },
+      "5M2026": {
+        "revenue": 423.816,
+        "gross_profit": 205.091,
+        "operating_profit": 34.247,
+        "owner_profit": 22.528,
+        "adjusted_profit": 33.835,
+        "ocf": 12.693,
+        "redemption_interest": 0,
+        "share_payments": 4.996,
+        "listing_expense": 6.311
+      }
+    },
+    "business": {
+      "FY2025_China_EIIR_share_pct": 20.0,
+      "ranking_scope": "China embodied intelligent industrial robot products, revenue; not all robotics",
+      "EIIR_5M2026_revenue": 260.189,
+      "EIIR_5M2025_revenue": 186.23,
+      "EIIR_5M2026_mix_pct": 61.4,
+      "EIIR_5M2026_margin_pct": 54.8,
+      "AI_equipment_margin_5M2025_2026": [
+        43.0,
+        41.4
+      ],
+      "modules_margin_5M2025_2026": [
+        44.0,
+        32.1
+      ],
+      "new_projects_5M2025_2026_incl_vat_cnym": [
+        354.755,
+        529.724
+      ],
+      "backlog_20260531_incl_vat_cnym": 665.697,
+      "Agilebot_5M2026_external_revenue_share_pct": 0.9,
+      "Agilebot_FY2026_expectation": "loss-making",
+      "management_FY2026_profit_guidance": "net profit below the five months ended 31 May 2026, despite higher revenue and gross profit; increased R&D in remaining seven months"
+    },
+    "working_capital": {
+      "inventory_20251231_20260531_cnym": [
+        110.1,
+        166.2
+      ],
+      "inventory_days_2025_5M2026": [
+        83,
+        98
+      ],
+      "inventory_provision_20251231_20260531_cnym": [
+        0.9,
+        5.3
+      ],
+      "receivable_days_2025_5M2026": [
+        256,
+        188
+      ],
+      "cash_cnym_20260531": 94.674
+    },
+    "FY2026_exact_forecast": null,
+    "FY2027_forecast": null,
+    "ltm_to_20260531_cnym": {
+      "revenue": 873.684,
+      "owner_profit": 20.534,
+      "adjusted_profit": 58.647999999999996
+    },
+    "valuations": [
+      {
+        "price_hkd": 16.63,
+        "equity_value_hkdm": 6198.954830279999,
+        "equity_value_cnym": 5308.041042072158,
+        "FY2025_ps": 6.672551039431804,
+        "LTM_ps": 6.075470126581417,
+        "LTM_reported_pe": 258.5000994483373,
+        "LTM_adjusted_pe": 90.506769916658,
+        "FY2026_pe_strict_lower_bound_if_positive": 235.61971955220875,
+        "owner_profit_cnym_for_illustrative_30x_pe": 176.93470140240527
+      },
+      {
+        "price_hkd": 19.05,
+        "equity_value_hkdm": 7101.027631800001,
+        "equity_value_cnym": 6080.467940557704,
+        "FY2025_ps": 7.643541629655796,
+        "LTM_ps": 6.959573416198196,
+        "LTM_reported_pe": 296.1170712261471,
+        "LTM_adjusted_pe": 103.67732813664072,
+        "FY2026_pe_strict_lower_bound_if_positive": 269.9071351454947,
+        "owner_profit_cnym_for_illustrative_30x_pe": 202.68226468525683
+      },
+      {
+        "price_hkd": 21.46,
+        "equity_value_hkdm": 7999.37285976,
+        "equity_value_cnym": 6849.702992355294,
+        "FY2025_ps": 8.610519862068944,
+        "LTM_ps": 7.8400233864363935,
+        "LTM_reported_pe": 333.5786009718172,
+        "LTM_adjusted_pe": 116.79346256232598,
+        "FY2026_pe_strict_lower_bound_if_positive": 304.0528672032712,
+        "owner_profit_cnym_for_illustrative_30x_pe": 228.3234330785098
+      }
+    ]
+  },
+  "peers": [
+    {
+      "symbol": "hk09615",
+      "name_cn": "梅卡曼德机器人",
+      "price": 88.1,
+      "time": "2026/10/20 16:08:26",
+      "total_shares": 125011050,
+      "quoted_total_equity_value_native_m": 11013.47,
+      "ticker": "09615",
+      "label": "Mech-Mind H",
+      "fit": "3D vision / AI",
+      "currency": "HKD",
+      "equity_value_cnym": 9430.617092861401,
+      "FY2025_revenue_cnym": 388.771,
+      "FY2025_ps": 24.25751173019953,
+      "revenue_source": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0824/2026082400017.pdf",
+      "price_verified_with_sina": true,
+      "final_daily_bar": [
+        "2026-10-20",
+        "82.150",
+        "88.100",
+        "88.100",
+        "81.500",
+        "116010.000"
+      ],
+      "broker": null,
+      "forecast_date": null,
+      "forecast_url": null,
+      "forecast_basis": "No verified public full-year forecast located as of 20 October",
+      "FY2026_profit_cnym": null,
+      "FY2027_profit_cnym": null,
+      "FY2026_pe": null,
+      "FY2026_pe_label": "n/c",
+      "FY2027_pe": null,
+      "FY2027_pe_label": "n/c"
+    },
+    {
+      "symbol": "hk02432",
+      "name_cn": "越疆",
+      "price": 17.32,
+      "time": "2026/10/20 16:08:26",
+      "total_shares": 439955400,
+      "quoted_total_equity_value_native_m": 7620.03,
+      "ticker": "02432",
+      "label": "Dobot H",
+      "fit": "Cobot / motion",
+      "currency": "HKD",
+      "equity_value_cnym": 6524.87717167584,
+      "FY2025_revenue_cnym": 492.209,
+      "FY2025_ps": 13.256314231710189,
+      "revenue_source": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0330/2026033001834.pdf",
+      "price_verified_with_sina": true,
+      "final_daily_bar": [
+        "2026-10-20",
+        "17.520",
+        "17.320",
+        "18.040",
+        "16.900",
+        "3290400.000"
+      ],
+      "broker": "CICC via EtNet",
+      "forecast_date": "2026-08-25",
+      "forecast_url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=02432",
+      "forecast_basis": "named CICC forecasts distributed by EtNet; original CICC note not publicly verified",
+      "FY2026_profit_cnym": -174,
+      "FY2027_profit_cnym": -67,
+      "FY2026_pe": null,
+      "FY2026_pe_label": "NM",
+      "FY2027_pe": null,
+      "FY2027_pe_label": "NM"
+    },
+    {
+      "symbol": "hk01021",
+      "name_cn": "华沿机器人",
+      "price": 6.895,
+      "time": "2026/10/20 16:08:26",
+      "total_shares": 557066580,
+      "quoted_total_equity_value_native_m": 3840.9700000000003,
+      "ticker": "01021",
+      "label": "Huayan H",
+      "fit": "Cobot / components",
+      "currency": "HKD",
+      "equity_value_cnym": 3288.949275888948,
+      "FY2025_revenue_cnym": 386.867,
+      "FY2025_ps": 8.501498643949853,
+      "revenue_source": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0427/2026042703294.pdf",
+      "price_verified_with_sina": true,
+      "final_daily_bar": [
+        "2026-10-20",
+        "7.205",
+        "6.895",
+        "7.435",
+        "6.860",
+        "5149200.000"
+      ],
+      "broker": null,
+      "forecast_date": null,
+      "forecast_url": null,
+      "forecast_basis": "No verified public full-year forecast located as of 20 October",
+      "FY2026_profit_cnym": null,
+      "FY2027_profit_cnym": null,
+      "FY2026_pe": null,
+      "FY2026_pe_label": "n/c",
+      "FY2027_pe": null,
+      "FY2027_pe_label": "n/c"
+    },
+    {
+      "symbol": "hk02715",
+      "name_cn": "埃斯顿",
+      "price": 12.5,
+      "time": "2026/10/20 16:08:26",
+      "total_shares": 968666053,
+      "quoted_total_equity_value_native_m": 12108.33,
+      "ticker": "02715",
+      "label": "Estun H",
+      "fit": "Industrial robots",
+      "currency": "HKD",
+      "equity_value_cnym": 10368.1170982855,
+      "FY2025_revenue_cnym": 4888,
+      "FY2025_ps": 2.1211368859012887,
+      "revenue_source": "https://pdf.dfcfw.com/pdf/H3_AP202608301828746890_1.pdf",
+      "price_verified_with_sina": true,
+      "final_daily_bar": [
+        "2026-10-20",
+        "12.160",
+        "12.500",
+        "12.860",
+        "11.950",
+        "7495600.000"
+      ],
+      "broker": "Soochow",
+      "forecast_date": "2026-08-30",
+      "forecast_url": "https://pdf.dfcfw.com/pdf/H3_AP202608301828746890_1.pdf",
+      "forecast_basis": "selected broker full-year attributable profit, original report verified",
+      "FY2026_profit_cnym": 284.93,
+      "FY2027_profit_cnym": 401.16,
+      "FY2026_pe": 36.388295715738955,
+      "FY2026_pe_label": "36.4x",
+      "FY2027_pe": 25.84534125607114,
+      "FY2027_pe_label": "25.8x"
+    },
+    {
+      "symbol": "sh688686",
+      "name_cn": "奥普特",
+      "price": 121.49,
+      "time": "20261020161438",
+      "total_shares": null,
+      "quoted_total_equity_value_native_m": 14850.0,
+      "ticker": "688686",
+      "label": "OPT A",
+      "fit": "Vision components",
+      "currency": "CNY",
+      "equity_value_cnym": 14850.0,
+      "FY2025_revenue_cnym": 1269,
+      "FY2025_ps": 11.702127659574469,
+      "revenue_source": "https://pdf.dfcfw.com/pdf/H3_AP202608311828803718_1.pdf",
+      "price_verified_with_sina": true,
+      "broker": "China Post Securities",
+      "forecast_date": "2026-08-31",
+      "forecast_url": "https://pdf.dfcfw.com/pdf/H3_AP202608311828803718_1.pdf",
+      "forecast_basis": "selected broker full-year attributable profit, original report verified",
+      "FY2026_profit_cnym": 249.9,
+      "FY2027_profit_cnym": 339.03,
+      "FY2026_pe": 59.42376950780312,
+      "FY2026_pe_label": "59.4x",
+      "FY2027_pe": 43.80143350146005,
+      "FY2027_pe_label": "43.8x"
+    },
+    {
+      "symbol": "sh688003",
+      "name_cn": "天准科技",
+      "price": 66.42,
+      "time": "20261020161448",
+      "total_shares": null,
+      "quoted_total_equity_value_native_m": 12937.0,
+      "ticker": "688003",
+      "label": "TZTEK A",
+      "fit": "Vision / AI equipment",
+      "currency": "CNY",
+      "equity_value_cnym": 12937.0,
+      "FY2025_revenue_cnym": 1790,
+      "FY2025_ps": 7.227374301675978,
+      "revenue_source": "https://pdf.dfcfw.com/pdf/H3_AP202609241829841491_1.pdf",
+      "price_verified_with_sina": true,
+      "broker": "Huaxin",
+      "forecast_date": "2026-09-23",
+      "forecast_url": "https://pdf.dfcfw.com/pdf/H3_AP202609241829841491_1.pdf",
+      "forecast_basis": "selected broker full-year attributable profit, original report verified",
+      "FY2026_profit_cnym": 171,
+      "FY2027_profit_cnym": 267,
+      "FY2026_pe": 75.65497076023392,
+      "FY2026_pe_label": "75.7x",
+      "FY2027_pe": 48.453183520599254,
+      "FY2027_pe_label": "48.5x"
+    },
+    {
+      "symbol": "sz002747",
+      "name_cn": "埃斯顿",
+      "price": 26.3,
+      "time": "20261020161445",
+      "total_shares": null,
+      "quoted_total_equity_value_native_m": 25476.0,
+      "ticker": "002747",
+      "label": "Estun A",
+      "fit": "Same group as H",
+      "currency": "CNY",
+      "equity_value_cnym": 25476.0,
+      "FY2025_revenue_cnym": 4888,
+      "FY2025_ps": 5.211947626841244,
+      "revenue_source": "https://pdf.dfcfw.com/pdf/H3_AP202608301828746890_1.pdf",
+      "price_verified_with_sina": true,
+      "broker": "Soochow",
+      "forecast_date": "2026-08-30",
+      "forecast_url": "https://pdf.dfcfw.com/pdf/H3_AP202608301828746890_1.pdf",
+      "forecast_basis": "selected broker full-year attributable profit, original report verified",
+      "FY2026_profit_cnym": 284.93,
+      "FY2027_profit_cnym": 401.16,
+      "FY2026_pe": 89.4114343873934,
+      "FY2026_pe_label": "89.4x",
+      "FY2027_pe": 63.505833084056235,
+      "FY2027_pe_label": "63.5x"
+    }
+  ],
+  "sources": {
+    "prospectus": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1020/2026102000030_c.pdf",
+      "english_url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1020/2026102000029.pdf",
+      "kind": "issuer primary filing",
+      "date": "2026-10-20",
+      "pages": {
+        "financial_summary": "printed 8-11",
+        "FY2026_profit_warning": "printed 13; English printed 13 / PDF 22",
+        "offer_statistics": "printed 14",
+        "orders": "printed 167",
+        "cornerstone_identity": "printed 269",
+        "cornerstone_table_typo": "printed 268",
+        "inventory_risk": "printed 47"
+      }
+    },
+    "formal_notice": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1020/2026102000022_c.pdf",
+      "kind": "issuer primary filing",
+      "date": "2026-10-20"
+    },
+    "mech_financials": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0824/2026082400017.pdf",
+      "kind": "issuer primary filing",
+      "page": "PDF 15 / printed 7"
+    },
+    "dobot_financials": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0330/2026033001834.pdf",
+      "kind": "issuer primary filing",
+      "page": "printed 6 and 149"
+    },
+    "huayan_financials": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0427/2026042703294.pdf",
+      "kind": "issuer primary filing",
+      "page": "printed 9 and 102"
+    },
+    "huayan_shares": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1005/2026100500910.pdf",
+      "kind": "issuer monthly return",
+      "page": "PDF 1-2",
+      "total_shares": 557066580
+    },
+    "fx": {
+      "url": "https://www.safe.gov.cn/AppStructured/hlw/RMBQuery.do",
+      "kind": "official central parity",
+      "date": "2026-10-20",
+      "cny_per_100_hkd": 85.628
+    },
+    "xueqiu": {
+      "url": "https://www.xueqiu.com/7274583832/412089663",
+      "kind": "publisher commentary on community platform",
+      "title": "Near RMB800m sales but only RMB5.1m profit",
+      "date": "2026-10-13",
+      "access": "search-indexed excerpts only; full article unavailable",
+      "argument_used": "Revenue and industrial-AI positioning do not establish an earnings-based valuation."
+    },
+    "xueqiu_retail": {
+      "url": "https://www.xueqiu.com/u/8201124121",
+      "kind": "individual retail profile",
+      "access": "public indexed profile excerpts",
+      "argument_used": "Focus on orders, gross margin and EIIR mix when R&D depresses reported earnings; this is one opinion, not a retail consensus."
+    },
+    "niuniu_bull": {
+      "url": "https://q.futunn.com/feed/117415434452996",
+      "kind": "IPO Zaozhidao publisher commentary on Niuniu",
+      "date": "2026-10-10",
+      "access": "full text read",
+      "argument_used": "Higher EIIR mix, industrial deployment data and positive operating cash support commercialization; tested against margins, spending and collection."
+    },
+    "niuniu_bear": {
+      "url": "https://q.futunn.com/hk/feed/116842591092740",
+      "kind": "publisher commentary on Niuniu",
+      "date": "2026-07-01",
+      "access": "indexed full article text read",
+      "argument_used": "R&D intensity, acquisition integration and unstable net profit; refreshed against October prospectus."
+    },
+    "dobot_forecast": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=02432",
+      "kind": "named CICC forecasts distributed by EtNet; original CICC note not publicly verified",
+      "forecast_date": "2026-08-25",
+      "retrieved_date": "2026-10-20",
+      "owner_profit_cnym": {
+        "2026": -174.0,
+        "2027": -67.0
+      }
+    },
+    "forecast_recency_opt": {
+      "url": "https://basic.10jqka.com.cn/688686/worth.html",
+      "kind": "distributor forecast roster; selected China Post 31 August estimates checked against original PDF"
+    },
+    "forecast_recency_tztek": {
+      "url": "https://basic.10jqka.com.cn/688003/worth.html",
+      "kind": "distributor forecast roster; selected Huaxin 23 September estimates checked against original PDF"
+    }
+  },
+  "download_manifest": {
+    "prospectus-cn.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1020/2026102000030_c.pdf",
+      "bytes": 9593413,
+      "sha256": "a0310da4c53032b8846021963ea64cd29c7a5f6e4f69138014efc193f922ecde"
+    },
+    "offer-announcement.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1020/2026102000022_c.pdf",
+      "bytes": 855243,
+      "sha256": "788813203f153ac473e0fa5f19a2a54109f27e0714c374d4bd59512acb1b7994"
+    },
+    "quotes.txt": {
+      "url": "https://qt.gtimg.cn/q=hk09615,hk02715,hk02651,hk02439,hk09880,sh688686,sh688003,sz002747",
+      "bytes": 3626,
+      "sha256": "f1dd78767de83362e14156353fc1fb7f7e720bae380c34b01c96af89c676d1d1"
+    },
+    "fx.html": {
+      "url": "https://www.safe.gov.cn/AppStructured/hlw/RMBQuery.do",
+      "bytes": 36850,
+      "sha256": "89a65c3c3afa39800cdd3cf6805332d8c1050da9bb295c5f6fe11712a55a85d3"
+    },
+    "02715-broker.pdf": {
+      "url": "https://pdf.dfcfw.com/pdf/H3_AP202608301828746890_1.pdf",
+      "bytes": 515211,
+      "sha256": "c0c155c5ea2abb6bc3778b251741c3bf2dbd3984290adfd49c97ec162256a650"
+    },
+    "688686-broker.pdf": {
+      "url": "https://pdf.dfcfw.com/pdf/H3_AP202608311828803718_1.pdf",
+      "bytes": 759448,
+      "sha256": "9173681ddbe9705e2e7c36312462f73431d6f0227c6616564c046cb48068f103"
+    },
+    "688003-broker.pdf": {
+      "url": "https://pdf.dfcfw.com/pdf/H3_AP202609241829841491_1.pdf",
+      "bytes": 475271,
+      "sha256": "5b193ef71108b59c03dc0f6c8015d7d682e8b3d2bb0d161a834e311e4492c520"
+    },
+    "quotes-peers.txt": {
+      "url": "https://qt.gtimg.cn/q=hk09615,hk02715,hk02432,hk01021,sh688686,sh688003,sz002747",
+      "bytes": 3214,
+      "sha256": "4e2d9f607fd299185445b4d00627be52f7d6d5c9d542413316a3185d7aa6ec12"
+    },
+    "dobot-forecasts.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=02432",
+      "bytes": 235927,
+      "sha256": "66f58b76d7f25e5c1a199e4a0cad8d67248132cd6d0e9e61320d1037a217bbf8"
+    },
+    "dobot-annual.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0330/2026033001834.pdf",
+      "bytes": 3755229,
+      "sha256": "839384118e71e420c4f6fc492ad94ff156029342442596db3d8418cec0e6c086"
+    },
+    "quotes-sina.txt": {
+      "url": "https://hq.sinajs.cn/list=rt_hk09615,rt_hk02715,rt_hk02432,rt_hk01021,sh688686,sh688003,sz002747",
+      "bytes": 1731,
+      "sha256": "6b1ee0e80ec9629ccfe6b37e590408b2d42f31f8c4722edaead8d15277b33b10"
+    },
+    "hk09615-daily.json": {
+      "url": "https://web.ifzq.gtimg.cn/appstock/app/kline/kline?param=hk09615,day,2026-10-01,2026-10-20,30",
+      "bytes": 2221,
+      "sha256": "ea1e06f4f3ef33178a5f27e8f90f071802f9b128add28a665b679e79f1438ea3"
+    },
+    "hk02715-daily.json": {
+      "url": "https://web.ifzq.gtimg.cn/appstock/app/kline/kline?param=hk02715,day,2026-10-01,2026-10-20,30",
+      "bytes": 2195,
+      "sha256": "cc62e63cac701c77d13689d7762f7b1d589873962b924c08ca7448164f144875"
+    },
+    "hk02432-daily.json": {
+      "url": "https://web.ifzq.gtimg.cn/appstock/app/kline/kline?param=hk02432,day,2026-10-01,2026-10-20,30",
+      "bytes": 2194,
+      "sha256": "c97632b1a2ac1d00b894864b466000fc161cf7ec57ea24d299acd5e78de743a9"
+    },
+    "hk01021-daily.json": {
+      "url": "https://web.ifzq.gtimg.cn/appstock/app/kline/kline?param=hk01021,day,2026-10-01,2026-10-20,30",
+      "bytes": 2172,
+      "sha256": "c83bf08fef8457682227c96f1c42371289cae285eb7c2475a378fdf45e44b6d3"
+    }
+  },
+  "method": {
+    "pe": "Current line-implied total-company equity value / selected attributable full-year profit. H prices apply to all ordinary shares, not H float. RMB forecasts and revenues converted at the same official FX rate. A total market values are vendor-rounded; precise share counts are not inferred. These are not blended A+H market caps.",
+    "ps": "All peer-table P/S denominators are actual FY2025 revenue; no annualised interim revenue. Estun, OPT and TZTEK FY2025 revenue in original broker tables is rounded to RMB million. IPO LTM measures are separately labelled to May 2026.",
+    "no_exact_issuer_forecast": "Management provides a qualitative FY2026 ceiling, not an exact earnings forecast. Positive FY2026 P/E must exceed the calculated floors; if loss-making, P/E is NM. FY2027 forecast unavailable.",
+    "consensus": "Selected broker estimates, not market consensus. Two A/H Estun lines use identical profit forecasts and FY2025 revenue."
+  },
+  "review_notes": [
+    "Critical new disclosure: FY2026 net profit expected below RMB22.528m earned in first five months. Do not annualise 5M profit or call it a full-year inflection.",
+    "Chinese prospectus printed page 268 shows 2.11% in one midpoint cornerstone table; 823,800 / 37,275,800 = 2.21%, agreeing with its narrative. Use share-count-derived 2.21%.",
+    "Correct post-issue total is 372,757,356; do not multiply base offer shares by ten to manufacture 372,758,000.",
+    "Legal cornerstone name is Elbe Rhein Investment Limited, not Elbe Rhine. Privately owned by Mr. Liu Jonas; no claim of sovereign, institutional blue-chip or strategic customer backing.",
+    "Greenshoe option capacity is not exercise. No exact cornerstone lock-up expiry date inferred from a six-month phrase.",
+    "Current positive operating cash does not establish durable free cash flow. Inventory days and provisions increased; receivable days improved but remain long.",
+    "Xueqiu full article access unavailable; only indexed excerpts/profile snippets read. Niuniu articles are publisher commentary, not a statistically sampled retail consensus.",
+    "No live margin-book subscription figure, final offer price, allocation, debut return or future earnings invented.",
+    "Do not treat the CFO improvement or the share count arithmetic as independent verification of all inputs. Main issuer inputs were checked against its filed financial tables and qualitative warning; prices match two quote providers and final HK daily bars."
+  ],
+  "template": {
+    "path": "/Users/lemon/Downloads/ipo analysis.docx",
+    "sha256": "ea8859ddd61c5ea574bd69c628c59d2bd737c732afdfa3b68da714587288f899"
+  },
+  "prior_word_sha256": "cbfae6fcd382adce7b53b7bff41e1d107800c05a0aaa2a63b53f2f56799718a0",
+  "document_content": {
+    "desk_view": "**Desk view - demanding earnings valuation.** Industrial AI has paying customers, but the offer relies on a later profit inflection. Management expects FY2026 profit to fall below the first five months: the strongest constraint on the bullish recovery story.",
+    "key_points": [
+      "**Good - real industrial AI demand and a niche lead.** No.1 in China EIIR products by FY2025 revenue, with 20% share. This is a narrowly defined market. Five-month 2026 EIIR sales rose 40%; the opportunity is automating factory tasks with vision, decision-making and motion control.",
+      "**Potential - repeat deployments with less engineering work.** Agilebot adds robot bodies and motion control. Reusing the software across tasks could improve operating leverage. New project awards rose 49% to RMB530m, including VAT; conversion still requires delivery and acceptance. 60.3% of IPO net proceeds funds R&D, so returns will take time.",
+      "**Bad - full-year profit will fall below January-May.** Management expects FY2026 net profit below RMB22.5m, despite higher sales and gross profit, because of continued R&D. Five-month operating profit rose only 1.8%; the reported profit jump also benefited from RMB16.6m redemption-interest expense disappearing.",
+      "**Bad - the mix upgrade has not lifted group margins.** EIIR gross margin reached 54.8%, but group margin slipped to 48.4% from 49.2% YoY as equipment and modules weakened. Orders need to produce both higher gross profit and slower expense growth before the AI theme improves shareholder earnings.",
+      "**Bad - working capital still absorbs cash.** Five-month operating cash turned positive at RMB12.7m, yet receivable days remain 188. Inventory rose 51%; turnover slowed to 98 days from 83, and provisions increased. Inventory supports delivery, but slower conversion raises funding and write-down risk.",
+      "**Bad - little demand is committed by the cornerstone.** Elbe Rhein Investment Limited, wholly owned by Mr. Liu Jonas, commits HK$15.7m: 2.21% of the offer at the stated midpoint, locked for six months. It is a private investment/asset-management company. The book still needs broad demand; this is limited valuation endorsement."
+    ],
+    "relative_value": [
+      "**Revenue valuation offers some room; earnings do not yet support a rerating.** The offer is 6.7-8.6x FY2025 sales, below Mech-Mind's 24.3x and Dobot's 13.3x, around Huayan's 8.5x. Different growth, margins and product standardisation justify different multiples. A lower P/S alone does not establish cheapness.",
+      "**The profit hurdle is substantial.** A future 30x P/E would need RMB177-228m annual owner profit, versus RMB20.5m reported LTM. That is a sensitivity, not a forecast or target multiple. Watch repeat orders, gross margin and R&D intensity together.",
+      "**Peer fit matters.** Mech-Mind is the closest H vision/AI reference; Dobot and Huayan cover cobots and motion hardware. Estun is a broader industrial robot platform. OPT and TZTEK provide A-share vision/inspection anchors. These are product overlaps, not identical whole-company peers. Estun H and A use the same profit estimates."
+    ],
+    "offer_rows": [
+      [
+        "Total equity value (HK$bn)",
+        "6.199",
+        "7.101",
+        "7.999"
+      ],
+      [
+        "FY2025 P/S",
+        "6.7x",
+        "7.6x",
+        "8.6x"
+      ],
+      [
+        "LTM reported / adjusted P/E",
+        "258.5x / 90.5x",
+        "296.1x / 103.7x",
+        "333.6x / 116.8x"
+      ],
+      [
+        "FY2026 P/E floor if profitable*",
+        ">235.6x",
+        ">269.9x",
+        ">304.1x"
+      ]
+    ],
+    "peer_rows": [
+      [
+        "Microintelligence H (03275)\nEIIR products / factory AI",
+        "HK$16.63-\n21.46",
+        "6.7-8.6x",
+        "n/c*",
+        "n/c",
+        "Issuer guidance*"
+      ],
+      [
+        "Mech-Mind H (09615)\n3D vision / AI",
+        "HK$88.100",
+        "24.3x",
+        "n/c",
+        "n/c",
+        "No verified estimate"
+      ],
+      [
+        "Dobot H (02432)\nCobot / motion",
+        "HK$17.320",
+        "13.3x",
+        "NM",
+        "NM",
+        "CICC via EtNet 25 Aug"
+      ],
+      [
+        "Huayan H (01021)\nCobot / components",
+        "HK$6.895",
+        "8.5x",
+        "n/c",
+        "n/c",
+        "No verified estimate"
+      ],
+      [
+        "Estun H (02715)\nIndustrial robots",
+        "HK$12.500",
+        "2.1x",
+        "36.4x",
+        "25.8x",
+        "Soochow 30 Aug"
+      ],
+      [
+        "OPT A (688686)\nVision components",
+        "RMB121.49",
+        "11.7x",
+        "59.4x",
+        "43.8x",
+        "China Post 31 Aug"
+      ],
+      [
+        "TZTEK A (688003)\nVision / AI equipment",
+        "RMB66.42",
+        "7.2x",
+        "75.7x",
+        "48.5x",
+        "Huaxin 23 Sep"
+      ],
+      [
+        "Estun A (002747)\nSame group as H",
+        "RMB26.30",
+        "5.2x",
+        "89.4x",
+        "63.5x",
+        "Soochow 30 Aug"
+      ]
+    ]
+  },
+  "document_sha256": "5176fa6962f88a27844fe4a8474097a34b4b11bdd63bdd1bad5a92b5b4a2edcc",
+  "package_qa": {
+    "parts": 16,
+    "only_changed_parts": [
+      "word/document.xml",
+      "word/_rels/document.xml.rels"
+    ],
+    "sections": 1,
+    "tables": 3,
+    "prior_study_unchanged": true,
+    "reference_unchanged": true,
+    "python_peak_rss_mib": 35.734375
+  },
+  "numeric_qa": {
+    "issuer_primary_rows_checked": [
+      "revenue",
+      "gross_profit",
+      "operating_profit",
+      "owner_profit"
+    ],
+    "management_profit_warning_checked": true,
+    "post_issue_share_count_checked": true,
+    "FX_official_row_checked": true,
+    "offer_price_cases_recomputed": 3,
+    "peer_rows_recomputed": 7,
+    "broker_original_profit_tables_checked": 3,
+    "second_quote_source_matches": 7,
+    "HK_final_daily_bars_match": 4,
+    "Estun_AH_profit_basis_identical": true,
+    "prior_word_hash_unchanged": true,
+    "python_peak_rss_mib": 31.96875,
+    "Word_offer_table_verified": true
+  },
+  "visual_qa": {
+    "pages": 2,
+    "final_render": "fidelity-final/b_render",
+    "all_final_pages_inspected": true,
+    "template_reference_pages": 5,
+    "source_layout_preserved": "Letter, margins, native Arial 10pt, small red headings, hyphen bullets and light grey tables",
+    "CJK_fallback": "Hiragino Sans GB replaces unavailable DengXian for issuer name; no missing glyphs in final render",
+    "result": "No clipped text, missing glyphs, split tables, blank pages or overflow. Dated one-company brief replaces sample content in a separate new artifact."
+  }
+}
