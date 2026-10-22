@@ -1,0 +1,561 @@
+{
+  "IPO Live": {
+    "state": "visible",
+    "cells": 4559,
+    "formulas": 2191,
+    "requests": {
+      "BDP": 716
+    },
+    "no_source_switch": 0,
+    "fields": {
+      "LAST_PRICE": 716
+    },
+    "samples": {
+      "BDP": [
+        [
+          "D8",
+          "IF($A8=\"\",\"\",IF($B$4=\"Bloomberg\",IFERROR(BDP($A8,\"LAST_PRICE\"),\"Unavailable\"),IF(ISNUMBER('Market Data'!BT8),'Market Data'!BT8,\"Unavailable\")))"
+        ],
+        [
+          "D9",
+          "IF($A9=\"\",\"\",IF($B$4=\"Bloomberg\",IFERROR(BDP($A9,\"LAST_PRICE\"),\"Unavailable\"),IF(ISNUMBER('Market Data'!BT9),'Market Data'!BT9,\"Unavailable\")))"
+        ],
+        [
+          "D10",
+          "IF($A10=\"\",\"\",IF($B$4=\"Bloomberg\",IFERROR(BDP($A10,\"LAST_PRICE\"),\"Unavailable\"),IF(ISNUMBER('Market Data'!BT10),'Market Data'!BT10,\"Unavailable\")))"
+        ],
+        [
+          "D11",
+          "IF($A11=\"\",\"\",IF($B$4=\"Bloomberg\",IFERROR(BDP($A11,\"LAST_PRICE\"),\"Unavailable\"),IF(ISNUMBER('Market Data'!BT11),'Market Data'!BT11,\"Unavailable\")))"
+        ],
+        [
+          "D12",
+          "IF($A12=\"\",\"\",IF($B$4=\"Bloomberg\",IFERROR(BDP($A12,\"LAST_PRICE\"),\"Unavailable\"),IF(ISNUMBER('Market Data'!BT12),'Market Data'!BT12,\"Unavailable\")))"
+        ]
+      ]
+    }
+  },
+  "AH": {
+    "state": "visible",
+    "cells": 1339,
+    "formulas": 625,
+    "requests": {},
+    "no_source_switch": 0,
+    "fields": {},
+    "samples": {}
+  },
+  "Peer Trades": {
+    "state": "visible",
+    "cells": 640,
+    "formulas": 19,
+    "requests": {},
+    "no_source_switch": 0,
+    "fields": {},
+    "samples": {}
+  },
+  "Screener": {
+    "state": "visible",
+    "cells": 1571,
+    "formulas": 1262,
+    "requests": {
+      "BDP": 3,
+      "BDH": 1
+    },
+    "no_source_switch": 4,
+    "fields": {
+      "PX_LAST": 3,
+      "CUR_MKT_CAP": 1
+    },
+    "samples": {
+      "BDP": [
+        [
+          "B53",
+          "IF($F$54=\"\",\"no A line\",IFERROR(BDP($F$54,\"PX_LAST\"),IFERROR(INDEX(Pipeline!$W$6:$W$20,MATCH(SelectedDeal,Pipeline!$B$6:$B$20,0)),\"Awaiting quote\")))"
+        ],
+        [
+          "B54",
+          "IFERROR(BDP(\"CNYHKD Curncy\",\"PX_LAST\"),\"Awaiting quote\")"
+        ],
+        [
+          "B61",
+          "IF($F$54=\"\",\"no A line\",IFERROR(BDP($F$54,\"CUR_MKT_CAP\")*IF(N(A_FX)>0,A_FX,NA()),IFERROR(INDEX(Database!$BU$5:$BU$530,MATCH(SelectedDeal,Database!$B$5:$B$530,0)),\"Awaiting quote\")))"
+        ]
+      ],
+      "BDH": [
+        [
+          "F56",
+          "IF($F$54=\"\",\"\",BDH($F$54,\"PX_LAST\",TODAY()-31,TODAY(),\"Dts=S\",\"Dir=V\",\"Sort=A\",\"Days=T\",\"Per=cd\"))"
+        ]
+      ]
+    }
+  },
+  "Database": {
+    "state": "visible",
+    "cells": 44351,
+    "formulas": 4216,
+    "requests": {},
+    "no_source_switch": 0,
+    "fields": {},
+    "samples": {}
+  },
+  "Pipeline": {
+    "state": "visible",
+    "cells": 1658,
+    "formulas": 40,
+    "requests": {},
+    "no_source_switch": 0,
+    "fields": {},
+    "samples": {}
+  },
+  "CS League": {
+    "state": "visible",
+    "cells": 12709,
+    "formulas": 0,
+    "requests": {},
+    "no_source_switch": 0,
+    "fields": {},
+    "samples": {}
+  },
+  "SM League": {
+    "state": "visible",
+    "cells": 1212,
+    "formulas": 0,
+    "requests": {},
+    "no_source_switch": 0,
+    "fields": {},
+    "samples": {}
+  },
+  "Scoring Stats": {
+    "state": "hidden",
+    "cells": 1186,
+    "formulas": 0,
+    "requests": {},
+    "no_source_switch": 0,
+    "fields": {},
+    "samples": {}
+  },
+  "Taxonomy": {
+    "state": "visible",
+    "cells": 235,
+    "formulas": 38,
+    "requests": {},
+    "no_source_switch": 0,
+    "fields": {},
+    "samples": {}
+  },
+  "SizeBench": {
+    "state": "hidden",
+    "cells": 135,
+    "formulas": 30,
+    "requests": {},
+    "no_source_switch": 0,
+    "fields": {},
+    "samples": {}
+  },
+  "BBG Verify": {
+    "state": "visible",
+    "cells": 12676,
+    "formulas": 10287,
+    "requests": {
+      "BDP": 3682,
+      "BDH": 2229
+    },
+    "no_source_switch": 5385,
+    "fields": {
+      "GREENSHOE_FACILITY": 526,
+      "OFFERING_GREENSHOE_SHARES_EX": 526,
+      "PX_LAST": 1177
+    },
+    "samples": {
+      "BDP": [
+        [
+          "C5",
+          "IFERROR(IF($B5=\"\",\"\",IFERROR(BDP($B5&\" Action\",\"CP036\"),\"\")),\"Unavailable\")"
+        ],
+        [
+          "E5",
+          "IFERROR(IF($B5=\"\",\"\",IFERROR(BDP($B5&\" Action\",\"CP037\"),\"\")),\"Unavailable\")"
+        ],
+        [
+          "G5",
+          "IFERROR(IF($B5=\"\",\"\",IFERROR(BDP($B5&\" Action\",\"GREENSHOE_FACILITY\"),\"\")),\"Unavailable\")"
+        ],
+        [
+          "H5",
+          "IFERROR(IF($B5=\"\",\"\",IFERROR(BDP($B5&\" Action\",\"OFFERING_GREENSHOE_SHARES_EX\"),\"\")),\"Unavailable\")"
+        ],
+        [
+          "K5",
+          "IFERROR(BDP(TEXT(VALUE(Database!$A5),\"0\")&\" HK Equity\",\"A/H_SHARE_CONVERSION\"),\"\")"
+        ]
+      ],
+      "BDH": [
+        [
+          "M5",
+          "IFERROR(BDH(TEXT(VALUE(Database!$A5),\"0\")&\" HK Equity\",\"CUR_MKT_CAP\",Database!$H5,Database!$H5),\"Unavailable\")"
+        ],
+        [
+          "O5",
+          "IFERROR(BDH(TEXT(VALUE(Database!$A5),\"0\")&\" HK Equity\",\"PE_RATIO\",Database!$H5,Database!$H5),\"Unavailable\")"
+        ],
+        [
+          "Q5",
+          "IFERROR(IF(Database!BQ5=\"\",\"\",BDH(LEFT(Database!BQ5,FIND(\".\",Database!BQ5)-1)&\" CH Equity\",\"PE_RATIO\",Database!$H5,Database!$H5)),\"Unavailable\")"
+        ],
+        [
+          "R5",
+          "IFERROR(IF(Database!BQ5=\"\",\"\",BDH(\"HSAHP Index\",\"PX_LAST\",Database!$H5,Database!$H5)),\"Unavailable\")"
+        ],
+        [
+          "M6",
+          "IFERROR(BDH(TEXT(VALUE(Database!$A6),\"0\")&\" HK Equity\",\"CUR_MKT_CAP\",Database!$H6,Database!$H6),\"Unavailable\")"
+        ]
+      ]
+    }
+  },
+  "Verification": {
+    "state": "hidden",
+    "cells": 94,
+    "formulas": 36,
+    "requests": {},
+    "no_source_switch": 0,
+    "fields": {},
+    "samples": {}
+  },
+  "Calc (scoring engine)": {
+    "state": "hidden",
+    "cells": 21155,
+    "formulas": 15340,
+    "requests": {},
+    "no_source_switch": 0,
+    "fields": {},
+    "samples": {}
+  },
+  "Chart Data": {
+    "state": "hidden",
+    "cells": 20076,
+    "formulas": 19800,
+    "requests": {},
+    "no_source_switch": 0,
+    "fields": {},
+    "samples": {}
+  },
+  "AH Delta": {
+    "state": "hidden",
+    "cells": 1339,
+    "formulas": 142,
+    "requests": {},
+    "no_source_switch": 0,
+    "fields": {},
+    "samples": {}
+  },
+  "AH Recent": {
+    "state": "hidden",
+    "cells": 204,
+    "formulas": 204,
+    "requests": {
+      "BDH": 204
+    },
+    "no_source_switch": 0,
+    "fields": {
+      "PX_LAST": 204
+    },
+    "samples": {
+      "BDH": [
+        [
+          "A5",
+          "IF(AH!$E$4<>\"Bloomberg\",\"\",BDH(\"668 HK Equity\",\"PX_LAST\",TODAY()-55,TODAY(),\"Dts=S\",\"Dir=V\",\"Sort=A\",\"Days=T\",\"Per=cd\",\"UseDPDF=N\",\"CshAdjNormal=N\",\"CshAdjAbnormal=N\",\"CapChg=N\"))"
+        ],
+        [
+          "D5",
+          "IF(AH!$E$4<>\"Bloomberg\",\"\",BDH(\"300866 CH Equity\",\"PX_LAST\",TODAY()-55,TODAY(),\"Dts=S\",\"Dir=V\",\"Sort=A\",\"Days=T\",\"Per=cd\",\"UseDPDF=N\",\"CshAdjNormal=N\",\"CshAdjAbnormal=N\",\"CapChg=N\"))"
+        ],
+        [
+          "G5",
+          "IF(AH!$E$4<>\"Bloomberg\",\"\",BDH(\"CNYHKD Curncy\",\"PX_LAST\",TODAY()-55,TODAY(),\"Dts=S\",\"Dir=V\",\"Sort=A\",\"Days=T\",\"Per=cd\"))"
+        ],
+        [
+          "A75",
+          "IF(AH!$E$4<>\"Bloomberg\",\"\",BDH(\"6951 HK Equity\",\"PX_LAST\",TODAY()-55,TODAY(),\"Dts=S\",\"Dir=V\",\"Sort=A\",\"Days=T\",\"Per=cd\",\"UseDPDF=N\",\"CshAdjNormal=N\",\"CshAdjAbnormal=N\",\"CapChg=N\"))"
+        ],
+        [
+          "D75",
+          "IF(AH!$E$4<>\"Bloomberg\",\"\",BDH(\"300408 CH Equity\",\"PX_LAST\",TODAY()-55,TODAY(),\"Dts=S\",\"Dir=V\",\"Sort=A\",\"Days=T\",\"Per=cd\",\"UseDPDF=N\",\"CshAdjNormal=N\",\"CshAdjAbnormal=N\",\"CapChg=N\"))"
+        ]
+      ]
+    }
+  },
+  "AH Compare": {
+    "state": "hidden",
+    "cells": 61620,
+    "formulas": 61620,
+    "requests": {},
+    "no_source_switch": 0,
+    "fields": {},
+    "samples": {}
+  },
+  "AH Compare Live": {
+    "state": "hidden",
+    "cells": 12,
+    "formulas": 12,
+    "requests": {
+      "BDH": 12
+    },
+    "no_source_switch": 0,
+    "fields": {
+      "PX_LAST": 4
+    },
+    "samples": {
+      "BDH": [
+        [
+          "A5",
+          "IF(OR(AH!$E$4<>\"Bloomberg\",'AH Compare'!$H$2=0),\"\",BDH(INDEX('Market Data'!$Q$3:$Q$73,'AH Compare'!$H$2),\"PX_LAST\",INDEX('AH Delta'!$F$3:$F$73,'AH Compare'!$H$2),TODAY(),\"Dts=S\",\"Dir=V\",\"Sort=A\",\"Days=T\",\"Per=cd\",\"UseDPDF=N\",\"CshAdjNormal=N\",\"CshAdjAbnormal=N\",\"CapChg=N\"))"
+        ],
+        [
+          "D5",
+          "IF(OR(AH!$E$4<>\"Bloomberg\",'AH Compare'!$H$2=0),\"\",BDH(INDEX('Market Data'!$R$3:$R$73,'AH Compare'!$H$2),\"PX_LAST\",INDEX('AH Delta'!$F$3:$F$73,'AH Compare'!$H$2)-31,TODAY(),\"Dts=S\",\"Dir=V\",\"Sort=A\",\"Days=T\",\"Per=cd\",\"UseDPDF=N\",\"CshAdjNormal=N\",\"CshAdjAbnormal=N\",\"CapChg=N\"))"
+        ],
+        [
+          "G5",
+          "IF(OR(AH!$E$4<>\"Bloomberg\",'AH Compare'!$H$2=0),\"\",BDH(\"CNYHKD Curncy\",\"PX_LAST\",INDEX('AH Delta'!$F$3:$F$73,'AH Compare'!$H$2)-31,TODAY(),\"Dts=S\",\"Dir=V\",\"Sort=A\",\"Days=T\",\"Per=cd\"))"
+        ],
+        [
+          "J5",
+          "IF(OR(AH!$E$4<>\"Bloomberg\",'AH Compare'!$Q$2=0),\"\",BDH(INDEX('Market Data'!$Q$3:$Q$73,'AH Compare'!$Q$2),\"PX_LAST\",INDEX('AH Delta'!$F$3:$F$73,'AH Compare'!$Q$2),TODAY(),\"Dts=S\",\"Dir=V\",\"Sort=A\",\"Days=T\",\"Per=cd\",\"UseDPDF=N\",\"CshAdjNormal=N\",\"CshAdjAbnormal=N\",\"CapChg=N\"))"
+        ],
+        [
+          "M5",
+          "IF(OR(AH!$E$4<>\"Bloomberg\",'AH Compare'!$Q$2=0),\"\",BDH(INDEX('Market Data'!$R$3:$R$73,'AH Compare'!$Q$2),\"PX_LAST\",INDEX('AH Delta'!$F$3:$F$73,'AH Compare'!$Q$2)-31,TODAY(),\"Dts=S\",\"Dir=V\",\"Sort=A\",\"Days=T\",\"Per=cd\",\"UseDPDF=N\",\"CshAdjNormal=N\",\"CshAdjAbnormal=N\",\"CapChg=N\"))"
+        ]
+      ]
+    }
+  },
+  "Peer Data": {
+    "state": "hidden",
+    "cells": 144905,
+    "formulas": 0,
+    "requests": {},
+    "no_source_switch": 0,
+    "fields": {},
+    "samples": {}
+  },
+  "Peer Live": {
+    "state": "hidden",
+    "cells": 2,
+    "formulas": 2,
+    "requests": {
+      "BDH": 2
+    },
+    "no_source_switch": 0,
+    "fields": {},
+    "samples": {
+      "BDH": [
+        [
+          "A5",
+          "IF(OR('Peer Chart'!$U$4<>\"Bloomberg\",'Peer Chart'!$O$5>'Peer Chart'!$R$5),\"\",BDH(TEXT(VALUE('Peer Chart'!$O$4),\"0\")&\" HK Equity\",\"PX_LAST\",'Peer Chart'!$O$5,'Peer Chart'!$R$5,\"Dts=S\",\"Sort=A\",\"Dir=V\",\"Days=T\",\"Per=cd\",\"UseDPDF=N\",\"CshAdjNormal=N\",\"CshAdjAbnormal=N\",\"CapChg=Y\"))"
+        ],
+        [
+          "D5",
+          "IF(OR('Peer Chart'!$U$4<>\"Bloomberg\",'Peer Chart'!$O$5>'Peer Chart'!$R$5),\"\",BDH(TEXT(VALUE('Peer Chart'!$R$4),\"0\")&\" HK Equity\",\"PX_LAST\",'Peer Chart'!$O$5,'Peer Chart'!$R$5,\"Dts=S\",\"Sort=A\",\"Dir=V\",\"Days=T\",\"Per=cd\",\"UseDPDF=N\",\"CshAdjNormal=N\",\"CshAdjAbnormal=N\",\"CapChg=Y\"))"
+        ]
+      ]
+    }
+  },
+  "Peer Chart": {
+    "state": "hidden",
+    "cells": 21127,
+    "formulas": 21034,
+    "requests": {
+      "BDP": 8
+    },
+    "no_source_switch": 0,
+    "fields": {},
+    "samples": {
+      "BDP": [
+        [
+          "Q9",
+          "IF($U$4=\"Bloomberg\",IFERROR(BDP(IFERROR(TEXT(VALUE($O$4),\"0\")&\" HK Equity\",\"\"),\"LAST_PRICE\"),\"\"),IFERROR(IF(IFERROR(IF('Peer Chart'!$H$2>0,INDEX('Peer Data'!$L$3:$L$68,'Peer Chart'!$H$2),0),0)>0,INDEX('Peer Data'!$B$1:$B$72135,IFERROR(IF('Peer Chart'!$H$2>0,INDEX('Peer Data'!$K$3:$K$68,'Peer Chart'!$H$2),0),0)+IFERROR(IF('Peer Chart'!$H$2>0,INDEX('Peer Data'!$L$3:$L$68,'Peer Chart'!$H$2),0),0)-1),\"\"),\"\"))"
+        ],
+        [
+          "S9",
+          "IF($U$4=\"Bloomberg\",IFERROR(BDP(IFERROR(TEXT(VALUE($O$4),\"0\")&\" HK Equity\",\"\"),\"CRNCY\"),\"\"),IFERROR(INDEX('HK Stocks'!$C$2:$C$2833,MATCH(TEXT(VALUE($O$4),\"0000\"),'HK Stocks'!$A$2:$A$2833,0)),\"\"))"
+        ],
+        [
+          "T9",
+          "IFERROR(IF($U$4=\"Bloomberg\",IF(AND(ISNUMBER(Q9),BDP(IFERROR(TEXT(VALUE($O$4),\"0\")&\" HK Equity\",\"\"),\"PX_YEST_CLOSE\")>0),Q9/BDP(IFERROR(TEXT(VALUE($O$4),\"0\")&\" HK Equity\",\"\"),\"PX_YEST_CLOSE\")-1,\"\"),IF(IFERROR(IF('Peer Chart'!$H$2>0,INDEX('Peer Data'!$L$3:$L$68,'Peer Chart'!$H$2),0),0)>1,INDEX('Peer Data'!$B$1:$B$72135,IFERROR(IF('Peer Chart'!$H$2>0,INDEX('Peer Data'!$K$3:$K$68,'Peer Chart'!$H$2),0),0)+IFERROR(IF('Peer Chart'!$H$2>0,INDEX('Peer Data'!$L$3:$L$68,'Peer Chart'!$H$2),0),0)-1)/INDEX('Peer Data'!$B$1:$B$72135,IFERROR(IF('Peer Chart'!$H$2>0,INDEX('Peer Data'!$K$3:$K$68,'Peer Chart'!$H$2),0),0)+IFERROR(IF('Peer Chart'!$H$2>0,INDEX('Peer Data'!$L$3:$L$68,'Peer Chart'!$H$2),0),0)-2)-1,\"\")),\"\")"
+        ],
+        [
+          "T9",
+          "IFERROR(IF($U$4=\"Bloomberg\",IF(AND(ISNUMBER(Q9),BDP(IFERROR(TEXT(VALUE($O$4),\"0\")&\" HK Equity\",\"\"),\"PX_YEST_CLOSE\")>0),Q9/BDP(IFERROR(TEXT(VALUE($O$4),\"0\")&\" HK Equity\",\"\"),\"PX_YEST_CLOSE\")-1,\"\"),IF(IFERROR(IF('Peer Chart'!$H$2>0,INDEX('Peer Data'!$L$3:$L$68,'Peer Chart'!$H$2),0),0)>1,INDEX('Peer Data'!$B$1:$B$72135,IFERROR(IF('Peer Chart'!$H$2>0,INDEX('Peer Data'!$K$3:$K$68,'Peer Chart'!$H$2),0),0)+IFERROR(IF('Peer Chart'!$H$2>0,INDEX('Peer Data'!$L$3:$L$68,'Peer Chart'!$H$2),0),0)-1)/INDEX('Peer Data'!$B$1:$B$72135,IFERROR(IF('Peer Chart'!$H$2>0,INDEX('Peer Data'!$K$3:$K$68,'Peer Chart'!$H$2),0),0)+IFERROR(IF('Peer Chart'!$H$2>0,INDEX('Peer Data'!$L$3:$L$68,'Peer Chart'!$H$2),0),0)-2)-1,\"\")),\"\")"
+        ],
+        [
+          "Q10",
+          "IF($U$4=\"Bloomberg\",IFERROR(BDP(IFERROR(TEXT(VALUE($R$4),\"0\")&\" HK Equity\",\"\"),\"LAST_PRICE\"),\"\"),IFERROR(IF(IFERROR(IF('Peer Chart'!$H$5>0,INDEX('Peer Data'!$L$3:$L$68,'Peer Chart'!$H$5),0),0)>0,INDEX('Peer Data'!$B$1:$B$72135,IFERROR(IF('Peer Chart'!$H$5>0,INDEX('Peer Data'!$K$3:$K$68,'Peer Chart'!$H$5),0),0)+IFERROR(IF('Peer Chart'!$H$5>0,INDEX('Peer Data'!$L$3:$L$68,'Peer Chart'!$H$5),0),0)-1),\"\"),\"\"))"
+        ]
+      ]
+    }
+  },
+  "HK Stocks": {
+    "state": "hidden",
+    "cells": 8496,
+    "formulas": 0,
+    "requests": {},
+    "no_source_switch": 0,
+    "fields": {},
+    "samples": {}
+  },
+  "Market Data": {
+    "state": "hidden",
+    "cells": 6663,
+    "formulas": 1001,
+    "requests": {
+      "BDP": 859
+    },
+    "no_source_switch": 0,
+    "fields": {
+      "LAST_PRICE": 143,
+      "PX_YEST_CLOSE": 716
+    },
+    "samples": {
+      "BDP": [
+        [
+          "E2",
+          "IF(AH!$E$4=\"Bloomberg\",BDP(\"CNYHKD Curncy\",\"LAST_PRICE\"),\"\")"
+        ],
+        [
+          "AC3",
+          "IF(AH!$E$4=\"Bloomberg\",BDP($R3,\"LAST_PRICE\"),IF(AH!$E$4=\"Stored\",IF(ISNUMBER(AF3),AF3,\"\"),\"\"))"
+        ],
+        [
+          "AD3",
+          "IF(AH!$E$4=\"Bloomberg\",IFERROR(BDP(Q3,\"LAST_PRICE\"),\"\"),IF(AH!$E$4=\"Stored\",AG3,\"\"))"
+        ],
+        [
+          "AC4",
+          "IF(AH!$E$4=\"Bloomberg\",BDP($R4,\"LAST_PRICE\"),IF(AH!$E$4=\"Stored\",IF(ISNUMBER(AF4),AF4,\"\"),\"\"))"
+        ],
+        [
+          "AD4",
+          "IF(AH!$E$4=\"Bloomberg\",IFERROR(BDP(Q4,\"LAST_PRICE\"),\"\"),IF(AH!$E$4=\"Stored\",AG4,\"\"))"
+        ]
+      ]
+    }
+  },
+  "AH History": {
+    "state": "hidden",
+    "cells": 163650,
+    "formulas": 0,
+    "requests": {},
+    "no_source_switch": 0,
+    "fields": {},
+    "samples": {}
+  },
+  "Live History": {
+    "state": "hidden",
+    "cells": 6,
+    "formulas": 3,
+    "requests": {
+      "BDH": 3
+    },
+    "no_source_switch": 0,
+    "fields": {
+      "PX_LAST": 3
+    },
+    "samples": {
+      "BDH": [
+        [
+          "A5",
+          "IF(OR(AH!$P$3=0,AH!$E$4<>\"Bloomberg\"),\"\",BDH(AH!$P$4,\"PX_LAST\",AH!$P$6,TODAY(),\"Dts=S\",\"Dir=V\",\"Sort=A\",\"Days=T\",\"Per=cd\",\"UseDPDF=N\",\"CshAdjNormal=N\",\"CshAdjAbnormal=N\",\"CapChg=N\"))"
+        ],
+        [
+          "D5",
+          "IF(OR(AH!$P$3=0,AH!$E$4<>\"Bloomberg\"),\"\",BDH(AH!$P$5,\"PX_LAST\",AH!$P$6-31,TODAY(),\"Dts=S\",\"Dir=V\",\"Sort=A\",\"Days=T\",\"Per=cd\",\"UseDPDF=N\",\"CshAdjNormal=N\",\"CshAdjAbnormal=N\",\"CapChg=N\"))"
+        ],
+        [
+          "G5",
+          "IF(OR(AH!$P$3=0,AH!$E$4<>\"Bloomberg\"),\"\",BDH(\"CNYHKD Curncy\",\"PX_LAST\",AH!$P$6-31,TODAY(),\"Dts=S\",\"Dir=V\",\"Sort=A\",\"Days=T\",\"Per=cd\"))"
+        ]
+      ]
+    }
+  },
+  "Valuation Data": {
+    "state": "hidden",
+    "cells": 10566,
+    "formulas": 9498,
+    "requests": {
+      "BDP": 1056,
+      "BQL": 2637
+    },
+    "no_source_switch": 3693,
+    "fields": {
+      "PE_RATIO": 528,
+      "PX_TO_SALES_RATIO": 528
+    },
+    "samples": {
+      "BDP": [
+        [
+          "C8",
+          "IF($A8=\"\",\"\",IFERROR(BDP($A8,\"PE_RATIO\"),\"\"))"
+        ],
+        [
+          "F8",
+          "IF($A8=\"\",\"\",IFERROR(BDP($A8,\"PX_TO_SALES_RATIO\"),\"\"))"
+        ],
+        [
+          "C16",
+          "IF($A16=\"\",\"\",IFERROR(BDP($A16,\"PE_RATIO\"),\"\"))"
+        ],
+        [
+          "F16",
+          "IF($A16=\"\",\"\",IFERROR(BDP($A16,\"PX_TO_SALES_RATIO\"),\"\"))"
+        ],
+        [
+          "C24",
+          "IF($A24=\"\",\"\",IFERROR(BDP($A24,\"PE_RATIO\"),\"\"))"
+        ]
+      ],
+      "BQL": [
+        [
+          "P8",
+          "IF($A8=\"\",\"\",BQL($A8,\"pe_ratio(fpt=ltm, fpo=1, ae=e)\"))"
+        ],
+        [
+          "Z8",
+          "IF($A8=\"\",\"\",BQL($A8,\"pe_ratio(fpt=a, fpr=2027, ae=e)\"))"
+        ],
+        [
+          "AJ8",
+          "IF($A8=\"\",\"\",BQL($A8,\"px_to_sales_ratio(fpt=a, fpr=2027, ae=e)\"))"
+        ],
+        [
+          "AU8",
+          "IF($A8=\"\",\"\",BQL($A8,\"pe_ratio(fpt=ltm, fpo=0, ae=a)\"))"
+        ],
+        [
+          "BD8",
+          "IF($A8=\"\",\"\",BQL($A8,\"px_to_sales_ratio(fpt=ltm)\"))"
+        ]
+      ]
+    }
+  },
+  "AH Reference": {
+    "state": "hidden",
+    "cells": 110527,
+    "formulas": 18175,
+    "requests": {
+      "BDH": 1
+    },
+    "no_source_switch": 0,
+    "fields": {
+      "PX_LAST": 1
+    },
+    "samples": {
+      "BDH": [
+        [
+          "BB5",
+          "IF(AND(AH!$E$4=\"Bloomberg\",AH!$P$3>0),BDH(\"SHSZ300 Index\",\"PX_LAST\",AH!$P$6-31,TODAY(),\"Dts=S\",\"Dir=V\",\"Sort=A\",\"Days=T\",\"Per=cd\"),\"\")"
+        ]
+      ]
+    }
+  }
+}

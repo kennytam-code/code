@@ -1,0 +1,10 @@
+{
+  "date": "2026-10-22",
+  "sha256": "ee4f93448fead949e2cb353d40f0db14574289f01d86f32d9b151002234cfab2",
+  "opened_without_repair": true,
+  "screener_form_visually_reviewed": true,
+  "view_only": true,
+  "terminal_available": false,
+  "interactive_mode_switch_tested": false,
+  "scope": "Final native Excel open and Screener header/table visual review. Structural, numeric and reference checks cover the complete package separately. Excel application was in manual calculation mode; its settings were not changed."
+}

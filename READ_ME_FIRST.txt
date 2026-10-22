@@ -1,6 +1,6 @@
-HK IPO DATABASE — 20 OCTOBER 2026
+HK IPO DATABASE — 22 OCTOBER 2026
 
-GITHUB MAIN DOWNLOADS
+GITHUB DOWNLOADS — 22 OCTOBER RELEASE
   Excel: https://github.com/kennytam-code/code/raw/refs/heads/main/HK_IPO_Database_v1.xlsx
   HTML: https://github.com/kennytam-code/code/raw/refs/heads/main/hk_ipo_dashboard.html
 
@@ -34,6 +34,9 @@ CONTROLS
 
   HTML AH — one full-width chart at a time. Use Chart to select Premium,
   Premium + CSI 300, around-IPO market context, HKD prices or performance.
+  Premium and CSI share dates in separate upper/lower plots. Comparison
+  lines have endpoint labels; click a legend to focus a line. HTML Screener
+  also shows one selected analysis at a time.
   Premium changes use seven calendar days / one calendar month, in pp.
 
   Peer Trades — B3 named product-peer pair; F3 source; H3 horizon;
@@ -43,8 +46,14 @@ CONTROLS
   Screener — B5 H code / pipeline; E5 shows the resolved company.
   Type 9607, 09607, or a company name. First two columns are frozen.
   HTML Screener also offers code-first search.
-  B7:B14 shows database inputs; C7:C14 accepts overrides. Selected-deal
-  outputs sit on the right. Large tab title rows have been removed.
+  D7:D14 shows database inputs; F7:F14 accepts overrides. P7:P11 groups
+  ranking, cornerstone, A-share, included-code and comparison-count filters.
+  Selected-deal outputs sit on the right. Large tab title rows have been removed.
+  Database B2: Selected / All / Off. Selected is the default and requests
+  valuations only for the Screener company and displayed comparisons.
+  All loads every database company; Off stops valuation requests.
+  BBG Verify B2 defaults Off; use On only when running the verification.
+  IPO Live, AH and Peer Trades retain separate Stored/Bloomberg switches.
   Database fundamentals contain live TTM PE/PS, NTM PE and FY2027 PE/PS;
   Screener mirrors them. Historical IPO multiples remain separate.
 
@@ -60,6 +69,8 @@ CONTROLS
   per stock. Stocks and average lines are shown in separate views.
 
 DATA DATES AND CHECKS
+  This 22 October delivery changes controls, formulas and presentation;
+  it does not refresh market observations.
   Live quotes and the new IPO are dated 15 October. Older histories retain
   their own dates, mostly 2 October; this is not a blanket market refresh.
   Corporate-action adjustments use reviewed factors, not curve smoothing.

@@ -39,11 +39,11 @@ with zipfile.ZipFile(path) as z:
    assert named.text.startswith("'Calc (scoring engine)'!");addr=named.text.split('!')[1].replace('$','');actual=value(weights[addr]);assert actual not in [None,''] and float(actual)>0,(named.get('name'),addr,actual)
  print('PASS every scoring weight remains numeric and positive at its named address')
  # Missing pipeline profitability is unknown, never numeric zero in a Y/N field.
- fn=formulas.Parser().ast('='+sc['B10'].find(q('f')).text)[1].compile()
+ fn=formulas.Parser().ast('='+sc['D10'].find(q('f')).text)[1].compile()
  for picked,expected in [('missing',''),('profitable','Y'),('loss','N')]:
   args=[picked if k in ['B5','SELECTEDDEAL'] else np.array([['missing'],['profitable'],['loss']],dtype=object) if k=='ALLDEALS' else np.array([[0],['Y'],['N']],dtype=object) for k in fn.inputs]
   assert fn(*args).item()==expected,(picked,fn.inputs)
- assert value(sc['B10']) in [None,'','Y','N']
+ assert value(sc['D10']) in [None,'','Y','N']
  for col,title in [('BM','NTM P/E live'),('BN','FY2027 P/E live'),('BO','FY2027 P/S live')]:assert value(db[col+'4'])==title
  assert f'Database!$BQ$5:$BQ${n+4}' in sc['F53'].find(q('f')).text
  for i,d in enumerate(deals):
@@ -57,14 +57,14 @@ with zipfile.ZipFile(path) as z:
   assert f'MEDIAN({col}21:{col}35)' in sc[col+'37'].find(q('f')).text
   fn=formulas.Parser().ast('='+sc[col+'21'].find(q('f')).text)[1].compile()
   scores=np.arange(1,n+1).reshape((n,1)).astype(object);multiples=(np.arange(1,n+1)+5).reshape((n,1)).astype(object)
-  args=[15 if key=='D18' else scores if 'CALC' in key.upper() else multiples for key in fn.inputs]
+  args=[15 if key=='P11' else scores if 'CALC' in key.upper() else multiples for key in fn.inputs]
   assert fn(*args).item()==n+5
  def evaluate(formula,fixture):
   fn=formulas.Parser().ast('='+formula)[1].compile();args=[]
   for key in fn.inputs:
    if ':' in key:
     a,b=key.split(':');ac=ci(re.match('[A-Z]+',a)[0]);bc=ci(re.match('[A-Z]+',b)[0]);ar=int(re.search('[0-9]+',a)[0]);br=int(re.search('[0-9]+',b)[0]);args.append(np.array([[fixture.get(ec(c)+str(r),schedula.EMPTY) for c in range(ac,bc+1)] for r in range(ar,br+1)],dtype=object))
-   else:args.append(fixture.get(key,schedula.EMPTY))
+   else:args.append(fixture.get(key,True if key=='BM8' else schedula.EMPTY))
   return fn(*args).item()
  for out,source,helper,field in [('X','P','Y','PE_RATIO'),('AH','Z','AI','PE_RATIO'),('AR','AJ','AS','PX_TO_SALES_RATIO')]:
   start=ci(source)
@@ -88,7 +88,7 @@ with zipfile.ZipFile(path) as z:
  tickers=np.full((8*(n-1)+1,1),'',dtype=object);multiples=tickers.copy()
  for i in range(n):tickers[8*i,0]=f'{i+1} HK Equity';multiples[8*i,0]=i+1.5
  for i in [0,n//2,n-1]:
-  args=[f'{i+1} HK Equity' if key=='A'+str(hrow) else tickers if key.startswith('A8:') else multiples for key in fn.inputs];assert fn(*args).item()==i+1.5
+  args=['Selected' if key=='DATABASE!B2' else f'{i+1} HK Equity' if key=='A'+str(hrow) else tickers if key.startswith('A8:') else multiples for key in fn.inputs];assert fn(*args).item()==i+1.5
  assert moved_formula('IF(A1="Database!BN5",Database!$BN$5,0)','Database',64,3)=='IF(A1="Database!BN5",Database!$BQ$5,0)'
  assert moved_range('$A$5:$CC$528',64,3)=='$A$5:$CF$528'
  for i,p in enumerate(json.loads((ROOT/'data/peer_pairs.json').read_text())['pairs'],3):assert value(peer['S'+str(i)])==p['code_a']+' / '+p['code_b']

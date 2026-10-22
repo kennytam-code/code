@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "valuation_gate_cases": 2630,
+  "guarded_verify_cells": 5385,
+  "ah_pairs": 71,
+  "recent_bdh_requests_before": 204,
+  "recent_bdh_requests_after": 143,
+  "ah_compare_count_before": 52808,
+  "ah_compare_count_after": 4,
+  "aggregate_formulas_expanded": 61620,
+  "layout_formulas_checked": 166060,
+  "historical_database_numeric_cells_unchanged": 20970,
+  "native_charts_unchanged": true,
+  "live_bloomberg_tested": false,
+  "sha256": "ee4f93448fead949e2cb353d40f0db14574289f01d86f32d9b151002234cfab2"
+}

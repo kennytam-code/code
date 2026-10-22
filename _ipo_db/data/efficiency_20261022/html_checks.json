@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "render_cases": 426,
+  "detail_control_cases": 40,
+  "html_code_search_cases": 2104,
+  "entire_payload_unchanged": true,
+  "all_observations_and_gaps_preserved": true,
+  "actual_svg_function": true,
+  "browser": false
+}

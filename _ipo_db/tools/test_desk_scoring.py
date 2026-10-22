@@ -7,6 +7,7 @@ ROOT=Path(__file__).resolve().parent.parent;sys.path.insert(0,str(ROOT/'ipo_lib'
 from patch_peer_workbook import maps,q
 from reflow_monitors import nodes,serial
 from build_xlsx import load
+from screener_desk import MOVES
 
 def cellvalue(c):
  if c is None:return ''
@@ -29,7 +30,10 @@ with zipfile.ZipFile(ROOT/'out/HK_IPO_Database_v1.xlsx') as z:
  for target in targets:
   title=target['name'];ispipe='code' not in target or target not in deals
   attrs={'D7':target.get('sector') or '', 'D8':target.get('subsector') or '', 'D9':target.get('deal_size_hkdm',target.get('expected_size_hkdm')) or '', 'D10':target.get('profitable_at_ipo') or '', 'D11':target.get('is_h_share') or '', 'D12':serial(target['ipo_date']) if target.get('ipo_date') else serial('2026-10-15'),'D13':target.get('pe_ipo') or '', 'D14':target.get('oversub_public_mult') or '', 'B18':'All','B16':'standard','D17':'','B17':''}
-  base={**weights,**{'SCREENER!'+k:v for k,v in attrs.items()},'SELECTEDDEAL':title};keys=(target.get('cornerstone_keys') or '').split(';')
+  mapped={}
+  for k,v in attrs.items():
+   sn,addr=MOVES.get(k,('Screener',k));key=next(iter(formulas.Parser().ast("='"+sn+"'!"+addr)[1].compile().inputs));mapped[key]=v
+  base={**weights,**mapped,'SELECTEDDEAL':title};keys=(target.get('cornerstone_keys') or '').split(';')
   base.update({col+'1':keys[i] if i<len(keys) else '' for i,col in enumerate('UVWXY')})
   scores=[]
   for row,deal in enumerate(deals,5):

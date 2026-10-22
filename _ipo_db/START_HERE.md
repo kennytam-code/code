@@ -4,6 +4,58 @@ Read this file, then `data/release_state.json`. The latest instruction wins over
 older dated entries in `MAINTENANCE.md`. This file is intended for the next AI or
 analyst, including a session with no conversation history.
 
+## 22 October: request load and compact Screener
+
+Published to GitHub main on 22 October with the user's explicit authorization.
+Root download files and TO_NOMURA contain the same verified release. Future
+changes need their own publication authorization. Market observations were not
+refreshed.
+
+Database B2 controls live valuations: **Selected** (default: Screener company
+and its displayed comparisons), **All**, or **Off**. BBG Verify B2 defaults
+**Off**; On explicitly enables its 5,911 BDP/BDH function occurrences. Those
+verification calls and 3,693 valuation occurrences previously lacked an on/off
+guard. Counts are formula occurrences, not measured terminal/network requests.
+TTM BQL is now only a fallback for a nonnumeric BDP response. Selected H values
+reuse the database issuer block; pipeline-only H codes retain their own fallback.
+All eight-row BQL response areas, field-header extraction and zero/negative
+valuation handling remain intact. No actual Bloomberg terminal test is available.
+
+AH Recent now covers all 71 roster pairs, including 9976, 9607 and 2636, and uses
+one shared FX history: 143 guarded BDH calls versus 204 covering only 68 pairs.
+The AH Compare sheet factors 52,808 repeated COUNT calls into four helper cells,
+plus shared minimum/maximum/first-date positions. This changes computation,
+not the observations or entitlement adjustments. Do not remove the hidden saved
+history sheets: their constant cells do not issue Bloomberg requests.
+
+Screener B5 remains the code/pipeline selector. D7:D14 now contains database
+attributes, F7:F14 contains overrides; effective values are on hidden
+Calc (scoring engine)!AX7:AX14. Selected-deal context is I7:L14. Filters are
+P7 ranking, P8 cornerstone text, P9 A-share filter, P10 included codes and P11
+comparison count. The old G5 helper moved to Calc!AX5. Preserve the explicit
+reference map in `ipo_lib/screener_desk.py`; never restore old D18/B16 references
+in tests or future patches. W_* inputs remain AU2:AU12.
+
+HTML comparisons have endpoint codes/values, full dated legends and click/hover
+focus. Real missing observations remain gaps. Premium + CSI uses aligned upper
+and lower plots sharing dates, avoiding two return scales overlaid together.
+HTML Screener also shows one selected analysis at a time. Sector scope, exclusive
+average modes and six-line pagination remain mandatory.
+
+Final stages: `request_efficiency`, then `screener_desk`. Small Artifact templates
+are `data/request_controls.json` and `data/screener_desk_layout.json`; graft them
+with native XML. Checks: `tools/test_request_efficiency.py`,
+`tools/test_native_desk.py`, `tools/test_desk_scoring.py`,
+`tools/test_presentation_package.py`, `tools/test_efficiency_html.mjs`,
+`tools/test_comparison_scope.mjs`, `tools/test_selected_averages.mjs`.
+The new tests supersede earlier date-specific layout assertions.
+
+Bloomberg's primary documentation confirms BDP for a streaming last price:
+`=IF(A8="","",BDP(A8,"LAST_PRICE"))`. BDH requests historical data. Source:
+[Bloomberg Open API Core Developer Guide, §15.1 and §15.4](https://data.bloomberglp.com/professional/sites/4/BLPAPI-Core-Developer-Guide.pdf).
+The guide is dated 2016; do not infer current default update intervals from it.
+Changing workbook query scopes is not a measured speed benchmark.
+
 ## What the user wants
 
 The user works in Nomura sales/trading. The deliverables are a professional Excel
@@ -33,8 +85,8 @@ tabs stay at the back/hidden. Do not delete other research in TO_NOMURA.
 | AH | B4 pair code, E4 Stored/Bloomberg. Premium = A price × CNYHKD / H price − 1. Seven-day and calendar-month changes are percentage points. J5 links to sector averages at J57. |
 | AH charts | Premium left axis; A-share and CSI 300 price returns right axis, common observed dates. Bloomberg requests through TODAY; Stored retains per-pair dates. No invented points or cosmetic interpolation. Reviewed split/bonus factors align each leg on its own ex date. |
 | Peer Trades | B3 named direct product-peer pair; F3 source; H3 horizon; F4/H4 custom dates. Return spread = A minus B price return in percentage points, both rebased at their first common observed session. Keep the product overlap/mix distinction. |
-| Screener | B5 is code-first: numeric-sorted H-code dropdown plus uncoded pipeline names; E5:F5 shows the resolved company. Free typing still accepts company names, leading zeros and Bloomberg tickers; retain exact numeric aliases such as 9607. F53 reads Database BQ (A code). The eleven W_* named model inputs now live in hidden Calc (scoring engine)!AU2:AU12, with names/descriptions in AT/AV. The final workbook has no Notes sheet. Never overwrite these inputs with prose. |
-| Screener form | B7:B14 shows database inputs; C7:C14 contains overrides. D7:D14 retains the effective calculation with display format `;;;`. The seven context outputs moved from H8/H9/H12:H16 to F7/F8/F10:F14 without changing their formulas or values. B5:C5 is the code/pipeline selector; E5:F5 shows the resolved company. Top titles and duplicate selection prose are hidden; the real snapshot date stays visible. |
+| Screener | B5 is code-first: numeric-sorted H-code dropdown plus uncoded pipeline names; E5:L5 shows the resolved company. Free typing still accepts company names, leading zeros and Bloomberg tickers; retain exact numeric aliases such as 9607. F53 reads Database BQ (A code). The eleven W_* named model inputs now live in hidden Calc (scoring engine)!AU2:AU12, with names/descriptions in AT/AV. The final workbook has no Notes sheet. Never overwrite these inputs with prose. |
+| Screener form | D7:D14 shows database inputs; F7:F14 contains overrides. Effective calculations are Calc!AX7:AX14. B5:C5 is the code/pipeline selector; E5:L5 shows the resolved company. Selected-deal context is I7:L14; filters are P7:P11. Top titles are hidden; the real snapshot date stays visible. |
 | Database fundamentals | BJ/BL: live TTM P/E/P/S. BM:BO: NTM P/E, FY2027 P/E, FY2027 P/S. Screener BE/BG/BH:BJ mirrors these. Historical IPO multiples remain separate. |
 | HTML comparisons | Active sector/subsector/search filters restrict both individual lines and mean inputs. Select all selects only that scope. Stocks, Selected average and Sector averages are mutually exclusive views. Six lines per page with full legend/tooltip. Means use **only checked stocks**, each stock one weight; multiple selected expiries of one stock are averaged within that stock first. Missing is excluded, not zero. |
 | Lock-up (HTML only) | Historical, source-confirmed cornerstone expiries with complete ±30 HK-session endpoints. 161 events / 158 stocks in the 17 October release, prices through 2 October. Future/undated/ambiguous dates and incomplete or unverified price windows are excluded, not blank rows. Interior price gaps remain visible. Date shown is the last day locked; day 0 is the last HK session on/before it. |

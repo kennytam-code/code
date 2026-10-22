@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "checks": [
+    "request scopes, factoring and relocation",
+    "native formula/valuation fixtures",
+    "actual scoring across 526 issuers and three targets",
+    "complete native package/source parity",
+    "426 SVG cases and control/focus tests",
+    "6773 comparison scope/average observations",
+    "selected average edge cases"
+  ],
+  "stored_market_data_unchanged": true,
+  "publication": "local_only"
+}

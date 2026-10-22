@@ -2203,7 +2203,7 @@ function ahPanel(host, title, draw, kind, subtitle) {
     (subtitle ? `<p class="psub">${subtitle}</p>` : "");
   host.appendChild(card);
   if(kind==='market')host.insertBefore(card,host.firstChild);
-  const W = fitW(card, kind==='market'?1080:560), H = kind==='market'?340:270, M = { l: 58, r: 58, t: kind==='market'?38:20, b: kind==='market'?40:34 };
+  const W = fitW(card, kind==='market'?1080:560), H = kind==='market'?400:270, M = { l: 58, r: 58, t: kind==='market'?38:20, b: kind==='market'?40:34 };
   const svg = el("svg", { viewBox: `0 0 ${W} ${H}` }, card);
   draw(svg, W, H, M);
   return svg;
@@ -2227,15 +2227,18 @@ function drawAHMarket(svg,W,H,M,P,source,trend,span,LEAD,mode="all"){
   const marketA=trend.map(x=>100*(x[1]/trend[0][1]-1)),marketCSI=trend.map(x=>100*(x[2]/trend[0][2]-1));
   const begin=mode==='premium'?Math.min(0,P.days[0]??0):Math.min(LEAD,marketDays[0]??0),end=Math.max(1,span,mode==='premium'?0:marketDays.at(-1)??0);
   const X=v=>M.l+(W-M.l-M.r)*(v-begin)/(end-begin),ok=P.prem.filter(Number.isFinite);
-  const Yp=scaleFor(mode==='premium'&&ok.length?ok:[...ok,0],H,M),Ym=scaleFor([...(mode==='all'?marketA:[]),...marketCSI,0],H,M);
+  const split=mode==='market',plotHeight=H-M.b-M.t;
+  const top=split?{...M,b:H-(M.t+plotHeight*.60)}:M,bottom=split?{...M,t:M.t+plotHeight*.78}:M;
+  const Yp=scaleFor(ok.length?ok:[0],H,top),Ym=scaleFor([...(mode==='all'?marketA:[]),...marketCSI,0],H,bottom);
   const showMarket=mode!=='premium';
   svg.dataset.points=ok.length;svg.dataset.benchmarkPoints=trend.length;svg.dataset.axes='premium-left,market-return-right';svg.dataset.ipo=P.ipo;
   const axis=(Y,side,color)=>niceTicks(...Y.domain,5).filter(v=>Y(v)>=M.t&&Y(v)<=H-M.b).forEach(v=>{
     if(side==='left')el('line',{x1:M.l,x2:W-M.r,y1:Y(v),y2:Y(v),stroke:'#E5E9EE','stroke-width':.8},svg);
     const t=el('text',{x:side==='left'?M.l-10:W-M.r+10,y:Y(v)+4,'text-anchor':side==='left'?'end':'start','font-size':12,fill:color,style:`fill:${color};font-size:12px`},svg);t.textContent=v.toFixed(Math.abs(v)<1&&v!==0?1:0)+'%';
   });
-  axis(Yp,'left',AHCHART.premium);if(showMarket)axis(Ym,'right',AHCHART.csi);
-  for(const [x,text,anchor,color] of [[M.l,'Premium (%)','start',AHCHART.premium],[W-M.r,showMarket?(mode==='all'?'Price return (%)':'CSI 300 return (%)'):'','end',AHCHART.csi]]){
+  axis(Yp,'left',AHCHART.premium);if(showMarket)axis(Ym,split?'left':'right',AHCHART.csi);
+  if(split){const t=el('text',{x:M.l,y:bottom.t-10,fill:AHCHART.csi,'font-size':11,'font-weight':600},svg);t.textContent='CSI 300 return (%)';el('line',{x1:M.l,x2:W-M.r,y1:bottom.t-26,y2:bottom.t-26,stroke:'#E5E9EE'},svg);}
+  for(const [x,text,anchor,color] of [[M.l,'Premium (%)','start',AHCHART.premium],[W-M.r,showMarket&&!split?(mode==='all'?'Price return (%)':'CSI 300 return (%)'):'','end',AHCHART.csi]]){
     const t=el('text',{x,y:16,'text-anchor':anchor,'font-size':12,'font-weight':600,fill:color,style:`fill:${color};font-size:12px;font-weight:600`},svg);t.textContent=text;
   }
   const dateAt=n=>new Date(Date.parse(P.ipo)+n*86400000).toISOString().slice(0,10);
@@ -2245,7 +2248,7 @@ function drawAHMarket(svg,W,H,M,P,source,trend,span,LEAD,mode="all"){
     t.textContent=dateAt(d);
   }
   if(begin<0){el('line',{x1:X(0),x2:X(0),y1:M.t,y2:H-M.b,stroke:'#AEB7C2','stroke-width':1,'stroke-dasharray':'3 4'},svg);const t=el('text',{x:X(0)+5,y:M.t+12,'font-size':10,fill:'#626E7B'},svg);t.textContent='H IPO';}
-  const series=[{name:'CSI 300 return (right)',days:marketDays,ys:marketCSI,color:AHCHART.csi,dash:'7 4',w:2.1},{name:'A-share return (right)',days:marketDays,ys:marketA,color:AHCHART.a,w:2.1},{name:'A/H premium (left)',days:P.days,ys:P.prem,color:AHCHART.premium,w:2.8}].filter(s=>s.color===AHCHART.premium||showMarket&&(mode==='all'||s.color===AHCHART.csi));
+  const series=[{name:split?'CSI 300 return':'CSI 300 return (right)',days:marketDays,ys:marketCSI,color:AHCHART.csi,dash:'7 4',w:2.1},{name:'A-share return (right)',days:marketDays,ys:marketA,color:AHCHART.a,w:2.1},{name:'A/H premium (left)',days:P.days,ys:P.prem,color:AHCHART.premium,w:2.8}].filter(s=>s.color===AHCHART.premium||showMarket&&(mode==='all'||s.color===AHCHART.csi));
   for(const s of series){
     const Y=s.color===AHCHART.premium?Yp:Ym,p=pathline(svg,s.days,s.ys,X,Y,s.color,s.w);p.setAttribute('stroke-linejoin','round');p.setAttribute('stroke-linecap','round');p.setAttribute('data-name',s.name);if(s.dash)p.setAttribute('stroke-dasharray',s.dash);
     const connected=(i,j)=>j>=0&&j<s.days.length&&Number.isFinite(s.ys[j])&&Math.abs(s.days[i]-s.days[j])<=10;
@@ -2266,17 +2269,21 @@ function fullAHPath(d) {
   }
   return out;
 }
-let labAHFocus=null;
+let labAHFocus=null,labAHMode="premium";
 function renderAH(chosen, options={}) {
   const host = $(options.host || "#lab-ah"); host.innerHTML="";
   const paths=DATA.ahpaths || {};let pairs=chosen.filter(d=>paths[d.code]);
-  const mode=options.deskMode;
+  const mode=options.deskMode||(!options.host?labAHMode:null);
+  if(!options.host&&pairs.length){
+    const control=document.createElement('label');control.className='ah-focus';control.innerHTML='Analysis <select id="lab-ah-analysis"><option value="premium">A/H premium</option><option value="market">Premium + CSI 300</option><option value="around">A shares vs CSI 300 around IPO</option><option value="hkd">Prices in HKD</option><option value="open">Performance from first open</option></select>';host.appendChild(control);
+    const pick=control.querySelector('select');pick.value=labAHMode;pick.addEventListener('change',()=>{labAHMode=pick.value;renderAH(chosen,options);});
+  }
   const panel=(g,title,draw,kind,subtitle)=>{
     if(mode){
       const accepted={premium:'A/H premium and mainland market',market:'A/H premium and mainland market',around:'A shares vs CSI 300 · around H listing',hkd:'Prices in HKD',open:'Performance from first open'};
       if(title!==accepted[mode])return;
       if(mode==='premium'){title='A/H premium';subtitle=`<span class="ah-market-legend"><span><i style="border-color:${AHCHART.premium}"></i>A/H premium</span></span>`;}
-      if(mode==='market'){title='A/H premium · CSI 300';subtitle=subtitle.replace(/<span><i style="border-color:#16857A"><\/i>A-share return \(right\)<\/span>/,'');}
+      if(mode==='market'){title='A/H premium · CSI 300';subtitle='<span class="ah-market-base">Premium above · CSI 300 below · shared dates</span>';}
       if(mode==='hkd')subtitle=`<span class="ah-market-legend"><span><i style="border-color:${AHCHART.premium}"></i>H shares</span><span><i style="border-color:${AHCHART.a}"></i>A shares in HKD</span></span>`;
       if(mode==='around')subtitle=`<span class="ah-market-legend"><span><i style="border-color:${AHCHART.a}"></i>A shares</span><span><i style="border-color:${AHCHART.csi};border-top-style:dashed"></i>CSI 300</span></span>`;
       if(mode==='open')subtitle=`<span class="ah-market-legend"><span><i style="border-color:${AHCHART.premium}"></i>H shares</span><span><i style="border-color:${AHCHART.a}"></i>A shares</span><span class="ah-market-base">First available open = 100</span></span>`;
@@ -2307,7 +2314,7 @@ function renderAH(chosen, options={}) {
     wrap.innerHTML=`<div class="ovleg"><span><i class="sw" style="background:${BLUE}"></i>H shares (HKD)</span><span><i class="sw" style="background:${RED}"></i>A shares</span><span><i class="sw" style="background:${AHCHART.csi}"></i>CSI 300</span><span>H listed ${P.ipo} · offer HK$${P.offer}</span></div><div class="ahwrap"><div class="ahgrid"></div></div>`;
     host.appendChild(wrap);const g=wrap.querySelector(".ahgrid");
     const ref=(DATA.ah_reference?.pairs||{})[d.code],common=ref?.rows||[];
-    if(mode)$(options.note).textContent=mode==='around'&&common.length?`${common[0][0]} to ${common.at(-1)[0]} · first common close = 100`:`${P.ipo} to ${P.dates?.[take.at(-1)]||AHST[d.code]?.latest_date||DATA.ah_asof} · saved daily closes`;
+    if(mode)$(options.note||"#lab-ah-note").textContent=mode==='around'&&common.length?`${common[0][0]} to ${common.at(-1)[0]} · first common close = 100`:`${P.ipo} to ${P.dates?.[take.at(-1)]||AHST[d.code]?.latest_date||DATA.ah_asof} · saved daily closes`;
     if(common.length>1 && ref.pre_from){
       const days=common.map(x=>Math.round((Date.parse(x[0])-Date.parse(P.ipo))/86400000));
       const a=common.map(x=>100*x[1]/common[0][1]),b=common.map(x=>100*x[2]/common[0][2]);
@@ -3055,8 +3062,8 @@ HTML = """<!doctype html>
 .ah-desk-metrics>div:first-child{padding-left:0}.ah-desk-metrics>div:last-child{border:0}
 .ah-desk-metrics span{display:block;font-size:11px;color:var(--text-muted);margin-bottom:6px}
 .ah-desk-metrics strong{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
-.ah-desk-detail>.ovleg{display:none}#ah .ah-desk-detail .ahgrid{display:block}
-#ah .ah-desk-detail .ahpane{border:0;padding:12px 0 0;background:transparent}
+.ah-desk-detail>.ovleg{display:none}#ah .ah-desk-detail .ahgrid,#lab-ah .ah-desk-detail .ahgrid{display:block}
+#ah .ah-desk-detail .ahpane,#lab-ah .ah-desk-detail .ahpane{border:0;padding:12px 0 0;background:transparent}
 #ah .ah-desk-detail .ahpane h4{font-size:13px;font-weight:600}
 #ah-history-note{margin:4px 0 20px;font-size:11px}
 #ah-tbl{max-height:330px;border:1px solid var(--line);border-radius:4px;margin:10px 0 24px}
@@ -3067,6 +3074,15 @@ HTML = """<!doctype html>
 #ah-compare-chart .comparison-legend .sw{flex-shrink:0}
 #ah-comparison{margin-top:20px}
 @media(max-width:700px){.ah-desk-metrics>div{min-width:45%;padding:8px 12px!important;border:0}.ah-desk-metrics strong{font-size:17px}#ah-compare-chart .comparison-legend{grid-template-columns:1fr}}
+
+
+.comparison-legend{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 16px!important;padding:12px 0!important}
+.comparison-legend .chart-key{display:flex;align-items:flex-start;gap:9px;text-align:left;background:transparent;border:1px solid transparent;border-radius:3px;padding:8px;font:inherit;font-size:12px;color:var(--text);cursor:pointer;white-space:normal}
+.comparison-legend .chart-key:hover,.comparison-legend .chart-key:focus-visible,.comparison-legend .chart-key[aria-pressed="true"]{background:#F3F6F9;border-color:#D9E1E8;outline:none}
+.chart-key .sw{flex-shrink:0;margin-top:7px}.chart-key-name{line-height:1.4}.chart-key small{display:block;margin-top:3px;color:#626E7B;font-size:10px;font-variant-numeric:tabular-nums}
+#lab-ah .ah-focus{display:inline-flex;align-items:center;gap:12px;margin-right:20px;font-size:12px}
+#lab-ah .ah-focus select{min-height:32px}.ahpane svg{display:block}
+@media(max-width:700px){.comparison-legend{grid-template-columns:1fr!important}.chart-key{padding:6px!important}}
 
 </style>
 </head>

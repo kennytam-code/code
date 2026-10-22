@@ -1,5 +1,5 @@
 {
-  "release_date": "2026-10-20",
+  "release_date": "2026-10-22",
   "handover": "START_HERE.md",
   "counts": {
     "database_screener": 526,
@@ -33,7 +33,7 @@
     "numeric_entries": 39303,
     "internal_numeric_failures": 0,
     "existing_525_stock_numeric_changes": 0,
-    "native_excel_open": "20 October final workbook opened in native Microsoft Excel without a content-repair prompt; Screener selector, resolved name and rankings visually reviewed. View-only installation; interactive edits and live Bloomberg responses not tested.",
+    "native_excel_open": "22 October final workbook opened in native Microsoft Excel without a content-repair prompt; compact Screener form/table reviewed. View-only installation; live Bloomberg responses and mode switching not tested.",
     "other_tabs_style_preservation": "13 sheets: business values, formulas and caches preserved, including seven relocated Screener outputs; requested titles removed; chart data, axes, drawing anchors and relationships unchanged",
     "small_projection_review": [
       "Database",
@@ -140,7 +140,7 @@
         {
           "test": "tools/test_historical_lockups.py",
           "passed": true,
-          "output": "PASS 161 historical events / 9821 session slots: filed dates, listing inputs, holder boundaries, raw prices, split factors, exact ±30 endpoints, return math, payload and unchanged Excel",
+          "output": "PASS 161 historical events / 9821 session slots: filed dates, listing inputs, holder boundaries, raw prices, split factors, exact \u00b130 endpoints, return math, payload and unchanged Excel",
           "browser": false
         },
         {
@@ -322,6 +322,56 @@
       },
       "market_data_refreshed": false,
       "all_existing_updater_inputs_preserved": true
+    },
+    "request_efficiency_20261022": {
+      "checks": [
+        "request scopes, factoring and relocation",
+        "native formula/valuation fixtures",
+        "actual scoring across 526 issuers and three targets",
+        "complete native package/source parity",
+        "426 SVG cases and control/focus tests",
+        "6773 comparison scope/average observations",
+        "selected average edge cases"
+      ],
+      "workbook": {
+        "passed": true,
+        "valuation_gate_cases": 2630,
+        "guarded_verify_cells": 5385,
+        "ah_pairs": 71,
+        "recent_bdh_requests_before": 204,
+        "recent_bdh_requests_after": 143,
+        "ah_compare_count_before": 52808,
+        "ah_compare_count_after": 4,
+        "aggregate_formulas_expanded": 61620,
+        "layout_formulas_checked": 166060,
+        "historical_database_numeric_cells_unchanged": 20970,
+        "native_charts_unchanged": true,
+        "live_bloomberg_tested": false,
+        "sha256": "ee4f93448fead949e2cb353d40f0db14574289f01d86f32d9b151002234cfab2"
+      },
+      "html": {
+        "passed": true,
+        "render_cases": 426,
+        "detail_control_cases": 40,
+        "html_code_search_cases": 2104,
+        "entire_payload_unchanged": true,
+        "all_observations_and_gaps_preserved": true,
+        "actual_svg_function": true,
+        "browser": false
+      },
+      "native_excel": {
+        "date": "2026-10-22",
+        "sha256": "ee4f93448fead949e2cb353d40f0db14574289f01d86f32d9b151002234cfab2",
+        "opened_without_repair": true,
+        "screener_form_visually_reviewed": true,
+        "view_only": true,
+        "terminal_available": false,
+        "interactive_mode_switch_tested": false,
+        "scope": "Final native Excel open and Screener header/table visual review. Structural, numeric and reference checks cover the complete package separately. Excel application was in manual calculation mode; its settings were not changed."
+      },
+      "all_stored_updater_data_preserved": true,
+      "market_data_refreshed": false,
+      "terminal_speed_measured": false
     }
   },
   "known_limits": {
@@ -336,24 +386,33 @@
   },
   "deliverables": {
     "HK_IPO_Database_v1.xlsx": {
-      "bytes": 7845218,
-      "sha256": "16b40499cf7ce05741655d0a86a6bf2772b0bf606d56d4dde0a5dae534ba1588"
+      "bytes": 7864230,
+      "sha256": "ee4f93448fead949e2cb353d40f0db14574289f01d86f32d9b151002234cfab2"
     },
     "hk_ipo_dashboard.html": {
-      "bytes": 2866361,
-      "sha256": "1fe5e69c1ed3b5b3862b314293c54e2ccdce1e2eaec2ad91527d2037cc7c74dd"
+      "bytes": 2870870,
+      "sha256": "80fa3f2d9e45811ee9461a98ac4ebd4fc0f5c2521abc9f4ff98692ff6342183a"
     },
     "hk_ipo_dashboard.zip": {
-      "bytes": 2052305,
-      "sha256": "2caadff9901d98a7c8a9626aba37c53517426a2a9d0e4bd3662d7f4c8edaf92a"
+      "bytes": 2053786,
+      "sha256": "50b68c52fe63953d5d51d1ea49ca15db09980f7b9867610e62e1371d768c8cdd"
     },
     "hk_ipo.py": {
-      "bytes": 15354684,
-      "sha256": "082c84af40dec8806d934ae290c85e54f4b7265cd32b7ccbd822476a889b491f"
+      "bytes": 15375676,
+      "sha256": "76e9eff1416de58b1a54acdd701ff967c0ad025dac17906c0f355ff0fe34acdd"
     },
     "READ_ME_FIRST.txt": {
-      "bytes": 4743,
-      "sha256": "5c311eeb816be09671ad086e959b118d5cc63b3e6d581ea6b2adb8e820df2b3a"
+      "bytes": 5518,
+      "sha256": "3e30151416b0d2c789e8015abec4e76c99ce9b2adb238dfec2bfdeccc762536f"
     }
+  },
+  "publication": {
+    "status": "published",
+    "github_updated_this_session": true,
+    "date": "2026-10-22",
+    "repository": "https://github.com/kennytam-code/code",
+    "branch": "main",
+    "base_commit": "da3f75f46aaf2696ed53a4aab0a58f9676717662",
+    "authorization": "Explicit user request: push to github"
   }
 }
