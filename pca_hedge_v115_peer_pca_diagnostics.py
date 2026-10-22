@@ -256,8 +256,9 @@ import textwrap as _textwrap
 
 RIDGE_ALPHAS = np.logspace(-4, 2, 25)
 MIN_RETURN_STD = 1e-12
-PCA_REVISION = '2026-10-20-v123-estimator-selection'
+PCA_REVISION = '2026-10-22-v124-peer-discovery'
 MIN_TRAIN_COVERAGE = 0.90
+DISCOVERY_VERSION = 2
 
 
 def _supported_plot_style(style, rc_params=None):
@@ -311,6 +312,14 @@ def _decision_fields(weights, grade):
             'recommended_action': ('REVIEW_CANDIDATE' if eligible else 'NO_VALIDATED_HEDGE'),
             'candidate_weights': weights.copy(),
             'trade_weights': weights.copy() if eligible else weights.iloc[:0].copy()}
+
+
+def _recipe_selection_key(score,size,recipe):
+    """Deterministic numerical ties; no new data are used to break a training tie."""
+    label=str(recipe)
+    joint=label.startswith('search:')
+    order=int(label.split(':',1)[1]) if joint else 0
+    return (round(float(score),12),-int(size),int(joint),-order,label)
 
 
 def _short_window_fit_score(r2, n_obs, n_names, gross, gross_penalty):
@@ -687,7 +696,7 @@ HEDGE_EXPOSURES = {
 }
 
 # (market, exposure tag) → locally-listed instruments, most representative
-# first. Resolution order is (market, tag) → (country, tag) → unresolved, and an
+# first. Resolution uses the listing market only; foreign proxies remain unresolved, and an
 # unresolved tag is REPORTED rather than silently skipped: a hedge built without
 # the leg its target most depends on is exactly the case the desk needs told.
 #
@@ -874,8 +883,7 @@ def _resolve_exposures(tags, market, country):
     rather than leaving the omission unexplained."""
     instruments, resolved, unresolved = [], {}, {}
     for tag in sorted(tags):
-        hit = (MARKET_INSTRUMENTS.get((market, tag))
-               or MARKET_INSTRUMENTS.get((country, tag)))
+        hit = MARKET_INSTRUMENTS.get((market, tag))
         if hit:
             resolved[tag] = list(hit)
             instruments.extend(hit)
@@ -1707,15 +1715,23 @@ def bbg_bulk(session, ticker, field, overrides=None):
             o.setElement("value", str(v))
     session.sendRequest(req)
     rows = []
+    request_errors=[]
 
     def on_msg(msg):
+        if msg.hasElement('responseError'):
+            request_errors.append(str(msg.getElement('responseError')))
+            return
         if not msg.hasElement("securityData"):
             return
         arr = msg.getElement("securityData")
         for i in range(arr.numValues()):
             sd = arr.getValueAsElement(i)
-            if sd.hasElement("securityError"):
+            errors=[]
+            _bbg_field_errors(sd,ticker,errors)
+            if errors:
+                request_errors.extend(errors)
                 continue
+            if not sd.hasElement('fieldData'): continue
             fd = sd.getElement("fieldData")
             if fd.hasElement(field):
                 bulk = fd.getElement(field)
@@ -1728,6 +1744,8 @@ def bbg_bulk(session, ticker, field, overrides=None):
                     rows.append(d)
 
     _drain_events(session, on_msg)
+    if request_errors:
+        raise RuntimeError('Bloomberg '+field+' for '+ticker+': '+str(request_errors))
     return rows
 
 
@@ -1883,20 +1901,25 @@ def _pit_index_membership(session, index_tickers, start, end, freq_days=91):
 
 
 def _peer_industry_supported(target_ref, peer_ref):
-    """Strict peers need industry agreement without an explicit sector conflict.
-
-    A missing/error label is never a match. Conflicting known sector labels
-    require manual review rather than automatic admission through another field.
-    """
-    for field in ('GICS_SECTOR_NAME', 'BICS_LEVEL_1_SECTOR_NAME'):
-        a, b = target_ref.get(field), peer_ref.get(field)
-        if _usable_industry(a) and _usable_industry(b) and not _same_industry(a, b):
+    """Use the narrowest shared level within each taxonomy; no parent override."""
+    issuer=_issuer_id(target_ref)
+    if issuer and issuer==_issuer_id(peer_ref):
+        return False
+    if any(_usable_industry(peer_ref.get(f)) for f in ('SECURITY_TYP2','SECURITY_TYP')) and not _common_share_type(peer_ref):
+        return False
+    for field in ('GICS_SECTOR_NAME','BICS_LEVEL_1_SECTOR_NAME'):
+        a,b=target_ref.get(field),peer_ref.get(field)
+        if _usable_industry(a) and _usable_industry(b) and not _same_industry(a,b):
             return False
-    return any(_same_industry(target_ref.get(field), peer_ref.get(field))
-               for field in ('BICS_LEVEL_4_SUB_INDUSTRY_NAME',
-                             'BICS_LEVEL_3_INDUSTRY_NAME',
-                             'BICS_LEVEL_2_INDUSTRY_GROUP_NAME',
-                             'GICS_SUB_INDUSTRY_NAME', 'GICS_INDUSTRY_NAME'))
+    for fields in (('BICS_LEVEL_4_SUB_INDUSTRY_NAME','BICS_LEVEL_3_INDUSTRY_NAME',
+                    'BICS_LEVEL_2_INDUSTRY_GROUP_NAME'),
+                   ('GICS_SUB_INDUSTRY_NAME','GICS_INDUSTRY_NAME')):
+        for field in fields:
+            a,b=target_ref.get(field),peer_ref.get(field)
+            if _usable_industry(a) and _usable_industry(b):
+                if _same_industry(a,b): return True
+                break
+    return False
 
 
 
@@ -1934,8 +1957,12 @@ def _discover_sector_stocks(target, references, candidates, registry_audit=(),
         support, reason = [], ''
         if _listing_market_key(ticker) != _listing_market_key(target):
             reason = 'different listing market'
+        elif _issuer_id(target_ref) and _issuer_id(target_ref)==_issuer_id(ref):
+            reason = 'another share class of target issuer'
         elif _is_etf(ticker):
             reason = 'ETF; controlled separately'
+        elif any(_usable_industry(ref.get(f)) for f in ('SECURITY_TYP2','SECURITY_TYP')) and not _common_share_type(ref):
+            reason = 'not a verified equity instrument'
         else:
             pairs = [(field, target_ref.get(field), ref.get(field)) for field in fields
                      if _usable_industry(target_ref.get(field)) and _usable_industry(ref.get(field))]
@@ -2082,9 +2109,212 @@ def _sector_etf_references(result, frame, peers, references, options):
                     ticker=ticker, weight=weight, r2=r2, score=score, reference_only=True)
 
 
+def _specific_exposure_tags(ref):
+    """Each taxonomy contributes its narrowest usable description, not its parents."""
+    descriptions=[]
+    for fields in (('BICS_LEVEL_4_SUB_INDUSTRY_NAME','BICS_LEVEL_3_INDUSTRY_NAME',
+                    'BICS_LEVEL_2_INDUSTRY_GROUP_NAME'),
+                   ('GICS_SUB_INDUSTRY_NAME','GICS_INDUSTRY_NAME')):
+        value=next((ref.get(f) for f in fields if _usable_industry(ref.get(f))),None)
+        if value: descriptions.append(value)
+    return _exposure_tags(*descriptions)
+
+
+def _discovery_references(session, names, fields, errors):
+    """Retain successful batches and retry missing securities once, across markets."""
+    result={}
+    names=list(dict.fromkeys(names))
+    for start in range(0,len(names),300):
+        pending=names[start:start+300]
+        for attempt in range(2):
+            try:
+                received=bbg_ref_multi(session,pending,fields,errors=errors)
+                for ticker,values in received.items(): result.setdefault(ticker,{}).update(values)
+            except Exception as err:
+                errors.append(dict(stage='classification request',tickers=list(pending),
+                                   attempt=attempt+1,reason=str(err)))
+            pending=[t for t in pending if not result.get(t)]
+            if not pending: break
+        if pending:
+            errors.append(dict(stage='classification missing',tickers=pending,
+                               reason='No reference fields returned after retry'))
+    return result
+
+
+def _common_share_type(ref):
+    """Positive common-equity/REIT type evidence for directory/search candidates."""
+    value=str(next((ref.get(f) for f in ('SECURITY_TYP2','SECURITY_TYP')
+                    if _usable_industry(ref.get(f))), '')).strip().casefold()
+    return value in ('common stock','common shares','ordinary shares',
+                     'depositary receipt','depository receipt','adr','gdr','reit',
+                     'stapled security','stapled securities')
+
+
+def _verify_roster_candidates(names, audit, references):
+    """An active-security directory also contains funds/debt: verify before use."""
+    untyped=set(t for row in audit if row.get('requires_security_type')
+                for t in row.get('issuer_names',{}))
+    blocked={t for t in untyped if not _common_share_type(references.get(t,{}))}
+    for row in audit:
+        if row.get('requires_security_type'):
+            row['security_type_unverified_or_non_equity']=sorted(set(row.get('issuer_names',{})) & blocked)
+            row['verified_equities']=len(set(row.get('issuer_names',{}))-blocked)
+    return [t for t in names if t not in blocked],blocked
+
+
+def _bbg_equity_lookup(session, query, limit=100):
+    """Documented //blp/instruments search; results are leads, never identity proof."""
+    req=session.getService('//blp/instruments').createRequest('instrumentListRequest')
+    for key,value in (('query',query),('yellowKeyFilter','YK_FILTER_EQTY'),
+                      ('languageOverride','LANG_OVERRIDE_NONE'),('maxResults',limit)):
+        req.set(key,value)
+    session.sendRequest(req)
+    names=[];result_count=[0];request_errors=[]
+    def receive(msg):
+        if msg.hasElement('responseError'):
+            request_errors.append(str(msg.getElement('responseError')))
+            return
+        if not msg.hasElement('results'): return
+        rows=msg.getElement('results')
+        result_count[0]+=rows.numValues()
+        for i in range(rows.numValues()):
+            security=rows.getValueAsElement(i).getElementAsString('security')
+            security=security[8:] if security.startswith('/ticker/') else security
+            match=re.fullmatch(r'([^\s/]+(?:/[A-Z])?)\s+([A-Z]{2})\s+(?:Equity|<equity>)',security,re.I)
+            if match:
+                names.append(_fmt_bbg_ticker(match.group(1)+' '+match.group(2).upper()))
+    _drain_events(session,receive)
+    if request_errors:
+        raise RuntimeError('Security lookup: '+'; '.join(request_errors))
+    return sorted(set(names)), result_count[0]>=limit
+
+
+def _issuer_id(ref):
+    """Bloomberg ID035 / ID_BB_COMPANY; reject zero/error placeholders."""
+    value=_positive_number(ref.get('ID_BB_COMPANY'))
+    return str(int(value)) if value is not None and value.is_integer() else None
+
+
+def _local_peer_listings(session,target,foreign_peers,references,fields,errors,allow_lookup=True):
+    """Resolve foreign peer issuers to local shares; never substitute A-share prices.
+
+    Lookup names only generate leads. Admission requires equal Bloomberg company
+    ID, local listing venue, common-share type and the target's peer taxonomy.
+    Unavailable identity fields/services leave an explicit unresolved audit.
+    """
+    market=_listing_market_key(target);tgt=references.get(target,{})
+    found,audit=[],[];service_ready=None;queries={}
+    for foreign in dict.fromkeys(foreign_peers):
+        if _listing_market_key(foreign)==market: continue
+        ref=references.get(foreign,{})
+        issuer=_issuer_id(ref)
+        if issuer and issuer==_issuer_id(tgt):
+            audit.append(dict(foreign_peer=foreign,local_listings=[],status='target issuer excluded',
+                              reason='Another share class of the target is not a peer'))
+            continue
+        if not _peer_industry_supported(tgt,ref): continue
+        row=dict(foreign_peer=foreign,local_listings=[],status='unresolved')
+        audit.append(row)
+        if not _usable_industry(issuer):
+            row['reason']='Bloomberg company identity unavailable';continue
+        local=[t for t,r in references.items() if _listing_market_key(t)==market and
+               _issuer_id(r)==issuer and t!=target and
+               _common_share_type(r) and _peer_industry_supported(tgt,r)]
+        if not local:
+            if not allow_lookup:
+                row['reason']='No issuer match in the retrieved local roster; name lookup deferred because listing coverage was received'
+                continue
+            query=ref.get('LONG_COMP_NAME') or ref.get('NAME')
+            if not _usable_industry(query):
+                row['reason']='Company name unavailable for local-listing lookup';continue
+            if service_ready is None:
+                try: service_ready=bool(session.openService('//blp/instruments'))
+                except Exception as err:
+                    service_ready=False;errors.append(dict(stage='security lookup service',reason=str(err)))
+            if not service_ready:
+                row['reason']='Bloomberg instrument lookup unavailable';continue
+            if issuer not in queries:
+                try:
+                    leads,truncated=_bbg_equity_lookup(session,str(query))
+                    leads=[t for t in leads if t!=target and _listing_market_key(t)==market]
+                    missing=[t for t in leads if t not in references]
+                    if missing: references.update(_discovery_references(session,missing,fields,errors))
+                    local=[t for t in leads if _issuer_id(references.get(t,{}))==issuer
+                           and _common_share_type(references.get(t,{}))
+                           and _peer_industry_supported(tgt,references.get(t,{}))]
+                    queries[issuer]=(local,truncated,None)
+                except Exception as err:
+                    queries[issuer]=([],False,str(err))
+            local,truncated,error=queries[issuer]
+            row.update(lookup_query=query,lookup_limit=100,lookup_truncated=truncated)
+            if error: row['reason']=error
+        if local:
+            row.update(status='verified local listing',local_listings=sorted(local))
+            found.extend(local)
+        elif 'reason' not in row:
+            row['reason']='No local common share verified; this is not proof that no local listing exists'
+    return sorted(set(found)),audit
+
+
+def _refresh_cached_peer_classification(data):
+    """Recheck saved evidence without inventing missing peers or changing prices."""
+    if not data or data.get('peer_policy_version') not in (4,5): return data
+    lists=dict(data.get('peer_tickers_by_target') or {});discovery=dict(data.get('peer_discovery_by_target') or {})
+    changed=False
+    for target,names in lists.items():
+        meta=discovery.get(target,{})
+        refs=meta.get('classification_evidence') or {}
+        if not refs.get(target): continue
+        keep,_,_=_strict_peer_set(refs[target],refs,names)
+        removed=sorted(set(names)-set(keep))
+        if removed:
+            lists[target]=keep
+            discovery[target]=dict(meta,taxonomy_rejected=sorted(set(meta.get('taxonomy_rejected',[]))|set(removed)),
+                                   current_taxonomy_reclassified=removed)
+            changed=True
+    return dict(data,peer_tickers_by_target=lists,peer_discovery_by_target=discovery) if changed else data
+
+
+def _extend_historical_discovery(session,names,metadata):
+    """Classify past members before choosing which price histories to request."""
+    known={t:r for m in metadata for t,r in m.get('classification_evidence',{}).items()}
+    missing=[t for t in names if t not in known]
+    errors=[]
+    if missing:
+        fields=['GICS_SECTOR_NAME','GICS_INDUSTRY_NAME','GICS_SUB_INDUSTRY_NAME',
+                'BICS_LEVEL_1_SECTOR_NAME','BICS_LEVEL_2_INDUSTRY_GROUP_NAME',
+                'BICS_LEVEL_3_INDUSTRY_NAME','BICS_LEVEL_4_SUB_INDUSTRY_NAME',
+                'SECURITY_TYP','SECURITY_TYP2','ID_BB_COMPANY']
+        known.update(_discovery_references(session,missing,fields,errors))
+    for m in metadata:
+        target=m['target'];refs=dict(known,**m.get('classification_evidence',{}))
+        peers,_,_=_strict_peer_set(refs.get(target,{}),refs,names)
+        sector,rows=_discover_sector_stocks(target,refs,names,m.get('listing_registry_audit',[]))
+        m['peer_tickers']=sorted(set(m.get('peer_tickers',[]))|set(peers))
+        m['peer_raw']=sorted(set(m.get('peer_raw',[]))|set(peers))
+        m['sector_stock_tickers']=sorted(set(m.get('sector_stock_tickers',[]))|set(sector))
+        m.setdefault('sector_stock_audit',[]).extend(rows)
+        m.setdefault('classification_evidence',{}).update({t:refs.get(t,{}) for t in set(peers+sector)})
+        m.setdefault('reference_errors',[]).extend(errors)
+        sources=m.setdefault('source_candidates',{})
+        sources['Historical classified peers']=peers
+        sources['Historical classified sector stocks']=sector
+        m.setdefault('non_index_shorts',set()).update(peers+sector)
+
+
+def _related_history_names(metadata):
+    names=set()
+    for m in metadata:
+        names.update(m.get('peer_tickers',[]))
+        names.update(m.get('sector_stock_tickers',[]))
+        for label in ('Target sector ETFs','Theme/exposure ETFs','Control ETFs'):
+            names.update(m.get('source_candidates',{}).get(label,[]))
+    return names
+
+
 def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
                            min_mktcap_usd_mm=5000, meta=None, exclude=None,
-                           additional_universe=None, defer_cap_filter=False):
+                           additional_universe=None, defer_cap_filter=False, discovery_cache=None, progress=None):
     print(f"  Auto-discovering universe for {target_ticker}...")
 
     ref_fields = [
@@ -2097,8 +2327,27 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
         'GICS_INDUSTRY_NAME',
         'GICS_SUB_INDUSTRY_NAME',   # [Fix 1] correct field name
         'CUR_MKT_CAP',
-        'AVERAGE_VOLUME_30D',
+        'AVERAGE_VOLUME_30D', 'NAME', 'LONG_COMP_NAME',
+        'ID_BB_COMPANY', 'SECURITY_TYP', 'SECURITY_TYP2',
     ]
+    reference_errors=[]
+    cache={} if discovery_cache is None else discovery_cache
+    def read_references(names):
+        stored=cache.setdefault('references',{})
+        missing=[t for t in names if t not in stored]
+        if missing:
+            if progress: progress('discovery',f'{target_ticker}: checking {len(missing):,} company records')
+            stored.update(_discovery_references(session,missing,ref_fields,reference_errors))
+        return {t:stored[t] for t in names if t in stored}
+    def read_index(spec):
+        key=tuple([spec] if isinstance(spec,str) else spec or [])
+        stored=cache.setdefault('indices',{})
+        if key not in stored: stored[key]=_index_members(session,spec)
+        return stored[key]
+    def read_peers(ticker):
+        stored=cache.setdefault('peer_links',{})
+        if ticker not in stored: stored[ticker]=bbg_bulk(session,ticker,'BLOOMBERG_PEERS')
+        return stored[ticker]
     tgt_ref = bbg_ref_single(session, target_ticker, ref_fields)
     target_usd_cap = None
     if min_mktcap_usd_mm:
@@ -2148,7 +2397,7 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
     )
     sector_key = 'Broad'
     # GICS sector has priority because it is explicitly a sector-level field.
-    for descriptor in (tgt_gics_sec, tgt_bics_lvl2):
+    for descriptor in (tgt_gics_sec, tgt_ref.get('BICS_LEVEL_1_SECTOR_NAME'), tgt_bics_lvl2):
         val = str(descriptor or '').lower()
         if not val or val == 'broad':
             continue
@@ -2164,8 +2413,7 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
     # match. Read it properly: derive the exposures the target carries, and
     # resolve each to an instrument listed in ITS OWN market so the candidate
     # set contains the thing the target actually moves with.
-    _tags = _exposure_tags(tgt_bics_lvl4, tgt_bics_lvl3, tgt_bics_lvl2,
-                           tgt_gics_sub, tgt_gics_ind)
+    _tags = _specific_exposure_tags(tgt_ref)
     exp_instruments, exp_resolved, exp_unresolved = _resolve_exposures(
         _tags, EXCH_TO_MARKET.get(_exch_of(target_ticker),market), country)
     if _tags:
@@ -2184,11 +2432,20 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
         print(f"    ├─ no specific commodity/rates exposure implied by the "
               f"taxonomy — broad-market candidates only")
 
-    registry,registry_audit=_public_equity_universe(EXCH_TO_MARKET.get(_exch_of(target_ticker)))
-    additional_universe=list(dict.fromkeys(list(additional_universe or [])+registry))
+    import copy
+    listing_market=_listing_market_key(target_ticker)
+    rosters=cache.setdefault('rosters',{})
+    if progress: progress('discovery',f'{target_ticker}: retrieving the local listing directory')
+    if listing_market not in rosters: rosters[listing_market]=_public_equity_universe(listing_market)
+    registry,registry_audit=copy.deepcopy(rosters[listing_market])
+    supplied_universe=list(additional_universe or [])
+    additional_universe=list(dict.fromkeys(supplied_universe+registry))
     if meta is not None: meta['listing_registry_audit']=registry_audit
     for item in registry_audit:
         print(f"    Listing source {item['source']}: {item['status']} ({item['count']} companies)")
+        if progress:
+            progress('discovery',f"{target_ticker}: matching companies to industries",
+                     source=(item['source'],f"{item['source']}: {item['count']:,} candidates" if item['status']=='received' else item['source']+': unavailable'))
     # 1. Discover the sector-specific index AND broad-market index separately.
     # Fallbacks are within each index spec. Fetching only one of these silently
     # discards local names outside the narrower index; no raw index is traded.
@@ -2197,7 +2454,7 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
     sector_index_tickers, sector_members = _sector_index_members(
         session, market, sector_key, broad_idx_spec)
     sector_index_ticker = sector_index_tickers[0] if sector_index_tickers else None
-    broad_index_ticker, broad_members = _index_members(session, broad_idx_spec)
+    broad_index_ticker, broad_members = read_index(broad_idx_spec)
     local_index_ticker = sector_index_ticker or broad_index_ticker
     local_members = sorted(set(sector_members) | set(broad_members))
     if sector_index_tickers:
@@ -2216,12 +2473,18 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
                          key=str)
     global_super_pool = []
     for spec in broad_specs:
-        _, members = _index_members(session, spec)
+        _, members = read_index(spec)
         global_super_pool.extend(members)
-    global_super_pool = sorted(set(global_super_pool) | set(additional_universe or []))
-    local_members = sorted(set(local_members) | {t for t in (additional_universe or []) if _exch_of(t) == _exch_of(target_ticker)})
-
-    pool_ref_data = bbg_ref_multi(session, global_super_pool, ref_fields)
+    global_super_pool = sorted(set(global_super_pool) | set(local_members) | set(additional_universe))
+    pool_ref_data = read_references(global_super_pool)
+    registry,untyped_blocked=_verify_roster_candidates(registry,registry_audit,pool_ref_data)
+    # Do not let an untyped security enter another discovery path via the fallback.
+    for name in untyped_blocked: pool_ref_data.pop(name,None)
+    additional_universe=list(dict.fromkeys(supplied_universe+registry))
+    local_members = sorted((set(local_members) | {t for t in additional_universe
+                            if _listing_market_key(t)==_listing_market_key(target_ticker)})-untyped_blocked)
+    sector_members=[t for t in sector_members if t not in untyped_blocked]
+    pool_ref_data[target_ticker]=tgt_ref
 
     # 3. Dual-taxonomy matching (BICS OR GICS)
     industry_matches = []
@@ -2240,10 +2503,12 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
     # 4. Bloomberg official peers + second-degree peers
     #    [Fix 1: proper formatting + capped API calls]
     peer_matches, first_degree, to_expand, failed_expansions = [], [], [], []
+    direct_peer_error=None
+    if progress: progress('discovery',f'{target_ticker}: checking Bloomberg peer links and local listings')
     second_degree_parents = {}   # independent first-degree paths to each candidate
     try:
         first_degree = []
-        for r in bbg_bulk(session, target_ticker, 'BLOOMBERG_PEERS'):
+        for r in read_peers(target_ticker):
             tk = _fmt_bbg_ticker(r.get('Peer Ticker', ''))
             if tk:
                 first_degree.append(tk)
@@ -2255,7 +2520,7 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
         failed_expansions = []
         for peer in to_expand:
             try:
-                for r in bbg_bulk(session, peer, 'BLOOMBERG_PEERS'):
+                for r in read_peers(peer):
                     tk = _fmt_bbg_ticker(r.get('Peer Ticker', ''))
                     if tk:
                         peer_matches.append(tk)
@@ -2269,6 +2534,7 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
             print(f'    ⚠ {len(failed_expansions)} second-degree requests failed; '
                   'coverage is incomplete: ' + ', '.join(t[0] for t in failed_expansions[:8]))
     except Exception as e:
+        direct_peer_error=str(e)
         print(f"    ⚠ failed to read peers: {e}")
 
     # 4a. Bloomberg's peer-of-a-peer graph is not transitive. For example,
@@ -2283,7 +2549,7 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
     missing_second_refs = [t for t in second_degree_raw if t not in pool_ref_data]
     if missing_second_refs:
         try:
-            pool_ref_data.update(bbg_ref_multi(session, missing_second_refs, ref_fields))
+            pool_ref_data.update(read_references(missing_second_refs))
         except Exception as e:
             print(f'    ⚠ second-degree taxonomy fetch failed: {e}; '
                   'unverified links will be audit-only')
@@ -2297,9 +2563,13 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
     peer_matches_raw = list(dict.fromkeys(peer_matches))
     missing_direct=[t for t in first_degree if t not in pool_ref_data]
     if missing_direct:
-        pool_ref_data.update(bbg_ref_multi(session,missing_direct,ref_fields))
+        pool_ref_data.update(read_references(missing_direct))
     direct_verified,direct_rejected,direct_unknown=_strict_peer_set(tgt_ref,pool_ref_data,first_degree)
-    peer_matches = list(dict.fromkeys(direct_verified + second_degree_verified))
+    local_peer_listings,local_listing_audit=_local_peer_listings(
+        session,target_ticker,direct_verified,pool_ref_data,ref_fields,reference_errors,allow_lookup=not bool(registry) or any(r.get('status')!='received' for r in registry_audit))
+    peer_matches = list(dict.fromkeys(direct_verified + second_degree_verified + local_peer_listings))
+    local_members=sorted(set(local_members)|set(local_peer_listings))
+    print(f'    ├─ verified local listings of foreign direct peers: {len(local_peer_listings)}')
 
     # 4b. ALWAYS search local BICS Level-2 related companies, not only when
     # the narrow local peer count is below an arbitrary 10-name threshold.
@@ -2310,11 +2580,11 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
     missing_local = [tk for tk in broad_local if tk not in pool_ref_data]
     if missing_local:
         try:
-            pool_ref_data.update(bbg_ref_multi(session, missing_local, ref_fields))
+            pool_ref_data.update(read_references(missing_local))
         except Exception as e:
             print(f'    ⚠ local sector references unavailable: {e}')
     for tk in sorted(broad_local):
-        if tk in _direct_peer_set or _exch_of(tk) != _exch_of(target_ticker):
+        if tk in _direct_peer_set or _listing_market_key(tk) != _listing_market_key(target_ticker):
             continue
         d = pool_ref_data.get(tk, {})
         same_bics2 = _same_industry(tgt_bics_lvl2,d.get('BICS_LEVEL_2_INDUSTRY_GROUP_NAME'))
@@ -2332,7 +2602,7 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
     sector_pool = sorted(set(local_members + peer_matches + industry_matches))
     missing_sector = [t for t in sector_pool if t not in pool_ref_data]
     if missing_sector:
-        pool_ref_data.update(bbg_ref_multi(session, missing_sector, ref_fields))
+        pool_ref_data.update(read_references(missing_sector))
     pool_ref_data[target_ticker] = tgt_ref
     sector_stocks, sector_stock_audit = _discover_sector_stocks(
         target_ticker, pool_ref_data, sector_pool, registry_audit,
@@ -2356,6 +2626,7 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
         'Local sector/industry index': list(sector_members),
         'BICS/GICS industry': list(industry_matches),
         'Bloomberg 1st degree': list(direct_verified),
+        'Local listings of foreign peers': list(local_peer_listings),
         'Bloomberg direct unverified': list(direct_rejected + direct_unknown),
         'Bloomberg 2nd degree': list(second_degree_verified),
         'Bloomberg 2nd degree (unverified, audit only)': list(second_degree_unverified),
@@ -2369,12 +2640,16 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
     if meta is not None:                          # [Fix 49] expose discovery
         meta['target'] = target_ticker
         meta['source_candidates'] = sources
+        meta['reference_errors']=reference_errors
+        meta['direct_peer_error']=direct_peer_error
+        meta['local_listing_audit']=local_listing_audit
+        meta['discovery_version']=DISCOVERY_VERSION
         meta['classification_missing'] = sorted(t for t in local_members if not any(_usable_industry(pool_ref_data.get(t,{}).get(f)) for f in ('GICS_INDUSTRY_NAME','BICS_LEVEL_2_INDUSTRY_GROUP_NAME','BICS_LEVEL_3_INDUSTRY_NAME')))
         meta['independent_peer_crosscheck'] = _independent_peer_crosscheck(target_ticker,registry_audit,peer_matches+industry_matches+local_bics2_peers)
         meta['taxonomy_rejected'] = direct_rejected
         meta['taxonomy_unknown'] = direct_unknown
-        meta['universe_coverage'] = ('supplied screen/list plus indices and Bloomberg relations' if additional_universe else 'index and Bloomberg relation coverage only; not all listings')
-        meta['peer_raw'] = sorted(set(peer_matches_raw + industry_matches + local_bics2_peers)
+        meta['universe_coverage'] = ('official listing candidates, supplied lists, indices and Bloomberg relations; subject to classification/identity checks' if registry else 'supplied screen/list plus indices and Bloomberg relations; official roster unavailable' if supplied_universe else 'INCOMPLETE: index and Bloomberg relation coverage only; official roster unavailable')
+        meta['peer_raw'] = sorted(set(peer_matches_raw + industry_matches + local_bics2_peers + local_peer_listings)
                                   - {target_ticker})
         meta['peer_expansion_requested'] = len(to_expand) if first_degree else 0
         meta['peer_expansion_available'] = len(first_degree)
@@ -2387,7 +2662,7 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
         meta['peer_tickers'] = sorted(set(peer_matches + industry_matches + local_bics2_peers) - {target_ticker})
         meta['sector_stock_tickers'] = list(sector_stocks)
         meta['sector_stock_audit'] = sector_stock_audit
-        meta['classification_evidence'] = {t: pool_ref_data.get(t, {}) for t in set(meta['peer_tickers']) | set(sector_stocks)}
+        meta['classification_evidence'] = {t: pool_ref_data.get(t, {}) for t in set(meta['peer_tickers']) | set(local_members) | set(sector_stocks)}
         meta['classification_evidence'][target_ticker] = tgt_ref
         meta['broad_market'] = broad_spec
         meta['index_ticker'] = local_index_ticker  # legacy / primary index
@@ -2599,6 +2874,9 @@ def check_cache_fit(target, data=None, fingerprint=None, stale_after=5):
                 'message': ('needs a fresh download — the hedging-instrument '
                             'map changed since this was cached, so the saved '
                             'universe cannot contain the new instruments')}
+    if fp.get('discovery_version') != DISCOVERY_VERSION:
+        return {'status':'mismatch','missing':[],'last_date':last,
+                'message':'needs a fresh download — peer discovery changed; an old cache cannot contain newly found local listings'}
     missing = [l for l in legs if l not in cols]
     if missing:
         return {'status': 'mismatch', 'missing': missing, 'last_date': last,
@@ -3748,7 +4026,8 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
                         force_include=None, fetch_mktcap_hist=True,
                         fetch_pit_members=True, cache=True,
                         same_exchange_only=False, peer_universe=None,
-                        peer_screen=None, peer_screen_type='PRIVATE', peer_screen_group=None):
+                        peer_screen=None, peer_screen_type='PRIVATE', peer_screen_group=None,
+                        download_scope='related', progress=None):
     """[Fix 31] CELL A for Jupyter: universe discovery + the single Bloomberg
     download. Run once; feed the returned dict to find_best_hedge(..., data=...).
     [Fix 35] Stores current USD market caps so the cap floor can be retuned with
@@ -3762,6 +4041,8 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
     weighted dict {'AAPL US Equity': 0.6, '700 HK': 0.4} (a whole book). For a
     book the universe is the UNION of each leg's universe, every leg is removed
     from the candidate pool, and all legs are downloaded."""
+    if download_scope not in ('related','all'):
+        raise ValueError("download_scope must be 'related' or 'all'")
     exclude = _parse_ticker_list(exclude)
     force_include = _parse_ticker_list(force_include)
     conflict = _exclusion_conflicts(exclude, force_include)
@@ -3769,6 +4050,7 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
         raise ValueError('exclude takes precedence: remove these tickers from force_include: '
                          + ', '.join(conflict))
     session = session or get_session()
+    if progress: progress('connect','Bloomberg session ready',status='done')
     legs, pf_w, is_portfolio, label = _coerce_targets(target)      # [Fix 46]
     leg_shorts = {l.split(' ')[0] for l in legs}
     selected_exchange = _same_listing_exchange(legs) if same_exchange_only else None
@@ -3782,9 +4064,11 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
     extra_universe=[_fmt_bbg_ticker(t) for t in _parse_ticker_list(peer_universe)]
     if any(t is None for t in extra_universe):
         raise ValueError('Additional peer-universe tickers need exchange codes')
+    if progress: progress('discovery','Finding relevant companies and market references')
     if peer_screen:
         extra_universe += bbg_screen_universe(session,peer_screen,peer_screen_type,peer_screen_group)
     disc_meta = []                                                 # [Fix 49]
+    discovery_cache={}  # one download only; no stale reference cache between runs
 
     if candidates is None:
         if is_portfolio:
@@ -3796,7 +4080,7 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
                 uni += auto_discover_universe(
                     session, leg, min_mktcap_usd_mm=min_mktcap_usd_mm, meta=m,
                     exclude=exclude, additional_universe=extra_universe,
-                    defer_cap_filter=fetch_mktcap_hist)
+                    defer_cap_filter=fetch_mktcap_hist,discovery_cache=discovery_cache,progress=progress)
                 disc_meta.append(m)
             seen, candidates = set(), []
             leg_full = {_ticker_key(leg) for leg in legs}
@@ -3811,7 +4095,7 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
             candidates = auto_discover_universe(
                 session, legs[0], min_mktcap_usd_mm=min_mktcap_usd_mm, meta=m,
                 exclude=exclude, additional_universe=extra_universe,
-                defer_cap_filter=fetch_mktcap_hist)
+                defer_cap_filter=fetch_mktcap_hist,discovery_cache=discovery_cache,progress=progress)
             disc_meta = [m]
 
     candidates, removed = _apply_exclusions(candidates, exclude)   # [Fix 36]
@@ -3843,6 +4127,9 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
     # is unavailable for this index (then everything behaves exactly as before)
     pit_members, non_index_shorts = {}, set()
     extra_raw, hist_removed, ever_members = [], [], set()
+    if progress:
+        progress('membership','Retrieving past index constituents' if fetch_pit_members and disc_meta else 'Not requested or no index for supplied candidates',
+                 status='running' if fetch_pit_members and disc_meta else 'skipped')
     if fetch_pit_members and disc_meta:
         for m in disc_meta:
             non_index_shorts |= m.get('non_index_shorts', set())
@@ -3870,9 +4157,24 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
         print("  (candidates were user-supplied — no index discovered, "
               "point-in-time membership skipped)")
 
+    history_scope_excluded=[]
+    if disc_meta:
+        # Full reference discovery is retained; costly price/cap/volume histories
+        # are requested only for relevant names unless the broad scope is explicit.
+        if extra_raw:
+            _extend_historical_discovery(session,extra_raw,disc_meta)
+        for m in disc_meta: non_index_shorts.update(m.get('non_index_shorts',set()))
+        if download_scope=='related':
+            wanted=_related_history_names(disc_meta)|set(force_include)
+            history_scope_excluded=[t for t in dedup if t not in wanted]
+            dedup=[t for t in dedup if t in wanted]
+            print(f'  Price-history scope: {len(dedup)} related candidates/references; '
+                  f'{len(history_scope_excluded)} unrelated listings skipped')
     all_tickers = legs + dedup                                    # [Fix 46]
     print(f"Downloading {len(all_tickers)} tickers ({start_dt} → {end_dt})...")
+    if progress: progress('prices',f'{len(all_tickers):,} instruments | {start_dt} to {end_dt}')
     prices = bbg_hist(session, all_tickers, start_dt, end_dt)
+    if progress: progress('prices',f'{prices.shape[1]:,} instruments returned | {prices.shape[0]:,} price rows',status='done')
     present_legs = [l for l in legs if l in prices.columns]
     if is_portfolio:
         if len(present_legs) < 2:
@@ -3887,6 +4189,7 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
     print(f"  ✓ {prices.shape[0]} price rows × {prices.shape[1]} tickers")
 
     # [Fix 35] current USD market caps (fail-open)
+    if progress: progress('caps',f'Current USD market caps for {prices.shape[1]:,} instruments')
     mktcap = {}
     try:
         liq = bbg_ref_multi(session, list(prices.columns),
@@ -3906,6 +4209,7 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
     mktcap_hist = pd.DataFrame()
     mktcap_hist_audit = {'errors': [], 'missing_currency_or_fx': []}
     if fetch_mktcap_hist:
+        if progress: progress('caps','Historical market caps and dated currency conversion')
         try:
             hist_local = bbg_hist_field(session, list(prices.columns),
                                         'CUR_MKT_CAP', start_dt, end_dt,
@@ -3925,9 +4229,15 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
             mktcap_hist_audit['errors'].append({'field': 'historical cap/FX', 'reason': str(e)})
             print(f"  ⚠ historical market-cap download unavailable ({e}); historical size eligibility cannot be verified")
 
+    if progress:
+        progress('caps',f'{len(mktcap):,} current caps | {mktcap_hist.shape[1]:,} historical series' if fetch_mktcap_hist else f'{len(mktcap):,} current caps | history not requested',status='done')
     # BDP quotes are current, even for a historical analysis end date.
+    if progress: progress('trading','Retrieving average volume, currency and bid/ask quotes')
     execution_asof = pd.Timestamp.now(tz='UTC').strftime('%Y%m%d')
     execution_snapshot, execution_data_audit = _download_execution_snapshot(session,list(prices.columns),execution_asof)
+    if progress:
+        volume_count=sum(_positive_number(q.get('PCA_AVG_DAILY_VOLUME')) is not None for q in execution_snapshot.values())
+        progress('trading',f'Volume available for {volume_count:,} of {prices.shape[1]:,} instruments; missing values remain unknown',status='done')
     # [Fix 119] carry the exposure verdict with the data. Merged across legs so
     # a book reports the union of what its legs need.
     _exp = {'tags': set(), 'resolved': {}, 'unresolved': {}}
@@ -3957,11 +4267,14 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
         wrong_exchange = ({t for t in raw if _exch_of(t) != selected_exchange}
                           if selected_exchange is not None else set())
         eligible_raw -= wrong_exchange
+        not_requested=eligible_raw & set(history_scope_excluded)
+        eligible_raw -= not_requested
         downloaded = eligible_raw & present_names
         info = {'discovered': len(raw), 'market_cap_removed': len(raw & cap_removed_all),
                 'manual_excluded': len(raw & excluded_all),
                 'different_exchange': len(raw & wrong_exchange),
-                'downloaded': len(downloaded), 'eligible_after_filters': len(eligible_raw)}
+                'downloaded': len(downloaded), 'eligible_after_filters': len(eligible_raw),
+                'outside_history_scope':len(not_requested)}
         source_stats[source] = info
         print(f"    {source}: discovered={info['discovered']}, "
               f"cap_removed={info['market_cap_removed']}, "
@@ -4011,6 +4324,7 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
                k: list(v) for k, v in m.get('source_candidates', {}).items()
                if k in ('BICS/GICS industry', 'Bloomberg 1st degree',
                         'Bloomberg 2nd degree', 'Bloomberg 2nd degree (unverified, audit only)',
+                        'Local listings of foreign peers', 'Historical classified peers',
                         'Local BICS L2 peers',
                         'Local GICS sector context')}
                for m in disc_meta},
@@ -4018,6 +4332,10 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
                'classification_evidence': m.get('classification_evidence', {}),
                'sector_stock_audit': m.get('sector_stock_audit', []),
                'source_candidates': m.get('source_candidates', {}),
+               'reference_errors': m.get('reference_errors', []),
+               'direct_peer_error': m.get('direct_peer_error'),
+               'local_listing_audit': m.get('local_listing_audit', []),
+               'discovery_version': DISCOVERY_VERSION,
                'raw_peers': m.get('peer_raw', []),
                'taxonomy_rejected': m.get('taxonomy_rejected', []),
                'taxonomy_unknown': m.get('taxonomy_unknown', []),
@@ -4039,6 +4357,8 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
            'same_exchange_only_download': bool(same_exchange_only),
            'other_exchange_removed': exchange_removed,
            'discovery_stats': source_stats,
+           'download_scope': download_scope if disc_meta else 'supplied',
+           'history_scope_excluded': history_scope_excluded,
            'exchange_download_counts': exchange_counts,
            'effective_mktcap_floor_by_target': {m['target']: m.get('effective_mktcap_floor_mm') for m in disc_meta},
            'broad_markets': [m['broad_market'] for m in disc_meta],
@@ -4059,7 +4379,10 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
                            'exclude': sorted(_ticker_key(t) for t in exclude),
                            'instrument_map': _INSTRUMENT_MAP_HASH,  # [Fix 119]
                            'peer_policy_version': 4,
+                           'discovery_version': DISCOVERY_VERSION,
+                           'download_scope': download_scope,
                            'force_include': sorted(_ticker_key(t) for t in force_include)}}
+    if progress: progress('cache','Writing the local cache' if cache else 'Cache disabled for this call',status='running' if cache else 'skipped')
     if cache:                                                 # [Fix 88]
         try:
             save_hedge_data(out)
@@ -4072,23 +4395,141 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
 from functools import wraps as _wraps
 
 
-@_wraps(_download_hedge_data_impl)
-def download_hedge_data(*args, verbose=True, **kwargs):
-    """Download and display source/cap/exclusion/exchange progress by default.
+_DOWNLOAD_STAGES = [('connect','Bloomberg connection'),('discovery','Company and peer discovery'),
+    ('membership','Historical index membership'),('prices','Price history'),
+    ('caps','Market caps and FX'),('trading','Volume and quotes'),('cache','Save download')]
 
-    verbose=False is supported for callers that explicitly need a compact log.
-    """
-    if verbose:
+
+def _download_progress_html(state):
+    """A single updating notebook panel; all vendor text is escaped."""
+    from html import escape
+    esc=lambda x:escape(str(x),quote=True)
+    colours={'waiting':'#8b929b','running':'#a51c30','done':'#32745b',
+             'skipped':'#8b929b','warning':'#8a641d','failed':'#a51c30'}
+    labels={'waiting':'Waiting','running':'In progress','done':'Done','skipped':'Not requested',
+            'warning':'Review notice','failed':'Failed'}
+    status=state.get('status','running')
+    heading={'running':'Downloading','done':'Download complete','warning':'Complete with notices',
+             'failed':'Download stopped'}.get(status,status)
+    rows=[]
+    for i,row in enumerate(state['stages'],1):
+        colour=colours[row['status']]
+        rows.append('<tr><td style="width:28px;color:#a0a5ac">'+str(i)+'</td>'
+            '<td style="width:225px;font-weight:600">'+esc(row['title'])+'</td>'
+            '<td style="color:#606b77">'+esc(row.get('detail',''))+'</td>'
+            '<td style="width:115px;text-align:right;color:'+colour+';font-weight:600">'
+            +labels[row['status']]+'</td></tr>')
+    sources=''
+    if state.get('sources'):
+        sources='<div class="pca-dl-sources"><b>LISTING SOURCES</b> &nbsp; '+ ' &nbsp; · &nbsp; '.join(
+            esc(v) for v in state['sources'].values())+'</div>'
+    summary=''
+    if state.get('summary'):
+        summary='<div class="pca-dl-summary">'+esc(state['summary'])+'</div>'
+    notices=''
+    if state.get('notices'):
+        items=''.join('<li>'+esc(n)+'</li>' for n in state['notices'])
+        notices='<details class="pca-dl-notices" open><summary>'+str(len(state['notices']))+' notices to review</summary><ul>'+items+'</ul></details>'
+    log=''
+    if state.get('log'):
+        log='<details class="pca-dl-log"><summary>Detailed download log</summary><pre>'+esc(state['log'])+'</pre></details>'
+    return '''<style>
+.pca-dl{font-family:Arial,Helvetica,sans-serif;color:#26313c;background:#fff;border:1px solid #dce1e6;border-top:3px solid #a51c30;border-radius:3px;max-width:1080px;margin:12px 0;line-height:1.5;font-size:13px}
+.pca-dl-head{display:flex;justify-content:space-between;gap:20px;padding:20px 24px 14px;background:#f8f9fa}
+.pca-dl-kicker{font-size:10px;letter-spacing:1.8px;font-weight:bold;color:#a51c30}.pca-dl-title{font-size:23px;font-weight:600;margin-top:4px}.pca-dl-sub{font-size:12px;color:#606b77;margin-top:5px}.pca-dl-time{text-align:right;white-space:nowrap;color:#606b77;font-size:12px}
+.pca-dl table{width:100%;border-collapse:collapse;font-size:12px}.pca-dl td{padding:12px 10px;border-top:1px solid #e9edf0;vertical-align:top}.pca-dl td:first-child{padding-left:24px}.pca-dl td:last-child{padding-right:24px}
+.pca-dl-sources{padding:12px 24px;color:#606b77;background:#f8f9fa;font-size:11px}.pca-dl-sources b{font-size:10px;letter-spacing:.8px}
+.pca-dl-summary{padding:15px 24px;font-weight:600;border-top:1px solid #e9edf0;white-space:pre-line}.pca-dl-notices{margin:0 24px 16px;padding:11px 14px;background:#fff8e9;border-left:3px solid #b28b4c;color:#71551c;font-size:12px}.pca-dl summary{cursor:pointer;font-weight:600}.pca-dl ul{padding-left:18px;margin:8px 0 0}.pca-dl li{margin:4px 0;overflow-wrap:anywhere}.pca-dl-log{padding:0 24px 16px;color:#606b77;font-size:12px}.pca-dl pre{max-height:300px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font:11px/1.5 Consolas,monospace;background:#f5f6f8;padding:12px}
+</style>'''+ '<div class="pca-dl"><div class="pca-dl-head"><div><div class="pca-dl-kicker">PCA HEDGE RESEARCH / DATA</div><div class="pca-dl-title">'+esc(heading)+'</div><div class="pca-dl-sub">'+esc(state.get('target',''))+'</div></div><div class="pca-dl-time">'+str(int(state.get('elapsed',0)))+' seconds<br>elapsed at last update</div></div><table>'+''.join(rows)+'</table>'+sources+summary+notices+log+'</div>'
+
+
+class _DownloadProgress:
+    """Presentation state only: never decides universe eligibility or weights."""
+    def __init__(self,target,callback,stream):
+        import time
+        self.started=time.monotonic();self.callback=callback;self.stream=stream;self.active=None
+        self.state=dict(target=str(target),status='running',elapsed=0,sources={},notices=[],log='',summary='',
+                        stages=[dict(id=k,title=v,status='waiting',detail='') for k,v in _DOWNLOAD_STAGES])
+    def publish(self):
+        import time,copy
+        self.state['elapsed']=time.monotonic()-self.started
+        if self.callback: self.callback(copy.deepcopy(self.state))
+    def update(self,stage,detail='',status='running',source=None):
+        rows={r['id']:r for r in self.state['stages']}
+        if self.active!=stage:
+            if self.active and rows[self.active]['status']=='running': rows[self.active]['status']='done'
+            self.active=stage
+            if not self.callback:
+                self.stream.write('[%d/%d] %s\n'%(list(rows).index(stage)+1,len(rows),rows[stage]['title']))
+                self.stream.flush()
+        row=rows[stage]
+        row.update(detail=detail,status='warning' if row['status']=='warning' and status in ('done','running') else status)
+        if source: self.state['sources'][source[0]]=source[1]
+        self.publish()
+    def notice(self,message,stage=None):
+        message=re.sub(r'^\s*[⚠△!]+\s*','',str(message)).strip()
+        if not message or message in self.state['notices']: return
+        self.state['notices'].append(message)
+        for row in self.state['stages']:
+            if row['id']==(stage or self.active) and row['status'] not in ('skipped','failed'): row['status']='warning'
+        self.publish()
+    def finish(self,log,result=None,error=None):
+        self.state['log']=log
+        if error:
+            self.state['status']='failed'
+            for row in self.state['stages']:
+                if row['id']==self.active: row.update(status='failed',detail=str(error))
+            self.notice(str(error))
+        else:
+            for row in self.state['stages']:
+                if row['status']=='running': row['status']='done'
+            prices=result['prices']
+            lines=[f'{prices.shape[1]} instruments · {prices.shape[0]} price rows · '+
+                   (f'{prices.index.min():%d %b %Y} – {prices.index.max():%d %b %Y}' if len(prices) else 'no price dates')]
+            for target,m in result.get('peer_discovery_by_target',{}).items():
+                unresolved=sum(r.get('status')=='unresolved' for r in m.get('local_listing_audit',[]))
+                lines.append(f"{target}: {len(result.get('peer_tickers_by_target',{}).get(target,[]))} classified peers · "
+                             f"{len(result.get('sector_stock_tickers_by_target',{}).get(target,[]))} local sector stocks")
+                if unresolved: self.notice(f'{target}: {unresolved} foreign-peer local-listing checks remain unresolved; see peer diagnostics.',stage='discovery')
+                if m.get('reference_errors'): self.notice(f"{target}: {len(m['reference_errors'])} reference-data errors recorded; discovery may be incomplete.",stage='discovery')
+                if m.get('classification_missing'): self.notice(f"{target}: {len(m['classification_missing'])} listings lack usable industry labels; see peer diagnostics.",stage='discovery')
+                for source in m.get('listing_registry_audit',[]):
+                    if source.get('status')!='received': self.notice(source['source']+' listing source unavailable; peer coverage may be incomplete.',stage='discovery')
+            self.state['summary']='\n'.join(lines)
+            self.state['status']='warning' if self.state['notices'] else 'done'
+        self.publish()
+        if not self.callback:
+            self.stream.write(self.state['summary']+'\n' if result is not None else 'Download stopped: '+str(error)+'\n')
+            for note in self.state['notices']: self.stream.write('Notice: '+note+'\n')
+            self.stream.flush()
+
+
+@_wraps(_download_hedge_data_impl)
+def download_hedge_data(*args, verbose=False, progress=None, **kwargs):
+    """Compact stage output or a progress callback; verbose=True shows all logs."""
+    if verbose and progress is None:
         return _download_hedge_data_impl(*args, **kwargs)
-    import io
+    import io,sys
     from contextlib import redirect_stdout
-    capture = io.StringIO()
-    with redirect_stdout(capture):
-        result = _download_hedge_data_impl(*args, **kwargs)
-    result['download_log'] = capture.getvalue()
-    print(f"Downloaded {result['prices'].shape[0]} price rows for "
-          f"{result['prices'].shape[1]} instruments. "
-          "Full per-source statistics are in data['discovery_stats'].")
+    tracker=_DownloadProgress(kwargs.get('target',args[0] if args else ''),progress,sys.stdout)
+    tracker.update('connect','Opening the Bloomberg connection')
+    class Capture(io.StringIO):
+        def __init__(self): super().__init__();self.pending=''
+        def write(self,value):
+            count=super().write(value);self.pending+=value
+            while '\n' in self.pending:
+                line,self.pending=self.pending.split('\n',1)
+                if '⚠' in line: tracker.notice(line)
+            return count
+    capture=Capture()
+    try:
+        with redirect_stdout(capture): result=_download_hedge_data_impl(*args,progress=tracker.update,**kwargs)
+    except Exception as err:
+        tracker.finish(capture.getvalue(),error=err)
+        raise
+    result['download_log']=capture.getvalue()
+    tracker.finish(result['download_log'],result=result)
+    result['download_progress']=tracker.state
     return result
 
 
@@ -4271,6 +4712,9 @@ def peer_coverage_report(data, target_ticker, exclude=None,
             'listing_registry_audit': provenance.get('listing_registry_audit',[]),
             'independent_peer_crosscheck': provenance.get('independent_peer_crosscheck',[]),
             'classification_missing': provenance.get('classification_missing',[]),
+            'reference_errors': provenance.get('reference_errors',[]),
+            'direct_peer_error': provenance.get('direct_peer_error'),
+            'local_listing_audit': provenance.get('local_listing_audit',[]),
             'taxonomy_rejected': provenance.get('taxonomy_rejected',[]),
             'taxonomy_unknown': provenance.get('taxonomy_unknown',[]),
             'audit_only_second_degree': sorted(unverified),
@@ -4461,17 +4905,21 @@ def _ordered_factor_references(data, legs):
         ref = (discovery.get('classification_evidence') or {}).get(leg, {})
         market = EXCH_TO_MARKET.get(_exch_of(leg), _exch_of(leg))
         # Narrow labels have priority even if the download stored tickers sorted.
+        specific_tags=_specific_exposure_tags(ref)
         for field in ('GICS_SUB_INDUSTRY_NAME', 'BICS_LEVEL_4_SUB_INDUSTRY_NAME',
                       'GICS_INDUSTRY_NAME', 'BICS_LEVEL_3_INDUSTRY_NAME',
                       'BICS_LEVEL_2_INDUSTRY_GROUP_NAME'):
             label = ref.get(field)
             if not _usable_industry(label):
                 continue
-            for tag in sorted(_exposure_tags(label)):
+            for tag in sorted(_exposure_tags(label) & specific_tags):
                 for ticker in MARKET_INSTRUMENTS.get((market, tag), []):
                     names.append(ids.get(_ticker_key(ticker), ticker))
         names.extend((data.get('sector_tickers_by_target') or {}).get(leg, []))
-        names.extend(available)
+        mapped_order=list(dict.fromkeys(t for mapping in (MARKET_INSTRUMENTS,SECTOR_INSTRUMENTS)
+                                        for choices in mapping.values() for t in choices))
+        priority={_ticker_key(t):i for i,t in enumerate(mapped_order)}
+        names.extend(sorted(available,key=lambda t:(priority.get(_ticker_key(t),len(priority)),_ticker_key(t))))
     return list(dict.fromkeys(names))
 
 
@@ -5088,7 +5536,7 @@ def _parse_public_roster(source, payload):
         require(frame,['Stock Code','Name of Securities','Category','Sub-Category','Trading Currency'])
         audit['source_date']='; '.join(str(x) for x in raw.iloc[:h,0] if 'Updated' in str(x))
         for _,row in frame.iterrows():
-            if row['Category']!='Equity' or 'Equity Securities' not in row['Sub-Category']:
+            if row['Category'] not in ('Equity','Real Estate Investment Trusts'):
                 audit['excluded_non_equity']+=1;continue
             # RMB counters duplicate the HKD line and are not additional issuers.
             if row['Trading Currency'] not in ('HKD','USD'):
@@ -5096,6 +5544,21 @@ def _parse_public_roster(source, payload):
             code=row['Stock Code'].strip()
             if not re.fullmatch(r'\d{1,5}',code): unmapped.append(code);continue
             add(str(int(code)),'HK',row['Name of Securities'])
+    elif source=='HKEXnews':
+        rows=json.loads(payload.decode('utf-8-sig') if isinstance(payload,bytes) else payload)
+        if not isinstance(rows,list) or not rows: raise ValueError('Empty HKEXnews active directory')
+        for row in rows:
+            if not isinstance(row,dict) or not {'c','n','i'}<=set(row):
+                raise ValueError('HKEXnews active-directory schema changed')
+            code=str(row['c']).strip()
+            if not re.fullmatch(r'\d{5}',code): unmapped.append(code);continue
+            # Official HKEX code allocation: Main Board/GEM candidates below 10000.
+            # This range ALSO includes funds/debt: positive type verification follows.
+            if not 0<int(code)<10000:
+                audit['excluded_non_equity']+=1;continue
+            add(str(int(code)),'HK',row['n'])
+        audit.update(requires_security_type=True,
+                     coverage='HKEXnews active securities below 10000; common-share type requires Bloomberg verification')
     elif source=='JPX':
         frame=pd.read_excel(io.BytesIO(payload),engine='openpyxl',dtype=str).fillna('')
         require(frame,['コード','銘柄名','市場・商品区分','33業種区分','日付'])
@@ -5308,6 +5771,10 @@ def _run_data_quality(result, data, options):
                discovery.get(leg, {}).get('listing_registry_audit', [])]
     missing_sources = sorted(set(row['source'] for row in sources if row.get('status') != 'received'))
     notes = []
+    if discovery and any(row.get('discovery_version')!=DISCOVERY_VERSION for row in discovery.values()):
+        notes.append('Saved universe predates local-listing recovery. Download again; re-running this cache cannot discover missing stocks.')
+    if any(row.get('direct_peer_error') or row.get('reference_errors') for row in discovery.values()):
+        notes.append('Discovery vendor errors recorded; inspect the peer coverage audit for affected names/fields.')
     if missing_sources:
         notes.append('Listing coverage incomplete: '+', '.join(missing_sources)+
                      '. See source status below.')
@@ -5370,7 +5837,8 @@ def _public_equity_universe(market):
               ('Other US exchanges','https://www.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt')]}
     fallback={
         'TWSE':'https://mopsfin.twse.com.tw/opendata/t187ap03_L.csv',
-        'TPEx':'https://mopsfin.twse.com.tw/opendata/t187ap03_O.csv'}
+        'TPEx':'https://mopsfin.twse.com.tw/opendata/t187ap03_O.csv',
+        'HKEX':'https://www1.hkexnews.hk/ncms/script/eds/activestock_sehk_e.json'}
     names,audit=[],[]
     for label,url in sources.get(market,[]):
         failures=[]
@@ -5381,7 +5849,9 @@ def _public_equity_universe(market):
                     req=urllib.request.Request(endpoint,headers={'User-Agent':'PCA equity research/1.0'})
                     with urllib.request.urlopen(req,timeout=15,context=_roster_ssl_context()) as response:
                         payload=response.read()
-                    tickers,detail=_parse_public_roster(label,payload)
+                    parser='HKEXnews' if endpoint.endswith('activestock_sehk_e.json') else label
+                    tickers,detail=_parse_public_roster(parser,payload)
+                    detail['parser']=parser
                     names.extend(tickers)
                     audit.append(dict(detail,source=label,status='received',url=endpoint,
                                       attempts=failures,
@@ -5797,9 +6267,12 @@ def _find_best_hedge_impl(
                                    min_mktcap_usd_mm=min_mktcap_usd_mm,
                                    exclude=exclude,
                                    force_include=force_include,
-                                   same_exchange_only=same_exchange_only)  # [Fix 40]
+                                   same_exchange_only=same_exchange_only,
+                                   download_scope='all' if candidate_scope=='all' else 'related')  # [Fix 40]
         prices = data['prices'].copy()
 
+    if candidate_scope=='all' and data.get('download_scope')=='related':
+        raise ValueError("Broad universe requires a fresh download with download_scope='all' (or select the broad download option in Data).")
     scope = _filter_candidate_scope(data, pf_legs, prices.columns, candidate_scope,
                                     include_broad_market, peer_tickers, force_include,
                                     exclude, same_exchange_only=same_exchange_only)
@@ -6935,7 +7408,7 @@ def _find_best_hedge_impl(
                              'At least two eligible instruments with complete training returns '
                              'are required; single references cannot replace the basket.')
         s_selection_score, _ps0, _bs0, fitted = max(
-            primary_trials, key=lambda item: (item[0], -item[2]))
+            primary_trials, key=lambda item: _recipe_selection_key(item[0],item[2],item[1]))
         (_, s_rank, s_basket, s_reg, s_r2_in, s_resid, s_npc, s_pca, s_loadings) = fitted
         _P(('  Fitted basket reference: ' if fallback_reason else '  Short sample: ')
            + 'configuration selected on training data only; '
@@ -9846,10 +10319,22 @@ def _report_blocks(result):
         for src in a.get('listing_registry_audit',[]):
             text(f"{src['source']} issuer roster: {src['status']} · {src['count']} candidates"+
                  (f" · {src.get('industry_count',0)} with independent industry labels" if src.get('status')=='received' else ' · '+str(src.get('reason','source unavailable'))[:180]),True)
+            if src.get('requires_security_type'):
+                text(f"Active-security fallback: {src.get('verified_equities',0)} common shares verified; {len(src.get('security_type_unverified_or_non_equity',[]))} non-equities or unverified types excluded.",True)
         for check in a.get('independent_peer_crosscheck',[]):
             if check.get('status')=='available':
                 text(f"{check['scheme']} cross-check: {len(check['same_category'])} in the same category; {len(check['needs_review'])} additional names need review. Category agreement does not automatically establish a peer.",True)
             else: text(check['scheme']+': target classification unavailable.',True)
+        if a.get('direct_peer_error'):
+            text('Bloomberg direct-peer request failed: '+str(a['direct_peer_error'])[:180],True)
+        if a.get('reference_errors'):
+            text(f"Discovery reference errors: {len(a['reference_errors'])}; full field/ticker reasons are retained in exported peer diagnostics.",True)
+        links=a.get('local_listing_audit') or []
+        recovered=[row for row in links if row['status']=='verified local listing']
+        if links:
+            table(['FOREIGN PEER','VERIFIED LOCAL LISTING'],[
+                [row['foreign_peer'],', '.join(row['local_listings'])] for row in recovered],widths=[3.5,3.5])
+            text(f"Local-listing checks: {len(recovered)}/{len(links)} resolved. Unresolved checks do not prove absence; full reasons are exported.",True)
         if a.get('classification_missing'):
             text(f"{len(a['classification_missing'])} local listings lack usable industry classifications; peer coverage remains incomplete.",True)
     execution=result.get('execution_audit') or {}
@@ -9882,7 +10367,7 @@ def _report_blocks(result):
         'Automatic joint search compares factor covariance and Ridge tracking within training-only chronological blocks. Method selection, constraints and historical tests do not guarantee future performance. Short windows retain the factor baseline when there is insufficient comparison evidence.',
         'Reported returns use a log-spread approximation. Trading costs, financing and FX conversion are excluded. Local listing does not establish domestic underlying exposure or eliminate FX risk. Current peer classifications can bias historical universe coverage.',
         'Engine revision '+str(result.get('engine_revision'))]))
-    return blocks
+    return _organize_report_blocks(blocks)
 
 
 _BRIEF_METHODOLOGY = (
@@ -9942,7 +10427,7 @@ def _tidy_report_blocks(blocks):
 def _render_compact_sections(result):
     for block in _report_blocks(result):
         if block['kind'] in ('title', 'section'):
-            _section(block['text'].upper())
+            _P();_P(block['text'].upper());_P('─'*min(72,len(block['text'])))
         elif block['kind'] == 'text':
             _P(block['text'])
         elif block['kind'] == 'chart':
@@ -9954,57 +10439,109 @@ def _render_compact_sections(result):
             _print_table(block['headers'], block['rows'], title=block.get('title'))
 
 
+def _organize_report_blocks(blocks):
+    """Put decisions and comparable baskets first; retain every diagnostic."""
+    prefix=[];sections={};tail=[];current=prefix
+    for block in blocks:
+        if block['kind']=='section':
+            current=sections.setdefault(block['text'],[])
+            current.append(block)
+        elif block['kind']=='notes': tail.append(block)
+        else: current.append(block)
+    basket=sections.get('Current basket',[])
+    split=next((i for i,b in enumerate(basket) if b.get('headers',[])[:1]==['BASKET METHOD']),None)
+    if split is not None:
+        sections['Method comparison']=[dict(kind='section',text='Method comparison')]+basket[split:]
+        sections['Current basket']=basket[:split]
+    order=['Decision overview','Current basket','Alternative baskets','Single instrument references',
+           'Optional history comparison','Market sector and peer exposures','Historical validation',
+           'Weight sensitivity','Residual risk review','Method comparison',
+           'Universe coverage and execution','Detailed validation configuration']
+    organized=list(prefix)
+    for name in order:
+        organized.extend(sections.pop(name,[]))
+    for remaining in sections.values(): organized.extend(remaining)
+    return organized+tail
+
+
 def _report_html(result):
-    """A self-contained report with a quiet palette and one expandable notes area."""
-    escape = lambda value: _html.escape(str(value))
-    css = '\n.pca-sheet{font-family:Arial,"Helvetica Neue",sans-serif;color:#25282d;background:#fff;max-width:1100px;margin:20px auto;padding:28px 36px;border-top:5px solid #c41230;line-height:1.5;box-sizing:border-box;counter-reset:section}\n.pca-sheet .desk-label{font-size:11px;font-weight:700;letter-spacing:1.5px;color:#b5122c;margin:0 0 10px;text-transform:uppercase}\n.pca-sheet h1{font-size:30px;line-height:1.2;font-weight:700;letter-spacing:-.5px;color:#16191d;margin:0 0 12px}\n.pca-sheet h2{font-size:19px;color:#20242a;font-weight:700;margin:32px 0 12px;counter-increment:section}\n.pca-sheet h2::before{content:counter(section,decimal-leading-zero) "  ";color:#c41230;font-size:14px;margin-right:10px;font-weight:700}\n.pca-sheet p{font-size:14px;margin:9px 0;color:#34383e}.pca-sheet .meta{color:#666b72;font-size:12.5px}\n.pca-sheet .verdict{font-size:16px;font-weight:700;color:#303740;margin:10px 0}.pca-sheet .caution{color:#795b29}.pca-sheet .failed{color:#b5122c}\n.pca-sheet .sample{font-size:12px;font-weight:700;letter-spacing:.3px;color:#795b29}\n.pca-sheet .metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;margin:18px 0 20px;padding:16px 0;border-top:1px solid #bfc2c6;border-bottom:1px solid #d7d9dc}\n.pca-sheet .metric-label{font-size:10px;letter-spacing:.7px;color:#646971;font-weight:700}.pca-sheet .metric-value{font-size:29px;line-height:1.2;font-weight:700;color:#22262d;margin-top:8px;font-variant-numeric:tabular-nums}.pca-sheet .metric:first-child .metric-value{font-size:18px;margin-top:13px}\n.pca-sheet .table-wrap{overflow-x:auto;margin:10px 0 18px}.pca-sheet table{width:100%;border-collapse:collapse;font-size:13px;line-height:1.5;table-layout:fixed}.pca-sheet th{text-align:left;background:#30343b;color:#fff;font-size:10px;font-weight:700;letter-spacing:.35px;padding:10px 11px;white-space:normal;border:1px solid #d9d9d9}.pca-sheet td{text-align:left;padding:10px 11px;border:1px solid #d9d9d9;vertical-align:middle;overflow-wrap:break-word;white-space:pre-line}.pca-sheet tr:nth-child(even) td{background:#f4f5f6}.pca-sheet td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.pca-sheet tr.selected td{background:#faf0f2}.pca-sheet caption{text-align:left;font-size:14px;font-weight:700;color:#30343b;padding:8px 0 10px}\n.pca-sheet .chart{margin:24px 0}.pca-sheet .chart img{width:100%;height:auto;display:block}.pca-sheet figcaption{font-size:12px;font-weight:700;color:#383d45;margin-bottom:10px}\n.pca-sheet details{margin-top:28px;border-top:1px solid #d9d9d9;padding:16px 0 0}.pca-sheet summary{cursor:pointer;font-size:12px;font-weight:700;color:#5c6168}.pca-sheet details p{font-size:12px;color:#666b72;margin:10px 0}\n@media(max-width:680px){.pca-sheet{padding:20px 14px}.pca-sheet h1{font-size:25px}.pca-sheet .metric-grid{grid-template-columns:repeat(2,1fr);gap:20px}.pca-sheet table{min-width:620px}}\n@media print{.pca-sheet{max-width:none;margin:0;padding:0;border-top:0}.pca-sheet h2,.pca-sheet figcaption{break-after:avoid}.pca-sheet figure,.pca-sheet tr{break-inside:avoid}.pca-sheet thead{display:table-header-group}}\n'
-    parts = ['<style>'+css+'</style><article class="pca-sheet tex2jax_ignore mathjax_ignore"><p class="desk-label">Equity hedge research</p>']
-    for block in _report_blocks(result):
-        kind = block['kind']
-        if kind == 'title':
-            parts.append('<h1>'+escape(block['text'])+'</h1>')
-        elif kind == 'section':
-            parts.append('<h2>'+escape(block['text'])+'</h2>')
-        elif kind == 'chart':
-            parts.append('<figure class="chart"><figcaption>'+escape(block['title'])+'</figcaption>'
-                         '<img alt="'+escape(block['title'])+'" src="data:image/png;base64,'+block['png']+'"></figure>')
-        elif kind == 'notes':
-            parts.append('<details><summary>Methodology and coverage</summary>')
-            parts.extend('<p>'+escape(note)+'</p>' for note in block['notes'])
-            parts.append('</details>')
-        elif kind == 'text':
-            value = block['text']
-            style = 'meta' if block.get('muted') else ''
+    """One desk-style report, with comparison cards and expandable detail."""
+    esc=lambda value:_html.escape(str(value),quote=True)
+    anchor=lambda title:re.sub(r'[^a-z0-9]+','-',title.lower()).strip('-')
+    blocks=_report_blocks(result)
+    css='''
+.pca-sheet{font-family:Arial,Helvetica,sans-serif;color:#26313c;background:#fff;max-width:1080px;margin:18px auto;padding:28px 32px;border-top:3px solid #a51c30;line-height:1.5;box-sizing:border-box;font-size:13px}
+.pca-sheet .desk-label{font-size:10px;font-weight:700;letter-spacing:1.8px;color:#a51c30;margin:0 0 9px;text-transform:uppercase}.pca-sheet h1{font-size:29px;line-height:1.2;font-weight:600;color:#202a35;margin:0 0 12px}.pca-sheet h2{font-size:19px;color:#26313c;font-weight:600;margin:30px 0 12px}.pca-sheet p{font-size:13px;margin:9px 0}.pca-sheet .meta{font-size:12px;color:#626e7a}.pca-sheet .verdict{font-size:15px;font-weight:700;margin:12px 0}.pca-sheet .failed,.pca-sheet .negative{color:#a51c30}.pca-sheet .caution,.pca-sheet .sample{color:#87651d}.pca-sheet .sample{font-weight:bold}
+.pca-sheet nav{display:flex;flex-wrap:wrap;gap:8px 22px;padding:13px 0;border-bottom:1px solid #e1e6ea;margin:15px 0 24px}.pca-sheet nav a{font-size:12px;text-decoration:none;color:#606b77}.pca-sheet nav a:hover{color:#a51c30}
+.pca-sheet .metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px;padding:17px 0;margin:15px 0;border-top:1px solid #dce1e6;border-bottom:1px solid #dce1e6}.pca-sheet .metric-label{font-size:10px;letter-spacing:.7px;color:#626e7a;font-weight:700}.pca-sheet .metric-value{font-size:28px;font-weight:600;line-height:1.2;margin-top:8px;font-variant-numeric:tabular-nums}.pca-sheet .metric:last-child .metric-value{font-size:17px;line-height:1.5}
+.pca-sheet .table-wrap{overflow-x:auto;margin:10px 0 19px}.pca-sheet table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px;line-height:1.45}.pca-sheet th{text-align:left;background:#303943;color:#fff;font-size:10px;font-weight:600;letter-spacing:.3px;padding:10px 11px;border:1px solid #d9dfe4}.pca-sheet td{padding:10px 11px;border:1px solid #d9dfe4;vertical-align:middle;overflow-wrap:anywhere;white-space:pre-line}.pca-sheet tr:nth-child(even) td{background:#f6f7f9}.pca-sheet td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.pca-sheet tr.selected td{background:#f8eef0}.pca-sheet caption{text-align:left;font-size:13px;font-weight:600;padding:7px 0 10px}
+.pca-sheet .chart{margin:22px 0}.pca-sheet .chart img{width:100%;height:auto;display:block}.pca-sheet figcaption{font-size:12px;font-weight:600;margin-bottom:8px;color:#626e7a}
+.pca-sheet .basket-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:15px 0}.pca-sheet .basket-card{border:1px solid #dce1e6;border-radius:3px;overflow:hidden}.pca-sheet .basket-card header{background:#f6f7f9;padding:13px 16px;font-size:14px;font-weight:600}.pca-sheet .basket-metrics{display:flex;justify-content:space-between;gap:10px;padding:13px 16px}.pca-sheet .basket-metrics span{font-size:10px;color:#626e7a;display:block}.pca-sheet .basket-metrics b{font-weight:600;font-size:17px;font-variant-numeric:tabular-nums}.pca-sheet .basket-card table{font-size:12px}.pca-sheet .basket-card td{border-left:0;border-right:0;padding:8px 16px}.pca-sheet .basket-card th{background:#fff;color:#626e7a;border-left:0;border-right:0;padding:7px 16px}.pca-sheet .basket-card td:last-child{width:100px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pca-sheet details{margin-top:18px;border-top:1px solid #dce1e6;padding:15px 0 0}.pca-sheet summary{cursor:pointer;font-size:13px;font-weight:600;color:#35414f}.pca-sheet details .detail-body{padding:4px 0 12px}.pca-sheet details h2{font-size:16px;margin-top:14px}.pca-sheet details.methodology p{font-size:11px;color:#626e7a}.pca-sheet .review-note{color:#87651d;font-size:12px}.pca-sheet .review-note strong{font-weight:600}
+@media(max-width:700px){.pca-sheet{padding:18px 14px}.pca-sheet h1{font-size:24px}.pca-sheet .metric-grid,.pca-sheet .basket-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.pca-sheet .basket-grid{grid-template-columns:1fr}.pca-sheet .table-wrap table{min-width:590px}}
+@media print{.pca-sheet{max-width:none;margin:0;padding:0;border:0}.pca-sheet nav{display:none}.pca-sheet h2,.pca-sheet figcaption{break-after:avoid}.pca-sheet figure,.pca-sheet tr,.pca-sheet .basket-card{break-inside:avoid}.pca-sheet thead{display:table-header-group}.pca-sheet details>.detail-body{display:block}}
+'''
+    parts=['<style>'+css+'</style><article class="pca-sheet tex2jax_ignore mathjax_ignore"><p class="desk-label">Equity hedge research</p>']
+    folded=False;nav=False
+    collapsible={'Weight sensitivity','Residual risk review','Method comparison','Universe coverage and execution','Detailed validation configuration'}
+    for block in blocks:
+        kind=block['kind']
+        if kind in ('section','notes') and folded:
+            parts.append('</div></details>');folded=False
+        if kind=='title': parts.append('<h1>'+esc(block['text'])+'</h1>')
+        elif kind=='section':
+            title=block['text'];key=anchor(title)
+            if not nav:
+                links=[('Decision overview','Overview'),('Current basket','Main basket'),('Alternative baskets','Alternatives'),('Market sector and peer exposures','Exposures'),('Historical validation','Validation'),('Universe coverage and execution','Coverage')]
+                parts.append('<nav aria-label="Report sections">'+''.join('<a href="#'+anchor(t)+'">'+label+'</a>' for t,label in links)+'</nav>');nav=True
+            if title in collapsible:
+                parts.append('<details id="'+key+'"><summary>'+esc(title)+'</summary><div class="detail-body">');folded=True
+            else: parts.append('<h2 id="'+key+'">'+esc(title)+'</h2>')
+        elif kind=='chart':
+            parts.append('<figure class="chart"><figcaption>'+esc(block['title'])+'</figcaption><img alt="'+esc(block['title'])+'" src="data:image/png;base64,'+block['png']+'"></figure>')
+        elif kind=='notes':
+            parts.append('<details class="methodology"><summary>Methodology and coverage</summary>')
+            parts.extend('<p>'+esc(note)+'</p>' for note in block['notes']);parts.append('</details>')
+        elif kind=='text':
+            value=block['text'];style='meta' if block.get('muted') else ''
             if value.startswith(('✓','△','✗','?')):
-                style = 'verdict' + (' caution' if value.startswith(('△','?')) else ' failed' if value.startswith('✗') else '')
-            elif value.startswith('ILLUSTRATIVE SAMPLE'):
-                style = 'sample'
-            parts.append(f'<p class="{style}">'+escape(value).replace('\n','<br>')+'</p>')
-        elif block['headers'] == ['EVIDENCE', 'UNSEEN R²', 'UNSEEN VOL CUT', 'IN-SAMPLE R²']:
-            labels = ['Evidence', 'Unseen R²', 'Unseen volatility cut', 'In-sample R²']
+                style='verdict'+(' caution' if value.startswith(('△','?')) else ' failed' if value.startswith('✗') else '')
+            elif value.startswith('ILLUSTRATIVE SAMPLE'): style='sample'
+            parts.append('<p class="'+style+'">'+esc(value).replace('\n','<br>')+'</p>')
+        elif block['headers']==['EVIDENCE','UNSEEN R²','UNSEEN VOL CUT','IN-SAMPLE R²']:
             parts.append('<div class="metric-grid">')
-            for label, value in zip(labels, block['rows'][0]):
-                parts.append('<div class="metric"><div class="metric-label">'+escape(label.upper())+
-                             '</div><div class="metric-value">'+escape(value)+'</div></div>')
+            for i,label in [(3,'Current fit R²'),(1,'Historical test R²'),(2,'Test volatility reduction'),(0,'Evidence')]:
+                value=block['rows'][0][i];negative=str(value).startswith(('-','−'))
+                parts.append('<div class="metric"><div class="metric-label">'+esc(label.upper())+'</div><div class="metric-value'+(' negative' if negative else '')+'">'+esc(value)+'</div></div>')
+            parts.append('</div>')
+        elif block['headers']==['REVIEW ITEM','STATUS']:
+            parts.extend('<p class="review-note"><strong>Data review '+esc(row[0])+'.</strong> '+esc(row[1])+'</p>' for row in block['rows'])
+        elif block['headers'][:2]==['ID','POSITIONS PER 100 TARGET']:
+            parts.append('<div class="basket-grid">')
+            for number,recipe,r2,vol,gross in block['rows']:
+                parts.append('<section class="basket-card"><header>Alternative '+esc(number)+'</header><div class="basket-metrics">'+''.join('<div><span>'+label+'</span><b>'+esc(value)+'</b></div>' for label,value in [('FIT R²',r2),('FITTED VOL CUT',vol),('GROSS',gross)])+'</div><table><thead><tr><th>Instrument</th><th>Per 100 target</th></tr></thead><tbody>')
+                for line in recipe.splitlines():
+                    action,amount,ticker=line.split(maxsplit=2)
+                    parts.append('<tr><td style="text-align:left">'+esc(ticker)+'</td><td>'+esc(action+' '+amount)+'</td></tr>')
+                parts.append('</tbody></table></section>')
             parts.append('</div>')
         else:
             parts.append('<div class="table-wrap"><table>')
-            if block.get('title'):
-                parts.append('<caption>'+escape(block['title'])+'</caption>')
+            if block.get('title'): parts.append('<caption>'+esc(block['title'])+'</caption>')
             widths=block.get('widths')
-            if widths:
-                parts.append('<colgroup>'+''.join('<col style="width:'+str(100*v/sum(widths))+'%">' for v in widths)+'</colgroup>')
-            parts.append('<thead><tr>'+''.join('<th>'+escape(h)+'</th>' for h in block['headers'])+'</tr></thead><tbody>')
+            if widths: parts.append('<colgroup>'+''.join('<col style="width:'+str(100*v/sum(widths))+'%">' for v in widths)+'</colgroup>')
+            parts.append('<thead><tr>'+''.join('<th>'+esc(h)+'</th>' for h in block['headers'])+'</tr></thead><tbody>')
             for row in block['rows']:
-                chosen = 'selected' if 'selected' in str(row[0]) else ''
-                parts.append(f'<tr class="{chosen}">')
+                parts.append('<tr class="'+('selected' if 'selected' in str(row[0]) else '')+'">')
                 for value in row:
-                    is_number = bool(re.fullmatch(r'[+$−\-]?\d+(?:[.,]\d+)*(?:%|×)?', str(value)))
-                    parts.append('<td'+(' class="num"' if is_number else '')+' style="text-align:'+('right' if is_number else 'left')+'">'+escape(value).replace('\n','<br>')+'</td>')
+                    number=bool(re.fullmatch(r'[+$−\-]?\d+(?:[.,]\d+)*(?:%|×)?',str(value)))
+                    parts.append('<td'+(' class="num"' if number else '')+' style="text-align:'+('right' if number else 'left')+'">'+esc(value).replace('\n','<br>')+'</td>')
                 parts.append('</tr>')
             parts.append('</tbody></table></div>')
+    if folded: parts.append('</div></details>')
     parts.append('</article>')
     return ''.join(parts)
+
 
 
 def _render_compact_report(result):
@@ -10231,7 +10768,7 @@ def find_best_hedge(*args, **kwargs):
     bound.apply_defaults()
     options = bound.arguments
     if options['data'] is not None:
-        options['data'] = _restore_cached_sector_candidates(options['data'])
+        options['data'] = _refresh_cached_peer_classification(_restore_cached_sector_candidates(options['data']))
     if options['report'] not in ('compact', 'full'):
         raise ValueError("report must be 'compact' or 'full'")
     compact = True  # capture legacy calculations in both presentation modes
@@ -10772,7 +11309,7 @@ def _docx_hedge_report(result, report_text, path):
                     p.paragraph_format.line_spacing = 1.05
                     # Keep short comparison tables intact at a page boundary.
                     p.paragraph_format.keep_with_next = (row_no == 0 or
-                        (not compact_appendix and short_table and row_no < len(t.rows) - 1))
+                        (short_table and row_no < len(t.rows) - 1))
                     for run in p.runs:
                         run.font.name = 'Arial'
                         run.font.size = Pt(9.5)
@@ -10970,6 +11507,7 @@ def export_hedge_diagnostics(result, out_dir=None):
               'in_sample_r2', 'fit_diagnostics', 'common_exposures',
               'validation_mode', 'validation_weights', 'holdout_r2',
               'selected_unseen_r2', 'sector_search_audit', 'joint_search_audit',
+              'peer_coverage', 'basket_identity_audit',
               'data_quality', 'effective_model_settings', 'execution_audit', 'current_sensitivity',
               'residual_calibration', 'hedge_error_attribution', 'model_selection',
               'selected_estimator', 'method_comparison', 'method_validation')
@@ -11314,6 +11852,7 @@ def hedge_ui(data=None):
     b_load = W.Button(description='Load selected', icon='folder-open')
     b_refresh = W.Button(description='Refresh list', icon='refresh')
     w_screen = W.Text(value='',description='EQS screen',style=LBL,layout=FULL)
+    w_download_scope=W.Dropdown(options=[('Peers + sector stocks + references','related'),('Broad universe (slower)','all')],value='related',description='Price history',style=LBL,layout=FULL)
     w_extra = W.Textarea(value='',description='Extra universe',style=LBL,layout=FULL,placeholder='Optional full tickers, including non-index listings')
     w_years = W.IntText(value=3, description='Years of history', style=LBL,
                         layout=FULL)
@@ -11336,7 +11875,7 @@ def hedge_ui(data=None):
         HELP('discovers the universe for the book in the Trade tab, pulls '
              'prices and caps, and caches everything to disk automatically'),
         w_years, W.HBox([w_pit1, w_pit2]),
-        HELP('Optional: an existing PRIVATE EQS screen or a complete ticker list broadens peer discovery beyond indices. Every proposed peer still needs matching industry classification.'),w_screen,w_extra,b_dl,
+        HELP('Optional: an existing PRIVATE EQS screen or a complete ticker list broadens peer discovery beyond indices. Every proposed peer still needs matching industry classification.'),w_screen,w_extra,w_download_scope,b_dl,
         H('Where Export writes'),
         HELP('the Export button writes a Word report (plus weights .csv) '
              'here. If the drive is not mapped on this machine it falls '
@@ -11819,8 +12358,12 @@ def hedge_ui(data=None):
             except Exception as e:
                 _status(f"target: {e}", 'err')
                 return
-            _status('downloading from Bloomberg — this can take minutes…',
-                    'info')
+            _status('downloading — progress is shown below','info')
+            panel=W.HTML()
+            display(panel)
+            def show_progress(state):
+                panel.value=_download_progress_html(state)
+                UI_STATE['download_progress']=state
             try:
                 UI_STATE['data'] = download_hedge_data(
                     tgt, years=int(w_years.value),
@@ -11830,9 +12373,9 @@ def hedge_ui(data=None):
                     fetch_mktcap_hist=w_pit1.value,
                     fetch_pit_members=w_pit2.value,
                     same_exchange_only=w_exchange.value,peer_screen=w_screen.value.strip() or None,
-                    peer_universe=_ui_list(w_extra.value))
+                    peer_universe=_ui_list(w_extra.value),download_scope=w_download_scope.value,progress=show_progress)
                 UI_STATE['loaded_from'] = None
-                _status(f"downloaded and cached · "
+                _status(f"download finished · "
                         f"{UI_STATE['data']['prices'].shape[0]} rows × "
                         f"{UI_STATE['data']['prices'].shape[1]} tickers",
                         'ok')
@@ -12005,7 +12548,7 @@ def hedge_ui(data=None):
     UI_STATE['widgets'] = {'compare_windows': w_compare,'max_leg':w_maxleg,'max_gross':w_maxgross,'objective':w_objective,
                            'candidate_scope': w_scope, 'basket_methods': w_method,
                            'include_broad_market': w_market,
-                           'same_exchange_only': w_exchange,
+                           'same_exchange_only': w_exchange, 'download_scope':w_download_scope,
                            'basket_mode': w_basket_mode, 'basket_min': w_basket_min,
                            'basket_max': w_basket_max, 'analysis_window': w_win,
                            'hedge_horizon': w_horizon, 'notional': w_notional,
