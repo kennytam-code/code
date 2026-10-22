@@ -61,6 +61,24 @@ class PeerDiscoveryTests(unittest.TestCase):
         kept,dropped=E['_exchange_filter'](names,[target],True,'test',quiet=True)
         self.assertIn(local,kept);self.assertIn(foreign,dropped)
 
+    def test_received_but_stale_roster_still_resolves_missing_new_local_share(self):
+        target,foreign,local='2476 HK Equity','001389 CH Equity','1989 HK Equity'
+        refs={target:electronics(ID_BB_COMPANY='1'),
+              foreign:electronics(ID_BB_COMPANY='2',NAME='Delton Technology'),
+              local:electronics(ID_BB_COMPANY='2',NAME='Delton Technology')}
+        lookup=MagicMock(return_value=([local],False));session=MagicMock();meta={}
+        session.openService.return_value=True
+        stub={'bbg_ref_single':lambda *a:refs[target],
+              'bbg_ref_multi':lambda session,names,*a,**kw:{t:refs.get(t,{}) for t in names},
+              'bbg_bulk':lambda session,ticker,field:[{'Peer Ticker':foreign}] if ticker==target else [],
+              '_public_equity_universe':lambda *a:([target],[dict(source='EXCHANGE',status='received',count=1)]),
+              '_index_members':lambda *a:('TEST Index',[target]),'_sector_index_members':lambda *a:([],[]),
+              '_bbg_equity_lookup':lookup}
+        with patch.dict(E['auto_discover_universe'].__globals__,stub),contextlib.redirect_stdout(io.StringIO()):
+            names=E['auto_discover_universe'](session,target,min_mktcap_usd_mm=0,meta=meta)
+        self.assertIn(local,names);self.assertIn(local,meta['peer_tickers'])
+        lookup.assert_called_once_with(session,'Delton Technology')
+
     def test_local_listing_recovery_is_generic_and_requires_issuer_identity(self):
         for suffix in ('HK','TT','JP','KS','AU','US'):
             with self.subTest(market=suffix):

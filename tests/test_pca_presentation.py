@@ -1,5 +1,6 @@
 """Presentation must preserve data, failure status and complete diagnostics."""
-import contextlib,io,unittest
+import contextlib,io,unittest,copy
+import numpy as np
 from unittest.mock import patch
 import pandas as pd
 from test_pca_research import E,fixture,run
@@ -73,6 +74,69 @@ class PresentationTests(unittest.TestCase):
                 self.assertIn(('SHORT ' if weight>0 else 'LONG ')+f'{abs(weight)*100:.1f}',html)
         self.assertIn(f'{result["in_sample_r2"]:.3f}',html)
         self.assertIn(f'{result["ticket"]["quality_r2"]:.3f}',html)
+
+
+    def test_tracking_charts_use_entire_selected_window_and_match_report_metrics(self):
+        data=fixture()
+        for window in ('1m','2m','3m','6m','1y',('2025-04-01','2025-07-01')):
+            with self.subTest(window=window):
+                result=run(data,sample_window=window)
+                tracking=E['_tracking_chart_data'](result)
+                current=tracking['current']
+                self.assertEqual(current['status'],'ok',current)
+                self.assertTrue(current['parts'][0].index.equals(result['returns'].index))
+                self.assertEqual(current['rows'],result['current_fit_rows'])
+                self.assertAlmostEqual(current['r2'],result['in_sample_r2'])
+                self.assertAlmostEqual(current['vol_reduction'],result['current_fit_risk']['vol_reduction'])
+                figures=E['_report_figures'](result)
+                self.assertIn('target versus basket',figures[0][0])
+                np.testing.assert_allclose(figures[0][1].axes[0].lines[1].get_ydata(),
+                    (result['returns'][result['weights'].index]@result['weights']).cumsum()*100)
+                for _,fig in figures: E['plt'].close(fig)
+                if result['method_validation']['folds']:
+                    self.assertEqual(tracking['test']['status'],'ok',tracking['test'])
+                    self.assertAlmostEqual(tracking['test']['r2'],result['method_validation']['methods']['selected']['r2'])
+
+    def test_frozen_chart_ignores_current_weights_and_keeps_training_intercept(self):
+        result=run(sample_window='3m');original=E['_tracking_chart_data'](result)['test']
+        altered=copy.deepcopy(result);altered['weights']*=1.5
+        changed=E['_tracking_chart_data'](altered)
+        self.assertEqual(changed['current']['status'],'unavailable')
+        pd.testing.assert_frame_equal(original['parts'][0],changed['test']['parts'][0])
+        fold=result['method_validation']['folds'][0];method=fold['methods']['selected']
+        frame=result['returns'].reindex(pd.DatetimeIndex(fold['test_dates']))
+        actual=frame[method['weights'].index]@method['weights']
+        np.testing.assert_allclose(actual,original['parts'][0]['basket'])
+        np.testing.assert_allclose(actual+method['intercept'],original['parts'][0]['prediction'])
+
+    def test_missing_or_overlapping_tests_never_produce_partial_good_chart(self):
+        original=run(sample_window='3m')
+        for failure in ('nan','short','intercept','overlap','train_overlap','bad_score'):
+            result=copy.deepcopy(original);fold=result['method_validation']['folds'][0]
+            if failure=='nan': fold['methods']['selected']['spread_returns'][0]=np.nan
+            if failure=='short': fold['target_returns'].pop()
+            if failure=='intercept': fold['methods']['selected']['intercept']+=.1
+            if failure=='overlap': result['method_validation']['folds'].append(copy.deepcopy(fold))
+            if failure=='train_overlap': fold['train_end']=fold['test_dates'][0]
+            if failure=='bad_score': result['method_validation']['methods']['selected']['r2']+=.1
+            with self.subTest(failure=failure):
+                tracking=E['_tracking_chart_data'](result)
+                self.assertEqual(tracking['current']['status'],'ok')
+                self.assertEqual(tracking['test']['status'],'unavailable')
+                self.assertNotIn('parts',tracking['test'])
+
+    def test_two_session_paths_do_not_double_count_and_no_test_is_invented(self):
+        result=run(sample_window='2m',async_adjust=True)
+        figures=E['_report_figures'](result)
+        path=E['_tracking_chart_data'](result)['current']['parts'][0].iloc[::2]
+        np.testing.assert_allclose(figures[0][1].axes[0].lines[0].get_ydata(),path['target'].cumsum()*100)
+        self.assertEqual(len(figures[0][1].axes[1].lines[0].get_ydata()),len(result['returns']))
+        for _,fig in figures: E['plt'].close(fig)
+        result['method_validation']={'folds':[]}
+        figures=E['_report_figures'](result)
+        self.assertFalse(any('Earlier frozen baskets' in name for name,_ in figures))
+        self.assertTrue(any('Historical test chart unavailable' in t.get_text() for t in figures[0][1].texts))
+        for _,fig in figures: E['plt'].close(fig)
 
 
 if __name__=='__main__': unittest.main()

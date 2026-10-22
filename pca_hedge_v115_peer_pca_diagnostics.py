@@ -256,9 +256,9 @@ import textwrap as _textwrap
 
 RIDGE_ALPHAS = np.logspace(-4, 2, 25)
 MIN_RETURN_STD = 1e-12
-PCA_REVISION = '2026-10-22-v124-peer-discovery'
+PCA_REVISION = '2026-10-23-v124-tracking-charts'
 MIN_TRAIN_COVERAGE = 0.90
-DISCOVERY_VERSION = 2
+DISCOVERY_VERSION = 3
 
 
 def _supported_plot_style(style, rc_params=None):
@@ -2222,7 +2222,7 @@ def _local_peer_listings(session,target,foreign_peers,references,fields,errors,a
                _common_share_type(r) and _peer_industry_supported(tgt,r)]
         if not local:
             if not allow_lookup:
-                row['reason']='No issuer match in the retrieved local roster; name lookup deferred because listing coverage was received'
+                row['reason']='No issuer match in the retrieved local roster; name lookup explicitly deferred'
                 continue
             query=ref.get('LONG_COMP_NAME') or ref.get('NAME')
             if not _usable_industry(query):
@@ -2566,7 +2566,7 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
         pool_ref_data.update(read_references(missing_direct))
     direct_verified,direct_rejected,direct_unknown=_strict_peer_set(tgt_ref,pool_ref_data,first_degree)
     local_peer_listings,local_listing_audit=_local_peer_listings(
-        session,target_ticker,direct_verified,pool_ref_data,ref_fields,reference_errors,allow_lookup=not bool(registry) or any(r.get('status')!='received' for r in registry_audit))
+        session,target_ticker,direct_verified,pool_ref_data,ref_fields,reference_errors,allow_lookup=True)
     peer_matches = list(dict.fromkeys(direct_verified + second_degree_verified + local_peer_listings))
     local_members=sorted(set(local_members)|set(local_peer_listings))
     print(f'    ├─ verified local listings of foreign direct peers: {len(local_peer_listings)}')
@@ -9863,6 +9863,129 @@ def _find_best_hedge_impl(
 
 
 
+def _tracking_chart_data(result):
+    """Use fitted rows and recorded frozen tests; never refit on test returns.
+
+    basket is Xw before applying the opposite hedge position. prediction adds
+    the estimated intercept for the R² comparison; that intercept is not P&L.
+    Missing/inconsistent test records invalidate the whole test chart.
+    """
+    out = {'current': {'status': 'unavailable'}, 'test': {'status': 'unavailable'}}
+    target = PORTFOLIO_COL if result.get('is_portfolio') else result['portfolio_legs'][0]
+    frame, weights = result['returns'], result['weights']
+    def metrics(parts):
+        y = np.concatenate([p['target'].to_numpy() for p in parts])
+        pred = np.concatenate([p['prediction'].to_numpy() for p in parts])
+        basket = np.concatenate([p['basket'].to_numpy() for p in parts])
+        tss = float(np.sum((y-y.mean())**2))
+        return {'r2': 1-float(np.sum((y-pred)**2))/tss if tss > MIN_RETURN_STD**2 else np.nan,
+                'vol_reduction': 1-float(np.std(y-basket))/float(np.std(y)) if tss > MIN_RETURN_STD**2 else np.nan,
+                'rows': len(y)}
+    try:
+        values = frame[[target]+list(weights.index)].astype(float)
+        if (values.index.has_duplicates or not values.index.is_monotonic_increasing
+                or len(values)<2 or not np.isfinite(values.to_numpy()).all()
+                or not np.isfinite(weights.to_numpy()).all()):
+            raise ValueError('Fitted dates or returns are incomplete')
+        y, basket = values[target], values[weights.index] @ weights
+        intercept = float((y-basket).mean())
+        part = pd.DataFrame({'target': y, 'basket': basket, 'prediction': basket+intercept})
+        stats = metrics([part])
+        if not np.isclose(stats['r2'], result['in_sample_r2'], atol=1e-8, rtol=1e-8, equal_nan=True):
+            raise ValueError('Fitted weights and reported R² disagree')
+        out['current'] = dict(status='ok', parts=[part], intercept=intercept, **stats)
+    except (KeyError, TypeError, ValueError) as err:
+        out['current']['reason'] = str(err)
+    folds = (result.get('method_validation') or {}).get('folds') or []
+    if not folds:
+        out['test']['reason'] = 'No recorded frozen test for this run'
+        return out
+    try:
+        parts = []
+        for fold in folds:
+            method = fold['methods']['selected']
+            if method.get('status') != 'ok':
+                raise ValueError('At least one frozen test is unavailable')
+            dates = pd.DatetimeIndex(fold['test_dates'])
+            n = int(fold['test_rows'])
+            if (n < 2 or len(dates) != n or dates.has_duplicates or dates.hasnans
+                    or not dates.is_monotonic_increasing or pd.Timestamp(fold['train_end']) >= dates[0]
+                    or pd.Timestamp(fold['test_start']) != dates[0] or pd.Timestamp(fold['test_end']) != dates[-1]):
+                raise ValueError('Frozen test dates are inconsistent or overlap training')
+            arrays = [np.asarray(a, dtype=float) for a in
+                      (fold['target_returns'], method['prediction_errors'], method['spread_returns'])]
+            if any(a.shape != (n,) or not np.isfinite(a).all() for a in arrays):
+                raise ValueError('Frozen test returns are incomplete; no partial test is drawn')
+            y, error, spread = arrays
+            intercept = float(method['intercept'])
+            if not np.isfinite(intercept) or not np.allclose(spread-error, intercept, atol=1e-10, rtol=1e-8):
+                raise ValueError('Frozen predictions and recorded intercept disagree')
+            parts.append(pd.DataFrame({'target': y, 'basket': y-spread,
+                                       'prediction': y-error}, index=dates))
+        parts.sort(key=lambda part: part.index[0])
+        if any(a.index[-1] >= b.index[0] for a,b in zip(parts,parts[1:])):
+            raise ValueError('Frozen test windows overlap')
+        stats = metrics(parts)
+        reported = ((result.get('method_validation') or {}).get('methods') or {}).get('selected', {})
+        if 'r2' in reported and not np.isclose(stats['r2'], reported['r2'], atol=1e-8, rtol=1e-8, equal_nan=True):
+            raise ValueError('Frozen predictions and reported R² disagree')
+        out['test'] = dict(status='ok', parts=parts, **stats)
+    except (KeyError, TypeError, ValueError) as err:
+        out['test']['reason'] = str(err)
+    return out
+
+
+def _tracking_figures(result):
+    """Tracking charts for any selected analysis window, including custom dates."""
+    data = _tracking_chart_data(result)
+    figures = []
+    two_day = bool(result.get('two_day_returns'))
+    window = (result.get('params') or {}).get('sample_window') or 'available history'
+    if isinstance(window, (tuple, list)):
+        window = 'custom dates'
+    target = 'Portfolio' if result.get('is_portfolio') else result['portfolio_legs'][0]
+    for kind in ('current', 'test'):
+        item = data[kind]
+        if item['status'] != 'ok':
+            continue
+        current = kind == 'current'
+        parts = item['parts']
+        start, end = parts[0].index[0], parts[-1].index[-1]
+        fig, axes = plt.subplots(1, 2, figsize=(14, 4.8))
+        heading = ('Current basket · fitted history' if current else 'Earlier frozen baskets · historical tests')
+        fig.suptitle(f'{target} | {window} | {heading}', x=.06, ha='left', fontsize=12, fontweight='bold', color='#30343b')
+        fig.text(.06, .89, f'{start:%d %b %Y} – {end:%d %b %Y}   |   {item["rows"]} observations   |   '
+                 f'{"Fit" if current else "Test"} R² {item["r2"]:.3f}   |   Volatility reduction {item["vol_reduction"]:.1%}',
+                 fontsize=9, color='#60656d')
+        for i, part in enumerate(parts):
+            # Cumulative paths must not double-count overlapping two-day returns.
+            path = part.iloc[::2] if two_day else part
+            for col, label, color in [('target','Target','#343a43'), ('basket','Basket before hedge sign','#c41230')]:
+                axes[0].plot(path.index, path[col].cumsum()*100, color=color,
+                             label=label if i==0 else None)
+            for col, label, color in [('target','Target','#343a43'), ('prediction','Basket + fitted intercept' if current else 'Basket + training intercept','#c41230')]:
+                axes[1].plot(part.index, part[col]*100, color=color, label=label if i==0 else None,
+                             marker='o' if len(part)<=25 else None, markersize=3, alpha=.9)
+        axes[0].set_title('Cumulative tracking · current weights' if current else 'Cumulative tracking · frozen weights per block')
+        axes[0].set_ylabel('Cumulative log-return proxy (%)')
+        axes[1].set_title('Return tracking · same predictions used for R²')
+        axes[1].set_ylabel(('2-session' if two_day else 'Daily')+' log return (%)')
+        for ax in axes:
+            ax.axhline(0, color='#bfc3c9', ls='--', lw=.8)
+            ax.legend(loc='best')
+            ax.xaxis.set_major_locator(_mdates.AutoDateLocator(maxticks=6))
+            ax.xaxis.set_major_formatter(_mdates.DateFormatter('%d %b' if (end-start).days<150 else '%b %y'))
+        note = ('Full-window fit; not a forward backtest.' if current else 'Each block uses its earlier frozen basket; paths restart per block.')
+        note += ' Left: weighted log returns, not portfolio NAV. Right: intercept is statistical, not hedge income.'
+        if two_day:
+            note += '\nPaths use every second observation; R² uses all recorded two-session returns.'
+        if current and data['test']['status'] != 'ok':
+            note += '\nHistorical test chart unavailable: '+data['test']['reason']+'.'
+        fig.text(.06, .02, note, fontsize=8, color='#60656d')
+        figures.append((heading+' · target versus basket', fig))
+    return figures
+
+
 def _report_figures(result):
     """Fitted diagnostics and conditional rolling charts; no extra validation."""
     frame, weights = result['returns'], result['weights']
@@ -9881,6 +10004,7 @@ def _report_figures(result):
              'lines.linewidth': 1.5, 'axes.prop_cycle': plt.cycler(color=['#536779','#c41230','#343a43','#9a8870'])}
     figures = []
     with plt.rc_context(_supported_plot_style(style)):
+        figures.extend(_tracking_figures(result))
         fig, axes = plt.subplots(2, 3, figsize=(14, 8.5))
         pca, loadings = result.get('chart_pca'), result.get('chart_loadings')
         if pca is not None:
@@ -9989,7 +10113,7 @@ def _report_figures(result):
         for _, figure in figures:
             for ax in figure.axes:
                 ax.title.set_color('#30343b'); ax.spines['top'].set_visible(False); ax.spines['right'].set_visible(False)
-            figure.tight_layout(pad=1.6)
+            figure.tight_layout(pad=1.6, rect=(0,.08,1,.85) if figure._suptitle is not None else None)
     return figures
 
 

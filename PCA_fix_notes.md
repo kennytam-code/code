@@ -1,8 +1,8 @@
 # PCA v124 changes
 
-Revision 2026-10-22-v124-peer-discovery in the existing v115 entry point.
+Revision 2026-10-23-v124-tracking-charts in the existing v115 entry point.
 
-- Recover local listings of foreign direct peers using Bloomberg company identity, local venue, equity type and industry evidence. Reuse the full local listing scan; fall back to documented instrument search when exchange sources are unavailable or partial. Keep unresolved checks explicit. Apply the same process across markets.
+- Recover local listings of foreign direct peers using Bloomberg company identity, local venue, equity type and industry evidence. Reuse the full local listing scan; query unmatched issuers through documented instrument search even if a received roster may be stale. Keep unresolved checks explicit. Apply the same process across markets.
 - Add HKEXnews active-directory fallback; verify instrument types so funds/debt do not become stock peers. Include legitimate HK equity subcategories and REITs. Classify sector-index names even outside broad indices. Retain successful reference batches and vendor errors.
 - Narrow strict-peer/exposure rules so a broad hardware/semiconductor parent does not override distinct businesses or imply a semiconductor factor. Keep broader sector scope available and distinguish classification changes from missing prices.
 - Scan listings broadly, then default price/cap/volume history to verified peers, sector names and references. Keep broad history as an explicit option; preserve all manual candidates/required names and classify historical additions. Reuse requests within a download and stream compact progress with a saved full log.
@@ -10,6 +10,7 @@ Revision 2026-10-22-v124-peer-discovery in the existing v115 entry point.
 - Make equivalent short-window training scores use a deterministic recipe tie-break; stabilize factor-reference ordering.
 - Replace raw Download-button logs with an updating stage panel, source status, visible notices and an expandable full log. Keep compact console output and failure diagnostics.
 - Reorder result presentation around the main and alternative baskets; add notebook comparison cards and expandable supporting analysis. Keep charts first, fitted/test labels distinct, and all positions and negative metrics unchanged.
+- Add target-versus-basket tracking charts for every analysis window, separating current fits from recorded frozen tests. Preserve training intercepts and all test rows; never replace old weights with current weights. Avoid overlapping two-session path accumulation and joins between separate test blocks. Verify plotted metrics against the report.
 - Regression coverage includes non-index names in three sectors across six markets, generic local-share resolution, identity/type and own-issuer rejection, source timeouts, response draining, batch failures, recent listings with complete short-window history, history scope, cache freshness and numerical ties. Live Bloomberg execution still requires terminal verification; no claim of exhaustive peers or improved realized hedge performance.
 
 # PCA v123 changes
