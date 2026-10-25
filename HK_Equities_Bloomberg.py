@@ -51,11 +51,12 @@ WINDOWS_PROXY_TIMEOUT_SECONDS = 35  # Legacy fallback, not used in "urllib" mode
 ALLOW_MANUAL_ETNET_HTML = True
 MANUAL_ETNET_FOLDER = "HK_Equities_Drafts/manual_etnet"
 MANUAL_ETNET_MAX_AGE_HOURS = 24
-# Set your approved corporate proxy here or via HK_EQUITIES_HTTPS_PROXY.
+# Keep the original working corporate proxy unless explicitly overridden.
+# A missing or blank HK_EQUITIES_HTTPS_PROXY keeps the original default.
 # Use http:// here: the HTTP proxy CONNECT-tunnels HTTPS destinations.
 # Never store company passwords or tokens in this notebook.
 # If your approved proxy changes, update this single line.
-HTTPS_PROXY_URL = os.environ.get("HK_EQUITIES_HTTPS_PROXY", "")
+HTTPS_PROXY_URL = os.environ.get("HK_EQUITIES_HTTPS_PROXY", "").strip() or "http://instinetpxy.nomura.com:8080"
 
 # Bloomberg connects to the local Desktop API, not the public-web HTTP proxy.
 BLOOMBERG_ENABLED = True
