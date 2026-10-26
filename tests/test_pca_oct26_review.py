@@ -74,7 +74,7 @@ class OctoberReviewTests(unittest.TestCase):
 
     def test_official_failure_uses_independent_directory_and_retains_both_statuses(self):
         fallback=MagicMock(return_value=(['1989 HK Equity'],dict(source='Yahoo',status='received',count=1)))
-        with patch('urllib.request.urlopen',side_effect=OSError('TLS/proxy denied')),patch.dict(E['_public_equity_universe'].__globals__,{'_yahoo_equity_universe':fallback}):
+        with patch.dict(E['_public_equity_universe'].__globals__,{'_public_roster_bytes':MagicMock(side_effect=OSError('TLS/proxy denied')),'_yahoo_equity_universe':fallback}):
             names,a=E['_public_equity_universe']('HK')
         self.assertEqual(names,['1989 HK Equity']);fallback.assert_called_once_with('HK')
         self.assertEqual(a[0]['status'],'unavailable');self.assertIn('TLS/proxy denied',a[0]['reason'])

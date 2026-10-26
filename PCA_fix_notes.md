@@ -1,3 +1,16 @@
+# PCA v126 changes
+
+Revision 2026-10-26-v126-market-scope-and-download, same script and notebook entry points.
+
+- Remove the invalid unused Bloomberg average-volume field request; keep valid quote-volume requests and observed-session volume fallback.
+- Prefer the tested lightweight HKEXnews JSON. Bound official source attempts across standard and curl clients; retain verified TLS and configured proxies. Recover optional yfinance import failures through a fresh anonymous public-screener session. Keep partial listing results and precise source audits, with one compact coverage notice.
+- Move the listing checkbox to Data and default it to unchecked (overseas peers allowed). Use one visible stock universe: verified local sector stocks plus verified overseas business peers when allowed. Remove the hidden automatic timezone restriction from that form/default scope; retain explicit script controls. Require a new download before turning a local-only cache into a global run.
+- Report candidate counts by market and the actual return basis. Correct the error-attribution label for two-day observations. Disclose FX-incomplete coefficients as research values and withhold executable-weight exports.
+- Clarify Auto compare as the recommended objective, its training-only volatility criterion and short-window limits. Preserve fitted R², historical tests, charts, alternatives, and basket priority.
+- Add integration tests for global candidate admission, local-cache guarding, manual exclusions, form placement, import-error recovery, direct-client failures, source fallback, compact notices and mixed-currency handling.
+
+Live public-source checks were performed from the development environment. They do not verify the user's terminal/network or establish complete peer coverage. No network blocking is inferred from timeout/import messages. Prices and business classifications still come from Bloomberg.
+
 # PCA v125 changes
 
 Revision 2026-10-26-v125-discovery-and-selection, same script and notebook entry points.

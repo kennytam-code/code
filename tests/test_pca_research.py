@@ -32,7 +32,7 @@ class ResearchTests(unittest.TestCase):
         cls.data=fixture();cls.one=run(cls.data,sample_window='1m');cls.three=run(cls.data,sample_window='3m')
 
     def test_actual_revision_loaded(self):
-        self.assertIn('v125',E['PCA_REVISION'])
+        self.assertIn('v126',E['PCA_REVISION'])
 
     def test_short_window_search_has_multiple_distinct_baskets(self):
         rows=self.one['basket_comparison']
@@ -231,7 +231,7 @@ class ResearchTests(unittest.TestCase):
             if 'openapi.twse' in req.full_url:
                 return io.BytesIO(b'[{"changed":"2889"}]')
             raise OSError('offline')
-        with patch('urllib.request.urlopen',side_effect=fetch), patch.dict(E['_public_equity_universe'].__globals__,{'_yahoo_equity_universe':lambda *a:([],dict(source='Yahoo',status='unavailable',count=0,reason='offline'))}):
+        with patch.dict(E['_public_equity_universe'].__globals__,{'_public_roster_bytes':lambda endpoint,transport: fetch(type('Request',(),{'full_url':endpoint})()).getvalue(),'_yahoo_equity_universe':lambda *a:([],dict(source='Yahoo',status='unavailable',count=0,reason='offline'))}):
             names,audit=E['_public_equity_universe']('TW')
         self.assertEqual(names,[]);self.assertEqual(audit[0]['status'],'unavailable')
 
@@ -241,9 +241,8 @@ class ResearchTests(unittest.TestCase):
             if 'tpex.org.tw' in req.full_url:
                 return io.BytesIO(b'[{"SecuritiesCompanyCode":"5864"}]')
             raise IncompleteRead(b'a')
-        with patch('urllib.request.urlopen',side_effect=receive) as fetch, patch.dict(E['_public_equity_universe'].__globals__,{'_yahoo_equity_universe':lambda *a:([],dict(source='Yahoo',status='unavailable',count=0,reason='offline'))}):
+        with patch.dict(E['_public_equity_universe'].__globals__,{'_public_roster_bytes':lambda endpoint,transport: receive(type('Request',(),{'full_url':endpoint})()).getvalue(),'_yahoo_equity_universe':lambda *a:([],dict(source='Yahoo',status='unavailable',count=0,reason='offline'))}):
             names,audit=E['_public_equity_universe']('TW')
-        self.assertEqual(fetch.call_count,5)
         self.assertEqual(names,['5864 TT Equity'])
         self.assertEqual(audit[0]['status'],'unavailable')
 

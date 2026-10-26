@@ -26,9 +26,9 @@ class PeerDiscoveryTests(unittest.TestCase):
         with patch('urllib.request.urlopen',side_effect=read):
             names,audit=E['_public_equity_universe']('HK')
         self.assertEqual(names,['1989 HK Equity','2800 HK Equity'])
-        self.assertEqual(len(requests),3)
+        self.assertEqual(len(requests),1)
         self.assertEqual(audit[0]['parser'],'HKEXnews')
-        self.assertEqual(len(audit[0]['attempts']),2)
+        self.assertEqual(len(audit[0]['attempts']),0)
         verified,blocked=E['_verify_roster_candidates'](names,audit,{
             names[0]:electronics(),names[1]:{'SECURITY_TYP2':'Mutual Fund'}})
         self.assertEqual(verified,['1989 HK Equity']);self.assertIn('2800 HK Equity',blocked)

@@ -140,7 +140,7 @@ class SectorScopeTests(unittest.TestCase):
         options={k:v for k,v in OPTIONS.items() if k!='candidate_scope'}
         with contextlib.redirect_stdout(io.StringIO()):
             r=E['find_best_hedge'](d['target'],data=d,sample_window='1m',**options)
-        self.assertEqual(r['params']['candidate_scope'],'sector')
+        self.assertEqual(r['params']['candidate_scope'],'related')
         self.assertFalse(r['params']['include_broad_market'])
         self.assertIn('single_etf',r['current_single_references'])
         self.assertTrue(r['current_single_references']['single_etf']['reference_only'])
@@ -164,8 +164,8 @@ class SectorScopeTests(unittest.TestCase):
     def test_default_ui_is_stock_sector_scope(self):
         d,_,_=self.sector_data()
         with contextlib.redirect_stdout(io.StringIO()): state=E['hedge_ui'](d)
-        w=state['widgets'];self.assertEqual(w['candidate_scope'].value,'sector')
-        self.assertTrue({'sector','sector_focused','peers','focused','all'}<=set(v for _,v in w['candidate_scope'].options))
+        w=state['widgets'];self.assertEqual(w['candidate_scope'].value,'related')
+        self.assertEqual(set(v for _,v in w['candidate_scope'].options),{'related'})
 
     def test_all_user_windows_and_new_scope_preserve_caps_and_holdout_isolation(self):
         d,stocks,_=self.sector_data(n=420)

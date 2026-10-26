@@ -256,9 +256,9 @@ import textwrap as _textwrap
 
 RIDGE_ALPHAS = np.logspace(-4, 2, 25)
 MIN_RETURN_STD = 1e-12
-PCA_REVISION = '2026-10-26-v125-discovery-and-selection'
+PCA_REVISION = '2026-10-26-v126-market-scope-and-download'
 MIN_TRAIN_COVERAGE = 0.90
-DISCOVERY_VERSION = 4
+DISCOVERY_VERSION = 5
 
 
 def _supported_plot_style(style, rc_params=None):
@@ -2020,8 +2020,24 @@ def _sector_stock_names(data, legs):
                              and not _is_etf(t) and t not in legs))
 
 
+def _related_stock_names(data, legs):
+    """One research universe: local sector stocks plus verified global peers.
+
+    Geography is controlled separately. A foreign stock needs peer evidence;
+    merely being listed in another market never establishes a relationship.
+    """
+    local = _sector_stock_names(data, legs)
+    if (data or {}).get('peer_policy_version') != 4:
+        raise ValueError('Verified peers require a fresh download with this revision.')
+    peers = [t for leg in legs for t in
+             ((data or {}).get('peer_tickers_by_target') or {}).get(leg, [])]
+    return list(dict.fromkeys(t for t in local + peers if t not in legs and not _is_etf(t)))
+
+
 def _risk_equity_names(data, legs, scope):
     """Use the declared stock universe consistently in the common-risk model."""
+    if scope == 'related':
+        return _related_stock_names(data, legs)
     if scope in ('sector', 'sector_focused'):
         return _sector_stock_names(data, legs)
     if (data or {}).get('peer_policy_version') != 4:
@@ -2032,7 +2048,7 @@ def _risk_equity_names(data, legs, scope):
 
 def _sector_search_audit(result, data, exclude=()):
     """Disjoint reasons for each discovered sector stock, through current search."""
-    if result.get('params', {}).get('candidate_scope') not in ('sector', 'sector_focused'):
+    if result.get('params', {}).get('candidate_scope') not in ('sector', 'sector_focused', 'related'):
         return {}
     prices = (data or {}).get('prices')
     if not isinstance(prices, pd.DataFrame):
@@ -2053,7 +2069,15 @@ def _sector_search_audit(result, data, exclude=()):
         rejected = []
         capped = {identity(t) for t in discovery.get('market_cap_filtered') or []}
         previously_excluded = {identity(t) for t in discovery.get('manual_excluded') or []}
-        for original in discovery.get('sector_stock_audit') or []:
+        stock_rows=list(discovery.get('sector_stock_audit') or [])
+        if result.get('params',{}).get('candidate_scope')=='related':
+            peer_names=set(((data or {}).get('peer_tickers_by_target') or {}).get(target,[]))
+            stock_rows=[dict(row,eligible=True,reason='verified business peer')
+                        if row['ticker'] in peer_names else row for row in stock_rows]
+            recorded={row['ticker'] for row in stock_rows}
+            stock_rows += [dict(ticker=t,eligible=True,reason='verified business peer',evidence=['peer classification'])
+                           for t in sorted(peer_names-recorded)]
+        for original in stock_rows:
             row = dict(original)
             ticker = row['ticker']
             key = identity(ticker)
@@ -2094,7 +2118,7 @@ def _sector_search_audit(result, data, exclude=()):
 
 def _sector_etf_references(result, frame, peers, references, options):
     """Same-date descriptive ETF comparisons without admitting ETFs to search."""
-    if options['candidate_scope'] != 'sector':
+    if options['candidate_scope'] not in ('sector', 'related'):
         return
     legs = result['portfolio_legs']
     target = PORTFOLIO_COL if result.get('is_portfolio') else legs[0]
@@ -2352,7 +2376,7 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
         'GICS_INDUSTRY_NAME',
         'GICS_SUB_INDUSTRY_NAME',   # [Fix 1] correct field name
         'CUR_MKT_CAP',
-        'AVERAGE_VOLUME_30D', 'NAME', 'LONG_COMP_NAME',
+        'NAME', 'LONG_COMP_NAME',
         'ID_BB_COMPANY', 'SECURITY_TYP', 'SECURITY_TYP2',
     ]
     reference_errors=[]
@@ -4539,6 +4563,7 @@ class _DownloadProgress:
             prices=result['prices']
             lines=[f'{prices.shape[1]} instruments · {prices.shape[0]} price rows · '+
                    (f'{prices.index.min():%d %b %Y} – {prices.index.max():%d %b %Y}' if len(prices) else 'no price dates')]
+            listing_issues=set()
             for target,m in result.get('peer_discovery_by_target',{}).items():
                 unresolved=sum(r.get('status')=='unresolved' for r in m.get('local_listing_audit',[]))
                 downloaded=set(prices.columns[prices.notna().any()])
@@ -4546,7 +4571,7 @@ class _DownloadProgress:
                 local={t for t in peers if _listing_market_key(t)==_listing_market_key(target)}
                 sector=set(result.get('sector_stock_tickers_by_target',{}).get(target,[]))
                 lines.append(f"{target}: {len(local & downloaded)} local peers downloaded / {len(local)} classified · "
-                             f"{len(sector & downloaded)} local sector stocks downloaded · {len(peers-local)} foreign peer leads")
+                             f"{len(sector & downloaded)} local sector stocks downloaded · {len((peers-local) & downloaded)}/{len(peers-local)} overseas peers downloaded")
                 if unresolved: self.notice(f'{target}: {unresolved} foreign-peer local-listing checks remain unresolved; see peer diagnostics.',stage='discovery')
                 if m.get('reference_errors'):
                     from collections import Counter
@@ -4555,7 +4580,10 @@ class _DownloadProgress:
                     self.notice(f"{target}: {len(m['reference_errors'])} reference errors. {summary}. Full details in diagnostics.",stage='discovery')
                 if m.get('classification_missing'): self.notice(f"{target}: {len(m['classification_missing'])} listings lack usable industry labels; see peer diagnostics.",stage='discovery')
                 for source in m.get('listing_registry_audit',[]):
-                    if source.get('status')!='received': self.notice(source['source']+' listing source '+source.get('status','unknown')+': '+str(source.get('reason','unknown failure'))[:240]+'. Coverage may be incomplete.',stage='discovery')
+                    if source.get('status')!='received': listing_issues.add(source['source'])
+            if listing_issues:
+                self.notice('Public listing cross-check incomplete ('+', '.join(sorted(listing_issues))+
+                            '). Available listings and Bloomberg discovery were retained; review known missing tickers with Force download. Source details are in diagnostics.',stage='discovery')
             if result.get('force_download'):
                 missing=result.get('force_download_missing',[])
                 lines.append(f"Force download: {len(result['force_download'])-len(missing)}/{len(result['force_download'])} returned usable prices")
@@ -4839,9 +4867,19 @@ def _filter_candidate_scope(data, legs, columns, scope, include_market, peers=No
     broad = [_broad_market_spec(t) for t in legs]
     market_ids = {canonical(t) for m in broad for t in m['instruments']}
     market_tickers = [c for c in columns if canonical(c) in market_ids and c not in legs]
-    if scope in ('peers', 'sector'):
+    if scope in ('peers', 'sector', 'related'):
         include_market = False
-    if scope in ('sector', 'sector_focused'):
+    if scope == 'related':
+        manual_names, _ = _apply_exclusions(_parse_ticker_list(peers), exclude)
+        if same_exchange_only:
+            manual_names, _ = _exchange_filter(manual_names, legs, True, 'foreign manual peers')
+        names = _related_stock_names(data, legs)
+        manual, missing = _resolve_force_include(manual_names, columns, legs[0])
+        if missing:
+            raise ValueError('Manual peers not in downloaded data: '+', '.join(missing))
+        ids = {canonical(t) for t in names + manual}
+        candidates = [c for c in columns if canonical(c) in ids and c not in legs and not _is_etf(c)]
+    elif scope in ('sector', 'sector_focused'):
         sector_names = _sector_stock_names(data, legs)
         ids = {canonical(t) for t in sector_names}
         if scope == 'sector_focused':
@@ -5739,7 +5777,7 @@ def _download_execution_snapshot(session, tickers, end):
     source, session count and last observation instead of inventing liquidity.
     """
     errors, metadata = [], {}
-    fields = ['PX_BID', 'PX_ASK', 'VOLUME_AVG_30D', 'AVERAGE_VOLUME_30D', 'CRNCY', 'NAME']
+    fields = ['PX_BID', 'PX_ASK', 'VOLUME_AVG_30D', 'CRNCY', 'NAME']
     try:
         quotes = bbg_ref_multi(session, tickers, fields, errors=errors)
     except Exception as err:  # optional vendor diagnostics must not abort price analysis
@@ -5748,7 +5786,7 @@ def _download_execution_snapshot(session, tickers, end):
     missing = []
     for ticker in tickers:
         quote = quotes.setdefault(ticker, {})
-        for field in ('VOLUME_AVG_30D', 'AVERAGE_VOLUME_30D'):
+        for field in ('VOLUME_AVG_30D',):
             value = _positive_number(quote.get(field), allow_zero=True)
             if value is not None:
                 quote['PCA_AVG_DAILY_VOLUME'] = value
@@ -5862,7 +5900,7 @@ def _run_data_quality(result, data, options):
     missing_sources = sorted(set(row['source'] for row in sources if row.get('status') != 'received'))
     notes = []
     if discovery and any(row.get('discovery_version')!=DISCOVERY_VERSION for row in discovery.values()):
-        notes.append('Saved universe predates local-listing recovery. Download again; re-running this cache cannot discover missing stocks.')
+        notes.append('Saved universe predates this discovery revision. Download again; re-running this cache cannot discover missing stocks.')
     if any(row.get('direct_peer_error') or row.get('reference_errors') for row in discovery.values()):
         notes.append('Discovery vendor errors recorded; inspect the peer coverage audit for affected names/fields.')
     if missing_sources:
@@ -6000,6 +6038,61 @@ def _yahoo_directory_pages(market, fetch_page, max_seconds=90, max_pages=40):
     return sorted(names),audit
 
 
+class _YahooDirectoryHTTP:
+    """Public screener protocol when the optional yfinance import is broken.
+
+    Uses only a fresh anonymous session cookie and its CSRF crumb. No account
+    credentials, saved browser state or persistent cookie cache are accessed.
+    The caller enforces the same page/time limits as the primary client.
+    """
+    def __init__(self, session):
+        self.session = session
+        self.crumb = None
+
+    def _authenticate(self):
+        response = self.session.get('https://fc.yahoo.com')
+        if response.status_code == 429:
+            raise RuntimeError('Yahoo rate limit; retry the download later')
+        # fc.yahoo.com normally sets the cookie on a 404 response.
+        if response.status_code not in (200, 204, 404):
+            raise RuntimeError('Yahoo cookie endpoint HTTP '+str(response.status_code))
+        response = self.session.get('https://query1.finance.yahoo.com/v1/test/getcrumb')
+        if response.status_code != 200:
+            raise RuntimeError('Yahoo session setup HTTP '+str(response.status_code))
+        crumb = response.text.strip()
+        if not crumb or len(crumb)>128 or any(ch.isspace() for ch in crumb) or '<' in crumb:
+            raise ValueError('Yahoo session response is not a usable token')
+        self.crumb = crumb
+
+    def screen(self, exchanges, offset, ascending=False):
+        if self.crumb is None:
+            self._authenticate()
+        terms=[{'operator':'EQ','operands':['exchange',value]} for value in exchanges]
+        query=terms[0] if len(terms)==1 else {'operator':'OR','operands':terms}
+        body={'offset':offset,'size':250,'sortField':'ticker',
+              'sortType':'ASC' if ascending else 'DESC','quoteType':'EQUITY',
+              'query':query,'userId':'','userIdType':'guid'}
+        params={'crumb':self.crumb,'formatted':'false','lang':'en-US',
+                'region':'US','corsDomain':'finance.yahoo.com'}
+        response=self.session.post('https://query1.finance.yahoo.com/v1/finance/screener',
+                                   params=params,json=body)
+        if response.status_code!=200:
+            raise RuntimeError('Yahoo screener HTTP '+str(response.status_code)+
+                               (' (rate limited; retry later)' if response.status_code==429 else ''))
+        payload=response.json()
+        finance=payload.get('finance',{}) if isinstance(payload,dict) else {}
+        rows=finance.get('result')
+        if finance.get('error') or not isinstance(rows,list) or len(rows)!=1:
+            raise ValueError('Yahoo screener returned an error or changed response schema')
+        return rows[0]
+
+
+def _public_proxy_options():
+    """Use configured OS/environment proxies without printing credentials."""
+    import urllib.request
+    return {k:v for k,v in urllib.request.getproxies().items() if k in ('http','https','all') and v}
+
+
 def _yahoo_equity_universe(market, fetch_page=None, max_seconds=90, max_pages=120):
     """Exchange-filtered directory, with two sort directions past Yahoo's 10k cap.
 
@@ -6013,25 +6106,35 @@ def _yahoo_equity_universe(market, fetch_page=None, max_seconds=90, max_pages=12
         return names,audit
     import time,os
     started=time.monotonic();names={};children=[];session=None;problem=None;pages=0
+    client_name='yfinance.screen';client_notice=None
     groups={'TW':[['TAI'],['TWO']], 'US':[['NYQ','NMS','NGM','NCM','ASE','PCX','BTS']],
             'HK':[['HKG']], 'JP':[['JPX','FKA','SAP']], 'KR':[['KSC','KOE']], 'AU':[['ASX']]}
     try:
-        import yfinance as yf
         from curl_cffi import requests as curl_requests
+        try:
+            import yfinance as yf
+            if not callable(getattr(yf,'screen',None)):
+                raise AttributeError('yfinance.screen is unavailable')
+        except (ImportError,TypeError,AttributeError) as err:
+            yf=None
+            client_name='direct public screener compatibility client'
+            client_notice='Recovered from optional yfinance import: '+type(err).__name__+': '+str(err)
         class BoundedSession(curl_requests.Session):
             def request(self,*args,**kwargs):
                 left=max_seconds-(time.monotonic()-started)
                 if left<=0: raise TimeoutError('Yahoo directory time budget reached')
                 kwargs['timeout']=min(15,left)
                 return super().request(*args,**kwargs)
-        session=BoundedSession(impersonate='chrome')
+        session=BoundedSession(impersonate='chrome',proxies=_public_proxy_options())
+        direct=_YahooDirectoryHTTP(session) if yf is None else None
         if os.environ.get('HEDGE_CA_BUNDLE'): session.verify=os.environ['HEDGE_CA_BUNDLE']
         if market not in groups: raise ValueError('Unsupported Yahoo listing market: '+str(market))
         for exchanges in groups[market]:
-            query=(yf.EquityQuery('eq',['exchange',exchanges[0]]) if len(exchanges)==1 else
-                   yf.EquityQuery('is-in',['exchange']+exchanges))
+            query=((yf.EquityQuery('eq',['exchange',exchanges[0]]) if len(exchanges)==1 else
+                    yf.EquityQuery('is-in',['exchange']+exchanges)) if yf is not None else None)
             # Descending first reaches TW ordinary tickers before six-digit warrants.
             def fetch(offset,ascending=False):
+                if direct is not None: return direct.screen(exchanges,offset,ascending)
                 return yf.screen(query,offset=offset,size=250,sortField='ticker',sortAsc=ascending,session=session)
             _,first=_yahoo_directory_pages(market,fetch,max_seconds-(time.monotonic()-started),min(40,max_pages-pages))
             pages+=first['pages'];names.update(first['issuer_names']);raw=set(first.pop('raw_symbols',[]))
@@ -6059,9 +6162,27 @@ def _yahoo_equity_universe(market, fetch_page=None, max_seconds=90, max_pages=12
         rows_received=sum(row['unique_rows'] for row in children),
         source_partitions=children,url='https://finance.yahoo.com/research-hub/screener/equity/',
         retrieved_at=pd.Timestamp.now(tz='UTC').isoformat())
+    audit['client']=client_name
+    if client_notice: audit['client_notice']=client_notice
     if not complete: audit['reason']='; '.join(dict.fromkeys(reasons)) or 'Yahoo screen coverage is incomplete'
     return sorted(names),audit
 
+
+
+def _public_roster_bytes(endpoint, transport='urllib', timeout=8):
+    """Bounded HTTPS retrieval; a transport failure can try the other client."""
+    import urllib.request,os
+    if transport=='urllib':
+        request=urllib.request.Request(endpoint,headers={'User-Agent':'Mozilla/5.0 (compatible; equity-research)'})
+        with urllib.request.urlopen(request,timeout=timeout,context=_roster_ssl_context()) as response:
+            return response.read()
+    from curl_cffi import requests
+    with requests.Session(impersonate='chrome',proxies=_public_proxy_options(),
+                          verify=os.environ.get('HEDGE_CA_BUNDLE') or True) as session:
+        response=session.get(endpoint,timeout=timeout)
+        if response.status_code!=200:
+            raise OSError('Official directory HTTP '+str(response.status_code))
+        return response.content
 
 
 def _public_equity_universe(market):
@@ -6084,26 +6205,24 @@ def _public_equity_universe(market):
     for label,url in sources.get(market,[]):
         failures=[]
         received=False
-        for endpoint in [url]+([fallback[label]] if label in fallback else []):
-            for attempt in range(2):
+        endpoints=[url]+([fallback[label]] if label in fallback else [])
+        if label=='HKEX': endpoints.reverse()  # lightweight official active-security JSON first
+        for transport in ('urllib','curl'):
+            for endpoint in endpoints:
                 try:
-                    req=urllib.request.Request(endpoint,headers={'User-Agent':'PCA equity research/1.0'})
-                    with urllib.request.urlopen(req,timeout=15,context=_roster_ssl_context()) as response:
-                        payload=response.read()
+                    payload=_public_roster_bytes(endpoint,transport)
                     parser='HKEXnews' if endpoint.endswith('activestock_sehk_e.json') else label
                     tickers,detail=_parse_public_roster(parser,payload)
                     detail['parser']=parser
                     names.extend(tickers)
                     audit.append(dict(detail,source=label,status='received',url=endpoint,
-                                      attempts=failures,
+                                      transport=transport,attempts=failures,
                                       retrieved_at=pd.Timestamp.now(tz='UTC').isoformat()))
                     received=True
                     break
-                except (OSError,ValueError,TypeError,ImportError,http.client.HTTPException,zipfile.BadZipFile) as err:
-                    failures.append({'url':endpoint,'reason':str(err)})
-                    if (isinstance(err,(ValueError,TypeError,ImportError,ssl.SSLCertVerificationError))
-                            or isinstance(getattr(err,'reason',None),ssl.SSLCertVerificationError)):
-                        break
+                except Exception as err:
+                    failures.append({'url':endpoint,'transport':transport,
+                                     'reason':type(err).__name__+': '+str(err)})
             if received: break
         if not received:
             reason=failures[-1]['reason'] if failures else 'No source available'
@@ -6405,7 +6524,7 @@ def _find_best_hedge_impl(
     hedge_objective='factor',     # 'variance' (risk reduction) or 'tracking' (strict R2)
     basket_methods='search',      # 'pca' (default) or 'all' (PCA + two comparators)
     broad_search=True,            # select a basket; score all eligible singles as references
-    candidate_scope='sector',     # local sector stocks; ETFs require sector_focused
+    candidate_scope='related',    # local sector stocks plus verified global peers
     include_broad_market=None,    # default: on for all, off for peers only
     peer_tickers=None,            # manual peer list for older caches
     basket_size_range=None,       # inclusive (min, max); exact number when equal
@@ -6430,9 +6549,9 @@ def _find_best_hedge_impl(
             or not 1 <= alternative_baskets <= 20):
         raise ValueError('alternative_baskets must be an integer from 1 to 20')
     basket_size_options = _basket_sizes(basket_size_options, basket_size_range)
-    if candidate_scope not in ('all', 'peers', 'focused', 'sector', 'sector_focused'):
-        raise ValueError("candidate_scope must be 'sector', 'sector_focused', 'peers', 'focused' or 'all'")
-    if candidate_scope in ('peers', 'sector'):
+    if candidate_scope not in ('all', 'peers', 'focused', 'sector', 'sector_focused', 'related'):
+        raise ValueError("candidate_scope must be 'related', 'sector', 'sector_focused', 'peers', 'focused' or 'all'")
+    if candidate_scope in ('peers', 'sector', 'related'):
         include_broad_market = False
     elif include_broad_market is None:
         include_broad_market = True
@@ -6517,6 +6636,11 @@ def _find_best_hedge_impl(
                                    download_scope='all')  # [Fix 40]
         prices = data['prices'].copy()
 
+    if (not same_exchange_only and data.get('same_exchange_only_download')
+            and candidate_scope in ('related', 'peers', 'focused', 'all')):
+        raise ValueError('This cache was downloaded with Same listing exchange only enabled. '
+                         'Untick it in Data and Download again before a global-peer run; '
+                         'the missing overseas prices cannot be restored by changing analysis settings.')
     if candidate_scope=='all' and data.get('download_scope')=='related':
         raise ValueError("Broad universe requires a fresh download with download_scope='all' (or select the broad download option in Data).")
     scope = _filter_candidate_scope(data, pf_legs, prices.columns, candidate_scope,
@@ -6711,7 +6835,7 @@ def _find_best_hedge_impl(
                    and _close_gap_hours(_close_utc_of(c), tgt_close)
                    <= tz_tolerance_hours]
         do_restrict = (restrict_to_target_tz is True or
-                       (restrict_to_target_tz == 'auto' and
+                       (restrict_to_target_tz == 'auto' and candidate_scope != 'related' and
                         (candidate_scope in ('peers', 'focused', 'sector', 'sector_focused') or len(same_tz) >= 30)))
     if do_restrict and len(same_tz) < len(others):
         # [Fix 40] forced names survive the restriction; if a forced name is
@@ -6751,8 +6875,8 @@ def _find_best_hedge_impl(
                   else f"max close gap {max_gap:.1f}h > "
                        f"{tz_tolerance_hours:.1f}h tolerance")
         _P(f"  ⚠ Universe treated as cross-timezone ({reason}) → "
-              f"switching to 2-day overlapping returns to correct "
-              f"async-trading bias")
+              f"using 2-day overlapping returns to reduce close-time sensitivity; "
+              f"this does not synchronize execution times")
 
     rets = np.log(prices / prices.shift(1))
     raw_observed = observed_prices.reindex_like(prices).notna()
@@ -10494,8 +10618,13 @@ def _report_blocks(result):
     if result.get('illustrative_sample'):
         text('ILLUSTRATIVE SAMPLE — simulated prices, not a live hedge recommendation.')
     if span: text(f"Analysis window {p.get('sample_window') or 'downloaded history'} · {span[0]:%d %b %Y} to {span[1]:%d %b %Y} · {span[2]} return observations",True)
-    scope_label={'sector':'Same-market sector stocks — ETFs excluded','sector_focused':'Same-market sector stocks + relevant ETFs','peers':'Strict peer stocks — ETFs excluded','focused':'Strict peers + relevant ETFs','all':'Broad universe — other industries allowed'}.get(p['candidate_scope'],p['candidate_scope'])
+    scope_label={'related':'Verified local sector stocks + global peers — ETFs are references','sector':'Same-market sector stocks — ETFs excluded','sector_focused':'Same-market sector stocks + relevant ETFs','peers':'Strict peer stocks — ETFs excluded','focused':'Strict peers + relevant ETFs','all':'Broad universe — other industries allowed'}.get(p['candidate_scope'],p['candidate_scope'])
     text('Candidate scope: '+scope_label,True)
+    market_audit=result.get('candidate_market_audit') or {}
+    if market_audit:
+        text(('Listing filter: target market only' if p.get('same_exchange_only') else 'Listing filter: global peers allowed')+
+             ' · Analysis candidates: '+', '.join(f'{k} {v}' for k,v in market_audit['analysis_by_market'].items())+
+             (' · 2-day overlapping returns' if result.get('two_day_returns') else ' · 1-day returns'),True)
     for chart in result.get('report_charts') or []: blocks.append(dict(kind='chart',**chart))
     section('Decision overview')
     text(ticket['grade'])
@@ -10511,16 +10640,20 @@ def _report_blocks(result):
     if quality.get('notes'):
         table(['REVIEW ITEM','STATUS'],[[str(i+1),note] for i,note in enumerate(quality['notes'])],widths=[.8,6.2])
     execution=result.get('execution_audit') or {}
-    if execution.get('currency_status')=='mixed':
-        text('Local-currency comparison only: '+', '.join(execution['currencies'])+
+    fx_pending=(execution.get('currency_status')=='mixed' or
+                result.get('recommended_action')=='FX_NORMALIZATION_REQUIRED')
+    if fx_pending:
+        text('Local-currency comparison only: '+(', '.join(execution['currencies']) or 'currencies unverified')+
              '. FX has not been converted; the spread is not a common-currency portfolio return. Trade weights are withheld pending FX normalization.')
     if result['validation_mode']=='IN-SAMPLE':
         text('Short-window research candidate: no reserved unseen test in this run. Review the exposure and weight-sensitivity checks.')
     else:
         for reason in (ticket.get('reasons') or [])[:3]: text(reason,True)
     section('Current basket')
-    text('Sizing: hedge notional per 100 units of target notional, in the same currency. Each counted basket leg must be at least 1 unit; smaller positions are rejected, not padded.',True)
-    table(['ACTION','PER 100 TARGET','INSTRUMENT'],[
+    text(('Research coefficients only: the amounts below are relative return weights, not FX-normalized trade sizes. ' if fx_pending else
+          'Sizing: hedge notional per 100 units of target notional, in the same currency. ')+
+         'Each counted basket leg must be at least 1 unit; smaller positions are rejected, not padded.',True)
+    table(['DIRECTION' if fx_pending else 'ACTION','COEFF. ×100' if fx_pending else 'PER 100 TARGET','INSTRUMENT'],[
         ['SHORT' if x>0 else 'LONG',f'{abs(x)*100:.1f}',t]
         for t,x in w.sort_values(key=lambda a:-a.abs()).items()],widths=[.8,1.4,4.8])
     text(f"{len(w)} instruments · Gross {w.abs().sum():.2f}× · {_report_method(result.get('current_recipe_spec',p['pc_spec']))} · {result.get('current_fit_rows',len(result['returns']))} current-fit observations",True)
@@ -10629,7 +10762,8 @@ def _report_blocks(result):
         common=attribution['variance_contributions']['common_factor_gap']
         text(f"Of the current fitted spread variance, {common:.1%} lies in retained common-factor mismatch and {attribution['outside_factor_share']:.1%} lies outside those factors. Outside-factor risk may include omitted drivers, company events and noise; it is not identified alpha.")
         text(f"Largest 10 error dates account for {attribution['top_ten_error_share']:.1%} of squared fitted error. The table shows the largest five; all dates are retained in the calculation.",True)
-        text(f"Daily log returns. Factor gap + other gap excludes the fitted mean spread of {attribution['mean_spread']:+.2%} per observation; it is descriptive, not a causal explanation.",True)
+        text(('Two-day overlapping log returns. ' if result.get('two_day_returns') else 'Daily log returns. ')+
+             f"Factor gap + other gap excludes the fitted mean spread of {attribution['mean_spread']:+.2%} per observation; it is descriptive, not a causal explanation.",True)
         table(['DATE','TARGET','HEDGE','FACTOR GAP','OTHER GAP','ERROR SHARE'],[
             [str(pd.Timestamp(row['date']).date()),f"{row['target_return']:+.2%}",f"{row['hedge_return']:+.2%}",
              f"{row['common_factor_gap']:+.2%}",f"{row['target_outside_factors']+row['hedge_outside_factors']:+.2%}",
@@ -10710,8 +10844,9 @@ def _report_blocks(result):
     text('Sensitivity refits keep the selected names and remove a small block of days. They are descriptive checks, not independent validation.',True)
     section('Universe coverage and execution')
     for target,a in (result.get('sector_search_audit') or {}).items():
-        table(['SECTOR STOCK SEARCH','COUNT'],
-              [['Verified local sector stocks before screens',a['discovered_sector_stocks']]]+
+        table(['SECTOR AND PEER STOCK SEARCH' if p['candidate_scope']=='related' else 'SECTOR STOCK SEARCH','COUNT'],
+              [[('Verified sector stocks and peers before screens' if p['candidate_scope']=='related' else
+                 'Verified local sector stocks before screens'),a['discovered_sector_stocks']]]+
               [[status,count] for status,count in a['counts'].items()],target,widths=[5.3,1.7])
         if a['search_audit_available']:
             text('Stocks actually searched: '+(', '.join(a['searched_stocks']) or 'none'),True)
@@ -11253,12 +11388,24 @@ def find_best_hedge(*args, **kwargs):
     result['selected_estimator']=common_model.get('hedge_estimator','factor') if common_model is not None else 'tracking'
     result['hedge_error_attribution']=_hedge_error_attribution(
         audit_frame,target_name,result['weights'],common_model,(options['data'] or {}).get('event_evidence'))
+    def market_counts(names):
+        counts={}
+        for name in names:
+            if name in result['portfolio_legs'] or name==PORTFOLIO_COL: continue
+            market=_listing_market_key(name);counts[market]=counts.get(market,0)+1
+        return dict(sorted(counts.items()))
+    result['candidate_market_audit']={
+        'downloaded_by_market':market_counts((options['data'] or {}).get('prices',pd.DataFrame()).columns),
+        'analysis_by_market':market_counts(result['prices'].columns),
+        'selected_by_market':market_counts(result['weights'].index)}
     result['execution_audit']=_execution_audit(result,options['data'])
     if result['execution_audit']['status']=='BORROW UNAVAILABLE':
         result['trade_eligible']=False
         result['trade_weights']=result['weights'].iloc[:0].copy()
         result['recommended_action']='BORROW_UNAVAILABLE'
-    elif result['execution_audit']['currency_status']=='mixed':
+    elif (result['execution_audit']['currency_status']=='mixed' or
+          (result['execution_audit']['currency_status']=='unknown' and
+           len({_listing_market_key(t) for t in result['portfolio_legs']+list(result['weights'].index)})>1)):
         result['trade_eligible']=False
         result['trade_weights']=result['weights'].iloc[:0].copy()
         result['recommended_action']='FX_NORMALIZATION_REQUIRED'
@@ -11314,7 +11461,7 @@ def find_best_hedge(*args, **kwargs):
            if peer_diag['status'] == 'ok' else peer_diag['reason']))
     scope = options['candidate_scope']
     market = options['include_broad_market']
-    market = False if scope in ('peers', 'sector') else (True if market is None else bool(market))
+    market = False if scope in ('peers', 'sector', 'related') else (True if market is None else bool(market))
     result['params'].update(candidate_scope=scope, include_broad_market=market,
                             peer_tickers=options['peer_tickers'],
                             basket_size_range=options['basket_size_range'],
@@ -11926,7 +12073,7 @@ def export_hedge_diagnostics(result, out_dir=None):
               'validation_mode', 'validation_weights', 'holdout_r2',
               'selected_unseen_r2', 'sector_search_audit', 'joint_search_audit',
               'peer_coverage', 'basket_identity_audit',
-              'data_quality', 'effective_model_settings', 'execution_audit', 'current_sensitivity',
+              'data_quality', 'effective_model_settings', 'execution_audit', 'candidate_market_audit', 'current_sensitivity',
               'residual_calibration', 'hedge_error_attribution', 'model_selection',
               'selected_estimator', 'method_comparison', 'method_validation')
     snapshot = {key: result.get(key) for key in fields}
@@ -12146,13 +12293,8 @@ def hedge_ui(data=None):
     # ── Universe tab ────────────────────────────────────────────────────────
     w_mktcap = W.FloatText(value=1000.0, description='Min mkt cap ($mm)',
                            style=LBL, layout=FULL)
-    w_scope = W.Dropdown(options=[
-        ('Same-market sector stocks', 'sector'),
-        ('Same-market sector stocks + ETFs', 'sector_focused'),
-        ('Strict peer stocks only', 'peers'),
-        ('Strict peers + relevant ETFs', 'focused'),
-        ('Broad universe (exploratory)', 'all')],
-        value='sector', description='Candidate universe', style=LBL, layout=FULL)
+    w_scope = W.Dropdown(options=[('Verified sector stocks and peers', 'related')],
+        value='related', description='Candidate universe', style=LBL, layout=FULL)
     w_scope_help = W.HTML()
     w_market = W.Checkbox(value=True, description='OPTIONAL: add a local broad-market ETF', indent=False)
     w_peers = W.Text(value='', description='Manual peer list', style=LBL, layout=FULL,
@@ -12168,28 +12310,15 @@ def hedge_ui(data=None):
                      description='Force include', style=LBL, layout=FULL)
     w_excl = W.Text(value='', placeholder='002230, 3156 JP Equity',
                     description='Exclude', style=LBL, layout=FULL)
-    w_exchange = W.Checkbox(value=True, indent=False,
+    w_exchange = W.Checkbox(value=False, indent=False,
                             description='Same listing exchange only (from target)')
-    w_tz = W.Dropdown(options=[('Auto', 'auto'),
-                               ('Force same timezone', True),
-                               ('Allow global', False)],
-                      value='auto', description='Timezone', style=LBL,
-                      layout=FULL)
     w_stale = W.IntText(value=7, description='Missing-price limit', style=LBL,
                         layout=FULL)
     tab_uni = W.VBox([
-        H('Candidate universe'), w_scope, w_scope_help, w_market,
-        HELP('Taxonomy-verified Bloomberg direct and second-degree peers + BICS/GICS '
-             'industry matches are the core. Discovery is not the final PCA pool: manual '
-             'exclusions, venue, timezone, missing returns and point-in-time eligibility still apply. '
-             'Re-download with this revision to recheck old peers.'),
-        w_peers, w_mktcap, w_exchange,
-        HELP('Same exchange follows YOUR target automatically: 2889 TT → TT only; '
-             '700 HK → HK only; 7203 JT → JP (Tokyo) only. This applies to '
-             'peers, ETFs, historical members and forced names, at download '
-             'and analysis, including cached data. It is stricter than timezone. '
-             'A portfolio spanning several listing exchanges cannot use this option.'),
-        w_tz, w_stale,
+        H('Hedge candidates'), w_scope_help,
+        HELP('One stock universe: verified local sector stocks and same-business peers. '
+             'The listing-market control is in Data. Single stocks and relevant ETFs remain comparison references.'),
+        w_peers, w_mktcap, w_stale,
         H('Basket construction'), w_basket_mode, w_basket, W.HBox([w_basket_min, w_basket_max]),
         HELP('Equal minimum and maximum request an exact number. Required sizes are never shrunk. '
              'Single instruments remain references.'), w_look,
@@ -12200,7 +12329,7 @@ def hedge_ui(data=None):
 
     # ── Model tab (factor / fitting knobs) ─────────────────────────────────
     w_objective = W.Dropdown(
-        options=[('Compare factor and tracking baskets', 'factor'),('Reduce volatility', 'variance'), ('Track returns (strict R²)', 'tracking')],
+        options=[('Auto compare — recommended', 'factor'),('Return-fit volatility model only', 'variance'), ('Return tracking — R² priority', 'tracking')],
         value='factor', description='Hedge objective', style=LBL, layout=FULL)
     w_method = W.Dropdown(
         options=[('Joint basket search (recommended)', 'search'),('PCA ranking only', 'pca'),
@@ -12250,6 +12379,8 @@ def hedge_ui(data=None):
     w_method.observe(_model_control_scope,names='value')
     _model_control_scope()
     tab_model = W.VBox([
+        HELP('Recommended: Auto compare. When history is sufficient, compare factor and return-fit baskets on forward-block volatility within training data. '
+             'R² remains a tracking diagnostic. Short histories cannot establish a reliable winner; residual returns are not identified alpha.'),
         H('Hedge objective'), w_objective,
         HELP('Automatic comparison chooses between factor covariance and Ridge tracking using training-only time blocks. Short histories may be insufficient to choose reliably. Reserved tests evaluate earlier frozen baskets. In-sample R² remains visible.'),
         H('Factor model'),
@@ -12291,6 +12422,11 @@ def hedge_ui(data=None):
         H('New download — the only action that touches Bloomberg'),
         HELP('discovers the universe for the book in the Trade tab, pulls '
              'prices and caps, and caches everything to disk automatically'),
+        w_exchange,
+        HELP('Default unchecked: allow verified overseas peers. Checked: download and analyse the target listing market only. '
+             'Re-download after unchecking if the cache was local-only. '
+             'Distant-market candidates can switch the run to two-day returns, so R² across the two settings is not directly comparable. '
+             'The selected basket can still be entirely local.'),
         w_years, W.HBox([w_pit1, w_pit2]),
         HELP('Broad universe downloads all discovered candidates allowed by the download filters. Force download adds full tickers even if discovery misses them; analysis eligibility still applies. It does not force them into the basket.'),w_extra,w_download_scope,b_dl,
         H('Where Export writes'),
@@ -12640,6 +12776,8 @@ def hedge_ui(data=None):
 
     def _scope_changed(_=None):
         descriptions = {
+            'related': ('<b>Verified sector stocks and peers.</b> Local sector coverage plus verified overseas business peers when Same listing exchange is unchecked. '
+                        'No unrelated global index stocks. ETFs are reported as references.'),
             'sector': ('<b>Same-market sector stocks (default).</b> Compare verified stocks from the target’s broader sector in its listing market. '
                        'Banks, insurers and other financial businesses can compete for a financial target; the same classification rule applies across markets and industries. ETFs remain references.'),
             'sector_focused': ('<b>Same-market sector stocks + relevant ETFs.</b> The same broader stock pool, with target-specific sector/factor ETFs and optionally the local market ETF allowed in the basket.'),
@@ -12659,10 +12797,10 @@ def hedge_ui(data=None):
                               "border-left:3px solid #547399;padding:8px 10px'>"
                               + descriptions[w_scope.value]
                               + '<br><b>Same exchange</b> and <b>Exclude</b> '
-                                'apply in ALL modes. ETF inclusion requires an explicitly labelled + ETFs scope.'
+                                'apply throughout download and analysis. ETFs remain comparison references in this stock universe.'
                                 '</div>')
-        w_market.disabled = w_scope.value in ('peers', 'sector')
-        w_market.value = w_scope.value not in ('peers', 'sector')
+        w_market.disabled = w_scope.value in ('peers', 'sector', 'related')
+        w_market.value = w_scope.value not in ('peers', 'sector', 'related')
         _refresh_tier()
 
     def _size_changed(_=None):
@@ -12691,7 +12829,7 @@ def hedge_ui(data=None):
                 'winsorize_pct': w_wins.value,
                 'force_include': _ui_list(w_force.value),
                 'exclude': _ui_list(w_excl.value),
-                'restrict_to_target_tz': w_tz.value,
+                'restrict_to_target_tz': False,
                 'same_exchange_only': w_exchange.value,
                 'robust_cov': w_cov.value,
                 'gross_penalty': w_gross.value,
@@ -12815,6 +12953,9 @@ def hedge_ui(data=None):
         fit = check_cache_fit(tgt, data=UI_STATE['data'])     # [Fix 90]
         if fit['status'] == 'mismatch':
             _status(f"cannot run — {fit['message']}", 'err')
+            return None
+        if not w_exchange.value and UI_STATE['data'].get('same_exchange_only_download'):
+            _status('This cache is local-only. Keep Same listing checked, or untick it and Download again in Data for overseas peers.', 'err')
             return None
         if fit['status'] == 'stale':
             print(f"  △ {fit['message']}\n")
@@ -12965,7 +13106,7 @@ def hedge_ui(data=None):
     UI_STATE['widgets'] = {'compare_windows': w_compare,'max_leg':w_maxleg,'max_gross':w_maxgross,'objective':w_objective,
                            'candidate_scope': w_scope, 'basket_methods': w_method,
                            'include_broad_market': w_market,
-                           'same_exchange_only': w_exchange, 'download_scope':w_download_scope, 'force_download':w_extra,
+                           'same_exchange_only': w_exchange, 'data_tab':tab_data, 'candidate_tab':tab_uni, 'download_scope':w_download_scope, 'force_download':w_extra,
                            'basket_mode': w_basket_mode, 'basket_min': w_basket_min,
                            'basket_max': w_basket_max, 'analysis_window': w_win,
                            'hedge_horizon': w_horizon, 'notional': w_notional,
