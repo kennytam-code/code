@@ -1,6 +1,8 @@
 # PCA hedge research
 
-The current engine is `pca_hedge_v115_peer_pca_diagnostics.py` and its matching notebook. The filename is retained for existing users; its internal revision is **2026-10-26-v127-incremental-download**. The v103 files are historical and use a different model. Use the current notebook for these changes.
+The current engine is `pca_hedge_v115_peer_pca_diagnostics.py` and its matching notebook. The filename is retained for existing users; its internal revision is **2026-10-26-v128-result-state**. The v103 files are historical and use a different model. Use the current notebook for these changes.
+
+v128 prevents previous or partial analyses being exported after failed, rejected or interrupted runs. New data and runs clear old comparisons and reports. Show code reuses the current dataset, including incremental additions, and safely quotes saved cache paths. The search and statistical calculations are unchanged.
 
 v127 adds **Download added tickers only** in Data. It combines Force include and Force download, skips tickers with usable cached prices, and requests only missing instruments over the existing cache’s date range. Classification, current/historical caps, dated cap-FX conversion and quote/volume data are added without rescanning listings or index membership. Existing price values, the full-download age and other coverage claims are preserved. Partial failures keep successful additions and name the missing instruments; a complete failure preserves the original dataset. An unrelated added stock is not automatically a verified peer. Force include still controls basket membership separately.
 

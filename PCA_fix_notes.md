@@ -1,3 +1,12 @@
+# PCA v128 changes
+
+Revision 2026-10-26-v128-result-state; retains incremental downloads and all v127 market controls.
+
+- Clear old results, comparisons and report text before a new run and when loading new data. Failed/rejected full runs, failed window comparisons, interrupted runs and failed re-hedges cannot export a previous or partial basket as the latest result.
+- Preserve the previous validated configuration as the input to a successful re-hedge, then export only its new result.
+- Make Show code reuse the loaded dataset, including manually added tickers, instead of starting a different full download. Quote cache paths with Python repr so Windows paths and apostrophes remain valid.
+- Add actual form-action regressions for failure, interruption, successful rerun/re-hedge, export blocking, data replacement and generated-code execution. No changes to hedge selection, fitting or reported statistics.
+
 # PCA v127 changes
 
 Revision 2026-10-26-v127-incremental-download; retains the v126 global default and download recovery.

@@ -256,7 +256,7 @@ import textwrap as _textwrap
 
 RIDGE_ALPHAS = np.logspace(-4, 2, 25)
 MIN_RETURN_STD = 1e-12
-PCA_REVISION = '2026-10-26-v127-incremental-download'
+PCA_REVISION = '2026-10-26-v128-result-state'
 MIN_TRAIN_COVERAGE = 0.90
 DISCOVERY_VERSION = 5
 
@@ -11768,6 +11768,12 @@ def quick_rehedge(book, data, prev_result, show_plots=True, rolling_oos=True,
 UI_STATE = {'data': None, 'result': None, 'code': '', 'report_text': '',
             'loaded_from': None}
 
+
+def _invalidate_ui_analysis():
+    """Prevent a previous or partial run from being exported as the new run."""
+    UI_STATE.update(result=None, comparison=None, report_text='', code='', last_seconds=0)
+
+
 _UI_CSS = """
 <style>
 /* [Fix 96/102] typography + spacing. ipywidgets defaults are cramped and
@@ -11889,14 +11895,15 @@ def _ui_list(text):
 def _ui_code(target, window, kw, loaded_from=None):
     """Render the equivalent Python so any GUI run can be reproduced."""
     def fmt(v):
-        return f"'{v}'" if isinstance(v, str) else repr(v)
+        return repr(v)
     lines = ["# equivalent code for this run:"]
     if loaded_from:
         lines.append(f"data = load_hedge_data({fmt(loaded_from)})")
     else:
-        lines.append(f"data = download_hedge_data({fmt(target)},"
-                     f" min_mktcap_usd_mm={kw.get('min_mktcap_usd_mm', 5000)},"
-                     f" same_exchange_only={bool(kw.get('same_exchange_only', False))})")
+        # Redownloading would change dates and lose incremental/manual additions.
+        lines.append("# Reuse the loaded data, including any added tickers.")
+        lines.append("data = UI_STATE['data']")
+        lines.append("if data is None: raise ValueError('Load or download the dataset first.')")
     args = [f"    {k}={fmt(v)}," for k, v in sorted(kw.items())
             if v is not None]
     if window is not None:
@@ -12387,6 +12394,8 @@ def hedge_ui(data=None):
 
     if data is not None:
         UI_STATE['data'] = data
+        UI_STATE['loaded_from'] = None
+        _invalidate_ui_analysis()
 
     LBL = {'description_width': '148px'}
     FULL = W.Layout(width='460px')
@@ -13064,9 +13073,7 @@ def hedge_ui(data=None):
             try:
                 UI_STATE['data'] = load_hedge_data(w_cache.value)
                 UI_STATE['loaded_from'] = w_cache.value
-                UI_STATE['result']=None
-                UI_STATE['report_text']=''
-                UI_STATE['code']=''
+                _invalidate_ui_analysis()
                 _status(f"loaded · {UI_STATE['data']['prices'].shape[0]} "
                         f"rows × {UI_STATE['data']['prices'].shape[1]} "
                         f"tickers (no API calls)", 'ok')
@@ -13100,9 +13107,7 @@ def hedge_ui(data=None):
                     same_exchange_only=w_exchange.value,
                     force_download=_ui_list(w_extra.value),download_scope=w_download_scope.value,progress=show_progress)
                 UI_STATE['loaded_from'] = None
-                UI_STATE['result']=None
-                UI_STATE['report_text']=''
-                UI_STATE['code']=''
+                _invalidate_ui_analysis()
                 _status(f"download finished · "
                         f"{UI_STATE['data']['prices'].shape[0]} rows × "
                         f"{UI_STATE['data']['prices'].shape[1]} tickers",
@@ -13132,9 +13137,7 @@ def hedge_ui(data=None):
                     same_exchange_only=w_exchange.value,exclude=_ui_list(w_excl.value),progress=show_progress)
                 UI_STATE['data']=updated
                 UI_STATE['loaded_from']=None
-                UI_STATE['result']=None  # require a new analysis before exporting revised inputs
-                UI_STATE['report_text']=''
-                UI_STATE['code']=''
+                _invalidate_ui_analysis()
                 _status('Added-ticker request finished. Existing price dates retained; run the analysis again.',
                     'warn' if UI_STATE.get('download_progress',{}).get('status')=='warning' else 'ok')
                 _refresh_cache();_refresh_tier();_refresh_fit()
@@ -13165,6 +13168,7 @@ def hedge_ui(data=None):
     def on_run(_):
         with out:
             clear_output()
+            _invalidate_ui_analysis()
             tgt = _pre_run()
             if tgt is None:
                 return
@@ -13174,6 +13178,7 @@ def hedge_ui(data=None):
                 tgt, win, {k: v for k, v in kw.items()
                            if k != 'show_plots'}, UI_STATE['loaded_from'])
             _status('running…', 'info')
+            completed = False
             try:
                 UI_STATE['result'] = _run_engine(
                     find_best_hedge, tgt, data=UI_STATE['data'],
@@ -13192,14 +13197,20 @@ def hedge_ui(data=None):
                 _status(f"done in {UI_STATE.get('last_seconds', 0):.0f}s · "
                         f"UI_STATE['result'] holds everything — Export "
                         f"writes the Word report", 'ok')
+                completed = True
             except Exception as e:
                 _status(f"run failed: {e}", 'err')
                 print(f"\n{type(e).__name__}: {e}")
+            finally:
+                if not completed:
+                    _invalidate_ui_analysis()
 
     def on_quick(_):
         with out:
             clear_output()
-            if UI_STATE['result'] is None:
+            previous = UI_STATE['result']
+            _invalidate_ui_analysis()
+            if previous is None:
                 _status('run a full hedge first — RE-HEDGE pins its '
                         'validated config', 'warn')
                 return
@@ -13208,20 +13219,25 @@ def hedge_ui(data=None):
                 return
             _full = (w_requick.value == 'full')
             _status('re-hedging on the pinned config…', 'info')
+            completed = False
             try:
                 # [Fix 115] the Charts and Rolling-OOS checkboxes apply here
                 # too. They used to be forced off inside quick_rehedge, so a
                 # re-hedge silently threw away every chart the full run drew.
                 UI_STATE['result'] = _run_engine(
                     quick_rehedge, tgt, UI_STATE['data'],
-                    UI_STATE['result'], show_plots=w_plots.value,
+                    previous, show_plots=w_plots.value,
                     rolling_oos=w_roll.value, full_validation=_full)
                 _status('re-hedged · weights refit, config unchanged · '
                         + ('full validation re-run' if _full else
                            '1 validation window (fast) — see the note at the '
                            'top of the report'), 'ok')
+                completed = True
             except Exception as e:
                 _status(f"re-hedge failed: {e}", 'err')
+            finally:
+                if not completed:
+                    _invalidate_ui_analysis()
 
     def on_export(_):
         with out:

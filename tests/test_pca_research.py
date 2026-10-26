@@ -32,7 +32,7 @@ class ResearchTests(unittest.TestCase):
         cls.data=fixture();cls.one=run(cls.data,sample_window='1m');cls.three=run(cls.data,sample_window='3m')
 
     def test_actual_revision_loaded(self):
-        self.assertIn('v127',E['PCA_REVISION'])
+        self.assertIn('v128',E['PCA_REVISION'])
 
     def test_short_window_search_has_multiple_distinct_baskets(self):
         rows=self.one['basket_comparison']
