@@ -70,16 +70,28 @@ with ZipFile(reference) as r,ZipFile(args.document) as z:
  assert set(changed)=={'word/document.xml','word/_rels/document.xml.rels'}
  root=etree.fromstring(z.read('word/document.xml'));old=etree.fromstring(r.read('word/document.xml'))
  assert etree.tostring(root.find('.//w:sectPr',ns),method='c14n',exclusive=True)==etree.tostring(old.find('.//w:sectPr',ns),method='c14n',exclusive=True)
- tables=root.findall('.//w:body/w:tbl',ns);assert len(tables)==9
+ tables=root.findall('.//w:body/w:tbl',ns);assert len(tables)==12
  for t in tables:
   assert sum(int(c.get('{'+ns['w']+'}w')) for c in t.findall('w:tblGrid/w:gridCol',ns))==9972
   for row in t.findall('w:tr',ns):assert row.find('w:trPr/w:cantSplit',ns) is not None
- for table,code in zip(tables[2:6],['2635','3317','6600','6651']):
+ for table,code in zip([tables[i] for i in [3,5,7,9]],['2635','3317','6600','6651']):
   vals=[''.join(c.xpath('.//w:t/text()',namespaces=ns)) for c in table.findall('.//w:tc',ns)]
   x=a['issuers'][code]
   for metric in ['rev','np','cfo']:
    for suffix in ['25','_h125','_h126']:assert f'{x[metric+suffix]:.1f}' in vals
   for suffix in ['25','_h125','_h126']:assert f'{100*x["gp"+suffix]/x["rev"+suffix]:.1f}%' in vals
+ peer_map={p['code']:p for p in a['peers']}
+ groups=[['2635','2121 HK','20 HK','600728 A'],['3317','1384 HK','6682 HK','600570 A'],['6600','668 HK','2391 HK','9880 HK','300866 A','688169 A','603486 A'],['6651','2571 HK','68 HK','300036 A']]
+ for idx,keys in zip([4,6,8,10],groups):
+  rows=tables[idx].findall('w:tr',ns)[1:];assert len(rows)==len(keys)
+  for row,key in zip(rows,keys):
+   target=key in a['issuers'];x=a['issuers'][key] if target else peer_map[key]
+   mark='†' if (target and key in ['3317','6651']) or (not target and x['broker'] and 'EtNet' in x['broker']) else ''
+   ccy='HK$' if target or x['price_currency']=='HKD' else 'RMB'
+   f=lambda n:'n/v' if n is None else n if isinstance(n,str) else f'{n:.1f}x'
+   cells=[''.join(c.xpath('.//w:t/text()',namespaces=ns)) for c in row.findall('w:tc',ns)]
+   assert cells[1:]==[ccy+f'{x["price"]:.3f}',f'{x["ps25"]:.1f}x',f(x['pe26'])+mark,f(x['pe27'])+mark],(key,cells)
+ assert hashlib.sha256((H/'source_and_valuation_audit.json').read_bytes()).hexdigest()=='6f4c2f43c3159f5fc2a88666aff79bf5e29111212e124551e84a024037d1d445','Design-only revision changed research inputs'
  # No stranded link IDs, changes/comments, or source-tool citation tokens.
  rel=etree.fromstring(z.read('word/_rels/document.xml.rels'));ids={n.get('Id') for n in rel}
  for h in root.findall('.//w:hyperlink',ns):assert h.get('{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id') in ids

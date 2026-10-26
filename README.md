@@ -1,5 +1,11 @@
 # HK IPO desk files
 
+## Listed IPO lockup brief
+
+**[Download the Word briefing — 2635 / 3317 / 6600 / 6651](https://github.com/kennytam-code/code/raw/refs/heads/main/Listed_AI_Lockup_Trader_Brief_2026-10-26.docx)**
+
+Six-page trader brief: comparison and key dates first, then one page per stock with fundamentals, risks, shareholder actions and peer valuations including forward P/E. Market snapshot: 26 October 2026.
+
 **[Download the Excel workbook](https://github.com/kennytam-code/code/raw/refs/heads/main/HK_IPO_Database_v1.xlsx)**
 
 | File | Download |

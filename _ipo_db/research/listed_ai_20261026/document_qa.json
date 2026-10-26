@@ -1,14 +1,14 @@
 {
-  "document_sha256": "5ce73d88b0115320baeafa5537d952113debc524ad9f4ca864083a7374c205fc",
+  "document_sha256": "36ddca5be7787e4d1b1a45511c5b62adea6bce496399849a9a7980e82b97d3e2",
   "parts": 16,
   "only_changed_parts": [
     "word/document.xml",
     "word/_rels/document.xml.rels"
   ],
-  "tables": 9,
+  "tables": 12,
   "sections": 1,
   "template_unchanged": true,
-  "python_peak_rss_mib": 38.40625,
+  "python_peak_rss_mib": 38.6875,
   "arithmetic_check": {
     "status": "pass",
     "comparisons": 114,
@@ -17,23 +17,34 @@
   },
   "source_integrity_hash_matches": 167,
   "final_render": {
-    "pages": 8,
+    "pages": 6,
+    "previous_pages": 8,
     "all_pages_visually_inspected": true,
     "clipping_or_overflow": false,
     "broken_tables_or_missing_glyphs": false,
-    "reference_pages": 5,
-    "reference_diff": "Different content and page count are intentional; same 16-part template, retained typography, Letter geometry and section. Only document body and external link relationships change.",
-    "reviewed_document_sha256": "5ce73d88b0115320baeafa5537d952113debc524ad9f4ca864083a7374c205fc",
-    "date": "2026-10-26",
+    "reviewed_document_sha256": "36ddca5be7787e4d1b1a45511c5b62adea6bce496399849a9a7980e82b97d3e2",
     "page_sha256": {
-      "1": "0f80ea940686795d2dbcaea7cac60b6838214d6f1a3144dbfd40f7d993703884",
-      "2": "306765ae9161c229315a351f57569651da62112338715b99620a7760a1d80ccd",
-      "3": "71b593997fc52d5f8716987540d9d63f7f432246d86e9569cbf31349b1817c7a",
-      "4": "bfba10a3974a27506ce63941ccce085598ef0eb0573622841ffb06e8c44d5199",
-      "5": "2028561bb9f11f27f1e974d93b1893e291c2216bf963cfd85c806e9869698515",
-      "6": "7e69b712390705a9710cbe6a2b0e612b6698e351fc48fac4e49db7a7231a249c",
-      "7": "d2db33072aa7a6645267e971e71ecd5d80a0f732b3a1f79b0c093a405c6c582a",
-      "8": "66db25327938ce4c3bb9bf367677ac5191843f14ea866e38848dbf1124a63a84"
-    }
+      "1": "1b398ce23f0076d1e54c56a0b752fbf9c40c48bc29e6418286bca26e155662d7",
+      "2": "6d1bdaa334928934cbfe3acd574c2e060906943eb536b0d02e40c0674ea787ed",
+      "3": "d124a32f1c02091c2aeb15732484eb61121684d1a10a58fa0436e399c2dac95d",
+      "4": "0848e2d7da9212e22a65e2e51a1ea774345c04d8f5c3f4dfd0b25d0e0d314a08",
+      "5": "e7f4dac043d565a8b135164097dbc3def19a2237652deacd7fb5fe05df255117",
+      "6": "b6b4d0c7b5b41e8b6a9ed8ad8ce4dcb94af8827f4d737a9be46bd2e99f7b5b8a"
+    },
+    "review_scope": "All six final pages; consistent one-page company structure with integrated peer tables. Larger title hierarchy retains template typography and colours."
+  },
+  "readability_revision": {
+    "company_page_order": [
+      "2635",
+      "3317",
+      "6600",
+      "6651"
+    ],
+    "peer_rows_checked": 19,
+    "input_json_unchanged": true,
+    "input_sha256": "6f4c2f43c3159f5fc2a88666aff79bf5e29111212e124551e84a024037d1d445",
+    "market_data_refreshed": false,
+    "snapshot": "2026-10-26 close",
+    "README_download_link_added": true
   }
 }

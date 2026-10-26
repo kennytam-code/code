@@ -125,159 +125,157 @@ def facts(c):
  rows=[['Revenue',f'{x["rev25"]:.1f}',f'{x["rev_h125"]:.1f}',f'{x["rev_h126"]:.1f}'],['Gross margin',f'{100*x["gp25"]/x["rev25"]:.1f}%',f'{100*x["gp_h125"]/x["rev_h125"]:.1f}%',f'{100*x["gp_h126"]/x["rev_h126"]:.1f}%'],['Owner profit / (loss)',f'{x["np25"]:.1f}',f'{x["np_h125"]:.1f}',f'{x["np_h126"]:.1f}'],['Operating cash flow',f'{x["cfo25"]:.1f}',f'{x["cfo_h125"]:.1f}',f'{x["cfo_h126"]:.1f}']]
  out(table(['RMBm, except margin','FY2025','H1 2025','H1 2026'],rows,[3972,2000,2000,2000]))
 
-def issuerline(c):
- x=I[c]
- mark='†' if c in ['3317','6651'] else ''
- textp(f'HK${x["price"]:,.3f} | Equity value HK${x["equity_hkdm"]/1000:.2f}bn | FY2025 P/S {x["ps25"]:.1f}x | FY2026E / FY2027E P/E {fmt(x["pe26"])} / {fmt(x["pe27"])}{mark}',after=100)
+# Reader order: desk summary, four identical company pages, source key.
+def page_title(text,new=True):
+ p=para(text,kind='title',after=130,pagebreak=new)
+ for rp in p.findall('w:r/w:rPr',NS):prop(rp,'sz',val=28);prop(rp,'szCs',val=28)
+ out(p)
 
-textp('Listed IPO / Lock-up Watch',kind='title',after=100)
-textp('2635 / 3317 / 6600 / 6651 | Trader briefing | 26 October 2026 close',after=100)
-textp('**Desk view.** The earnings-quality concern is strongest at Xunce; the valuation stretch is greatest at 51WORLD. OneRobotics has the most difficult liquidity for a short. Nuobikan has already de-rated to 15.4x reported LTM earnings. December unlocks create potential supply, but timing needs evidence of holders selling and a workable borrow.',after=110)
-out(table(['Stock / theme','Short thesis worth testing','What can defeat the short'],[
-['2635 Nuobikan\nInfrastructure AI','Receivables exceed annual sales; cash conversion weakening.','Profitable, 4.1x FY2025 sales; new compute-infrastructure orders.'],
-['3317 Xunce\nEnterprise data / Token','RMB661m H1 operating outflow; fair-value gains underpin reported profit.','Very fast growth; credible December HSTECH inclusion candidate.'],
-['6600 OneRobotics\nHome / embodied robots','Costs outrun sales; expensive against established consumer hardware.','New products, founder lock extension; thin trading amplifies squeezes.'],
-['6651 51WORLD\nSimulation / physical AI','60.5x FY2025 sales; recurring economics still unproven.','NVIDIA ecosystem news, 51Sim growth and Aper order deliveries.']
-],[2130,3921,3921],left_cols=(0,1,2)))
-head('December supply: identified original pre-IPO H shares')
+def valuation(c,keys):
+ rows=[]
+ for k in [c]+keys:
+  target=k in I;x=I[k] if target else P[k]
+  mark='†' if (target and k in ['3317','6651']) or (not target and x['broker'] and 'EtNet' in x['broker']) else ''
+  name=x['name'].split(' ')[0] if target else x['name']
+  ccy='HK$' if target or x['price_currency']=='HKD' else 'RMB'
+  code=k+' HK' if target else k
+  rows.append([name+' '+code,ccy+f'{x["price"]:.3f}',f'{x["ps25"]:.1f}x',fmt(x['pe26'])+mark,fmt(x['pe27'])+mark])
+ tb=table(['Company','26 Oct price','FY2025 P/S','FY2026E P/E','FY2027E P/E'],rows,[3492,1620,1620,1620,1620])
+ # Distinguish the subject from its peers without another colour system.
+ for c1 in tb.findall('w:tr',NS)[1].findall('w:tc',NS):prop(c1.find('w:tcPr',NS),'shd',val='clear',color='auto',fill='F2F2F2')
+ out(tb)
+
+def company(c,theme,view):
+ x=I[c];page_title(c+'  '+x['name'])
+ textp(theme+'  |  Equity value HK$'+f'{x["equity_hkdm"]/1000:.2f}'+'bn',after=90)
+ textp('**Desk view  '+view+'**',after=110)
+ facts(c)
+
+page_title('IPO lockup trading brief',False)
+textp('2635  /  3317  /  6600  /  6651     •     26 October 2026 close',after=130)
+textp('**Research priority: Xunce and 51WORLD.** OneRobotics has a valuation concern but difficult short liquidity. Nuobikan needs evidence of collection problems to strengthen the bearish case.',after=130)
+head('The four calls')
+out(table(['Stock and theme','Core concern','Main risk to the short'],[
+ ['2635 Nuobikan\nInfrastructure AI','Weak cash conversion; receivables exceed annual sales.','Profitable at 15.4x LTM P/E; compute orders could improve growth.'],
+ ['3317 Xunce\nEnterprise data','RMB661m H1 cash outflow; investment gains support profit.','December HSTECH inclusion is a published analyst possibility.'],
+ ['6600 OneRobotics\nHome robotics','Costs outrun growth; 352.5x FY2027E P/E.','New products and thin turnover can drive a squeeze.'],
+ ['6651 51WORLD\nPhysical AI','60.5x FY2025 sales; recurring cash earnings unproven.','NVIDIA ecosystem news and Aper deliveries support the theme.']
+],[2280,3846,3846],left_cols=(0,1,2)))
+head('December supply at a glance')
 rows=[]
 for c in ['2635','3317','6600','6651']:
- x=I[c];rows.append([c,x['last_locked'][8:]+' Dec / '+x['first_released'][8:]+' Dec',f'{x["unlock_h"]/1e6:.2f}m',f'{x["unlock_pct_total"]:.1f}%',f'{x["unlock_adv"]:.1f}x'])
-out(table(['Code','Last locked / first release','H shares','% current total','Shares / 20d ADV'],rows,[900,3072,2000,1800,2200]))
-textp('Dates are 2026. Release means expiry of the identified IPO restriction; other insider rules can still apply. Amounts exclude unlisted shares, post-IPO option shares and OneRobotics’ founder extension. ADV is 25 September–26 October. The multiples measure potential overhang, not expected selling or days needed to liquidate.',before=80,after=100)
-head('Trading implications')
-bullet('**The flow catalyst is index buying before the unlock.** Watch the 20 November Hang Seng review and 7 December HSTECH implementation, particularly Xunce. All four have already been admitted to Southbound; first-time admission is not a new catalyst.')
-bullet('**No confirmed near-term earnings date for the four.** FY2026 results are expected by March 2027; exact dates are unannounced. A short initiated now may have to carry through both index and year-end theme risk before audited full-year evidence arrives.')
-bullet('**Eligible to short does not mean available to borrow.** All four appear on HKEX’s designated list effective 23 October. Borrow size, fee and recall terms remain unverified. Recent DI forms reviewed show placement dilution, not a wave of disclosed insider selling.')
-sources('Primary lock-up evidence: ',[('Nuobikan',filing('2025/1222','2025122201578')),('Xunce',filing('2025/1229','2025122902057')),('OneRobotics extension',filing('2026/0630','2026063002277')),('51WORLD',filing('2025/1229','2025122902393'))])
+ x=I[c];rows.append([c,x['first_released'][8:]+' Dec',f'{x["unlock_h"]/1e6:.2f}m',f'{x["unlock_pct_total"]:.1f}%',f'{x["unlock_adv"]:.1f}x'])
+out(table(['Code','First release','H shares','% total shares','Shares / 20d ADV'],rows,[1000,1900,2200,2200,2672]))
+textp('Identified original pre-IPO H holdings only. Last locked day is the preceding date. OneRobotics excludes the founder’s extended lock. Supply is potential, not a forecast of selling.',before=80,after=100)
+head('Dates that matter before taking the short')
+out(table(['Date','Event','Trading relevance'],[
+ ['29 Oct','Anker Q3 board meeting','Early consumer-hardware read-through for 6600.'],
+ ['11 Nov / 1 Dec','MSCI review / effective','Scheduled; no new addition verified for these four.'],
+ ['20 Nov / 7 Dec','Hang Seng review / HSTECH effective','Xunce is an analyst add candidate; inclusion unconfirmed.'],
+ ['By 31 Mar 2027','FY2026 results deadline','Exact dates for all four remain unannounced.']
+],[2100,3400,4472],left_cols=(0,1,2)))
+head('Execution matters')
+textp('**Southbound:** all four already admitted. **Borrow:** all are designated short-sale securities, but availability, fee and recall terms are unverified. **Selling:** recent DI percentage reductions mainly reflect new-share dilution; expiry alone is not evidence of an exit.',after=110)
+textp('Company pages: 2635 p2  •  3317 p3  •  6600 p4  •  6651 p5  |  Sources and definitions p6',after=0)
 
-head('2635 Nuobikan 諾比侃 — cash collection is the test',True)
-issuerline('2635');facts('2635')
-head('Good / potential')
-bullet('**A paying infrastructure niche, with a less demanding valuation.** Rail inspection, power monitoring and urban systems are real project businesses. Cited 2024 shares were 5.9% in AI rail-power inspection and 1.8% in broader AI rail inspection: useful specialist positions, not dominance across AI. Reported LTM owner profit is RMB131.5m, giving 15.4x P/E.')
-bullet('**A new route into compute spending.** The 6 August software contract with an unnamed domestic AI chip company is RMB50.8m including VAT, roughly 10% of FY2025 sales. It creates upside if delivered and paid; it does not yet establish recurring cloud revenue. H1 gross margin recovered to 55.0% from a weak comparison base.')
-head('Bad / risk')
-bullet('**Profit has accumulated in receivables.** June trade receivables were RMB637.9m versus RMB498.2m FY2025 revenue. H1 operating cash covered only 50% of owner profit and fell 68% YoY. City projects generated 54% of H1 sales, increasing exposure to customer budgets, acceptance and collection timing.')
-bullet('**Margin recovery has not removed the spending burden.** H1 R&D rose 165% and selling expense 183%, far ahead of 32% sales growth. More bespoke projects can produce revenue without software-like operating leverage. The key downside trigger is further ageing or provisions, not the AI label itself.')
-bullet('**Supplier controversy remains a diligence issue.** Its May clarification followed a supplier’s accounting penalty. Nuobikan stated its own transactions and accounting were valid. The supplier’s offence is not proof of misconduct by Nuobikan; no independent clearance of Nuobikan’s accounting was established in this review.')
-head('Shareholders / lock-up / what changes the view')
-textp('**Recent action:** 16.49m new H shares placed at HK$8.19, completed 9 October; net proceeds HK$131.5m. This is 4.2% of current total shares. The close is 27% below the placing price. The 9 October DI events explicitly reflect dilution; Liao Yu’s concert group still reports 129.58m H shares and Luo Tian’s deemed interest 54.65m H shares. These overlapping interests must not be added twice.',after=85)
-textp('**23 December release:** 266.48m original H shares, including 136.90m outside the controller group; 74.32m unlisted shares excluded. A large overhang is real, but the valuation case is weaker than for the other three. **Bear confirmation:** collections disappoint or provisions rise. **Short breaker:** strong cash collection plus repeat chip/compute orders.',after=85)
-textp('**Next earnings:** FY2026, date unannounced; expected by 31 March 2027. No verified exact FY2026/27 profit forecast. HSTECH/MSCI addition is not an established catalyst for this name.',after=85)
-sources('Evidence: ',[('H1 report',filing('2026/0916','2026091600183')),('FY2025',filing('2026/0428','2026042805085')),('chip contract',filing('2026/0806','2026080601150')),('placing',filing('2026/1009','2026100901015')),('clarification',filing('2026/0511','2026051101486')),('DI',A['di_source_urls']['02635-di-notices-0']),('market-share context',S['nuobikan_marketshare'])])
+company('2635','Rail inspection, power monitoring and urban systems','Cash collection is the test; valuation alone is a weaker short case.')
+head('Good points')
+bullet('**A profitable specialist.** 2024 niche shares were 5.9% in AI rail-power inspection and 1.8% in broader AI rail inspection. Reported LTM owner profit is RMB131.5m; H1 gross margin recovered to 55.0%.')
+bullet('**Compute spending creates upside.** August’s RMB50.8m software contract with a domestic AI chip company is about 10% of FY2025 sales, including VAT. Repeat orders and payment would strengthen the growth case.')
+head('Risks')
+bullet('**Earnings are ahead of cash.** June receivables were RMB637.9m versus RMB498.2m FY2025 sales. H1 operating cash covered 50% of profit; city projects were 54% of sales, exposing collections to budgets and acceptance.')
+bullet('**Growth is expensive.** H1 R&D rose 165% and selling costs 183%, versus sales growth of 32%. A supplier’s accounting penalty adds diligence risk; it does not establish misconduct by Nuobikan, which disputes any issue with its transactions.')
+head('Valuation versus peers')
+valuation('2635',['2121 HK','20 HK','600728 A'])
+textp('**Closest:** AInnovation for H-share project economics; PCI for A-share rail/city exposure. PCI’s hardware mix makes its lower P/S an imperfect target. SenseTime is a broader AI comparison.',before=75,after=85)
+head('Catalysts and shareholder actions')
+bullet('**9 October placing:** 16.49m new H shares at HK$8.19; net HK$131.5m. The close is 27% below the placing price. Reviewed DI changes were dilution, not disclosed disposals.')
+bullet('**23 December release:** 266.48m H shares, including 136.90m outside the controller group. FY2026 results are due by March 2027; no verified new index-add call.')
+textp('**Confirms the short:** ageing receivables or higher provisions.\n**Invalidates it:** strong collections and repeat chip/compute orders.',after=90)
+textp('Forecast unavailable for 2635. NM = loss; n/v = unavailable. Forecast dates and sources: p6.',after=0)
 
-head('3317 Xunce 迅策 — high growth, low cash quality',True)
-issuerline('3317');facts('3317')
-head('Good / potential')
-bullet('**The enterprise-AI bottleneck is credible.** Models need usable, real-time data. Prospectus research puts Xunce first in China’s asset-management real-time data market (11.6% share in 2024), but fourth across industries (3.4%). H1 sales rose 389%; non-asset-management clients contributed 87.6%. Token-based revenue exceeded 10%. Usage billing could scale better than one-off deployments.')
-bullet('**Index demand can arrive before the bearish catalyst.** Shenton Research’s 16 October screen names Xunce as a December HSTECH add candidate. The expanded 50-stock methodology favours both scale and revenue growth. This is an analyst forecast, not a confirmed inclusion; 20 November and 7 December are the critical dates.')
-head('Bad / risk')
-bullet('**The profit inflection is not yet an operating one.** H1 pretax profit of RMB67.0m included RMB101.4m of investment fair-value gains. Subtracting that gain alone gives a RMB34.4m pretax loss; this is a sensitivity, not adjusted net profit. Group gross margin fell 6.6 percentage points to 60.1%.')
-bullet('**Cash burn overwhelms reported earnings.** H1 operating outflow was RMB661.2m, driven by receivables, inventories and prepayments. Transaction-based products still represented 90.5% of revenue; subscriptions were only 9.5%. Token language does not turn the whole company into recurring SaaS. The next test is repeat usage and collections, not another headline growth rate.')
-bullet('**The capital intensity is increasing.** The September circular proposes a RMB12bn project and financing/guarantees up to RMB10bn. These are proposed capacity and limits, not proof the cash is already spent or financing fully drawn. July equity and convertible issuance rebuilt liquidity, but also linked the thesis to execution and refinancing.')
-head('Shareholders / lock-up / what changes the view')
-textp('**Recent action:** July placement of 7.283m H shares at HK$107.70 plus RMB1.36bn zero-coupon bonds due July 2027. September outstanding principal was RMB1.268bn; initial conversion price HK$123.86, well above HK$65.20. Redemption at 101.75% creates a cash obligation if not converted/refinanced. Tencent and GBA Fund DI percentage reductions were placement dilution, with share counts unchanged.',after=85)
-textp('**30 December release:** 244.48m original pre-IPO H shares; 174.41m outside the largest shareholder group. The June cornerstone expiry is already past. **Bear confirmation:** sustained cash burn, slower collections or new funding without cash returns. **Short breaker:** token cash generation or confirmed HSTECH inclusion; avoid treating the lock date as the first catalyst.',after=85)
-textp('**Next earnings:** FY2026, unannounced; expected by March 2027. Selected GTJ estimates via EtNet (28 September): owner profit RMB57m / RMB294m in FY2026/27, implying 324.1x / 62.8x. Original note/accounting adjustments were not independently verified; these are indicative, not consensus.',after=85)
-sources('Evidence: ',[('H1 report',filing('2026/0921','2026092100985')),('prospectus',filing('2025/1218','2025121800027')),('project circular',filing('2026/0909','2026090900997')),('July financing',filing('2026/0703','2026070300105')),('September capital',filing('2026/1002','2026100202637')),('DI',A['di_source_urls']['03317-di-notices-0']),('GTHT business case',S['gtj_xunce']),('index screen',S['hstech_candidate'])])
+company('3317','Real-time enterprise data and usage-based AI services','Strongest earnings-quality concern; index buying could arrive before selling.')
+head('Good points')
+bullet('**A useful enterprise-AI function.** Prospectus research ranks it first in China’s asset-management real-time data market (11.6% in 2024), but fourth across industries (3.4%). H1 revenue rose 389%.')
+bullet('**Usage billing could improve scalability.** Token revenue exceeded 10%; industries outside asset management contributed 87.6%. Shenton’s October screen also names Xunce as a December HSTECH candidate.')
+head('Risks')
+bullet('**Reported profit depends on investment gains.** H1 pretax profit was RMB67.0m, including RMB101.4m fair-value gains. Removing that gain alone gives a RMB34.4m pretax loss. Gross margin fell 6.6 percentage points.')
+bullet('**Cash demand is accelerating.** H1 operating outflow was RMB661.2m; transaction-based products remained 90.5% of sales. The proposed RMB12bn project increases execution and funding risk; its budget is not cash already spent.')
+head('Valuation versus peers')
+valuation('3317',['1384 HK','6682 HK','600570 A'])
+textp('**Closest:** Deepexi in H enterprise data/AI; Hundsun for A financial software. Phancy is adjacent. Xunce’s premium needs repeat usage and collections. † Indicative vendor forecasts; original broker accounting basis unverified.',before=75,after=85)
+head('Catalysts and shareholder actions')
+bullet('**20 November / 7 December:** HSTECH decision / effective date. **30 December:** 244.48m H shares release, including 174.41m outside the largest shareholder group. Tencent/GBA DI percentage declines were dilution.')
+bullet('**Financing:** July placed 7.283m shares at HK$107.70 and issued RMB1.36bn zero-coupon bonds. RMB1.268bn remained in September, due July 2027; conversion HK$123.86, redemption 101.75%.')
+textp('**Confirms the short:** continued cash burn or fresh funding without cash returns.\n**Invalidates it:** sustained token cash generation; index inclusion is a near-term squeeze risk.',after=90)
+textp('FY2026 earnings: date unannounced, due by March 2027. Forecast dates and sources: p6.',after=0)
 
-head('6600 OneRobotics 臥安機器人 — growth must earn its premium',True)
-issuerline('6600');facts('6600')
-head('Good / potential')
-bullet('**A route from existing homes into embodied AI.** Prospectus research ranks it first with 11.9% of the narrowly defined global home-robotic-system market (2024 retail sales). SwitchBot provides channels for Onero H1, Acemate and Kata, which together contributed RMB68.4m in H1, or 13.1% of sales. Cross-selling and reusable control models are the upside; current revenue is predominantly hardware.')
-bullet('**Expansion has measurable traction and funding.** Europe and North America grew 97.5% and 85.7%, reaching a combined 42.1% of sales. June cash/bank balances plus structured deposits were about RMB1.595bn. Much of the investing outflow was a transfer into term deposits, not a disappearance of liquidity. New-product execution matters more than an imminent funding-crisis narrative.')
-head('Bad / risk')
-bullet('**Costs are rising faster than the revenue base.** Gross margin fell from 54.2% to 50.4%; selling costs rose 63% and R&D 73%. The RMB42.7m FX loss was substantially offset at profit level by RMB33.8m of forward-contract gains. Treating the full FX loss as the sole explanation for the earnings reversal overstates the underlying recovery potential.')
-bullet('**Inventory is a delivery bet, not automatically good or bad.** H1 operating outflow reached RMB164.7m; inventory absorbed RMB100.1m and receivables RMB47.5m. This can reverse with Q4 sell-through, but inventories also bring markdown and obsolescence risk. Inventory provisions rose to RMB9.8m from RMB5.7m. Watch cash collected after delivery and product gross margin together.')
-bullet('**The premium needs much more profit.** Great Wall’s 20 October forecast gives FY2026/27 sales of RMB1.412bn / RMB2.045bn, but owner profit of -RMB46m / +RMB28m. That is 7.0x FY2026 sales and 352.5x FY2027 earnings, versus roughly 12–17x FY2027 earnings for Anker, Roborock and Ecovacs. Their categories differ, but they anchor consumer-hardware economics.')
-head('Shareholders / lock-up / what changes the view')
-textp('**Support is specific:** Li Zhichen extended 43.65m directly held shares through 29 June 2027. Other pre-IPO holders’ 156.35m shares release from the identified restriction on 30 December 2026. Cornerstones’ June 2026 expiry has passed; their later confidence statements are not binding extensions.',after=85)
-textp('**Recent action:** the incentive trustee bought 653,200 shares cumulatively for about HK$39.9m by 14 September. This is employee-scheme stock, not cancellation or a founder purchase, and only 0.29% of shares. No new DI notices were found in the July–26 October window. **Short breaker:** strong Q4 deliveries and margin recovery; **execution problem:** just 0.227m shares/day on the 20-session average.',after=85)
-textp('**Next earnings:** FY2026 date unannounced; expected by March 2027. Anker’s confirmed 29 October Q3 meeting is an earlier channel/margin read-through, not OneRobotics guidance. No verified new index-add forecast for OneRobotics.',after=85)
-sources('Evidence: ',[('H1 report',filing('2026/0918','2026091800725')),('prospectus',filing('2025/1218','2025121800167')),('founder extension',filing('2026/0630','2026063002277')),('trust purchases',filing('2026/0914','2026091401199')),('Great Wall forecast',S['greatwall_onerobotics']),('Anker meeting',filing('2026/1016','2026101600304'))])
+company('6600','SwitchBot smart-home devices and emerging embodied robots','The growth premium is large; thin turnover makes the short difficult to execute.')
+head('Good points')
+bullet('**A distribution base for new products.** Prospectus research cites 11.9% of the narrowly defined global home-robotic-system market in 2024. Onero H1, Acemate and Kata produced 13.1% of H1 sales.')
+bullet('**Growth has funding.** Europe and North America grew 97.5% and 85.7%; June cash/bank balances plus structured deposits were RMB1.595bn. Much investing outflow was a move into term deposits.')
+head('Risks')
+bullet('**Costs outrun sales.** H1 gross margin fell to 50.4%; selling and R&D costs rose 63% and 73%. Forward gains of RMB33.8m offset much of the RMB42.7m FX loss, so FX alone does not explain the earnings reversal.')
+bullet('**Inventory needs to sell through.** It absorbed RMB100.1m of cash; provisions rose to RMB9.8m from RMB5.7m. Great Wall forecasts only RMB28m FY2027 owner profit despite RMB2.045bn sales.')
+head('Valuation versus peers')
+valuation('6600',['668 HK','2391 HK','9880 HK','300866 A','688169 A','603486 A'])
+textp('**Closest:** Anker H for global smart-home hardware; Roborock/Ecovacs for home robots. Tuya and UBTech are secondary platform/theme references. † Vendor forecast basis unverified.',before=75,after=85)
+head('Catalysts and shareholder actions')
+bullet('**29 October:** Anker Q3 read-through. **30 December:** 156.35m H shares release; founder Li Zhichen’s 43.65m stay locked through 29 June 2027. Average daily turnover is just 0.227m shares.')
+bullet('**Trust buying:** 653,200 shares for HK$39.9m by 14 September; employee-scheme stock, not cancellation. No new July–26 October DI notices found. FY2026 results due by March 2027, date unannounced.')
+textp('**Confirms the short:** weak sell-through and continued margin pressure.\n**Invalidates it:** successful Q4 launches, cash conversion and margin recovery.',after=0)
 
-head('6651 51WORLD 五一視界 — strong theme, demanding conversion',True)
-issuerline('6651');facts('6651')
-head('Good / potential')
-bullet('**Simulation has a concrete use case.** 51Sim helps automakers test difficult driving scenarios and validate safety. The FY2025 report cites 53.5% share of China’s end-to-end high-level intelligent-driving simulation/data platform market. That is a narrow commissioned-market definition, not 53.5% of global simulation. H1 51Sim sales rose 545% to RMB51.2m, reaching 41.4% of revenue.')
-bullet('**The catalyst is tools for physical AI.** The 22 October announcement confirms 51Sim’s inclusion in NVIDIA’s Halos SAFE ecosystem. Aper’s orders exceeded RMB200m on 16 September, with over 90% targeted for delivery this year. These improve market access and near-term revenue visibility. Usage-based training and repeat purchases are the longer-term upside, if demonstrated.')
-head('Bad / risk')
-bullet('**Orders and ecosystem membership are not cash earnings.** Aper combines hardware and software; delivery, acceptance and collection still matter. Initial equipment sales do not prove recurring platform revenue, and more hardware can dilute margins. NVIDIA participation does not itself disclose contracted revenue, exclusivity or a minimum purchase commitment.')
-bullet('**Growth starts from a small, seasonal base.** H1 sales were RMB123.7m, with a RMB67.6m owner loss and RMB43.1m operating cash outflow. Receivables improved, but cash generation remains negative. The margin recovery to 44.8% is encouraging; FY2025’s 30.0% margin shows how much project mix can change the outcome.')
-bullet('**Even bullish forecasts leave a large valuation hurdle.** Latest Guosheng coverage (20 October) forecasts FY2026/27 sales of RMB750m / RMB1.53bn, giving 28.1x / 13.8x P/S, and only -RMB110m / +RMB10m adjusted profit. That positive FY2027 figure is non-GAAP, not evidence of reported breakeven. Huatai’s 15 September reported-profit forecasts remain negative in both years.')
-head('Shareholders / lock-up / what changes the view')
-textp('**Recent action:** 5.466m new H shares placed at HK$73.20 on 10 July; net proceeds HK$394.5m. The close is 20% below that price. July DI forms for Li Yi and LS51World Holding Limited explicitly state no share-count reduction: the percentage changes were dilution. September RSU grants are incentives, not insider buying.',after=85)
-textp('**30 December release:** 363.30m original pre-IPO H shares; excludes 19.08m unlisted shares and 7.65m H shares issued on April option exercises whose restriction treatment is not included. Pathfinder investors LS51World Holding Limited and Sky9 51World Limited account for 79.26m; other pre-IPO investors another 172.11m. Holder willingness to sell is still unproven.',after=85)
-textp('**Bear confirmation:** missed Aper delivery/acceptance, weak repeat orders or margin dilution. **Short breaker:** paid deployments plus recurring usage; further ecosystem news can sustain the theme before earnings catch up. FY2026 results are unannounced, expected by March 2027; no verified new index-add forecast.',after=85)
-sources('Evidence: ',[('H1 report',filing('2026/0921','2026092100462')),('FY2025 market share',filing('2026/0424','2026042403908')),('Aper orders',filing('2026/0916','2026091601231')),('NVIDIA',filing('2026/1022','2026102200055')),('DI',A['di_source_urls']['06651-di-notices-0']),('Guosheng',S['guosheng_51world']),('Huatai',S['huatai_51world']),('Xueqiu argument',S['xueqiu_51world'])])
+company('6651','51Sim simulation, digital twins and physical-AI training infrastructure','Largest valuation stretch; theme momentum can persist before earnings catch up.')
+head('Good points')
+bullet('**A strong simulation niche.** The FY2025 report cites 53.5% of China’s end-to-end high-level driving simulation/data-platform market. H1 51Sim sales rose 545% to RMB51.2m, or 41.4% of revenue.')
+bullet('**Visible physical-AI catalysts.** 51Sim joined NVIDIA’s Halos SAFE ecosystem on 22 October. Aper orders exceeded RMB200m by 16 September, with over 90% targeted for delivery this year.')
+head('Risks')
+bullet('**Orders still need to become cash.** Hardware/software delivery, acceptance and collection remain essential. NVIDIA ecosystem participation does not itself establish contracted revenue; initial equipment orders do not prove recurring usage.')
+bullet('**The earnings hurdle is high.** H1 losses and cash outflow continued. Guosheng’s newer forecasts imply 28.1x / 13.8x FY2026/27 sales, but only -RMB110m / +RMB10m adjusted profit; this is not reported breakeven.')
+head('Valuation versus peers')
+valuation('6651',['2571 HK','68 HK','300036 A'])
+textp('**Closest:** Saimo for H simulation/testing; SuperMap for A digital twins. Manycore is adjacent spatial software. Saimo had zero volume on 26 October. † Vendor forecast basis unverified; Huatai expects reported losses in both years.',before=75,after=85)
+head('Catalysts and shareholder actions')
+bullet('**Year-end Aper deliveries** are the next operating test. **30 December:** 363.30m original H shares release, including 79.26m held by LS51World Holding Limited and Sky9 51World Limited.')
+bullet('**10 July placing:** 5.466m shares at HK$73.20; net HK$394.5m. The close is 20% lower. Li Yi/LS51World DI changes were dilution; September RSUs are incentives. FY2026 results due by March 2027; no verified new index-add call.')
+textp('**Confirms the short:** missed acceptance, margin dilution or weak repeat orders.\n**Invalidates it:** paid deployments and recurring usage at improving margins.',after=90)
+textp('Market-share claims use narrow commissioned definitions. Forecast dates and sources: p6.',after=0)
 
-# H-first comparison groups. Original earnings conventions stay visible.
-def peerrow(code):
- x=P[code];price=('HK$' if x['price_currency']=='HKD' else 'RMB')+f'{x["price"]:.3f}'
- date=x['forecast_date'];b='No verified forecast' if not date else x['broker']+' '+date[8:]+' '+{'08':'Aug','09':'Sep','10':'Oct'}[date[5:7]]
- mark='†' if x['broker'] and 'EtNet' in x['broker'] else ''
- return [x['name']+'\n'+code,price,f'{x["ps25"]:.1f}x',fmt(x['pe26'])+mark,fmt(x['pe27'])+mark,b]
-def targetrow(c):
- x=I[c];b={'2635':'No verified forecast','3317':'GTJ / EtNet 28 Sep†','6600':'Great Wall 20 Oct','6651':'Huatai / EtNet 15 Sep†'}[c];m='†' if c in ['3317','6651'] else ''
- return [x['name'].split(' ')[0]+'\n'+c+' HK',f'HK${x["price"]:.3f}',f'{x["ps25"]:.1f}x',fmt(x['pe26'])+m,fmt(x['pe27'])+m,b]
-headers=['Company / code','26 Oct price','FY2025\nP/S','FY2026E\nP/E','FY2027E\nP/E','Selected forecast / date']
-widths=[2572,1300,1000,1100,1100,2900]
-
-def valuationtable(rows,meta):
- tb=table(headers,rows,widths,left_cols=(0,5))
- for tr,x in zip(tb.findall('w:tr',NS)[1:],meta):
-  if x:
-   p=tr.findall('w:tc',NS)[-1].find('w:p',NS);label=''.join(p.xpath('.//w:t/text()',namespaces=NS))
-   for r in list(p):
-    if r.tag!=q('pPr'):p.remove(r)
-   hyperlink(p,label,x)
- out(tb)
-head('Valuation — infrastructure AI, data and simulation',True)
-textp('Common 26 October prices and FX; actual FY2025 sales for every P/S. Forward P/E is a dated selected forecast, not consensus. † Vendor-listed owner-profit estimates: original broker adjustment conventions not independently verified.',after=100)
-keys=['2635','2121 HK','20 HK','600728 A','3317','1384 HK','6682 HK','600570 A','6651','2571 HK','68 HK','300036 A']
-valuationtable([targetrow(k) if k in I else peerrow(k) for k in keys],[('https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code='+k if k in ['3317','6651'] else None) if k in I else P[k]['forecast_url'] for k in keys])
-textp('NM = forecast loss; n/v = no verified exact estimate. Do not treat n/v as zero or cheap. Saimo’s HK$16.20 quote matches two vendors but 26 October volume was zero; it is a valuation reference, not an executable hedge.',before=75,after=80)
-head('Which comparisons matter')
-bullet('**2635:** AInnovation is the closest H reference for industrial AI project delivery; PCI is the closest A reference for rail/city systems. SenseTime is a broader AI platform. PCI’s hardware/integration mix depresses P/S, so its 1.0x is not a like-for-like target for Nuobikan’s higher margins.')
-bullet('**3317:** Deepexi is the closest H enterprise-data/AI reference; Phancy is adjacent in enterprise decision AI. Hundsun overlaps financial clients and software, with slower growth and more established earnings. The premium must be earned through cash and recurring usage, not simply assigned because revenue grew faster.')
-bullet('**6651:** Saimo is the most direct H simulation/testing peer. Manycore overlaps spatial software/data, and SuperMap overlaps GIS/digital twins; neither is an identical autonomous-driving platform. 51WORLD’s 60.5x historical P/S is far above all three. Even Guosheng’s newer growth case leaves 13.8x FY2027 sales.')
-textp('**Forecast reconciliation:** Huatai’s 51WORLD FY2026/27 sales forecasts are RMB623m / RMB1,172m, or 33.8x / 18.0x P/S, with reported losses. Guosheng’s newer estimates are RMB750m / RMB1,530m, but its profit forecast is adjusted. Both are shown explicitly; adjusted earnings are not substituted into the reported-profit row.',after=85)
-sources('Source trail: ',[('H issuer financials / HKEX', 'https://www1.hkexnews.hk/search/titlesearch.xhtml?lang=en'),('PCI FY2025',S['pci_annual']),('SuperMap FY2025',S['supermap_annual']),('SenseTime forecast',P['20 HK']['forecast_url']),('51WORLD latest',S['guosheng_51world'])])
-
-head('Valuation — OneRobotics versus consumer / robotics peers',True)
-textp('Anker H is the principal H operating comparison. The A listings retain the closest home-robotics product overlaps. Tuya and UBTech show platform/theme valuations, not equivalent product economics.',after=100)
-keys=['6600','668 HK','2391 HK','9880 HK','300866 A','688169 A','603486 A']
-valuationtable([targetrow(k) if k in I else peerrow(k) for k in keys],[S['greatwall_onerobotics'] if k in I else P[k]['forecast_url'] for k in keys])
-head('Trading the valuation gap')
-bullet('**Anker is relevant, but it is broader.** Eufy overlaps smart-home devices and household robots; charging, storage and audio diversify the group. At 13.0x FY2027 P/E on the H line, it offers an earnings anchor that OneRobotics’ 352.5x lacks. Product mix and growth prevent a mechanical pair-trade ratio.')
-bullet('**Roborock and Ecovacs are the closest category checks.** Both sell home robots with established earnings, at approximately 12x FY2027 P/E. OneRobotics needs new categories to scale without permanently higher selling and development costs. Its recent growth is meaningful, but does not by itself justify a platform multiple.')
-bullet('**Tuya / UBTech are secondary references.** Tuya monetises IoT software and devices across brands; UBTech’s industrial humanoid deployments have different customers, capex and delivery cycles. UBTech is also in the HSTECH candidate screen, so a theme hedge can have its own index catalyst.')
-head('Valuation discipline')
-textp('Prices are the 26 October closing snapshots; Tencent and Sina agree for the target stocks and the quoted comparison lines checked. Anker H also matches an independent historical-price table. Target share counts are taken from the latest capital returns and completed placement notices, not rounded vendor market caps.',after=85)
-textp('All H values use H price × total ordinary shares, converted at 1 HKD = RMB0.85634; USD financials use RMB6.7162/USD. These are whole-company values implied by that share line. Anker A and H use the same 589,432,146 issued shares, FY2025 revenue and profit forecasts; they are not combined A+H market caps. Anker’s H discount to A is 22.9% on this basis.',after=85)
-textp('No interim annualisation. P/E divides equity value by full-year owner profit; negative forecasts are NM. Broker dates are explicit and estimates can be revised after this snapshot. † Tuya and other marked rows use EtNet’s owner-profit field; the full original broker basis was unavailable. Use unmarked reported-profit rows for strict accounting comparisons. Primary filings, raw inputs, formulas and limitations accompany the brief in the repository.',after=85)
-textp('At a purely illustrative 30x reported P/E, OneRobotics would need RMB329m annual owner profit, versus Great Wall’s RMB28m FY2027 forecast. 51WORLD would need RMB702m, versus current losses. These are profit hurdles, not forecasts or target prices.',after=85)
-sources('Evidence: ',[('Anker shares',filing('2026/1007','2026100700758')),('Anker forecast',P['668 HK']['forecast_url']),('Roborock forecast',P['688169 A']['forecast_url']),('Ecovacs forecast',P['603486 A']['forecast_url']),('FX parity','https://www.safe.gov.cn/AppStructured/hlw/RMBQuery.do'),('Tuya FY2025',filing('2026/0303','2026030300005'))])
-
-head('Event calendar — distinguish fixed dates from forecasts',True)
-out(table(['Date / window','Event / status','Stock relevance'],[
-['29 Oct 2026','Anker Q3 board meeting — confirmed','Sector read-through for 6600; not a target-company earnings date.'],
-['11 Nov / 1 Dec','MSCI review announcement / effective date — scheduled','No stock-specific new addition verified for these four. Watch actual results; no automatic inclusion from time listed.'],
-['20 Nov / 7 Dec','Hang Seng review / HSTECH implementation — scheduled','3317 is in a published analyst candidate screen; still unconfirmed. Rebalance trading commonly concentrates at the prior close.'],
-['22–23 Dec','2635: last locked 22 Dec; release from 23 Dec','266.48m original H shares; no disclosed sale commitment identified.'],
-['29–30 Dec','3317 / 6600 / 6651: last locked 29 Dec; release from 30 Dec','244.48m / 156.35m / 363.30m original H shares respectively.'],
-['By 31 Mar 2027','FY2026 results — deadline; exact dates unannounced','For all four. Profit warnings and business updates can arrive earlier.'],
-['29–30 Jun 2027','6600 founder extension ends 29 Jun; release from 30 Jun','43.65m directly held shares remain excluded from December supply.'],
-['Jul 2027','3317 convertible maturity','RMB1.268bn outstanding in September; watch conversion, redemption or refinancing.']
-],[2020,4020,3932],left_cols=(0,1,2)))
-head('Index / Southbound conclusions')
-bullet('**Southbound is already open.** Xunce, OneRobotics and 51WORLD entered in March 2026; Nuobikan’s 2635 line was added from the next Connect session after 17 April, i.e. 20 April. Current vendor eligibility flags also show admission. There is no first-admission date to trade now; ongoing mainland demand is a flow variable.')
-bullet('**HSTECH has changed materially.** October rules expand it to 50 stocks: 40 selected by market value and 10 by revenue growth. Non-members need three-month daily turnover of at least HK$100m; the growth stream needs at least HK$500m sales in each of the last two fiscal years. Eligibility also requires HSCI large/mid-cap membership. Xunce has a named candidate call; no equivalent call was verified for the other three.')
-bullet('**Expiry is not automatic passive buying.** Index free float excludes strategic holdings under provider rules, so a contractual unlock does not guarantee a matching weight increase. The next MSCI review after December is announced 9 February 2027, effective 1 March; it is a monitoring window, not an inclusion prediction.')
-head('Before treating the overhang as a short catalyst')
-textp('The SFC’s 16 October reported short positions were 0 / 908,700 / 308,278 / 619,200 shares for 2635 / 3317 / 6600 / 6651 (0.00% / 0.27% / 0.14% / 0.15% of current total shares). These lagged, threshold-based observations do not measure total borrowing or prove an uncrowded trade. Zero means no reportable aggregate in that file, not no shorts.',after=85)
-textp('Look for an actual secondary block, disposal filing or sustained sell flow; distinguish custody transfers from sales. Obtain executable borrow with size, fee and recall terms before sizing. An illustrative 30% annual borrow fee costs about 5% over two months before price movement. Thin turnover and an index/news squeeze can dominate an otherwise sound fundamental thesis.',after=85)
-sources('Calendar / rules: ',[('HSTECH methodology',S['hstech_rules']),('Xunce candidate screen',S['hstech_candidate']),('Hang Seng dates',S['hstech_calendar']),('MSCI dates',S['msci_calendar']),('April Connect notice',S['southbound_2635']),('March Connect report',S['southbound_march']),('HKEX short list','https://www.hkex.com.hk/-/media/HKEX-Market/Services/Trading/Securities/Securities-Lists/Designated-Securities-Eligible-for-Short-Selling/ds_list20261023.csv')])
+page_title('Sources and valuation basis')
+textp('Prices are dated 26 October 2026. Forecast dates and accounting conventions are listed below.',after=100)
+head('How to read the numbers')
+textp('**P/S:** FY2025 actual sales. **P/E:** dated full-year owner-profit forecasts; no interim annualisation. **NM:** forecast loss. **n/v:** no verified exact forecast. **†:** EtNet owner-profit field; the original broker adjustment basis is unverified. These are selected estimates, not consensus.',after=85)
+textp('H-share values apply H price to total ordinary shares. FX: RMB0.85634/HKD and RMB6.7162/USD, SAFE central parity. Anker A/H use identical shares and earnings; their line-implied values are separate, with a 22.9% H discount. Target capital counts use filings; most peer market caps use the dated quote feeds.',after=85)
+head('Forecast source key')
+forecast_rows=[
+ ('3317','GTJ / EtNet · 28 Sep†','https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=3317'),
+ ('6600','Great Wall · 20 Oct',S['greatwall_onerobotics']),
+ ('6651','Huatai / EtNet · 15 Sep†',S['huatai_51world']),
+ ('SenseTime 20','GTHT · 10 Sep',P['20 HK']['forecast_url']),
+ ('Deepexi 1384','GTJ / EtNet · 20 Sep†',P['1384 HK']['forecast_url']),
+ ('Phancy 6682','JPM / EtNet · 23 Sep†',P['6682 HK']['forecast_url']),
+ ('Manycore 68','JPM / EtNet · 23 Sep†',P['68 HK']['forecast_url']),
+ ('Hundsun 600570','Soochow · 25 Aug',P['600570 A']['forecast_url']),
+ ('Anker H 668 / A 300866','Kaiyuan · 1 Sep',P['668 HK']['forecast_url']),
+ ('Roborock 688169','Guosen · 12 Oct',P['688169 A']['forecast_url']),
+ ('Ecovacs 603486','Guosen · 13 Oct',P['603486 A']['forecast_url']),
+ ('Tuya 2391','CICC / EtNet · 29 Aug†',P['2391 HK']['forecast_url']),
+ ('UBTech 9880','CICC · 29 Aug',P['9880 HK']['forecast_url'])]
+tb=table(['Stock','Broker and 2026 forecast date'],[[x,y] for x,y,z in forecast_rows],[4000,5972],left_cols=(0,1))
+for row,(_,label,url) in zip(tb.findall('w:tr',NS)[1:],forecast_rows):
+ p=row.findall('w:tc',NS)[1].find('w:p',NS)
+ for x in list(p):
+  if x.tag!=q('pPr'):p.remove(x)
+ hyperlink(p,label,url)
+out(tb)
+textp('**51WORLD reconciliation:** Huatai sales RMB623m / RMB1,172m imply 33.8x / 18.0x FY2026/27 P/S, with reported losses. Guosheng sales RMB750m / RMB1,530m imply 28.1x / 13.8x; its profit estimates are adjusted. They are not mixed in the P/E table.',before=75,after=85)
+head('Primary filings and supporting research')
+sources('2635  ',[('H1 results',filing('2026/0916','2026091600183')),('FY2025',filing('2026/0428','2026042805085')),('lockup',filing('2025/1222','2025122201578')),('placing',filing('2026/1009','2026100901015')),('supplier clarification',filing('2026/0511','2026051101486'))])
+sources('3317  ',[('H1 results',filing('2026/0921','2026092100985')),('lockup',filing('2025/1229','2025122902057')),('project',filing('2026/0909','2026090900997')),('financing',filing('2026/0703','2026070300105')),('index forecast',S['hstech_candidate'])])
+sources('6600  ',[('H1 results',filing('2026/0918','2026091800725')),('lockup',filing('2025/1229','2025122902399')),('founder extension',filing('2026/0630','2026063002277')),('trust purchases',filing('2026/0914','2026091401199'))])
+sources('6651  ',[('H1 results',filing('2026/0921','2026092100462')),('lockup',filing('2025/1229','2025122902393')),('Aper orders',filing('2026/0916','2026091601231')),('NVIDIA',filing('2026/1022','2026102200055')),('Guosheng',S['guosheng_51world']),('Xueqiu',S['xueqiu_51world'])])
+sources('Events  ',[('HSTECH rules',S['hstech_rules']),('Hang Seng dates',S['hstech_calendar']),('MSCI dates',S['msci_calendar']),('Anker meeting',filing('2026/1016','2026101600304')),('Connect April',S['southbound_2635']),('Connect March',S['southbound_march'])])
+textp('**Lockup scope:** identified IPO restrictions only; excludes unlisted shares, post-IPO options and the 6600 founder extension. Other insider rules may apply. ADV covers 25 September–26 October. Full disclosure links, source hashes, shareholder reconciliation and limitations are in the repository audit.',before=75,after=0)
 
 out(deepcopy(donors[-1]))
 assert etree.tostring(body[-1],method='c14n',exclusive=True)==etree.tostring(donors[-1],method='c14n',exclusive=True)
