@@ -7,6 +7,27 @@ from test_pca_research import E,fixture,run,OPTIONS
 from test_pca_peer_discovery import electronics
 
 class OctoberReviewTests(unittest.TestCase):
+    def test_roundoff_at_gross_limit_does_not_discard_valid_baskets(self):
+        from test_pca_estimator_selection import sparse_relationship
+        solve=E['_solve_hedge_qp']; boundary_calls=[]
+        def rounded(H,c,max_gross=None,max_leg=None):
+            w=solve(H,c,max_gross,max_leg).copy()
+            if max_gross and abs(abs(w).sum()-max_gross)<1e-10:
+                # Simulate cross-platform BLAS/SLSQP rounding at a binding cap.
+                j=int(np.argmax(abs(w)))
+                while abs(w).sum()<=max_gross:
+                    w[j]=np.nextafter(w[j],np.copysign(np.inf,w[j]))
+                boundary_calls.append(abs(w).sum())
+            return w
+        with patch.dict(solve.__globals__,{'_solve_hedge_qp':rounded}):
+            r=run(sparse_relationship(),sample_window='3m',max_gross=1.2,
+                  max_leg=.7,force_include=['P0 TT Equity'])
+        self.assertTrue(boundary_calls)
+        self.assertGreaterEqual(len(r['weights']),2)
+        self.assertIn('P0 TT Equity',r['weights'].index)
+        self.assertLessEqual(r['weights'].abs().sum(),1.2+1e-7)
+        self.assertLessEqual(r['weights'].abs().max(),.7+1e-7)
+
     def test_yahoo_client_public_api_is_installed(self):
         import yfinance as yf
         self.assertTrue(callable(yf.screen))

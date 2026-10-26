@@ -4665,7 +4665,7 @@ def _alternative_evidence(weights, raw_r2, ys, residuals, spreads, ann,
             quality = 1 - float(np.sum(residual ** 2)) / denom
         risk = _trade_risk(y, np.concatenate(spreads), ann)
     complete = bool(expected_windows and len(ys) == expected_windows)
-    within_cap = config.get('max_gross') is None or weights.abs().sum() <= config['max_gross']
+    within_cap = config.get('max_gross') is None or weights.abs().sum() <= config['max_gross'] + 1e-7
     if mode == 'IN-SAMPLE':
         status = 'INDICATIVE — fitted history only'
     elif not complete or not np.isfinite(quality):
@@ -6235,6 +6235,8 @@ def _solve_hedge_qp(H, c, max_gross=None, max_leg=None):
     differentiable, including at zero. No post-fit clipping of trade weights.
     """
     from scipy.optimize import minimize
+    # Downstream selection uses this solver's 1e-7 feasibility tolerance too;
+    # platform rounding at a binding cap must not discard a valid basket.
     H, c = np.asarray(H, float), np.asarray(c, float)
     k = len(c)
     try:
@@ -7469,7 +7471,7 @@ def _find_best_hedge_impl(
                         if not _meaningful_basket(reg.coef_): continue
                     except RuntimeError:
                         continue
-                    if max_gross is not None and np.abs(reg.coef_).sum() > max_gross:
+                    if max_gross is not None and np.abs(reg.coef_).sum() > max_gross + 1e-7:
                         continue
                     r2_te, vol_red = _eval_on_window(reg, basket, ret_te)
                     if not np.isfinite(r2_te):
@@ -7598,7 +7600,7 @@ def _find_best_hedge_impl(
             summary['composite_recent'] = (summary['recent_vol_red'].fillna(0)
                                            - gross_penalty * summary['avg_gross'])
         if max_gross is not None:
-            within = summary[summary['avg_gross'] <= max_gross]
+            within = summary[summary['avg_gross'] <= max_gross + 1e-7]
             if len(within):
                 summary = within.reset_index(drop=True)
             else:
@@ -7636,7 +7638,7 @@ def _find_best_hedge_impl(
                 continue
             _, _, short_basket, short_reg, short_r2, short_resid, _, _, _ = fitted
             gross = float(np.abs(short_reg.coef_).sum())
-            if max_gross is not None and gross > max_gross:
+            if max_gross is not None and gross > max_gross + 1e-7:
                 continue
             # 1M-3M / any insufficient-history tier: rank PCA recipes on
             # complexity-adjusted fitted R² minus gross exposure penalty.
@@ -8055,7 +8057,7 @@ def _find_best_hedge_impl(
             try:
                 _, _, fb, fr, _, _, _, _, _ = _select_and_fit(
                     inner.iloc[-int(choice['lookback']):], choice['pc_spec'], int(choice['basket_size']))
-                if max_gross is not None and np.abs(fr.coef_).sum() > max_gross:
+                if max_gross is not None and np.abs(fr.coef_).sum() > max_gross + 1e-7:
                     raise RuntimeError('Outer refit exceeds the requested gross cap')
                 fq, _ = _eval_on_window(fr, fb, outer_test)
                 if np.isfinite(fq):
@@ -8075,7 +8077,7 @@ def _find_best_hedge_impl(
         try:
             _, _, bkt_j, reg_j, _, _, _, _, _ = _select_and_fit(
                 inner.iloc[-lb_j:], cfg['pc_spec'], int(cfg['basket_size']))
-            if max_gross is not None and np.abs(reg_j.coef_).sum() > max_gross:
+            if max_gross is not None and np.abs(reg_j.coef_).sum() > max_gross + 1e-7:
                 raise RuntimeError('Outer refit exceeds the requested gross cap')
             r2_j, vr_j = _eval_on_window(reg_j, bkt_j, outer_test)
             _record_method_test(inner.iloc[-lb_j:],bkt_j,reg_j,outer_test)
@@ -8173,7 +8175,7 @@ def _find_best_hedge_impl(
                     continue
                 pick = tr[pool].corrwith(tr[target_ticker]).abs().idxmax()
                 reg_b, r2_tr, _ = _fit_active(tr, target_ticker, [pick])
-                if max_gross is not None and np.abs(reg_b.coef_).sum() > max_gross:
+                if max_gross is not None and np.abs(reg_b.coef_).sum() > max_gross + 1e-7:
                     continue
                 if best is None or r2_tr > best[0]:
                     best = (r2_tr, pick, lb, reg_b)
@@ -8213,7 +8215,7 @@ def _find_best_hedge_impl(
                 _, _, bkt_w, reg_w, _, _, _, _, _ = _select_and_fit(
                     rets.iloc[max(0, os_ - purge - lb):os_ - purge],
                     ps, bs)                           # [Fix 39] purge gap
-                if max_gross is not None and np.abs(reg_w.coef_).sum() > max_gross:
+                if max_gross is not None and np.abs(reg_w.coef_).sum() > max_gross + 1e-7:
                     continue
                 test, _ = _prepare_evaluation(rets.iloc[os_:oe_])
                 r2_w, vr_w = _eval_on_window(reg_w, bkt_w, test)
@@ -8399,7 +8401,7 @@ def _find_best_hedge_impl(
     reg_e = None
     if best_etf is not None:
         reg_e, _, _ = _fit_active(returns_final, target_ticker, [best_etf])
-        if max_gross is not None and np.abs(reg_e.coef_).sum() > max_gross:
+        if max_gross is not None and np.abs(reg_e.coef_).sum() > max_gross + 1e-7:
             best_etf, reg_e = None, None
 
     # ── Display names: short name; fall back to full ticker on collision ────
@@ -8752,7 +8754,7 @@ def _find_best_hedge_impl(
     if hedge_objective == 'tracking' and np.isfinite(_quality) and _quality < 0:
         grade = '✗ NO VALIDATED HEDGE'
         reasons.insert(0, 'negative unseen tracking R²; candidate retained for reference only')
-    if max_gross is not None and weights_final.abs().sum() > max_gross:
+    if max_gross is not None and weights_final.abs().sum() > max_gross + 1e-7:
         grade = '✗ NO VALIDATED HEDGE'
         reasons.insert(0, 'final fitted weights exceed the requested gross exposure cap')
     if trade_risk.get('vol_reduction', np.nan) <= 0:
