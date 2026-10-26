@@ -91,7 +91,7 @@ class PresentationTests(unittest.TestCase):
                 figures=E['_report_figures'](result)
                 self.assertIn('target versus basket',figures[0][0])
                 np.testing.assert_allclose(figures[0][1].axes[0].lines[1].get_ydata(),
-                    (result['returns'][result['weights'].index]@result['weights']).cumsum()*100)
+                    (result.get('analysis_returns',result['returns'])[result['weights'].index]@result['weights']).cumsum()*100)
                 for _,fig in figures: E['plt'].close(fig)
                 if result['method_validation']['folds']:
                     self.assertEqual(tracking['test']['status'],'ok',tracking['test'])

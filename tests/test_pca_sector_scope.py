@@ -105,8 +105,8 @@ class SectorScopeTests(unittest.TestCase):
             downloaded=fn(target,session=object(),fetch_mktcap_hist=False,fetch_pit_members=False,cache=False)
             result=E['find_best_hedge'](target,data=downloaded,**dict(OPTIONS,candidate_scope='sector',sample_window='1m'))
         self.assertEqual(downloaded['sector_scope_policy_version'],1)
-        self.assertNotIn(unrelated,downloaded['prices'])
-        self.assertEqual(downloaded['download_scope'],'related')
+        self.assertIn(unrelated,downloaded['prices'])  # Broad download is now the default
+        self.assertEqual(downloaded['download_scope'],'all')
         self.assertEqual(downloaded['sector_stock_tickers_by_target'][target],stocks)
         self.assertEqual(set(result['sector_search_audit'][target]['searched_stocks']),set(stocks))
         self.assertNotIn(unrelated,result['weights'])

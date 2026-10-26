@@ -1,3 +1,18 @@
+# PCA v125 changes
+
+Revision 2026-10-26-v125-discovery-and-selection, same script and notebook entry points.
+
+- Default downloads to Broad universe. Replace the EQS form input with Force download; distinguish download requests from required basket holdings.
+- Add a bounded Yahoo regional listing-directory fallback, exchange partitioning, two-direction paging for the observed 10,000-slot limit, slot-aware offsets, partial-data retention, type/venue checks and explicit source audits. Prices and peer classification remain Bloomberg-based.
+- Batch second-degree Bloomberg requests and retain security errors; preflight invalid fields, drain failed reference responses, and show actionable summaries.
+- Keep CV-selected lookbacks in final long-window fits. Preserve complete analysis-horizon charts, label the fitting segment and stop replacement recipes inheriting a trade-eligible verdict.
+- Use constrained QP screening, exact constrained pair seeds, no materiality rejection of partial baskets, and a display-independent shortlist. Validate search:0 automatically; keep alternatives as research references.
+- Extract legacy PCA directions without target legs and use signal-based loadings. Keep the covariance shrinkage model.
+- Add a visible simple-return reconciliation of current positions alongside the retained log-return model. Neither is a forecast of alpha or net execution P&L.
+- Add regression coverage for Yahoo pagination/venue/type/error cases, batched vendor failures, force-download semantics, target-free PCA, selected lookbacks, exact pair optimization, and return-basis reconciliation.
+
+Live directory connectivity and Bloomberg field entitlements vary across computers. The release records underlying source and field errors; a successful local directory check does not prove another computer’s network access or terminal entitlement. No all-peer, global-optimum, higher-R² or zero-error guarantee is made.
+
 # PCA v124 changes
 
 Revision 2026-10-23-v124-tracking-charts in the existing v115 entry point.
