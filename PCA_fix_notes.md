@@ -1,3 +1,13 @@
+# PCA v127 changes
+
+Revision 2026-10-26-v127-incremental-download; retains the v126 global default and download recovery.
+
+- Add a compact incremental download button and API. Request only missing explicit ticker histories and associated metadata within the existing cached dates, without repeating discovery or changing existing prices.
+- Preserve source coverage and original download age; expose partial global additions and missing-price failures. Classify added instruments without automatically treating them as peers or basket holdings.
+- Share metadata retrieval between full and incremental downloads; invalidate old analysis results after switching or updating the loaded data.
+- Isolate both public HTTP clients in the offline source-failure test so CI cannot accidentally use live exchange data.
+- Add regressions for incremental vendor requests, no-op/duplicates, original-data preservation, partial/all failure, classification, listing constraints, executable analysis with an added required peer, and the Data-tab action.
+
 # PCA v126 changes
 
 Revision 2026-10-26-v126-market-scope-and-download, same script and notebook entry points.

@@ -1,7 +1,7 @@
 """Offline checks of the v117 production engine, including actual-result regressions."""
 import contextlib,io,os,runpy,unittest,json,tempfile
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import patch,MagicMock
 import numpy as np
 import pandas as pd
 os.environ.setdefault('MPLBACKEND','Agg')
@@ -32,7 +32,7 @@ class ResearchTests(unittest.TestCase):
         cls.data=fixture();cls.one=run(cls.data,sample_window='1m');cls.three=run(cls.data,sample_window='3m')
 
     def test_actual_revision_loaded(self):
-        self.assertIn('v126',E['PCA_REVISION'])
+        self.assertIn('v127',E['PCA_REVISION'])
 
     def test_short_window_search_has_multiple_distinct_baskets(self):
         rows=self.one['basket_comparison']
@@ -221,7 +221,7 @@ class ResearchTests(unittest.TestCase):
             names,audit=E['_public_equity_universe']('TW')
         self.assertEqual(names,['2889 TT Equity','5864 TT Equity'])
         self.assertTrue(all(r['status']=='received' for r in audit))
-        with patch('urllib.request.urlopen',side_effect=OSError('offline')), patch.dict(E['_public_equity_universe'].__globals__,{'_yahoo_equity_universe':lambda *a:([],dict(source='Yahoo',status='unavailable',count=0,reason='offline'))}):
+        with patch.dict(E['_public_equity_universe'].__globals__,{'_public_roster_bytes':MagicMock(side_effect=OSError('offline')),'_yahoo_equity_universe':lambda *a:([],dict(source='Yahoo',status='unavailable',count=0,reason='offline'))}):
             names,audit=E['_public_equity_universe']('TW')
         self.assertFalse(names);self.assertEqual(len(audit),3)
         self.assertTrue(all(r['status']=='unavailable' for r in audit))

@@ -256,7 +256,7 @@ import textwrap as _textwrap
 
 RIDGE_ALPHAS = np.logspace(-4, 2, 25)
 MIN_RETURN_STD = 1e-12
-PCA_REVISION = '2026-10-26-v126-market-scope-and-download'
+PCA_REVISION = '2026-10-26-v127-incremental-download'
 MIN_TRAIN_COVERAGE = 0.90
 DISCOVERY_VERSION = 5
 
@@ -4089,6 +4089,63 @@ def _n_pc_auto(ret_scaled, cap, robust_cov='none'):
     return int(min(max(2, k), cap, 15, n - 1, p))
 
 
+def _download_quote_metadata(session, prices, start_dt, end_dt, fetch_mktcap_hist=True, progress=None):
+    """Shared metadata download for full and incremental price batches."""
+    # [Fix 35] current USD market caps (fail-open)
+    if progress: progress('caps',f'Current USD market caps for {prices.shape[1]:,} instruments')
+    mktcap = {}
+    try:
+        liq = bbg_ref_multi(session, list(prices.columns),
+                            ['CRNCY_ADJ_MKT_CAP'],
+                            overrides={'EQY_FUND_CRNCY': 'USD'})
+        for tk, d_ in liq.items():
+            try:
+                mktcap[tk] = float(d_.get('CRNCY_ADJ_MKT_CAP'))
+            except (TypeError, ValueError):
+                continue
+        print(f"  ✓ USD market caps stored for {len(mktcap)} tickers")
+    except Exception as e:
+        print(f"  ⚠ market-cap download skipped ({e}) — the cap filter will "
+              f"be unavailable in find_best_hedge")
+
+    # Historical market caps use dated FX, never today's cap/FX scaling.
+    mktcap_hist = pd.DataFrame()
+    mktcap_hist_audit = {'errors': [], 'missing_currency_or_fx': []}
+    if fetch_mktcap_hist:
+        if progress: progress('caps','Historical market caps and dated currency conversion')
+        try:
+            hist_local = bbg_hist_field(session, list(prices.columns),
+                                        'CUR_MKT_CAP', start_dt, end_dt,
+                                        errors=mktcap_hist_audit['errors'])
+            currencies = bbg_ref_multi(session, list(hist_local.columns), ['CRNCY'],
+                                      errors=mktcap_hist_audit['errors'])
+            ccys = {str(q.get('CRNCY', '')).strip().upper() for q in currencies.values()}
+            pairs = sorted(c+'USD Curncy' for c in ccys if c != 'USD' and re.fullmatch(r'[A-Z]{3}', c))
+            fx = (bbg_hist_field(session, pairs, 'PX_LAST', start_dt, end_dt,
+                                active_days=True, errors=mktcap_hist_audit['errors'])
+                  if pairs else pd.DataFrame())
+            mktcap_hist, missing_fx = _historical_caps_usd(hist_local, currencies, fx)
+            mktcap_hist_audit['missing_currency_or_fx'] = missing_fx
+            print(f"  ✓ dated-FX USD market-cap paths for "
+                  f"{mktcap_hist.shape[1]} tickers")
+        except Exception as e:
+            mktcap_hist_audit['errors'].append({'field': 'historical cap/FX', 'reason': str(e)})
+            print(f"  ⚠ historical market-cap download unavailable ({e}); historical size eligibility cannot be verified")
+
+    if progress:
+        progress('caps',f'{len(mktcap):,} current caps | {mktcap_hist.shape[1]:,} historical series' if fetch_mktcap_hist else f'{len(mktcap):,} current caps | history not requested',status='done')
+    # BDP quotes are current, even for a historical analysis end date.
+    if progress: progress('trading','Retrieving average volume, currency and bid/ask quotes')
+    execution_asof = pd.Timestamp.now(tz='UTC').strftime('%Y%m%d')
+    execution_snapshot, execution_data_audit = _download_execution_snapshot(session,list(prices.columns),execution_asof)
+    if progress:
+        volume_count=sum(_positive_number(q.get('PCA_AVG_DAILY_VOLUME')) is not None for q in execution_snapshot.values())
+        progress('trading',f'Volume available for {volume_count:,} of {prices.shape[1]:,} instruments; missing values remain unknown',status='done')
+    return dict(mktcap_usd_mm=mktcap, mktcap_hist=mktcap_hist,
+                mktcap_hist_audit=mktcap_hist_audit, execution_snapshot=execution_snapshot,
+                execution_data_audit=execution_data_audit, execution_snapshot_date=execution_asof)
+
+
 def _download_hedge_data_impl(target, candidates=None, session=None,
                         years=3, min_mktcap_usd_mm=5000, exclude=None,
                         force_include=None, fetch_mktcap_hist=True,
@@ -4262,56 +4319,13 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
         raise ValueError(f"No price data for {legs[0]} — check the ticker spelling")
     print(f"  ✓ {prices.shape[0]} price rows × {prices.shape[1]} tickers")
 
-    # [Fix 35] current USD market caps (fail-open)
-    if progress: progress('caps',f'Current USD market caps for {prices.shape[1]:,} instruments')
-    mktcap = {}
-    try:
-        liq = bbg_ref_multi(session, list(prices.columns),
-                            ['CRNCY_ADJ_MKT_CAP'],
-                            overrides={'EQY_FUND_CRNCY': 'USD'})
-        for tk, d_ in liq.items():
-            try:
-                mktcap[tk] = float(d_.get('CRNCY_ADJ_MKT_CAP'))
-            except (TypeError, ValueError):
-                continue
-        print(f"  ✓ USD market caps stored for {len(mktcap)} tickers")
-    except Exception as e:
-        print(f"  ⚠ market-cap download skipped ({e}) — the cap filter will "
-              f"be unavailable in find_best_hedge")
-
-    # Historical market caps use dated FX, never today's cap/FX scaling.
-    mktcap_hist = pd.DataFrame()
-    mktcap_hist_audit = {'errors': [], 'missing_currency_or_fx': []}
-    if fetch_mktcap_hist:
-        if progress: progress('caps','Historical market caps and dated currency conversion')
-        try:
-            hist_local = bbg_hist_field(session, list(prices.columns),
-                                        'CUR_MKT_CAP', start_dt, end_dt,
-                                        errors=mktcap_hist_audit['errors'])
-            currencies = bbg_ref_multi(session, list(hist_local.columns), ['CRNCY'],
-                                      errors=mktcap_hist_audit['errors'])
-            ccys = {str(q.get('CRNCY', '')).strip().upper() for q in currencies.values()}
-            pairs = sorted(c+'USD Curncy' for c in ccys if c != 'USD' and re.fullmatch(r'[A-Z]{3}', c))
-            fx = (bbg_hist_field(session, pairs, 'PX_LAST', start_dt, end_dt,
-                                active_days=True, errors=mktcap_hist_audit['errors'])
-                  if pairs else pd.DataFrame())
-            mktcap_hist, missing_fx = _historical_caps_usd(hist_local, currencies, fx)
-            mktcap_hist_audit['missing_currency_or_fx'] = missing_fx
-            print(f"  ✓ dated-FX USD market-cap paths for "
-                  f"{mktcap_hist.shape[1]} tickers")
-        except Exception as e:
-            mktcap_hist_audit['errors'].append({'field': 'historical cap/FX', 'reason': str(e)})
-            print(f"  ⚠ historical market-cap download unavailable ({e}); historical size eligibility cannot be verified")
-
-    if progress:
-        progress('caps',f'{len(mktcap):,} current caps | {mktcap_hist.shape[1]:,} historical series' if fetch_mktcap_hist else f'{len(mktcap):,} current caps | history not requested',status='done')
-    # BDP quotes are current, even for a historical analysis end date.
-    if progress: progress('trading','Retrieving average volume, currency and bid/ask quotes')
-    execution_asof = pd.Timestamp.now(tz='UTC').strftime('%Y%m%d')
-    execution_snapshot, execution_data_audit = _download_execution_snapshot(session,list(prices.columns),execution_asof)
-    if progress:
-        volume_count=sum(_positive_number(q.get('PCA_AVG_DAILY_VOLUME')) is not None for q in execution_snapshot.values())
-        progress('trading',f'Volume available for {volume_count:,} of {prices.shape[1]:,} instruments; missing values remain unknown',status='done')
+    downloaded = _download_quote_metadata(session, prices, start_dt, end_dt, fetch_mktcap_hist, progress)
+    mktcap = downloaded['mktcap_usd_mm']
+    mktcap_hist = downloaded['mktcap_hist']
+    mktcap_hist_audit = downloaded['mktcap_hist_audit']
+    execution_snapshot = downloaded['execution_snapshot']
+    execution_data_audit = downloaded['execution_data_audit']
+    execution_asof = downloaded['execution_snapshot_date']
     # [Fix 119] carry the exposure verdict with the data. Merged across legs so
     # a book reports the union of what its legs need.
     _exp = {'tags': set(), 'resolved': {}, 'unresolved': {}}
@@ -4564,6 +4578,12 @@ class _DownloadProgress:
             lines=[f'{prices.shape[1]} instruments · {prices.shape[0]} price rows · '+
                    (f'{prices.index.min():%d %b %Y} – {prices.index.max():%d %b %Y}' if len(prices) else 'no price dates')]
             listing_issues=set()
+            incremental=result.get('last_incremental_download')
+            if incremental:
+                lines.insert(0,f"Added tickers: {len(incremental['added'])} downloaded, "
+                    f"{len(incremental['already_available'])} already available, {len(incremental['missing'])} missing. Existing histories retained.")
+            if result.get('global_peer_download_incomplete'):
+                self.notice('This is a local cache plus explicitly added tickers; remaining global peers were not downloaded. Full Download expands the whole universe.',stage='discovery')
             for target,m in result.get('peer_discovery_by_target',{}).items():
                 unresolved=sum(r.get('status')=='unresolved' for r in m.get('local_listing_audit',[]))
                 downloaded=set(prices.columns[prices.notna().any()])
@@ -4600,11 +4620,17 @@ class _DownloadProgress:
 @_wraps(_download_hedge_data_impl)
 def download_hedge_data(*args, verbose=False, progress=None, **kwargs):
     """Compact stage output or a progress callback; verbose=True shows all logs."""
+    return _download_with_progress(_download_hedge_data_impl, *args, verbose=verbose, progress=progress, **kwargs)
+
+
+def _download_with_progress(operation, *args, verbose=False, progress=None, **kwargs):
     if verbose and progress is None:
-        return _download_hedge_data_impl(*args, **kwargs)
+        return operation(*args, **kwargs)
     import io,sys
     from contextlib import redirect_stdout
-    tracker=_DownloadProgress(kwargs.get('target',args[0] if args else ''),progress,sys.stdout)
+    target=kwargs.get('target',args[0] if args else '')
+    if isinstance(target,dict) and 'prices' in target: target=target.get('target_label',target.get('target',''))
+    tracker=_DownloadProgress(target,progress,sys.stdout)
     tracker.update('connect','Opening the Bloomberg connection')
     class Capture(io.StringIO):
         def __init__(self): super().__init__();self.pending=''
@@ -4616,7 +4642,7 @@ def download_hedge_data(*args, verbose=False, progress=None, **kwargs):
             return count
     capture=Capture()
     try:
-        with redirect_stdout(capture): result=_download_hedge_data_impl(*args,progress=tracker.update,**kwargs)
+        with redirect_stdout(capture): result=operation(*args,progress=tracker.update,**kwargs)
     except Exception as err:
         tracker.finish(capture.getvalue(),error=err)
         raise
@@ -4624,6 +4650,142 @@ def download_hedge_data(*args, verbose=False, progress=None, **kwargs):
     tracker.finish(result['download_log'],result=result)
     result['download_progress']=tracker.state
     return result
+
+
+def _download_added_tickers_impl(data, tickers, session=None, same_exchange_only=None,
+                                exclude=None, cache=True, progress=None):
+    """Extend one saved window without refreshing existing prices or discovery.
+
+    Explicit additions are classified; download does not force basket membership.
+    Missing prices remain missing. The original full-download age and coverage
+    claims are retained, including incomplete global discovery.
+    """
+    import copy
+    if not isinstance(data,dict) or not isinstance(data.get('prices'),pd.DataFrame) or data['prices'].empty:
+        raise ValueError('Load or download a dataset before adding tickers.')
+    legs=_coerce_targets(data['target'])[0]
+    requested=[_fmt_bbg_ticker(t) for t in _parse_ticker_list(tickers)]
+    if not requested or any(t is None for t in requested):
+        raise ValueError('Enter full tickers in Force include or Force download, e.g. 1989 HK Equity.')
+    requested=list(dict.fromkeys(requested))
+    prior_exclusions=(data.get('fingerprint') or {}).get('exclude',[])
+    excluded=list(prior_exclusions)+_parse_ticker_list(exclude)
+    conflicts=_exclusion_conflicts(excluded,requested)
+    if conflicts: raise ValueError('Added tickers conflict with Exclude: '+', '.join(conflicts))
+    local_only=data.get('same_exchange_only_download',False) if same_exchange_only is None else bool(same_exchange_only)
+    if local_only:
+        kept,removed=_exchange_filter(requested,legs,True,'added tickers')
+        if removed: raise ValueError('Added tickers conflict with Same listing exchange: '+', '.join(removed))
+    prices=data['prices']
+    available={_fmt_bbg_ticker(t) or t for t in prices if prices[t].notna().any()}
+    wanted=[t for t in requested if t not in available]
+    if not wanted:
+        out=dict(data)
+        out['last_incremental_download']={'requested':requested,'added':[],'missing':[],
+                                          'already_available':requested,'status':'nothing to download'}
+        print('All requested tickers already have prices; no Bloomberg requests made.')
+        return out
+    session=session or get_session()
+    if progress: progress('connect','Bloomberg session ready',status='done')
+    start,end=prices.index.min(),prices.index.max()
+    start_dt,end_dt=start.strftime('%Y%m%d'),end.strftime('%Y%m%d')
+    if progress:
+        progress('discovery','Classifying only the explicitly added tickers')
+        progress('membership','Existing membership snapshots retained',status='skipped')
+        progress('prices',f'{len(wanted)} missing tickers | {start_dt} to {end_dt}')
+    downloaded=bbg_hist(session,wanted,start_dt,end_dt)
+    if isinstance(downloaded,pd.DataFrame) and downloaded.empty:
+        raise ValueError('No added tickers returned usable prices in the cached date range; original cache retained: '+', '.join(wanted))
+    if (not isinstance(downloaded,pd.DataFrame) or not isinstance(downloaded.index,pd.DatetimeIndex)
+            or downloaded.index.has_duplicates or downloaded.columns.has_duplicates):
+        raise ValueError('Added-ticker price response is invalid or has duplicate dates; original cache retained.')
+    downloaded=downloaded.loc[(downloaded.index>=start)&(downloaded.index<=end)]
+    added=[t for t in wanted if t in downloaded and downloaded[t].notna().any()]
+    missing=sorted(set(wanted)-set(added))
+    if not added:
+        raise ValueError('No added tickers returned usable prices in the cached date range; original cache retained: '+', '.join(wanted))
+    downloaded=downloaded[added].sort_index()
+    if progress: progress('prices',f'{len(added)}/{len(wanted)} added tickers returned prices',status='done')
+    errors=[]
+    fields=['GICS_SECTOR_NAME','GICS_INDUSTRY_NAME','GICS_SUB_INDUSTRY_NAME',
+            'BICS_LEVEL_1_SECTOR_NAME','BICS_LEVEL_2_INDUSTRY_GROUP_NAME',
+            'BICS_LEVEL_3_INDUSTRY_NAME','BICS_LEVEL_4_SUB_INDUSTRY_NAME',
+            'SECURITY_TYP','SECURITY_TYP2','ID_BB_COMPANY','NAME']
+    references={t:r for meta in (data.get('peer_discovery_by_target') or {}).values()
+                for t,r in (meta.get('classification_evidence') or {}).items()}
+    ref_names=added+[t for t in legs if t not in references]
+    references.update(_discovery_references(session,ref_names,fields,errors))
+    has_hist=data.get('mktcap_hist_method')!='not requested'
+    packet=_download_quote_metadata(session,downloaded,start_dt,end_dt,has_hist,progress)
+    out=dict(data)
+    for key in ('peer_discovery_by_target','peer_tickers_by_target','sector_stock_tickers_by_target',
+                'peer_sources_by_target','mktcap_usd_mm','mktcap_hist_audit','execution_snapshot',
+                'execution_data_audit','execution_snapshot_dates','fingerprint','discovery_stats'):
+        out[key]=copy.deepcopy(data.get(key) or {})
+    # Replace only unavailable columns; never alter an already usable series.
+    out['prices']=pd.concat([prices.drop(columns=[t for t in prices if (_fmt_bbg_ticker(t) or t) in added]),downloaded],axis=1).sort_index()
+    out['mktcap_usd_mm'].update(packet['mktcap_usd_mm'])
+    old_caps=data.get('mktcap_hist',pd.DataFrame())
+    out['mktcap_hist']=pd.concat([old_caps.drop(columns=[t for t in old_caps if (_fmt_bbg_ticker(t) or t) in added]),packet['mktcap_hist']],axis=1).sort_index()
+    for key in ('errors','missing_currency_or_fx'):
+        out['mktcap_hist_audit'].setdefault(key,[]).extend(packet['mktcap_hist_audit'].get(key,[]))
+    out['execution_snapshot'].update(packet['execution_snapshot'])
+    out['execution_snapshot_dates'].update({t:packet['execution_snapshot_date'] for t in added})
+    out['execution_data_audit'].setdefault('incremental_batches',[]).append(packet['execution_data_audit'])
+    out['execution_data_audit'].setdefault('volume',{}).update(packet['execution_data_audit'].get('volume',{}))
+    independent=set(data.get('non_index_shorts') or [])
+    for target in legs:
+        meta=out['peer_discovery_by_target'].setdefault(target,{})
+        existing=meta.setdefault('classification_evidence',{})
+        existing.update({t:references.get(t,{}) for t in added+[target]})
+        peers,rejected,unknown=_strict_peer_set(existing.get(target,{}),existing,added)
+        sector,rows=_discover_sector_stocks(target,existing,added,meta.get('listing_registry_audit',[]))
+        for key,values in (('peer_tickers_by_target',peers),('sector_stock_tickers_by_target',sector)):
+            out[key][target]=list(dict.fromkeys(out[key].get(target,[])+values))
+        meta['sector_stock_audit']=[r for r in meta.get('sector_stock_audit',[]) if r['ticker'] not in added]+rows
+        meta.setdefault('reference_errors',[]).extend(errors)
+        meta['raw_peers']=sorted(set(meta.get('raw_peers',[]))|set(peers))
+        meta.setdefault('source_candidates',{})['Explicitly added tickers']=sorted(set(meta.get('source_candidates',{}).get('Explicitly added tickers',[]))|set(added))
+        meta.setdefault('incremental_classification',[]).append(dict(verified_peers=peers,sector_stocks=sector,
+            not_strict_peers=rejected,unverified=unknown))
+        out['peer_sources_by_target'].setdefault(target,{}).setdefault('Added verified peers',[]).extend(peers)
+        independent.update(peers+sector)
+        meta['market_cap_filtered']=[t for t in meta.get('market_cap_filtered',[]) if t not in added]
+    out['non_index_shorts']=sorted(independent)
+    out['force_download']=list(dict.fromkeys(list(data.get('force_download') or [])+requested))
+    usable={t for t in out['prices'] if out['prices'][t].notna().any()}
+    out['force_download_missing']=[t for t in out['force_download'] if t not in usable]
+    out['history_scope_excluded']=[t for t in data.get('history_scope_excluded',[]) if t not in added]
+    out['other_exchange_removed']=[t for t in data.get('other_exchange_removed',[]) if t not in added]
+    if data.get('same_exchange_only_download') and not local_only:
+        # The user explicitly chose a partial extension. Permit research on
+        # that available subset, while retaining the incomplete-global notice.
+        out['same_exchange_only_download']=False
+        out['global_peer_download_incomplete']=True
+        out['fingerprint']['same_exchange_only']=False
+    out['exchange_download_counts']={ex:sum(_exch_of(t)==ex for t in usable) for ex in sorted({_exch_of(t) for t in usable})}
+    audit=dict(requested=requested,added=added,missing=missing,already_available=[t for t in requested if t in available],
+               start=start_dt,end=end_dt,status='partial' if missing else 'received',
+               timestamp=pd.Timestamp.now(tz='UTC').isoformat())
+    out['last_incremental_download']=audit
+    out['incremental_downloads']=list(data.get('incremental_downloads') or [])+[audit]
+    out['last_extended_at']=audit['timestamp']
+    out['fingerprint']['force_download']=sorted(out['force_download'])
+    out['fingerprint']['incremental_additions']=sorted(set(data.get('fingerprint',{}).get('incremental_additions',[]))|set(added))
+    if progress: progress('discovery',f'{len(added)} explicit additions classified; full universe not rescanned',status='done')
+    print(f'Added {len(added)} tickers; existing histories and their end date are unchanged.')
+    if missing: print('⚠ No prices for requested additions: '+', '.join(missing))
+    if progress: progress('cache','Saving extended cache' if cache else 'Cache disabled',status='running' if cache else 'skipped')
+    if cache:
+        try: save_hedge_data(out,label=str(out.get('target_label','hedge'))+'-added')
+        except Exception as err: print('⚠ Could not save extended cache; retained in memory: '+str(err))
+    return out
+
+
+def download_added_tickers(data, tickers, *, verbose=False, progress=None, **kwargs):
+    """Download only missing explicit tickers over the loaded dataset's dates."""
+    return _download_with_progress(_download_added_tickers_impl,data,tickers,
+                                   verbose=verbose,progress=progress,**kwargs)
 
 
 def _adf_pvalue(values, **kwargs):
@@ -5899,6 +6061,8 @@ def _run_data_quality(result, data, options):
                discovery.get(leg, {}).get('listing_registry_audit', [])]
     missing_sources = sorted(set(row['source'] for row in sources if row.get('status') != 'received'))
     notes = []
+    if data.get('global_peer_download_incomplete'):
+        notes.append('Only explicitly added tickers supplement the original local cache; global-peer price coverage is incomplete. Full Download expands that universe.')
     if discovery and any(row.get('discovery_version')!=DISCOVERY_VERSION for row in discovery.values()):
         notes.append('Saved universe predates this discovery revision. Download again; re-running this cache cannot discover missing stocks.')
     if any(row.get('direct_peer_error') or row.get('reference_errors') for row in discovery.values()):
@@ -12298,7 +12462,7 @@ def hedge_ui(data=None):
     w_scope_help = W.HTML()
     w_market = W.Checkbox(value=True, description='OPTIONAL: add a local broad-market ETF', indent=False)
     w_peers = W.Text(value='', description='Manual peer list', style=LBL, layout=FULL,
-                     placeholder='Optional for older caches: 2910 TT, 2911 TT')
+                     placeholder='Optional additional stock peers, with exchange codes')
     w_basket_mode = W.Dropdown(options=[('Automatic sizes', 'auto'), ('Require a range or exact size', 'range')],
                                value='auto', description='Basket size', style=LBL, layout=FULL)
     w_basket = W.Text(value='3,5,7', description='Automatic choices', style=LBL, layout=FULL)
@@ -12306,7 +12470,7 @@ def hedge_ui(data=None):
     w_basket_max = W.BoundedIntText(value=7, min=2, max=50, description='Maximum names', style=LBL, layout=HALF)
     w_look = W.Text(value='126,252', description='Lookbacks (days)',
                     style=LBL, layout=FULL)
-    w_force = W.Text(value='', placeholder='0050 TT, 2330 TT',
+    w_force = W.Text(value='', placeholder='Required stock tickers, e.g. 1989 HK Equity',
                      description='Force include', style=LBL, layout=FULL)
     w_excl = W.Text(value='', placeholder='002230, 3156 JP Equity',
                     description='Exclude', style=LBL, layout=FULL)
@@ -12411,6 +12575,8 @@ def hedge_ui(data=None):
     b_dl = W.Button(description='Download from Bloomberg',
                     button_style='warning', icon='cloud-download',
                     layout=W.Layout(width='240px'))
+    b_add = W.Button(description='Download added tickers only',icon='plus',
+                     layout=W.Layout(width='260px'))
     w_expdir = W.Text(value=HEDGE_EXPORT_DIR, description='Export folder',
                       style=LBL, layout=W.Layout(width='620px'))
     w_expcsv = W.Checkbox(value=True, indent=False,
@@ -12419,7 +12585,7 @@ def hedge_ui(data=None):
         H('Cached downloads — reload with zero API calls'),
         HELP('✓ fits the current book · △ stale prices · ✗ a leg is missing'),
         W.HBox([w_cache]), W.HBox([b_load, b_refresh]),
-        H('New download — the only action that touches Bloomberg'),
+        H('Bloomberg downloads'),
         HELP('discovers the universe for the book in the Trade tab, pulls '
              'prices and caps, and caches everything to disk automatically'),
         w_exchange,
@@ -12428,7 +12594,8 @@ def hedge_ui(data=None):
              'Distant-market candidates can switch the run to two-day returns, so R² across the two settings is not directly comparable. '
              'The selected basket can still be entirely local.'),
         w_years, W.HBox([w_pit1, w_pit2]),
-        HELP('Broad universe downloads all discovered candidates allowed by the download filters. Force download adds full tickers even if discovery misses them; analysis eligibility still applies. It does not force them into the basket.'),w_extra,w_download_scope,b_dl,
+        HELP('Broad universe downloads all discovered candidates allowed by the download filters. Force download adds full tickers even if discovery misses them; analysis eligibility still applies. It does not force them into the basket.'),w_extra,w_download_scope,W.HBox([b_dl,b_add]),
+        HELP('Added tickers only reads Force include and Force download. It skips existing price series and adds missing tickers over the loaded cache’s date range, with classification, cap and quote data. It does not refresh existing prices or rescan all peers. Use full Download to update dates or expand the whole universe.'),
         H('Where Export writes'),
         HELP('the Export button writes a Word report (plus weights .csv) '
              'here. If the drive is not mapped on this machine it falls '
@@ -12897,6 +13064,9 @@ def hedge_ui(data=None):
             try:
                 UI_STATE['data'] = load_hedge_data(w_cache.value)
                 UI_STATE['loaded_from'] = w_cache.value
+                UI_STATE['result']=None
+                UI_STATE['report_text']=''
+                UI_STATE['code']=''
                 _status(f"loaded · {UI_STATE['data']['prices'].shape[0]} "
                         f"rows × {UI_STATE['data']['prices'].shape[1]} "
                         f"tickers (no API calls)", 'ok')
@@ -12930,6 +13100,9 @@ def hedge_ui(data=None):
                     same_exchange_only=w_exchange.value,
                     force_download=_ui_list(w_extra.value),download_scope=w_download_scope.value,progress=show_progress)
                 UI_STATE['loaded_from'] = None
+                UI_STATE['result']=None
+                UI_STATE['report_text']=''
+                UI_STATE['code']=''
                 _status(f"download finished · "
                         f"{UI_STATE['data']['prices'].shape[0]} rows × "
                         f"{UI_STATE['data']['prices'].shape[1]} tickers",
@@ -12939,6 +13112,34 @@ def hedge_ui(data=None):
                 _refresh_fit()
             except Exception as e:
                 _status(f"download failed: {e}", 'err')
+
+    def on_add_tickers(_):
+        with out:
+            clear_output()
+            if UI_STATE['data'] is None:
+                _status('Load or download a dataset first.', 'warn')
+                return
+            try:
+                target=_ui_parse_book(w_target.value)
+                if set(_coerce_targets(target)[0])!=set(_coerce_targets(UI_STATE['data']['target'])[0]):
+                    raise ValueError('The target changed. Load matching data or make a full download first.')
+                tickers=(_ui_list(w_extra.value) or [])+(_ui_list(w_force.value) or [])
+                panel=W.HTML();display(panel)
+                def show_progress(state):
+                    panel.value=_download_progress_html(state)
+                    UI_STATE['download_progress']=state
+                updated=download_added_tickers(UI_STATE['data'],tickers,
+                    same_exchange_only=w_exchange.value,exclude=_ui_list(w_excl.value),progress=show_progress)
+                UI_STATE['data']=updated
+                UI_STATE['loaded_from']=None
+                UI_STATE['result']=None  # require a new analysis before exporting revised inputs
+                UI_STATE['report_text']=''
+                UI_STATE['code']=''
+                _status('Added-ticker request finished. Existing price dates retained; run the analysis again.',
+                    'warn' if UI_STATE.get('download_progress',{}).get('status')=='warning' else 'ok')
+                _refresh_cache();_refresh_tier();_refresh_fit()
+            except Exception as err:
+                _status('Added-ticker download failed; original data retained: '+str(err),'err')
 
     def _pre_run():
         if UI_STATE['data'] is None:
@@ -13060,11 +13261,12 @@ def hedge_ui(data=None):
     # [Fix 106] every action goes through _guard: single-flight, buttons
     # disabled for the duration, elapsed time reported. b_refresh and b_code
     # are instant and read-only, so they stay unguarded.
-    _ACTION_BTNS.extend([b_load, b_dl, b_run, b_quick, b_export, b_diagnostics])
+    _ACTION_BTNS.extend([b_load, b_dl, b_add, b_run, b_quick, b_export, b_diagnostics])
     b_load.on_click(_guard(on_load, 'loading cache', 'Load selected'))
     b_refresh.on_click(_refresh_cache)
     b_dl.on_click(_guard(on_download, 'downloading from Bloomberg',
                          'Download from Bloomberg'))
+    b_add.on_click(_guard(on_add_tickers, 'downloading added tickers', 'Download added tickers only'))
     b_run.on_click(_guard(on_run, 'running the hedge', 'RUN HEDGE'))
     b_quick.on_click(_guard(on_quick, 're-hedging', 'RE-HEDGE (fast)'))
     b_export.on_click(_guard(on_export, 'writing the report', 'Export Word'))
@@ -13110,7 +13312,7 @@ def hedge_ui(data=None):
                            'basket_mode': w_basket_mode, 'basket_min': w_basket_min,
                            'basket_max': w_basket_max, 'analysis_window': w_win,
                            'hedge_horizon': w_horizon, 'notional': w_notional,
-                           'target': w_target, 'run_button': b_run,
+                           'target': w_target, 'run_button': b_run, 'add_tickers_button':b_add, 'force_include':w_force,
                            'validation_preview': w_tier, 'form': root}
     display(root)
     return UI_STATE

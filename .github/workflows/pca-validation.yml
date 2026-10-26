@@ -8,6 +8,10 @@ on:
 jobs:
   offline-tests:
     runs-on: ${{ matrix.os }}
+    env:
+      OPENBLAS_NUM_THREADS: '1'
+      OMP_NUM_THREADS: '1'
+      MKL_NUM_THREADS: '1'
     strategy:
       fail-fast: false
       matrix:

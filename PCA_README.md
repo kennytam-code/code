@@ -1,6 +1,15 @@
 # PCA hedge research
 
-The current engine is `pca_hedge_v115_peer_pca_diagnostics.py` and its matching notebook. The filename is retained for existing users; its internal revision is **2026-10-26-v126-market-scope-and-download**. The v103 files are historical and use a different model. Use the current notebook for these changes.
+The current engine is `pca_hedge_v115_peer_pca_diagnostics.py` and its matching notebook. The filename is retained for existing users; its internal revision is **2026-10-26-v127-incremental-download**. The v103 files are historical and use a different model. Use the current notebook for these changes.
+
+v127 adds **Download added tickers only** in Data. It combines Force include and Force download, skips tickers with usable cached prices, and requests only missing instruments over the existing cache’s date range. Classification, current/historical caps, dated cap-FX conversion and quote/volume data are added without rescanning listings or index membership. Existing price values, the full-download age and other coverage claims are preserved. Partial failures keep successful additions and name the missing instruments; a complete failure preserves the original dataset. An unrelated added stock is not automatically a verified peer. Force include still controls basket membership separately.
+
+Adding selected tickers to a local-only dataset with the listing restriction unchecked enables research on the available subset and visibly marks global price coverage incomplete. This also lets you add a local required ticker without repeating the full download. It does not claim to have downloaded all overseas peers. The normal full Download remains necessary to refresh all prices/dates or expand the complete discovered universe. Load, full Download and incremental Download invalidate the old displayed result until another analysis is run.
+
+```python
+data = download_added_tickers(data, ['1989 HK Equity'])
+# Then run find_best_hedge with the updated data and desired force_include.
+```
 
 v126 moves **Same listing exchange only** to Data and defaults it to **unchecked**, permitting verified overseas business peers. Check it to restrict candidates to the target listing market. The form uses one candidate rule: verified local sector stocks plus verified peers (`candidate_scope='related'`). It no longer silently removes distant-time-zone peers. Unchecking a local-only saved download requires downloading again. The selected basket can still be entirely local when those names rank best. Market counts and one-day/two-day return basis are printed; scores with different return bases are not directly comparable.
 
