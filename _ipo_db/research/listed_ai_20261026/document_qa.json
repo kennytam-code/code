@@ -1,0 +1,39 @@
+{
+  "document_sha256": "5ce73d88b0115320baeafa5537d952113debc524ad9f4ca864083a7374c205fc",
+  "parts": 16,
+  "only_changed_parts": [
+    "word/document.xml",
+    "word/_rels/document.xml.rels"
+  ],
+  "tables": 9,
+  "sections": 1,
+  "template_unchanged": true,
+  "python_peak_rss_mib": 38.40625,
+  "arithmetic_check": {
+    "status": "pass",
+    "comparisons": 114,
+    "independent_primary_verification": false,
+    "note": "Recalculation of recorded source inputs, plus separately identified Sina cross-vendor price matches."
+  },
+  "source_integrity_hash_matches": 167,
+  "final_render": {
+    "pages": 8,
+    "all_pages_visually_inspected": true,
+    "clipping_or_overflow": false,
+    "broken_tables_or_missing_glyphs": false,
+    "reference_pages": 5,
+    "reference_diff": "Different content and page count are intentional; same 16-part template, retained typography, Letter geometry and section. Only document body and external link relationships change.",
+    "reviewed_document_sha256": "5ce73d88b0115320baeafa5537d952113debc524ad9f4ca864083a7374c205fc",
+    "date": "2026-10-26",
+    "page_sha256": {
+      "1": "0f80ea940686795d2dbcaea7cac60b6838214d6f1a3144dbfd40f7d993703884",
+      "2": "306765ae9161c229315a351f57569651da62112338715b99620a7760a1d80ccd",
+      "3": "71b593997fc52d5f8716987540d9d63f7f432246d86e9569cbf31349b1817c7a",
+      "4": "bfba10a3974a27506ce63941ccce085598ef0eb0573622841ffb06e8c44d5199",
+      "5": "2028561bb9f11f27f1e974d93b1893e291c2216bf963cfd85c806e9869698515",
+      "6": "7e69b712390705a9710cbe6a2b0e612b6698e351fc48fac4e49db7a7231a249c",
+      "7": "d2db33072aa7a6645267e971e71ecd5d80a0f732b3a1f79b0c093a405c6c582a",
+      "8": "66db25327938ce4c3bb9bf367677ac5191843f14ea866e38848dbf1124a63a84"
+    }
+  }
+}

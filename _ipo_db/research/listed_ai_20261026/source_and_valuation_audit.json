@@ -1,0 +1,1614 @@
+{
+  "as_of": "2026-10-26 Hong Kong close",
+  "template": {
+    "path": "/Users/lemon/Downloads/ipo analysis.docx",
+    "sha256": "ea8859ddd61c5ea574bd69c628c59d2bd737c732afdfa3b68da714587288f899"
+  },
+  "fx": {
+    "cny_per_hkd": 0.85634,
+    "cny_per_usd": 6.7162,
+    "date": "2026-10-26",
+    "basis": "SAFE central parity, not closing spot"
+  },
+  "issuers": {
+    "2635": {
+      "name": "Nuobikan 諾比侃",
+      "price": 5.975,
+      "shares": 395154500,
+      "h_shares": 320834280,
+      "ipo_price_adjusted": 8.0,
+      "list_date": "2025-12-23",
+      "rev25": 498.159,
+      "np25": 117.843,
+      "gp25": 266.186,
+      "cfo25": 85.848,
+      "rev_h125": 231.571,
+      "np_h125": 40.081,
+      "gp_h125": 90.801,
+      "cfo_h125": 84.398,
+      "rev_h126": 306.046,
+      "np_h126": 53.688,
+      "gp_h126": 168.264,
+      "cfo_h126": 26.967,
+      "unlock_h": 266479780,
+      "last_locked": "2026-12-22",
+      "first_released": "2026-12-23",
+      "excluded_unlisted": 74320220,
+      "other_preipo_h": 136900270,
+      "control_h": 129579510,
+      "short_shares_20261016": 0,
+      "fy26_np": null,
+      "fy27_np": null,
+      "adv20_shares": 5176488.0,
+      "adv20_start": "2026-09-25",
+      "equity_hkdm": 2361.0481375,
+      "equity_cnym": 2021.8599620667499,
+      "ltm_rev": 572.634,
+      "ltm_np": 131.45,
+      "ps25": 4.058663924704261,
+      "ltm_ps": 3.5308066968897234,
+      "ltm_pe": 15.381209296818183,
+      "pe26": null,
+      "pe27": null,
+      "unlock_pct_total": 67.43685824152325,
+      "unlock_pct_h": 83.05838765109513,
+      "unlock_adv": 51.47887525287415,
+      "short_pct_total": 0.0,
+      "since_ipo_pct": -25.312500000000004
+    },
+    "3317": {
+      "name": "Xunce 迅策",
+      "price": 65.2,
+      "shares": 330835596,
+      "h_shares": 275316702,
+      "ipo_price_adjusted": 48.8,
+      "list_date": "2025-12-30",
+      "rev25": 1284.657,
+      "np25": -94.061,
+      "gp25": 792.082,
+      "cfo25": -88.84,
+      "rev_h125": 197.845,
+      "np_h125": -89.429,
+      "gp_h125": 131.882,
+      "cfo_h125": -128.114,
+      "rev_h126": 967.021,
+      "np_h126": 72.505,
+      "gp_h126": 580.909,
+      "cfo_h126": -661.209,
+      "unlock_h": 244481106,
+      "last_locked": "2026-12-29",
+      "first_released": "2026-12-30",
+      "excluded_unlisted": 55518894,
+      "other_preipo_h": 174409265,
+      "control_h": 70071841,
+      "short_shares_20261016": 908700,
+      "fy26_np": 57,
+      "fy27_np": 294,
+      "forecast_source": "Guotai Junan 28 September 2026, as labelled by EtNet; original full note unavailable",
+      "adv20_shares": 1096161.1,
+      "adv20_start": "2026-09-25",
+      "equity_hkdm": 21570.4808592,
+      "equity_cnym": 18471.665578967328,
+      "ltm_rev": 2053.8329999999996,
+      "ltm_np": 67.87299999999999,
+      "ps25": 14.37867506966243,
+      "ltm_ps": 8.993752451619645,
+      "ltm_pe": 272.1504218020027,
+      "pe26": 324.0643084029356,
+      "pe27": 62.82879448628343,
+      "unlock_pct_total": 73.89806567247376,
+      "unlock_pct_h": 88.79995446117177,
+      "unlock_adv": 223.03391901062716,
+      "short_pct_total": 0.2746681466525144,
+      "since_ipo_pct": 33.606557377049185
+    },
+    "6600": {
+      "name": "OneRobotics 臥安機器人",
+      "price": 51.15,
+      "shares": 225356100,
+      "h_shares": 225356100,
+      "ipo_price_adjusted": 92.0,
+      "list_date": "2025-12-30",
+      "rev25": 900.56,
+      "np25": -24.676,
+      "gp25": 486.625,
+      "cfo25": 112.933,
+      "rev_h125": 396.294,
+      "np_h125": 27.903,
+      "gp_h125": 214.753,
+      "cfo_h125": 29.167,
+      "rev_h126": 522.386,
+      "np_h126": -35.532,
+      "gp_h126": 263.124,
+      "cfo_h126": -164.655,
+      "unlock_h": 156351550,
+      "last_locked": "2026-12-29",
+      "first_released": "2026-12-30",
+      "excluded_unlisted": 0,
+      "extended_founder_h": 43648450,
+      "founder_last_locked": "2027-06-29",
+      "short_shares_20261016": 308278,
+      "fy26_np": -46,
+      "fy27_np": 28,
+      "fy26_rev": 1412,
+      "fy27_rev": 2045,
+      "forecast_source": "Great Wall Securities 20 October 2026, broker-authored public excerpt; RMBm rounded",
+      "adv20_shares": 227245.8,
+      "adv20_start": "2026-09-25",
+      "equity_hkdm": 11526.964515,
+      "equity_cnym": 9871.0007927751,
+      "ltm_rev": 1026.652,
+      "ltm_np": -88.11099999999999,
+      "ps25": 10.960958506679289,
+      "ltm_ps": 9.614748515344147,
+      "ltm_pe": null,
+      "pe26": "NM",
+      "pe27": 352.5357425991107,
+      "unlock_pct_total": 69.37977272414636,
+      "unlock_pct_h": 69.37977272414636,
+      "unlock_adv": 688.0283375974386,
+      "short_pct_total": 0.13679594206680007,
+      "since_ipo_pct": -44.40217391304348
+    },
+    "6651": {
+      "name": "51WORLD 五一視界",
+      "price": 58.6,
+      "shares": 419469371,
+      "h_shares": 400387563,
+      "ipo_price_adjusted": 37.9,
+      "list_date": "2025-12-30",
+      "rev25": 347.761,
+      "np25": -181.845,
+      "gp25": 104.17,
+      "cfo25": -91.75,
+      "rev_h125": 53.82,
+      "np_h125": -91.12,
+      "gp_h125": 22.127,
+      "cfo_h125": -41.697,
+      "rev_h126": 123.672,
+      "np_h126": -67.572,
+      "gp_h126": 55.386,
+      "cfo_h126": -43.129,
+      "unlock_h": 363299144,
+      "last_locked": "2026-12-29",
+      "first_released": "2026-12-30",
+      "excluded_unlisted": 19081808,
+      "excluded_april_option_shares": 7647619,
+      "sii_h": 79260115,
+      "other_investors_h": 172112117,
+      "short_shares_20261016": 619200,
+      "fy26_np": -154.17,
+      "fy27_np": -247.19,
+      "fy26_rev": 623,
+      "fy27_rev": 1172,
+      "forecast_source": "Huatai 15 September 2026: revenue in broker-authored Futu excerpt; owner profit via EtNet",
+      "newer_forecast": {
+        "broker": "Guosheng 20 October 2026",
+        "fy26_rev": 750,
+        "fy27_rev": 1530,
+        "fy26_adjusted_np": -110,
+        "fy27_adjusted_np": 10,
+        "gaap_np": null
+      },
+      "adv20_shares": 4007071.35,
+      "adv20_start": "2026-09-25",
+      "equity_hkdm": 24580.905140600004,
+      "equity_cnym": 21049.61230810141,
+      "ltm_rev": 417.61300000000006,
+      "ltm_np": -158.297,
+      "ps25": 60.52896186778106,
+      "ltm_ps": 50.40459063319726,
+      "ltm_pe": null,
+      "pe26": "NM",
+      "pe27": "NM",
+      "unlock_pct_total": 86.60921848332043,
+      "unlock_pct_h": 90.73687036577607,
+      "unlock_adv": 90.66450588657474,
+      "short_pct_total": 0.14761506865777813,
+      "since_ipo_pct": 54.61741424802111
+    }
+  },
+  "peers": [
+    {
+      "code": "2121 HK",
+      "name": "AInnovation",
+      "symbol": "hk02121",
+      "price": 3.705,
+      "price_currency": "HKD",
+      "cap_local_m": 2027.47,
+      "cap_cnym": 1736.2036598,
+      "rev25": 1512.558,
+      "financial_currency": "CNY",
+      "np26": null,
+      "np27": null,
+      "broker": null,
+      "forecast_date": null,
+      "fit": "Industrial AI projects; closest H operating model",
+      "forecast_url": null,
+      "shares": null,
+      "ps25": 1.1478592290675795,
+      "pe26": null,
+      "pe27": null,
+      "forecast_basis": "no verified forecast"
+    },
+    {
+      "code": "20 HK",
+      "name": "SenseTime",
+      "symbol": "hk00020",
+      "price": 1.145,
+      "price_currency": "HKD",
+      "cap_local_m": 48383.46,
+      "cap_cnym": 41432.6921364,
+      "rev25": 5014.64,
+      "financial_currency": "CNY",
+      "np26": -442,
+      "np27": -491,
+      "broker": "GTHT",
+      "forecast_date": "2026-09-10",
+      "fit": "Broader AI platform; thematic",
+      "forecast_url": "https://news.futunn.com/post/79129799/sensetime-00020-hk-h1-2026-commentary-system-level-ai-capability",
+      "shares": null,
+      "ps25": 8.262346277379832,
+      "pe26": "NM",
+      "pe27": "NM",
+      "forecast_basis": "reported owner profit, broker-authored excerpt"
+    },
+    {
+      "code": "600728 A",
+      "name": "PCI Technology",
+      "symbol": "sh600728",
+      "price": 4.62,
+      "price_currency": "CNY",
+      "cap_local_m": 9853.0,
+      "cap_cnym": 9853.0,
+      "rev25": 10127.986054,
+      "financial_currency": "CNY",
+      "np26": null,
+      "np27": null,
+      "broker": null,
+      "forecast_date": null,
+      "fit": "Rail / city systems; closest A product overlap",
+      "forecast_url": null,
+      "shares": null,
+      "ps25": 0.9728488909311446,
+      "pe26": null,
+      "pe27": null,
+      "forecast_basis": "no verified forecast"
+    },
+    {
+      "code": "1384 HK",
+      "name": "Deepexi",
+      "symbol": "hk01384",
+      "price": 12.03,
+      "price_currency": "HKD",
+      "cap_local_m": 4196.79,
+      "cap_cnym": 3593.8791486,
+      "rev25": 414.991,
+      "financial_currency": "CNY",
+      "np26": 47,
+      "np27": 146,
+      "broker": "GTJ / EtNet",
+      "forecast_date": "2026-09-20",
+      "fit": "Enterprise data / AI; closest H",
+      "forecast_url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=1384",
+      "shares": null,
+      "ps25": 8.660137565874923,
+      "pe26": 76.4655138,
+      "pe27": 24.615610606849316,
+      "forecast_basis": "vendor-listed owner profit; original adjustment convention unverified"
+    },
+    {
+      "code": "6682 HK",
+      "name": "Phancy",
+      "symbol": "hk06682",
+      "price": 21.68,
+      "price_currency": "HKD",
+      "cap_local_m": 12076.57,
+      "cap_cnym": 10341.649953799999,
+      "rev25": 7135.286,
+      "financial_currency": "CNY",
+      "np26": 141,
+      "np27": 378,
+      "broker": "JPM / EtNet",
+      "forecast_date": "2026-09-23",
+      "fit": "Enterprise decision AI; adjacent",
+      "forecast_url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=6682",
+      "shares": null,
+      "ps25": 1.449367264858059,
+      "pe26": 73.34503513333333,
+      "pe27": 27.35886231164021,
+      "forecast_basis": "vendor-listed owner profit; original adjustment convention unverified"
+    },
+    {
+      "code": "600570 A",
+      "name": "Hundsun",
+      "symbol": "sh600570",
+      "price": 20.84,
+      "price_currency": "CNY",
+      "cap_local_m": 39526.0,
+      "cap_cnym": 39526.0,
+      "rev25": 5783,
+      "financial_currency": "CNY",
+      "np26": 1325,
+      "np27": 1674,
+      "broker": "Soochow",
+      "forecast_date": "2026-08-25",
+      "fit": "Financial software; functional A overlap",
+      "forecast_url": "https://pdf.dfcfw.com/pdf/H3_AP202608261828436963_1.pdf",
+      "shares": null,
+      "ps25": 6.834860798893308,
+      "pe26": 29.830943396226417,
+      "pe27": 23.611708482676224,
+      "forecast_basis": "reported owner profit"
+    },
+    {
+      "code": "2571 HK",
+      "name": "Saimo",
+      "symbol": "hk02571",
+      "price": 16.2,
+      "price_currency": "HKD",
+      "cap_local_m": 2160.0,
+      "cap_cnym": 1849.6944,
+      "rev25": 262.447,
+      "financial_currency": "CNY",
+      "np26": null,
+      "np27": null,
+      "broker": null,
+      "forecast_date": null,
+      "fit": "Auto simulation / testing; closest H",
+      "forecast_url": null,
+      "shares": null,
+      "ps25": 7.047877857243558,
+      "pe26": null,
+      "pe27": null,
+      "forecast_basis": "no verified forecast"
+    },
+    {
+      "code": "68 HK",
+      "name": "Manycore",
+      "symbol": "hk00068",
+      "price": 3.095,
+      "price_currency": "HKD",
+      "cap_local_m": 5342.59,
+      "cap_cnym": 4575.0735206,
+      "rev25": 819.994,
+      "financial_currency": "CNY",
+      "np26": 131,
+      "np27": 127,
+      "broker": "JPM / EtNet",
+      "forecast_date": "2026-09-23",
+      "fit": "Spatial design SaaS; adjacent",
+      "forecast_url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=68",
+      "shares": null,
+      "ps25": 5.579398776820318,
+      "pe26": 34.9242253480916,
+      "pe27": 36.024200949606296,
+      "forecast_basis": "vendor-listed owner profit; original adjustment convention unverified"
+    },
+    {
+      "code": "300036 A",
+      "name": "SuperMap",
+      "symbol": "sz300036",
+      "price": 10.66,
+      "price_currency": "CNY",
+      "cap_local_m": 5253.0,
+      "cap_cnym": 5253.0,
+      "rev25": 1509.117443,
+      "financial_currency": "CNY",
+      "np26": null,
+      "np27": null,
+      "broker": null,
+      "forecast_date": null,
+      "fit": "GIS / digital twins; closest A overlap",
+      "forecast_url": null,
+      "shares": null,
+      "ps25": 3.4808424118122128,
+      "pe26": null,
+      "pe27": null,
+      "forecast_basis": "no verified forecast"
+    },
+    {
+      "code": "668 HK",
+      "name": "Anker H",
+      "symbol": "hk00668",
+      "price": 107.0,
+      "price_currency": "HKD",
+      "cap_local_m": 63069.239622,
+      "cap_cnym": 54008.71265790348,
+      "rev25": 30514.403377,
+      "financial_currency": "CNY",
+      "np26": 3572,
+      "np27": 4147,
+      "broker": "Kaiyuan",
+      "forecast_date": "2026-09-01",
+      "fit": "Smart-home hardware / global distribution",
+      "forecast_url": "https://data.eastmoney.com/report/info/AP202609011828867218.html",
+      "shares": 589432146,
+      "ps25": 1.7699416236534429,
+      "pe26": 15.12002034095842,
+      "pe27": 13.023562251724977,
+      "forecast_basis": "reported owner profit"
+    },
+    {
+      "code": "300866 A",
+      "name": "Anker A",
+      "symbol": "sz300866",
+      "price": 118.82,
+      "price_currency": "CNY",
+      "cap_local_m": 70036.32758772,
+      "cap_cnym": 70036.32758772,
+      "rev25": 30514.403377,
+      "financial_currency": "CNY",
+      "np26": 3572,
+      "np27": 4147,
+      "broker": "Kaiyuan",
+      "forecast_date": "2026-09-01",
+      "fit": "Same issuer / estimates as H",
+      "forecast_url": "https://data.eastmoney.com/report/info/AP202609011828867218.html",
+      "shares": 589432146,
+      "ps25": 2.2951891512487954,
+      "pe26": 19.60703459902576,
+      "pe27": 16.88843202018809,
+      "forecast_basis": "reported owner profit"
+    },
+    {
+      "code": "688169 A",
+      "name": "Roborock",
+      "symbol": "sh688169",
+      "price": 113.5,
+      "price_currency": "CNY",
+      "cap_local_m": 29463.0,
+      "cap_cnym": 29463.0,
+      "rev25": 18695,
+      "financial_currency": "CNY",
+      "np26": 2017,
+      "np27": 2463,
+      "broker": "Guosen",
+      "forecast_date": "2026-10-12",
+      "fit": "Home robots; direct category overlap",
+      "forecast_url": "https://pdf.dfcfw.com/pdf/H3_AP202610121830372456_1.pdf",
+      "shares": null,
+      "ps25": 1.5759828831238298,
+      "pe26": 14.607337630143778,
+      "pe27": 11.962241169305726,
+      "forecast_basis": "reported owner profit"
+    },
+    {
+      "code": "603486 A",
+      "name": "Ecovacs",
+      "symbol": "sh603486",
+      "price": 47.33,
+      "price_currency": "CNY",
+      "cap_local_m": 27505.0,
+      "cap_cnym": 27505.0,
+      "rev25": 19039.6629,
+      "financial_currency": "CNY",
+      "np26": 2110,
+      "np27": 2350,
+      "broker": "Guosen",
+      "forecast_date": "2026-10-13",
+      "fit": "Home robots; direct category overlap",
+      "forecast_url": "https://m.hibor.com.cn/wap_detail.aspx?id=d910e1901e2dcd8b5ba7cbdd03a0cd67",
+      "shares": null,
+      "ps25": 1.4446159128163976,
+      "pe26": 13.035545023696683,
+      "pe27": 11.704255319148936,
+      "forecast_basis": "reported owner profit"
+    },
+    {
+      "code": "2391 HK",
+      "name": "Tuya",
+      "symbol": "hk02391",
+      "price": 12.83,
+      "price_currency": "HKD",
+      "cap_local_m": 7867.98,
+      "cap_cnym": 6737.665993199999,
+      "rev25": 321.791,
+      "financial_currency": "USD",
+      "np26": 67,
+      "np27": 75,
+      "broker": "CICC / EtNet",
+      "forecast_date": "2026-08-29",
+      "fit": "IoT platform, not a robot vendor",
+      "forecast_url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=2391",
+      "shares": null,
+      "ps25": 3.117539494808141,
+      "pe26": 14.973076889161293,
+      "pe27": 13.375948687650753,
+      "forecast_basis": "vendor-listed owner profit; original adjustment convention unverified"
+    },
+    {
+      "code": "9880 HK",
+      "name": "UBTech",
+      "symbol": "hk09880",
+      "price": 68.5,
+      "price_currency": "HKD",
+      "cap_local_m": 34482.99,
+      "cap_cnym": 29529.163656599998,
+      "rev25": 2000.999,
+      "financial_currency": "CNY",
+      "np26": -699,
+      "np27": -280,
+      "broker": "CICC",
+      "forecast_date": "2026-08-29",
+      "fit": "Industrial humanoids; theme only",
+      "forecast_url": "https://news.futunn.com/post/78497794/ubtech-robotics-09880-hk-humanoid-robots-are-ramping-up-production",
+      "shares": null,
+      "ps25": 14.757210601604497,
+      "pe26": "NM",
+      "pe27": "NM",
+      "forecast_basis": "reported owner profit, 14 August introduced; 29 August maintained, public broker excerpts rounded"
+    }
+  ],
+  "quote_snapshots": {
+    "hk02635": {
+      "price": 5.975,
+      "market_cap_local_m": 2361.0499999999997,
+      "timestamp": "2026/10/26 16:08:10"
+    },
+    "hk03317": {
+      "price": 65.2,
+      "market_cap_local_m": 21570.48,
+      "timestamp": "2026/10/26 16:08:12"
+    },
+    "hk06600": {
+      "price": 51.15,
+      "market_cap_local_m": 11526.96,
+      "timestamp": "2026/10/26 16:08:12"
+    },
+    "hk06651": {
+      "price": 58.6,
+      "market_cap_local_m": 24580.91,
+      "timestamp": "2026/10/26 16:08:12"
+    },
+    "hk00020": {
+      "price": 1.145,
+      "market_cap_local_m": 48383.46,
+      "timestamp": "2026/10/26 16:08:11"
+    },
+    "hk06682": {
+      "price": 21.68,
+      "market_cap_local_m": 12076.57,
+      "timestamp": "2026/10/26 16:08:10"
+    },
+    "hk01384": {
+      "price": 12.03,
+      "market_cap_local_m": 4196.79,
+      "timestamp": "2026/10/26 16:08:12"
+    },
+    "hk00068": {
+      "price": 3.095,
+      "market_cap_local_m": 5342.59,
+      "timestamp": "2026/10/26 16:08:11"
+    },
+    "hk02391": {
+      "price": 12.83,
+      "market_cap_local_m": 7867.98,
+      "timestamp": "2026/10/26 16:08:09"
+    },
+    "hk09880": {
+      "price": 68.5,
+      "market_cap_local_m": 34482.99,
+      "timestamp": "2026/10/26 16:08:10"
+    },
+    "hk02432": {
+      "price": 18.56,
+      "market_cap_local_m": 8165.57,
+      "timestamp": "2026/10/26 16:08:12"
+    },
+    "sh600728": {
+      "price": 4.62,
+      "market_cap_local_m": 9853.0,
+      "timestamp": "20261026161454"
+    },
+    "sh600570": {
+      "price": 20.84,
+      "market_cap_local_m": 39526.0,
+      "timestamp": "20261026161446"
+    },
+    "sh688031": {
+      "price": 82.27,
+      "market_cap_local_m": 11119.0,
+      "timestamp": "20261026161451"
+    },
+    "sh688111": {
+      "price": 252.57,
+      "market_cap_local_m": 117196.0,
+      "timestamp": "20261026161449"
+    },
+    "sh688169": {
+      "price": 113.5,
+      "market_cap_local_m": 29463.0,
+      "timestamp": "20261026161445"
+    },
+    "sh603486": {
+      "price": 47.33,
+      "market_cap_local_m": 27505.0,
+      "timestamp": "20261026161443"
+    },
+    "sz300866": {
+      "price": 118.82,
+      "market_cap_local_m": 70036.0,
+      "timestamp": "20261026161451"
+    },
+    "sz300036": {
+      "price": 10.66,
+      "market_cap_local_m": 5253.0,
+      "timestamp": "20261026161421"
+    },
+    "sz300496": {
+      "price": 58.4,
+      "market_cap_local_m": 26964.0,
+      "timestamp": "20261026161445"
+    },
+    "hk02121": {
+      "price": 3.705,
+      "market_cap_local_m": 2027.47,
+      "timestamp": "2026/10/26 16:08:12"
+    },
+    "hk02571": {
+      "price": 16.2,
+      "market_cap_local_m": 2160.0,
+      "timestamp": "2026/10/26 16:08:12"
+    },
+    "hk00668": {
+      "price": 107.0,
+      "market_cap_local_m": 63069.240000000005,
+      "timestamp": "2026/10/26 16:08:12"
+    }
+  },
+  "sources": {
+    "2635-ann.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement.php?code=2635",
+      "bytes": 253446,
+      "sha256": "1faada1fef3f1c2768590644892deeb2ee54bc82233456cd4e7bdcb5c0a49c97"
+    },
+    "3317-ann.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement.php?code=3317",
+      "bytes": 256544,
+      "sha256": "b218f0d7b6c9b1a1a5cf0dd8e6e67d5f9fca48353b647edd9b71dc1cdbb54127"
+    },
+    "6600-ann.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement.php?code=6600",
+      "bytes": 257894,
+      "sha256": "22100f47c0fce8a3a4fe5e8bba7872c80fda0f36cd40b86bd9f02ce7553d7668"
+    },
+    "6651-ann.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement.php?code=6651",
+      "bytes": 254964,
+      "sha256": "5126e3b849ad5b842091076678e72b6b315e2c76192722fa7144b87687bcd431"
+    },
+    "2635-5710850.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5710850&code=2635",
+      "bytes": 133630,
+      "sha256": "590df47fe645c879668387f38b8ec402e94be1ddb9d98213019b17450fb089b4"
+    },
+    "2635-5710836.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5710836&code=2635",
+      "bytes": 194460,
+      "sha256": "10d1d17ca5d59d57063e712a735f2017a45372d33c702774a17ab46f13a85b8c"
+    },
+    "2635-5709620.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5709620&code=2635",
+      "bytes": 201439,
+      "sha256": "07bc910221de6f3100f4bf9444e7fe5703905df12886d2daa88745ff35ccf671"
+    },
+    "2635-5707494.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5707494&code=2635",
+      "bytes": 150430,
+      "sha256": "5c04220ee5a58e3dc0a483dca27d4f20b3bcfab7a01a8d2e7b64a61bd115c977"
+    },
+    "2635-5694503.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5694503&code=2635",
+      "bytes": 314719,
+      "sha256": "ee31a2a9756794955f850d2dec4bcb7b477ba61103f69f5036c811e2f43fa486"
+    },
+    "2635-5679563.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5679563&code=2635",
+      "bytes": 2469575,
+      "sha256": "f66d5dba8d5d9e936fe77727ecbc4c918e8d64a607122ada3e99918fce7b696e"
+    },
+    "2635-5641647.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5641647&code=2635",
+      "bytes": 381828,
+      "sha256": "7e7da1fad6f833336889f678004634329bc5b1efca1b321b7a2a35fe8b980dc8"
+    },
+    "2635-5628265.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5628265&code=2635",
+      "bytes": 68144,
+      "sha256": "6865f40c76309e88a8d5166a37aac0284b619ecfd302ca974a63d4e7da673461"
+    },
+    "2635-5625602.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5625602&code=2635",
+      "bytes": 140221,
+      "sha256": "cfe9412d27e89df7b8e1b62163a6d79256f502ce75d3b8a8ba87cdeda9924422"
+    },
+    "2635-5515169.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5515169&code=2635",
+      "bytes": 113858,
+      "sha256": "a0326547b9625146fcab6c21ca93b8ad19d5ad65319d2acb94dae8eba991c9a2"
+    },
+    "2635-5514932.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5514932&code=2635",
+      "bytes": 113858,
+      "sha256": "a0326547b9625146fcab6c21ca93b8ad19d5ad65319d2acb94dae8eba991c9a2"
+    },
+    "2635-5492049.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5492049&code=2635",
+      "bytes": 5568767,
+      "sha256": "71fc0be1a68adaaebd18ee4fb63542b71ac270ad7be81c5050c9dc0b77a5fb57"
+    },
+    "3317-5701975.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5701975&code=3317",
+      "bytes": 156749,
+      "sha256": "0c5df4510ab6204f619099d678235ef41cb9a378cf243e5f3cee859fee7eaeb7"
+    },
+    "3317-5685222.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5685222&code=3317",
+      "bytes": 9411798,
+      "sha256": "79594bebe7d5ae18c3d7de3a8d777c6ba19f0db3b8a7a2ab869099ba0d898ac6"
+    },
+    "3317-5673147.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5673147&code=3317",
+      "bytes": 773355,
+      "sha256": "5f016b82cbeb6a6b6f2be819548cbc2aff8daee0c5d21df4fdc826355ace94c8"
+    },
+    "3317-5642474.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5642474&code=3317",
+      "bytes": 608160,
+      "sha256": "df7b8c064f44a7476632329485159e06f808dced4c27f989c651ca5c12aeaf88"
+    },
+    "3317-5629604.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5629604&code=3317",
+      "bytes": 72079,
+      "sha256": "a53962eed2e646cc28e8514e8692cb0de665c97bc0ab4f20a658545667d8f8ab"
+    },
+    "3317-5593160.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5593160&code=3317",
+      "bytes": 265577,
+      "sha256": "86c39507e4b675399b2862674e1840bc157517cc5ccc70402fb771943131bd2f"
+    },
+    "3317-5583573.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5583573&code=3317",
+      "bytes": 471997,
+      "sha256": "c1ebbf658bea29c45beb302abeb374ee799aef52781fcf9a4e2aa879fe3df61b"
+    },
+    "6600-5707576.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5707576&code=6600",
+      "bytes": 132558,
+      "sha256": "bd19b5ece857f13ffc21e8208dca3cce4d559df1ff1fb0e8940e5543def08b5e"
+    },
+    "6600-5683211.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5683211&code=6600",
+      "bytes": 2445731,
+      "sha256": "4e6ba46e610ba40b14a832e120e2cce051348801544a478547778d20c9bca78d"
+    },
+    "6600-5677869.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5677869&code=6600",
+      "bytes": 314355,
+      "sha256": "82cc97afccd1bbc5c3ecdb9c101fc55af4b7f33ca6ea08354255b250f896fead"
+    },
+    "6600-5651362.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5651362&code=6600",
+      "bytes": 661916,
+      "sha256": "6d10a4098c95d20726959b72013f03b25248ac3206f25e8cc3175bb212ff2e79"
+    },
+    "6600-5635853.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5635853&code=6600",
+      "bytes": 203683,
+      "sha256": "3c4595b61759db37624b3649bf45203a73e08074b61734cb72e28dbb2f469cf4"
+    },
+    "6600-5579468.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5579468&code=6600",
+      "bytes": 313070,
+      "sha256": "ad5b7b6a1e0733cee75ad2450dc286e573ee9846e0014f7a99e8fe2dd2608ce9"
+    },
+    "6600-5578488.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5578488&code=6600",
+      "bytes": 291111,
+      "sha256": "7959a9710ec16fe7c6ed92eee2e62bd6ef071c71dc8542026d935f64506587f8"
+    },
+    "6651-5720246.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5720246&code=6651",
+      "bytes": 132805,
+      "sha256": "e6936785822dfe4b00518ed72e6ccc423e20f11c0d79364fdb51514b12b13209"
+    },
+    "6651-5697444.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5697444&code=6651",
+      "bytes": 154735,
+      "sha256": "cdad31508183be32324b58e182e7156a16f2682978d3c417296fa37b768252ad"
+    },
+    "6651-5684725.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5684725&code=6651",
+      "bytes": 3904351,
+      "sha256": "003bd1e17e8dca898941eb98281aff519c84a91c2b9d150c7546f848e1c388e7"
+    },
+    "6651-5680615.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5680615&code=6651",
+      "bytes": 130841,
+      "sha256": "eae879b02c7228f685de71cdcd0438587881a854e1141ce37ec527d6b6afb1fe"
+    },
+    "6651-5641909.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5641909&code=6651",
+      "bytes": 174602,
+      "sha256": "50519b00848de2ec67a7673681849b7d159a1c0a231243a200ae101c9c729523"
+    },
+    "6651-5628222.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5628222&code=6651",
+      "bytes": 392888,
+      "sha256": "1711eefde3fb4daa48038b21cad18c41e7552010bd2ad9f7a9558d12715671b0"
+    },
+    "6651-5594297.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5594297&code=6651",
+      "bytes": 182666,
+      "sha256": "ce6aae211744f1e3989d013ac799ab87c7d1db837327dad03df2306d42635ded"
+    },
+    "6651-5594296.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5594296&code=6651",
+      "bytes": 65835,
+      "sha256": "f7c625647b69aab8bba44cf78c62aad2a0b1b9cf5f830ea0d20b2a618a3858ee"
+    },
+    "6651-5593790.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5593790&code=6651",
+      "bytes": 190687,
+      "sha256": "14c777d3e24556fe8ddb1560826f90eccea02cbc0506fffed51e291f01200aa3"
+    },
+    "6651-5583560.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5583560&code=6651",
+      "bytes": 752522,
+      "sha256": "e3c932007e476897dc5bc0f9063ef654557c0e6db1c568a43d3fe2fb1eae3c8a"
+    },
+    "6651-5484104.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_announcement_doc.php?newsid=5484104&code=6651",
+      "bytes": 8434478,
+      "sha256": "d2bd19d2951e4d467ac0da400124ed72f558f02d5e8e9941daf6c44844759c81"
+    },
+    "2635-quote_profit.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=2635",
+      "bytes": 225887,
+      "sha256": "5e1d0c292786ce00811406b9f151e058b08664a595af713300d29a8be918bd67"
+    },
+    "2635-quote_ci_pl.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_pl.php?code=2635",
+      "bytes": 242432,
+      "sha256": "74264574d6c2bdd202fb61e35b5ac7d871217eb1f849f2537a2d9d8e358caf13"
+    },
+    "2635-quote_ci_basicdata.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_basicdata.php?code=2635",
+      "bytes": 232863,
+      "sha256": "3e4812306ecfb754d8c2a189846a575911f7e5cf028871ff430dd6914256ef25"
+    },
+    "3317-quote_profit.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=3317",
+      "bytes": 238784,
+      "sha256": "fc4c6d7bc41662dcab595de48a81000b2083d04bf05428ee9c1e9deb64a5e7f8"
+    },
+    "3317-quote_ci_pl.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_pl.php?code=3317",
+      "bytes": 242507,
+      "sha256": "c8fa5fb0b2fad63d468a495937627cf3e620c127869d70c9ac9176a44847a277"
+    },
+    "3317-quote_ci_basicdata.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_basicdata.php?code=3317",
+      "bytes": 232859,
+      "sha256": "77948234a9d242d332d10087c7bfd6bd307731ed68f880c99fe65478c6c971b7"
+    },
+    "6600-quote_profit.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=6600",
+      "bytes": 238892,
+      "sha256": "2b4c36d67876cccf3432b4aa594e6569d6b993ce124278af8e6be1ddc5db207e"
+    },
+    "6600-quote_ci_pl.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_pl.php?code=6600",
+      "bytes": 242484,
+      "sha256": "931a1c48db4db706a9347781d81836a2163adac2ac80e3ea5bf246ace86b9048"
+    },
+    "6600-quote_ci_basicdata.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_basicdata.php?code=6600",
+      "bytes": 232596,
+      "sha256": "4cf9c0c48dec0e778798f095c048dbc012f71c4aef2f2d538f9b46c9b99e3cc5"
+    },
+    "6651-quote_profit.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=6651",
+      "bytes": 233472,
+      "sha256": "46eeaad8b14a218276ca0db62e3b3ecfcbec9b83bc6f8f6b97c5a3452af1b93c"
+    },
+    "6651-quote_ci_pl.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_pl.php?code=6651",
+      "bytes": 242505,
+      "sha256": "0c26f192c41b9345e33446ff91c310a90d2100acca9b508d673000fbeadee049"
+    },
+    "6651-quote_ci_basicdata.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_basicdata.php?code=6651",
+      "bytes": 232901,
+      "sha256": "5d38fcfd3af2281773d4b190cca5f0fd513fc9051eedace666e9ebf44498aa05"
+    },
+    "0020-quote_profit.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=0020",
+      "bytes": 238844,
+      "sha256": "43a51ee2ca836f1f31cd8f323d1f20ec40138d8776cedf4849f297c48f758d77"
+    },
+    "0020-quote_ci_pl.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_pl.php?code=0020",
+      "bytes": 242659,
+      "sha256": "5983c1b2a6f1c97198f35dcee3f364944086b04eee8a92b21fe7cd5ee1145d85"
+    },
+    "0020-quote_ci_basicdata.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_basicdata.php?code=0020",
+      "bytes": 232917,
+      "sha256": "01fdcc7cdd8098f49f5efab71ae2a601b3241b12ce6524ef065ddbce14b38237"
+    },
+    "6682-quote_profit.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=6682",
+      "bytes": 238688,
+      "sha256": "916bc38218f4436799ab368aab3dc84614112eed6090dd1111b2332ccdc4d143"
+    },
+    "6682-quote_ci_pl.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_pl.php?code=6682",
+      "bytes": 242608,
+      "sha256": "2218bf84a3835a2d6664f83a8268ba59c78e962b21d6c85e88a3ef0b9742248d"
+    },
+    "6682-quote_ci_basicdata.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_basicdata.php?code=6682",
+      "bytes": 232877,
+      "sha256": "ed6dc1cf7235ba41744884a69bd55b1c32b69696950f73c124ffd2a18f306007"
+    },
+    "1384-quote_profit.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=1384",
+      "bytes": 235783,
+      "sha256": "4a39588da8e56154f89ffa061ed3cd8f09ace486c0d4f2ccddf911ea8c3879c0"
+    },
+    "1384-quote_ci_pl.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_pl.php?code=1384",
+      "bytes": 242539,
+      "sha256": "46f594d14d4d192e5f155323fb2a5ee436baaab5656de458f598717592ecff17"
+    },
+    "1384-quote_ci_basicdata.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_basicdata.php?code=1384",
+      "bytes": 232501,
+      "sha256": "d7e2ddc42ede7203e0129dc12aa93ac14f34765a40eecfca9dff772aae60cbde"
+    },
+    "0068-quote_profit.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=0068",
+      "bytes": 234830,
+      "sha256": "a8ac43b87b40df4bf18cc07c7e66b04a3ecf2166c41a7e1e8d574dc3fe2e98d5"
+    },
+    "0068-quote_ci_pl.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_pl.php?code=0068",
+      "bytes": 241741,
+      "sha256": "9a962410f9e970ef5ea4b048eb79631972c93955313136725b1f737d89536c70"
+    },
+    "0068-quote_ci_basicdata.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_basicdata.php?code=0068",
+      "bytes": 232476,
+      "sha256": "3a0b6bff70f2ebf074238f0c00fc42c021c25ef8a2010a9aeab53c22cf8cd285"
+    },
+    "2391-quote_profit.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=2391",
+      "bytes": 234319,
+      "sha256": "aab4a54730628308869512bfb8e0a042697b9ab5fcc84efbba85182b24d796cb"
+    },
+    "2391-quote_ci_pl.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_pl.php?code=2391",
+      "bytes": 242458,
+      "sha256": "b0ca2b169706b8e4a0d03369786833399ecab8b28f2557337f6a3fdda6295705"
+    },
+    "2391-quote_ci_basicdata.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_basicdata.php?code=2391",
+      "bytes": 232799,
+      "sha256": "0a39acc99ae4b00be5f6d36b2318649b018fa4ccc220084ade37fe6bd9cc7f4b"
+    },
+    "9880-quote_profit.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=9880",
+      "bytes": 241649,
+      "sha256": "a2b11c80e2c8793ca45ea71d50dd62e9daf7e77dfb3d4e0008aea681e52f688e"
+    },
+    "9880-quote_ci_pl.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_pl.php?code=9880",
+      "bytes": 242657,
+      "sha256": "875b6d77e77000daa642d1cb77b6becd4f46c642eccaff8b666a6b5036b6d0c7"
+    },
+    "9880-quote_ci_basicdata.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_basicdata.php?code=9880",
+      "bytes": 232879,
+      "sha256": "f1fcb34b43076cd8ae643af43b4a47e484ad72755c5a3119a17646027ee63ff9"
+    },
+    "02432-quote_profit.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=02432",
+      "bytes": 237355,
+      "sha256": "834e26a4e382bee8140cdc13957ba756352912d33d50250345f293dacbc29f8c"
+    },
+    "02432-quote_ci_pl.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_pl.php?code=02432",
+      "bytes": 242452,
+      "sha256": "31838ff95bc99cc83d09390e1fb8536d01c1d6770244196528a6f4439751b94c"
+    },
+    "02432-quote_ci_basicdata.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_basicdata.php?code=02432",
+      "bytes": 232858,
+      "sha256": "99b43c629911ecf2202f6a910112010dd83848d208fe1d7fdf4d163f776ffe8b"
+    },
+    "quotes.txt": {
+      "url": "https://qt.gtimg.cn/q=hk02635,hk03317,hk06600,hk06651,hk00020,hk06682,hk01384,hk00068,hk02391,hk09880,hk02432,sh600728,sh600570,sh688031,sh688111,sh688169,sh603486,sz300866,sz300036,sz300496",
+      "bytes": 9237,
+      "sha256": "40c9602d85d7cde18de4f0890519dc53769c3c19bf4cd727aeb00bb268a8a463"
+    },
+    "fx.html": {
+      "url": "https://www.safe.gov.cn/AppStructured/hlw/RMBQuery.do",
+      "bytes": 36854,
+      "sha256": "fb8826fd6ff8e746a524610683da1e151cd91371c232784c0c3885f914ea1f29"
+    },
+    "02635-2026100901029.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1009/2026100901029.pdf",
+      "bytes": 87547,
+      "sha256": "ad863bc5cd7553bb4bb8456fcb8d830bc744623412222249648bbfd3c468e491"
+    },
+    "02635-2026100901015.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1009/2026100901015.pdf",
+      "bytes": 124077,
+      "sha256": "62cfc94d572bfafba788d8953db67c747ca046b3f908953f4a5c2e5e7d56bde9"
+    },
+    "02635-2026100700958.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1007/2026100700958.pdf",
+      "bytes": 70033,
+      "sha256": "03693ed92a6447ed742a95018ad7ea6cd86a98b43b853d9580fea2a8ac4487ef"
+    },
+    "02635-2026092900023.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0929/2026092900023.pdf",
+      "bytes": 147682,
+      "sha256": "09a9228a103d357bc623dc2e939a154d73c1cd0a6e97a24d06e7e9036ac02fc9"
+    },
+    "02635-2026091600183.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0916/2026091600183.pdf",
+      "bytes": 2123434,
+      "sha256": "aaf36885f02a6dc25194429d0d437242baa30bffe7e45b9bea484f0efce90371"
+    },
+    "02635-2026080601150.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0806/2026080601150.pdf",
+      "bytes": 35919,
+      "sha256": "4220ff4f7211cae71e8da97ac391c45ee2de062e39d395ced98a10deae57fa3e"
+    },
+    "02635-2026051101486.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0511/2026051101486.pdf",
+      "bytes": 35537,
+      "sha256": "30578c97c0a2956917f65ce14499aec58a6fd50cd152a6da94af73a7d391c128"
+    },
+    "02635-2026042805085.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0428/2026042805085.pdf",
+      "bytes": 5144292,
+      "sha256": "afff93d2c7d8f21e7a69b0e63a84781c46cfc2b8cb2bc4699b11306535d744f4"
+    },
+    "02635-2025122201578.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1222/2025122201578.pdf",
+      "bytes": 218207,
+      "sha256": "8e705d711e5ced8c4b1f33d1ace0fced89528c3f5d695376ea13d6fac7d63dff"
+    },
+    "03317-2026100202637.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1002/2026100202637.pdf",
+      "bytes": 72574,
+      "sha256": "3f33273c3823e82d1b592cdf621857a5092f8f5ae3499c141000df00e743293a"
+    },
+    "03317-2026092100985.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0921/2026092100985.pdf",
+      "bytes": 9132003,
+      "sha256": "741f0dffaa9637b870b42a435439083e3261cd8f1f629e19b3d1005cf526281d"
+    },
+    "03317-2026090900997.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0909/2026090900997.pdf",
+      "bytes": 499550,
+      "sha256": "531df70e39eb13b65d9b609c1fc440bedc26831c7769824d2a08ac41695fe480"
+    },
+    "03317-2026071000364.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0710/2026071000364.pdf",
+      "bytes": 65405,
+      "sha256": "beae75c05c66fe0f2de6f805bb0f1d673017660971d2ca0009d9e43b14d26a1e"
+    },
+    "03317-2026070300105.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0703/2026070300105.pdf",
+      "bytes": 151464,
+      "sha256": "55f6b8bf0143290cac1b7ccc576031ae5e7af5401a621de6c972e14eebb4be49"
+    },
+    "03317-2026042900854.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0429/2026042900854.pdf",
+      "bytes": 3774659,
+      "sha256": "7e22331c351733fe290617b66dc4af39215db4cf39b8359bf561d803f853e04f"
+    },
+    "03317-2025122902057.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1229/2025122902057.pdf",
+      "bytes": 1031681,
+      "sha256": "ed5e413fba1146490710d350d84256e0090ef8d28fd879866e7f9ed065b5bb04"
+    },
+    "06600-2026100701040.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1007/2026100701040.pdf",
+      "bytes": 68020,
+      "sha256": "65d935f729c11b75f50f81f13fd08037ec60480647b547c483f7f9138e4b4a18"
+    },
+    "06600-2026091800725.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0918/2026091800725.pdf",
+      "bytes": 2127174,
+      "sha256": "d007df37aabdc61eb5248aab8309447b3f92db8f01d38a04cfa6b47511816adc"
+    },
+    "06600-2026091401199.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0914/2026091401199.pdf",
+      "bytes": 99973,
+      "sha256": "55722a94395391b1fb8bfcc17c2e1d9586141eacbb8a786fadf30550b43babc7"
+    },
+    "06600-2026070100087.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0701/2026070100087.pdf",
+      "bytes": 95094,
+      "sha256": "aa3ff38a27c73d1224925f692100132eeaef63684f38f7b9505ec9544780db10"
+    },
+    "06600-2026063002277.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0630/2026063002277.pdf",
+      "bytes": 97353,
+      "sha256": "7de61e887c6c8051d03da1e05f4d25ab9f85332c4f6f7f13f51d8e27fea756ea"
+    },
+    "06600-2026050800402.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0508/2026050800402.pdf",
+      "bytes": 280894,
+      "sha256": "b3d1d3e5fd1fbb10b14bb895fea1d6f157c42a2bf09d7582b0db8e1d3d87174e"
+    },
+    "06600-2026042904444.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0429/2026042904444.pdf",
+      "bytes": 4417776,
+      "sha256": "6d293e6782db7d7ba217ff559b1e5600bc2206556cacad4213a9ad48dbd83bd6"
+    },
+    "06600-2026012201287.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0122/2026012201287.pdf",
+      "bytes": 134717,
+      "sha256": "84e87b9bd1351756655d5bc2cc8f1e20d3239af4410688df6bd1829913e05b10"
+    },
+    "06600-2025122902399.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1229/2025122902399.pdf",
+      "bytes": 496857,
+      "sha256": "0967c4e7a37262ff9b3424101c3842d792dd76281ee6c36177241fa8dace1d1e"
+    },
+    "06651-2026102200055.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1022/2026102200055.pdf",
+      "bytes": 38478,
+      "sha256": "e1106360c52449d3454e13230cadd4930cea2cdbf4a1e10139d0a3894c8b08e0"
+    },
+    "06651-2026093000998.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0930/2026093000998.pdf",
+      "bytes": 71545,
+      "sha256": "5efa945be7815ddade517e4bcb7633798fb02446bc643fd7b7dbd90e57b90805"
+    },
+    "06651-2026092100462.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0921/2026092100462.pdf",
+      "bytes": 3905020,
+      "sha256": "97e6190aab63739d62fcf65c4a4647c81f159209a5a41098c1ab3409b2be0053"
+    },
+    "06651-2026091601231.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0916/2026091601231.pdf",
+      "bytes": 38492,
+      "sha256": "82d3e7f8af2b6b0da63c1ffd6e1bb3acc59c9cc91473646a19b057d045e7e6bf"
+    },
+    "06651-2026090402061.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0904/2026090402061.pdf",
+      "bytes": 41636,
+      "sha256": "266dc1fc1eecbec563288fc846cc5e9c47af103c1edc639f992b1a8104efc3bf"
+    },
+    "06651-2026082001433.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0820/2026082001433.pdf",
+      "bytes": 48566,
+      "sha256": "ecb9148609ab194e64545b8531f9b9048dccef91b8699a539bcde4b6696703e1"
+    },
+    "06651-2026071001047.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0710/2026071001047.pdf",
+      "bytes": 72621,
+      "sha256": "9b23332a1e784da52ba7058d1ff1a3f500f64fb1b3d174180675542a58e698f0"
+    },
+    "06651-2026070300089.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0703/2026070300089.pdf",
+      "bytes": 494523,
+      "sha256": "1751268a8271013d1b41a996978c3deb37488a3e40e47ddda4c219c3199e9be6"
+    },
+    "06651-2026042403908.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0424/2026042403908.pdf",
+      "bytes": 8308395,
+      "sha256": "9ab5a125af3724293457f06456c1058fb91cf22ca1edd704288746c67cc221bb"
+    },
+    "06651-2025122902393.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1229/2025122902393.pdf",
+      "bytes": 799321,
+      "sha256": "a43d6f3c354dd84b7c9597bf9814cd8a9c3535ad0f50a4c986ca665eda600021"
+    },
+    "short-list.csv": {
+      "url": "https://www.hkex.com.hk/-/media/HKEX-Market/Services/Trading/Securities/Securities-Lists/Designated-Securities-Eligible-for-Short-Selling/ds_list20261023.csv",
+      "bytes": 44885,
+      "sha256": "4e4d26316065061961e0ff17faa88ffdd70bc7841a1034585d0fe58bf12477b8"
+    },
+    "sse-eligible.html": {
+      "url": "https://www.sse.com.cn/services/hkexsc/disclo/eligible/",
+      "bytes": 26569,
+      "sha256": "ee3afc3b2acfbcd40eb0db5f98f3839d7660698865682af20f92b4af8e271a35"
+    },
+    "sfc-20261016.csv": {
+      "url": "https://www.sfc.hk/-/media/EN/pdf/spr/2026/10/16/Short_Position_Reporting_Aggregated_Data_Eng_20261016.csv",
+      "bytes": 211222,
+      "sha256": "d9c2a8c4a37155fea5ac4cd1fc850e610cb1d99dd8c5567d2fb1e247ad05c3f0"
+    },
+    "msci-dates.pdf": {
+      "url": "https://www.msci.com/eqb/pressreleases/archive/ir_dates.pdf",
+      "bytes": 146586,
+      "sha256": "cbeed4eaf555bf1350f81716bb1e9b13ce077802e3346ee5fee50a4af06055a5"
+    },
+    "02635-daily.json": {
+      "url": "https://web.ifzq.gtimg.cn/appstock/app/hkfqkline/get?param=hk02635,day,,,35,qfq",
+      "bytes": 4408,
+      "sha256": "fb03e5217bed4ab0fd39eee5b5f5715410ef05c5d6abdb2fabe179602fbce7fa"
+    },
+    "03317-daily.json": {
+      "url": "https://web.ifzq.gtimg.cn/appstock/app/hkfqkline/get?param=hk03317,day,,,35,qfq",
+      "bytes": 5009,
+      "sha256": "ef173d8aa6cd7d88c30095c3209cead6f275f41955ebe8bc15e1a5cf5009cd6c"
+    },
+    "06600-daily.json": {
+      "url": "https://web.ifzq.gtimg.cn/appstock/app/hkfqkline/get?param=hk06600,day,,,35,qfq",
+      "bytes": 4468,
+      "sha256": "70739a17fc0f9f6886c192e2d36788ed2b1b63887f6c53e8388bc3488a19e150"
+    },
+    "06651-daily.json": {
+      "url": "https://web.ifzq.gtimg.cn/appstock/app/hkfqkline/get?param=hk06651,day,,,35,qfq",
+      "bytes": 4973,
+      "sha256": "fa237c058c9f4c78a18c78d50de36a70a8021679f4b1a422672db462565ef1ad"
+    },
+    "di.html": {
+      "url": "https://di.hkex.com.hk/di/NSSrchCorp.aspx?src=MAIN&lang=EN",
+      "bytes": 24878,
+      "sha256": "3ff539e8a830c1110341e100b03d2c5d734401b2d7d4394bdbe6811ff654082d"
+    },
+    "xueqiu3317.html": {
+      "url": "https://xueqiu.com/6899105006/408182410",
+      "bytes": 110310,
+      "sha256": "13d64aad3c321f7d0b97197a06956e3f2041f21aa92247e970536ac0e83a21cd"
+    },
+    "02635-futu-ratings.html": {
+      "url": "https://www.futunn.com/stock/02635-HK/institutional-ratings",
+      "bytes": 1230727,
+      "sha256": "f546af942b436c16631949762cbe74e7db84d37f54e9aadbed7b333557cd62a3"
+    },
+    "03317-futu-ratings.html": {
+      "url": "https://www.futunn.com/stock/03317-HK/institutional-ratings",
+      "bytes": 1251028,
+      "sha256": "64c00353857aeb95c34203fb4bd28dd0ee4dd5df2658504d0d655dbe84df30f7"
+    },
+    "06600-futu-ratings.html": {
+      "url": "https://www.futunn.com/stock/06600-HK/institutional-ratings",
+      "bytes": 1255691,
+      "sha256": "aacd620c92c6476fcb019b9ca10de77c878011d3390ec3031f1129d6d919688f"
+    },
+    "06651-futu-ratings.html": {
+      "url": "https://www.futunn.com/stock/06651-HK/institutional-ratings",
+      "bytes": 1241594,
+      "sha256": "13a9da9c9c9beaa77631568d7299ff0f5659e51ad5052ce7ed5315a56c8370f7"
+    },
+    "00020-futu-ratings.html": {
+      "url": "https://www.futunn.com/stock/00020-HK/institutional-ratings",
+      "bytes": 1215307,
+      "sha256": "3a51fa667fcfb0d56c959b5ba1fd745030556b49adade9927b87c9152360f4b8"
+    },
+    "06682-futu-ratings.html": {
+      "url": "https://www.futunn.com/stock/06682-HK/institutional-ratings",
+      "bytes": 1034216,
+      "sha256": "0e2e61b0307f6ed4edca0a31cd56aa699f4ae5cba64c54612048a38e5e4aed04"
+    },
+    "01384-futu-ratings.html": {
+      "url": "https://www.futunn.com/stock/01384-HK/institutional-ratings",
+      "bytes": 1240230,
+      "sha256": "e496b51455614613eda15b4f188a28842541c06d0d172e3e1e3a4078955c2a41"
+    },
+    "00068-futu-ratings.html": {
+      "url": "https://www.futunn.com/stock/00068-HK/institutional-ratings",
+      "bytes": 1238541,
+      "sha256": "7cbc6cbacaf29e66096c756f879474851b015b6012cfbae323b6a34a0824faa2"
+    },
+    "02391-futu-ratings.html": {
+      "url": "https://www.futunn.com/stock/02391-HK/institutional-ratings",
+      "bytes": 1235894,
+      "sha256": "6e234f7ad35dc4fe27549b3c226e9ead3bf5f49f5c24166e505063d7e691ebc9"
+    },
+    "09880-futu-ratings.html": {
+      "url": "https://www.futunn.com/stock/09880-HK/institutional-ratings",
+      "bytes": 1226623,
+      "sha256": "b6c4e6cc55365ea78dc589b58e700860972c5ba0b3657eb9df86fd02d85b5843"
+    },
+    "02635-form-DA20261014E00585.html": {
+      "url": "https://di.hkex.com.hk/di/NSForm3A.aspx?fn=DA20261014E00585&sa2=an&sid=527649&corpn=Nuobikan+AI+Technology+(Chengdu)+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=02635&src=MAIN&lang=EN&g_lang=en&",
+      "bytes": 46646,
+      "sha256": "12d749a3335183e95549402ae5918f8676adf7f7f64f2a37f580864a0e6bc310"
+    },
+    "02635-form-IS20261014E00616.html": {
+      "url": "https://di.hkex.com.hk/di/NSForm1.aspx?fn=IS20261014E00616&sa2=an&sid=527649&corpn=Nuobikan+AI+Technology+(Chengdu)+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=02635&src=MAIN&lang=EN&g_lang=en&",
+      "bytes": 40894,
+      "sha256": "de778373ad7d61685fc181da7d2b84e0d4c691cd16f94afb56f84be0b60c7a44"
+    },
+    "02635-form-DA20261014E00641.html": {
+      "url": "https://di.hkex.com.hk/di/NSForm3A.aspx?fn=DA20261014E00641&sa2=an&sid=527649&corpn=Nuobikan+AI+Technology+(Chengdu)+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=02635&src=MAIN&lang=EN&g_lang=en&",
+      "bytes": 58084,
+      "sha256": "efc5f3ac4cbaff7cb84b3e533458bacbe840d87a7b8a65bb5d612b938d14b424"
+    },
+    "02635-form-IS20261014E00624.html": {
+      "url": "https://di.hkex.com.hk/di/NSForm1.aspx?fn=IS20261014E00624&sa2=an&sid=527649&corpn=Nuobikan+AI+Technology+(Chengdu)+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=02635&src=MAIN&lang=EN&g_lang=en&",
+      "bytes": 40893,
+      "sha256": "0cbe4eada32afdbfd9c0f8eee4d5f13f7fb1b3c763982f9bd8ae993073f9575b"
+    },
+    "02635-form-DA20261014E00601.html": {
+      "url": "https://di.hkex.com.hk/di/NSForm3A.aspx?fn=DA20261014E00601&sa2=an&sid=527649&corpn=Nuobikan+AI+Technology+(Chengdu)+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=02635&src=MAIN&lang=EN&g_lang=en&",
+      "bytes": 43702,
+      "sha256": "5d1a0d8769299f7459a2f1b7ca2d8175d018810629600ae4516119431c307bc8"
+    },
+    "02635-form-CS20261014E00573.html": {
+      "url": "https://di.hkex.com.hk/di/NSForm2.aspx?fn=CS20261014E00573&sa2=an&sid=527649&corpn=Nuobikan+AI+Technology+(Chengdu)+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=02635&src=MAIN&lang=EN&g_lang=en&",
+      "bytes": 41409,
+      "sha256": "e08f152d449dec029a428bd6d34d74a3decc272d2d9bbfdbed8dba3302e6b725"
+    },
+    "02635-form-CS20261014E00580.html": {
+      "url": "https://di.hkex.com.hk/di/NSForm2.aspx?fn=CS20261014E00580&sa2=an&sid=527649&corpn=Nuobikan+AI+Technology+(Chengdu)+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=02635&src=MAIN&lang=EN&g_lang=en&",
+      "bytes": 41379,
+      "sha256": "eef557333e0c1b35ff67c9c9bb13ccb2bee855247f893d68ba29f67edc7df9a3"
+    },
+    "03317-form-CS20260717E00035.html": {
+      "url": "https://di.hkex.com.hk/di/NSForm2.aspx?fn=CS20260717E00035&sa2=an&sid=527996&corpn=Shenzhen+Xunce+Technology+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=03317&src=MAIN&lang=EN&g_lang=en&",
+      "bytes": 36693,
+      "sha256": "c843ef509072e92dabb271eb8634e992f561d74a5e7b86b157d22459485db2c5"
+    },
+    "03317-form-CS20260720E00062.html": {
+      "url": "https://di.hkex.com.hk/di/NSForm2.aspx?fn=CS20260720E00062&sa2=an&sid=527996&corpn=Shenzhen+Xunce+Technology+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=03317&src=MAIN&lang=EN&g_lang=en&",
+      "bytes": 39097,
+      "sha256": "e680035ae5ed98bdde0b5ad092ad88f7885832162ed47cca33833e1c72db1c9f"
+    },
+    "03317-form-CS20260720E00063.html": {
+      "url": "https://di.hkex.com.hk/di/NSForm2.aspx?fn=CS20260720E00063&sa2=an&sid=527996&corpn=Shenzhen+Xunce+Technology+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=03317&src=MAIN&lang=EN&g_lang=en&",
+      "bytes": 42103,
+      "sha256": "3c39eaa842ddb34b4ca7c3e76e7da1c329a9a5aa4d0b477f59c98adf7214c093"
+    },
+    "03317-form-CS20260715E00775.html": {
+      "url": "https://di.hkex.com.hk/di/NSForm2.aspx?fn=CS20260715E00775&sa2=an&sid=527996&corpn=Shenzhen+Xunce+Technology+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=03317&src=MAIN&lang=EN&g_lang=en&",
+      "bytes": 62661,
+      "sha256": "be2dc2071dadb3ecfd9a57b76347a10dcdec023fdf31d096e3b6e5ecf0f5bf7a"
+    },
+    "06651-form-DA20260715E00184.html": {
+      "url": "https://di.hkex.com.hk/di/NSForm3A.aspx?fn=DA20260715E00184&sa2=an&sid=527997&corpn=Beijing+51WORLD+Digital+Twin+Technology+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=06651&src=MAIN&lang=EN&g_lang=en&",
+      "bytes": 41058,
+      "sha256": "a51ee8fc504ce4b0c9d07f7921485d394205bdb06860311a15a4a0d95fe89448"
+    },
+    "06651-form-CS20260714E00458.html": {
+      "url": "https://di.hkex.com.hk/di/NSForm2.aspx?fn=CS20260714E00458&sa2=an&sid=527997&corpn=Beijing+51WORLD+Digital+Twin+Technology+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=06651&src=MAIN&lang=EN&g_lang=en&",
+      "bytes": 36558,
+      "sha256": "16a4fe08ee26cd9832eb5016ba7218ab7b36f977a3edb8b2a1bdb9eb9526c25e"
+    },
+    "06651-form-DA20260715E00198.html": {
+      "url": "https://di.hkex.com.hk/di/NSForm3A.aspx?fn=DA20260715E00198&sa2=an&sid=527997&corpn=Beijing+51WORLD+Digital+Twin+Technology+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=06651&src=MAIN&lang=EN&g_lang=en&",
+      "bytes": 39590,
+      "sha256": "58ea53e5bae5fc30e5bf3fc23874b4cb2f79f5500276d20a6323b4074f54ec3d"
+    },
+    "06651-form-DA20260715E00203.html": {
+      "url": "https://di.hkex.com.hk/di/NSForm3A.aspx?fn=DA20260715E00203&sa2=an&sid=527997&corpn=Beijing+51WORLD+Digital+Twin+Technology+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=06651&src=MAIN&lang=EN&g_lang=en&",
+      "bytes": 39668,
+      "sha256": "e54fd42d2eb370c46a3c62a7e080e5a30cde2ac531f212115f394c1b014ce50a"
+    },
+    "00668-peer-2026101600304.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1016/2026101600304.pdf",
+      "bytes": 40401,
+      "sha256": "ecd46bf790ba5e97850cb785edfb781aa48c8d51ba8f219f2a8a5d78b5b2a316"
+    },
+    "00668-peer-2026100700758.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1007/2026100700758.pdf",
+      "bytes": 73789,
+      "sha256": "6bed7ca8c7ed12a796edf5ade508be610756954462111332bb9fb7611c54fcac"
+    },
+    "00668-peer-2026081800508.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0818/2026081800508.pdf",
+      "bytes": 43756,
+      "sha256": "83e3198a5bc82057642f737eb316edf54e4b45932b758eb1bc5c3e1c8e3a3468"
+    },
+    "02121-peer-2026032500859.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0325/2026032500859.pdf",
+      "bytes": 3152068,
+      "sha256": "a01de7d036cee33576ec233a97181ac175ef3f231ca38cee7326e86fa663cafc"
+    },
+    "02571-peer-2026033004374.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0330/2026033004374.pdf",
+      "bytes": 752302,
+      "sha256": "8ce20b7ed0165f72c639f29baf602b80fd1c99bfe38107fe482381b198af393e"
+    },
+    "00020-peer-2026032400794.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0324/2026032400794.pdf",
+      "bytes": 346024,
+      "sha256": "a998440c7b68ccaf95357647cf43a8ffc354343d7333bb65b40d3a3c39e10106"
+    },
+    "06682-peer-2026033001384.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0330/2026033001384.pdf",
+      "bytes": 162842,
+      "sha256": "83a48af3f6eff7bee58c24238cbfe6d26a4e078c00aee6890ad90127821b985c"
+    },
+    "01384-peer-2026032000842.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0320/2026032000842.pdf",
+      "bytes": 118819,
+      "sha256": "bd97c4aec501fc0509adcfada55cf0eb2208c786bc5a6b76e8c2b16e446ce55e"
+    },
+    "02391-peer-2026030300005.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0303/2026030300005.pdf",
+      "bytes": 112538,
+      "sha256": "a3cfd649add4d9b6b55d6aca7d1239a79869963db43bd0c08ad7111f16386269"
+    },
+    "09880-peer-2026033102607.pdf": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0331/2026033102607.pdf",
+      "bytes": 916657,
+      "sha256": "eb6ff552c00b7d9501c0da489a0a8f455d6f9d6117833ee08df536ff07228039"
+    },
+    "anker-quote.txt": {
+      "url": "https://qt.gtimg.cn/q=hk00668",
+      "bytes": 413,
+      "sha256": "c0a7ead6e47ffe29ff515f8e1917d11315951bef1d1894bd0abde25d976f445e"
+    },
+    "anker-basic.html": {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_basicdata.php?code=668",
+      "bytes": 232866,
+      "sha256": "3e4658f9d75a53e1563220a784ed0e6d250d2086653a4c1e9a951c6724708695"
+    },
+    "00020-broker0.html": {
+      "url": "https://news.futunn.com/post/79129799/sensetime-00020-hk-h1-2026-commentary-system-level-ai-capability",
+      "bytes": 1313480,
+      "sha256": "6c30d34037c8d6ff504e97aeb67594a31c081f463fe56e7d0f5984bb9f8269e2"
+    },
+    "00020-broker1.html": {
+      "url": "https://news.futunn.com/post/78540374/sensetime-w-00020-hk-the-share-of-generative-ai-continues",
+      "bytes": 1312734,
+      "sha256": "4d5abf5111ea90234be1b841b90ef683bbf7f81670496f24da28c665dacf51db"
+    },
+    "06682-broker2.html": {
+      "url": "https://news.futunn.com/post/78241373/paradigm-intelligence-06682-hk-turned-around-losses-as-scheduled-in",
+      "bytes": 1312333,
+      "sha256": "717026ad351ad168872507f3e86a04bbb203cf0e66c968bbf1d38cced0bb4e0b"
+    },
+    "06682-broker3.html": {
+      "url": "https://news.futunn.com/post/76762755/paradigm-intelligence-06682-hk-h1-2026-earnings-forecast-shows-turnaround",
+      "bytes": 1312594,
+      "sha256": "8fd68a6c4a1fd00940cdcd93dede1dd44f2a73ff92471d54891cb79ae9b4b753"
+    },
+    "01384-broker4.html": {
+      "url": "https://news.futunn.com/post/79507466/dipu-technology-1384-hk-enterprise-grade-ai-os-sees-accelerated",
+      "bytes": 1312661,
+      "sha256": "3eb0fc6f9efb5becc76d1e1e100c6a68a73ee1259812bc45211ecfdff614839e"
+    },
+    "00068-broker5.html": {
+      "url": "https://news.futunn.com/post/78955597/manycore-tech-00068-hk-building-a-spatial-intelligence-model-data",
+      "bytes": 1313828,
+      "sha256": "06cb66bdc30753f00996a71b14c242f111cb58f9be291e5a50f59b0db5a98d35"
+    },
+    "00068-broker6.html": {
+      "url": "https://news.futunn.com/post/73506662/guotai-haitong-securities-initiated-coverage-on-qunhe-technology-00068-hk",
+      "bytes": 1317922,
+      "sha256": "0261e0791862407e3946ca86181d72314cb9f5d06407f5597a432453d154c450"
+    },
+    "09880-broker7.html": {
+      "url": "https://news.futunn.com/post/78497794/ubtech-robotics-09880-hk-humanoid-robots-are-ramping-up-production",
+      "bytes": 1311961,
+      "sha256": "14f39a4aa3471b7e9f4081dc13c3b380be837dab9e95aa19fdd12222224138aa"
+    },
+    "09880-broker8.html": {
+      "url": "https://news.futunn.com/post/77698561/ubtech-robotics-9880-hk-mass-production-of-humanoid-robots-is",
+      "bytes": 1312030,
+      "sha256": "1b13cb0d8022c16425947e0242d025d149877e548cd44072ec9c84b597e93311"
+    }
+  },
+  "di_source_urls": {
+    "02635-di-notices-0": "https://di.hkex.com.hk/di/NSAllFormList.aspx?sa2=an&sid=527649&corpn=Nuobikan+AI+Technology+(Chengdu)+Co.%2c+Ltd.++-+H+Shares&sd=01/07/2026&ed=26/10/2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=02635&src=MAIN&lang=EN&g_lang=en&",
+    "02635-di-notices-1": "https://di.hkex.com.hk/di/NSAllFormList.aspx?sa2=an&sid=527649&corpn=Nuobikan+AI+Technology+(Chengdu)+Co.%2c+Ltd.++-+Domestic+Shares&sd=01/07/2026&ed=26/10/2026&cid=4&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=02635&src=MAIN&lang=EN&g_lang=en&",
+    "03317-di-notices-0": "https://di.hkex.com.hk/di/NSAllFormList.aspx?sa2=an&sid=527996&corpn=Shenzhen+Xunce+Technology+Co.%2c+Ltd.++-+H+Shares&sd=01/07/2026&ed=26/10/2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=03317&src=MAIN&lang=EN&g_lang=en&",
+    "03317-di-notices-1": "https://di.hkex.com.hk/di/NSAllFormList.aspx?sa2=an&sid=527996&corpn=Shenzhen+Xunce+Technology+Co.%2c+Ltd.++-+Others&sd=01/07/2026&ed=26/10/2026&cid=99&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=03317&src=MAIN&lang=EN&g_lang=en&",
+    "06600-di-notices-0": "https://di.hkex.com.hk/di/NSAllFormList.aspx?sa2=an&sid=528001&corpn=OneRobotics+(Shenzhen)+Co.%2c+Ltd.++-+H+Shares&sd=01/07/2026&ed=26/10/2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=06600&src=MAIN&lang=EN&g_lang=en&",
+    "06651-di-notices-0": "https://di.hkex.com.hk/di/NSAllFormList.aspx?sa2=an&sid=527997&corpn=Beijing+51WORLD+Digital+Twin+Technology+Co.%2c+Ltd.++-+H+Shares&sd=01/07/2026&ed=26/10/2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=06651&src=MAIN&lang=EN&g_lang=en&",
+    "06651-di-notices-1": "https://di.hkex.com.hk/di/NSAllFormList.aspx?sa2=an&sid=527997&corpn=Beijing+51WORLD+Digital+Twin+Technology+Co.%2c+Ltd.++-+Domestic+Shares&sd=01/07/2026&ed=26/10/2026&cid=4&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=06651&src=MAIN&lang=EN&g_lang=en&"
+  },
+  "di_form_urls": {
+    "02635-form-DA20261014E00585.html": "https://di.hkex.com.hk/di/NSForm3A.aspx?fn=DA20261014E00585&sa2=an&sid=527649&corpn=Nuobikan+AI+Technology+(Chengdu)+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=02635&src=MAIN&lang=EN&g_lang=en&",
+    "02635-form-IS20261014E00616.html": "https://di.hkex.com.hk/di/NSForm1.aspx?fn=IS20261014E00616&sa2=an&sid=527649&corpn=Nuobikan+AI+Technology+(Chengdu)+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=02635&src=MAIN&lang=EN&g_lang=en&",
+    "02635-form-DA20261014E00641.html": "https://di.hkex.com.hk/di/NSForm3A.aspx?fn=DA20261014E00641&sa2=an&sid=527649&corpn=Nuobikan+AI+Technology+(Chengdu)+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=02635&src=MAIN&lang=EN&g_lang=en&",
+    "02635-form-IS20261014E00624.html": "https://di.hkex.com.hk/di/NSForm1.aspx?fn=IS20261014E00624&sa2=an&sid=527649&corpn=Nuobikan+AI+Technology+(Chengdu)+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=02635&src=MAIN&lang=EN&g_lang=en&",
+    "02635-form-DA20261014E00601.html": "https://di.hkex.com.hk/di/NSForm3A.aspx?fn=DA20261014E00601&sa2=an&sid=527649&corpn=Nuobikan+AI+Technology+(Chengdu)+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=02635&src=MAIN&lang=EN&g_lang=en&",
+    "02635-form-CS20261014E00573.html": "https://di.hkex.com.hk/di/NSForm2.aspx?fn=CS20261014E00573&sa2=an&sid=527649&corpn=Nuobikan+AI+Technology+(Chengdu)+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=02635&src=MAIN&lang=EN&g_lang=en&",
+    "02635-form-CS20261014E00580.html": "https://di.hkex.com.hk/di/NSForm2.aspx?fn=CS20261014E00580&sa2=an&sid=527649&corpn=Nuobikan+AI+Technology+(Chengdu)+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=02635&src=MAIN&lang=EN&g_lang=en&",
+    "03317-form-CS20260717E00035.html": "https://di.hkex.com.hk/di/NSForm2.aspx?fn=CS20260717E00035&sa2=an&sid=527996&corpn=Shenzhen+Xunce+Technology+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=03317&src=MAIN&lang=EN&g_lang=en&",
+    "03317-form-CS20260720E00062.html": "https://di.hkex.com.hk/di/NSForm2.aspx?fn=CS20260720E00062&sa2=an&sid=527996&corpn=Shenzhen+Xunce+Technology+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=03317&src=MAIN&lang=EN&g_lang=en&",
+    "03317-form-CS20260720E00063.html": "https://di.hkex.com.hk/di/NSForm2.aspx?fn=CS20260720E00063&sa2=an&sid=527996&corpn=Shenzhen+Xunce+Technology+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=03317&src=MAIN&lang=EN&g_lang=en&",
+    "03317-form-CS20260715E00775.html": "https://di.hkex.com.hk/di/NSForm2.aspx?fn=CS20260715E00775&sa2=an&sid=527996&corpn=Shenzhen+Xunce+Technology+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=03317&src=MAIN&lang=EN&g_lang=en&",
+    "06651-form-DA20260715E00184.html": "https://di.hkex.com.hk/di/NSForm3A.aspx?fn=DA20260715E00184&sa2=an&sid=527997&corpn=Beijing+51WORLD+Digital+Twin+Technology+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=06651&src=MAIN&lang=EN&g_lang=en&",
+    "06651-form-CS20260714E00458.html": "https://di.hkex.com.hk/di/NSForm2.aspx?fn=CS20260714E00458&sa2=an&sid=527997&corpn=Beijing+51WORLD+Digital+Twin+Technology+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=06651&src=MAIN&lang=EN&g_lang=en&",
+    "06651-form-DA20260715E00198.html": "https://di.hkex.com.hk/di/NSForm3A.aspx?fn=DA20260715E00198&sa2=an&sid=527997&corpn=Beijing+51WORLD+Digital+Twin+Technology+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=06651&src=MAIN&lang=EN&g_lang=en&",
+    "06651-form-DA20260715E00203.html": "https://di.hkex.com.hk/di/NSForm3A.aspx?fn=DA20260715E00203&sa2=an&sid=527997&corpn=Beijing+51WORLD+Digital+Twin+Technology+Co.%2c+Ltd.++-+H+Shares&sd=01%2f07%2f2026&ed=26%2f10%2f2026&cid=2&sa1=cl&scsd=01%2f07%2f2026&sced=26%2f10%2f2026&sc=06651&src=MAIN&lang=EN&g_lang=en&"
+  },
+  "methodology": [
+    "P/E uses reported owner profit for unmarked forecasts. EtNet rows are indicative vendor owner-profit estimates whose original broker adjustment conventions were not independently verified; marked with a dagger in the brief. Adjusted estimates are separately labelled and never substituted into reported rows.",
+    "Selected dated estimates, not consensus. No half-year annualisation.",
+    "Current issued shares are used without assuming conversion of out-of-money CBs. Anker H/A line-implied whole-company values use identical total shares and earnings.",
+    "Primary annual sales cross-checks cover targets and AInnovation, Saimo, SenseTime, Phancy, Deepexi, Tuya, UBTech. Manycore FY25 sales remain EtNet-sourced. A peer figures are from issuer annual filings or dated original broker tables/excerpts.",
+    "Unlock amounts cover identifiable original pre-IPO H holdings only. Non-H holdings, post-IPO options and OneRobotics founder extension are excluded where specified. These are release from identified IPO restrictions, not a prediction of selling or exemption from other insider rules.",
+    "SFC observation is 16 October, not contemporaneous borrow availability. All four are on HKEX designated short-sale list effective 23 October.",
+    "Official title search covers disclosures 1 December 2025 to 26 October 2026. DI search covers 1 July to 26 October 2026; subthreshold sales need not generate a DI filing."
+  ],
+  "limitations": [
+    "No live Bloomberg or prime-broker borrow run.",
+    "Full Xueqiu articles were not accessible for every issuer; accessible 51WORLD article was read, Xunce search excerpts treated as leads only. Futu broker-authored excerpts read in full; not a retail sentiment poll.",
+    "Selected EtNet forward owner-profit estimates cannot be guaranteed to share all original broker adjustment conventions; exact original notes not available. They are labelled vendor forecasts.",
+    "Saimo quote 16.20 independently matched Tencent/Sina but reported zero trades on 26 October; indicative valuation reference, not executable hedge.",
+    "All four historically admitted to Southbound; current vendor eligibility flags match. Dynamic exchange current list was not downloaded in full. No new admission catalyst is assumed."
+  ],
+  "additional_sources": {
+    "hstech_rules": "https://www.hsi.com.hk/content/dam/wpb/hsil/index/methodologies/zh_hk/hstech/IM_hstech.pdf",
+    "hstech_candidate": "https://shentonresearch.com/research/hs-tech-dec-2026-index-rebalance-forecast.html",
+    "hstech_calendar": "https://www.aastocks.com/en/mobile/News.aspx?NewsID=NOW.1547566&NewsSource=HK6&NewsType=",
+    "msci_calendar": "https://www.msci.com/eqb/pressreleases/archive/ir_dates.pdf",
+    "southbound_2635": "https://www.sse.com.cn/services/hkexsc/disclo/announ/c/c_20260417_10815535.shtml",
+    "southbound_march": "https://www.nbd.com.cn/articles/2026-03-09/4284577.html",
+    "xueqiu_51world": "https://www.xueqiu.com/3798919683/409680011",
+    "xueqiu_xunce_excerpt": "https://xueqiu.com/1160725247/404133965",
+    "guosheng_51world": "https://news.futunn.com/post/1001662516/wuyi-shijie-6651-hk-from-digital-twins-to-physical-ai",
+    "huatai_51world": "https://news.futunn.com/post/79329214/wuyi-shijie-6651-hk-physical-ai-platform-accelerates-its-rise",
+    "gtj_xunce": "https://news.futunn.com/post/78532225/xunce-3317-hk-2026-interim-results-review-revenue-soars-profit",
+    "greatwall_onerobotics": "https://www.gelonghui.com/news/5327914",
+    "nuobikan_marketshare": "https://www.nbd.com.cn/articles/2025-12-11/4177689.html",
+    "nuobikan_broker": "https://www.fxbaogao.com/detail/5371640",
+    "supermap_annual": "https://static.cninfo.com.cn/finalpage/2026-04-17/1225110824.PDF",
+    "pci_annual": "https://paper.cnstock.com/html/2026-04/10/content_2198169.htm",
+    "anker_annual": "https://epaper.stcn.com/pic/202604/10/cf177048750b409d8c9d9f747e8527e5.pdf",
+    "anker_price_independent": "https://cn.investing.com/equities/anker-innovations-tech-historical-data",
+    "00020-broker0.html": "https://news.futunn.com/post/79129799/sensetime-00020-hk-h1-2026-commentary-system-level-ai-capability",
+    "00020-broker1.html": "https://news.futunn.com/post/78540374/sensetime-w-00020-hk-the-share-of-generative-ai-continues",
+    "06682-broker2.html": "https://news.futunn.com/post/78241373/paradigm-intelligence-06682-hk-turned-around-losses-as-scheduled-in",
+    "06682-broker3.html": "https://news.futunn.com/post/76762755/paradigm-intelligence-06682-hk-h1-2026-earnings-forecast-shows-turnaround",
+    "01384-broker4.html": "https://news.futunn.com/post/79507466/dipu-technology-1384-hk-enterprise-grade-ai-os-sees-accelerated",
+    "00068-broker5.html": "https://news.futunn.com/post/78955597/manycore-tech-00068-hk-building-a-spatial-intelligence-model-data",
+    "00068-broker6.html": "https://news.futunn.com/post/73506662/guotai-haitong-securities-initiated-coverage-on-qunhe-technology-00068-hk",
+    "09880-broker7.html": "https://news.futunn.com/post/78497794/ubtech-robotics-09880-hk-humanoid-robots-are-ramping-up-production",
+    "09880-broker8.html": "https://news.futunn.com/post/77698561/ubtech-robotics-9880-hk-mass-production-of-humanoid-robots-is"
+  },
+  "checks": {
+    "primary_peer_revenue_matches": {
+      "02121": "1,512,558",
+      "02571": "262,447",
+      "00020": "5,014,640",
+      "06682": "7,135,286",
+      "01384": "414,991",
+      "02391": "321,791",
+      "09880": "2,000,999"
+    },
+    "independent_price_matches": 18,
+    "target_exact_shares_sources": [
+      "02635-2026100901029.pdf",
+      "03317-2026100202637.pdf",
+      "06600-2026100701040.pdf",
+      "06651-2026093000998.pdf"
+    ],
+    "sources_have_hashes": true
+  },
+  "price_crosscheck_sina": {
+    "url": "https://hq.sinajs.cn/list=rt_hk02635,rt_hk03317,rt_hk06600,rt_hk06651,rt_hk02121,rt_hk02571,rt_hk00020,rt_hk06682,rt_hk01384,rt_hk00068,rt_hk02391,rt_hk09880,sh600728,sh600570,sh688169,sh603486,sz300866,sz300036",
+    "sha256": "48c59ee481278a126d693c42f0955dce673311c407da6dc6dcdc5dea273c740e"
+  },
+  "market_position_checks": {
+    "3317": {
+      "year": 2024,
+      "china_asset_management_realtime_data_share_pct": 11.6,
+      "rank": 1,
+      "china_all_industry_realtime_data_share_pct": 3.4,
+      "all_industry_rank": 4,
+      "source": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1218/2025121800027.pdf",
+      "pdf_pages_1based": [
+        10,
+        113,
+        119
+      ],
+      "definition": "Frost & Sullivan commissioned research; actual vendor revenue, real-time data infrastructure and analytics."
+    },
+    "6600": {
+      "year": 2024,
+      "global_home_robotic_system_share_pct": 11.9,
+      "rank": 1,
+      "source": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1218/2025121800167.pdf",
+      "basis": "Retail sales; narrowly defined home robotic systems; verified against indexed prospectus industry section and HKEX PHIP industry overview. Not all robots/smart-home devices."
+    }
+  }
+}
