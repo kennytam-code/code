@@ -24,7 +24,7 @@ class PeerDiscoveryTests(unittest.TestCase):
             if 'hkexnews' not in req.full_url: raise TimeoutError('timeout')
             return io.BytesIO(payload)
         with patch('urllib.request.urlopen',side_effect=read):
-            names,audit=E['_public_equity_universe']('HK')
+            names,audit=E['_public_equity_universe']('HK',refresh=True)
         self.assertEqual(names,['1989 HK Equity','2800 HK Equity'])
         self.assertEqual(len(requests),1)
         self.assertEqual(audit[0]['parser'],'HKEXnews')

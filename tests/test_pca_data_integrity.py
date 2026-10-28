@@ -70,7 +70,7 @@ class DataIntegrityTests(unittest.TestCase):
             code='2889' if '_L.' in req.full_url else '5864'
             return io.BytesIO(('公司代號,公司簡稱,產業別\n'+code+',test,17\n').encode())
         with patch.dict(E['_public_equity_universe'].__globals__,{'_bundled_listing_sources':lambda market:{}}),patch('urllib.request.urlopen',side_effect=receive):
-            names,audit=E['_public_equity_universe']('TW')
+            names,audit=E['_public_equity_universe']('TW',refresh=True)
         self.assertEqual(names,['2889 TT Equity','5864 TT Equity'])
         self.assertTrue(all(a['status']=='received' and len(a['attempts'])==1 for a in audit))
 
@@ -109,14 +109,15 @@ class DataIntegrityTests(unittest.TestCase):
         caps=pd.DataFrame({'A':1000.,'U':200.},index=dates)
         fx=pd.DataFrame({'TWDUSD Curncy':[.03,.04]},index=dates[:2])
         ccy={'A':{'CRNCY':'TWD'},'U':{'CRNCY':'USD'}}
-        out,missing=E['_historical_caps_usd'](caps,ccy,fx)
+        units={'TWDUSD Curncy':1}
+        out,missing=E['_historical_caps_usd'](caps,ccy,fx,fx_quote_units=units)
         self.assertEqual(list(out['A'].iloc[:2]),[30.,40.])
         self.assertTrue(np.isnan(out['A'].iloc[2]))
         self.assertEqual(list(out['U']),[200.,200.,200.])
         changed=fx.copy();changed.iloc[1]=999
-        again,_=E['_historical_caps_usd'](caps,ccy,changed)
+        again,_=E['_historical_caps_usd'](caps,ccy,changed,fx_quote_units=units)
         self.assertEqual(again['A'].iloc[0],out['A'].iloc[0])
-        late,_=E['_historical_caps_usd'](caps,ccy,fx.iloc[1:])
+        late,_=E['_historical_caps_usd'](caps,ccy,fx.iloc[1:],fx_quote_units=units)
         self.assertTrue(np.isnan(late['A'].iloc[0]))
 
     def test_cached_cap_restoration_needs_verified_prices_and_honours_exclusions(self):
@@ -135,7 +136,7 @@ class DataIntegrityTests(unittest.TestCase):
     def test_new_dated_cap_path_does_not_fall_back_to_future_cap(self):
         d,stocks,_=sector_tests.SectorScopeTests().sector_data(n=150)
         idx=d['prices'].index
-        d['mktcap_hist_method']='historical local cap x dated FX'
+        d['mktcap_hist_method']=E['CAP_HISTORY_METHOD']
         d['mktcap_hist']=pd.DataFrame(2000.,index=idx,columns=[d['target']]+stocks)
         d['mktcap_hist'].loc[idx[:-5],stocks[0]]=np.nan
         d['mktcap_usd_mm']={t:2000. for t in [d['target']]+stocks}

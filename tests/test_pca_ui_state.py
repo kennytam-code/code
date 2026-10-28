@@ -49,6 +49,17 @@ class UIResultStateTests(unittest.TestCase):
         run.assert_called_once()
         self.assert_no_result_can_be_exported()
 
+    def test_listing_update_is_separate_and_does_not_download_or_replace_prices(self):
+        refresh=MagicMock(return_value={'TW':{'count':1994,'refreshed_sources':['TWSE'],'audit':[]}})
+        download=MagicMock(side_effect=AssertionError('directory refresh must not download prices'))
+        original=self.state['data']
+        self.click('Update listing lists',refresh_listing_directories=refresh,download_hedge_data=download)
+        self.assertEqual(refresh.call_args[0][0],['TW'])
+        self.assertIs(self.state['data'],original)
+        self.assertIs(self.state['result'],self.previous)
+        download.assert_not_called()
+        self.assertFalse(self.state.get('busy'))
+
     def test_preflight_rejection_clears_previous_analysis(self):
         run = MagicMock()
         self.widgets['target'].value = 'OTHER US Equity'

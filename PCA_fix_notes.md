@@ -1,3 +1,16 @@
+# PCA v131 changes
+
+Revision 2026-10-28-v131-regional-coverage-usd-caps; discovery version 8. Same current script/notebook entry points.
+
+- Correct historical cap conversion: KRWUSD is quoted per 100 KRW, not per 1. Request historical CUR_MKT_CAP with Bloomberg HistoricalDataRequest currency='USD' for all markets. Remove raw FX conversion from the production download path; retain source/units/date in diagnostics. No change to stock-price currencies or hedge-return arithmetic.
+- Reject old unverified Korean cap caches when an active historical size screen would use them. Missing/stale vendor USD caps remain unavailable; future/current cap fallback remains disallowed. The unused legacy FX helper requires explicit base-currency units. Drain historical request errors before raising, so a failed optional cap request cannot leave responses in the next request's queue.
+- Add mainland listing leads across Shanghai main-board, STAR, Shenzhen and Beijing. Validate schemas, leading zeroes, paging totals and duplicates. Do not promote broad CSRC Manufacturing to GICS sector evidence. Add Shanghai/Shenzhen Yahoo venue mapping and explicitly report unsupported independent-directory markets.
+- Bundle 5,575 unique dated mainland leads: 1,699 Shanghai main-board Yahoo names, 618 official STAR, 2,905 official Shenzhen and 353 official Beijing names. The Shanghai official full-list fetch repeatedly failed; its fallback remains explicitly attributed to Yahoo. Separately live-tested Yahoo's Shanghai/Shenzhen screen returned 5,220 mapped names across 31 pages in about 18 seconds. These are candidate directories, not guaranteed peer classifications or verified Bloomberg tradable identities.
+- Separate public listing updates from Bloomberg Download. Ordinary downloads read dated local directories without exchange/Yahoo calls; Data → Update listing lists explicitly refreshes and atomically saves successful sources. Failed refreshes retain earlier dates. Bloomberg taxonomy and peer-network discovery still run. Directory discovery does not price every regional listing. Add tests for offline defaults, persistence, failed-refresh retention and the independent UI action.
+- Extend local-sector/global-peer policy tests to mainland China and verify Taiwan/Australia/Japan/mainland listing restrictions, dated backups, holiday calendars and USD cap request behavior. Retain deduplication and the existing incremental-add workflow.
+
+A fresh full Download is required once. No Bloomberg terminal is available in development; vendor entitlement, the live USD field values, borrow and real-data fit improvements require verification on the terminal. No perfect peer coverage or future hedge performance is claimed.
+
 # PCA v130 changes
 
 Revision 2026-10-28-v130-local-sector-global-peers; same current entry points.
@@ -7,7 +20,7 @@ Revision 2026-10-28-v130-local-sector-global-peers; same current entry points.
 - Route all local first/second-degree leads through sector classification, including graph-only names absent from directories and indices. Query each direct peer once, stop at two hops, retain source parents and deduplicate final prices.
 - Preserve recorded direct relationships during cache reclassification and local issuer-listing resolution. Distinguish direct peers from sector candidates in basket identities and download/report counts.
 - Add tests across all six priority markets for local hardware versus semiconductor coverage, overseas exclusions, direct-link safeguards, deduplication, cache reuse and report provenance.
-- Record raw cap/currency/FX/date/conversion samples in diagnostic exports. The uploaded Korean cap scale anomaly remains unverified without that run's raw data; no guessed scaling fix is applied.
+- Record raw cap/currency/FX/date/conversion samples in diagnostic exports. The cap-unit defect was subsequently identified and corrected in v131 below; historical v130 diagnostics alone did not resolve it.
 - Require fresh discovery version 7. Hedge fitting, frozen validation, short-sample size controls and the statistical objective are unchanged.
 
 # PCA v129 changes

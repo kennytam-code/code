@@ -53,7 +53,7 @@ class LocalGlobalPolicyTests(unittest.TestCase):
         return target,direct,local,foreign,precise,unrelated,meta,found,calls,progress,stubs
 
     def test_local_graph_only_hardware_survives_and_global_sector_only_does_not(self):
-        for suffix in ('HK','TT','JP','KS','AU','US'):
+        for suffix in ('HK','TT','JP','KS','AU','US','CH'):
             with self.subTest(suffix=suffix):
                 target,direct,local,foreign,precise,bad,m,found,calls,progress,_=self.discovery(suffix)
                 self.assertIn(local,found)
@@ -137,11 +137,13 @@ class LocalGlobalPolicyTests(unittest.TestCase):
                            'USD US Equity':[200.,210.],'NOFX HK Equity':[50.,60.]},index=dates)
         ccys={'000660 KS Equity':{'CRNCY':'KRW'},'USD US Equity':{'CRNCY':'USD'},
               'NOFX HK Equity':{'CRNCY':'HKD'}}
-        fx=pd.DataFrame({'KRWUSD Curncy':[.0007]},index=dates[:1]);audit={}
-        out,missing=E['_historical_caps_usd'](caps,ccys,fx,audit=audit)
+        fx=pd.DataFrame({'KRWUSD Curncy':[.07]},index=dates[:1]);audit={}
+        out,missing=E['_historical_caps_usd'](caps,ccys,fx,audit=audit,
+                                           fx_quote_units={'KRWUSD Curncy':100})
         row=audit['000660 KS Equity']
         self.assertEqual(row['local_cap'],151000000.)
-        self.assertEqual(row['fx_rate'],.0007)
+        self.assertEqual(row['fx_rate'],.07)
+        self.assertEqual(row['fx_quote_units'],100)
         self.assertEqual(row['fx_date'],'2026-10-02')
         self.assertEqual(row['date'],'2026-10-05')
         self.assertAlmostEqual(row['usd_mm'],105700.)

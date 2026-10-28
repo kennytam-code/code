@@ -141,7 +141,7 @@ class MarketControlsTests(unittest.TestCase):
             if transport=='urllib': raise TimeoutError('slow route')
             return json.dumps([{'i':1,'c':'01989','n':'TEST'}]).encode()
         with patch.dict(E['_public_equity_universe'].__globals__,{'_bundled_listing_sources':lambda market:{},'_public_roster_bytes':fetch,'_yahoo_equity_universe':MagicMock(side_effect=AssertionError('unneeded'))}):
-            names,audit=E['_public_equity_universe']('HK')
+            names,audit=E['_public_equity_universe']('HK',refresh=True)
         self.assertEqual(names,['1989 HK Equity']);self.assertEqual(audit[0]['transport'],'curl')
         self.assertEqual(len(calls),3);self.assertEqual(len(set(calls)),3)
         self.assertIn('hkexnews',calls[0][0])

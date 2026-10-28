@@ -24,7 +24,7 @@ class October28Tests(unittest.TestCase):
         fn=E['_public_equity_universe'];fetch=MagicMock(side_effect=TimeoutError('restricted network'))
         with patch.dict(fn.__globals__,{'_public_roster_bytes':fetch,
                 '_yahoo_equity_universe':MagicMock(side_effect=AssertionError('do not spend another timeout'))}):
-            names,audit=fn('HK')
+            names,audit=fn('HK',refresh=True)
         self.assertTrue({'3223 HK Equity','9976 HK Equity'}<=set(names))
         self.assertEqual(fetch.call_count,1)
         self.assertEqual(audit[0]['transport'],'bundled snapshot')
@@ -115,7 +115,7 @@ class October28Tests(unittest.TestCase):
         pd.testing.assert_series_equal(p.iloc[:,0],s,check_names=False)
 
     def test_calendar_ranges_may_start_or_end_on_non_sessions(self):
-        for name in ('XHKG','XTAI','XKRX','XTKS','XASX','XNYS'):
+        for name in ('XHKG','XTAI','XKRX','XTKS','XASX','XNYS','XSHG'):
             days=E['_calendar_sessions'](name,'2024-01-01','2024-06-30')
             self.assertGreater(len(days),100)
             self.assertGreaterEqual(days.min(),pd.Timestamp('2024-01-01'))
