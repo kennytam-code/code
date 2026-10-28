@@ -6,9 +6,12 @@ analyst, including a session with no conversation history.
 
 ## 28 October: new listing, daily A/H changes and all Excel charts
 
-Prepared for GitHub main with the user's explicit publication request.
-See `data/release_state.json` for the verified publication status. Future
-changes require their own publication authorization.
+Published to GitHub main on 29 October with the user's explicit request.
+The data release is dated 28 October. Root downloads and TO_NOMURA match; all
+five downloaded files passed SHA-256 verification. Publication used an isolated
+checkout, preserving the parent Git branch/index and unrelated work. See
+`data/release_state.json` for the release commit. Future changes require their
+own publication authorization.
 
 527 database IPOs, 717 IPO Live stocks, 72 A/H pairs, 21 pipeline rows. DSBJ
 (2384 / 002384.SZ) listed 28 October: offer HK$86.80, public/institutional

@@ -449,13 +449,17 @@
     }
   },
   "publication": {
-    "status": "ready_for_publication",
-    "github_updated_this_session": false,
+    "status": "published",
+    "github_updated_this_session": true,
     "date": "2026-10-29",
     "repository": "https://github.com/kennytam-code/code",
     "branch": "main",
     "base_commit": "2567d939eb07e6aa2ef66ffc40990fd8531ea44b",
-    "authorization": "Explicit user request: push to github after checking errors, layout and issues"
+    "authorization": "Explicit user request: push to github after checking errors, layout and issues",
+    "release_commit": "af50d894d93adee3573480bcd513b3f31e5e22b9",
+    "verified_at": "2026-10-29T00:10:46.931532+08:00",
+    "downloaded_hashes_verified": true,
+    "method": "Isolated checkout based on current GitHub main; parent Git branch/index and unrelated work preserved."
   },
   "previous_publication": {
     "status": "published",

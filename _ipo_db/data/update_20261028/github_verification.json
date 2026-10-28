@@ -1,0 +1,42 @@
+{
+  "release_commit": "af50d894d93adee3573480bcd513b3f31e5e22b9",
+  "remote_main_verified": true,
+  "verified_at": "2026-10-29T00:10:46.931532+08:00",
+  "downloads": [
+    {
+      "path": "HK_IPO_Database_v1.xlsx",
+      "bytes": 7896755,
+      "sha256": "a6bc29bc94040b798e7b8fa0124e358bb33f7fa9efff07f228b7789798109f8f",
+      "url": "https://raw.githubusercontent.com/kennytam-code/code/af50d894d93adee3573480bcd513b3f31e5e22b9/HK_IPO_Database_v1.xlsx",
+      "verified": true
+    },
+    {
+      "path": "hk_ipo.py",
+      "bytes": 15403168,
+      "sha256": "ca5caf434b336861359b4d27fe597456824733db9e62111c06b4dfd3c6c6f68f",
+      "url": "https://raw.githubusercontent.com/kennytam-code/code/af50d894d93adee3573480bcd513b3f31e5e22b9/hk_ipo.py",
+      "verified": true
+    },
+    {
+      "path": "READ_ME_FIRST.txt",
+      "bytes": 2301,
+      "sha256": "84a120e8657783caf2c38daeeed16a0e539fca2f1882b157b7b2e72b6d39fd4d",
+      "url": "https://raw.githubusercontent.com/kennytam-code/code/af50d894d93adee3573480bcd513b3f31e5e22b9/READ_ME_FIRST.txt",
+      "verified": true
+    },
+    {
+      "path": "hk_ipo_dashboard.html",
+      "bytes": 2873614,
+      "sha256": "d2c41cd5773d45771f408c15b06b1a4ff3a9da6789bfed450b5c3ba3c9f050a3",
+      "url": "https://raw.githubusercontent.com/kennytam-code/code/af50d894d93adee3573480bcd513b3f31e5e22b9/hk_ipo_dashboard.html",
+      "verified": true
+    },
+    {
+      "path": "_ipo_db/TO_NOMURA/hk_ipo_dashboard.zip",
+      "bytes": 2056300,
+      "sha256": "360663fb6c83041e03588ed48089ac53077e54cdd89c38929e561f7f3689fc1f",
+      "url": "https://raw.githubusercontent.com/kennytam-code/code/af50d894d93adee3573480bcd513b3f31e5e22b9/_ipo_db/TO_NOMURA/hk_ipo_dashboard.zip",
+      "verified": true
+    }
+  ]
+}

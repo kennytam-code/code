@@ -15,5 +15,8 @@
   "bloomberg_terminal_tested": false,
   "remote_base": "2567d939eb07e6aa2ef66ffc40990fd8531ea44b",
   "unchanged_prior_database_numbers": 526,
-  "publication_status": "ready_for_publication"
+  "publication_status": "published",
+  "release_commit": "af50d894d93adee3573480bcd513b3f31e5e22b9",
+  "github_download_hashes_verified": true,
+  "verified_at": "2026-10-29T00:10:46.931532+08:00"
 }
