@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "ah_pairs": 72,
+  "summary_formulas": 100,
+  "chart_parts": 10,
+  "chart_ranges_and_observations_preserved": true,
+  "actual_formula_edge_cases": 18,
+  "bloomberg_live_tested": false,
+  "sha256": "a6bc29bc94040b798e7b8fa0124e358bb33f7fa9efff07f228b7789798109f8f"
+}

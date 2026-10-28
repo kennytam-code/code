@@ -2823,8 +2823,10 @@ def combine_bbg_sheets(wb,n):
  for m in src.merged_cells.ranges:dst.merge_cells(start_row=m.min_row+offset,end_row=m.max_row+offset,start_column=m.min_col,end_column=m.max_col)
  for rr,d in src.row_dimensions.items():dst.row_dimensions[rr+offset].height=d.height
  dst['U4']='Final shoe outcome';dst['V4']='Final shoe filing';dst.column_dimensions['U'].width=24;dst.column_dimensions['V'].width=18
+ # Reuse one parsed roster; repeated 15 MB JSON parses inflated allocator RSS.
+ roster={d['code']:d for d in json.loads((ROOT/'data/deals.json').read_text())['deals']}
  for r in range(5,n+5):
-  code=str(wb['Database'].cell(r,1).value).zfill(4);d=next((d for d in json.loads((ROOT/'data/deals.json').read_text())['deals'] if d['code']==code),{})
+  code=str(wb['Database'].cell(r,1).value).zfill(4);d=roster.get(code,{})
   dst.cell(r,21,d.get('greenshoe_exercised_final'));link=dst.cell(r,22,'HKEX' if d.get('stabilization_link') else '')
   if d.get('stabilization_link'):link.hyperlink=d['stabilization_link']
  wb.remove(src)

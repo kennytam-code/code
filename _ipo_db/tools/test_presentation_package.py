@@ -100,8 +100,10 @@ with zipfile.ZipFile(ROOT/'out/HK_IPO_Database_v1.xlsx') as z:
     assert [x.get('name') for x in table.find(q('tableColumns'))]==[value(lock[col(i)+'37']) for i in range(1,14)]
  assert not {'Lock-up','Lock-up Data','Lock Compare','Lock Matrix'} & set(sheets)
  c=next(E.fromstring(z.read(p)) for p in z.namelist() if p.startswith('xl/charts/') and p.endswith('.xml') and b'!AHMarketPremium' in z.read(p));cn=lambda x:'{http://schemas.openxmlformats.org/drawingml/2006/chart}'+x
- assert len(list(c.iter(cn('ser'))))==3 and len(list(c.iter(cn('valAx'))))==3
- assert len(list(c.iter(cn('scatterChart'))))==2
+ assert len(list(c.iter(cn('ser'))))==1 and len(list(c.iter(cn('valAx'))))==2
+ assert len(list(c.iter(cn('scatterChart'))))==1
+ returns=E.fromstring(z.read('xl/charts/chartAHMarketReturns.xml'))
+ assert len(list(returns.iter(cn('ser'))))==2 and len(list(returns.iter(cn('valAx'))))==2
  peer_meta=json.loads((ROOT/'data/peer_pairs.json').read_text());wanted=set();cursor=2
  for i,st in enumerate(peer_meta['stocks'],3):
   wanted.update(c+str(i) for c in ['H','K','L']);wanted.update(['B'+str(cursor),'B'+str(cursor+len(st['history'])-1)]);cursor+=len(st['history'])

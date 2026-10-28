@@ -1,8 +1,8 @@
 {
  "batch": "newlistings",
  "source": "www2 New Listings Main Board",
- "fetched_at": "2026-10-15T14:45:10.752832+00:00",
- "count": 3,
+ "fetched_at": "2026-10-28T14:42:00+00:00",
+ "count": 4,
  "deals": [
   {
    "code": "6700",
@@ -189,6 +189,27 @@
    "reviewed_at": "2026-10-15",
    "business_overview": "Tourist boat services and related tourism operations in Yangzhou.",
    "size_at_cap_hkdm": 226.9332
+  },
+  {
+   "code": "3275",
+   "name": "Changzhou Microintelligence Co., Ltd",
+   "name_cn": "微億智造",
+   "status": "POSTPONED",
+   "sector": "Technology",
+   "subsector": "Robotics & autonomous driving",
+   "range_lo": 16.63,
+   "range_hi": 21.46,
+   "lot_size": 200,
+   "offer_shares": 37275800,
+   "expected_listing_date": "2026-10-28",
+   "offer_period": "2026-10-20 to 2026-10-23",
+   "prospectus_links": [
+    "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1020/2026102000029.pdf"
+   ],
+   "announcement_links": [
+    "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1020/2026102000021.pdf"
+   ],
+   "allotment_links": []
   }
  ]
 }

@@ -1,40 +1,30 @@
 {
- "checked_at": "2026-10-15",
+ "checked_at": "2026-10-28",
  "sources": [
   {
-   "file": "phip.json",
-   "url": "https://www1.hkexnews.hk/ncms/json/eds/appactive_appphip_sehk_e.json",
-   "sha256": "a4c4d056c360c46b0294e0c5f6849873759f53a1aeb7ed1a786838d537ad04f6",
-   "bytes": 8501
+   "file": "6157_postponement.pdf",
+   "sha256": "2544f23fea821f2c788cedf0f838c425881c1b6a18bfdd6f824298a5b83ad030"
+  },
+  {
+   "file": "new_listing_report.xlsx",
+   "sha256": "dd0a9fcafb1ae06b407ec3029fc736e11932b9153c405532f9fa5d171a084fba"
   },
   {
    "file": "applications.json",
-   "url": "https://www1.hkexnews.hk/ncms/json/eds/appactive_app_sehk_e.json",
-   "sha256": "93d5f1ac3b0192d2b2783575a50afb04940e3802c0853ac366de247f449d2584",
-   "bytes": 194766
+   "sha256": "e08e22186bbd2771f172fbb170570497c1c9e52ea5af8dd82caffc2f5f545118"
   },
   {
-   "file": "2636_allotment.pdf",
-   "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1014/2026101401159.pdf",
-   "sha256": "f8ed7d96229422d6788a17a6701dfc0ca059ed1d639e9be6c2ca1cf770f36729",
-   "bytes": 244425
+   "file": "phip.json",
+   "sha256": "22d5d3b7eee043a73536d996e2da67ae33cfc315510ae23cb13c4bf11365e0bf"
   },
   {
-   "file": "6157_prospectus.pdf",
-   "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1014/2026101400023.pdf",
-   "sha256": "cc25588930d424e1d7b221547d07aa1dd15ed7417637dcbfc861e899bf8d3131",
-   "bytes": 7039679
-  },
-  {
-   "file": "6157_notice.pdf",
-   "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1014/2026101400007.pdf",
-   "sha256": "31aec3b0f1e4fc261dfb6d3a47fe7e697253dbb646f02dfa09cc4e20fbe14adb",
-   "bytes": 602027
+   "file": "3275_postponement.pdf",
+   "sha256": "59b0a5abfa8f12500f594c6244f3c3bd631efe5e3674ed8dcf83f527b8580776"
   }
  ],
  "notes": [
-  "PHIP/AP membership checked against official live feeds. Existing parsed terms retain their individual source dates.",
-  "Forms Syntron 6700 remains postponed; EKH 2523 remains withdrawn. No new timetable was established.",
-  "Press-only manual watchlist estimates are not freshly confirmed offering terms."
+  "2384 confirmed listed by HKEX daily listing table and annual new listing report.",
+  "3275 and 6157 postponed by issuer filings; original timetable is inactive.",
+  "Fresh AP/PHIP membership; older parsed financial terms retain their individual dates. New application records without parsed financials remain incomplete."
  ]
 }

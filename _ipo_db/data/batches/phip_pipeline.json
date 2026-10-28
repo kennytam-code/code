@@ -1,22 +1,118 @@
 {
  "batch": "phip_pipeline",
  "source": "hkexnews appactive_app_sehk_e.json",
- "feed_generated": "1792072810001",
- "fetched_at": "2026-10-15T14:45:10+00:00",
- "count": 365,
- "with_phip": 12,
+ "feed_generated": "1793196025916",
+ "fetched_at": "2026-10-28T14:50:22+00:00",
+ "count": 360,
+ "with_phip": 20,
  "applications": [
   {
-   "applicant": "Suzhou Dongshan Precision Manufacturing Co., Ltd.",
-   "app_id": 108550,
-   "first_filing": "2026-10-11",
-   "latest_submission": "2026-10-11",
+   "applicant": "Beijing Sinotau International Pharmaceutical Technology Co., Ltd. - B",
+   "app_id": 109006,
+   "first_filing": "2026-10-28",
+   "latest_submission": "2026-10-28",
    "latest_kind": "PHIP (1st submission)",
    "has_phip": true,
    "stage": "PHIP posted (hearing cleared)",
    "sponsor_terminated": false,
-   "days_in_process": 4,
-   "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108550/documents/sehk26101100054.pdf"
+   "days_in_process": 0,
+   "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/109006/documents/sehk26102801584.pdf"
+  },
+  {
+   "applicant": "HOSIN Global Electronics Co., Ltd.",
+   "app_id": 108712,
+   "first_filing": "2026-10-26",
+   "latest_submission": "2026-10-26",
+   "latest_kind": "PHIP (1st submission)",
+   "has_phip": true,
+   "stage": "PHIP posted (hearing cleared)",
+   "sponsor_terminated": true,
+   "days_in_process": 2,
+   "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108712/documents/sehk26102001152.pdf"
+  },
+  {
+   "applicant": "CTG Hongkong and Macao Culture and Tourism Holding Limited",
+   "app_id": 108558,
+   "first_filing": "2026-10-26",
+   "latest_submission": "2026-10-26",
+   "latest_kind": "PHIP (1st submission)",
+   "has_phip": true,
+   "stage": "PHIP posted (hearing cleared)",
+   "sponsor_terminated": false,
+   "days_in_process": 2,
+   "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108558/documents/sehk26102601358.pdf"
+  },
+  {
+   "applicant": "Suzhou Denglin Technology Co., Ltd. - P",
+   "app_id": 108986,
+   "first_filing": "2026-10-25",
+   "latest_submission": "2026-10-25",
+   "latest_kind": "PHIP (1st submission)",
+   "has_phip": true,
+   "stage": "PHIP posted (hearing cleared)",
+   "sponsor_terminated": false,
+   "days_in_process": 3,
+   "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108986/documents/sehk26102500064.pdf"
+  },
+  {
+   "applicant": "Sichuan Neautus Traditional Chinese Medicine Co., Ltd.",
+   "app_id": 108487,
+   "first_filing": "2026-10-25",
+   "latest_submission": "2026-10-25",
+   "latest_kind": "PHIP (1st submission)",
+   "has_phip": true,
+   "stage": "PHIP posted (hearing cleared)",
+   "sponsor_terminated": false,
+   "days_in_process": 3,
+   "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108487/documents/sehk26102500138.pdf"
+  },
+  {
+   "applicant": "Jiangsu Xinde Semiconductor Technology Co., Ltd.",
+   "app_id": 108516,
+   "first_filing": "2026-10-21",
+   "latest_submission": "2026-10-21",
+   "latest_kind": "PHIP (1st submission)",
+   "has_phip": true,
+   "stage": "PHIP posted (hearing cleared)",
+   "sponsor_terminated": false,
+   "days_in_process": 7,
+   "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108516/documents/sehk26102101184.pdf"
+  },
+  {
+   "applicant": "Ganzhou Hemay Pharmaceutical Co., Ltd. - B",
+   "app_id": 108622,
+   "first_filing": "2026-10-20",
+   "latest_submission": "2026-10-20",
+   "latest_kind": "PHIP (1st submission)",
+   "has_phip": true,
+   "stage": "PHIP posted (hearing cleared)",
+   "sponsor_terminated": false,
+   "days_in_process": 8,
+   "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108622/documents/sehk26102001468.pdf"
+  },
+  {
+   "applicant": "Shenzhen Chuangzhi Semi-link Technology Co., Ltd.",
+   "app_id": 108473,
+   "first_filing": "2026-10-19",
+   "latest_submission": "2026-10-19",
+   "latest_kind": "PHIP (1st submission)",
+   "has_phip": true,
+   "stage": "PHIP posted (hearing cleared)",
+   "sponsor_terminated": false,
+   "days_in_process": 9,
+   "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108473/documents/sehk26101900082.pdf"
+  },
+  {
+   "applicant": "RelyEZ Energy Storage Technology Co., Ltd.",
+   "app_id": 108790,
+   "first_filing": "2026-10-19",
+   "latest_submission": "2026-10-19",
+   "latest_kind": "PHIP (1st submission)",
+   "has_phip": true,
+   "stage": "PHIP posted (hearing cleared)",
+   "sponsor_terminated": false,
+   "days_in_process": 9,
+   "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108790/documents/sehk26101900244.pdf"
   },
   {
    "applicant": "Changzhou Microintelligence Co., Ltd",
@@ -27,7 +123,7 @@
    "has_phip": true,
    "stage": "PHIP posted (hearing cleared)",
    "sponsor_terminated": false,
-   "days_in_process": 6,
+   "days_in_process": 19,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108374/documents/sehk26100901432.pdf"
   },
   {
@@ -39,7 +135,7 @@
    "has_phip": true,
    "stage": "PHIP posted (hearing cleared)",
    "sponsor_terminated": false,
-   "days_in_process": 8,
+   "days_in_process": 21,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108373/documents/sehk26100700090.pdf"
   },
   {
@@ -51,7 +147,7 @@
    "has_phip": true,
    "stage": "PHIP posted (hearing cleared)",
    "sponsor_terminated": false,
-   "days_in_process": 10,
+   "days_in_process": 23,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108340/documents/sehk26100500008.pdf"
   },
   {
@@ -63,7 +159,7 @@
    "has_phip": true,
    "stage": "PHIP posted (hearing cleared)",
    "sponsor_terminated": false,
-   "days_in_process": 15,
+   "days_in_process": 28,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108911/documents/sehk26093003030.pdf",
    "parsed": {
     "business_overview": "We are an established innovator contributing to the advancement and commercialization in the intelligent mobile robotics industry. We ranked third among intelligent mobile robotic solution providers in terms of revenue in 2025, capturing approximately 4.2% market share, and ranked as the largest single-modal robotic solutions provider in China, with a market share of 2.2%, and third in multi-modal robotic solutions in China with 5.9% market share, according to Frost & Sullivan. In 2025, the sales volume of our intelligent mobile robotic solutions exceeded 3.5 million sets.",
@@ -95,7 +191,7 @@
    "has_phip": true,
    "stage": "PHIP posted (hearing cleared)",
    "sponsor_terminated": false,
-   "days_in_process": 17,
+   "days_in_process": 30,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108258/documents/sehk26092802070.pdf",
    "parsed": {
     "business_overview": "We are an integrated device manufacturer (“ IDM”) company in the magnetic sensor industry. We maintain a broad magnetic sensing technology portfolio with vertical integration across the industry value chain, from chip design and wafer manufacturing through module design and manufacturing. This has enabled us to provide one-stop magnetic sensor solutions to customers across diverse industries, including green energy, NEV and automotive, industrial automation and robotics, and AI infrastructure and data centers. The magnetic sensor industry is highly competitive.",
@@ -127,7 +223,7 @@
    "has_phip": true,
    "stage": "PHIP posted (hearing cleared)",
    "sponsor_terminated": false,
-   "days_in_process": 32,
+   "days_in_process": 45,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108794/documents/sehk26091300040.pdf",
    "parsed": {
     "business_overview": "We are a company that provides specialized solutions in integrated waste treatment and resource utilization, including the investment, management, and operation of green energy and environmental services projects. Our core business comprises (i) clean waste-to-energy incineration; (ii) the integrated treatment of various types of waste (including sludge, food waste, sewage and leachate, fly ash, and others); (iii) the interim treatment and transfer of household waste; and (iv) the collection, harmless treatment, compression, and resource utilization of food waste.",
@@ -158,7 +254,7 @@
    "has_phip": true,
    "stage": "PHIP posted (hearing cleared)",
    "sponsor_terminated": false,
-   "days_in_process": 38,
+   "days_in_process": 51,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108575/documents/sehk26090701490.pdf",
    "parsed": {
     "business_overview": "We operate a tiered proprietary brand matrix tailored to distinct user segments and channels, comprising DENAGO TM, GOTRAX TM, TEKO TM and TAOMOTOR TM. This matrix enables precise coverage of key consumer cohorts and supports brand synergy through differentiated positioning and operations.  DENAGO TM — Premium, Professional, High-Performance . As one of our principal brands, DENAGO is positioned for E-mobility and powersports through a dedicated dealer network. The brand focuses on product quality and design, serving consumer demandin key markets.",
@@ -189,7 +285,7 @@
    "has_phip": true,
    "stage": "PHIP posted (hearing cleared)",
    "sponsor_terminated": false,
-   "days_in_process": 39,
+   "days_in_process": 52,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108727/documents/sehk26090600084.pdf",
    "parsed": {
     "business_overview": "We are an established fintech service provider in the banking industry based in the Greater Bay Area, delivering fintech software development services, consulting services, and system integration services to banks, regulatory authorities and other financial institutions across Chinese Mainland and Hong Kong to support their continuous digital transformation. Our comprehensive service offerings comprise three principal segments: (i) Fintech Software Development Services : The fintech software we develop refers to software systems specifically designed for financial institutions to meet regulatory requirements and support operational demands across their business activities.",
@@ -220,7 +316,7 @@
    "has_phip": true,
    "stage": "PHIP posted (hearing cleared)",
    "sponsor_terminated": true,
-   "days_in_process": 69,
+   "days_in_process": 82,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108262/documents/sehk26062301714.pdf"
   },
   {
@@ -232,7 +328,7 @@
    "has_phip": true,
    "stage": "PHIP posted (hearing cleared)",
    "sponsor_terminated": false,
-   "days_in_process": 111,
+   "days_in_process": 124,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108390/documents/sehk26062603258.pdf",
    "parsed": {
     "business_overview": "We provide services and products to both ends of the shipping supply chain including container shipping lines and direct customers (as well as those i n the middle such as freight forwarders). As such, we play different roles in the various logistic services we provide resulting in the overlap of some of our customers and suppliers. For example, we provide container depot services to container shipping lines and container leasing companies (as our customer) and they may sell us used containers in respect of our container sales services (as our supplier).",
@@ -255,7 +351,7 @@
    "has_phip": true,
    "stage": "PHIP posted (hearing cleared)",
    "sponsor_terminated": false,
-   "days_in_process": 116,
+   "days_in_process": 129,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108483/documents/sehk26062100126.pdf",
    "parsed": {
     "business_overview": "We operate our offline stores through two models to maximize market presence and adapt to consumer demands. Our permanent stores provide consistent brand presence in prime retail locations, offering our full product range throughout the year. In contrast, our seasonal offline stores are strategically opened during peak sales periods, primarily in the first and fourth quarters of each year.",
@@ -274,6 +370,18 @@
    "parsed_source_date": "2026-06-21"
   },
   {
+   "applicant": "CSG Smart Science & Technology Co., Ltd.",
+   "app_id": 108966,
+   "first_filing": "2026-10-22",
+   "latest_submission": "2026-10-22",
+   "latest_kind": "Application Proof (1st submission)",
+   "has_phip": false,
+   "stage": "Application Proof only",
+   "sponsor_terminated": false,
+   "days_in_process": 6,
+   "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108966/documents/sehk26102201517.pdf"
+  },
+  {
    "applicant": "Shandong Sinder Technology Co., Ltd",
    "app_id": 108946,
    "first_filing": "2026-10-14",
@@ -282,7 +390,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 1,
+   "days_in_process": 14,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108946/documents/sehk26101400166.pdf"
   },
   {
@@ -294,7 +402,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 3,
+   "days_in_process": 16,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108908/documents/sehk26092900994.pdf"
   },
   {
@@ -306,7 +414,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 3,
+   "days_in_process": 16,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108906/documents/sehk26092700112.pdf"
   },
   {
@@ -318,7 +426,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 7,
+   "days_in_process": 20,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108926/documents/sehk26100801298.pdf"
   },
   {
@@ -330,7 +438,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 13,
+   "days_in_process": 26,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108912/documents/sehk26100203578.pdf"
   },
   {
@@ -342,7 +450,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 15,
+   "days_in_process": 28,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108910/documents/sehk26093002652.pdf"
   },
   {
@@ -354,7 +462,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 16,
+   "days_in_process": 29,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108909/documents/sehk26092902078.pdf"
   },
   {
@@ -366,7 +474,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 17,
+   "days_in_process": 30,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108907/documents/sehk26092800296.pdf"
   },
   {
@@ -378,7 +486,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 21,
+   "days_in_process": 34,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108867/documents/sehk26091001726.pdf"
   },
   {
@@ -390,7 +498,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 21,
+   "days_in_process": 34,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108890/documents/sehk26092401221.pdf"
   },
   {
@@ -402,7 +510,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 22,
+   "days_in_process": 35,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108889/documents/sehk26092301864.pdf"
   },
   {
@@ -414,7 +522,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": true,
-   "days_in_process": 23,
+   "days_in_process": 36,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108440/documents/sehk26041200324.pdf"
   },
   {
@@ -426,7 +534,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 23,
+   "days_in_process": 36,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108888/documents/sehk26092201540.pdf"
   },
   {
@@ -438,7 +546,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 24,
+   "days_in_process": 37,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108887/documents/sehk26092101146.pdf"
   },
   {
@@ -450,7 +558,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 24,
+   "days_in_process": 37,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108870/documents/sehk26091300124.pdf"
   },
   {
@@ -462,7 +570,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 27,
+   "days_in_process": 40,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108886/documents/sehk26091801843.pdf"
   },
   {
@@ -474,7 +582,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 34,
+   "days_in_process": 47,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108850/documents/sehk26083000490.pdf"
   },
   {
@@ -486,7 +594,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 34,
+   "days_in_process": 47,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108868/documents/sehk26091101556.pdf"
   },
   {
@@ -498,7 +606,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 35,
+   "days_in_process": 48,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108822/documents/sehk26082701844.pdf"
   },
   {
@@ -510,7 +618,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 35,
+   "days_in_process": 48,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108827/documents/sehk26082803557.pdf"
   },
   {
@@ -522,7 +630,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 41,
+   "days_in_process": 54,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108812/documents/sehk26082102364.pdf"
   },
   {
@@ -534,7 +642,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 42,
+   "days_in_process": 55,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108857/documents/sehk26090300176.pdf"
   },
   {
@@ -546,7 +654,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 42,
+   "days_in_process": 55,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108858/documents/sehk26090301640.pdf"
   },
   {
@@ -558,7 +666,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 44,
+   "days_in_process": 57,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108797/documents/sehk26081700010.pdf"
   },
   {
@@ -570,7 +678,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 45,
+   "days_in_process": 58,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108851/documents/sehk26083101780.pdf"
   },
   {
@@ -582,7 +690,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 45,
+   "days_in_process": 58,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108853/documents/sehk26083102166.pdf"
   },
   {
@@ -594,7 +702,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 45,
+   "days_in_process": 58,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108852/documents/sehk26083102544.pdf"
   },
   {
@@ -606,7 +714,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 45,
+   "days_in_process": 58,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108854/documents/sehk26083102636.pdf"
   },
   {
@@ -618,7 +726,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 45,
+   "days_in_process": 58,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108855/documents/sehk26083102794.pdf"
   },
   {
@@ -630,7 +738,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 45,
+   "days_in_process": 58,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108856/documents/sehk26083102866.pdf"
   },
   {
@@ -642,7 +750,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 46,
+   "days_in_process": 59,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108847/documents/sehk26083000266.pdf"
   },
   {
@@ -654,7 +762,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 46,
+   "days_in_process": 59,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108849/documents/sehk26083000408.pdf"
   },
   {
@@ -666,7 +774,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 48,
+   "days_in_process": 61,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108805/documents/sehk26082101576.pdf"
   },
   {
@@ -678,7 +786,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 48,
+   "days_in_process": 61,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108824/documents/sehk26082802199.pdf"
   },
   {
@@ -690,7 +798,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 48,
+   "days_in_process": 61,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108825/documents/sehk26082802477.pdf"
   },
   {
@@ -702,7 +810,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 48,
+   "days_in_process": 61,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108826/documents/sehk26082803207.pdf"
   },
   {
@@ -714,7 +822,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 48,
+   "days_in_process": 61,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108828/documents/sehk26082803705.pdf"
   },
   {
@@ -726,7 +834,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 48,
+   "days_in_process": 61,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108829/documents/sehk26082803861.pdf"
   },
   {
@@ -738,7 +846,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 48,
+   "days_in_process": 61,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108831/documents/sehk26082803941.pdf"
   },
   {
@@ -750,7 +858,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 48,
+   "days_in_process": 61,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108832/documents/sehk26082804043.pdf"
   },
   {
@@ -762,7 +870,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 48,
+   "days_in_process": 61,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108833/documents/sehk26082804161.pdf"
   },
   {
@@ -774,7 +882,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 49,
+   "days_in_process": 62,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108798/documents/sehk26081800036.pdf"
   },
   {
@@ -786,7 +894,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 49,
+   "days_in_process": 62,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108823/documents/sehk26082702222.pdf"
   },
   {
@@ -798,7 +906,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 50,
+   "days_in_process": 63,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108821/documents/sehk26082601974.pdf"
   },
   {
@@ -810,7 +918,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 51,
+   "days_in_process": 64,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108818/documents/sehk26082500276.pdf"
   },
   {
@@ -822,7 +930,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 51,
+   "days_in_process": 64,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108820/documents/sehk26082502062.pdf"
   },
   {
@@ -834,7 +942,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 52,
+   "days_in_process": 65,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108815/documents/sehk26082401772.pdf"
   },
   {
@@ -846,20 +954,8 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 52,
+   "days_in_process": 65,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108816/documents/sehk26082402034.pdf"
-  },
-  {
-   "applicant": "RelyEZ Energy Storage Technology Co., Ltd.",
-   "app_id": 108790,
-   "first_filing": "2026-08-21",
-   "latest_submission": "2026-08-21",
-   "latest_kind": "Application Proof (1st submission)",
-   "has_phip": false,
-   "stage": "Application Proof only",
-   "sponsor_terminated": false,
-   "days_in_process": 55,
-   "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108790/documents/sehk26080900120.pdf"
   },
   {
    "applicant": "Qdama International Holding Ltd.",
@@ -870,7 +966,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 55,
+   "days_in_process": 68,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108804/documents/sehk26082101862.pdf"
   },
   {
@@ -882,7 +978,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 55,
+   "days_in_process": 68,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108806/documents/sehk26082101888.pdf"
   },
   {
@@ -894,7 +990,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 55,
+   "days_in_process": 68,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108809/documents/sehk26082102082.pdf"
   },
   {
@@ -906,7 +1002,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 55,
+   "days_in_process": 68,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108811/documents/sehk26082102278.pdf"
   },
   {
@@ -918,7 +1014,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 55,
+   "days_in_process": 68,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108813/documents/sehk26082102534.pdf"
   },
   {
@@ -930,7 +1026,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 56,
+   "days_in_process": 69,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108802/documents/sehk26082000220.pdf"
   },
   {
@@ -942,7 +1038,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 56,
+   "days_in_process": 69,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108787/documents/sehk26080601694.pdf"
   },
   {
@@ -954,7 +1050,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 56,
+   "days_in_process": 69,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108803/documents/sehk26082001768.pdf"
   },
   {
@@ -966,7 +1062,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 57,
+   "days_in_process": 70,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108801/documents/sehk26081901724.pdf"
   },
   {
@@ -978,7 +1074,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 58,
+   "days_in_process": 71,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108799/documents/sehk26081801658.pdf"
   },
   {
@@ -990,7 +1086,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 62,
+   "days_in_process": 75,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108795/documents/sehk26081402024.pdf"
   },
   {
@@ -1002,7 +1098,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 64,
+   "days_in_process": 77,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108793/documents/sehk26081201416.pdf"
   },
   {
@@ -1014,7 +1110,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 65,
+   "days_in_process": 78,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108792/documents/sehk26081100442.pdf"
   },
   {
@@ -1026,7 +1122,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 66,
+   "days_in_process": 79,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108771/documents/sehk26072900705.pdf"
   },
   {
@@ -1038,7 +1134,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 66,
+   "days_in_process": 79,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108791/documents/sehk26081001283.pdf"
   },
   {
@@ -1050,7 +1146,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 69,
+   "days_in_process": 82,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108788/documents/sehk26080701054.pdf"
   },
   {
@@ -1062,7 +1158,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 69,
+   "days_in_process": 82,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108789/documents/sehk26080701538.pdf"
   },
   {
@@ -1074,7 +1170,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 72,
+   "days_in_process": 85,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108786/documents/sehk26080402104.pdf"
   },
   {
@@ -1086,7 +1182,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 74,
+   "days_in_process": 87,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108747/documents/sehk26072000042.pdf"
   },
   {
@@ -1098,7 +1194,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 76,
+   "days_in_process": 89,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108740/documents/sehk26071701190.pdf"
   },
   {
@@ -1110,7 +1206,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 76,
+   "days_in_process": 89,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108776/documents/sehk26073101890.pdf"
   },
   {
@@ -1122,7 +1218,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 77,
+   "days_in_process": 90,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108770/documents/sehk26073000330.pdf"
   },
   {
@@ -1134,7 +1230,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 77,
+   "days_in_process": 90,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108774/documents/sehk26073002134.pdf"
   },
   {
@@ -1146,7 +1242,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 77,
+   "days_in_process": 90,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108775/documents/sehk26073002144.pdf"
   },
   {
@@ -1158,7 +1254,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 78,
+   "days_in_process": 91,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108772/documents/sehk26072901708.pdf"
   },
   {
@@ -1170,7 +1266,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 78,
+   "days_in_process": 91,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108773/documents/sehk26072901848.pdf"
   },
   {
@@ -1182,7 +1278,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 79,
+   "days_in_process": 92,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108768/documents/sehk26072800883.pdf"
   },
   {
@@ -1194,7 +1290,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 79,
+   "days_in_process": 92,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108769/documents/sehk26072800992.pdf"
   },
   {
@@ -1206,7 +1302,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 80,
+   "days_in_process": 93,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108737/documents/sehk26071500938.pdf"
   },
   {
@@ -1218,7 +1314,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 80,
+   "days_in_process": 93,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108767/documents/sehk26072701068.pdf"
   },
   {
@@ -1230,7 +1326,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 83,
+   "days_in_process": 96,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108735/documents/sehk26071401399.pdf"
   },
   {
@@ -1242,7 +1338,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 83,
+   "days_in_process": 96,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108752/documents/sehk26072401795.pdf"
   },
   {
@@ -1254,7 +1350,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 83,
+   "days_in_process": 96,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108754/documents/sehk26072401933.pdf"
   },
   {
@@ -1266,7 +1362,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 83,
+   "days_in_process": 96,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108755/documents/sehk26072402029.pdf"
   },
   {
@@ -1278,7 +1374,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 84,
+   "days_in_process": 97,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108732/documents/sehk26070900219.pdf"
   },
   {
@@ -1290,7 +1386,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 85,
+   "days_in_process": 98,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108749/documents/sehk26072200212.pdf"
   },
   {
@@ -1302,7 +1398,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 85,
+   "days_in_process": 98,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108730/documents/sehk26070801013.pdf"
   },
   {
@@ -1314,7 +1410,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 85,
+   "days_in_process": 98,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108750/documents/sehk26072201076.pdf"
   },
   {
@@ -1326,7 +1422,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 85,
+   "days_in_process": 98,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108751/documents/sehk26072201244.pdf"
   },
   {
@@ -1338,7 +1434,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 87,
+   "days_in_process": 100,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108748/documents/sehk26072001318.pdf"
   },
   {
@@ -1350,7 +1446,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 88,
+   "days_in_process": 101,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108746/documents/sehk26071900090.pdf"
   },
   {
@@ -1362,7 +1458,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 91,
+   "days_in_process": 104,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108738/documents/sehk26071600800.pdf"
   },
   {
@@ -1374,7 +1470,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 93,
+   "days_in_process": 106,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108701/documents/sehk26063002928.pdf"
   },
   {
@@ -1386,7 +1482,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 93,
+   "days_in_process": 106,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108703/documents/sehk26063003290.pdf"
   },
   {
@@ -1398,7 +1494,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 93,
+   "days_in_process": 106,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108702/documents/sehk26063003204.pdf"
   },
   {
@@ -1410,7 +1506,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 93,
+   "days_in_process": 106,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108736/documents/sehk26071401249.pdf"
   },
   {
@@ -1422,7 +1518,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 94,
+   "days_in_process": 107,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108700/documents/sehk26063002654.pdf"
   },
   {
@@ -1434,7 +1530,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 94,
+   "days_in_process": 107,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108697/documents/sehk26063000694.pdf"
   },
   {
@@ -1446,7 +1542,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 94,
+   "days_in_process": 107,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108734/documents/sehk26071301148.pdf"
   },
   {
@@ -1458,7 +1554,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 97,
+   "days_in_process": 110,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108686/documents/sehk26062602744.pdf"
   },
   {
@@ -1470,7 +1566,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 97,
+   "days_in_process": 110,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108733/documents/sehk26071001544.pdf"
   },
   {
@@ -1482,7 +1578,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 99,
+   "days_in_process": 112,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108684/documents/sehk26062601348.pdf"
   },
   {
@@ -1494,7 +1590,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 99,
+   "days_in_process": 112,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108731/documents/sehk26070801143.pdf"
   },
   {
@@ -1506,7 +1602,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 100,
+   "days_in_process": 113,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108729/documents/sehk26070701752.pdf"
   },
   {
@@ -1518,7 +1614,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 101,
+   "days_in_process": 114,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108667/documents/sehk26062201734.pdf"
   },
   {
@@ -1530,7 +1626,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 101,
+   "days_in_process": 114,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108728/documents/sehk26070601201.pdf"
   },
   {
@@ -1542,7 +1638,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 101,
+   "days_in_process": 114,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108674/documents/sehk26062401485.pdf"
   },
   {
@@ -1554,7 +1650,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 101,
+   "days_in_process": 114,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108666/documents/sehk26062201402.pdf"
   },
   {
@@ -1566,20 +1662,8 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 102,
+   "days_in_process": 115,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108726/documents/sehk26070500036.pdf"
-  },
-  {
-   "applicant": "HOSIN Global Electronics Co., Ltd.",
-   "app_id": 108712,
-   "first_filing": "2026-07-03",
-   "latest_submission": "2026-07-03",
-   "latest_kind": "Application Proof (1st submission)",
-   "has_phip": false,
-   "stage": "Application Proof only",
-   "sponsor_terminated": false,
-   "days_in_process": 104,
-   "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108712/documents/sehk26070300014.pdf"
   },
   {
    "applicant": "Jingze Biopharmaceutical (Hefei) Co., Ltd. - B",
@@ -1590,7 +1674,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 104,
+   "days_in_process": 117,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108713/documents/sehk26070302614.pdf"
   },
   {
@@ -1602,7 +1686,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 105,
+   "days_in_process": 118,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108711/documents/sehk26070201322.pdf"
   },
   {
@@ -1614,7 +1698,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 107,
+   "days_in_process": 120,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108696/documents/sehk26063000536.pdf"
   },
   {
@@ -1626,7 +1710,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 107,
+   "days_in_process": 120,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108652/documents/sehk26061701131.pdf"
   },
   {
@@ -1638,7 +1722,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 107,
+   "days_in_process": 120,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108698/documents/sehk26063000822.pdf"
   },
   {
@@ -1650,7 +1734,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 107,
+   "days_in_process": 120,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108699/documents/sehk26063002318.pdf"
   },
   {
@@ -1662,7 +1746,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 107,
+   "days_in_process": 120,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108653/documents/sehk26061701457.pdf"
   },
   {
@@ -1674,7 +1758,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 107,
+   "days_in_process": 120,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108648/documents/sehk26061601691.pdf"
   },
   {
@@ -1686,7 +1770,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 107,
+   "days_in_process": 120,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108705/documents/sehk26063003394.pdf"
   },
   {
@@ -1698,7 +1782,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 107,
+   "days_in_process": 120,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108706/documents/sehk26063003580.pdf"
   },
   {
@@ -1710,7 +1794,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 107,
+   "days_in_process": 120,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108708/documents/sehk26063003672.pdf"
   },
   {
@@ -1722,7 +1806,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 107,
+   "days_in_process": 120,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108707/documents/sehk26063003596.pdf"
   },
   {
@@ -1734,7 +1818,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 107,
+   "days_in_process": 120,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108709/documents/sehk26063003758.pdf"
   },
   {
@@ -1746,7 +1830,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 107,
+   "days_in_process": 120,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108710/documents/sehk26063003834.pdf"
   },
   {
@@ -1758,7 +1842,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 108,
+   "days_in_process": 121,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108690/documents/sehk26062900564.pdf"
   },
   {
@@ -1770,7 +1854,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 108,
+   "days_in_process": 121,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108650/documents/sehk26061601965.pdf"
   },
   {
@@ -1782,7 +1866,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 108,
+   "days_in_process": 121,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108639/documents/sehk26061400174.pdf"
   },
   {
@@ -1794,7 +1878,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 108,
+   "days_in_process": 121,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108692/documents/sehk26062901798.pdf"
   },
   {
@@ -1806,7 +1890,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 108,
+   "days_in_process": 121,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108649/documents/sehk26061601771.pdf"
   },
   {
@@ -1818,7 +1902,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 108,
+   "days_in_process": 121,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108693/documents/sehk26062902402.pdf"
   },
   {
@@ -1830,7 +1914,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 108,
+   "days_in_process": 121,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108694/documents/sehk26062902260.pdf"
   },
   {
@@ -1842,7 +1926,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 109,
+   "days_in_process": 122,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108641/documents/sehk26061500394.pdf"
   },
   {
@@ -1854,7 +1938,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 111,
+   "days_in_process": 124,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108682/documents/sehk26062601139.pdf"
   },
   {
@@ -1866,7 +1950,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 111,
+   "days_in_process": 124,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108685/documents/sehk26062601710.pdf"
   },
   {
@@ -1878,7 +1962,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 111,
+   "days_in_process": 124,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108687/documents/sehk26062602940.pdf"
   },
   {
@@ -1890,7 +1974,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 111,
+   "days_in_process": 124,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108688/documents/sehk26062603130.pdf"
   },
   {
@@ -1902,7 +1986,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 112,
+   "days_in_process": 125,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108676/documents/sehk26062500407.pdf"
   },
   {
@@ -1914,7 +1998,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 112,
+   "days_in_process": 125,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108679/documents/sehk26062500974.pdf"
   },
   {
@@ -1926,7 +2010,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 112,
+   "days_in_process": 125,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108637/documents/sehk26061202115.pdf"
   },
   {
@@ -1938,7 +2022,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 112,
+   "days_in_process": 125,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108680/documents/sehk26062502081.pdf"
   },
   {
@@ -1950,7 +2034,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 112,
+   "days_in_process": 125,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108681/documents/sehk26062502157.pdf"
   },
   {
@@ -1962,7 +2046,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 113,
+   "days_in_process": 126,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108629/documents/sehk26061000308.pdf"
   },
   {
@@ -1974,7 +2058,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 113,
+   "days_in_process": 126,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108675/documents/sehk26062401557.pdf"
   },
   {
@@ -1986,7 +2070,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 113,
+   "days_in_process": 126,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108646/documents/sehk26061600394.pdf"
   },
   {
@@ -1998,7 +2082,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 113,
+   "days_in_process": 126,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108673/documents/sehk26062401801.pdf"
   },
   {
@@ -2010,7 +2094,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 114,
+   "days_in_process": 127,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108632/documents/sehk26061100226.pdf"
   },
   {
@@ -2022,7 +2106,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 114,
+   "days_in_process": 127,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108627/documents/sehk26060901287.pdf"
   },
   {
@@ -2034,7 +2118,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 114,
+   "days_in_process": 127,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108671/documents/sehk26062301349.pdf"
   },
   {
@@ -2046,7 +2130,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 114,
+   "days_in_process": 127,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108672/documents/sehk26062301872.pdf"
   },
   {
@@ -2058,7 +2142,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 115,
+   "days_in_process": 128,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108668/documents/sehk26062201516.pdf"
   },
   {
@@ -2070,7 +2154,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 115,
+   "days_in_process": 128,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108669/documents/sehk26062201788.pdf"
   },
   {
@@ -2082,7 +2166,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 119,
+   "days_in_process": 132,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108655/documents/sehk26061801751.pdf"
   },
   {
@@ -2094,7 +2178,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 119,
+   "days_in_process": 132,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108657/documents/sehk26061801931.pdf"
   },
   {
@@ -2106,7 +2190,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 119,
+   "days_in_process": 132,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108660/documents/sehk26061802175.pdf"
   },
   {
@@ -2118,7 +2202,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 120,
+   "days_in_process": 133,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108651/documents/sehk26061700701.pdf"
   },
   {
@@ -2130,7 +2214,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 120,
+   "days_in_process": 133,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108654/documents/sehk26061701847.pdf"
   },
   {
@@ -2142,7 +2226,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 121,
+   "days_in_process": 134,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108647/documents/sehk26061600484.pdf"
   },
   {
@@ -2154,7 +2238,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 122,
+   "days_in_process": 135,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108642/documents/sehk26061501627.pdf"
   },
   {
@@ -2166,7 +2250,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 122,
+   "days_in_process": 135,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108643/documents/sehk26061501863.pdf"
   },
   {
@@ -2178,7 +2262,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 122,
+   "days_in_process": 135,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108644/documents/sehk26061502025.pdf"
   },
   {
@@ -2190,7 +2274,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 123,
+   "days_in_process": 136,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108640/documents/sehk26061400250.pdf"
   },
   {
@@ -2202,7 +2286,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 125,
+   "days_in_process": 138,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108593/documents/sehk26052900642.pdf"
   },
   {
@@ -2214,7 +2298,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 125,
+   "days_in_process": 138,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108595/documents/sehk26052902299.pdf"
   },
   {
@@ -2226,7 +2310,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 125,
+   "days_in_process": 138,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108598/documents/sehk26052903009.pdf"
   },
   {
@@ -2238,7 +2322,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 125,
+   "days_in_process": 138,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108601/documents/sehk26052903333.pdf"
   },
   {
@@ -2250,7 +2334,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 125,
+   "days_in_process": 138,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108590/documents/sehk26052900146.pdf"
   },
   {
@@ -2262,7 +2346,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 125,
+   "days_in_process": 138,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108634/documents/sehk26061201749.pdf"
   },
   {
@@ -2274,7 +2358,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 125,
+   "days_in_process": 138,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108635/documents/sehk26061201929.pdf"
   },
   {
@@ -2286,7 +2370,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 125,
+   "days_in_process": 138,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108636/documents/sehk26061201939.pdf"
   },
   {
@@ -2298,7 +2382,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 125,
+   "days_in_process": 138,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108638/documents/sehk26061202231.pdf"
   },
   {
@@ -2310,7 +2394,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 126,
+   "days_in_process": 139,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108585/documents/sehk26052802312.pdf"
   },
   {
@@ -2322,7 +2406,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 126,
+   "days_in_process": 139,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108633/documents/sehk26061101768.pdf"
   },
   {
@@ -2334,7 +2418,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 127,
+   "days_in_process": 140,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108628/documents/sehk26061000116.pdf"
   },
   {
@@ -2346,7 +2430,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 127,
+   "days_in_process": 140,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108586/documents/sehk26052802742.pdf"
   },
   {
@@ -2358,7 +2442,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 127,
+   "days_in_process": 140,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108582/documents/sehk26052702039.pdf"
   },
   {
@@ -2370,7 +2454,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 127,
+   "days_in_process": 140,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108579/documents/sehk26052701601.pdf"
   },
   {
@@ -2382,7 +2466,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 127,
+   "days_in_process": 140,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108581/documents/sehk26052701855.pdf"
   },
   {
@@ -2394,7 +2478,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 127,
+   "days_in_process": 140,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108630/documents/sehk26061001677.pdf"
   },
   {
@@ -2406,7 +2490,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 129,
+   "days_in_process": 142,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108578/documents/sehk26052701531.pdf"
   },
   {
@@ -2418,20 +2502,8 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 129,
+   "days_in_process": 142,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108620/documents/sehk26060800899.pdf"
-  },
-  {
-   "applicant": "Ganzhou Hemay Pharmaceutical Co., Ltd. - B",
-   "app_id": 108622,
-   "first_filing": "2026-06-08",
-   "latest_submission": "2026-06-08",
-   "latest_kind": "Application Proof (1st submission)",
-   "has_phip": false,
-   "stage": "Application Proof only",
-   "sponsor_terminated": false,
-   "days_in_process": 129,
-   "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108622/documents/sehk26060801665.pdf"
   },
   {
    "applicant": "Hangzhou Highlightll Pharmaceutical Co., Ltd. - B",
@@ -2442,7 +2514,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 129,
+   "days_in_process": 142,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108625/documents/sehk26060802151.pdf"
   },
   {
@@ -2454,7 +2526,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 130,
+   "days_in_process": 143,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108567/documents/sehk26052500090.pdf"
   },
   {
@@ -2466,7 +2538,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 130,
+   "days_in_process": 143,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108619/documents/sehk26060700172.pdf"
   },
   {
@@ -2478,7 +2550,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 132,
+   "days_in_process": 145,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108615/documents/sehk26060502315.pdf"
   },
   {
@@ -2490,7 +2562,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 132,
+   "days_in_process": 145,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108617/documents/sehk26060502523.pdf"
   },
   {
@@ -2502,7 +2574,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 132,
+   "days_in_process": 145,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108618/documents/sehk26060502611.pdf"
   },
   {
@@ -2514,7 +2586,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 132,
+   "days_in_process": 145,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108616/documents/sehk26060502747.pdf"
   },
   {
@@ -2526,7 +2598,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 133,
+   "days_in_process": 146,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108562/documents/sehk26052201821.pdf"
   },
   {
@@ -2538,7 +2610,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 133,
+   "days_in_process": 146,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108570/documents/sehk26052600208.pdf"
   },
   {
@@ -2550,7 +2622,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 136,
+   "days_in_process": 149,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108610/documents/sehk26060101084.pdf"
   },
   {
@@ -2562,7 +2634,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 136,
+   "days_in_process": 149,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108611/documents/sehk26060103681.pdf"
   },
   {
@@ -2574,7 +2646,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 137,
+   "days_in_process": 150,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108608/documents/sehk26053100070.pdf"
   },
   {
@@ -2586,7 +2658,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 137,
+   "days_in_process": 150,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108609/documents/sehk26053100148.pdf"
   },
   {
@@ -2598,7 +2670,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 139,
+   "days_in_process": 152,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108591/documents/sehk26052900388.pdf"
   },
   {
@@ -2610,7 +2682,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 139,
+   "days_in_process": 152,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108592/documents/sehk26052900548.pdf"
   },
   {
@@ -2622,7 +2694,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 139,
+   "days_in_process": 152,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108541/documents/sehk26051500227.pdf"
   },
   {
@@ -2634,7 +2706,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 139,
+   "days_in_process": 152,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108596/documents/sehk26052902439.pdf"
   },
   {
@@ -2646,7 +2718,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 139,
+   "days_in_process": 152,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108597/documents/sehk26052902839.pdf"
   },
   {
@@ -2658,7 +2730,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 139,
+   "days_in_process": 152,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108600/documents/sehk26052903257.pdf"
   },
   {
@@ -2670,7 +2742,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 139,
+   "days_in_process": 152,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108599/documents/sehk26052903187.pdf"
   },
   {
@@ -2682,7 +2754,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 139,
+   "days_in_process": 152,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108603/documents/sehk26052903557.pdf"
   },
   {
@@ -2694,7 +2766,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 140,
+   "days_in_process": 153,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108545/documents/sehk26051502046.pdf"
   },
   {
@@ -2706,7 +2778,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 140,
+   "days_in_process": 153,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108583/documents/sehk26052801452.pdf"
   },
   {
@@ -2718,7 +2790,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 140,
+   "days_in_process": 153,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108540/documents/sehk26051500134.pdf"
   },
   {
@@ -2730,7 +2802,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 140,
+   "days_in_process": 153,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108584/documents/sehk26052802306.pdf"
   },
   {
@@ -2742,7 +2814,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 140,
+   "days_in_process": 153,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108587/documents/sehk26052802472.pdf"
   },
   {
@@ -2754,7 +2826,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 140,
+   "days_in_process": 153,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108588/documents/sehk26052802580.pdf"
   },
   {
@@ -2766,7 +2838,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 141,
+   "days_in_process": 154,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108577/documents/sehk26052700114.pdf"
   },
   {
@@ -2778,7 +2850,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 141,
+   "days_in_process": 154,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108580/documents/sehk26052701981.pdf"
   },
   {
@@ -2790,7 +2862,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 142,
+   "days_in_process": 155,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108573/documents/sehk26052601653.pdf"
   },
   {
@@ -2802,7 +2874,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 142,
+   "days_in_process": 155,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108574/documents/sehk26052602073.pdf"
   },
   {
@@ -2814,7 +2886,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 143,
+   "days_in_process": 156,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108566/documents/sehk26052500248.pdf"
   },
   {
@@ -2826,7 +2898,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 143,
+   "days_in_process": 156,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108530/documents/sehk26051101903.pdf"
   },
   {
@@ -2838,7 +2910,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 146,
+   "days_in_process": 159,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108563/documents/sehk26052201903.pdf"
   },
   {
@@ -2850,7 +2922,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 146,
+   "days_in_process": 159,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108564/documents/sehk26052201995.pdf"
   },
   {
@@ -2862,20 +2934,8 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 146,
+   "days_in_process": 159,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108559/documents/sehk26052100343.pdf"
-  },
-  {
-   "applicant": "Jiangsu Silicon Integrity Semiconductor Technology Co., Ltd.",
-   "app_id": 108516,
-   "first_filing": "2026-05-22",
-   "latest_submission": "2026-05-22",
-   "latest_kind": "Application Proof (1st submission)",
-   "has_phip": false,
-   "stage": "Application Proof only",
-   "sponsor_terminated": false,
-   "days_in_process": 146,
-   "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108516/documents/sehk26050801313.pdf"
   },
   {
    "applicant": "EnjoyGo Technology Limited",
@@ -2886,7 +2946,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 146,
+   "days_in_process": 159,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108565/documents/sehk26052202201.pdf"
   },
   {
@@ -2898,7 +2958,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 146,
+   "days_in_process": 159,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108532/documents/sehk26051200032.pdf"
   },
   {
@@ -2910,7 +2970,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 147,
+   "days_in_process": 160,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108560/documents/sehk26052101521.pdf"
   },
   {
@@ -2922,7 +2982,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 148,
+   "days_in_process": 161,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108512/documents/sehk26050602893.pdf"
   },
   {
@@ -2934,7 +2994,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 148,
+   "days_in_process": 161,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108552/documents/sehk26052000951.pdf"
   },
   {
@@ -2946,7 +3006,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 148,
+   "days_in_process": 161,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108554/documents/sehk26052001369.pdf"
   },
   {
@@ -2958,20 +3018,8 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 148,
+   "days_in_process": 161,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108556/documents/sehk26052001553.pdf"
-  },
-  {
-   "applicant": "CTG Hongkong and Macao Culture and Tourism Holding Limited",
-   "app_id": 108558,
-   "first_filing": "2026-05-20",
-   "latest_submission": "2026-05-20",
-   "latest_kind": "Application Proof (1st submission)",
-   "has_phip": false,
-   "stage": "Application Proof only",
-   "sponsor_terminated": false,
-   "days_in_process": 148,
-   "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108558/documents/sehk26052001857.pdf"
   },
   {
    "applicant": "Tage iDriver Technology Co., Ltd.",
@@ -2982,7 +3030,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 148,
+   "days_in_process": 161,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108557/documents/sehk26052001787.pdf"
   },
   {
@@ -2994,7 +3042,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 149,
+   "days_in_process": 162,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108549/documents/sehk26051901284.pdf"
   },
   {
@@ -3006,7 +3054,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 150,
+   "days_in_process": 163,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108546/documents/sehk26051800258.pdf"
   },
   {
@@ -3018,7 +3066,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 150,
+   "days_in_process": 163,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108547/documents/sehk26051801467.pdf"
   },
   {
@@ -3030,7 +3078,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 150,
+   "days_in_process": 163,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108548/documents/sehk26051801597.pdf"
   },
   {
@@ -3042,7 +3090,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 153,
+   "days_in_process": 166,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108537/documents/sehk26051401533.pdf"
   },
   {
@@ -3054,7 +3102,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 153,
+   "days_in_process": 166,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108542/documents/sehk26051501574.pdf"
   },
   {
@@ -3066,7 +3114,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 153,
+   "days_in_process": 166,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108544/documents/sehk26051501734.pdf"
   },
   {
@@ -3078,7 +3126,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 153,
+   "days_in_process": 166,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108543/documents/sehk26051501892.pdf"
   },
   {
@@ -3090,7 +3138,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 154,
+   "days_in_process": 167,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108536/documents/sehk26051401391.pdf"
   },
   {
@@ -3102,7 +3150,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 154,
+   "days_in_process": 167,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108538/documents/sehk26051401717.pdf"
   },
   {
@@ -3114,7 +3162,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 154,
+   "days_in_process": 167,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108539/documents/sehk26051401789.pdf"
   },
   {
@@ -3126,20 +3174,8 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 155,
+   "days_in_process": 168,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108534/documents/sehk26051301026.pdf"
-  },
-  {
-   "applicant": "Sichuan Neautus Traditional Chinese Medicine Co., Ltd.",
-   "app_id": 108487,
-   "first_filing": "2026-05-13",
-   "latest_submission": "2026-05-13",
-   "latest_kind": "Application Proof (1st submission)",
-   "has_phip": false,
-   "stage": "Application Proof only",
-   "sponsor_terminated": false,
-   "days_in_process": 155,
-   "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108487/documents/sehk26043002708.pdf"
   },
   {
    "applicant": "BIWIN STORAGE TECHNOLOY CO., LTD.",
@@ -3150,7 +3186,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 156,
+   "days_in_process": 169,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108533/documents/sehk26051201579.pdf"
   },
   {
@@ -3162,7 +3198,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 157,
+   "days_in_process": 170,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108527/documents/sehk26051100710.pdf"
   },
   {
@@ -3174,7 +3210,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 157,
+   "days_in_process": 170,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108470/documents/sehk26042703383.pdf"
   },
   {
@@ -3186,7 +3222,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 157,
+   "days_in_process": 170,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108529/documents/sehk26051101259.pdf"
   },
   {
@@ -3198,7 +3234,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 158,
+   "days_in_process": 171,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108526/documents/sehk26051000200.pdf"
   },
   {
@@ -3210,7 +3246,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 160,
+   "days_in_process": 173,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108460/documents/sehk26042702865.pdf"
   },
   {
@@ -3222,7 +3258,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 160,
+   "days_in_process": 173,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108515/documents/sehk26050800288.pdf"
   },
   {
@@ -3234,7 +3270,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 160,
+   "days_in_process": 173,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108462/documents/sehk26042402872.pdf"
   },
   {
@@ -3246,7 +3282,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 160,
+   "days_in_process": 173,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108517/documents/sehk26050801725.pdf"
   },
   {
@@ -3258,20 +3294,8 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 161,
+   "days_in_process": 174,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108466/documents/sehk26042403757.pdf"
-  },
-  {
-   "applicant": "Makesense Energy Technology Co., Limited",
-   "app_id": 108463,
-   "first_filing": "2026-05-07",
-   "latest_submission": "2026-05-07",
-   "latest_kind": "Application Proof (1st submission)",
-   "has_phip": false,
-   "stage": "Application Proof only",
-   "sponsor_terminated": false,
-   "days_in_process": 161,
-   "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108463/documents/sehk26042403313.pdf"
   },
   {
    "applicant": "DeepWay Technology Co., Ltd.",
@@ -3282,7 +3306,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 161,
+   "days_in_process": 174,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108514/documents/sehk26050702257.pdf"
   },
   {
@@ -3294,7 +3318,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 162,
+   "days_in_process": 175,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108511/documents/sehk26050600118.pdf"
   },
   {
@@ -3306,7 +3330,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 164,
+   "days_in_process": 177,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108506/documents/sehk26050400896.pdf"
   },
   {
@@ -3318,7 +3342,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 168,
+   "days_in_process": 181,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108451/documents/sehk26041701854.pdf"
   },
   {
@@ -3330,7 +3354,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 168,
+   "days_in_process": 181,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108488/documents/sehk26043002914.pdf"
   },
   {
@@ -3342,7 +3366,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 168,
+   "days_in_process": 181,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108489/documents/sehk26043003575.pdf"
   },
   {
@@ -3354,7 +3378,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 168,
+   "days_in_process": 181,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108490/documents/sehk26043003971.pdf"
   },
   {
@@ -3366,7 +3390,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 168,
+   "days_in_process": 181,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108491/documents/sehk26043004089.pdf"
   },
   {
@@ -3378,7 +3402,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 168,
+   "days_in_process": 181,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108492/documents/sehk26043004423.pdf"
   },
   {
@@ -3390,7 +3414,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 169,
+   "days_in_process": 182,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108478/documents/sehk26042900256.pdf"
   },
   {
@@ -3402,32 +3426,8 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 169,
+   "days_in_process": 182,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108479/documents/sehk26042902289.pdf"
-  },
-  {
-   "applicant": "Nanjing Lingxing Technology Co., Ltd.",
-   "app_id": 108458,
-   "first_filing": "2026-04-29",
-   "latest_submission": "2026-04-29",
-   "latest_kind": "Application Proof (1st submission)",
-   "has_phip": false,
-   "stage": "Application Proof only",
-   "sponsor_terminated": false,
-   "days_in_process": 169,
-   "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108458/documents/sehk26042202191.pdf"
-  },
-  {
-   "applicant": "Shanghai Buy Quickly BMax Technology Services Group Co., Ltd.",
-   "app_id": 108481,
-   "first_filing": "2026-04-29",
-   "latest_submission": "2026-04-29",
-   "latest_kind": "Application Proof (1st submission)",
-   "has_phip": false,
-   "stage": "Application Proof only",
-   "sponsor_terminated": false,
-   "days_in_process": 169,
-   "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108481/documents/sehk26042904997.pdf"
   },
   {
    "applicant": "Shanghai Fullhan Microelectronics Co., Ltd.",
@@ -3438,7 +3438,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 169,
+   "days_in_process": 182,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108482/documents/sehk26042905483.pdf"
   },
   {
@@ -3450,7 +3450,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 169,
+   "days_in_process": 182,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108484/documents/sehk26042906017.pdf"
   },
   {
@@ -3462,7 +3462,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 169,
+   "days_in_process": 182,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108485/documents/sehk26042906033.pdf"
   },
   {
@@ -3474,7 +3474,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 169,
+   "days_in_process": 182,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108486/documents/sehk26042906339.pdf"
   },
   {
@@ -3486,20 +3486,8 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 170,
+   "days_in_process": 183,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108472/documents/sehk26042802304.pdf"
-  },
-  {
-   "applicant": "Shenzhen Chuangzhi Semi-link Technology Co., Ltd.",
-   "app_id": 108473,
-   "first_filing": "2026-04-28",
-   "latest_submission": "2026-04-28",
-   "latest_kind": "Application Proof (1st submission)",
-   "has_phip": false,
-   "stage": "Application Proof only",
-   "sponsor_terminated": false,
-   "days_in_process": 170,
-   "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108473/documents/sehk26042804160.pdf"
   },
   {
    "applicant": "Wuhan Silicon Integrated Co., Ltd.",
@@ -3510,7 +3498,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 170,
+   "days_in_process": 183,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108474/documents/sehk26042804614.pdf"
   },
   {
@@ -3522,7 +3510,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 170,
+   "days_in_process": 183,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108476/documents/sehk26042804898.pdf"
   },
   {
@@ -3534,7 +3522,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 170,
+   "days_in_process": 183,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108477/documents/sehk26042804992.pdf"
   },
   {
@@ -3546,7 +3534,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 170,
+   "days_in_process": 183,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108475/documents/sehk26042805160.pdf"
   },
   {
@@ -3558,7 +3546,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 171,
+   "days_in_process": 184,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108469/documents/sehk26042700426.pdf"
   },
   {
@@ -3570,7 +3558,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 171,
+   "days_in_process": 184,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108443/documents/sehk26041301459.pdf"
   },
   {
@@ -3582,7 +3570,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 171,
+   "days_in_process": 184,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108471/documents/sehk26042703391.pdf"
   },
   {
@@ -3594,7 +3582,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 174,
+   "days_in_process": 187,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108461/documents/sehk26042400514.pdf"
   },
   {
@@ -3606,20 +3594,8 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 174,
+   "days_in_process": 187,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108465/documents/sehk26042403683.pdf"
-  },
-  {
-   "applicant": "Horen Cortp Co., Ltd.",
-   "app_id": 108468,
-   "first_filing": "2026-04-24",
-   "latest_submission": "2026-04-24",
-   "latest_kind": "Application Proof (1st submission)",
-   "has_phip": false,
-   "stage": "Application Proof only",
-   "sponsor_terminated": false,
-   "days_in_process": 174,
-   "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108468/documents/sehk26042403975.pdf"
   },
   {
    "applicant": "Beijing QL Biopharmaceutical Co., Ltd - B",
@@ -3630,7 +3606,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 174,
+   "days_in_process": 187,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108464/documents/sehk26042404195.pdf"
   },
   {
@@ -3642,20 +3618,8 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 175,
+   "days_in_process": 188,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108432/documents/sehk26041000707.pdf"
-  },
-  {
-   "applicant": "JVS (Suzhou) Technologies Co., Ltd.",
-   "app_id": 108459,
-   "first_filing": "2026-04-23",
-   "latest_submission": "2026-04-23",
-   "latest_kind": "Application Proof (1st submission)",
-   "has_phip": false,
-   "stage": "Application Proof only",
-   "sponsor_terminated": false,
-   "days_in_process": 175,
-   "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108459/documents/sehk26042302879.pdf"
   },
   {
    "applicant": "Beijing Yuanxin Technology Group Co., Ltd.",
@@ -3666,7 +3630,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 176,
+   "days_in_process": 189,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108456/documents/sehk26042200306.pdf"
   },
   {
@@ -3678,7 +3642,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 176,
+   "days_in_process": 189,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108457/documents/sehk26042201933.pdf"
   },
   {
@@ -3690,7 +3654,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 177,
+   "days_in_process": 190,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108454/documents/sehk26042100868.pdf"
   },
   {
@@ -3702,20 +3666,8 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 177,
+   "days_in_process": 190,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108455/documents/sehk26042101751.pdf"
-  },
-  {
-   "applicant": "WeiMai Inc.",
-   "app_id": 108452,
-   "first_filing": "2026-04-20",
-   "latest_submission": "2026-04-20",
-   "latest_kind": "Application Proof (1st submission)",
-   "has_phip": false,
-   "stage": "Application Proof only",
-   "sponsor_terminated": false,
-   "days_in_process": 178,
-   "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108452/documents/sehk26042001783.pdf"
   },
   {
    "applicant": "Wuhan DR Laser Technology Corp., Ltd",
@@ -3726,7 +3678,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 178,
+   "days_in_process": 191,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108453/documents/sehk26042001857.pdf"
   },
   {
@@ -3738,7 +3690,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 181,
+   "days_in_process": 194,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108450/documents/sehk26041701684.pdf"
   },
   {
@@ -3750,7 +3702,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 182,
+   "days_in_process": 195,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108408/documents/sehk26040203409.pdf"
   },
   {
@@ -3762,7 +3714,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 182,
+   "days_in_process": 195,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108401/documents/sehk26040202349.pdf"
   },
   {
@@ -3774,7 +3726,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 182,
+   "days_in_process": 195,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108449/documents/sehk26041601833.pdf"
   },
   {
@@ -3786,7 +3738,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 182,
+   "days_in_process": 195,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108410/documents/sehk26040203645.pdf"
   },
   {
@@ -3798,7 +3750,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 183,
+   "days_in_process": 196,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108447/documents/sehk26041501617.pdf"
   },
   {
@@ -3810,7 +3762,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 184,
+   "days_in_process": 197,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108392/documents/sehk26040104033.pdf"
   },
   {
@@ -3822,7 +3774,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 185,
+   "days_in_process": 198,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108441/documents/sehk26041301037.pdf"
   },
   {
@@ -3834,7 +3786,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 186,
+   "days_in_process": 199,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108437/documents/sehk26041200164.pdf"
   },
   {
@@ -3846,7 +3798,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 186,
+   "days_in_process": 199,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108439/documents/sehk26041200178.pdf"
   },
   {
@@ -3858,7 +3810,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 188,
+   "days_in_process": 201,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108433/documents/sehk26041001334.pdf"
   },
   {
@@ -3870,7 +3822,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 188,
+   "days_in_process": 201,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108434/documents/sehk26041001574.pdf"
   },
   {
@@ -3882,7 +3834,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 188,
+   "days_in_process": 201,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108435/documents/sehk26041001586.pdf"
   },
   {
@@ -3894,7 +3846,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 190,
+   "days_in_process": 203,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108429/documents/sehk26040800244.pdf"
   },
   {
@@ -3906,7 +3858,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 190,
+   "days_in_process": 203,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108389/documents/sehk26033104398.pdf"
   },
   {
@@ -3918,7 +3870,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 191,
+   "days_in_process": 204,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108326/documents/sehk26032500810.pdf"
   },
   {
@@ -3930,7 +3882,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 191,
+   "days_in_process": 204,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108428/documents/sehk26040700274.pdf"
   },
   {
@@ -3942,7 +3894,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 196,
+   "days_in_process": 209,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108403/documents/sehk26040202801.pdf"
   },
   {
@@ -3954,7 +3906,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 196,
+   "days_in_process": 209,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108404/documents/sehk26040202893.pdf"
   },
   {
@@ -3966,7 +3918,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 196,
+   "days_in_process": 209,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108405/documents/sehk26040203143.pdf"
   },
   {
@@ -3978,7 +3930,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 196,
+   "days_in_process": 209,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108407/documents/sehk26040203315.pdf"
   },
   {
@@ -3990,7 +3942,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 196,
+   "days_in_process": 209,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108412/documents/sehk26040203667.pdf"
   },
   {
@@ -4002,7 +3954,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 196,
+   "days_in_process": 209,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108414/documents/sehk26040203883.pdf"
   },
   {
@@ -4014,7 +3966,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 196,
+   "days_in_process": 209,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108415/documents/sehk26040203973.pdf"
   },
   {
@@ -4026,7 +3978,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 197,
+   "days_in_process": 210,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108391/documents/sehk26040103901.pdf"
   },
   {
@@ -4038,7 +3990,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 197,
+   "days_in_process": 210,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108393/documents/sehk26040104159.pdf"
   },
   {
@@ -4050,7 +4002,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 197,
+   "days_in_process": 210,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108397/documents/sehk26040104509.pdf"
   },
   {
@@ -4062,7 +4014,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 198,
+   "days_in_process": 211,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108370/documents/sehk26033003883.pdf"
   },
   {
@@ -4074,7 +4026,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 198,
+   "days_in_process": 211,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108376/documents/sehk26033101714.pdf"
   },
   {
@@ -4086,7 +4038,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 198,
+   "days_in_process": 211,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108378/documents/sehk26033102184.pdf"
   },
   {
@@ -4098,7 +4050,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 198,
+   "days_in_process": 211,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108377/documents/sehk26033102752.pdf"
   },
   {
@@ -4110,7 +4062,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 198,
+   "days_in_process": 211,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108381/documents/sehk26033103112.pdf"
   },
   {
@@ -4122,7 +4074,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 198,
+   "days_in_process": 211,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108379/documents/sehk26033103502.pdf"
   },
   {
@@ -4134,7 +4086,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 198,
+   "days_in_process": 211,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108384/documents/sehk26033103586.pdf"
   },
   {
@@ -4146,7 +4098,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 198,
+   "days_in_process": 211,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108385/documents/sehk26033103768.pdf"
   },
   {
@@ -4158,7 +4110,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 198,
+   "days_in_process": 211,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108387/documents/sehk26033104148.pdf"
   },
   {
@@ -4170,7 +4122,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 199,
+   "days_in_process": 212,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108368/documents/sehk26033000687.pdf"
   },
   {
@@ -4182,7 +4134,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 199,
+   "days_in_process": 212,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108313/documents/sehk26031602057.pdf"
   },
   {
@@ -4194,7 +4146,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 199,
+   "days_in_process": 212,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108372/documents/sehk26033004159.pdf"
   },
   {
@@ -4206,7 +4158,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 200,
+   "days_in_process": 213,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108367/documents/sehk26032900730.pdf"
   },
   {
@@ -4218,7 +4170,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 202,
+   "days_in_process": 215,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108338/documents/sehk26032700634.pdf"
   },
   {
@@ -4230,7 +4182,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 202,
+   "days_in_process": 215,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108341/documents/sehk26032702407.pdf"
   },
   {
@@ -4242,7 +4194,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 202,
+   "days_in_process": 215,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108342/documents/sehk26032703683.pdf"
   },
   {
@@ -4254,7 +4206,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 202,
+   "days_in_process": 215,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108343/documents/sehk26032703919.pdf"
   },
   {
@@ -4266,7 +4218,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 202,
+   "days_in_process": 215,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108346/documents/sehk26032704137.pdf"
   },
   {
@@ -4278,7 +4230,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 203,
+   "days_in_process": 216,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108332/documents/sehk26032600137.pdf"
   },
   {
@@ -4290,7 +4242,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 203,
+   "days_in_process": 216,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108333/documents/sehk26032601489.pdf"
   },
   {
@@ -4302,7 +4254,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 203,
+   "days_in_process": 216,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108334/documents/sehk26032602243.pdf"
   },
   {
@@ -4314,7 +4266,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 205,
+   "days_in_process": 218,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108325/documents/sehk26032401823.pdf"
   },
   {
@@ -4326,7 +4278,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 206,
+   "days_in_process": 219,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108322/documents/sehk26032301281.pdf"
   },
   {
@@ -4338,7 +4290,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 206,
+   "days_in_process": 219,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108324/documents/sehk26032301807.pdf"
   },
   {
@@ -4350,7 +4302,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 209,
+   "days_in_process": 222,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108320/documents/sehk26032001843.pdf"
   },
   {
@@ -4362,7 +4314,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 211,
+   "days_in_process": 224,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108316/documents/sehk26031800038.pdf"
   },
   {
@@ -4374,7 +4326,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 212,
+   "days_in_process": 225,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108315/documents/sehk26031701661.pdf"
   },
   {
@@ -4386,7 +4338,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 213,
+   "days_in_process": 226,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108311/documents/sehk26031600232.pdf"
   },
   {
@@ -4398,7 +4350,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 214,
+   "days_in_process": 227,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108306/documents/sehk26031500054.pdf"
   },
   {
@@ -4410,7 +4362,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 216,
+   "days_in_process": 229,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108290/documents/sehk26031301894.pdf"
   },
   {
@@ -4422,7 +4374,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 216,
+   "days_in_process": 229,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108259/documents/sehk26022702275.pdf"
   },
   {
@@ -4434,7 +4386,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 217,
+   "days_in_process": 230,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108255/documents/sehk26022702543.pdf"
   },
   {
@@ -4446,7 +4398,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 223,
+   "days_in_process": 236,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108266/documents/sehk26030600646.pdf"
   },
   {
@@ -4458,7 +4410,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 230,
+   "days_in_process": 243,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108256/documents/sehk26022701885.pdf"
   },
   {
@@ -4470,20 +4422,8 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 230,
+   "days_in_process": 243,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108257/documents/sehk26022701969.pdf"
-  },
-  {
-   "applicant": "COL Global Co., Ltd.",
-   "app_id": 108260,
-   "first_filing": "2026-02-27",
-   "latest_submission": "2026-02-27",
-   "latest_kind": "Application Proof (1st submission)",
-   "has_phip": false,
-   "stage": "Application Proof only",
-   "sponsor_terminated": false,
-   "days_in_process": 230,
-   "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108260/documents/sehk26022702475.pdf"
   },
   {
    "applicant": "Qingdao TGOOD Electric Co., Ltd.",
@@ -4494,7 +4434,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 231,
+   "days_in_process": 244,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2026/108252/documents/sehk26022601054.pdf"
   },
   {
@@ -4506,7 +4446,7 @@
    "has_phip": false,
    "stage": "Application Proof only",
    "sponsor_terminated": false,
-   "days_in_process": 363,
+   "days_in_process": 376,
    "doc_link": "https://www1.hkexnews.hk/app/sehk/2025/107796/documents/sehk25101701817.pdf"
   }
  ]

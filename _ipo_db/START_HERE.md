@@ -4,6 +4,84 @@ Read this file, then `data/release_state.json`. The latest instruction wins over
 older dated entries in `MAINTENANCE.md`. This file is intended for the next AI or
 analyst, including a session with no conversation history.
 
+## 28 October: new listing, daily A/H changes and all Excel charts
+
+Prepared for GitHub main with the user's explicit publication request.
+See `data/release_state.json` for the verified publication status. Future
+changes require their own publication authorization.
+
+527 database IPOs, 717 IPO Live stocks, 72 A/H pairs, 21 pipeline rows. DSBJ
+(2384 / 002384.SZ) listed 28 October: offer HK$86.80, public/institutional
+subscription 0.52x/3.17x, 50.00% cornerstone allocation, 20 allocation groups
+comprising 24 separately named legal investors. Primary evidence and rejected
+vendor observations are under `data/update_20261028/`; accepted inputs are
+`data/batches/latest_listed_review_20261028.json`. 6157 and 3275 are postponed
+under issuer filings. Official AP/PHIP membership was refreshed; unparsed new
+financial terms remain missing. The existing 526 issuers' numeric fields are
+unchanged. Historical lock-ups remain 161 events / 158 stocks.
+
+IPO Live's dated snapshot has 702 valid quotes from a 717-stock request, with
+latest date 28 October. Missing/stale/debut references do not enter the daily
+average. This is not a complete historical refresh: 70 A/H pairs remain at
+2 October, Transsion at 15 October, DSBJ at 28 October. DSBJ uses the completed
+27 October FX daily close (28 October's UTC FX bar was unfinished). Peer
+histories remain 2 October. No later point is fabricated.
+
+AH table is A:I: A/H codes, sector, subsector, IPO/current premium, then 1D,
+7D and 1M premium changes in percentage points. 1D uses the previous H trading
+session before the H quote date, with A and FX as-of closes and existing
+independent entitlement adjustments. First-day IPOs have no prior-H-session
+change. Seven days and one month keep the existing calendar definitions.
+Sector and subsector summaries below the roster average each available pair
+change, excluding missing. J5 jumps to these groups.
+
+The independent A-current-price / H-IPO-price checker is on AH J58:O73; L5
+jumps there. M60 is numeric H code; M61 optional numeric A-code override;
+M62 optional positive H IPO-price override. M64/M65 show effective A code / IPO
+price. M68/M69/M70/M72/M73 show A price, CNYHKD, converted A price, A premium
+vs H IPO, and A quote date. E4 selects Stored/Bloomberg for it and the AH view.
+Known H codes resolve Database or Pipeline terms. Unknown/new A codes need
+Bloomberg mode for a live price; Stored never borrows another pair's cache.
+The checker has no BDH request or A-price history graph. Its named outputs
+A_PX/A_FX/A_HKD/H_TRM now refer to AH. The main AH charts remain.
+
+Screener's selected-company A-code helpers moved from F53/F54 to hidden
+Calc AY53/AY54. Valuation Data references AY54, independently of the manual
+AH checker. Its live PE/PS matrix moved A63:D69 to A52:D58. The old Screener
+checker/history spill and drawing were removed. Preserve all eleven W_* names.
+
+Final build stages after screener_desk: ah_desk_update, excel_chart_refresh.
+`data/ah_update_layout.json` is a bounded Artifact-authored template. The chart
+stage styles all native chart parts and uses two aligned AH panels: premium
+above, A-share/CSI 300 returns below, sharing dates. Navy/teal/grey distinguish
+semantics; comparison lines have separate colours. Tiny AH points keep a
+new one-observation IPO visible. Do not smooth or fill gaps. Live bars use
+Excel's dynamic negative-fill red and positive green. Peer charts share plot
+alignment with compact dates. Chart series/formulas/caches are preserved.
+Manual layout uses edge positions, not offsets from automatic layout (Microsoft
+Office Open XML ST_LayoutMode implementation notes). The prior single dual-axis
+AH chart instructions later in this document are superseded.
+
+Memory fix: combine_bbg_sheets loads the canonical roster once rather than
+parsing a 15 MB JSON file once for every issuer. Keep the staged native build
+and Python 512 MiB / Node 384 MiB limits. Never rescue a failure by raising them.
+
+Validation: test_update_20261028.py (72 pairs, 100 summary formulas, input edge
+cases, all chart series preserved); test_native_desk.py (Bloomberg valuation
+response fixtures and native structure); test_presentation_package.py (167,037
+formula structures, source/data parity and package relationships); actual desk
+scoring; test_html_update_20261028.mjs (432 SVG cases, 40 controls);
+test_scope_update_20261028.mjs (6,775 scope/average observations); selected means.
+The final native workbook opened without repair and Live/AH/Peer/Screener areas
+were inspected. This Mac is view-only; actual Bloomberg execution and mode
+switching are not certified. Small final Artifact projections are under
+out/update_20261028. Source review and formula notes stay outside the workbook.
+
+`tools/package_update_20261028.py` is the date-specific local package utility.
+It validates embedded source/data parity, prior-number preservation and hashes,
+then installs only requested files with --install. It never publishes or
+removes unrelated studies. Keep the previous Word studies untouched.
+
 ## 22 October: request load and compact Screener
 
 Published to GitHub main on 22 October with the user's explicit authorization.
@@ -82,10 +160,10 @@ tabs stay at the back/hidden. Do not delete other research in TO_NOMURA.
 | View | Controls / meaning |
 |---|---|
 | IPO Live | B4 Stored/Bloomberg; B5 Sector/Subsector; H34 subsector chart's broad sector. LAST_PRICE and PX_YEST_CLOSE. Daily return needs a real previous trading close: no offer-price substitution on IPO day. Stale/missing quotes do not enter daily averages. |
-| AH | B4 pair code, E4 Stored/Bloomberg. Premium = A price × CNYHKD / H price − 1. Seven-day and calendar-month changes are percentage points. J5 links to sector averages at J57. |
-| AH charts | Premium left axis; A-share and CSI 300 price returns right axis, common observed dates. Bloomberg requests through TODAY; Stored retains per-pair dates. No invented points or cosmetic interpolation. Reviewed split/bonus factors align each leg on its own ex date. |
+| AH | B4 chart pair; E4 Stored/Bloomberg. A:I roster includes 1D/7D/1M premium changes in pp. J5 jumps to group averages; L5 to independent IPO-price checker. |
+| AH charts | Aligned premium and A-share/CSI return panels, common observed dates. Bloomberg requests through TODAY; Stored retains per-pair dates. No invented points or cosmetic interpolation. Reviewed split/bonus factors align each leg on its own ex date. |
 | Peer Trades | B3 named direct product-peer pair; F3 source; H3 horizon; F4/H4 custom dates. Return spread = A minus B price return in percentage points, both rebased at their first common observed session. Keep the product overlap/mix distinction. |
-| Screener | B5 is code-first: numeric-sorted H-code dropdown plus uncoded pipeline names; E5:L5 shows the resolved company. Free typing still accepts company names, leading zeros and Bloomberg tickers; retain exact numeric aliases such as 9607. F53 reads Database BQ (A code). The eleven W_* named model inputs now live in hidden Calc (scoring engine)!AU2:AU12, with names/descriptions in AT/AV. The final workbook has no Notes sheet. Never overwrite these inputs with prose. |
+| Screener | B5 is code-first: numeric-sorted H-code dropdown plus uncoded pipeline names; E5:L5 shows the resolved company. Free typing still accepts company names, leading zeros and Bloomberg tickers; retain exact numeric aliases such as 9607. Calc AY53 reads Database BQ (selected A code); AY54 is its ticker. The eleven W_* named model inputs now live in hidden Calc (scoring engine)!AU2:AU12, with names/descriptions in AT/AV. The final workbook has no Notes sheet. Never overwrite these inputs with prose. |
 | Screener form | D7:D14 shows database inputs; F7:F14 contains overrides. Effective calculations are Calc!AX7:AX14. B5:C5 is the code/pipeline selector; E5:L5 shows the resolved company. Selected-deal context is I7:L14; filters are P7:P11. Top titles are hidden; the real snapshot date stays visible. |
 | Database fundamentals | BJ/BL: live TTM P/E/P/S. BM:BO: NTM P/E, FY2027 P/E, FY2027 P/S. Screener BE/BG/BH:BJ mirrors these. Historical IPO multiples remain separate. |
 | HTML comparisons | Active sector/subsector/search filters restrict both individual lines and mean inputs. Select all selects only that scope. Stocks, Selected average and Sector averages are mutually exclusive views. Six lines per page with full legend/tooltip. Means use **only checked stocks**, each stock one weight; multiple selected expiries of one stock are averaged within that stock first. Missing is excluded, not zero. |

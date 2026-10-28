@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-29",
+  "workbook_sha256": "a6bc29bc94040b798e7b8fa0124e358bb33f7fa9efff07f228b7789798109f8f",
+  "html_sha256": "d2c41cd5773d45771f408c15b06b1a4ff3a9da6789bfed450b5c3ba3c9f050a3",
+  "rerun_passed": [
+    "tools/test_update_20261028.py",
+    "tools/test_native_desk.py",
+    "tools/test_presentation_package.py",
+    "tools/test_selected_averages.mjs",
+    "tools/test_html_update_20261028.mjs",
+    "tools/test_scope_update_20261028.mjs"
+  ],
+  "html_execution": "Actual shipped SVG, selectors and scope/average functions in Node; final HTML bytes match the delivery. Bundled sharp was used from the configured staging environment.",
+  "layout_review": "Native Excel previously reviewed on this exact workbook hash; stored chart and calculator previews reviewed again before publication.",
+  "bloomberg_terminal_tested": false,
+  "remote_base": "2567d939eb07e6aa2ef66ffc40990fd8531ea44b",
+  "unchanged_prior_database_numbers": 526,
+  "publication_status": "ready_for_publication"
+}

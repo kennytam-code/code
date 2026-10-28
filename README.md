@@ -15,7 +15,7 @@ Six-page trader brief: comparison and key dates first, then one page per stock w
 | Compressed HTML | [ZIP for shared-drive transfer](https://github.com/kennytam-code/code/raw/refs/heads/main/_ipo_db/TO_NOMURA/hk_ipo_dashboard.zip) |
 | Updater | [Standalone Python updater](https://github.com/kennytam-code/code/raw/refs/heads/main/hk_ipo.py) |
 
-22 October 2026: compact Screener layout, guarded Bloomberg valuation/verification requests, and clearer HTML charts with labelled lines and legend focus.
+28 October 2026: 527 listed IPOs including DSBJ (2384), refreshed pipeline and IPO Live snapshot, daily A/H premium changes and sector/subsector averages, an independent numeric-code IPO price checker, and redesigned Excel charts.
 Market histories retain their displayed snapshot dates. Live Bloomberg responses still require terminal verification.
 
 [Desk instructions](READ_ME_FIRST.txt) · [Maintenance handover](_ipo_db/START_HERE.md) · [Release details](_ipo_db/data/release_state.json)

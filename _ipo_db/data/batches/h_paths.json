@@ -142679,6 +142679,19 @@
    ],
    "source": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=hk02636,day,2026-08-25,2026-10-15,320,",
    "complete": false
+  },
+  {
+   "code": "2384",
+   "ipo": "2026-10-28",
+   "open0": 82.4,
+   "closes": [
+    [
+     0,
+     86.15
+    ]
+   ],
+   "source": "Tencent raw daily / Yahoo close cross-check 2026-10-28",
+   "complete": false
   }
  ]
 }

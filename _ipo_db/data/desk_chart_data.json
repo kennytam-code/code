@@ -1,5 +1,5 @@
 {
- "listed_count": 716,
+ "listed_count": 717,
  "pairs": [
   {
    "code": "0668",
@@ -1222,9 +1222,23 @@
    "stored_1m": null,
    "latest_date": "2026-10-15",
    "review": null
+  },
+  {
+   "code": "2384",
+   "name": "DSBJ",
+   "a_ticker": "002384 CH Equity",
+   "h_ticker": "2384 HK Equity",
+   "ipo_date": "2026-10-28",
+   "raw_debut": 86.15,
+   "cache_start": 27276,
+   "cache_rows": 1,
+   "stored_7": null,
+   "stored_1m": null,
+   "latest_date": "2026-10-28",
+   "review": null
   }
  ],
- "ah_cache_end": 27275,
+ "ah_cache_end": 27276,
  "peer": {
   "asof": "2026-10-02",
   "pairs": [

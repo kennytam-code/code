@@ -1,0 +1,308 @@
+{
+ "batch": "Primary-source newly listed acceptance",
+ "reviewed_at": "2026-10-28",
+ "deals": [
+  {
+   "code": "2384",
+   "name": "DSBJ",
+   "name_full": "Suzhou Dongshan Precision Manufacturing Co., Ltd.",
+   "company_name": "Suzhou Dongshan Precision Manufacturing Co., Ltd.",
+   "name_cn": "東山精密",
+   "ipo_date": "2026-10-28",
+   "allot_announce_dt": "2026-10-27",
+   "allotment_link": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1027/2026102701391.pdf",
+   "prospectus_link": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1020/2026102000017.pdf",
+   "final_price": 86.8,
+   "price_range_hi": 93.8,
+   "price_range_note": "Maximum offer price only",
+   "offer_shares": 113783200,
+   "gross_proceeds_hkdm": 9876.38,
+   "net_proceeds_hkdm": 9716.94,
+   "shares_issued_on_listing": 1945390732,
+   "treasury_shares_at_listing": 6046200,
+   "shares_outstanding": 1939344532,
+   "mktcap_basis": "HKEX:total shares upon listing excluding treasury x final offer price",
+   "mktcap_source": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1027/2026102701391.pdf",
+   "mktcap_source_page": 4,
+   "oversub_public_mult": 0.52,
+   "oversub_intl_mult": 3.17,
+   "public_pct_initial": 10,
+   "public_shares_final": 5905500,
+   "public_alloc_pct": 5.19,
+   "intl_placees": 81,
+   "one_lot_hit_pct": 100,
+   "lot_size": 100,
+   "cornerstone_investors": [
+    "Aurora SF",
+    "HK Yonglian Investment Development Co., Limited",
+    "JPMorgan Asset Management (Asia Pacific) Limited",
+    "Alibaba Investment Limited",
+    "CPE Bodhi Investment Limited",
+    "LMR Multi-Strategy Master Fund Limited",
+    "Foresight Global Superior Choice SPC — Global Superior Choice Fund 1 SP",
+    "Foresight Global Superior Choice SPC — Vision Fund 1 SP",
+    "Foresight Global Superior Choice SPC — Vision Fund 3 SP",
+    "Foresight Global Superior Choice SPC — Horizon Fund 1 SP",
+    "Foresight Global Superior Choice SPC — Horizon Next Fund SP",
+    "Montage Hong Kong Holdings Company Limited",
+    "Orient Asset Management (Hong Kong) Limited",
+    "Spring River Greater China Fund",
+    "Jane Street Singapore Pte. Limited",
+    "Nexchip Semiconductor Hong Kong Corporation Limited",
+    "Pinpoint Asset Management Limited",
+    "FS.COM HK LIMITED",
+    "Tianhong Asset Management Co., Ltd.",
+    "New China Asset Management (Hong Kong) Limited",
+    "Ghisallo Fund Master Ltd",
+    "Jump Trading Pacific Pte. Ltd.",
+    "V-Capital International Holding Co., Limited",
+    "Mr. LUO Zhongli"
+   ],
+   "cornerstone_pct": 50.0,
+   "cornerstone_amt_m": 4938.14748,
+   "cornerstone_amt_ccy": "HKD",
+   "cornerstone_n": 24,
+   "cornerstone_allocation_groups": 20,
+   "greenshoe_pct": 15.0,
+   "overallot_shares": 17067400,
+   "over_allocation_pct": 15.0,
+   "offer_size_adjustment_shares": 0,
+   "greenshoe_exercised_final": "pending",
+   "greenshoe_note": "17,067,400 shares over-allocated; exercise not yet announced. Offer Size Adjustment Option not exercised.",
+   "offer_period": "2026-10-20 to 2026-10-23",
+   "sponsors": [
+    "UBS Securities Hong Kong Limited",
+    "Haitong International Capital Limited",
+    "GF Capital (Hong Kong) Limited",
+    "CITIC Securities (Hong Kong) Limited"
+   ],
+   "bookrunners": [
+    "UBS AG Hong Kong Branch",
+    "Haitong International Securities Company Limited",
+    "GF Securities (Hong Kong) Brokerage Limited",
+    "CLSA Limited",
+    "The Hongkong and Shanghai Banking Corporation Limited",
+    "ABCI Capital Limited",
+    "CCB International Capital Limited",
+    "CMB International Capital Limited",
+    "Soochow Securities International Brokerage Limited",
+    "Zero2IPO Securities Limited",
+    "Lighthouse Capital (HK) Financial Limited",
+    "Futu Securities International (Hong Kong) Limited"
+   ],
+   "stabilizing_manager": "UBS AG Hong Kong Branch",
+   "a_share_code": "002384.SZ",
+   "is_h_share": true,
+   "sector": "Technology",
+   "subsector": "Hardware & electronics",
+   "business_overview": "Electronic circuits (FPC, rigid PCB and rigid-flex), precision components and optical modules.",
+   "rev_latest": 46792.83848396501,
+   "ni_latest": 1616.404664723032,
+   "rev_latest_financial_year": 2025,
+   "ni_latest_financial_year": 2025,
+   "rev_latest_basis": "FY2025 IFRS revenue, RMB million / 0.8575 RMB per HKD",
+   "ni_latest_basis": "FY2025 IFRS profit attributable to ordinary shareholders, RMB million / 0.8575 RMB per HKD",
+   "first_open": 82.4,
+   "first_close": 86.15,
+   "last_close": 86.15,
+   "first_date": "2026-10-28",
+   "last_date": "2026-10-28",
+   "price_asof": "2026-10-28",
+   "day1_return_pct": -0.7488479262672709,
+   "first_day_return_pct": -0.7488479262672709,
+   "day1_open_pop_pct": -5.069124423963123,
+   "since_ipo_pct": -0.7488479262672709,
+   "grey_pct": -5.5299539170506895,
+   "grey_price": 82,
+   "grey_source": "Phillip grey-market close 2026-10-27, reported by HKET",
+   "grey_link": "https://inews.hket.com/article/4215220/",
+   "cornerstone_lockup_end": "2027-04-27",
+   "a_close_cny": 101.09,
+   "a_close_hkd": 118.89022730708123,
+   "a_close_date": "2026-10-27",
+   "cnyhkd": 1.176082968711853,
+   "a_premium_ipo_pct": 36.97,
+   "ah_discount_ipo_pct": -26.99
+  }
+ ],
+ "field_evidence": {
+  "2384": {
+   "final_price": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1027/2026102701391.pdf",
+    "page": 4,
+    "sha256": "1b5030b468df5036147182d060f24065f498221decb4413b36cad2a18718bee7",
+    "basis": "Final allotment; exclude treasury for outstanding company market cap. Over-allocation is not exercised shoe."
+   },
+   "offer_shares": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1027/2026102701391.pdf",
+    "page": 4,
+    "sha256": "1b5030b468df5036147182d060f24065f498221decb4413b36cad2a18718bee7",
+    "basis": "Final allotment; exclude treasury for outstanding company market cap. Over-allocation is not exercised shoe."
+   },
+   "gross_proceeds_hkdm": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1027/2026102701391.pdf",
+    "page": 4,
+    "sha256": "1b5030b468df5036147182d060f24065f498221decb4413b36cad2a18718bee7",
+    "basis": "Final allotment; exclude treasury for outstanding company market cap. Over-allocation is not exercised shoe."
+   },
+   "net_proceeds_hkdm": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1027/2026102701391.pdf",
+    "page": 4,
+    "sha256": "1b5030b468df5036147182d060f24065f498221decb4413b36cad2a18718bee7",
+    "basis": "Final allotment; exclude treasury for outstanding company market cap. Over-allocation is not exercised shoe."
+   },
+   "shares_outstanding": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1027/2026102701391.pdf",
+    "page": 4,
+    "sha256": "1b5030b468df5036147182d060f24065f498221decb4413b36cad2a18718bee7",
+    "basis": "Final allotment; exclude treasury for outstanding company market cap. Over-allocation is not exercised shoe."
+   },
+   "shares_issued_on_listing": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1027/2026102701391.pdf",
+    "page": 4,
+    "sha256": "1b5030b468df5036147182d060f24065f498221decb4413b36cad2a18718bee7",
+    "basis": "Final allotment; exclude treasury for outstanding company market cap. Over-allocation is not exercised shoe."
+   },
+   "treasury_shares_at_listing": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1027/2026102701391.pdf",
+    "page": 4,
+    "sha256": "1b5030b468df5036147182d060f24065f498221decb4413b36cad2a18718bee7",
+    "basis": "Final allotment; exclude treasury for outstanding company market cap. Over-allocation is not exercised shoe."
+   },
+   "overallot_shares": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1027/2026102701391.pdf",
+    "page": 4,
+    "sha256": "1b5030b468df5036147182d060f24065f498221decb4413b36cad2a18718bee7",
+    "basis": "Final allotment; exclude treasury for outstanding company market cap. Over-allocation is not exercised shoe."
+   },
+   "oversub_public_mult": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1027/2026102701391.pdf",
+    "page": 5,
+    "sha256": "1b5030b468df5036147182d060f24065f498221decb4413b36cad2a18718bee7",
+    "basis": "Own-tranche subscription level, not excess applications or post-reallocation denominator."
+   },
+   "oversub_intl_mult": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1027/2026102701391.pdf",
+    "page": 5,
+    "sha256": "1b5030b468df5036147182d060f24065f498221decb4413b36cad2a18718bee7",
+    "basis": "Own-tranche subscription level, not excess applications or post-reallocation denominator."
+   },
+   "public_shares_final": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1027/2026102701391.pdf",
+    "page": 5,
+    "sha256": "1b5030b468df5036147182d060f24065f498221decb4413b36cad2a18718bee7",
+    "basis": "Own-tranche subscription level, not excess applications or post-reallocation denominator."
+   },
+   "public_alloc_pct": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1027/2026102701391.pdf",
+    "page": 5,
+    "sha256": "1b5030b468df5036147182d060f24065f498221decb4413b36cad2a18718bee7",
+    "basis": "Own-tranche subscription level, not excess applications or post-reallocation denominator."
+   },
+   "intl_placees": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1027/2026102701391.pdf",
+    "page": 5,
+    "sha256": "1b5030b468df5036147182d060f24065f498221decb4413b36cad2a18718bee7",
+    "basis": "Own-tranche subscription level, not excess applications or post-reallocation denominator."
+   },
+   "cornerstone_investors": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1027/2026102701391.pdf",
+    "page": "7–9",
+    "sha256": "1b5030b468df5036147182d060f24065f498221decb4413b36cad2a18718bee7",
+    "basis": "20 allocation groups; Foresight disclosed as five separate legal funds. 56,891,100 cornerstone shares. No additional placements included."
+   },
+   "cornerstone_pct": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1027/2026102701391.pdf",
+    "page": "7–9",
+    "sha256": "1b5030b468df5036147182d060f24065f498221decb4413b36cad2a18718bee7",
+    "basis": "20 allocation groups; Foresight disclosed as five separate legal funds. 56,891,100 cornerstone shares. No additional placements included."
+   },
+   "cornerstone_amt_m": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1027/2026102701391.pdf",
+    "page": "7–9",
+    "sha256": "1b5030b468df5036147182d060f24065f498221decb4413b36cad2a18718bee7",
+    "basis": "20 allocation groups; Foresight disclosed as five separate legal funds. 56,891,100 cornerstone shares. No additional placements included."
+   },
+   "cornerstone_n": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1027/2026102701391.pdf",
+    "page": "7–9",
+    "sha256": "1b5030b468df5036147182d060f24065f498221decb4413b36cad2a18718bee7",
+    "basis": "20 allocation groups; Foresight disclosed as five separate legal funds. 56,891,100 cornerstone shares. No additional placements included."
+   },
+   "cornerstone_lockup_end": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1027/2026102701391.pdf",
+    "page": "16–17",
+    "sha256": "1b5030b468df5036147182d060f24065f498221decb4413b36cad2a18718bee7",
+    "basis": "Printed last day locked. Future event excluded from historical HTML sample."
+   },
+   "rev_latest": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1020/2026102000017.pdf",
+    "page": 16,
+    "sha256": "863ceb2c92f195bf04ec661c4a7f9129e4f4923fb85950e93af921a2e921ec8e",
+    "basis": "FY2025 revenue RMB40,124.859m. Conversion HKD1=RMB0.8575, PDF p77."
+   },
+   "ni_latest": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1020/2026102000017.pdf",
+    "page": 405,
+    "sha256": "863ceb2c92f195bf04ec661c4a7f9129e4f4923fb85950e93af921a2e921ec8e",
+    "basis": "FY2025 ordinary shareholder profit RMB1,386.067m. Same prospectus FX."
+   },
+   "sponsors": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1020/2026102000017.pdf",
+    "page": "80–81",
+    "sha256": "863ceb2c92f195bf04ec661c4a7f9129e4f4923fb85950e93af921a2e921ec8e",
+    "basis": "Filed parties; stabilizing manager also named on allotment p1."
+   },
+   "bookrunners": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1020/2026102000017.pdf",
+    "page": "80–81",
+    "sha256": "863ceb2c92f195bf04ec661c4a7f9129e4f4923fb85950e93af921a2e921ec8e",
+    "basis": "Filed parties; stabilizing manager also named on allotment p1."
+   },
+   "stabilizing_manager": {
+    "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1020/2026102000017.pdf",
+    "page": "80–81",
+    "sha256": "863ceb2c92f195bf04ec661c4a7f9129e4f4923fb85950e93af921a2e921ec8e",
+    "basis": "Filed parties; stabilizing manager also named on allotment p1."
+   },
+   "first_open": {
+    "url": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=hk02384,day,2026-10-01,2026-10-29,60,",
+    "date": "2026-10-28",
+    "crosscheck": "Yahoo 2384.HK open/close and AAStocks closing report agree to HK$0.01"
+   },
+   "first_close": {
+    "url": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=hk02384,day,2026-10-01,2026-10-29,60,",
+    "date": "2026-10-28",
+    "crosscheck": "Yahoo 2384.HK open/close and AAStocks closing report agree to HK$0.01"
+   },
+   "last_close": {
+    "url": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=hk02384,day,2026-10-01,2026-10-29,60,",
+    "date": "2026-10-28",
+    "crosscheck": "Yahoo 2384.HK open/close and AAStocks closing report agree to HK$0.01"
+   },
+   "first_day_return_pct": {
+    "url": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=hk02384,day,2026-10-01,2026-10-29,60,",
+    "date": "2026-10-28",
+    "crosscheck": "Yahoo 2384.HK open/close and AAStocks closing report agree to HK$0.01"
+   },
+   "day1_open_pop_pct": {
+    "url": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=hk02384,day,2026-10-01,2026-10-29,60,",
+    "date": "2026-10-28",
+    "crosscheck": "Yahoo 2384.HK open/close and AAStocks closing report agree to HK$0.01"
+   },
+   "since_ipo_pct": {
+    "url": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=hk02384,day,2026-10-01,2026-10-29,60,",
+    "date": "2026-10-28",
+    "crosscheck": "Yahoo 2384.HK open/close and AAStocks closing report agree to HK$0.01"
+   },
+   "price_asof": {
+    "url": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=hk02384,day,2026-10-01,2026-10-29,60,",
+    "date": "2026-10-28",
+    "crosscheck": "Yahoo 2384.HK open/close and AAStocks closing report agree to HK$0.01"
+   }
+  }
+ },
+ "quote_snapshot_asof": {
+  "2384": "2026-10-28"
+ }
+}

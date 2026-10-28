@@ -1,0 +1,25 @@
+import fs from 'node:fs/promises';
+import{Workbook,SpreadsheetFile}from'@oai/artifact-tool';
+const wb=Workbook.create(),s=wb.worksheets.add('AH desk');s.showGridLines=false;
+const widths=[11,9,15,32,13,13,12,12,12,16,16,16,16,16,16];
+widths.forEach((w,i)=>s.getRange(`${String.fromCharCode(65+i)}:${String.fromCharCode(65+i)}`).format.columnWidth=w);
+s.getRange('A1:O24').format.font={name:'Arial',size:10,color:'#263442'};
+s.getRange('A1:O24').format.fill='#FFFFFF';s.getRange('A1:O24').format.rowHeight=23;s.getRange('A1:O24').format.verticalAlignment='center';
+const set=(a,v)=>s.getRange(a).values=[[v]];
+['A code','H code','Sector','Subsector','IPO premium','Premium now','1D Δ (pp)','7D Δ (pp)','1M Δ (pp)'].forEach((v,i)=>set(String.fromCharCode(65+i)+'2',v));
+s.getRange('A2:I2').format.fill='#303A45';s.getRange('A2:I2').format.font={name:'Arial',size:10,color:'#FFFFFF',bold:true};s.getRange('A2:I2').format.wrapText=true;s.getRange('A2:I2').format.rowHeight=34;
+[2384,2384,'Technology','Hardware & electronics',.2,.19,-.4,1.2,-2.3].forEach((v,i)=>set(String.fromCharCode(65+i)+'3',v));
+s.getRange('A3:I3').format.borders={bottom:{style:'hair',color:'#D9DEE3'}};
+s.getRange('E3:F3').setNumberFormat('0.0%;(0.0%);0.0%');s.getRange('G3:I3').setNumberFormat('0.0" pp";(0.0)" pp";0.0" pp"');
+s.getRange('A6:D6').merge();set('A6','Sector averages');s.getRange('A6:I6').format.fill='#E9EDF1';s.getRange('A6:I6').format.font={name:'Arial',size:10,color:'#263442',bold:true};
+s.getRange('A7:D7').merge();set('A7','Sector / subsector');['Pairs','Premium now','1D Δ (pp)','7D Δ (pp)','1M Δ (pp)'].forEach((v,i)=>set(String.fromCharCode(69+i)+'7',v));s.getRange('A7:I7').format.font={name:'Arial',size:9,color:'#626E7B',bold:true};s.getRange('A7:I7').format.wrapText=true;
+s.getRange('A8:D8').merge();set('A8','Hardware & electronics');set('E8',12);set('F8',.2);set('G8',-.2);set('H8',1.2);set('I8',2.3);s.getRange('A8:I8').format.borders={bottom:{style:'hair',color:'#D9DEE3'}};s.getRange('F8').setNumberFormat('0.0%');s.getRange('G8:I8').setNumberFormat('0.0" pp";(0.0)" pp";0.0" pp"');
+s.getRange('J2:O2').merge();set('J2','A price vs H IPO price');s.getRange('J2:O2').format.fill='#E9EDF1';s.getRange('J2:O2').format.font={name:'Arial',size:11,color:'#263442',bold:true};s.getRange('J2:O2').format.borders={bottom:{style:'thin',color:'#CB2125'}};
+const labels=['H code','A code','H IPO price · HKD','Company','A price · CNY','CNY / HKD','A price · HKD','A premium vs H IPO','Quote date'];
+labels.forEach((v,i)=>{let r=i+4;s.getRange(`J${r}:L${r}`).merge();s.getRange(`M${r}:O${r}`).merge();set('J'+r,v);s.getRange(`J${r}:O${r}`).format.borders={bottom:{style:'hair',color:'#D9DEE3'}};});
+set('M4',2384);set('M5',2384);s.getRange('M5:O5').setNumberFormat('000000');set('M6',86.8);set('M7','DSBJ');set('M8',80);set('M9',1.17);s.getRange('M10').formulas=[['=M8*M9']];s.getRange('M11').formulas=[['=M10/M6-1']];s.getRange('M11:O11').setNumberFormat('0.0%');set('M12','28 Oct 2026');
+for(let r=4;r<=6;r++){s.getRange(`M${r}:O${r}`).format.fill='#EEF3F7';s.getRange(`M${r}:O${r}`).format.font={name:'Arial',size:11,color:'#1D4E89'};}
+s.getRange('J11:O11').format.fill='#F0F3F5';s.getRange('J11:O11').format.font={name:'Arial',size:11,color:'#263442',bold:true};
+const file=await SpreadsheetFile.exportXlsx(wb);await file.save('out/ah_update_template.xlsx');
+const png=await wb.render({sheetName:s.name,range:'J2:O12',scale:1.4,format:'png'});await fs.writeFile('out/ah_calculator_template.png',new Uint8Array(await png.arrayBuffer()));
+await fs.writeFile('data/ah_update_layout.json',JSON.stringify({widths,xlsx_base64:(await fs.readFile('out/ah_update_template.xlsx')).toString('base64')})+'\n');console.log('AH template authored and formula preview calculated');

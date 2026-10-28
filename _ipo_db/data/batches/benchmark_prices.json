@@ -11511,6 +11511,14 @@
     [
      "2026-10-15",
      3.982
+    ],
+    [
+     "2026-10-27",
+     3.722
+    ],
+    [
+     "2026-10-28",
+     3.782
     ]
    ],
    "src": "Yahoo Finance unadjusted Close",
@@ -11524,7 +11532,11 @@
       "2026-10-15"
      ]
     }
-   ]
+   ],
+   "supplement_20261028": {
+    "source": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=hk03033,day,2026-10-27,2026-10-28,10,",
+    "scope": "Two daily closes for 2384 benchmark window. Earlier observations retained."
+   }
   },
   "China Biotech ETF (HS biotech proxy)": {
    "ticker": "2820.HK",

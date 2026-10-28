@@ -1056,6 +1056,9 @@ def main():
     # Newly listed issuers accepted from complete final-allotment/prospectus
     # readings. Apply before derived size/valuation/return computations.
     latest = load("latest_listed_review_20261015.json")
+    new_review = load("latest_listed_review_20261028.json")
+    if new_review:
+        latest = dict(latest or {}, deals=(latest or {}).get("deals", []) + new_review["deals"], field_evidence={**(latest or {}).get("field_evidence", {}), **new_review.get("field_evidence", {})}, quote_snapshot_asof={**(latest or {}).get("quote_snapshot_asof", {}), **new_review.get("quote_snapshot_asof", {})})
     if latest:
         from review_quote_guard import quote_dates, allowed as review_allowed
         refreshed_dates = quote_dates({name: load(name+".json") for name in ["prices","ah_study","ah_snapshot","h_paths"]})

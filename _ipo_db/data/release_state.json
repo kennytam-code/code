@@ -1,25 +1,26 @@
 {
-  "release_date": "2026-10-22",
+  "release_date": "2026-10-28",
   "handover": "START_HERE.md",
   "counts": {
-    "database_screener": 526,
-    "live_universe": 716,
-    "ah_pairs": 71,
+    "database_screener": 527,
+    "live_universe": 717,
+    "ah_pairs": 72,
     "peer_pairs": 35,
     "peer_stocks": 66,
-    "pipeline_rows": 15,
+    "pipeline_rows": 21,
     "html_lockup_events": 161,
     "html_lockup_stocks": 158
   },
   "dates": {
-    "pipeline_status_checked": "2026-10-15",
-    "live_fetch": "2026-10-15",
-    "live_saved_quotes": 707,
-    "live_current_quotes": 701,
-    "live_daily_returns": 700,
+    "pipeline_status_checked": "2026-10-28",
+    "live_fetch": "2026-10-28",
+    "live_saved_quotes": 702,
+    "live_current_quotes": 702,
+    "live_daily_returns": 701,
     "ah_pair_latest_dates": {
       "2026-10-02": 70,
-      "2026-10-15": 1
+      "2026-10-15": 1,
+      "2026-10-28": 1
     },
     "historical_lockup_prices": "2026-10-02"
   },
@@ -33,7 +34,7 @@
     "numeric_entries": 39303,
     "internal_numeric_failures": 0,
     "existing_525_stock_numeric_changes": 0,
-    "native_excel_open": "22 October final workbook opened in native Microsoft Excel without a content-repair prompt; compact Screener form/table reviewed. View-only installation; live Bloomberg responses and mode switching not tested.",
+    "native_excel_open": "28 October final workbook opened without repair; Live, AH, Peer Trades and moved Screener valuation area reviewed. View-only Mac; terminal responses and interactive inputs not tested live.",
     "other_tabs_style_preservation": "13 sheets: business values, formulas and caches preserved, including seven relocated Screener outputs; requested titles removed; chart data, axes, drawing anchors and relationships unchanged",
     "small_projection_review": [
       "Database",
@@ -140,7 +141,7 @@
         {
           "test": "tools/test_historical_lockups.py",
           "passed": true,
-          "output": "PASS 161 historical events / 9821 session slots: filed dates, listing inputs, holder boundaries, raw prices, split factors, exact \u00b130 endpoints, return math, payload and unchanged Excel",
+          "output": "PASS 161 historical events / 9821 session slots: filed dates, listing inputs, holder boundaries, raw prices, split factors, exact ±30 endpoints, return math, payload and unchanged Excel",
           "browser": false
         },
         {
@@ -372,13 +373,54 @@
       "all_stored_updater_data_preserved": true,
       "market_data_refreshed": false,
       "terminal_speed_measured": false
+    },
+    "update_20261028": {
+      "workbook": {
+        "passed": true,
+        "ah_pairs": 72,
+        "summary_formulas": 100,
+        "chart_parts": 10,
+        "chart_ranges_and_observations_preserved": true,
+        "actual_formula_edge_cases": 18,
+        "bloomberg_live_tested": false,
+        "sha256": "a6bc29bc94040b798e7b8fa0124e358bb33f7fa9efff07f228b7789798109f8f"
+      },
+      "html": {
+        "passed": true,
+        "render_cases": 432,
+        "detail_control_cases": 40,
+        "html_code_search_cases": 2108,
+        "refreshed_dataset": true,
+        "all_observations_and_gaps_preserved": true,
+        "actual_svg_function": true,
+        "browser": false
+      },
+      "comparison_scope": {
+        "checks": 6775,
+        "ah_pairs": 72,
+        "lockup_events": 161,
+        "refreshed_dataset": true,
+        "real_browser": false,
+        "passed": true
+      },
+      "old_database_numeric_changes": 0,
+      "bundle_inputs_match": true,
+      "native_excel_open_without_repair": true,
+      "native_tabs_reviewed": [
+        "IPO Live",
+        "AH selected and comparison charts",
+        "AH independent calculator",
+        "Peer Trades",
+        "Screener valuations"
+      ],
+      "live_bloomberg_tested": false
     }
   },
   "known_limits": {
     "financial_cells_needing_primary_followup": 273,
     "earlier_cornerstone_aliases_unresolved": 119,
     "undated_visible_lockup_events": 0,
-    "market_dates": "Most historical series remain 2 October; a new quote/listing does not refresh them all.",
+    "market_dates": "IPO Live quote snapshot 28 October; 2384 A/H closes 28 October with completed FX close 27 October. Other A/H histories remain 2/15 October and peer histories 2 October. Missing remains unavailable; no full-history refresh.",
     "browser": "Current HTML data and actual renderer functions checked locally; no fresh browser visual pass.",
     "bloomberg": "Formula fixtures passed; terminal/add-in responses remain unverified.",
     "taxonomy": "Framework reviewed and retained; confirmed assignment errors in 2477 and 2321 remain recommendations, not applied changes. See data/taxonomy_review_20261016.json.",
@@ -386,27 +428,36 @@
   },
   "deliverables": {
     "HK_IPO_Database_v1.xlsx": {
-      "bytes": 7864230,
-      "sha256": "ee4f93448fead949e2cb353d40f0db14574289f01d86f32d9b151002234cfab2"
-    },
-    "hk_ipo_dashboard.html": {
-      "bytes": 2870870,
-      "sha256": "80fa3f2d9e45811ee9461a98ac4ebd4fc0f5c2521abc9f4ff98692ff6342183a"
-    },
-    "hk_ipo_dashboard.zip": {
-      "bytes": 2053786,
-      "sha256": "50b68c52fe63953d5d51d1ea49ca15db09980f7b9867610e62e1371d768c8cdd"
+      "bytes": 7896755,
+      "sha256": "a6bc29bc94040b798e7b8fa0124e358bb33f7fa9efff07f228b7789798109f8f"
     },
     "hk_ipo.py": {
-      "bytes": 15375676,
-      "sha256": "76e9eff1416de58b1a54acdd701ff967c0ad025dac17906c0f355ff0fe34acdd"
+      "bytes": 15403168,
+      "sha256": "ca5caf434b336861359b4d27fe597456824733db9e62111c06b4dfd3c6c6f68f"
     },
     "READ_ME_FIRST.txt": {
-      "bytes": 5518,
-      "sha256": "3e30151416b0d2c789e8015abec4e76c99ce9b2adb238dfec2bfdeccc762536f"
+      "bytes": 2301,
+      "sha256": "84a120e8657783caf2c38daeeed16a0e539fca2f1882b157b7b2e72b6d39fd4d"
+    },
+    "hk_ipo_dashboard.html": {
+      "bytes": 2873614,
+      "sha256": "d2c41cd5773d45771f408c15b06b1a4ff3a9da6789bfed450b5c3ba3c9f050a3"
+    },
+    "hk_ipo_dashboard.zip": {
+      "bytes": 2056300,
+      "sha256": "360663fb6c83041e03588ed48089ac53077e54cdd89c38929e561f7f3689fc1f"
     }
   },
   "publication": {
+    "status": "ready_for_publication",
+    "github_updated_this_session": false,
+    "date": "2026-10-29",
+    "repository": "https://github.com/kennytam-code/code",
+    "branch": "main",
+    "base_commit": "2567d939eb07e6aa2ef66ffc40990fd8531ea44b",
+    "authorization": "Explicit user request: push to github after checking errors, layout and issues"
+  },
+  "previous_publication": {
     "status": "published",
     "github_updated_this_session": true,
     "date": "2026-10-22",

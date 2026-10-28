@@ -1,0 +1,33 @@
+{
+ "batch": "withdrawn",
+ "note": "Offerings PULLED after launch — the roster keeps their prospectus so they keep reappearing as 'OFFERING NOW' unless stopped here. Append-only; every entry needs the HKEX announcement.",
+ "deals": [
+  {
+   "code": "2523",
+   "name": "EKH LIMITED",
+   "date": "2026-07-08",
+   "src": "HKEX 2026-07-08 announcement 'GLOBAL OFFERING AND THE LISTING NOT TO PROCEED' (2026070801370.pdf) — pulled despite ~8,964x retail cover; no refiling as of 2026-08-25"
+  },
+  {
+   "code": "6700",
+   "name": "Shenzhen Forms Syntron Information Co., Ltd.",
+   "date": "2026-09-17",
+   "kind": "postponed",
+   "src": "HKEX 2026-09-17 'UPDATE ON THE GLOBAL OFFERING (1) POSTPONEMENT OF THE GLOBAL OFFERING AND THE LISTING' (2026091701579.pdf) — postponed on market conditions; application monies refunded 2026-09-22; the Joint Overall Coordinators are assessing an updated timetable"
+  },
+  {
+   "code": "6157",
+   "name": "Jiangsu Slender West Lake Culture and Tourism Co., Ltd.",
+   "date": "2026-10-20",
+   "kind": "postponed",
+   "src": "HKEX 2026-10-20: global offering and listing postponed; no revised timetable. https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1020/2026102000564.pdf"
+  },
+  {
+   "code": "3275",
+   "name": "Changzhou Microintelligence Co., Ltd",
+   "date": "2026-10-25",
+   "kind": "postponed",
+   "src": "HKEX 2026-10-25: global offering and listing postponed; no revised timetable. https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1025/2026102500001.pdf"
+  }
+ ]
+}

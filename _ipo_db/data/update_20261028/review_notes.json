@@ -1,0 +1,78 @@
+{
+ "date": "2026-10-28",
+ "notes": [
+  "Yahoo A-line open 111.00 exceeds its same-bar high 105.86; not accepted. Tencent open 103.59 retained with close cross-checked.",
+  "Yahoo FX 28 October is an unfinished UTC daily bar and excluded; 27 October last completed FX close is the as-of reference.",
+  "HKET grey venue is Phillip, not a consolidated exchange close.",
+  "Newlisting report roster used for listing confirmation; offering counts from issuer final allotment.",
+  "Older database numeric fields and historical price caches not refreshed by this targeted new-listing acceptance."
+ ],
+ "listing_confirmation": "https://www.hkex.com.hk/Services/Trading/Securities/Trading-News/Newly-Listed-Securities?sc_lang=en",
+ "files": [
+  {
+   "file": "2384_prospectus.pdf",
+   "bytes": 8353321,
+   "sha256": "863ceb2c92f195bf04ec661c4a7f9129e4f4923fb85950e93af921a2e921ec8e"
+  },
+  {
+   "file": "6157_postponement.pdf",
+   "bytes": 81079,
+   "sha256": "2544f23fea821f2c788cedf0f838c425881c1b6a18bfdd6f824298a5b83ad030"
+  },
+  {
+   "file": "fx_yahoo.json",
+   "bytes": 8303,
+   "sha256": "a2f82b60811c5db084a775067d50b5b342be83fff81709ab0190c16b0b5febfd"
+  },
+  {
+   "file": "a_2384_tencent.json",
+   "bytes": 4040,
+   "sha256": "4018b639a369fa8b735cf36baa82351caae8e1ccc2b5a2fe3682d42dc4176b5d"
+  },
+  {
+   "file": "new_listing_report.xlsx",
+   "bytes": 41196,
+   "sha256": "dd0a9fcafb1ae06b407ec3029fc736e11932b9153c405532f9fa5d171a084fba"
+  },
+  {
+   "file": "2384_allotment.pdf",
+   "bytes": 1186243,
+   "sha256": "1b5030b468df5036147182d060f24065f498221decb4413b36cad2a18718bee7"
+  },
+  {
+   "file": "h_2384_yahoo.json",
+   "bytes": 1223,
+   "sha256": "73ca4ee47db2be18daf286cac1ae814188cabee1278a3c878169f4f25b04515c"
+  },
+  {
+   "file": "applications.json",
+   "bytes": 187452,
+   "sha256": "e08e22186bbd2771f172fbb170570497c1c9e52ea5af8dd82caffc2f5f545118"
+  },
+  {
+   "file": "h_2384_tencent.json",
+   "bytes": 1498,
+   "sha256": "0d9a2592d7e28e74599569fe99aa9800b5e470968a99275b0e2485452eef8db6"
+  },
+  {
+   "file": "postponement_search.json",
+   "bytes": 743,
+   "sha256": "b799a82943b1f5bfc84be6418ec370545365b6e39aa01fd7f5bb21e378c2e46e"
+  },
+  {
+   "file": "phip.json",
+   "bytes": 14194,
+   "sha256": "22d5d3b7eee043a73536d996e2da67ae33cfc315510ae23cb13c4bf11365e0bf"
+  },
+  {
+   "file": "3275_postponement.pdf",
+   "bytes": 111908,
+   "sha256": "59b0a5abfa8f12500f594c6244f3c3bd631efe5e3674ed8dcf83f527b8580776"
+  },
+  {
+   "file": "a_2384_yahoo.json",
+   "bytes": 7453,
+   "sha256": "e6f2f35edeba13967dcb6b3a4f90c45806b8c3c3a6e953b07b250ea88f0bc401"
+  }
+ ]
+}

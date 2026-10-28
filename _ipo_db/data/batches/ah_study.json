@@ -1,8 +1,8 @@
 {
  "version": 1,
- "asof": "2026-10-15",
+ "asof": "2026-10-28",
  "generated_at": "2026-10-15T14:48:40.372676+00:00",
- "universe_count": 65,
+ "universe_count": 66,
  "eligible_1m_count": 60,
  "errors": [],
  "method": "A premium = raw A(CNY) * dated CNYHKD / raw H(HKD) - 1. Day 1 close to 21st subsequent H-traded session. Prior known A/FX close carried at most 10/5 calendar days; quote dates retained. Different closing times, not executable arbitrage. No dividends. One share per class. First-month H share-scale actions excluded from correlations. Offer reference uses A/FX close before H debut, not book pricing time. Historical company cap at A reference = listing company cap / H offer * pre-debut A * FX; it inherits the listing cap's share-count basis, and is not A-only float cap. Offer value / this cap is a funding-value ratio, not free float. Current company cap at A price is a descriptive, forward-looking proxy, not historical A-float cap. Correlations are exploratory, not causation.",
@@ -232473,6 +232473,61 @@
    "a_runup_pre_ipo_pct": -6.883918241419207,
    "a_runup_start_date": "2026-09-14",
    "a_runup_end_date": "2026-10-14",
+   "exclusion": "Missing aligned Day 1 or 21st subsequent H-traded session"
+  },
+  {
+   "code": "2384",
+   "name": "DSBJ",
+   "sector": "Technology",
+   "subsector": "Hardware & electronics",
+   "a_code": "002384.SZ",
+   "ipo_date": "2026-10-28",
+   "offer_hkd": 86.8,
+   "deal_size_hkdm": 9876.38,
+   "size_basis": "gross (stated)",
+   "current_company_cap_at_a_hkdm": null,
+   "current_cap_date": null,
+   "history": [
+    [
+     "2026-10-28",
+     86.15,
+     104.6,
+     1.176082968711853,
+     0.42795448087359045,
+     "2026-10-28",
+     "2026-10-27"
+    ]
+   ],
+   "h_history": [
+    [
+     "2026-10-28",
+     86.15
+    ]
+   ],
+   "eligible_1m": false,
+   "offer_reference_premium_pct": 36.97030795746685,
+   "offer_reference_a_date": "2026-10-27",
+   "offer_reference_fx_date": "2026-10-27",
+   "company_cap_at_a_reference_hkdm": 230569.1048705098,
+   "listing_cap_basis": "derived:price x shares upon listing",
+   "offer_size_to_a_reference_cap_pct": 4.283479352338504,
+   "premium_day1_pct": 42.79544808735905,
+   "day1_h_hkd": 86.15,
+   "day1_a_cny": 104.6,
+   "day1_fx": 1.176082968711853,
+   "day1_a_date": "2026-10-28",
+   "day1_fx_date": "2026-10-27",
+   "offer_to_day1_change_pp": 5.825140129892198,
+   "latest_date": "2026-10-28",
+   "latest_h_hkd": 86.15,
+   "latest_a_cny": 104.6,
+   "latest_fx": 1.176082968711853,
+   "latest_premium_pct": 42.79544808735905,
+   "latest_a_date": "2026-10-28",
+   "latest_fx_date": "2026-10-27",
+   "a_runup_pre_ipo_pct": -39.92750178274305,
+   "a_runup_start_date": "2026-09-28",
+   "a_runup_end_date": "2026-10-27",
    "exclusion": "Missing aligned Day 1 or 21st subsequent H-traded session"
   }
  ]

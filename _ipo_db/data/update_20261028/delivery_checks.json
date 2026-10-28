@@ -1,0 +1,54 @@
+{
+  "changed_inputs": [
+    "data/ah_reference.json",
+    "data/ah_study_cache/a_2384.json",
+    "data/ah_study_cache/cnyhkd.json",
+    "data/ah_study_cache/h_2384.json",
+    "data/ah_update_layout.json",
+    "data/batches/ah_study.json",
+    "data/batches/benchmark_prices.json",
+    "data/batches/h_paths.json",
+    "data/batches/hkex_allotments.json",
+    "data/batches/latest_listed_review_20261028.json",
+    "data/batches/newlistings.json",
+    "data/batches/phip_pipeline.json",
+    "data/batches/pipeline_review.json",
+    "data/batches/withdrawn.json",
+    "data/conflicts.json",
+    "data/csi300_prices.json",
+    "data/deals.json",
+    "data/desk_chart_data.json",
+    "data/live_snapshot.json",
+    "ipo_lib/staged_native_build.py",
+    "ipo_lib/ah_desk_update.py",
+    "ipo_lib/excel_chart_refresh.py",
+    "ipo_lib/merge_batches.py",
+    "ipo_lib/build_xlsx.py",
+    "ipo_lib/make_bundle.py"
+  ],
+  "prior_526_numeric_changes": 0,
+  "all_bundle_inputs_match": true,
+  "deliverables": {
+    "HK_IPO_Database_v1.xlsx": {
+      "bytes": 7896755,
+      "sha256": "a6bc29bc94040b798e7b8fa0124e358bb33f7fa9efff07f228b7789798109f8f"
+    },
+    "hk_ipo.py": {
+      "bytes": 15403168,
+      "sha256": "ca5caf434b336861359b4d27fe597456824733db9e62111c06b4dfd3c6c6f68f"
+    },
+    "READ_ME_FIRST.txt": {
+      "bytes": 2301,
+      "sha256": "84a120e8657783caf2c38daeeed16a0e539fca2f1882b157b7b2e72b6d39fd4d"
+    },
+    "hk_ipo_dashboard.html": {
+      "bytes": 2873614,
+      "sha256": "d2c41cd5773d45771f408c15b06b1a4ff3a9da6789bfed450b5c3ba3c9f050a3"
+    },
+    "hk_ipo_dashboard.zip": {
+      "bytes": 2056300,
+      "sha256": "360663fb6c83041e03588ed48089ac53077e54cdd89c38929e561f7f3689fc1f"
+    }
+  },
+  "github_updated": false
+}

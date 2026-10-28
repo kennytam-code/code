@@ -45,7 +45,7 @@ with zipfile.ZipFile(path) as z:
   assert fn(*args).item()==expected,(picked,fn.inputs)
  assert value(sc['D10']) in [None,'','Y','N']
  for col,title in [('BM','NTM P/E live'),('BN','FY2027 P/E live'),('BO','FY2027 P/S live')]:assert value(db[col+'4'])==title
- assert f'Database!$BQ$5:$BQ${n+4}' in sc['F53'].find(q('f')).text
+ assert f'Database!$BQ$5:$BQ${n+4}' in weights['AY53'].find(q('f')).text
  for i,d in enumerate(deals):
   rr=8+8*i
   assert value(db['BQ'+str(i+5)])==(d.get('a_share_code') or '')
@@ -118,8 +118,10 @@ with zipfile.ZipFile(path) as z:
    if b"Lock-up" in z.read(path):
     for ref in doc.iter(cn('f')):assert not re.search(r"'Lock-up'!\$[BEHK]\$30",ref.text or '')
    if b'AHMarketPremium' in z.read(path):
-    assert len(list(doc.iter(cn('scatterChart'))))==2
-    groups=list(doc.iter(cn('scatterChart')));assert groups[0].find(cn('axId')).get('val')==groups[1].find(cn('axId')).get('val')
+    assert len(list(doc.iter(cn('scatterChart'))))==1 and len(list(doc.iter(cn('ser'))))==1
+    companion=E.fromstring(z.read('xl/charts/chartAHMarketReturns.xml'))
+    assert len(list(companion.iter(cn('ser'))))==2
+    assert next(doc.iter(cn('xVal'))).find('.//'+cn('f')).text==next(companion.iter(cn('xVal'))).find('.//'+cn('f')).text
  # Verify cached sector means exclude stale quotes and agree with the roster.
  groups={}
  for addr,cell in live.items():

@@ -2,7 +2,7 @@
  "name": "CSI 300",
  "code": "000300",
  "bloomberg_ticker": "SHSZ300 Index",
- "asof": "2026-10-15",
+ "asof": "2026-10-28",
  "closes": [
   [
    "2019-01-02",
@@ -7547,6 +7547,42 @@
   [
    "2026-10-15",
    4166.01
+  ],
+  [
+   "2026-10-16",
+   4170.61
+  ],
+  [
+   "2026-10-19",
+   4174.53
+  ],
+  [
+   "2026-10-20",
+   4152.11
+  ],
+  [
+   "2026-10-21",
+   4111.93
+  ],
+  [
+   "2026-10-22",
+   4036.3
+  ],
+  [
+   "2026-10-23",
+   4105.33
+  ],
+  [
+   "2026-10-26",
+   4103.54
+  ],
+  [
+   "2026-10-27",
+   4049.55
+  ],
+  [
+   "2026-10-28",
+   4083.87
   ]
  ],
  "source_urls": [
@@ -7558,8 +7594,9 @@
   "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh000300,day,2024-01-01,2024-12-31,320,",
   "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh000300,day,2025-01-01,2025-12-31,320,",
   "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh000300,day,2026-01-01,2026-12-31,320,",
-  "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh000300,day,2026-08-25,2026-10-15,320,"
+  "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh000300,day,2026-08-25,2026-10-15,320,",
+  "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh000300,day,2026-01-01,2026-12-31,320,"
  ],
  "methodology": "https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/detail/files/en/000300_Index_Methodology_en.pdf",
- "retrieved_at": "2026-10-13T13:40:11.643976+00:00"
+ "retrieved_at": "2026-10-28T15:00:58.702789+00:00"
 }
