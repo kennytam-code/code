@@ -1,3 +1,15 @@
+# PCA v130 changes
+
+Revision 2026-10-28-v130-local-sector-global-peers; same current entry points.
+
+- Keep local GICS-or-BICS sector candidates even with different industries. Record cross-taxonomy sector disagreement instead of silently vetoing an agreeing local sector; conflicts without any agreement remain excluded.
+- Keep recorded Bloomberg direct peers across industries within a corroborated sector, with equity-type and issuer checks. Overseas index/second-degree leads still require industry/group evidence; a global sector match alone is insufficient.
+- Route all local first/second-degree leads through sector classification, including graph-only names absent from directories and indices. Query each direct peer once, stop at two hops, retain source parents and deduplicate final prices.
+- Preserve recorded direct relationships during cache reclassification and local issuer-listing resolution. Distinguish direct peers from sector candidates in basket identities and download/report counts.
+- Add tests across all six priority markets for local hardware versus semiconductor coverage, overseas exclusions, direct-link safeguards, deduplication, cache reuse and report provenance.
+- Record raw cap/currency/FX/date/conversion samples in diagnostic exports. The uploaded Korean cap scale anomaly remains unverified without that run's raw data; no guessed scaling fix is applied.
+- Require fresh discovery version 7. Hedge fitting, frozen validation, short-sample size controls and the statistical objective are unchanged.
+
 # PCA v129 changes
 
 Revision 2026-10-28-v129-peer-coverage; same current script/notebook entry points.

@@ -256,9 +256,9 @@ import textwrap as _textwrap
 
 RIDGE_ALPHAS = np.logspace(-4, 2, 25)
 MIN_RETURN_STD = 1e-12
-PCA_REVISION = '2026-10-28-v129-peer-coverage'
+PCA_REVISION = '2026-10-28-v130-local-sector-global-peers'
 MIN_TRAIN_COVERAGE = 0.90
-DISCOVERY_VERSION = 6
+DISCOVERY_VERSION = 7
 
 
 def _supported_plot_style(style, rc_params=None):
@@ -1982,6 +1982,34 @@ def _peer_industry_supported(target_ref, peer_ref):
     return any(_same_industry(target_ref.get(f),peer_ref.get(f)) for f in fields)
 
 
+def _direct_peer_supported(target_ref, peer_ref):
+    """A recorded direct Bloomberg link can cross industries within a sector.
+
+    Only call this for an actual direct link (or its issuer-verified local
+    listing). Sector agreement alone never admits an arbitrary foreign stock.
+    The broader exception requires a verified common share and no known sector
+    conflict; unknown or contradictory labels cannot establish the exception.
+    """
+    if _peer_industry_supported(target_ref, peer_ref):
+        return True
+    if not _common_share_type(peer_ref):
+        return False
+    issuer = _issuer_id(target_ref)
+    if issuer and issuer == _issuer_id(peer_ref):
+        return False
+    pairs = [(target_ref.get(f), peer_ref.get(f))
+             for f in ('GICS_SECTOR_NAME', 'BICS_LEVEL_1_SECTOR_NAME')
+             if _usable_industry(target_ref.get(f)) and _usable_industry(peer_ref.get(f))]
+    return bool(pairs) and all(_same_industry(a, b) for a, b in pairs)
+
+
+def _recorded_direct_peers(meta):
+    """Preserve provider/issuer evidence when rechecking saved classifications."""
+    sources = (meta or {}).get('source_candidates') or {}
+    return set(sources.get('Bloomberg 1st degree', [])) | set(
+        sources.get('Local listings of foreign peers', []))
+
+
 
 
 """Inserted into the standalone engine; no external runtime module required."""
@@ -1996,8 +2024,10 @@ def _discover_sector_stocks(target, references, candidates, registry_audit=(),
                             sector_members=(), sector_key='Broad'):
     """Broader local-sector eligibility, distinct from narrow business peers.
 
-    Compare labels only within the same classification scheme. A known sector
-    conflict wins over index/category fallbacks. Unknown labels never match.
+    Compare labels only within the same classification scheme. One agreeing
+    Bloomberg sector is enough for this deliberately broad local pool. A
+    conflicting alternative scheme is recorded; with no agreeing scheme,
+    conflicts still block index/category fallbacks. Unknown labels never match.
     Current classifications are research-universe metadata, not historical facts.
     """
     target_ref = references.get(target, {})
@@ -2015,7 +2045,7 @@ def _discover_sector_stocks(target, references, candidates, registry_audit=(),
             continue
         seen.add(key)
         ref = references.get(ticker, {})
-        support, reason = [], ''
+        support, reason, conflicts = [], '', []
         if _listing_market_key(ticker) != _listing_market_key(target):
             reason = 'different listing market'
         elif _issuer_id(target_ref) and _issuer_id(target_ref)==_issuer_id(ref):
@@ -2027,10 +2057,12 @@ def _discover_sector_stocks(target, references, candidates, registry_audit=(),
         else:
             pairs = [(field, target_ref.get(field), ref.get(field)) for field in fields
                      if _usable_industry(target_ref.get(field)) and _usable_industry(ref.get(field))]
-            if any(not _same_industry(a, b) for _, a, b in pairs):
+            support = [field + ': ' + str(a) for field, a, b in pairs if _same_industry(a, b)]
+            conflicts = [field + ': ' + str(a) + ' vs ' + str(b)
+                         for field, a, b in pairs if not _same_industry(a, b)]
+            if conflicts and not support:
                 reason = 'known sector classification conflict'
             else:
-                support = [field + ': ' + str(a) for field, a, b in pairs if _same_industry(a, b)]
                 for scheme, labels in schemes.items():
                     # Official schemes can have a different level of detail.
                     # They qualify this broader scope, never the strict-peer set.
@@ -2046,6 +2078,7 @@ def _discover_sector_stocks(target, references, candidates, registry_audit=(),
         audit.append({'ticker': ticker, 'eligible': eligible,
                       'reason': 'same-market sector stock' if eligible else reason,
                       'evidence': support,
+                      'classification_conflicts': conflicts,
                       'sector': ref.get('GICS_SECTOR_NAME') or ref.get('BICS_LEVEL_1_SECTOR_NAME') or '',
                       'industry': ref.get('GICS_INDUSTRY_NAME') or ref.get('BICS_LEVEL_3_INDUSTRY_NAME') or ''})
     return accepted, audit
@@ -2284,7 +2317,8 @@ def _local_peer_listings(session,target,foreign_peers,references,fields,errors,a
     """Resolve foreign peer issuers to local shares; never substitute A-share prices.
 
     Lookup names only generate leads. Admission requires equal Bloomberg company
-    ID, local listing venue, common-share type and the target's peer taxonomy.
+    ID, local listing venue, common-share type and supported direct-peer sector
+    or industry evidence. The input list contains recorded direct peers only.
     Unavailable identity fields/services leave an explicit unresolved audit.
     """
     market=_listing_market_key(target);tgt=references.get(target,{})
@@ -2297,14 +2331,14 @@ def _local_peer_listings(session,target,foreign_peers,references,fields,errors,a
             audit.append(dict(foreign_peer=foreign,local_listings=[],status='target issuer excluded',
                               reason='Another share class of the target is not a peer'))
             continue
-        if not _peer_industry_supported(tgt,ref): continue
+        if not _direct_peer_supported(tgt,ref): continue
         row=dict(foreign_peer=foreign,local_listings=[],status='unresolved')
         audit.append(row)
         if not _usable_industry(issuer):
             row['reason']='Bloomberg company identity unavailable';continue
         local=[t for t,r in references.items() if _listing_market_key(t)==market and
                _issuer_id(r)==issuer and t!=target and
-               _common_share_type(r) and _peer_industry_supported(tgt,r)]
+               _common_share_type(r) and _direct_peer_supported(tgt,r)]
         if not local:
             if not allow_lookup:
                 row['reason']='No issuer match in the retrieved local roster; name lookup explicitly deferred'
@@ -2326,7 +2360,7 @@ def _local_peer_listings(session,target,foreign_peers,references,fields,errors,a
                     if missing: references.update(_discovery_references(session,missing,fields,errors))
                     local=[t for t in leads if _issuer_id(references.get(t,{}))==issuer
                            and _common_share_type(references.get(t,{}))
-                           and _peer_industry_supported(tgt,references.get(t,{}))]
+                           and _direct_peer_supported(tgt,references.get(t,{}))]
                     incomplete=[t for t in leads if _issuer_id(references.get(t,{})) is None or
                                 not any(_usable_industry(references.get(t,{}).get(f)) for f in ('SECURITY_TYP','SECURITY_TYP2'))]
                     queries[issuer]=(local,truncated,
@@ -2354,7 +2388,8 @@ def _refresh_cached_peer_classification(data):
         meta=discovery.get(target,{})
         refs=meta.get('classification_evidence') or {}
         if not refs.get(target): continue
-        keep,_,_=_strict_peer_set(refs[target],refs,names)
+        keep,_,_=_strict_peer_set(refs[target],refs,names,
+                                  direct_candidates=_recorded_direct_peers(meta))
         removed=sorted(set(names)-set(keep))
         if removed:
             lists[target]=keep
@@ -2596,7 +2631,7 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
     print(f"    ├─ industry matches captured: {len(industry_matches)} names")
 
     # 4. Bloomberg official peers + second-degree peers
-    #    [Fix 1: proper formatting + capped API calls]
+    #    Expand all unique direct peers in batches, with request reuse.
     peer_matches, first_degree, to_expand, failed_expansions = [], [], [], []
     direct_peer_error=None
     if progress: progress('discovery',f'{target_ticker}: checking Bloomberg peer links and local listings')
@@ -2648,10 +2683,10 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
     # 4a. Bloomberg's peer-of-a-peer graph is not transitive. For example,
     # a financial company's peer may also list an airline; blindly admitting
     # that airline made even the "Peers only" universe contain unrelated stocks.
-    # Verify direct Bloomberg links and admit a
-    # second-degree link only when BICS industry-group or GICS industry
-    # taxonomy corroborates it. Unverified links remain visible in the audit;
-    # a user can still add a legitimate cross-industry link manually.
+    # Overseas second-degree links need industry/group corroboration. Direct
+    # links can additionally cross industries within a verified sector. Local
+    # graph leads also feed the broader sector pool below, even when absent
+    # from every roster/index. No third-degree expansion is performed.
     first_degree_set = set(first_degree)
     second_degree_raw = sorted(set(peer_matches) - first_degree_set - {target_ticker})
     missing_second_refs = [t for t in second_degree_raw if t not in pool_ref_data]
@@ -2664,19 +2699,24 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
     second_degree_verified = sorted(t for t in second_degree_raw
                                     if _peer_industry_supported(tgt_ref, pool_ref_data.get(t, {})))
     second_degree_unverified = sorted(set(second_degree_raw) - set(second_degree_verified))
-    print(f'    ├─ second-degree industry classification check: {len(second_degree_verified)} '
-          f'verified / {len(second_degree_raw)} discovered; '
-          f'{len(second_degree_unverified)} audit-only (not eligible)')
+    print(f'    ├─ peers of peers: {len(second_degree_raw)} unique leads; '
+          f'{len(second_degree_verified)} industry/group matches; '
+          'remaining local leads will also receive the broader sector check')
     second_degree_network_supported = []  # taxonomy remains mandatory
     peer_matches_raw = list(dict.fromkeys(peer_matches))
     missing_direct=[t for t in first_degree if t not in pool_ref_data]
     if missing_direct:
         pool_ref_data.update(read_references(missing_direct))
-    direct_verified,direct_rejected,direct_unknown=_strict_peer_set(tgt_ref,pool_ref_data,first_degree)
+    direct_verified,direct_rejected,direct_unknown=_strict_peer_set(
+        tgt_ref,pool_ref_data,first_degree,direct_candidates=first_degree)
+    direct_sector_supported = sorted(t for t in direct_verified
+                                     if not _peer_industry_supported(tgt_ref,pool_ref_data.get(t,{})))
     local_peer_listings,local_listing_audit=_local_peer_listings(
         session,target_ticker,direct_verified,pool_ref_data,ref_fields,reference_errors,allow_lookup=True)
     peer_matches = list(dict.fromkeys(direct_verified + second_degree_verified + local_peer_listings))
-    local_members=sorted(set(local_members)|set(local_peer_listings))
+    local_graph_leads = {t for t in peer_matches_raw if t != target_ticker
+                         and _listing_market_key(t) == _listing_market_key(target_ticker)}
+    local_members=sorted(set(local_members)|set(local_peer_listings)|local_graph_leads)
     print(f'    ├─ verified local listings of foreign direct peers: {len(local_peer_listings)}')
 
     # 4b. ALWAYS search local BICS Level-2 related companies, not only when
@@ -2715,7 +2755,18 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
     sector_stocks, sector_stock_audit = _discover_sector_stocks(
         target_ticker, pool_ref_data, sector_pool, registry_audit,
         sector_members, sector_key)
+    local_sector_from_peer_links = sorted(local_graph_leads & set(sector_stocks)
+                                         - set(peer_matches + industry_matches + local_bics2_peers))
+    local_second_degree_sector = sorted(set(second_degree_unverified) & set(sector_stocks))
+    second_degree_audit_only = sorted(set(second_degree_unverified) - set(local_second_degree_sector))
     print(f'    ├─ verified same-market sector stocks: {len(sector_stocks)} before size/exclusion screens')
+    print(f'    ├─ direct links retained across industries within a verified sector: {len(direct_sector_supported)}; '
+          f'additional local sector candidates from peer links: {len(local_sector_from_peer_links)}')
+    if progress:
+        progress('discovery',f'{target_ticker}: {len(direct_verified):,} direct peers; '
+                 f'peers of peers: {len(second_degree_verified):,} industry/group peers + '
+                 f'{len(local_second_degree_sector):,} additional local sector stocks; '
+                 f'{len(second_degree_audit_only):,} other links excluded from the related universe')
 
     # These are optional proxies for PCA to consider, not factors to impose.
     sector_etfs = list(SECTOR_INSTRUMENTS.get((EXCH_TO_MARKET.get(_exch_of(target_ticker),market), sector_key), []))
@@ -2737,7 +2788,8 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
         'Local listings of foreign peers': list(local_peer_listings),
         'Bloomberg direct unverified': list(direct_rejected + direct_unknown),
         'Bloomberg 2nd degree': list(second_degree_verified),
-        'Bloomberg 2nd degree (unverified, audit only)': list(second_degree_unverified),
+        'Bloomberg 2nd degree (unverified, audit only)': list(second_degree_audit_only),
+        'Local sector via peer links': list(local_sector_from_peer_links),
         'Local BICS L2 peers': list(local_bics2_peers),
         'Local GICS sector context': list(local_sector_context),
         'Same-market sector stocks': list(sector_stocks),
@@ -2765,6 +2817,11 @@ def auto_discover_universe(session, target_ticker, max_first_degree_peers=None,
         meta['peer_second_degree_unverified'] = list(second_degree_unverified)
         meta['peer_second_degree_verified'] = list(second_degree_verified)
         meta['peer_second_degree_network_supported'] = list(second_degree_network_supported)
+        meta['direct_sector_supported'] = direct_sector_supported
+        meta['local_sector_from_peer_links'] = local_sector_from_peer_links
+        meta['local_second_degree_sector'] = local_second_degree_sector
+        meta['second_degree_audit_only'] = second_degree_audit_only
+        meta['second_degree_parents'] = {t: sorted(parents) for t, parents in second_degree_parents.items()}
         meta['target_usd_cap_mm'] = target_usd_cap
         meta['effective_mktcap_floor_mm'] = effective_floor
         meta['peer_tickers'] = sorted(set(peer_matches + industry_matches + local_bics2_peers) - {target_ticker})
@@ -4164,8 +4221,15 @@ def _download_quote_metadata(session, prices, start_dt, end_dt, fetch_mktcap_his
             fx = (bbg_hist_field(session, pairs, 'PX_LAST', start_dt, end_dt,
                                 active_days=True, errors=mktcap_hist_audit['errors'])
                   if pairs else pd.DataFrame())
-            mktcap_hist, missing_fx = _historical_caps_usd(hist_local, currencies, fx)
+            conversion_samples = {}
+            mktcap_hist, missing_fx = _historical_caps_usd(hist_local, currencies, fx,
+                                                         audit=conversion_samples)
             mktcap_hist_audit['missing_currency_or_fx'] = missing_fx
+            # Preserve the actual vendor inputs behind the latest conversion.
+            # This diagnoses unit/quote issues without guessing a rescale factor.
+            for ticker, row in conversion_samples.items():
+                row['current_reported_usd_mm'] = _positive_number(mktcap.get(ticker))
+            mktcap_hist_audit['conversion_samples'] = conversion_samples
             print(f"  ✓ dated-FX USD market-cap paths for "
                   f"{mktcap_hist.shape[1]} tickers")
         except Exception as e:
@@ -4456,7 +4520,7 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
            'portfolio': {'legs': legs, 'weights': pf_w,
                          'is_portfolio': is_portfolio, 'label': label},
            'peer_tickers_by_target': {m['target']: m['peer_tickers'] for m in disc_meta},
-           'peer_policy_version': 4,  # narrow peers retain the existing verification
+           'peer_policy_version': 4,  # evidence policy is versioned by discovery_version
            'sector_scope_policy_version': 1,
            'sector_stock_tickers_by_target': {m['target']: list(m.get('sector_stock_tickers', [])) for m in disc_meta},
            'sector_tickers_by_target': {m['target']: list(m.get('source_candidates',{}).get('Target sector ETFs',[])) for m in disc_meta},
@@ -4469,7 +4533,7 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
                if k in ('BICS/GICS industry', 'Bloomberg 1st degree',
                         'Bloomberg 2nd degree', 'Bloomberg 2nd degree (unverified, audit only)',
                         'Local listings of foreign peers', 'Historical classified peers',
-                        'Local BICS L2 peers',
+                        'Local BICS L2 peers', 'Local sector via peer links',
                         'Local GICS sector context')}
                for m in disc_meta},
            'peer_discovery_by_target': {m['target']: {
@@ -4490,6 +4554,11 @@ def _download_hedge_data_impl(target, candidates=None, session=None,
                'verified_second_degree': m.get('peer_second_degree_verified', []),
                'network_supported_second_degree': m.get('peer_second_degree_network_supported', []),
                'unverified_second_degree': m.get('peer_second_degree_unverified', []),
+               'direct_sector_supported': m.get('direct_sector_supported', []),
+               'local_sector_from_peer_links': m.get('local_sector_from_peer_links', []),
+               'local_second_degree_sector': m.get('local_second_degree_sector', []),
+               'second_degree_audit_only': m.get('second_degree_audit_only', []),
+               'second_degree_parents': m.get('second_degree_parents', {}),
                'expansion_requested': m.get('peer_expansion_requested', 0),
                'expansion_available': m.get('peer_expansion_available', 0),
                'expansion_failed': m.get('peer_expansion_failed', []),
@@ -4556,8 +4625,8 @@ def _download_inventory(result):
     sectors=set(t for names in result.get('sector_stock_tickers_by_target',{}).values() for t in names)
     markets={_exch_of(t) for t in legs if isinstance(t,str)}
     local={t for t in peers if _exch_of(t) in markets}
-    groups=[('Target stocks',legs),('Local industry/group peers',local),
-            ('Global industry/group peers',peers-local),('Other local sector stocks',sectors),
+    groups=[('Target stocks',legs),('Local direct/industry peers',local),
+            ('Global direct/industry peers',peers-local),('Other local sector stocks',sectors),
             ('ETF and factor references',{t for t in remaining if _is_etf(t)}),
             ('Other broad-universe or manual candidates',remaining.copy())]
     rows=[]
@@ -4826,6 +4895,8 @@ def _download_added_tickers_impl(data, tickers, session=None, same_exchange_only
     out['mktcap_hist']=pd.concat([old_caps.drop(columns=[t for t in old_caps if (_fmt_bbg_ticker(t) or t) in added]),packet['mktcap_hist']],axis=1).sort_index()
     for key in ('errors','missing_currency_or_fx'):
         out['mktcap_hist_audit'].setdefault(key,[]).extend(packet['mktcap_hist_audit'].get(key,[]))
+    out['mktcap_hist_audit'].setdefault('conversion_samples',{}).update(
+        packet['mktcap_hist_audit'].get('conversion_samples',{}))
     out['execution_snapshot'].update(packet['execution_snapshot'])
     out['execution_snapshot_dates'].update({t:packet['execution_snapshot_date'] for t in added})
     out['execution_data_audit'].setdefault('incremental_batches',[]).append(packet['execution_data_audit'])
@@ -4835,7 +4906,8 @@ def _download_added_tickers_impl(data, tickers, session=None, same_exchange_only
         meta=out['peer_discovery_by_target'].setdefault(target,{})
         existing=meta.setdefault('classification_evidence',{})
         existing.update({t:references.get(t,{}) for t in added+[target]})
-        peers,rejected,unknown=_strict_peer_set(existing.get(target,{}),existing,added)
+        peers,rejected,unknown=_strict_peer_set(existing.get(target,{}),existing,added,
+                                               direct_candidates=_recorded_direct_peers(meta))
         sector,rows=_discover_sector_stocks(target,existing,added,meta.get('listing_registry_audit',[]))
         for key,values in (('peer_tickers_by_target',peers),('sector_stock_tickers_by_target',sector)):
             out[key][target]=list(dict.fromkeys(out[key].get(target,[])+values))
@@ -5042,8 +5114,8 @@ def peer_coverage_report(data, target_ticker, exclude=None,
     if raw is None:
         raw = (data.get('peer_tickers_by_target') or {}).get(target, [])
     raw = sorted(set(raw) - {target})
-    # Unverified second-degree links remain in the DISCOVERY denominator,
-    # but cannot count as eligible or downloadable peers.
+    # Non-peer links stay in the discovery denominator. Some local links can
+    # separately qualify for the broader sector pool; never count them as peers.
     unverified = set(provenance.get('unverified_second_degree') or []) | set(provenance.get('taxonomy_rejected') or []) | set(provenance.get('taxonomy_unknown') or [])
     trusted = [tk for tk in raw if tk not in unverified]
     kept, excluded = _apply_exclusions(trusted, exclude)
@@ -5077,6 +5149,11 @@ def peer_coverage_report(data, target_ticker, exclude=None,
             'unverified_second_degree': list(provenance.get('unverified_second_degree') or []),
             'verified_second_degree': list(provenance.get('verified_second_degree') or []),
             'network_supported_second_degree': list(provenance.get('network_supported_second_degree') or []),
+            'direct_sector_supported': list(provenance.get('direct_sector_supported') or []),
+            'local_sector_from_peer_links': list(provenance.get('local_sector_from_peer_links') or []),
+            'local_second_degree_sector': list(provenance.get('local_second_degree_sector') or []),
+            'second_degree_audit_only': list(provenance.get('second_degree_audit_only') or []),
+            'second_degree_parents': dict(provenance.get('second_degree_parents') or {}),
             'excluded': excluded, 'different_exchange': not_exchange,
             'cap_filtered': sorted(t for t in after_exchange if t in cap_filtered),
             'missing_prices': missing,
@@ -6153,7 +6230,7 @@ def _download_execution_snapshot(session, tickers, end):
     return quotes, dict(volume=metadata, errors=errors)
 
 
-def _historical_caps_usd(local_caps, currencies, fx_prices):
+def _historical_caps_usd(local_caps, currencies, fx_prices, audit=None):
     """Convert local cap paths using contemporaneous CCYUSD observations.
 
     Backward alignment only, with a seven-calendar-day age bound. A current
@@ -6163,10 +6240,20 @@ def _historical_caps_usd(local_caps, currencies, fx_prices):
     for ticker in local_caps:
         ccy = str(currencies.get(ticker, {}).get('CRNCY', '')).strip().upper()
         local = pd.to_numeric(local_caps[ticker], errors='coerce')
+        row = {'currency': ccy, 'cap_field': 'CUR_MKT_CAP',
+               'conversion': 'local cap x dated CCYUSD', 'status': 'unavailable'}
+        if audit is not None:
+            audit[ticker] = row
         if ccy == 'USD':
             converted[ticker] = local.where(local > 0)
+            valid = converted[ticker].dropna()
+            if len(valid):
+                dt = valid.index[-1]
+                row.update(status='converted',date=str(dt.date()),local_cap=float(local.loc[dt]),
+                           fx_pair=None,fx_rate=1.0,fx_date=str(dt.date()),usd_mm=float(valid.iloc[-1]))
             continue
         pair = ccy+'USD Curncy'
+        row['fx_pair'] = pair
         if not re.fullmatch(r'[A-Z]{3}', ccy) or pair not in fx_prices:
             missing.append(ticker)
             continue
@@ -6177,6 +6264,11 @@ def _historical_caps_usd(local_caps, currencies, fx_prices):
         values = (local*aligned).where(local > 0)
         if values.notna().any():
             converted[ticker] = values
+            dt = values.dropna().index[-1]
+            rate_date = rates.index[rates.index <= dt][-1]
+            row.update(status='converted',date=str(dt.date()),local_cap=float(local.loc[dt]),
+                       fx_rate=float(aligned.loc[dt]),fx_date=str(rate_date.date()),
+                       usd_mm=float(values.loc[dt]))
         else:
             missing.append(ticker)
     return pd.DataFrame(converted, index=local_caps.index), sorted(missing)
@@ -10881,14 +10973,20 @@ def bbg_screen_universe(session, screen_name, screen_type='PRIVATE', group=None)
     return sorted(set(names))
 
 
-def _strict_peer_set(target_ref, references, candidates):
-    """A Bloomberg relation suggests a candidate; taxonomy verifies a strict peer."""
+def _strict_peer_set(target_ref, references, candidates, direct_candidates=()):
+    """Industry/group peers, plus evidenced direct links within a sector.
+
+    Only actual Bloomberg direct links and issuer-verified local equivalents
+    may use the wider direct-peer rule. Other candidates need industry evidence.
+    """
     accepted, rejected, unknown=[],[],[]
+    direct = set(direct_candidates)
     fields=('BICS_LEVEL_2_INDUSTRY_GROUP_NAME','BICS_LEVEL_3_INDUSTRY_NAME',
             'BICS_LEVEL_4_SUB_INDUSTRY_NAME','GICS_INDUSTRY_GROUP_NAME','GICS_INDUSTRY_NAME','GICS_SUB_INDUSTRY_NAME')
     for name in dict.fromkeys(candidates):
         ref=references.get(name,{})
-        if _peer_industry_supported(target_ref,ref): accepted.append(name)
+        if (_peer_industry_supported(target_ref,ref) or
+                (name in direct and _direct_peer_supported(target_ref,ref))): accepted.append(name)
         elif not any(_usable_industry(ref.get(f)) and _usable_industry(target_ref.get(f)) for f in fields): unknown.append(name)
         else: rejected.append(name)
     return accepted,rejected,unknown
@@ -11013,6 +11111,8 @@ def _peer_identity_rows(result, data):
     snapshot = (data or {}).get('execution_snapshot') or {}
     automatic = set(t for leg in result['portfolio_legs'] for t in
         ((data or {}).get('peer_tickers_by_target') or {}).get(leg, []))
+    direct = set(t for leg in result['portfolio_legs'] for t in _recorded_direct_peers(
+        ((data or {}).get('peer_discovery_by_target') or {}).get(leg, {})))
     tickers = list(result['weights'].index)
     for row in result.get('basket_comparison') or []:
         tickers.extend(row['weights'].index)
@@ -11022,7 +11122,8 @@ def _peer_identity_rows(result, data):
         label = next((ref[f] for f in ('GICS_INDUSTRY_NAME', 'BICS_LEVEL_3_INDUSTRY_NAME',
                                        'BICS_LEVEL_2_INDUSTRY_GROUP_NAME')
                       if _usable_industry(ref.get(f))), 'not recorded')
-        kind = ('Factor ETF' if _is_etf(ticker) else 'Industry/group peer' if ticker in automatic
+        kind = ('Factor ETF' if _is_etf(ticker) else 'Bloomberg direct peer' if ticker in automatic and ticker in direct
+                else 'Industry/group peer' if ticker in automatic
                 else 'Same-market sector stock' if ticker in sector_names else 'Manual / broad-universe')
         rows.append([ticker, snapshot.get(ticker, {}).get('NAME', 'not recorded'), label, kind])
     return rows
@@ -15222,7 +15323,7 @@ def _report_blocks(result):
     if result.get('illustrative_sample'):
         text('ILLUSTRATIVE SAMPLE — simulated prices, not a live hedge recommendation.')
     if span: text(f"Analysis window {p.get('sample_window') or 'downloaded history'} · {span[0]:%d %b %Y} to {span[1]:%d %b %Y} · {span[2]} return observations",True)
-    scope_label={'related':'Verified local sector stocks + global peers — ETFs are references','sector':'Same-market sector stocks — ETFs excluded','sector_focused':'Same-market sector stocks + relevant ETFs','peers':'Industry/group peer stocks — ETFs excluded','focused':'Industry/group peers + relevant ETFs','all':'Broad universe — other industries allowed'}.get(p['candidate_scope'],p['candidate_scope'])
+    scope_label={'related':'Local sector stocks + global direct/industry peers — ETFs are references','sector':'Same-market sector stocks — ETFs excluded','sector_focused':'Same-market sector stocks + relevant ETFs','peers':'Direct and industry/group peer stocks — ETFs excluded','focused':'Direct and industry/group peers + relevant ETFs','all':'Broad universe — other industries allowed'}.get(p['candidate_scope'],p['candidate_scope'])
     text('Candidate scope: '+scope_label,True)
     market_audit=result.get('candidate_market_audit') or {}
     if market_audit:
@@ -15479,10 +15580,12 @@ def _report_blocks(result):
                 for row in rejected[:12]],widths=[1.8,3,1.1,1.1])
             if len(rejected)>12:
                 text(f"Showing 12 of {len(rejected)} training-eligibility exclusions; full list in exported diagnostics.",True)
-        text('Sector stocks share a broader classification than strict peers. Current classifications do not establish historical membership; full per-stock evidence and rejection reasons are retained in sector_search_audit.',True)
+        text('Local stocks may qualify through either GICS or BICS sector. Overseas stocks require industry/group evidence, or a Bloomberg direct link supported by sector and equity-type checks. Current classifications do not establish historical membership; per-stock evidence is exported.',True)
     table(['INSTRUMENT','COMPANY','INDUSTRY','ELIGIBILITY'],result.get('basket_identity_audit') or [],widths=[1.6,2,2.1,1.3])
     for target,a in (result.get('peer_coverage') or {}).items():
-        table(['INDUSTRY/GROUP PEER COVERAGE','COUNT'],[['Discovered relationships',a['raw_discovered']],['Available after filters',a['available_count']],
+        table(['DIRECT / INDUSTRY PEER COVERAGE','COUNT'],[['Discovered relationships',a['raw_discovered']],['Available after filters',a['available_count']],
+            ['Direct links retained across industries within a sector',len(a.get('direct_sector_supported',[]))],
+            ['Additional local sector stocks from peers of peers',len(a.get('local_second_degree_sector',[]))],
             ['Rejected or unverified taxonomy',len(a.get('taxonomy_rejected',[]))+len(a.get('taxonomy_unknown',[]))],
             ['Missing downloaded prices',len(a['missing_prices'])],['Failed second-degree queries',len(a['failed_second_degree_requests'])]],target,widths=[5.3,1.7])
         text('Coverage: '+str(a.get('coverage','unknown'))+'. Force download can add known missing tickers; listing-source errors and Yahoo fallback status are shown below.',True)
@@ -16945,7 +17048,8 @@ def hedge_ui(data=None):
                         layout=FULL)
     tab_uni = W.VBox([
         H('Hedge candidates'), w_scope_help,
-        HELP('One stock universe: verified local sector stocks and BICS/GICS industry and industry-group peers. '
+        HELP('Local: matching GICS or BICS sector. Overseas: industry/group matches or supported Bloomberg direct peers. '
+             'All direct peer lists are expanded once; local peers of peers also receive the broader sector check. '
              'The listing-market control is in Data. Single stocks and relevant ETFs remain comparison references.'),
         w_peers, w_mktcap, w_stale,
         H('Basket construction'), w_basket_mode, w_basket, W.HBox([w_basket_min, w_basket_max]),
@@ -17413,8 +17517,9 @@ def hedge_ui(data=None):
 
     def _scope_changed(_=None):
         descriptions = {
-            'related': ('<b>Verified sector stocks and peers.</b> Local sector coverage plus verified overseas business peers when Same listing exchange is unchecked. '
-                        'No unrelated global index stocks. ETFs are reported as references.'),
+            'related': ('<b>Local sector stocks + global direct/industry peers.</b> Local candidates can share either GICS or BICS sector despite different industries. '
+                        'Overseas candidates need industry/group evidence or a supported Bloomberg direct link. '
+                        'Same listing exchange excludes overseas candidates. ETFs are comparison references.'),
             'sector': ('<b>Same-market sector stocks (default).</b> Compare verified stocks from the target’s broader sector in its listing market. '
                        'Banks, insurers and other financial businesses can compete for a financial target; the same classification rule applies across markets and industries. ETFs remain references.'),
             'sector_focused': ('<b>Same-market sector stocks + relevant ETFs.</b> The same broader stock pool, with target-specific sector/factor ETFs and optionally the local market ETF allowed in the basket.'),

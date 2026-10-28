@@ -142,7 +142,7 @@ class October28Tests(unittest.TestCase):
         self.assertEqual(sum(r['count'] for r in rows),d['prices'].shape[1])
         self.assertEqual(sum(foreign in r['tickers'] for r in rows),1)
         row=next(r for r in rows if foreign in r['tickers'])
-        self.assertEqual(row['category'],'Global industry/group peers')
+        self.assertEqual(row['category'],'Global direct/industry peers')
         tracker=E['_DownloadProgress'](d['target'],lambda state:None,io.StringIO())
         tracker.finish('details',d)
         html=E['_download_progress_html'](tracker.state)

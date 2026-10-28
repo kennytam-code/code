@@ -32,7 +32,7 @@ class ResearchTests(unittest.TestCase):
         cls.data=fixture();cls.one=run(cls.data,sample_window='1m');cls.three=run(cls.data,sample_window='3m')
 
     def test_actual_revision_loaded(self):
-        self.assertIn('v129',E['PCA_REVISION'])
+        self.assertIn('v130',E['PCA_REVISION'])
 
     def test_short_window_search_has_multiple_distinct_baskets(self):
         rows=self.one['basket_comparison']
@@ -676,7 +676,7 @@ class ResearchTests(unittest.TestCase):
         self.assertNotIn('_analysis_data',r)
         row=next(x for x in r['basket_identity_audit'] if x[0]==peer)
         self.assertEqual(row[1:],['Illustrative financial peer','Banks','Industry/group peer'])
-        self.assertIn('Industry/group peer stocks',str(E['_report_blocks'](r)))
+        self.assertIn('Direct and industry/group peer stocks',str(E['_report_blocks'](r)))
 
     def test_replacement_current_rule_cannot_inherit_historical_trade_flag(self):
         options={'sample_window':'3m','basket_size_options':(3,5)}
