@@ -1,3 +1,18 @@
+# PCA v129 changes
+
+Revision 2026-10-28-v129-peer-coverage; same current script/notebook entry points.
+
+- Broaden both taxonomy ladders through industry group; request GICS_INDUSTRY_GROUP_NAME. Keep issuer, instrument-type and sector-conflict checks. Fresh discovery version 6 is required.
+- Add compressed, dated official listing backups for six markets inside the standalone engine, retaining sources and dates. HK backup contains 3223/9976. Prefer one bounded live request, then backup rather than repeated timeouts. Bloomberg verifies each candidate; no company is hardcoded as a peer.
+- Clarify the download panel: stage purpose, batch progress, concrete tickers, requested/returned/missing counts and disjoint category totals. Retain vendor errors and guard malformed price responses.
+- Merge full security identities before price requests and reference batches. Normalize numeric HK aliases without truncating Korean/Taiwan leading zeroes; incremental additions retain existing histories.
+- Add 3m/6m download periods, with month arithmetic. Preserve partial IPO histories and decide eligibility inside the selected analysis window.
+- Use exchange_calendars to carry marks across verified closures only. Do not fill unexplained open-day gaps, pre-listing periods or suspensions. Preserve reopening returns, actual-quote precedence and auditable calendar failures. Reference factors use the same target-date valuation convention. Record exact eligibility gaps and first/last actual prices.
+- Expose factor-only estimation in the form. Print factor exposures and common-factor volatility before/after on the exact factor-fit rows, fixing the audit denominator when fitting history differs from the display horizon. Keep the factor section visible and linked from report navigation.
+- Preserve basket priority, fitted/test distinction, temporal purges, alternative baskets and constraints. Broader candidates may improve a historical fit; no improvement or complete worldwide coverage is promised.
+
+The uploaded document identifies missing histories but does not include raw 000660 prices or its complete field/FX diagnostics. Scheduled-closure exclusion was reproduced and fixed with tests; genuine remaining gaps must be identified from exported dates. The development environment has no Bloomberg terminal, so live entitlement/data verification remains necessary there.
+
 # PCA v128 changes
 
 Revision 2026-10-26-v128-result-state; retains incremental downloads and all v127 market controls.

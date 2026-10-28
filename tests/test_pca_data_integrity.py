@@ -69,7 +69,7 @@ class DataIntegrityTests(unittest.TestCase):
                 raise ssl.SSLCertVerificationError('test certificate failure')
             code='2889' if '_L.' in req.full_url else '5864'
             return io.BytesIO(('公司代號,公司簡稱,產業別\n'+code+',test,17\n').encode())
-        with patch('urllib.request.urlopen',side_effect=receive):
+        with patch.dict(E['_public_equity_universe'].__globals__,{'_bundled_listing_sources':lambda market:{}}),patch('urllib.request.urlopen',side_effect=receive):
             names,audit=E['_public_equity_universe']('TW')
         self.assertEqual(names,['2889 TT Equity','5864 TT Equity'])
         self.assertTrue(all(a['status']=='received' and len(a['attempts'])==1 for a in audit))

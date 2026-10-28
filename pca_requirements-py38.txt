@@ -17,3 +17,6 @@ curl_cffi>=0.7,<0.14
 peewee>=3.16.2,<4
 # Newer multitasking releases evaluate Python 3.9-only type annotations.
 multitasking==0.0.11
+
+# Distinguish scheduled market closures from missing security observations.
+exchange-calendars==4.2

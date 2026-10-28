@@ -13,3 +13,6 @@ lxml==5.3.0
 yfinance==0.2.66
 curl_cffi>=0.7,<0.14
 peewee>=3.16.2,<4
+
+# Distinguish scheduled market closures from missing security observations.
+exchange-calendars==4.13.2

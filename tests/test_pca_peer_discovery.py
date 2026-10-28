@@ -133,11 +133,11 @@ class PeerDiscoveryTests(unittest.TestCase):
                         E['auto_discover_universe'](None,t,min_mktcap_usd_mm=0,meta=meta)
                     self.assertIn(p,seen);self.assertIn(p,meta['peer_tickers']);self.assertIn(p,meta['sector_stock_tickers'])
 
-    def test_parent_group_cannot_override_narrow_business_conflict(self):
+    def test_parent_group_expands_peers_without_inventing_specific_factor_exposure(self):
         target=electronics();semi=electronics(BICS_LEVEL_3_INDUSTRY_NAME='Semiconductors',
             BICS_LEVEL_4_SUB_INDUSTRY_NAME='Semiconductor Devices',GICS_INDUSTRY_NAME='Semiconductors & Semiconductor',
             GICS_SUB_INDUSTRY_NAME='Semiconductors')
-        self.assertFalse(E['_peer_industry_supported'](target,semi))
+        self.assertTrue(E['_peer_industry_supported'](target,semi))
         self.assertTrue(E['_peer_industry_supported'](target,electronics()))
         self.assertTrue(E['_peer_industry_supported']({'GICS_INDUSTRY_NAME':'Banks'},{'GICS_INDUSTRY_NAME':'Banks'}))
         self.assertFalse(E['_peer_industry_supported'](target,electronics(SECURITY_TYP2='ETF')))
@@ -183,12 +183,12 @@ class PeerDiscoveryTests(unittest.TestCase):
         self.assertEqual(len(refs),305);self.assertEqual(len(calls),4)
         self.assertIn(names[-1],refs);self.assertEqual(len(errors[-1]['tickers']),300)
 
-    def test_cached_narrow_classification_rechecked_without_changing_sector_or_prices(self):
+    def test_cached_parent_classification_retained_without_changing_prices(self):
         d=fixture();t=d['target'];p=d['peer_tickers_by_target'][t][0]
         d['peer_discovery_by_target']={t:{'classification_evidence':{t:electronics(),p:electronics(
             GICS_SUB_INDUSTRY_NAME='Software',BICS_LEVEL_4_SUB_INDUSTRY_NAME='Software')}}}
         updated=E['_refresh_cached_peer_classification'](d)
-        self.assertNotIn(p,updated['peer_tickers_by_target'][t]);self.assertIn(p,d['peer_tickers_by_target'][t])
+        self.assertIn(p,updated['peer_tickers_by_target'][t]);self.assertIn(p,d['peer_tickers_by_target'][t])
         self.assertIs(updated['prices'],d['prices'])
 
     def test_related_history_scope_keeps_all_peers_and_sector_stocks(self):
@@ -261,7 +261,8 @@ class PeerDiscoveryTests(unittest.TestCase):
                 {'securityData':[{'fieldExceptions':[{'fieldId':'BLOOMBERG_PEERS',
                                                       'errorInfo':'not entitled'}]}]}),
                ('bbg_bulk',('T HK Equity','BLOOMBERG_PEERS'),{'responseError':'not entitled'}),
-               ('_bbg_equity_lookup',('peer',),{'responseError':'not entitled'})]
+               ('_bbg_equity_lookup',('peer',),{'responseError':'not entitled'}),
+               ('bbg_hist',(['T HK Equity'],'20260101','20260131'),{'responseError':'not entitled'})]
         for name,args,message in cases:
             with self.subTest(name=name,message=message):
                 drained=[]

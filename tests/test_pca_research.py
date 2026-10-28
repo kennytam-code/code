@@ -32,7 +32,7 @@ class ResearchTests(unittest.TestCase):
         cls.data=fixture();cls.one=run(cls.data,sample_window='1m');cls.three=run(cls.data,sample_window='3m')
 
     def test_actual_revision_loaded(self):
-        self.assertIn('v128',E['PCA_REVISION'])
+        self.assertIn('v129',E['PCA_REVISION'])
 
     def test_short_window_search_has_multiple_distinct_baskets(self):
         rows=self.one['basket_comparison']
@@ -221,7 +221,7 @@ class ResearchTests(unittest.TestCase):
             names,audit=E['_public_equity_universe']('TW')
         self.assertEqual(names,['2889 TT Equity','5864 TT Equity'])
         self.assertTrue(all(r['status']=='received' for r in audit))
-        with patch.dict(E['_public_equity_universe'].__globals__,{'_public_roster_bytes':MagicMock(side_effect=OSError('offline')),'_yahoo_equity_universe':lambda *a:([],dict(source='Yahoo',status='unavailable',count=0,reason='offline'))}):
+        with patch.dict(E['_public_equity_universe'].__globals__,{'_bundled_listing_sources':lambda market:{},'_public_roster_bytes':MagicMock(side_effect=OSError('offline')),'_yahoo_equity_universe':lambda *a:([],dict(source='Yahoo',status='unavailable',count=0,reason='offline'))}):
             names,audit=E['_public_equity_universe']('TW')
         self.assertFalse(names);self.assertEqual(len(audit),3)
         self.assertTrue(all(r['status']=='unavailable' for r in audit))
@@ -231,7 +231,7 @@ class ResearchTests(unittest.TestCase):
             if 'openapi.twse' in req.full_url:
                 return io.BytesIO(b'[{"changed":"2889"}]')
             raise OSError('offline')
-        with patch.dict(E['_public_equity_universe'].__globals__,{'_public_roster_bytes':lambda endpoint,transport: fetch(type('Request',(),{'full_url':endpoint})()).getvalue(),'_yahoo_equity_universe':lambda *a:([],dict(source='Yahoo',status='unavailable',count=0,reason='offline'))}):
+        with patch.dict(E['_public_equity_universe'].__globals__,{'_bundled_listing_sources':lambda market:{},'_public_roster_bytes':lambda endpoint,transport: fetch(type('Request',(),{'full_url':endpoint})()).getvalue(),'_yahoo_equity_universe':lambda *a:([],dict(source='Yahoo',status='unavailable',count=0,reason='offline'))}):
             names,audit=E['_public_equity_universe']('TW')
         self.assertEqual(names,[]);self.assertEqual(audit[0]['status'],'unavailable')
 
@@ -241,7 +241,7 @@ class ResearchTests(unittest.TestCase):
             if 'tpex.org.tw' in req.full_url:
                 return io.BytesIO(b'[{"SecuritiesCompanyCode":"5864"}]')
             raise IncompleteRead(b'a')
-        with patch.dict(E['_public_equity_universe'].__globals__,{'_public_roster_bytes':lambda endpoint,transport: receive(type('Request',(),{'full_url':endpoint})()).getvalue(),'_yahoo_equity_universe':lambda *a:([],dict(source='Yahoo',status='unavailable',count=0,reason='offline'))}):
+        with patch.dict(E['_public_equity_universe'].__globals__,{'_bundled_listing_sources':lambda market:{},'_public_roster_bytes':lambda endpoint,transport: receive(type('Request',(),{'full_url':endpoint})()).getvalue(),'_yahoo_equity_universe':lambda *a:([],dict(source='Yahoo',status='unavailable',count=0,reason='offline'))}):
             names,audit=E['_public_equity_universe']('TW')
         self.assertEqual(names,['5864 TT Equity'])
         self.assertEqual(audit[0]['status'],'unavailable')
@@ -675,8 +675,8 @@ class ResearchTests(unittest.TestCase):
         r=run(d,sample_window='2m',candidate_scope='peers',force_include=[peer])
         self.assertNotIn('_analysis_data',r)
         row=next(x for x in r['basket_identity_audit'] if x[0]==peer)
-        self.assertEqual(row[1:],['Illustrative financial peer','Banks','Strict peer'])
-        self.assertIn('Strict peer stocks',str(E['_report_blocks'](r)))
+        self.assertEqual(row[1:],['Illustrative financial peer','Banks','Industry/group peer'])
+        self.assertIn('Industry/group peer stocks',str(E['_report_blocks'](r)))
 
     def test_replacement_current_rule_cannot_inherit_historical_trade_flag(self):
         options={'sample_window':'3m','basket_size_options':(3,5)}
