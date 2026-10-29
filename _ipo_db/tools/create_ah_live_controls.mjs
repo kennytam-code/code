@@ -1,0 +1,17 @@
+import fs from 'node:fs/promises';
+import {FileBlob,SpreadsheetFile} from '@oai/artifact-tool';
+const folder='out/ah_live_fix_20261029';
+const wb=await SpreadsheetFile.importXlsx(await FileBlob.load(`${folder}/before_preview.xlsx`));
+const s=wb.worksheets.getItem('AH');
+s.getRange('D4').values=[['Quotes']];
+s.getRange('G4').copyFrom(s.getRange('D4'),'all');
+s.getRange('G4').values=[['Charts']];
+s.getRange('H4').copyFrom(s.getRange('E4'),'all');
+s.getRange('H4').values=[['Stored']];
+s.getRange('H4').dataValidation={rule:{type:'list',values:['Stored','Bloomberg']}};
+wb.recalculate();
+console.log((await wb.inspect({kind:'table',range:'AH!A4:I8',include:'values,formulas',tableMaxRows:5,tableMaxCols:9})).ndjson);
+const out=await SpreadsheetFile.exportXlsx(wb);await out.save(`${folder}/controls.xlsx`);
+const png=await wb.render({sheetName:'AH',range:'A4:I15',scale:1.2,format:'png'});
+await fs.writeFile(`${folder}/controls.png`,new Uint8Array(await png.arrayBuffer()));
+await fs.writeFile('data/ah_live_controls.json',JSON.stringify({quoteLabel:'Quotes',chartLabel:'Charts',chartDefault:'Stored',choices:['Stored','Bloomberg'],xlsx_base64:(await fs.readFile(`${folder}/controls.xlsx`)).toString('base64')})+'\n');

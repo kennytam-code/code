@@ -1,0 +1,14 @@
+{
+  "date": "2026-10-29",
+  "sha256": "0cfca1eda3f28e398c859745c591d1132f0cfc59ced943c795864d4a4946c2ab",
+  "opened_without_repair": true,
+  "reviewed": [
+    "AH controls",
+    "Stored 1D/7D/1M table",
+    "AH premium and A-share/CSI charts"
+  ],
+  "closed_without_saving": true,
+  "excel_view_only": true,
+  "bloomberg_live_tested": false,
+  "application_calculation_settings_changed": false
+}

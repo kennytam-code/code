@@ -1,4 +1,4 @@
-HK IPO desk files — 28 October 2026
+HK IPO desk files — A/H formula fix 29 October 2026; data 28 October
 
 Open HK_IPO_Database_v1.xlsx for the desk workbook; open hk_ipo_dashboard.html
 for the offline dashboard. The ZIP contains that same HTML.
@@ -9,10 +9,14 @@ IPO Live has 702 valid saved quotes, with individual dates. The latest is
 28 October. Missing/stale quotes and debut-day reference prices are excluded
 from daily averages. This update does not refresh every historical series.
 
-AH: E4 chooses Stored or Bloomberg. G:I show premium changes in percentage
+AH: E4 Quotes chooses Stored or Bloomberg. H4 Charts is independent.
+For a live table with less history work, use E4 Bloomberg and H4 Stored.
+Current prices use BDP LAST_PRICE; a short shared history feeds the changes. G:I show premium changes in percentage
 points over 1D, seven calendar days and one calendar month. 1D compares the
 current premium with the previous H trading close, using dated A/FX as-of
-observations. A first-day IPO has no previous H trading close.
+observations. Seven-day/month reference dates also follow the H quote date.
+A first-day IPO has no previous H trading close. Missing history or dates
+show a short status instead of a silent blank. Sector means exclude missing.
 
 AH top links: Group averages, IPO price check. The independent price checker
 uses M60 for H code; optional M61 for A code and M62 for H IPO price. Numeric

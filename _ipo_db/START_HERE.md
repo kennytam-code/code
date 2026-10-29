@@ -4,6 +4,42 @@ Read this file, then `data/release_state.json`. The latest instruction wins over
 older dated entries in `MAINTENANCE.md`. This file is intended for the next AI or
 analyst, including a session with no conversation history.
 
+## 29 October: Bloomberg A/H horizon repair
+
+Prepared for GitHub main with the user's explicit request. See
+`data/release_state.json` for verified publication status.
+Market observations and all accepted financial inputs are unchanged.
+
+AH E4 is now **Quotes** (Stored/Bloomberg), H4 is **Charts** (Stored/Bloomberg).
+Both default Stored. For a live table without long history requests, choose
+E4 Bloomberg and leave H4 Stored. Current A/H prices use scalar BDP LAST_PRICE;
+one FX quote is shared. The independent IPO-price checker still follows E4.
+
+1D/7D/1M are premium changes in percentage points. All references use the H
+quote date: previous H session, seven calendar days earlier, or one calendar
+month earlier. A and FX observations are as-of the chosen H close, with the
+existing independent entitlement factors. Do not change them into stock returns.
+One short H history and one A history per pair plus one shared FX history serve
+all three horizons (145 guarded BDH occurrences for 72 pairs, 55 calendar days).
+Long chart requests (16 occurrences) only activate with H4 Bloomberg. Counts
+are formula occurrences, not measured terminal requests or RAM benchmarks.
+
+The final native stage is ah_live_requests.apply after excel_chart_refresh.
+It declares bounded two-column native BDH array ranges; header/error/blank-safe
+lookup scans are single-cell native arrays for older Excel compatibility.
+Quote-date normalization handles serials, YYYYMMDD numbers/text and date text.
+H/A/FX positions are shared per horizon instead of repeated nested searches.
+Missing replies show No quote, No date, No history or Too new, not zero or a
+silent error. Group averages exclude unavailable text. Do not restore blanket
+IFERROR blanks or couple table and long-chart request switches.
+
+The small control template is data/ah_live_controls.json, authored via Artifact.
+Tests: tools/test_ah_live_requests.py plus native_desk, presentation_package
+and update_20261028. All original data/chart caches and 62 unaffected ZIP parts
+are identical. Native Excel opened the final package without repair; the AH
+table, controls and charts were reviewed. Bloomberg execution remains untested
+without an entitled terminal. Review evidence: data/ah_live_fix_20261029/.
+
 ## 28 October: new listing, daily A/H changes and all Excel charts
 
 Published to GitHub main on 29 October with the user's explicit request.
@@ -163,7 +199,7 @@ tabs stay at the back/hidden. Do not delete other research in TO_NOMURA.
 | View | Controls / meaning |
 |---|---|
 | IPO Live | B4 Stored/Bloomberg; B5 Sector/Subsector; H34 subsector chart's broad sector. LAST_PRICE and PX_YEST_CLOSE. Daily return needs a real previous trading close: no offer-price substitution on IPO day. Stale/missing quotes do not enter daily averages. |
-| AH | B4 chart pair; E4 Stored/Bloomberg. A:I roster includes 1D/7D/1M premium changes in pp. J5 jumps to group averages; L5 to independent IPO-price checker. |
+| AH | B4 chart pair; E4 Quotes Stored/Bloomberg; H4 independent Charts source. A:I roster includes 1D/7D/1M premium changes in pp. J5 jumps to group averages; L5 to independent IPO-price checker. |
 | AH charts | Aligned premium and A-share/CSI return panels, common observed dates. Bloomberg requests through TODAY; Stored retains per-pair dates. No invented points or cosmetic interpolation. Reviewed split/bonus factors align each leg on its own ex date. |
 | Peer Trades | B3 named direct product-peer pair; F3 source; H3 horizon; F4/H4 custom dates. Return spread = A minus B price return in percentage points, both rebased at their first common observed session. Keep the product overlap/mix distinction. |
 | Screener | B5 is code-first: numeric-sorted H-code dropdown plus uncoded pipeline names; E5:L5 shows the resolved company. Free typing still accepts company names, leading zeros and Bloomberg tickers; retain exact numeric aliases such as 9607. Calc AY53 reads Database BQ (selected A code); AY54 is its ticker. The eleven W_* named model inputs now live in hidden Calc (scoring engine)!AU2:AU12, with names/descriptions in AT/AV. The final workbook has no Notes sheet. Never overwrite these inputs with prose. |

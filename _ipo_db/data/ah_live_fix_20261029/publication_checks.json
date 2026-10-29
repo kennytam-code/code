@@ -1,0 +1,27 @@
+{
+  "workbook_sha256": "0cfca1eda3f28e398c859745c591d1132f0cfc59ced943c795864d4a4946c2ab",
+  "checks": [
+    {
+      "test": "tools/test_ah_live_requests.py",
+      "exit": 0
+    },
+    {
+      "test": "tools/test_native_desk.py",
+      "exit": 0
+    },
+    {
+      "test": "tools/test_presentation_package.py",
+      "exit": 0
+    },
+    {
+      "test": "tools/test_update_20261028.py",
+      "exit": 0
+    }
+  ],
+  "bloomberg_live_tested": false,
+  "date": "2026-10-29",
+  "publication_status": "ready_for_publication",
+  "base_commit": "593743ff938d6aae02d61bbd65c8ad82bbd620fa",
+  "native_excel_hash_verified": true,
+  "html_unchanged": true
+}

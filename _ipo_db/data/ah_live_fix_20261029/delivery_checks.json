@@ -1,0 +1,61 @@
+{
+  "data_inputs_unchanged": true,
+  "html_unchanged": true,
+  "native_excel": {
+    "date": "2026-10-29",
+    "sha256": "0cfca1eda3f28e398c859745c591d1132f0cfc59ced943c795864d4a4946c2ab",
+    "opened_without_repair": true,
+    "reviewed": [
+      "AH controls",
+      "Stored 1D/7D/1M table",
+      "AH premium and A-share/CSI charts"
+    ],
+    "closed_without_saving": true,
+    "excel_view_only": true,
+    "bloomberg_live_tested": false,
+    "application_calculation_settings_changed": false
+  },
+  "formula_checks": {
+    "terminal_tested": false,
+    "fixtures": 45,
+    "unchanged_package_parts": 62,
+    "stored_ah_and_market_caches": "unchanged",
+    "AH Recent_bdh": 145,
+    "Live History_bdh": 3,
+    "AH Compare Live_bdh": 12,
+    "AH Reference_bdh": 1,
+    "idempotent": true,
+    "before_delta": {
+      "formula_characters": 549947,
+      "history_range_references": 11304
+    },
+    "after_delta": {
+      "formula_characters": 358746,
+      "history_range_references": 4536
+    },
+    "workbook_sha256": "0cfca1eda3f28e398c859745c591d1132f0cfc59ced943c795864d4a4946c2ab"
+  },
+  "deliverables": {
+    "HK_IPO_Database_v1.xlsx": {
+      "bytes": 7909498,
+      "sha256": "0cfca1eda3f28e398c859745c591d1132f0cfc59ced943c795864d4a4946c2ab"
+    },
+    "hk_ipo.py": {
+      "bytes": 15424204,
+      "sha256": "1af26c4eca673b5095a08967dca2cc04a09b2b43b3004c8840c285c329bb0fa7"
+    },
+    "READ_ME_FIRST.txt": {
+      "bytes": 2681,
+      "sha256": "177c465cec4ef3b0c643a77447d37daf5a29c1aaccd7a144f8f42b13aa874585"
+    },
+    "hk_ipo_dashboard.html": {
+      "bytes": 2873614,
+      "sha256": "d2c41cd5773d45771f408c15b06b1a4ff3a9da6789bfed450b5c3ba3c9f050a3"
+    },
+    "hk_ipo_dashboard.zip": {
+      "bytes": 2056300,
+      "sha256": "360663fb6c83041e03588ed48089ac53077e54cdd89c38929e561f7f3689fc1f"
+    }
+  },
+  "github_updated": false
+}

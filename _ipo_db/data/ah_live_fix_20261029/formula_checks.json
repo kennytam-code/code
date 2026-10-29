@@ -1,0 +1,20 @@
+{
+  "terminal_tested": false,
+  "fixtures": 45,
+  "unchanged_package_parts": 62,
+  "stored_ah_and_market_caches": "unchanged",
+  "AH Recent_bdh": 145,
+  "Live History_bdh": 3,
+  "AH Compare Live_bdh": 12,
+  "AH Reference_bdh": 1,
+  "idempotent": true,
+  "before_delta": {
+    "formula_characters": 549947,
+    "history_range_references": 11304
+  },
+  "after_delta": {
+    "formula_characters": 358746,
+    "history_range_references": 4536
+  },
+  "workbook_sha256": "0cfca1eda3f28e398c859745c591d1132f0cfc59ced943c795864d4a4946c2ab"
+}

@@ -1,5 +1,5 @@
 {
-  "release_date": "2026-10-28",
+  "release_date": "2026-10-29",
   "handover": "START_HERE.md",
   "counts": {
     "database_screener": 527,
@@ -34,7 +34,7 @@
     "numeric_entries": 39303,
     "internal_numeric_failures": 0,
     "existing_525_stock_numeric_changes": 0,
-    "native_excel_open": "28 October final workbook opened without repair; Live, AH, Peer Trades and moved Screener valuation area reviewed. View-only Mac; terminal responses and interactive inputs not tested live.",
+    "native_excel_open": "29 October AH formula repair opened without repair. AH controls/table/charts reviewed, then closed without saving. Mac view-only; no live Bloomberg execution.",
     "other_tabs_style_preservation": "13 sheets: business values, formulas and caches preserved, including seven relocated Screener outputs; requested titles removed; chart data, axes, drawing anchors and relationships unchanged",
     "small_projection_review": [
       "Database",
@@ -414,6 +414,70 @@
         "Screener valuations"
       ],
       "live_bloomberg_tested": false
+    },
+    "ah_live_fix_20261029": {
+      "terminal_tested": false,
+      "fixtures": 45,
+      "unchanged_package_parts": 62,
+      "stored_ah_and_market_caches": "unchanged",
+      "AH Recent_bdh": 145,
+      "Live History_bdh": 3,
+      "AH Compare Live_bdh": 12,
+      "AH Reference_bdh": 1,
+      "idempotent": true,
+      "before_delta": {
+        "formula_characters": 549947,
+        "history_range_references": 11304
+      },
+      "after_delta": {
+        "formula_characters": 358746,
+        "history_range_references": 4536
+      },
+      "workbook_sha256": "0cfca1eda3f28e398c859745c591d1132f0cfc59ced943c795864d4a4946c2ab",
+      "native_excel": {
+        "date": "2026-10-29",
+        "sha256": "0cfca1eda3f28e398c859745c591d1132f0cfc59ced943c795864d4a4946c2ab",
+        "opened_without_repair": true,
+        "reviewed": [
+          "AH controls",
+          "Stored 1D/7D/1M table",
+          "AH premium and A-share/CSI charts"
+        ],
+        "closed_without_saving": true,
+        "excel_view_only": true,
+        "bloomberg_live_tested": false,
+        "application_calculation_settings_changed": false
+      },
+      "bundle_market_inputs_unchanged": true,
+      "html_byte_identical": true,
+      "checks_passed": [
+        "test_ah_live_requests",
+        "test_native_desk",
+        "test_presentation_package",
+        "test_update_20261028"
+      ],
+      "publication_rerun": {
+        "workbook_sha256": "0cfca1eda3f28e398c859745c591d1132f0cfc59ced943c795864d4a4946c2ab",
+        "checks": [
+          {
+            "test": "tools/test_ah_live_requests.py",
+            "exit": 0
+          },
+          {
+            "test": "tools/test_native_desk.py",
+            "exit": 0
+          },
+          {
+            "test": "tools/test_presentation_package.py",
+            "exit": 0
+          },
+          {
+            "test": "tools/test_update_20261028.py",
+            "exit": 0
+          }
+        ],
+        "bloomberg_live_tested": false
+      }
     }
   },
   "known_limits": {
@@ -424,20 +488,21 @@
     "browser": "Current HTML data and actual renderer functions checked locally; no fresh browser visual pass.",
     "bloomberg": "Formula fixtures passed; terminal/add-in responses remain unverified.",
     "taxonomy": "Framework reviewed and retained; confirmed assignment errors in 2477 and 2321 remain recommendations, not applied changes. See data/taxonomy_review_20261016.json.",
-    "historical_lockups": "161 completed, date-confirmed events; selective sample. 21 retain interior price gaps. 70 ambiguous dates, 67 undated, 67 future, 26 incomplete/unverified price windows and six original schedules with later extensions excluded; 6911 controller row corrected. Amendment search was targeted, not exhaustive. Sources and exclusions retained outside Excel."
+    "historical_lockups": "161 completed, date-confirmed events; selective sample. 21 retain interior price gaps. 70 ambiguous dates, 67 undated, 67 future, 26 incomplete/unverified price windows and six original schedules with later extensions excluded; 6911 controller row corrected. Amendment search was targeted, not exhaustive. Sources and exclusions retained outside Excel.",
+    "ah_live_terminal": "Formula and response-fixture checks passed; actual Bloomberg add-in responses/entitlements are not verified. Quotes and Charts use separate switches."
   },
   "deliverables": {
     "HK_IPO_Database_v1.xlsx": {
-      "bytes": 7896755,
-      "sha256": "a6bc29bc94040b798e7b8fa0124e358bb33f7fa9efff07f228b7789798109f8f"
+      "bytes": 7909498,
+      "sha256": "0cfca1eda3f28e398c859745c591d1132f0cfc59ced943c795864d4a4946c2ab"
     },
     "hk_ipo.py": {
-      "bytes": 15403168,
-      "sha256": "ca5caf434b336861359b4d27fe597456824733db9e62111c06b4dfd3c6c6f68f"
+      "bytes": 15424204,
+      "sha256": "1af26c4eca673b5095a08967dca2cc04a09b2b43b3004c8840c285c329bb0fa7"
     },
     "READ_ME_FIRST.txt": {
-      "bytes": 2301,
-      "sha256": "84a120e8657783caf2c38daeeed16a0e539fca2f1882b157b7b2e72b6d39fd4d"
+      "bytes": 2681,
+      "sha256": "177c465cec4ef3b0c643a77447d37daf5a29c1aaccd7a144f8f42b13aa874585"
     },
     "hk_ipo_dashboard.html": {
       "bytes": 2873614,
@@ -449,6 +514,15 @@
     }
   },
   "publication": {
+    "status": "ready_for_publication",
+    "github_updated_this_session": false,
+    "date": "2026-10-29",
+    "repository": "https://github.com/kennytam-code/code",
+    "branch": "main",
+    "base_commit": "593743ff938d6aae02d61bbd65c8ad82bbd620fa",
+    "authorization": "Explicit user request: check if no error then push to github"
+  },
+  "previous_publication": {
     "status": "published",
     "github_updated_this_session": true,
     "date": "2026-10-29",
@@ -461,13 +535,5 @@
     "downloaded_hashes_verified": true,
     "method": "Isolated checkout based on current GitHub main; parent Git branch/index and unrelated work preserved."
   },
-  "previous_publication": {
-    "status": "published",
-    "github_updated_this_session": true,
-    "date": "2026-10-22",
-    "repository": "https://github.com/kennytam-code/code",
-    "branch": "main",
-    "base_commit": "da3f75f46aaf2696ed53a4aab0a58f9676717662",
-    "authorization": "Explicit user request: push to github"
-  }
+  "data_release_date": "2026-10-28"
 }
