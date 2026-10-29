@@ -1,5 +1,13 @@
 # HK IPO desk files
 
+## Reviewed hedge finder — 29 October 2026
+
+**[Open the reviewed v130 notebook](PCA_Hedge_Finder_v130.ipynb)** · **[Download notebook](https://github.com/kennytam-code/code/raw/refs/heads/main/PCA_Hedge_Finder_v130.ipynb)** · [Python source](PCA_Hedge_Finder_v130.py)
+
+This reviewed snapshot adds broader BICS/GICS and peer-network search, optional peers of peers and listing-directory checks, 1m/3m/6m downloads, exchange restrictions, shared-history handling, and before/after factor exposures. It also fixes candidate/cache issues and improves the form and report styling. Run the notebook and use a fresh Bloomberg download for the expanded universe.
+
+The existing maintained PCA engine and its release history remain documented separately in [PCA_README.md](PCA_README.md).
+
 ## Listed IPO lockup brief
 
 **[Download the Word briefing — 2635 / 3317 / 6600 / 6651](https://github.com/kennytam-code/code/raw/refs/heads/main/Listed_AI_Lockup_Trader_Brief_2026-10-26.docx)**
