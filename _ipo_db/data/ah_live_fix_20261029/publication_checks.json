@@ -20,8 +20,11 @@
   ],
   "bloomberg_live_tested": false,
   "date": "2026-10-29",
-  "publication_status": "ready_for_publication",
-  "base_commit": "593743ff938d6aae02d61bbd65c8ad82bbd620fa",
+  "publication_status": "published",
+  "base_commit": "c229b92ed9e08e7c8f24d6ca8b1f3413c77e0277",
   "native_excel_hash_verified": true,
-  "html_unchanged": true
+  "html_unchanged": true,
+  "release_commit": "6c3119d7f2fcfe9d8217b205a6909dbaba013b5d",
+  "github_download_hashes_verified": true,
+  "verified_at": "2026-10-29T23:21:47.344784+08:00"
 }

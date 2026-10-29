@@ -6,8 +6,9 @@ analyst, including a session with no conversation history.
 
 ## 29 October: Bloomberg A/H horizon repair
 
-Prepared for GitHub main with the user's explicit request. See
-`data/release_state.json` for verified publication status.
+Published to GitHub main on 29 October with the user's explicit request.
+All five downloaded deliverables passed SHA-256 verification; root Excel and
+updater match TO_NOMURA. See `data/release_state.json` for the release commit.
 Market observations and all accepted financial inputs are unchanged.
 
 AH E4 is now **Quotes** (Stored/Bloomberg), H4 is **Charts** (Stored/Bloomberg).
