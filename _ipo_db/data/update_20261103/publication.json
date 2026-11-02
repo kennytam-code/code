@@ -1,0 +1,67 @@
+{
+  "publication": {
+    "status": "published",
+    "github_updated_this_session": true,
+    "date": "2026-11-03",
+    "repository": "https://github.com/kennytam-code/code",
+    "branch": "main",
+    "authorization": "User: push to github once done",
+    "release_commit": "8f8f6e7693d4490eac386ec08f7cdc8e7ec94c6a",
+    "verified_at": "2026-11-03T01:13:43.391757+08:00",
+    "downloaded_hashes_verified": true,
+    "downloaded_paths": 10,
+    "method": "Isolated sparse checkout, rebased onto current main; unrelated work and Word studies preserved."
+  },
+  "downloads": [
+    {
+      "path": "_ipo_db/TO_NOMURA/HK_IPO_Database_v1.xlsx",
+      "bytes": 7915544,
+      "sha256": "78c6c822a89b796d18850e2f3349567e8c8346206ab452fac5a7e46457aacb96"
+    },
+    {
+      "path": "_ipo_db/TO_NOMURA/hk_ipo.py",
+      "bytes": 15433728,
+      "sha256": "a67a36ea12fae453e5e90c743cccb9cd769324f8e85d137629e7d687db6d2a52"
+    },
+    {
+      "path": "_ipo_db/TO_NOMURA/hk_ipo_dashboard.html",
+      "bytes": 2876157,
+      "sha256": "f6e09ec3ff931422c9506688925be3164eea0d8be18296ea6f757d343f58ddde"
+    },
+    {
+      "path": "_ipo_db/TO_NOMURA/hk_ipo_dashboard.zip",
+      "bytes": 2058047,
+      "sha256": "09c002207160bf9e2d901b499930d6dbbf95e3295afc6b22828d910f9d2af2a0"
+    },
+    {
+      "path": "_ipo_db/TO_NOMURA/READ_ME_FIRST.txt",
+      "bytes": 3230,
+      "sha256": "34d318da41e17c2d4699a9aa305881a4b3f3cd50b706d642f1d6873f7a0e3f2a"
+    },
+    {
+      "path": "HK_IPO_Database_v1.xlsx",
+      "bytes": 7915544,
+      "sha256": "78c6c822a89b796d18850e2f3349567e8c8346206ab452fac5a7e46457aacb96"
+    },
+    {
+      "path": "hk_ipo.py",
+      "bytes": 15433728,
+      "sha256": "a67a36ea12fae453e5e90c743cccb9cd769324f8e85d137629e7d687db6d2a52"
+    },
+    {
+      "path": "hk_ipo_dashboard.html",
+      "bytes": 2876157,
+      "sha256": "f6e09ec3ff931422c9506688925be3164eea0d8be18296ea6f757d343f58ddde"
+    },
+    {
+      "path": "READ_ME_FIRST.txt",
+      "bytes": 3230,
+      "sha256": "34d318da41e17c2d4699a9aa305881a4b3f3cd50b706d642f1d6873f7a0e3f2a"
+    },
+    {
+      "path": "_ipo_db/export/hk_ipo.py",
+      "bytes": 15433728,
+      "sha256": "a67a36ea12fae453e5e90c743cccb9cd769324f8e85d137629e7d687db6d2a52"
+    }
+  ]
+}

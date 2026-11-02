@@ -580,11 +580,17 @@
     }
   },
   "publication": {
-    "status": "ready_to_publish",
-    "github_updated_this_session": false,
-    "authorization": "User: push to github once done",
+    "status": "published",
+    "github_updated_this_session": true,
+    "date": "2026-11-03",
     "repository": "https://github.com/kennytam-code/code",
-    "branch": "main"
+    "branch": "main",
+    "authorization": "User: push to github once done",
+    "release_commit": "8f8f6e7693d4490eac386ec08f7cdc8e7ec94c6a",
+    "verified_at": "2026-11-03T01:13:43.391757+08:00",
+    "downloaded_hashes_verified": true,
+    "downloaded_paths": 10,
+    "method": "Isolated sparse checkout, rebased onto current main; unrelated work and Word studies preserved."
   },
   "previous_publication": {
     "status": "published",
