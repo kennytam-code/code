@@ -4,6 +4,48 @@ Read this file, then `data/release_state.json`. The latest instruction wins over
 older dated entries in `MAINTENANCE.md`. This file is intended for the next AI or
 analyst, including a session with no conversation history.
 
+## 3 November: Bloomberg modes and new offerings
+
+This section supersedes the October defaults/array instructions below.
+Database B2 defaults **All**, explicitly requested by the user. Selected/Off
+remain optional. Scope is normalised once; Selected uses issuer codes and the
+displayed peer codes. Five Screener H valuation fields reuse the database
+issuer block; standalone H queries are reserved for pipeline-only codes. Off
+also gates selected H/A forward requests. No new Bloomberg fields were added.
+Out-of-scope values say Outside selection or Off, not ambiguous Not requested.
+
+All 161 BDH anchors have **no preallocated multi-cell legacy CSE arrays**.
+Bloomberg must own and resize its reply areas. Keep those zones empty. Retain
+the 648 separate single-cell AH Delta array lookup calculations: they do not
+occupy a Bloomberg reply zone. AH Quotes E4 and Charts H4 remain independent,
+default Stored; 145 short histories serve 1D/7D/1M and 16 long chart calls are
+guarded separately. Current prices still use scalar BDP LAST_PRICE. All-mode
+valuation loading increases active requests relative to Selected by design;
+actual terminal latency/RAM has not been measured.
+
+527 database IPOs,717 Live stocks,72 A/H pairs,23 pipeline rows. New offerings:
+0054,2065,2206,2681,7672,9621,9917;1821 is an introduction. Eight HKEX documents
+were reviewed for terms, cornerstone legal names and percentages, sponsors,
+lot size and timetable. No new final allocations/subscriptions are invented.
+Other AP/PHIP membership remains Oct28. Market histories remain dated as in
+the release state. CTG Hongkong/Macao tourism must not dedupe into CTG Duty-Free;
+the HOSIN name variant and trailing PHIP class suffixes are handled explicitly.
+
+data/pipeline_peers.json supplies reviewed business comparisons. Excel's
+Screener P10 resolves these automatically for a pipeline selection; HTML cards
+have Compare in Screener. Pinned companies lead the wider subsector ranking.
+Comparison limitations are retained in the data; do not call every broad peer
+an exact direct competitor. Introduction offer-only terms display N/A.
+
+Final native stages: ah_live_requests, bloomberg_mode_repair,
+pipeline_peer_inputs. Both new modules and peer inputs are in the standalone
+updater. Use tools/test_update_20261103.py instead of the old AH test's CSE
+expectations. data/update_20261103/validation.json records formula, package,
+historical preservation, native Excel, browser and bounded Artifact checks.
+Bloomberg live execution remains untested; this Mac is view-only. Validation
+and source notes stay here, not in workbook tabs. See release_state publication
+status/hash manifest for the exact delivery and GitHub commit.
+
 ## 29 October: Bloomberg A/H horizon repair
 
 Published to GitHub main on 29 October with the user's explicit request.

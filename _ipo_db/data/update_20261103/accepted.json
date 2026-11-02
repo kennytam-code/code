@@ -1,0 +1,265 @@
+[
+  {
+    "code": "2065",
+    "name": "Amicro Technology Co., Ltd.",
+    "status": "OFFERING NOW",
+    "sector": "Technology",
+    "subsector": "Robotics & autonomous driving",
+    "range_lo": 9.27,
+    "range_hi": 11.58,
+    "offer_shares": 71687000,
+    "lot_size": 500,
+    "listing_date": "2026-11-12",
+    "expected_listing_date": "2026-11-12",
+    "offer_period": "2026-10-31 to 2026-11-09",
+    "size_at_cap_hkdm": 830.13546,
+    "cornerstone_pct": 11.81,
+    "cornerstone_investors": [
+      "Digital Horizon GD Investment LP",
+      "Compro Lighting Co., Limited"
+    ],
+    "cornerstone_basis": "At maximum offer price; base offer; before options",
+    "sponsors": [
+      "China Securities (International) Corporate Finance Company Limited",
+      "Guotai Junan Capital Limited"
+    ],
+    "business_overview": "Robotics SoCs, sensors, algorithms and development tools for intelligent mobile robots.",
+    "prospectus_links": [
+      "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1030/2026103002447.pdf"
+    ],
+    "announcement_links": [],
+    "allotment_links": [],
+    "reviewed_at": "2026-11-03",
+    "greenshoe_pct": 0
+  },
+  {
+    "code": "0054",
+    "name": "Ganzhou Hemay Pharmaceutical Co., Ltd.",
+    "status": "OFFERING NOW",
+    "sector": "Healthcare",
+    "subsector": "Biotech pre-revenue (18A)",
+    "range_lo": 15.5,
+    "range_hi": 18.9,
+    "offer_shares": 55210000,
+    "lot_size": 100,
+    "listing_date": "2026-11-09",
+    "expected_listing_date": "2026-11-09",
+    "offer_period": "2026-10-30 to 2026-11-04",
+    "size_at_cap_hkdm": 1043.4689999999998,
+    "cornerstone_pct": 21.81,
+    "cornerstone_investors": [
+      "GF Fund Management Co., Ltd.",
+      "GF International Investment Management Limited",
+      "China Universal Asset Management Co., Ltd.",
+      "China Universal Asset Management (Hong Kong) Company Limited",
+      "Fullgoal Fund Management Co., Ltd.",
+      "Fullgoal Asset Management (HK) Limited",
+      "E Fund Management Co., Ltd."
+    ],
+    "cornerstone_basis": "At maximum offer price; base offer; before options",
+    "sponsors": [
+      "SDIC Securities Corporate Finance (Hong Kong) Limited"
+    ],
+    "business_overview": "Small-molecule drugs for autoimmune diseases and oncology; no product sales during the track record period.",
+    "prospectus_links": [
+      "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1030/2026103000029.pdf"
+    ],
+    "announcement_links": [],
+    "allotment_links": [],
+    "reviewed_at": "2026-11-03",
+    "profitable_at_ipo": "N",
+    "pe_note": "Loss-making",
+    "range_note": "Indicative HK$15.50–18.90; downward adjustment floor HK$14.00",
+    "greenshoe_pct": 15
+  },
+  {
+    "code": "7672",
+    "name": "Jiangsu Xinde Semiconductor Technology Co., Ltd.",
+    "status": "OFFERING NOW",
+    "sector": "Technology",
+    "subsector": "Semiconductors",
+    "range_lo": 8.6,
+    "range_hi": 9.6,
+    "offer_shares": 106562500,
+    "lot_size": 500,
+    "listing_date": "2026-11-10",
+    "expected_listing_date": "2026-11-10",
+    "offer_period": "2026-10-30 to 2026-11-05",
+    "size_at_cap_hkdm": 1023.0,
+    "cornerstone_pct": 30.59,
+    "cornerstone_investors": [
+      "GF Fund Management Co., Ltd.",
+      "Guohui (HK) Holdings Co., Limited",
+      "Maxwell Technology Pte. Ltd."
+    ],
+    "cornerstone_basis": "At maximum offer price; base offer; before options",
+    "sponsors": [
+      "Huatai Financial Holdings (Hong Kong) Limited"
+    ],
+    "business_overview": "Semiconductor assembly and testing, including traditional and advanced packaging.",
+    "prospectus_links": [
+      "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1030/2026103000027.pdf"
+    ],
+    "announcement_links": [],
+    "allotment_links": [],
+    "reviewed_at": "2026-11-03",
+    "greenshoe_pct": 0
+  },
+  {
+    "code": "2681",
+    "name": "HOSIN Electronics Co., LTD.",
+    "status": "OFFERING NOW",
+    "sector": "Technology",
+    "subsector": "Semiconductors",
+    "range_lo": 72.29,
+    "range_hi": 82.9,
+    "offer_shares": 14717200,
+    "lot_size": 100,
+    "listing_date": "2026-11-12",
+    "expected_listing_date": "2026-11-12",
+    "offer_period": "2026-10-30 to 2026-11-09",
+    "size_at_cap_hkdm": 1220.05588,
+    "cornerstone_pct": 37.01,
+    "cornerstone_investors": [
+      "Flourish Holding Limited",
+      "Pine Vigor Capital Limited",
+      "Transsion International Limited",
+      "Longsys Investment Co., Limited",
+      "Gottfried (HK) Limited",
+      "STRONG LION LIMITED",
+      "Mr. Chen Chun-Cheng"
+    ],
+    "cornerstone_basis": "At maximum offer price; base offer; before options",
+    "sponsors": [
+      "China Securities (International) Corporate Finance Company Limited"
+    ],
+    "business_overview": "Embedded storage, SSDs, DRAM, mobile storage and memory IC products.",
+    "prospectus_links": [
+      "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1030/2026103000025.pdf"
+    ],
+    "announcement_links": [],
+    "allotment_links": [],
+    "reviewed_at": "2026-11-03",
+    "greenshoe_pct": 15
+  },
+  {
+    "code": "9917",
+    "name": "Suzhou Denglin Technology Co., Ltd.",
+    "status": "OFFERING NOW",
+    "sector": "Technology",
+    "subsector": "Semiconductors",
+    "range_lo": 231.0,
+    "range_hi": 288.0,
+    "offer_shares": 6125000,
+    "lot_size": 25,
+    "listing_date": "2026-11-10",
+    "expected_listing_date": "2026-11-10",
+    "offer_period": "2026-10-30 to 2026-11-05",
+    "size_at_cap_hkdm": 1764.0,
+    "cornerstone_pct": 36.64,
+    "cornerstone_investors": [
+      "Hua Yuan International Limited",
+      "Sky Giant Investment Limited",
+      "Suzhou Chinese Consortium Holding Co., Ltd.",
+      "ZGD Capital Investments Pte. Ltd.",
+      "Everbright Wealth Management Co., Ltd."
+    ],
+    "cornerstone_basis": "At maximum offer price; base offer; before options",
+    "sponsors": [
+      "CITIC Securities (Hong Kong) Limited",
+      "China Securities (International) Corporate Finance Company Limited",
+      "BOCI Asia Limited"
+    ],
+    "business_overview": "GPGPU chips and products focused on enterprise AI computing.",
+    "prospectus_links": [
+      "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1030/2026103000023.pdf"
+    ],
+    "announcement_links": [],
+    "allotment_links": [],
+    "reviewed_at": "2026-11-03",
+    "greenshoe_pct": 15
+  },
+  {
+    "code": "9621",
+    "name": "RelyEZ Energy Storage Technology Co., Ltd.",
+    "status": "OFFERING NOW",
+    "sector": "Industrials",
+    "subsector": "Batteries / energy storage",
+    "range_lo": 8.54,
+    "range_hi": 11.1,
+    "offer_shares": 57540500,
+    "lot_size": 500,
+    "listing_date": "2026-11-09",
+    "expected_listing_date": "2026-11-09",
+    "offer_period": "2026-10-30 to 2026-11-04",
+    "size_at_cap_hkdm": 638.69955,
+    "cornerstone_pct": 4.91,
+    "cornerstone_investors": [
+      "CDH Global Frontier Ventures Limited"
+    ],
+    "cornerstone_basis": "At maximum offer price; base offer; before options",
+    "sponsors": [
+      "CMB International Capital Limited"
+    ],
+    "business_overview": "Integrated battery energy storage systems and energy storage solutions.",
+    "prospectus_links": [
+      "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1030/2026103000021.pdf"
+    ],
+    "announcement_links": [],
+    "allotment_links": [],
+    "reviewed_at": "2026-11-03",
+    "greenshoe_pct": 0
+  },
+  {
+    "code": "2206",
+    "name": "Sichuan Neautus Traditional Chinese Medicine Co., Ltd.",
+    "status": "OFFERING NOW",
+    "sector": "Healthcare",
+    "subsector": "TCM",
+    "range_lo": 40.2,
+    "range_hi": 50.55,
+    "offer_shares": 6517300,
+    "lot_size": 50,
+    "listing_date": "2026-11-11",
+    "expected_listing_date": "2026-11-11",
+    "offer_period": "2026-10-30 to 2026-11-06",
+    "size_at_cap_hkdm": 329.449515,
+    "cornerstone_pct": 0,
+    "cornerstone_investors": [],
+    "cornerstone_basis": "At maximum offer price; base offer; before options",
+    "sponsors": [
+      "GF Capital (Hong Kong) Limited",
+      "ABCI Capital Limited"
+    ],
+    "business_overview": "Traditional Chinese medicine decoction-ready products for institutional and retail customers.",
+    "prospectus_links": [
+      "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1030/2026103000019.pdf"
+    ],
+    "announcement_links": [],
+    "allotment_links": [],
+    "reviewed_at": "2026-11-03",
+    "cornerstone_note": "No cornerstone investment section or cornerstone investor commitment in the full prospectus.",
+    "greenshoe_pct": 0
+  },
+  {
+    "code": "1821",
+    "name": "CTG Hongkong and Macao Culture and Tourism Holding Limited",
+    "status": "INTRODUCTION",
+    "listing_method": "Introduction",
+    "sector": "Consumer",
+    "subsector": "Consumer services / education",
+    "listing_date": "2026-11-26",
+    "expected_listing_date": "2026-11-26",
+    "lot_size": 500,
+    "sponsors": [
+      "China Galaxy International Securities (Hong Kong) Co., Limited"
+    ],
+    "business_overview": "Greater Bay Area passenger ferry and bus transport, hotel operations and travel-document services.",
+    "prospectus_links": [
+      "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1030/2026103000207.pdf"
+    ],
+    "announcement_links": [],
+    "allotment_links": [],
+    "reviewed_at": "2026-11-03"
+  }
+]

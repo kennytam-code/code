@@ -1,0 +1,80 @@
+{
+ "2065": {
+  "codes": [
+   "3223",
+   "0600",
+   "9660"
+  ],
+  "basis": "Related SoC and edge-computing businesses; robotics platform mix differs.",
+  "name": "Amicro Technology Co., Ltd.",
+  "reviewed_at": "2026-11-03",
+  "source": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1030/2026103002447.pdf"
+ },
+ "0054": {
+  "codes": [
+   "2509",
+   "2617"
+  ],
+  "basis": "Immunology and small-molecule drug development; clinical stages and products differ.",
+  "name": "Ganzhou Hemay Pharmaceutical Co., Ltd.",
+  "reviewed_at": "2026-11-03",
+  "source": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1030/2026103000029.pdf"
+ },
+ "7672": {
+  "codes": [
+   "2551"
+  ],
+  "basis": "Related semiconductor packaging exposure; not a like-for-like general OSAT peer.",
+  "name": "Jiangsu Xinde Semiconductor Technology Co., Ltd.",
+  "reviewed_at": "2026-11-03",
+  "source": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1030/2026103000027.pdf"
+ },
+ "2681": {
+  "codes": [
+   "9976",
+   "3986"
+  ],
+  "basis": "Longsys is the closer storage-product peer; GigaDevice adds upstream memory-chip exposure.",
+  "name": "HOSIN Electronics Co., LTD.",
+  "reviewed_at": "2026-11-03",
+  "source": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1030/2026103000025.pdf"
+ },
+ "9917": {
+  "codes": [
+   "6082",
+   "9903"
+  ],
+  "basis": "China GPGPU and AI-computing chip providers.",
+  "name": "Suzhou Denglin Technology Co., Ltd.",
+  "reviewed_at": "2026-11-03",
+  "source": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1030/2026103000023.pdf"
+ },
+ "9621": {
+  "codes": [
+   "6656",
+   "6960",
+   "0666"
+  ],
+  "basis": "Energy-storage systems and battery exposure; end markets and integration differ.",
+  "name": "RelyEZ Energy Storage Technology Co., Ltd.",
+  "reviewed_at": "2026-11-03",
+  "source": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1030/2026103000021.pdf"
+ },
+ "2206": {
+  "codes": [
+   "2593",
+   "1643"
+  ],
+  "basis": "TCM product businesses; product and distribution mix differ.",
+  "name": "Sichuan Neautus Traditional Chinese Medicine Co., Ltd.",
+  "reviewed_at": "2026-11-03",
+  "source": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1030/2026103000019.pdf"
+ },
+ "1821": {
+  "codes": [],
+  "basis": "No close operating peer in the five-year IPO sample; use broader travel/service comparisons.",
+  "name": "CTG Hongkong and Macao Culture and Tourism Holding Limited",
+  "reviewed_at": "2026-11-03",
+  "source": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1030/2026103000207.pdf"
+ }
+}

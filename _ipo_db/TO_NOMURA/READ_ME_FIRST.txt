@@ -1,9 +1,14 @@
-HK IPO desk files — A/H formula fix 29 October 2026; data 28 October
+HK IPO desk files — 3 November 2026; historical market snapshots unchanged
 
 Open HK_IPO_Database_v1.xlsx for the desk workbook; open hk_ipo_dashboard.html
 for the offline dashboard. The ZIP contains that same HTML.
 
-527 listed IPOs; 717 stocks in IPO Live; 72 A/H pairs; 21 pipeline rows.
+527 listed IPOs; 717 stocks in IPO Live; 72 A/H pairs; 23 pipeline rows.
+Seven new offerings: 0054, 2065, 2206, 2681, 7672, 9621, 9917.
+1821 is an introduction. Terms were checked against HKEX prospectuses.
+Pipeline cards open comparisons in Screener; Excel selects peer codes
+automatically for the new offerings. These are business comparison sets.
+AP/PHIP membership outside these eight remains the 28 October review.
 2384 DSBJ is listed. 6157 and 3275 have postponed their offerings.
 IPO Live has 702 valid saved quotes, with individual dates. The latest is
 28 October. Missing/stale quotes and debut-day reference prices are excluded
@@ -28,7 +33,10 @@ Premium and mainland returns now occupy aligned upper/lower charts. All
 visible charts have consistent fonts, colours and axes; Live bars turn green
 or red dynamically. Observed points and genuine gaps are preserved.
 
-Database B2: Selected/All/Off live valuation scope. BBG Verify B2: Off/On.
+Database B2 defaults All: PE/PS and forward valuations load for all issuers.
+Selected and Off remain optional. Screener reuses the same issuer results.
+BDH output areas are writable, without preallocated multi-cell array locks.
+BBG Verify B2 remains Off/On, default Off.
 Stored is the default for daily monitors. Bloomberg mode requires the add-in
 and a logged-in entitled terminal. This Mac cannot certify live Bloomberg
 replies. Native Excel opened the final file without a repair prompt.

@@ -125,12 +125,13 @@ def _offering_rows(root):
             "lot_size": r.get("lot_size"),
             "offer_period": r.get("offer_period"),
             "rev_latest": rev, "ni_latest": ni,
-            "profitable_at_ipo": ("Y" if ni and ni > 0 else "N") if ni is not None else None,
+            "profitable_at_ipo": r.get("profitable_at_ipo") or (("Y" if ni and ni > 0 else "N") if ni is not None else None),
             "sponsors": "; ".join(r.get("sponsors") or []) or None,
             "expected_size_hkdm": (r.get("expected_net_hkdm") or r.get("size_at_cap_hkdm")
                                    or press.get("expected_size_hkdm")),
             "expected_size_basis": ("prospectus: net proceeds at the maximum price"
-                                    if r.get("expected_net_hkdm") else press.get("basis")),
+                                    if r.get("expected_net_hkdm") else "offer shares x maximum price"
+                                    if r.get("size_at_cap_hkdm") else press.get("basis")),
             "business_desc": r.get("business_overview"),
             "doc_link": (r.get("prospectus_links") or [None])[0],
             "a_share_code": r.get("a_share_code") or press.get("a_share_code"),
@@ -214,6 +215,8 @@ def load():
     pipe = pipe + _phip_as_pipeline(ROOT, [str(x.get("name")) for x in pipe])
     from pipeline_dedupe import merge_pipeline
     pipe = merge_pipeline(pipe)      # one row per company (the SHEIN split)
+    from pipeline_peer_inputs import enrich
+    pipe = enrich(pipe, ROOT)
     listed_codes = {str(d['code']).zfill(4) for d in deals}
     listed_names = {str(d.get('company_name') or '').strip().lower() for d in deals}
     pipe = [p for p in pipe if str(p.get('code') or '').zfill(4) not in listed_codes
@@ -1372,7 +1375,7 @@ const pipeOrder = [...DATA.pipe].sort((a, b) => {
     : /PHIP/i.test(p.status || "") ? 2 : 3;
   return rank(a) - rank(b) || String(a.name).localeCompare(String(b.name));
 });
-const pipelineStage = p => isPulled(p) ? "Withdrawn / postponed" : isOffering(p) ? "Offering" : /PHIP/i.test(p.status || "") ? "Hearing cleared" : p.watchlist ? "Watchlist" : "Filed / reported";
+const pipelineStage = p => isPulled(p) ? "Withdrawn / postponed" : /^INTRODUCTION/i.test(p.status || "") ? "Introduction" : isOffering(p) ? "Offering" : /PHIP/i.test(p.status || "") ? "Hearing cleared" : p.watchlist ? "Watchlist" : "Filed / reported";
 function drawPipeline() {
 const q = $("#pipe-q").value.trim().toLowerCase(), stage = $("#pipe-stage").value;
 const shown = pipeOrder.filter(p => (stage === "Active" ? !isPulled(p) && !p.watchlist : !stage || pipelineStage(p) === stage) && (!q || [p.name, p.name_cn, p.sector, p.subsector].some(v => String(v || "").toLowerCase().includes(q)) || normalCode(p.expected_code || p.code) === normalCode(q) && normalCode(q)));
@@ -1380,7 +1383,7 @@ $("#pipe-count").textContent = `${shown.length} deals · status checked ${DATA.p
 $("#cards").innerHTML = shown.map(p => {
   const comps = topComps({ name: p.name, sector: p.sector, subsector: p.subsector,
     size: p.expected_size_hkdm, profitable: p.profitable_at_ipo, is_h: p.is_h_share,
-    ref_date: DATA.as_of }, 3);
+    ref_date: DATA.as_of, peer_codes: p.peer_codes }, 3);
   const offering = isOffering(p);
   const rows = [];
   if (p.range_lo && p.range_hi) rows.push(["Price range", `HK$${p.range_lo}–${p.range_hi}`]);
@@ -1422,13 +1425,15 @@ $("#cards").innerHTML = shown.map(p => {
   return `<details class="card pipeline-row"><summary>
     <span class="pipe-name">${safeText(p.name)}${p.expected_code ? ` (${safeText(p.expected_code)})` : ""}<small>${safeText(p.name_cn || "")} ▾</small></span>
     <span>${pipelineStage(p)}</span><span>${safeText(p.expected_timing || "Not announced")}</span>
-    <span>${safeText(p.subsector || p.sector || "Unclassified")}</span><span class="num">${size || "Not guided"}</span><span class="num">${price}</span>
-    </summary><div class="pipe-body"><p class="meta">${safeText(p.status || "")} · ${p.is_h_share ? "A+H" : "H-only"}${p.profitable_at_ipo != null ? " · " + ((p.profitable_at_ipo === true || p.profitable_at_ipo === "Y") ? "Profitable" : "Loss-making") : ""}</p>
+    <span>${safeText(p.subsector || p.sector || "Unclassified")}</span><span class="num">${size || (pipelineStage(p) === "Introduction" ? "N/A" : "Not guided")}</span><span class="num">${price}</span>
+    </summary><div class="pipe-body"><p class="meta">${safeText(p.status || "")}${pipelineStage(p) === "Introduction" ? "" : " · " + (p.is_h_share ? "A+H" : "H-only")}${p.profitable_at_ipo != null ? " · " + ((p.profitable_at_ipo === true || p.profitable_at_ipo === "Y") ? "Profitable" : "Loss-making") : ""}</p>
     ${p.expected_size_basis ? `<p class="sizebasis">Size basis: ${safeText(p.expected_size_basis)}</p>` : ""}
     <table class="cardtbl">${rows.map(([k, v]) => `<tr><td>${safeText(k)}</td><td>${safeText(v)}</td></tr>`).join("")}</table>
     ${p.business_desc ? `<p class="desc">${safeText(p.business_desc)}</p>` : ""}
     ${p.doc_link ? `<p class="meta"><a href="${safeText(p.doc_link)}" rel="noopener">HKEX filing ↗</a></p>` : ""}
-    <p class="meta comps">Closest comps: ${comps.map(c => `${safeText(c.d.name)} (${c.d.code})`).join(" · ") || "—"}</p></div></details>`;
+    <p class="meta comps">Comparisons: ${comps.map(c => `${safeText(c.d.name)} (${c.d.code})`).join(" · ") || "—"}</p>
+    ${p.peer_basis ? `<p class="meta">${safeText(p.peer_basis)}</p>` : ""}
+    <button type="button" data-pipeline-pick="${safeText(p.name)}">Compare in Screener</button></div></details>`;
 }).join("");
 }
 $("#pipe-q").addEventListener("input", drawPipeline);
@@ -1456,9 +1461,10 @@ drawPipeline();
 function topComps(t, n) {
   const ranked = deals.map((d, i) => ({ d, s: similarityScore(t, d, CFGW, i + 1) }))
     .sort((a, b) => b.s - a.s);
-  const pin = ranked.filter(c => FORCED.has(c.d.code) && c.d.name !== t.name)
+  const preferred = FORCED.size ? FORCED : new Set(t.peer_codes || (t.meta || {}).peer_codes || []);
+  const pin = ranked.filter(c => preferred.has(c.d.code) && c.d.name !== t.name)
     .map(c => ({ ...c, forced: true }));
-  const rest = ranked.filter(c => !FORCED.has(c.d.code));
+  const rest = ranked.filter(c => !preferred.has(c.d.code));
   return pin.concat(rest).slice(0, Math.max(n, pin.length));
 }
 // one matcher for every box: code with/without leading zeros, EN substring,
@@ -2964,6 +2970,15 @@ drawSmLeague();
 
 // pipeline-card description: unclamp in place
 document.addEventListener("click", ev => {
+  const pick = ev.target.closest("[data-pipeline-pick]");
+  if (pick) {
+    sel.value = 'P:' + pick.dataset.pipelinePick;
+    FORCED.clear(); $("#fi-box").value = ''; drawFiChips();
+    ['#ov-name','#ov-sub','#ov-size','#ov-pe','#ov-prof','#ov-ah','#cs-box'].forEach(id => $(id).value = '');
+    $("#cs-first").checked = false;
+    $("#finder-status").textContent = ''; renderPick(); labReset(); showTab('screener');
+    return;
+  }
   const m = ev.target.closest(".pmore");
   if (!m) return;
   const p = m.previousElementSibling;
@@ -3224,7 +3239,7 @@ HTML = """<!doctype html>
 <section id="pipeline">
   <h2>Active pipeline</h2>
   <p class="sub">Key terms at a glance; expand a company for its investors, banks, business and source filing. Sizes are indicative.</p>
-  <div class="filters"><label>Search <input id="pipe-q" type="search" placeholder="H code or company name"></label><label>Stage <select id="pipe-stage"><option>Active</option><option value="">All stages</option><option>Offering</option><option>Hearing cleared</option><option>Filed / reported</option><option>Watchlist</option><option>Withdrawn / postponed</option></select></label><span class="note" id="pipe-count"></span></div>
+  <div class="filters"><label>Search <input id="pipe-q" type="search" placeholder="H code or company name"></label><label>Stage <select id="pipe-stage"><option>Active</option><option value="">All stages</option><option>Offering</option><option>Introduction</option><option>Hearing cleared</option><option>Filed / reported</option><option>Watchlist</option><option>Withdrawn / postponed</option></select></label><span class="note" id="pipe-count"></span></div>
   <div class="pipeline-head"><span>Company</span><span>Stage</span><span>Listing / timing</span><span>Subsector</span><span class="num">Expected size</span><span class="num">Price range</span></div>
   <div class="cards" id="cards"></div>
 </section>

@@ -64,7 +64,7 @@ with zipfile.ZipFile(path) as z:
   for key in fn.inputs:
    if ':' in key:
     a,b=key.split(':');ac=ci(re.match('[A-Z]+',a)[0]);bc=ci(re.match('[A-Z]+',b)[0]);ar=int(re.search('[0-9]+',a)[0]);br=int(re.search('[0-9]+',b)[0]);args.append(np.array([[fixture.get(ec(c)+str(r),schedula.EMPTY) for c in range(ac,bc+1)] for r in range(ar,br+1)],dtype=object))
-   else:args.append(fixture.get(key,True if key=='BM8' else schedula.EMPTY))
+   else:args.append(fixture.get(key,True if key=='BM8' else 'All' if key=='BM1' else schedula.EMPTY))
   return fn(*args).item()
  for out,source,helper,field in [('X','P','Y','PE_RATIO'),('AH','Z','AI','PE_RATIO'),('AR','AJ','AS','PX_TO_SALES_RATIO')]:
   start=ci(source)
@@ -88,7 +88,7 @@ with zipfile.ZipFile(path) as z:
  tickers=np.full((8*(n-1)+1,1),'',dtype=object);multiples=tickers.copy()
  for i in range(n):tickers[8*i,0]=f'{i+1} HK Equity';multiples[8*i,0]=i+1.5
  for i in [0,n//2,n-1]:
-  args=['Selected' if key=='DATABASE!B2' else f'{i+1} HK Equity' if key=='A'+str(hrow) else tickers if key.startswith('A8:') else multiples for key in fn.inputs];assert fn(*args).item()==i+1.5
+  args=['Selected' if key in ['DATABASE!B2','BM1'] else f'{i+1} HK Equity' if key=='A'+str(hrow) else tickers if key.startswith('A8:') else multiples for key in fn.inputs];assert fn(*args).item()==i+1.5
  assert moved_formula('IF(A1="Database!BN5",Database!$BN$5,0)','Database',64,3)=='IF(A1="Database!BN5",Database!$BQ$5,0)'
  assert moved_range('$A$5:$CC$528',64,3)=='$A$5:$CF$528'
  for i,p in enumerate(json.loads((ROOT/'data/peer_pairs.json').read_text())['pairs'],3):assert value(peer['S'+str(i)])==p['code_a']+' / '+p['code_b']

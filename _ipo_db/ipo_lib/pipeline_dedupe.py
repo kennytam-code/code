@@ -42,6 +42,14 @@ def status_asof(root):
 def company_key(name):
     """Distinctive key for a company name ('Shein Group' == 'SHEIN Global')."""
     import re
+    # HKEX uses listing suffixes in PHIP names. They are not distinct issuers.
+    name = re.sub(r'\s+-\s+[BPW]\s*$', '', name or '', flags=re.I)
+    # The tourism spin-off is a different issuer from CTG Duty-Free (1880).
+    # investor_key deliberately reduces both to "ctg", which is too broad here.
+    if re.match(r'^CTG Hongkong and Macao Culture and Tourism', name, re.I):
+        return 'ctg_hongkong_macao_tourism'
+    if name.lower().startswith('hosin global electronics'):
+        name = re.sub(r'^HOSIN Global Electronics', 'HOSIN Electronics', name, flags=re.I)
     # City/province prefixes describe the domicile, not the issuer. Keeping
     # "Anhui" or "Zhejiang" as the brand collapses unrelated applicants and
     # can falsely mark a new PHIP as an already listed company.

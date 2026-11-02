@@ -1,30 +1,143 @@
 {
- "checked_at": "2026-10-28",
- "sources": [
-  {
-   "file": "6157_postponement.pdf",
-   "sha256": "2544f23fea821f2c788cedf0f838c425881c1b6a18bfdd6f824298a5b83ad030"
-  },
-  {
-   "file": "new_listing_report.xlsx",
-   "sha256": "dd0a9fcafb1ae06b407ec3029fc736e11932b9153c405532f9fa5d171a084fba"
-  },
-  {
-   "file": "applications.json",
-   "sha256": "e08e22186bbd2771f172fbb170570497c1c9e52ea5af8dd82caffc2f5f545118"
-  },
-  {
-   "file": "phip.json",
-   "sha256": "22d5d3b7eee043a73536d996e2da67ae33cfc315510ae23cb13c4bf11365e0bf"
-  },
-  {
-   "file": "3275_postponement.pdf",
-   "sha256": "59b0a5abfa8f12500f594c6244f3c3bd631efe5e3674ed8dcf83f527b8580776"
-  }
+ "checked_at": "2026-11-03",
+ "new_offering_codes": [
+  "0054",
+  "2065",
+  "2206",
+  "2681",
+  "7672",
+  "9621",
+  "9917"
  ],
+ "introduction_codes": [
+  "1821"
+ ],
+ "field_evidence": {
+  "2065": {
+   "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1030/2026103002447.pdf",
+   "sha256": "8be19ea51186117df075e6ff33a5083c92afc6449a8ffee79f7a6cad03cd801f",
+   "pages": 478,
+   "terms_pages": [
+    2,
+    4,
+    5,
+    6
+   ],
+   "cornerstone_pages": [
+    247,
+    248
+   ]
+  },
+  "0054": {
+   "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1030/2026103000029.pdf",
+   "sha256": "e7e3594bcd41dfe41516e274dccf857adbfe06495225b87357a8738f471780a7",
+   "pages": 462,
+   "terms_pages": [
+    2,
+    4,
+    5,
+    6
+   ],
+   "cornerstone_pages": [
+    251,
+    252,
+    253,
+    254
+   ]
+  },
+  "7672": {
+   "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1030/2026103000027.pdf",
+   "sha256": "50fe6138a1aa8d026ee907415862f63145d881648779a3d7a32c9b9751e88b89",
+   "pages": 523,
+   "terms_pages": [
+    2,
+    4,
+    5,
+    6
+   ],
+   "cornerstone_pages": [
+    270,
+    271
+   ]
+  },
+  "2681": {
+   "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1030/2026103000025.pdf",
+   "sha256": "91c6f77188350ca7f98812a6fea4ed5acc3464225447d44e1eb0a17342c78d3c",
+   "pages": 476,
+   "terms_pages": [
+    2,
+    4,
+    5,
+    6
+   ],
+   "cornerstone_pages": [
+    267,
+    269,
+    270,
+    271,
+    272
+   ]
+  },
+  "9917": {
+   "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1030/2026103000023.pdf",
+   "sha256": "889175a15acf6b373f6fcd83b96dc4889c91975d25a3956843aab842dfd58774",
+   "pages": 431,
+   "terms_pages": [
+    2,
+    4,
+    5,
+    6
+   ],
+   "cornerstone_pages": [
+    232,
+    234,
+    235
+   ]
+  },
+  "9621": {
+   "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1030/2026103000021.pdf",
+   "sha256": "07d7936de887fafa8757cba38f97dbdda514c66a7b75ba97b029d79d253bc9ef",
+   "pages": 459,
+   "terms_pages": [
+    2,
+    4,
+    5,
+    6
+   ],
+   "cornerstone_pages": [
+    278
+   ]
+  },
+  "2206": {
+   "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1030/2026103000019.pdf",
+   "sha256": "4386e3f85efdaa99712b521cc3cabc881046f466c1889d56e173d17f9434d256",
+   "pages": 429,
+   "terms_pages": [
+    2,
+    4,
+    5,
+    6
+   ],
+   "cornerstone_pages": []
+  },
+  "1821": {
+   "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1030/2026103000207.pdf",
+   "sha256": "ec527df09f7fe6427f3066c77c9e5e8dfc2826972feb6397383cda70b93bab14",
+   "pages": 422,
+   "terms_pages": [
+    2,
+    4,
+    5,
+    6
+   ],
+   "cornerstone_pages": []
+  }
+ },
  "notes": [
-  "2384 confirmed listed by HKEX daily listing table and annual new listing report.",
-  "3275 and 6157 postponed by issuer filings; original timetable is inactive.",
-  "Fresh AP/PHIP membership; older parsed financial terms retain their individual dates. New application records without parsed financials remain incomplete."
+  "Seven offering documents and one introduction matched HKEX New Listing Information and prospectus index on 3 November. No new allotment result in these eight rows.",
+  "Terms are indicative, not final allocations. Cornerstone percentages use the maximum price/base offer without options.",
+  "No new financial estimates or unverified net proceeds accepted. Existing market snapshots remain dated.",
+  "AP/PHIP membership outside these eight companies remains the 28 October review.",
+  "Xinde cornerstone undertaking states nine months; no future exact lockup date derived or added to historical sample."
  ]
 }

@@ -1,0 +1,64 @@
+{
+  "terminal_tested": false,
+  "fixtures": 105,
+  "ipo_rows": 527,
+  "pipeline_rows": 23,
+  "new_pipeline_codes": [
+    "0054",
+    "9621",
+    "7672",
+    "9917",
+    "2206",
+    "2065",
+    "2681",
+    "1821"
+  ],
+  "unlocked_bdh_anchors": 161,
+  "default_valuations": "All",
+  "workbook_sha256": "78c6c822a89b796d18850e2f3349567e8c8346206ab452fac5a7e46457aacb96",
+  "embedded_data_files": 262,
+  "changed_data_inputs": [
+    "data/batches/newlistings.json",
+    "data/batches/pipeline_review.json"
+  ],
+  "new_data_inputs": [
+    "data/pipeline_peers.json"
+  ],
+  "unchanged_database_cells": 44268,
+  "unchanged_chart_parts": 10,
+  "historical_ah_inputs_unchanged": true,
+  "all_embedded_source_and_data_match": true,
+  "checks_passed": [
+    "test_update_20261103: 105 formula/response fixtures",
+    "test_native_desk: structure, named weights and valuation fixtures",
+    "test_presentation_package: 168630 formula structures,19944 numeric source comparisons",
+    "test_desk_scoring: 527 rows x three targets",
+    "test_pipeline_release: actual renderer and code search",
+    "test_html_update_20261028: 432 SVG /40 detail cases",
+    "test_scope_update_20261028: 6775 scope/average observations"
+  ],
+  "browser_review": {
+    "pipeline_code_search": true,
+    "hosin_compare_button": true,
+    "hosin_pinned_peers": [
+      "3986",
+      "9976"
+    ],
+    "introduction_filter": true,
+    "console_errors": 0
+  },
+  "native_excel": {
+    "opened_without_repair": true,
+    "reviewed": [
+      "Database default All",
+      "AH controls and rendered charts",
+      "Pipeline eight current listings",
+      "Screener automatic Hemay peers"
+    ],
+    "view_only": true,
+    "live_bloomberg_tested": false,
+    "closed_without_saving": true
+  },
+  "artifact_projection": "Pipeline A4:L13,120 cells; rendered and visually checked",
+  "terminal_speed_or_memory_measured": false
+}

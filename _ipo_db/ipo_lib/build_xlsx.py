@@ -190,7 +190,7 @@ def _offering_rows(root):
             "lot_size": r.get("lot_size"),
             "offer_period": r.get("offer_period"),
             "rev_latest": rev, "ni_latest": ni,
-            "profitable_at_ipo": ("Y" if ni and ni > 0 else "N") if ni is not None else None,
+            "profitable_at_ipo": r.get("profitable_at_ipo") or (("Y" if ni and ni > 0 else "N") if ni is not None else None),
             "sponsors": "; ".join(r.get("sponsors") or []) or None,
             "expected_size_hkdm": (r.get("expected_net_hkdm") or r.get("size_at_cap_hkdm")
                                    or press.get("expected_size_hkdm")),
@@ -290,6 +290,8 @@ def _stage(p):
         return "Withdrawn", 4
     if p.get("postponed") or st.startswith("POSTPONED"):
         return "Postponed", 4
+    if st.startswith("INTRODUCTION"):
+        return "Introduction", 1
     if "OFFERING" in st or p.get("range_hi") or p.get("offer_period"):
         return "Offering", 1
     if "PHIP" in st or str(p.get("expected_timing") or "").startswith("PHIP"):
@@ -308,6 +310,8 @@ def load():
     pipe = pipe + _phip_as_pipeline(ROOT, [str(x.get("name")) for x in pipe])
     from pipeline_dedupe import merge_pipeline
     pipe = merge_pipeline(pipe)      # one row per company (the SHEIN split)
+    from pipeline_peer_inputs import enrich
+    pipe = enrich(pipe, ROOT)
     listed_codes = {str(d['code']).zfill(4) for d in deals}
     listed_names = {str(d.get('company_name') or '').strip().lower() for d in deals}
     pipe = [p for p in pipe if str(p.get('code') or '').zfill(4) not in listed_codes
