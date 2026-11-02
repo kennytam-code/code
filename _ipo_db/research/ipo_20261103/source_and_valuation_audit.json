@@ -1,0 +1,1275 @@
+{
+  "as_of": "2026-11-02 Hong Kong close; filings through 2026-11-02 evening",
+  "template": {
+    "path": "/Users/lemon/Downloads/ipo analysis.docx",
+    "sha256": "ea8859ddd61c5ea574bd69c628c59d2bd737c732afdfa3b68da714587288f899"
+  },
+  "fx": {
+    "cny_per_hkd": 0.85595,
+    "date": "2026-11-02",
+    "basis": "CFETS central parity, not closing spot",
+    "source": "https://finance.eastmoney.com/a/202611023917883759.html"
+  },
+  "issuers": {
+    "2206": {
+      "name": "Neautus 新荷花",
+      "shares": 65172741,
+      "low": 40.2,
+      "high": 50.55,
+      "rev25": 1334.707,
+      "rev_prev": 382.819,
+      "rev_now": 432.185,
+      "gp25": 253.161,
+      "gp_prev": 72.234,
+      "gp_now": 94.228,
+      "np25": 106.441,
+      "np_prev": 20.74,
+      "np_now": 33.878,
+      "cfo25": 154.051,
+      "cfo_prev": -22.868,
+      "cfo_now": -26.996,
+      "period": "4M",
+      "fy26_np": null,
+      "fy27_np": null,
+      "close": "2026-11-06",
+      "listing": "2026-11-11",
+      "offer_shares": 6517300,
+      "mid": 45.375,
+      "ltm_rev": 1384.073,
+      "ltm_np": 119.57900000000002,
+      "equity_hkdm_low": 2619.9441882,
+      "equity_cnym_low": 2242.54122788979,
+      "ps25_low": 1.6801749207052858,
+      "pe25_low": 21.068396838528294,
+      "ltm_ps_low": 1.6202477960987536,
+      "ltm_pe_low": 18.753637577582936,
+      "equity_hkdm_mid": 2957.213122875,
+      "equity_cnym_mid": 2531.2265725248562,
+      "ps25_mid": 1.8964660951990633,
+      "pe25_mid": 23.780559864383612,
+      "ltm_ps_mid": 1.8288244713428092,
+      "ltm_pe_mid": 21.16781853439865,
+      "equity_hkdm_high": 3294.48205755,
+      "equity_cnym_high": 2819.9119171599223,
+      "ps25_high": 2.1127572696928403,
+      "pe25_high": 26.492722890238934,
+      "ltm_ps_high": 2.037401146586865,
+      "ltm_pe_high": 23.581999491214358,
+      "pe26": null,
+      "pe27": null,
+      "profit_scenarios": [
+        {
+          "growth": 0.2,
+          "profit_cnym": 127.72919999999999,
+          "mid_pe": 19.81713322031968
+        },
+        {
+          "growth": 0.4,
+          "profit_cnym": 149.01739999999998,
+          "mid_pe": 16.98611418884544
+        }
+      ]
+    },
+    "7672": {
+      "name": "Xinde 芯德半導體",
+      "shares": 1065624232,
+      "low": 8.6,
+      "high": 9.6,
+      "rev25": 1012.159,
+      "rev_prev": 306.371,
+      "rev_now": 359.672,
+      "gp25": -182.464,
+      "gp_prev": -62.692,
+      "gp_now": -64.261,
+      "np25": -437.165,
+      "np_prev": -155.648,
+      "np_now": -138.044,
+      "cfo25": 39.96,
+      "cfo_prev": 110.723,
+      "cfo_now": -108.15,
+      "period": "4M",
+      "fy26_np": null,
+      "fy27_np": null,
+      "close": "2026-11-05",
+      "listing": "2026-11-10",
+      "offer_shares": 106562500,
+      "group_loss25": -483.088,
+      "adjusted_group_loss25": -273.907,
+      "adjusted_group_loss_prev": -87.14,
+      "adjusted_group_loss_now": -101.022,
+      "mid": 9.1,
+      "ltm_rev": 1065.46,
+      "ltm_np": -419.56100000000004,
+      "equity_hkdm_low": 9164.3683952,
+      "equity_cnym_low": 7844.241127871439,
+      "ps25_low": 7.750008771222149,
+      "pe25_low": "NM",
+      "ltm_ps_low": 7.362304664531225,
+      "ltm_pe_low": "NM",
+      "equity_hkdm_mid": 9697.180511199998,
+      "equity_cnym_mid": 8300.301658561639,
+      "ps25_mid": 8.200590676525762,
+      "pe25_mid": "NM",
+      "ltm_ps_mid": 7.790345633399319,
+      "ltm_pe_mid": "NM",
+      "equity_hkdm_high": 10229.9926272,
+      "equity_cnym_high": 8756.362189251839,
+      "ps25_high": 8.651172581829375,
+      "pe25_high": "NM",
+      "ltm_ps_high": 8.218386602267413,
+      "ltm_pe_high": "NM",
+      "pe26": null,
+      "pe27": null
+    },
+    "9917": {
+      "name": "Denglin 登臨科技-P",
+      "shares": 60827518,
+      "low": 231,
+      "high": 288,
+      "rev25": 171.292,
+      "rev_prev": 5.796,
+      "rev_now": 200.365,
+      "gp25": 84.302,
+      "gp_prev": 3.402,
+      "gp_now": 102.016,
+      "np25": -281.005,
+      "np_prev": -108.28,
+      "np_now": -16.474,
+      "cfo25": -295.022,
+      "cfo_prev": -164.224,
+      "cfo_now": -146.744,
+      "period": "4M",
+      "fy26_np": null,
+      "fy27_np": null,
+      "close": "2026-11-05",
+      "listing": "2026-11-10",
+      "offer_shares": 6125000,
+      "mid": 259.5,
+      "ltm_rev": 365.86100000000005,
+      "ltm_np": -189.19899999999998,
+      "equity_hkdm_low": 14051.156658,
+      "equity_cnym_low": 12027.0875414151,
+      "ps25_low": 70.21394776997816,
+      "pe25_low": "NM",
+      "ltm_ps_low": 32.87337962071688,
+      "ltm_pe_low": "NM",
+      "equity_hkdm_mid": 15784.740921,
+      "equity_cnym_mid": 13510.94899132995,
+      "ps25_mid": 78.87670755978067,
+      "pe25_mid": "NM",
+      "ltm_ps_mid": 36.92918619729883,
+      "ltm_pe_mid": "NM",
+      "equity_hkdm_high": 17518.325184,
+      "equity_cnym_high": 14994.810441244801,
+      "ps25_high": 87.53946734958318,
+      "pe25_high": "NM",
+      "ltm_ps_high": 40.98499277388079,
+      "ltm_pe_high": "NM",
+      "pe26": null,
+      "pe27": null
+    },
+    "2681": {
+      "name": "Hosin 宏芯宇",
+      "shares": 482531284,
+      "low": 72.29,
+      "high": 82.9,
+      "rev25": 11237.576,
+      "rev_prev": 2804.51,
+      "rev_now": 8012.275,
+      "gp25": 2446.388,
+      "gp_prev": 386.592,
+      "gp_now": 4968.808,
+      "np25": 1363.885,
+      "np_prev": 123.068,
+      "np_now": 3840.646,
+      "cfo25": 716.701,
+      "cfo_prev": -430.187,
+      "cfo_now": -2691.062,
+      "period": "4M",
+      "fy26_np": null,
+      "fy27_np": null,
+      "close": "2026-11-09",
+      "listing": "2026-11-12",
+      "offer_shares": 14717000,
+      "mid": 77.6,
+      "ltm_rev": 16445.341,
+      "ltm_np": 5081.463,
+      "equity_hkdm_low": 34882.18652036,
+      "equity_cnym_low": 29857.407552102144,
+      "ps25_low": 2.656925973368469,
+      "pe25_low": 21.89144066552689,
+      "ltm_ps_low": 1.8155541774477126,
+      "ltm_pe_low": 5.875750261706549,
+      "equity_hkdm_mid": 37444.4276384,
+      "equity_cnym_mid": 32050.557837088476,
+      "ps25_mid": 2.852088193849677,
+      "pe25_mid": 23.499457679414668,
+      "ltm_ps_mid": 1.9489141536857446,
+      "ltm_pe_mid": 6.307348461867867,
+      "equity_hkdm_high": 40001.8434436,
+      "equity_cnym_high": 34239.577895549424,
+      "ps25_high": 3.0468828771925036,
+      "pe25_high": 25.104446412673667,
+      "ltm_ps_high": 2.0820229811926323,
+      "ltm_pe_high": 6.73813385939235,
+      "pe26": null,
+      "pe27": null,
+      "profit_scenarios": [
+        {
+          "sustainable_profit_cnym": 1500,
+          "mid_pe": 21.367038558058983
+        },
+        {
+          "sustainable_profit_cnym": 3000,
+          "mid_pe": 10.683519279029491
+        },
+        {
+          "sustainable_profit_cnym": 6000,
+          "mid_pe": 5.341759639514746
+        }
+      ]
+    },
+    "2687": {
+      "name": "Able Digital 卓越睿新",
+      "shares": 66666700,
+      "low": 81.05,
+      "high": 81.05,
+      "rev25": 969.406,
+      "rev_prev": 275.421,
+      "rev_now": 327.942,
+      "gp25": 634.598,
+      "gp_prev": 129.198,
+      "gp_now": 165.363,
+      "np25": 130.224,
+      "np_prev": -98.956,
+      "np_now": -116.414,
+      "cfo25": -64.021,
+      "cfo_prev": -258.014,
+      "cfo_now": -364.183,
+      "period": "H1",
+      "fy26_np": 200,
+      "fy27_np": 280,
+      "last_locked": "2026-12-07",
+      "first_release": "2026-12-08",
+      "h_shares": 61952800,
+      "unlock_h": 55286100,
+      "excluded_domestic": 4713900,
+      "controller_h": 23066820,
+      "other_old_h": 32219280,
+      "forecast_source": "Guosheng 13 August 2026; rounded figures publicly reported 14 August. Predates H1 results and October subsidiary penalty; not current consensus.",
+      "mid": 81.05,
+      "ltm_rev": 1021.9269999999999,
+      "ltm_np": 112.76599999999999,
+      "equity_hkdm_low": 5403.336035,
+      "equity_cnym_low": 4624.98547915825,
+      "ps25_low": 4.770947857923564,
+      "pe25_low": 35.51561524110956,
+      "ltm_ps_low": 4.52574937266385,
+      "ltm_pe_low": 41.01400669668384,
+      "equity_hkdm_mid": 5403.336035,
+      "equity_cnym_mid": 4624.98547915825,
+      "ps25_mid": 4.770947857923564,
+      "pe25_mid": 35.51561524110956,
+      "ltm_ps_mid": 4.52574937266385,
+      "ltm_pe_mid": 41.01400669668384,
+      "equity_hkdm_high": 5403.336035,
+      "equity_cnym_high": 4624.98547915825,
+      "ps25_high": 4.770947857923564,
+      "pe25_high": 35.51561524110956,
+      "ltm_ps_high": 4.52574937266385,
+      "ltm_pe_high": 41.01400669668384,
+      "pe26": 23.12492739579125,
+      "pe27": 16.517805282708036,
+      "adv_sessions": 14,
+      "adv_shares": 32439.285714285714,
+      "adv_start": "2026-10-13",
+      "daily_turnover": [
+        {
+          "date": "2026-10-13",
+          "close": 194.8,
+          "shares": 57100.0
+        },
+        {
+          "date": "2026-10-14",
+          "close": 181.6,
+          "shares": 31550.0
+        },
+        {
+          "date": "2026-10-15",
+          "close": 174.6,
+          "shares": 19600.0
+        },
+        {
+          "date": "2026-10-16",
+          "close": 147.5,
+          "shares": 44700.0
+        },
+        {
+          "date": "2026-10-20",
+          "close": 147.8,
+          "shares": 39100.0
+        },
+        {
+          "date": "2026-10-21",
+          "close": 138.0,
+          "shares": 22450.0
+        },
+        {
+          "date": "2026-10-22",
+          "close": 120.9,
+          "shares": 28700.0
+        },
+        {
+          "date": "2026-10-23",
+          "close": 129.1,
+          "shares": 23900.0
+        },
+        {
+          "date": "2026-10-26",
+          "close": 113.4,
+          "shares": 31200.0
+        },
+        {
+          "date": "2026-10-27",
+          "close": 110.3,
+          "shares": 18600.0
+        },
+        {
+          "date": "2026-10-28",
+          "close": 103.9,
+          "shares": 56200.0
+        },
+        {
+          "date": "2026-10-29",
+          "close": 96.2,
+          "shares": 18150.0
+        },
+        {
+          "date": "2026-10-30",
+          "close": 87.4,
+          "shares": 36150.0
+        },
+        {
+          "date": "2026-11-02",
+          "close": 81.05,
+          "shares": 26750.0
+        }
+      ],
+      "unlock_adv": 1704.294616316195,
+      "unlock_pct_total": 82.92910853544572,
+      "h2_profit_required_for_200m": 316.414,
+      "h2_2025_profit": 229.18,
+      "required_h2_profit_growth": 0.38063530849114224,
+      "cfo_ltm": -170.19
+    },
+    "1333": {
+      "name": "Breton 博雷頓",
+      "shares": 426197162,
+      "low": 16.39,
+      "high": 16.39,
+      "rev25": 779.483,
+      "rev_prev": 326.775,
+      "rev_now": 330.674,
+      "gp25": 86.174,
+      "gp_prev": 20.95,
+      "gp_now": 54.484,
+      "np25": -318.629,
+      "np_prev": -174.184,
+      "np_now": -81.646,
+      "cfo25": -174.6,
+      "cfo_prev": -147.909,
+      "cfo_now": -165.094,
+      "period": "H1",
+      "fy26_np": null,
+      "fy27_np": null,
+      "last_locked": "2026-11-06",
+      "first_release": "2026-11-07",
+      "first_session": "2026-11-09",
+      "h_shares": 393921890,
+      "treasury_h": 1420800,
+      "unlock_h": 102515835,
+      "qiu_blocked_h": 3091551,
+      "screened_cohort_h": 99424284,
+      "extended_funds_h": 58909668,
+      "funds_last_locked": "2027-02-28",
+      "funds_first_session": "2027-03-01",
+      "mid": 16.39,
+      "ltm_rev": 783.382,
+      "ltm_np": -226.09100000000004,
+      "equity_hkdm_low": 6985.3714851800005,
+      "equity_cnym_low": 5979.128722739822,
+      "ps25_low": 7.670633898032185,
+      "pe25_low": "NM",
+      "ltm_ps_low": 7.632456097714553,
+      "ltm_pe_low": "NM",
+      "equity_hkdm_mid": 6985.3714851800005,
+      "equity_cnym_mid": 5979.128722739822,
+      "ps25_mid": 7.670633898032185,
+      "pe25_mid": "NM",
+      "ltm_ps_mid": 7.632456097714553,
+      "ltm_pe_mid": "NM",
+      "equity_hkdm_high": 6985.3714851800005,
+      "equity_cnym_high": 5979.128722739822,
+      "ps25_high": 7.670633898032185,
+      "pe25_high": "NM",
+      "ltm_ps_high": 7.632456097714553,
+      "ltm_pe_high": "NM",
+      "pe26": null,
+      "pe27": null,
+      "adv_sessions": 14,
+      "adv_shares": 2894054.785714286,
+      "adv_start": "2026-10-13",
+      "daily_turnover": [
+        {
+          "date": "2026-10-13",
+          "close": 12.9,
+          "shares": 3104400.0
+        },
+        {
+          "date": "2026-10-14",
+          "close": 13.56,
+          "shares": 2717800.0
+        },
+        {
+          "date": "2026-10-15",
+          "close": 14.07,
+          "shares": 2148600.0
+        },
+        {
+          "date": "2026-10-16",
+          "close": 14.7,
+          "shares": 5752000.0
+        },
+        {
+          "date": "2026-10-20",
+          "close": 15.17,
+          "shares": 2344200.0
+        },
+        {
+          "date": "2026-10-21",
+          "close": 15.2,
+          "shares": 2917800.0
+        },
+        {
+          "date": "2026-10-22",
+          "close": 15.3,
+          "shares": 1990200.0
+        },
+        {
+          "date": "2026-10-23",
+          "close": 16.27,
+          "shares": 3567000.0
+        },
+        {
+          "date": "2026-10-26",
+          "close": 16.69,
+          "shares": 3468600.0
+        },
+        {
+          "date": "2026-10-27",
+          "close": 16.7,
+          "shares": 1945967.0
+        },
+        {
+          "date": "2026-10-28",
+          "close": 16.76,
+          "shares": 1752600.0
+        },
+        {
+          "date": "2026-10-29",
+          "close": 16.71,
+          "shares": 2784600.0
+        },
+        {
+          "date": "2026-10-30",
+          "close": 16.38,
+          "shares": 2430600.0
+        },
+        {
+          "date": "2026-11-02",
+          "close": 16.39,
+          "shares": 3592400.0
+        }
+      ],
+      "unlock_adv": 35.42290750888391,
+      "unlock_pct_total": 24.05361746636877
+    }
+  },
+  "peers": {
+    "570 HK": {
+      "code": "570 HK",
+      "name": "China TCM",
+      "relation": "Closest H product mix; granules and finished medicines also material",
+      "price_currency": "HKD",
+      "profit_currency": "CNY",
+      "price": 1.175,
+      "equity_hkdm": 5917.07,
+      "equity_profit_m": 5064.7160665,
+      "rev25": 14744.779,
+      "np25": -342.07,
+      "fy26_np": 582,
+      "fy27_np": 728,
+      "broker": "Morgan Stanley",
+      "forecast_date": "2026-08-31",
+      "basis": "EtNet-labelled profit forecast; original broker accounting adjustments not independently verified",
+      "forecast_url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=570",
+      "historical_url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_pl.php?code=570",
+      "ps25": 0.3434921653623971,
+      "pe25": "NM",
+      "pe26": 8.702261282646049,
+      "pe27": 6.957027563873627
+    },
+    "2273 HK": {
+      "code": "2273 HK",
+      "name": "Gushengtang",
+      "relation": "Adjacent downstream TCM clinics",
+      "price_currency": "HKD",
+      "profit_currency": "CNY",
+      "price": 28.3,
+      "equity_hkdm": 6261.56,
+      "equity_profit_m": 5359.582282,
+      "rev25": 3249.07,
+      "np25": 352.765,
+      "fy26_np": 407,
+      "fy27_np": 480,
+      "broker": "CITIC",
+      "forecast_date": "2026-09-08",
+      "basis": "EtNet-labelled profit forecast; original broker accounting adjustments not independently verified",
+      "forecast_url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=2273",
+      "historical_url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_pl.php?code=2273",
+      "ps25": 1.6495742726380165,
+      "pe25": 15.193067004946638,
+      "pe26": 13.168506835380835,
+      "pe27": 11.165796420833335
+    },
+    "522 HK": {
+      "code": "522 HK",
+      "name": "ASMPT",
+      "relation": "Adjacent packaging-equipment supplier; not an OSAT",
+      "price_currency": "HKD",
+      "profit_currency": "HKD",
+      "price": 107.7,
+      "equity_hkdm": 45170.27,
+      "equity_profit_m": 45170.27,
+      "rev25": 13736.243,
+      "np25": 902.034,
+      "fy26_np": 2039,
+      "fy27_np": 2710,
+      "broker": "CLSA",
+      "forecast_date": "2026-10-29",
+      "basis": "EtNet-labelled profit forecast; original broker accounting adjustments not independently verified",
+      "forecast_url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=522",
+      "historical_url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_pl.php?code=522",
+      "ps25": 3.288400620169576,
+      "pe25": 50.076017090264884,
+      "pe26": 22.153148602256007,
+      "pe27": 16.667996309963097
+    },
+    "9903 HK": {
+      "code": "9903 HK",
+      "name": "Iluvatar CoreX",
+      "relation": "Direct GPGPU developer",
+      "price_currency": "HKD",
+      "profit_currency": "CNY",
+      "price": 61.55,
+      "equity_hkdm": 49703.12,
+      "equity_profit_m": 42543.385564000004,
+      "rev25": 1033.606,
+      "np25": -1003.656,
+      "fy26_np": -404,
+      "fy27_np": 1076,
+      "broker": "CLSA",
+      "forecast_date": "2026-09-14",
+      "basis": "EtNet-labelled profit forecast; original broker accounting adjustments not independently verified",
+      "forecast_url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=9903",
+      "historical_url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_pl.php?code=9903",
+      "ps25": 41.16015731719824,
+      "pe25": "NM",
+      "pe26": "NM",
+      "pe27": 39.53846242007435
+    },
+    "6082 HK": {
+      "code": "6082 HK",
+      "name": "Biren",
+      "relation": "Direct GPGPU developer",
+      "price_currency": "HKD",
+      "profit_currency": "CNY",
+      "price": 20.08,
+      "equity_hkdm": 54819.92,
+      "equity_profit_m": 46923.110523999996,
+      "rev25": 1034.614,
+      "np25": -16493.028,
+      "fy26_np": -1091,
+      "fy27_np": 944,
+      "broker": "Goldman Sachs",
+      "forecast_date": "2026-10-21",
+      "basis": "EtNet-labelled profit forecast; original broker accounting adjustments not independently verified",
+      "forecast_url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=6082",
+      "historical_url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_pl.php?code=6082",
+      "ps25": 45.35325302383304,
+      "pe25": "NM",
+      "pe26": "NM",
+      "pe27": 49.70668487711864
+    },
+    "9976 HK": {
+      "code": "9976 HK",
+      "name": "Longsys H",
+      "relation": "Direct memory modules and controllers",
+      "price_currency": "HKD",
+      "profit_currency": "CNY",
+      "price": 142.0,
+      "equity_hkdm": 65271.38,
+      "equity_profit_m": 55869.037711,
+      "rev25": 22766.17,
+      "np25": 1423.298,
+      "fy26_np": 17112,
+      "fy27_np": 14885,
+      "broker": "Citi",
+      "forecast_date": "2026-11-02",
+      "basis": "EtNet-labelled profit forecast; original broker accounting adjustments not independently verified",
+      "forecast_url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=9976",
+      "historical_url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_pl.php?code=9976",
+      "ps25": 2.454037622973034,
+      "pe25": 39.25322575525294,
+      "pe26": 3.2649040270570358,
+      "pe27": 3.7533784152502516
+    },
+    "777 HK": {
+      "code": "777 HK",
+      "name": "NetDragon",
+      "relation": "Adjacent digital education with material gaming exposure",
+      "price_currency": "HKD",
+      "profit_currency": "CNY",
+      "price": 7.7,
+      "equity_hkdm": 4050.9700000000003,
+      "equity_profit_m": 3467.4277715000003,
+      "rev25": 4475.0,
+      "np25": 151.0,
+      "fy26_np": 301.66,
+      "fy27_np": 547.94,
+      "broker": "First Shanghai",
+      "forecast_date": "2026-09-22",
+      "basis": "EtNet-labelled profit forecast; original broker accounting adjustments not independently verified",
+      "forecast_url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=777",
+      "historical_url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_pl.php?code=777",
+      "ps25": 0.7748441947486034,
+      "pe25": 22.963097824503315,
+      "pe26": 11.494489728502288,
+      "pe27": 6.328115800087601
+    },
+    "2469 HK": {
+      "code": "2469 HK",
+      "name": "Fenbi",
+      "relation": "Adjacent adult training; not university digitisation",
+      "price_currency": "HKD",
+      "profit_currency": "CNY",
+      "price": 0.239,
+      "equity_hkdm": 528.2,
+      "equity_profit_m": 452.11279,
+      "rev25": 2676.628,
+      "np25": 198.126,
+      "fy26_np": null,
+      "fy27_np": null,
+      "broker": null,
+      "forecast_date": null,
+      "basis": "EtNet-labelled profit forecast; original broker accounting adjustments not independently verified",
+      "forecast_url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=2469",
+      "historical_url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_pl.php?code=2469",
+      "ps25": 0.1689113279843146,
+      "pe25": 2.2819457819771256,
+      "pe26": null,
+      "pe27": null
+    },
+    "631 HK": {
+      "code": "631 HK",
+      "name": "Sany International",
+      "relation": "Closest H mining-equipment exposure; diversified",
+      "price_currency": "HKD",
+      "profit_currency": "CNY",
+      "price": 6.37,
+      "equity_hkdm": 20955.52,
+      "equity_profit_m": 17936.877344,
+      "rev25": 24333.593,
+      "np25": 1778.814,
+      "fy26_np": 2211,
+      "fy27_np": 3147,
+      "broker": "CLSA",
+      "forecast_date": "2026-10-30",
+      "basis": "EtNet-labelled profit forecast; original broker accounting adjustments not independently verified",
+      "forecast_url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=631",
+      "historical_url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_pl.php?code=631",
+      "ps25": 0.7371240796211229,
+      "pe25": 10.083616018313325,
+      "pe26": 8.112563249208502,
+      "pe27": 5.699675037813791
+    },
+    "1157 HK": {
+      "code": "1157 HK",
+      "name": "Zoomlion H",
+      "relation": "Adjacent diversified construction equipment",
+      "price_currency": "HKD",
+      "profit_currency": "CNY",
+      "price": 4.985,
+      "equity_hkdm": 43112.95,
+      "equity_profit_m": 36902.5295525,
+      "rev25": 52107.0,
+      "np25": 4653.0,
+      "fy26_np": 4807,
+      "fy27_np": 6184,
+      "broker": "Citi",
+      "forecast_date": "2026-09-28",
+      "basis": "EtNet-labelled profit forecast; original broker accounting adjustments not independently verified",
+      "forecast_url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=1157",
+      "historical_url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_pl.php?code=1157",
+      "ps25": 0.7082067582570479,
+      "pe25": 7.930911143885664,
+      "pe26": 7.676831610671936,
+      "pe27": 5.967420690895859
+    },
+    "300181 A": {
+      "code": "300181 A",
+      "name": "Zoli",
+      "relation": "Product overlap in decoction pieces; majority branded finished drugs",
+      "price_currency": "CNY",
+      "profit_currency": "CNY",
+      "price": 12.27,
+      "equity_profit_m": 8606.0,
+      "rev25": 3041,
+      "np25": 631.93,
+      "fy26_np": 787.33,
+      "fy27_np": 953.81,
+      "broker": "China Post",
+      "forecast_date": "2026-09-12",
+      "basis": "Reported attributable profit; original broker PDF read",
+      "forecast_url": "https://pdf.dfcfw.com/pdf/H3_AP202609121829316730_1.pdf",
+      "historical_url": null,
+      "ps25": 2.829990134824071,
+      "pe25": 13.618596996502779,
+      "pe26": 10.930613592775583,
+      "pe27": 9.022761346599427
+    },
+    "600584 A": {
+      "code": "600584 A",
+      "name": "JCET",
+      "relation": "Direct OSAT; larger and profitable",
+      "price_currency": "CNY",
+      "profit_currency": "CNY",
+      "price": 50.3,
+      "equity_profit_m": 90008.0,
+      "rev25": 38871,
+      "np25": 1565,
+      "fy26_np": 2283,
+      "fy27_np": 2936,
+      "broker": "Shanxi",
+      "forecast_date": "2026-10-28",
+      "basis": "Reported attributable profit; original broker PDF read",
+      "forecast_url": "https://pdf.dfcfw.com/pdf/H3_AP202610281831069536_1.pdf",
+      "historical_url": null,
+      "ps25": 2.3155565846003445,
+      "pe25": 57.51309904153354,
+      "pe26": 39.42531756460797,
+      "pe27": 30.6566757493188
+    },
+    "688362 A": {
+      "code": "688362 A",
+      "name": "Ningbo Silicon",
+      "relation": "Direct OSAT; small profit base",
+      "price_currency": "CNY",
+      "profit_currency": "CNY",
+      "price": 37.19,
+      "equity_profit_m": 16887.0,
+      "rev25": 4398,
+      "np25": 81.73,
+      "fy26_np": 120.05,
+      "fy27_np": 278.84,
+      "broker": "Soochow",
+      "forecast_date": "2026-10-30",
+      "basis": "Reported attributable profit; original broker PDF read",
+      "forecast_url": "https://pdf.dfcfw.com/pdf/H3_AP202610301831207492_1.pdf",
+      "historical_url": null,
+      "ps25": 3.839699863574352,
+      "pe25": 206.61935641747215,
+      "pe26": 140.66638900458142,
+      "pe27": 60.561612394204566
+    },
+    "688795 A": {
+      "code": "688795 A",
+      "name": "Moore Threads",
+      "relation": "Direct GPU developer; broader full-function portfolio",
+      "price_currency": "CNY",
+      "profit_currency": "CNY",
+      "price": 324.55,
+      "equity_profit_m": 152548.0,
+      "rev25": 1506,
+      "np25": -1001,
+      "fy26_np": 150,
+      "fy27_np": 1243,
+      "broker": "Shanxi",
+      "forecast_date": "2026-10-30",
+      "basis": "Reported attributable profit; original broker PDF read",
+      "forecast_url": "https://pdf.dfcfw.com/pdf/H3_AP202610301831227112_1.pdf",
+      "historical_url": null,
+      "ps25": 101.29349269588313,
+      "pe25": "NM",
+      "pe26": 1016.9866666666667,
+      "pe27": 122.72566371681415
+    },
+    "688525 A": {
+      "code": "688525 A",
+      "name": "Biwin",
+      "relation": "Direct memory module/controller and packaging exposure",
+      "price_currency": "CNY",
+      "profit_currency": "CNY",
+      "price": 131.86,
+      "equity_profit_m": 62714.0,
+      "rev25": 11302,
+      "np25": 853,
+      "fy26_np": 14657,
+      "fy27_np": 16182,
+      "broker": "Sinolink",
+      "forecast_date": "2026-08-10",
+      "basis": "Reported attributable profit; original broker PDF read",
+      "forecast_url": "https://pdf.dfcfw.com/pdf/H3_AP202608101827803026_1.pdf",
+      "historical_url": null,
+      "ps25": 5.548929393027783,
+      "pe25": 73.52168815943728,
+      "pe26": 4.278774646926383,
+      "pe27": 3.875540724261525
+    },
+    "000528 A": {
+      "code": "000528 A",
+      "name": "LiuGong",
+      "relation": "Direct overlap in battery-electric loaders; diversified",
+      "price_currency": "CNY",
+      "profit_currency": "CNY",
+      "price": 8.0,
+      "equity_profit_m": 16341.0,
+      "rev25": 33144,
+      "np25": 1609.23,
+      "fy26_np": 1684.92,
+      "fy27_np": 2094.88,
+      "broker": "China Post",
+      "forecast_date": "2026-10-30",
+      "basis": "Reported attributable profit; original broker PDF read",
+      "forecast_url": "https://pdf.dfcfw.com/pdf/H3_AP202610301831238126_1.pdf",
+      "historical_url": null,
+      "ps25": 0.49303041274438814,
+      "pe25": 10.154545962976082,
+      "pe26": 9.698383306032333,
+      "pe27": 7.80044680363553
+    },
+    "300559 A": {
+      "code": "300559 A",
+      "name": "Jiafa Education",
+      "relation": "Closest A education IT; examination hardware differs",
+      "price_currency": "CNY",
+      "profit_currency": "CNY",
+      "price": 10.69,
+      "equity_profit_m": 4271.0,
+      "rev25": 430.529643,
+      "np25": 31.65662,
+      "fy26_np": null,
+      "fy27_np": null,
+      "broker": null,
+      "forecast_date": null,
+      "basis": "No current public forecast verified",
+      "forecast_url": null,
+      "historical_url": "https://static.cninfo.com.cn/finalpage/2026-04-21/1225130651.PDF",
+      "ps25": 9.920338981165113,
+      "pe25": 134.91648824163792,
+      "pe26": null,
+      "pe27": null
+    },
+    "301308 A": {
+      "code": "301308 A",
+      "name": "Longsys A",
+      "relation": "Same company as 9976; same Citi profit estimates used",
+      "price_currency": "CNY",
+      "profit_currency": "CNY",
+      "price": 214.63,
+      "equity_hkdm": 65271.38,
+      "equity_profit_m": 98656.0,
+      "rev25": 22766.17,
+      "np25": 1423.298,
+      "fy26_np": 17112,
+      "fy27_np": 14885,
+      "broker": "Citi",
+      "forecast_date": "2026-11-02",
+      "basis": "EtNet-labelled profit forecast; original broker accounting adjustments not independently verified",
+      "forecast_url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_profit.php?code=9976",
+      "historical_url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_pl.php?code=9976",
+      "ps25": 4.333447391458467,
+      "pe25": 69.315069648099,
+      "pe26": 5.765310892940627,
+      "pe27": 6.627880416526705
+    }
+  },
+  "quotes": {
+    "hk02687": {
+      "name": "卓越睿新",
+      "price": 81.05,
+      "quote_date": "2026/11/02 16:08:21",
+      "equity_quote_m": 5403.34
+    },
+    "hk01333": {
+      "name": "博雷顿",
+      "price": 16.39,
+      "quote_date": "2026/11/02 16:08:21",
+      "equity_quote_m": 6985.370000000001
+    },
+    "hk02273": {
+      "name": "固生堂",
+      "price": 28.3,
+      "quote_date": "2026/11/02 16:08:17",
+      "equity_quote_m": 6261.56
+    },
+    "hk01666": {
+      "name": "同仁堂科技",
+      "price": 2.9,
+      "quote_date": "2026/11/02 16:08:21",
+      "equity_quote_m": 3714.27
+    },
+    "hk00570": {
+      "name": "中国中药",
+      "price": 1.175,
+      "quote_date": "2026/11/02 16:08:20",
+      "equity_quote_m": 5917.07
+    },
+    "sz300181": {
+      "name": "佐力药业",
+      "price": 12.27,
+      "quote_date": "20261102161415",
+      "equity_quote_m": 8606.0
+    },
+    "hk00522": {
+      "name": "ASMPT",
+      "price": 107.7,
+      "quote_date": "2026/11/02 16:08:21",
+      "equity_quote_m": 45170.27
+    },
+    "sh600584": {
+      "name": "长电科技",
+      "price": 50.3,
+      "quote_date": "20261102161455",
+      "equity_quote_m": 90008.0
+    },
+    "sh688362": {
+      "name": "甬矽电子",
+      "price": 37.19,
+      "quote_date": "20261102161451",
+      "equity_quote_m": 16887.0
+    },
+    "sz002156": {
+      "name": "通富微电",
+      "price": 41.12,
+      "quote_date": "20261102161442",
+      "equity_quote_m": 65537.0
+    },
+    "hk09903": {
+      "name": "天数智芯",
+      "price": 61.55,
+      "quote_date": "2026/11/02 16:08:19",
+      "equity_quote_m": 49703.12
+    },
+    "hk06082": {
+      "name": "壁仞科技",
+      "price": 20.08,
+      "quote_date": "2026/11/02 16:08:21",
+      "equity_quote_m": 54819.92
+    },
+    "sh688256": {
+      "name": "寒武纪",
+      "price": 861.0,
+      "quote_date": "20261102161442",
+      "equity_quote_m": 541443.0
+    },
+    "sh688795": {
+      "name": "摩尔线程-U",
+      "price": 324.55,
+      "quote_date": "20261102161443",
+      "equity_quote_m": 152548.0
+    },
+    "hk09976": {
+      "name": "江波龙",
+      "price": 142.0,
+      "quote_date": "2026/11/02 16:08:21",
+      "equity_quote_m": 65271.38
+    },
+    "sz301308": {
+      "name": "江波龙",
+      "price": 214.63,
+      "quote_date": "20261102161445",
+      "equity_quote_m": 98656.0
+    },
+    "sh688525": {
+      "name": "佰维存储",
+      "price": 131.86,
+      "quote_date": "20261102161451",
+      "equity_quote_m": 62714.0
+    },
+    "sz001309": {
+      "name": "德明利",
+      "price": 207.78,
+      "quote_date": "20261102161427",
+      "equity_quote_m": 65987.0
+    },
+    "hk00777": {
+      "name": "网龙",
+      "price": 7.7,
+      "quote_date": "2026/11/02 16:08:21",
+      "equity_quote_m": 4050.9700000000003
+    },
+    "hk02469": {
+      "name": "粉笔",
+      "price": 0.239,
+      "quote_date": "2026/11/02 16:08:21",
+      "equity_quote_m": 528.2
+    },
+    "sz300559": {
+      "name": "佳发教育",
+      "price": 10.69,
+      "quote_date": "20261102161445",
+      "equity_quote_m": 4271.0
+    },
+    "hk00631": {
+      "name": "三一国际",
+      "price": 6.37,
+      "quote_date": "2026/11/02 16:08:20",
+      "equity_quote_m": 20955.52
+    },
+    "hk01157": {
+      "name": "中联重科",
+      "price": 4.985,
+      "quote_date": "2026/11/02 16:08:21",
+      "equity_quote_m": 43112.95
+    },
+    "sz000528": {
+      "name": "柳    工",
+      "price": 8.0,
+      "quote_date": "20261102161445",
+      "equity_quote_m": 16341.0
+    }
+  },
+  "limits": [
+    "IPO offer ranges and scheduled dates are provisional until pricing/allotment notices; base deal only, before adjustment and greenshoe.",
+    "No verified public FY26/FY27 profit estimate for the four IPOs or Breton. n/v is deliberate; annualised four-month earnings are not forecasts.",
+    "EtNet-labelled estimates are individual broker observations, not consensus; adjustments and dilution cannot be fully verified without original notes.",
+    "Guosheng Able Digital estimates are rounded public extracts predating the H1 results and penalty.",
+    "IPO lockup cohorts are not immediately saleable quantities: director transfer caps, resignation restrictions, blackouts and extensions may apply.",
+    "14-session ADV 13 October–2 November avoids Able Digital parallel-counter board-lot change period. Shares, not lots. No live borrow or fee verified.",
+    "Broker and social posts are selected views, not representative polls. Inaccessible original Xueqiu links were not described as read."
+  ],
+  "critical_reconciliations": {
+    "xinde": "Do not confuse 2.5D/3D revenue share with all advanced packaging; BGA/WLP also classified advanced. Redeemable-share liabilities convert on listing; bank debt separately identified.",
+    "hosin": "RMB10.8bn private valuation is not IPO market cap. Reciprocal IPO investments with Transsion/Longsys are disclosed as non-interconditional. HK455.32m cornerstone table mixes fee bases; HK451.56m aggregate excludes fees.",
+    "able": "FY25 cash-flow statement is -RMB64.021m despite positive-CFO wording in narrative. Wang Xin July DI is loss of deemed partnership interest, not sale. Domestic conversion is proposed, not completed.",
+    "breton": "102.515835m contractual H cohort excludes 21.125599m domestic; subtract Qiu3.091551m from near-term screen because resignation transfer restriction; annual director cap remains. Separate 58.909668m funds locked through 28Feb2027; do not add to November cohort."
+  },
+  "primary_documents": {
+    "000528_broker": {
+      "url": "https://pdf.dfcfw.com/pdf/H3_AP202610301831238126_1.pdf",
+      "sha256": "5b1c7f58dfe9505d0f3b4212137f134ef6f6e09fa8eacd88de3acb7889f015ae",
+      "bytes": 746100
+    },
+    "1333_2026012000269": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0120/2026012000269.pdf",
+      "sha256": "9f966435ad4cdf891a959bd4195be5977341733f3a4a1951c0cd42360dfdac97",
+      "bytes": 56461
+    },
+    "1333_2026012001371": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0120/2026012001371.pdf",
+      "sha256": "ffac86f045c4fe18792f64187fd8f5e608e50aec865b6bd8f6e4eb799b8a23a2",
+      "bytes": 59286
+    },
+    "1333_2026012201355": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0122/2026012201355.pdf",
+      "sha256": "1b6707a0992c4496000e46013679e5ced12a6b3fd9ccea50dffe83a0dce28a29",
+      "bytes": 56984
+    },
+    "1333_2026012801390": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0128/2026012801390.pdf",
+      "sha256": "741a85813df8df43d30e02e7fbe1cf163020b32f19c4769f281171c16314c224",
+      "bytes": 57175
+    },
+    "1333_2026033003446": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0330/2026033003446.pdf",
+      "sha256": "4938fdd2cd11b875800979c62d52d0c0ebeade21ecaf81d7eeb6f202772d10c1",
+      "bytes": 190615
+    },
+    "1333_2026041500259": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0415/2026041500259.pdf",
+      "sha256": "421065abac5ba9a67f6fbe2447353dca9105b98ac407a45d86ba60fa8e4dbf43",
+      "bytes": 154884
+    },
+    "1333_2026042805191": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0428/2026042805191.pdf",
+      "sha256": "521c6894085a5914e4f29d7c54af01942feb5789cfb7db8f0cd3cf40f20467e8",
+      "bytes": 60089
+    },
+    "1333_2026050702330": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0507/2026050702330.pdf",
+      "sha256": "de2a0dafbbf1dc71faa9a37c0f8f3125f246e17671a895fc7fa5e521332fd28e",
+      "bytes": 441038
+    },
+    "1333_2026052101750": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0521/2026052101750.pdf",
+      "sha256": "049adadf7de93bc523c769a7988d8ce94b39240f1c7405e89b38cc5b1607fdc3",
+      "bytes": 57060
+    },
+    "1333_2026060402683": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0604/2026060402683.pdf",
+      "sha256": "672c6d871e4475a7f440cf216d4102ce6ebb3f79ff03d0de102b9ef2492b5752",
+      "bytes": 57067
+    },
+    "1333_2026060502208": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0605/2026060502208.pdf",
+      "sha256": "07fd000b320d3cfd17349a195700730c7734d03a89d2ef3ee70042a518a7292c",
+      "bytes": 57093
+    },
+    "1333_2026060801604": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0608/2026060801604.pdf",
+      "sha256": "b9a6b35f6f85924cc223dff1cab79d77de730ab73cb2a6cda911aa4f58362728",
+      "bytes": 57059
+    },
+    "1333_2026061100969": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0611/2026061100969.pdf",
+      "sha256": "4a46a98e6929c5c6f357a92a53f127ad68a854637423277f0a4c745022d4a346",
+      "bytes": 57078
+    },
+    "1333_2026073100674": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0731/2026073100674.pdf",
+      "sha256": "a87c7057e3a09e14db1b48c49af4b60d2e927109a65cd701883198426ed81073",
+      "bytes": 144301
+    },
+    "1333_2026091800948": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0918/2026091800948.pdf",
+      "sha256": "2c2605577dee934152ac93611bf039610db2c620f29c8630d9dee2c127ce103c",
+      "bytes": 82632
+    },
+    "1333_2026092500373": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0925/2026092500373.pdf",
+      "sha256": "6778f86fcf2e2d4f56f4fafc43222dbfde061f52e0190ebeae732f1154cac19f",
+      "bytes": 2055290
+    },
+    "1333_2026102101027": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1021/2026102101027.pdf",
+      "sha256": "a95119a23e86eee14ee8ccff922f7be6fdbb8fe126cad975e3d11db2e1fb8ede",
+      "bytes": 85608
+    },
+    "1333_2026110203513": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1102/2026110203513.pdf",
+      "sha256": "0464f69c694fe13d6e855bb2afa420b36f948cf8b9ac42d75c2dd4d4e9e014c2",
+      "bytes": 56168
+    },
+    "1333_allot": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0506/2025050602875.pdf",
+      "sha256": "c246037a86814728725efb0081dd9d7c9111bbb535e42c535a0f1eb51e5daa13",
+      "bytes": 572451
+    },
+    "1333_articles": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1021/2026102101047.pdf",
+      "sha256": "aa0a5bce13e976853e4e88a505b191525e7d641634164fdc200e3bf7b42a1679",
+      "bytes": 282800
+    },
+    "1333_resign": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1020/2026102001455.pdf",
+      "sha256": "98f544716b741b8eaaba2a85539119cd93a7f99ee9fd51bef024e47229ad4648",
+      "bytes": 47056
+    },
+    "2206": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1030/2026103000020_c.pdf",
+      "sha256": "14c6d8a1211595c6675cab2739a1a9d174ceb09db25ebd0fc36d6c2d985627c8",
+      "bytes": 5993341
+    },
+    "2681e": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1030/2026103000025.pdf",
+      "sha256": "91c6f77188350ca7f98812a6fea4ed5acc3464225447d44e1eb0a17342c78d3c",
+      "bytes": 7833424
+    },
+    "2687_2026032702879": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0327/2026032702879.pdf",
+      "sha256": "e205b5b525c1f76e1b45ad6815cbc1002c687f19e853c5269bd72844023bfbbd",
+      "bytes": 715939
+    },
+    "2687_2026042903659": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0429/2026042903659.pdf",
+      "sha256": "06fd807d9f427c6e65a52a6c13da799579bdbc700e9f3055b78cbae57f6fb18b",
+      "bytes": 12126123
+    },
+    "2687_2026092100863": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0921/2026092100863.pdf",
+      "sha256": "63432ce48bff477d5a87d9c590c5f01f2e4a9df7d170da6a6086efc37befd3eb",
+      "bytes": 11355160
+    },
+    "2687_2026100600764": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1006/2026100600764.pdf",
+      "sha256": "38405b0cb7f075b567f208362e1492a90c05ba5e70ed32443c0b615c5d6d776b",
+      "bytes": 69090
+    },
+    "2687_2026101500683": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1015/2026101500683.pdf",
+      "sha256": "691415e6c6e99d387dd9720c929efb2699c2a3a52d83dde2b47323e26e6af8c8",
+      "bytes": 436072
+    },
+    "2687_allot": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1205/2025120501787.pdf",
+      "sha256": "a1088ae293cbcc760eeb361a97616f5c3f64428839ad2972e4099109782ec8cb",
+      "bytes": 908658
+    },
+    "300181_broker": {
+      "url": "https://pdf.dfcfw.com/pdf/H3_AP202609121829316730_1.pdf",
+      "sha256": "99a40c2d7975511100d3580683c5d419b3325e47ba6ed28012cf9cabca5aa91b",
+      "bytes": 624120
+    },
+    "600584_broker": {
+      "url": "https://pdf.dfcfw.com/pdf/H3_AP202610281831069536_1.pdf",
+      "sha256": "b05bc4fc89a57ca833164170af0885010412ccda168f383522c79f7923152f40",
+      "bytes": 445101
+    },
+    "688362_broker": {
+      "url": "https://pdf.dfcfw.com/pdf/H3_AP202610301831207492_1.pdf",
+      "sha256": "f5f12dd426020aa7833578d783862efc8857fe0378c04712f513c772787077e1",
+      "bytes": 463720
+    },
+    "688525_broker": {
+      "url": "https://pdf.dfcfw.com/pdf/H3_AP202608101827803026_1.pdf",
+      "sha256": "8f9fad2b82e08bd47e4ae95216531e477e18afeaae004256c48bfd0e1c2f094b",
+      "bytes": 2859146
+    },
+    "688795_broker": {
+      "url": "https://pdf.dfcfw.com/pdf/H3_AP202610301831227112_1.pdf",
+      "sha256": "c1c9d0c770becc46867ef4aa9a2b0f8685c3daeb39761ca39f7b050c6aba53b1",
+      "bytes": 448669
+    },
+    "7672e": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1030/2026103000027.pdf",
+      "sha256": "50fe6138a1aa8d026ee907415862f63145d881648779a3d7a32c9b9751e88b89",
+      "bytes": 8753720
+    },
+    "9917e": {
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1030/2026103000023.pdf",
+      "sha256": "889175a15acf6b373f6fcd83b96dc4889c91975d25a3956843aab842dfd58774",
+      "bytes": 9088878
+    }
+  },
+  "other_sources": {
+    "able_di": "https://di.hkex.com.hk/di/NSForm3A.aspx?fn=DA20260723E00090&lang=EN",
+    "able_forecast": "https://finance.sina.com.cn/stock/hkstock/hkgg/2026-08-14/doc-ininfvzw2710630.shtml",
+    "southbound_able": "https://www.sse.com.cn/services/hkexsc/disclo/announ/c/c_20260306_10811051.shtml",
+    "southbound_breton": "https://www.sse.com.cn/services/hkexsc/disclo/announ/c/c_20250905_10790691.shtml",
+    "msci": "https://app2.msci.com/eqb/pressreleases/archive/ir_dates.pdf",
+    "hsi": "https://finance.sina.com.cn/stock/estate/integration/2026-10-02/doc-initvpqz4618655.shtml",
+    "short_list": "https://www.hkex.com.hk/eng/market/sec_tradinfo/ds20261020.htm",
+    "niuniu": "https://q.futunn.com/feed/117529347752340",
+    "xueqiu_neautus": "https://www.xueqiu.com/9244403865/414958726",
+    "xueqiu_neautus_terms": "https://www.xueqiu.com/9244403865/414958819",
+    "xueqiu_xinde": "https://www.xueqiu.com/9244403865/414970758",
+    "xueqiu_xinde_backers": "https://www.xueqiu.com/9252950692/409987709",
+    "xueqiu_denglin": "https://www.xueqiu.com/9244403865/414970218",
+    "xinde_critique": "https://finance.sina.com.cn/stock/observe/2026-09-29/doc-initnscx7702383.shtml",
+    "hosin_sina": "https://finance.sina.com.cn/stock/stockzmt/2026-10-21/doc-inivyhkr6195510.shtml",
+    "neautus_history": "https://www.jiemian.com/article/14508745.html",
+    "quote_breton_check": "https://www.marketscreener.com/quote/stock/BRETON-TECHNOLOGY-CO-LTD-187716725/",
+    "quote_able_check": "https://daily.hstong.com/quotes/10000-02687-HK"
+  }
+}

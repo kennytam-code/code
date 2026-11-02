@@ -1,0 +1,176 @@
+{
+  "as_of": "2026-11-02 close",
+  "source": "https://hq.sinajs.cn/list=",
+  "tencent_source": "https://qt.gtimg.cn/q=",
+  "count": 24,
+  "crosschecks": [
+    {
+      "code": "hk02687",
+      "tencent": 81.05,
+      "sina": 81.05,
+      "date": "2026-11-02",
+      "match": true
+    },
+    {
+      "code": "hk01333",
+      "tencent": 16.39,
+      "sina": 16.39,
+      "date": "2026-11-02",
+      "match": true
+    },
+    {
+      "code": "hk02273",
+      "tencent": 28.3,
+      "sina": 28.3,
+      "date": "2026-11-02",
+      "match": true
+    },
+    {
+      "code": "hk01666",
+      "tencent": 2.9,
+      "sina": 2.9,
+      "date": "2026-11-02",
+      "match": true
+    },
+    {
+      "code": "hk00570",
+      "tencent": 1.175,
+      "sina": 1.175,
+      "date": "2026-11-02",
+      "match": true
+    },
+    {
+      "code": "sz300181",
+      "tencent": 12.27,
+      "sina": 12.27,
+      "date": "2026-11-02",
+      "match": true
+    },
+    {
+      "code": "hk00522",
+      "tencent": 107.7,
+      "sina": 107.7,
+      "date": "2026-11-02",
+      "match": true
+    },
+    {
+      "code": "sh600584",
+      "tencent": 50.3,
+      "sina": 50.3,
+      "date": "2026-11-02",
+      "match": true
+    },
+    {
+      "code": "sh688362",
+      "tencent": 37.19,
+      "sina": 37.19,
+      "date": "2026-11-02",
+      "match": true
+    },
+    {
+      "code": "sz002156",
+      "tencent": 41.12,
+      "sina": 41.12,
+      "date": "2026-11-02",
+      "match": true
+    },
+    {
+      "code": "hk09903",
+      "tencent": 61.55,
+      "sina": 61.55,
+      "date": "2026-11-02",
+      "match": true
+    },
+    {
+      "code": "hk06082",
+      "tencent": 20.08,
+      "sina": 20.08,
+      "date": "2026-11-02",
+      "match": true
+    },
+    {
+      "code": "sh688256",
+      "tencent": 861.0,
+      "sina": 861.0,
+      "date": "2026-11-02",
+      "match": true
+    },
+    {
+      "code": "sh688795",
+      "tencent": 324.55,
+      "sina": 324.55,
+      "date": "2026-11-02",
+      "match": true
+    },
+    {
+      "code": "hk09976",
+      "tencent": 142.0,
+      "sina": 142.0,
+      "date": "2026-11-02",
+      "match": true
+    },
+    {
+      "code": "sz301308",
+      "tencent": 214.63,
+      "sina": 214.63,
+      "date": "2026-11-02",
+      "match": true
+    },
+    {
+      "code": "sh688525",
+      "tencent": 131.86,
+      "sina": 131.86,
+      "date": "2026-11-02",
+      "match": true
+    },
+    {
+      "code": "sz001309",
+      "tencent": 207.78,
+      "sina": 207.78,
+      "date": "2026-11-02",
+      "match": true
+    },
+    {
+      "code": "hk00777",
+      "tencent": 7.7,
+      "sina": 7.7,
+      "date": "2026-11-02",
+      "match": true
+    },
+    {
+      "code": "hk02469",
+      "tencent": 0.239,
+      "sina": 0.239,
+      "date": "2026-11-02",
+      "match": true
+    },
+    {
+      "code": "sz300559",
+      "tencent": 10.69,
+      "sina": 10.69,
+      "date": "2026-11-02",
+      "match": true
+    },
+    {
+      "code": "hk00631",
+      "tencent": 6.37,
+      "sina": 6.37,
+      "date": "2026-11-02",
+      "match": true
+    },
+    {
+      "code": "hk01157",
+      "tencent": 4.985,
+      "sina": 4.985,
+      "date": "2026-11-02",
+      "match": true
+    },
+    {
+      "code": "sz000528",
+      "tencent": 8.0,
+      "sina": 8.0,
+      "date": "2026-11-02",
+      "match": true
+    }
+  ]
+}

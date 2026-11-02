@@ -1,5 +1,13 @@
 # HK IPO desk files
 
+## November IPO and lockup brief — 3 November 2026
+
+**[Download the Word briefing — 新荷花 / 芯德 / 登臨 / 宏芯宇 / 2687 / 1333](https://github.com/kennytam-code/code/raw/refs/heads/main/IPO_and_Lockup_Trader_Brief_2026-11-03.docx)**
+
+One page per company with the trading view, good points, risks and H-first peer valuations, including dated FY26E/FY27E P/E where available. Covers cornerstone identities, lockup cohorts, recent shareholder actions, earnings and index calendars, and existing Southbound eligibility. Prices: **2 November 2026 close**; older or unavailable forecasts are explicitly identified.
+
+[Sources and calculation audit](_ipo_db/research/ipo_20261103/source_and_valuation_audit.json) · [Price cross-checks](_ipo_db/research/ipo_20261103/price_crosscheck.json)
+
 ## Reviewed hedge finder — 29 October 2026
 
 **[Open the reviewed v130 notebook](PCA_Hedge_Finder_v130.ipynb)** · **[Download notebook](https://github.com/kennytam-code/code/raw/refs/heads/main/PCA_Hedge_Finder_v130.ipynb)** · [Python source](PCA_Hedge_Finder_v130.py)
