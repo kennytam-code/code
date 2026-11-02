@@ -7,6 +7,9 @@ Prints date checks, strategy results, coverage and charts; exports Excel/CSV/HTM
 HKEX historical full lists mark exchange short-sale eligibility at T0 minus 21
 HK sessions. Verified HKEX history is embedded; online refresh extends coverage.
 Historical checks must all resolve to Yes/No before final export. No borrow availability is inferred.
+Charts and the main Excel Summary include only HKEX-eligible events at T−21.
+HSI benchmark charts compare matched short-stock and short-index price returns.
+All event detail remains in the Excel By event, Trades and Inputs sheets.
 The current Hong Kong daily bar is excluded. No substitute price provider.
 Live Bloomberg transport/entitlements require verification on your workstation.
 """
@@ -44,7 +47,7 @@ from datetime import datetime, date
 import numpy as np
 import pandas as pd
 
-VERSION = "2.2.0"
+VERSION = "2.3.0"
 PRICE_FIELDS = ("PX_OPEN", "PX_LAST", "PX_VOLUME")
 
 
@@ -529,11 +532,53 @@ def event_paths(events, prices, sessions, settings=None, half_window=21):
     return pd.DataFrame(records)
 
 
-def plot_results(summary, trades, paths, output_dir=None, settings=None):
-    """Return four professional figures; save high-resolution PNGs when requested."""
+def chart_rows(frame, audit=None):
+    """Only Yes at this ticker/event's T−21 date; never promote a whole ticker."""
+    if frame.empty:
+        return frame.copy()
+    data = with_hkex_columns(frame, audit, HKEX_COMPACT) if audit is not None else frame
+    if "hkex_eligible_tminus21" not in data:
+        raise ValueError("Chart inputs need the historical HKEX eligibility check first")
+    return data.loc[data.hkex_eligible_tminus21.eq("Yes")].copy()
+
+
+def summarize_benchmark(trades):
+    """Pair exact trade endpoints, average events within issuer, then issuers.
+
+    HSI return is supplied by the existing Bloomberg backtest. Its negative is
+    the short-index price reference. Excess = short stock minus short HSI.
+    This is a price comparison, not an index borrow or execution claim.
+    """
+    columns = ["strategy", "strategy_label", "events", "issuers", "mean_stock_short",
+               "mean_hsi_short", "mean_excess", "missing_benchmark_events"]
+    t = chart_rows(trades)
+    if t.empty:
+        return pd.DataFrame(columns=columns)
+    t = t.loc[t.status.eq("Completed")].copy()
+    out = []
+    for key, g in t.groupby("strategy", sort=False):
+        stock = pd.to_numeric(g.gross_return, errors="coerce")
+        hsi = pd.to_numeric(g.benchmark_return, errors="coerce")
+        valid = np.isfinite(stock) & np.isfinite(hsi)
+        matched = pd.DataFrame({"ticker": g.loc[valid, "ticker"],
+                                "stock": stock[valid], "hsi": -hsi[valid]})
+        issuer = matched.groupby("ticker")[["stock", "hsi"]].mean()
+        out.append(dict(strategy=key, strategy_label=g.strategy_label.iloc[0],
+                        events=int(valid.sum()), issuers=len(issuer),
+                        mean_stock_short=float(issuer.stock.mean()),
+                        mean_hsi_short=float(issuer.hsi.mean()),
+                        mean_excess=float((issuer.stock-issuer.hsi).mean()),
+                        missing_benchmark_events=int((~valid).sum())))
+    return pd.DataFrame(out, columns=columns)
+
+
+def plot_results(summary, trades, paths, output_dir=None, settings=None, audit=None):
+    """Eligible-only figures, including an HSI comparison on matched endpoints."""
     import matplotlib.pyplot as plt
     from matplotlib.ticker import PercentFormatter
     cfg = settings or Settings()
+    trades, paths = chart_rows(trades, audit), chart_rows(paths, audit)
+    summary = summarize(trades, cfg)
     plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 10,
                          "axes.spines.top": False, "axes.spines.right": False,
                          "axes.edgecolor": "#c8c8c8", "axes.labelcolor": "#333333",
@@ -609,6 +654,23 @@ def plot_results(summary, trades, paths, output_dir=None, settings=None):
         ax.set_xlabel("Individual-event short price return · outliers retained")
         ax.set_title("Dispersion and adverse outcomes", loc="left", fontweight="bold", pad=12)
         figures["return_distribution"] = fig
+    benchmark = summarize_benchmark(trades)
+    paired = benchmark.loc[benchmark.events.gt(0)].iloc[::-1]
+    if not paired.empty:
+        fig, ax = plt.subplots(figsize=(11, max(6, len(paired)*.43)), layout="constrained")
+        y = np.arange(len(paired))
+        ax.barh(y+.18, paired.mean_stock_short, height=.32, color="#153954", label="Short stock")
+        ax.barh(y-.18, paired.mean_hsi_short, height=.32, color="#9aa4ae", label="Short HSI price reference")
+        ax.set_yticks(y, [f"{r.strategy_label}   (n={r.issuers})" for r in paired.itertuples()])
+        ax.axvline(0, color="#999999", lw=.7)
+        ax.xaxis.set_major_formatter(PercentFormatter(1))
+        ax.set_title("HSI benchmark comparison", loc="left", fontweight="bold", pad=14)
+        ax.set_xlabel("Price P&L / initial notional · identical endpoints · equal issuer weight")
+        ax.legend(frameon=False, loc="upper center", bbox_to_anchor=(.5, -.11), ncol=2)
+        ax.grid(axis="x", alpha=.15)
+        figures["hsi_benchmark"] = fig
+    for fig in figures.values():
+        fig.suptitle("HKEX eligible at T−21 only", fontsize=10, color="#626970")
     if output_dir:
         d = Path(output_dir)
         d.mkdir(parents=True, exist_ok=True)
@@ -617,15 +679,16 @@ def plot_results(summary, trades, paths, output_dir=None, settings=None):
     return figures
 
 
-def plot_stocks(paths, tickers, page=1):
+def plot_stocks(paths, tickers, page=1, audit=None):
     """Individual stock paths only, six event lines per page, complete legends."""
     import matplotlib.pyplot as plt
     from matplotlib.ticker import PercentFormatter
+    paths = chart_rows(paths, audit)
     chosen = {normalize_ticker(t) for t in tickers}
     p = paths[paths.ticker.isin(chosen)]
     keys = list(p.event_id.unique())
     if not keys:
-        raise ValueError("No observed paths for selected tickers")
+        raise ValueError("No HKEX-eligible T−21 price paths for selected tickers")
     pages = (len(keys)+5)//6
     if not 1 <= page <= pages:
         raise ValueError(f"Choose page 1 to {pages}")
@@ -638,7 +701,7 @@ def plot_stocks(paths, tickers, page=1):
     ax.axvline(0, color="#999999", ls="--", lw=.8)
     ax.axhline(0, color="#bbbbbb", lw=.7)
     ax.yaxis.set_major_formatter(PercentFormatter(1))
-    ax.set(title=f"Selected stock events · page {page}/{pages}", xlabel="HK trading sessions from T0",
+    ax.set(title=f"HKEX-eligible stock events · page {page}/{pages}", xlabel="HK trading sessions from T0",
            ylabel="Short price return from T−21 close")
     ax.legend(loc="upper center", bbox_to_anchor=(.5,-.12), frameon=False, fontsize=9)
     return fig
@@ -1257,6 +1320,11 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
     cfg, meta = settings or Settings(), metadata or {}
     if "hkex_eligible_tminus21" in audit:
         ensure_hkex_complete(audit,cfg)
+    chart_trades = chart_rows(trades, audit)
+    paths = chart_rows(paths, audit)
+    summary = summarize(chart_trades, cfg)
+    common_summary = summarize(chart_trades, cfg, common_sample=True)
+    benchmark_summary = summarize_benchmark(chart_trades)
     wb = Workbook()
     ws = wb.active
     ws.title = 'Summary'
@@ -1268,7 +1336,7 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
                     'gross_return','after_cost_price_return','net_return','borrow_cost',
                     'transaction_cost','dividend_cost','benchmark_return','short_plus_hsi_return',
                     'worst_mark_return','best_mark_return','borrow_rate_used','borrow_rate',
-                    'short_return_from_Tminus21','Mean return'}
+                    'short_return_from_Tminus21','Mean return','mean_stock_short','mean_hsi_short','mean_excess'}
     labels = {'strategy_label':'Strategy','events':'Events','issuers':'Issuers',
               'mean_gross':'Mean gross return','mean_after_cost_price':'After assumed costs',
               'win_rate':'Win rate','ci_low':'95% interval low','ci_high':'95% interval high',
@@ -1281,7 +1349,9 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
               'status':'Status','reason':'Exclusion reason','date':'Date',
               'PX_OPEN':'Open','PX_LAST':'Close','PX_VOLUME':'Volume',
               'source_url':'Primary source','category':'Holder category','borrow_rate':'Assumed annual borrow',
-              'fee_bps_per_leg':'Fee per leg (bps)'}
+              'fee_bps_per_leg':'Fee per leg (bps)',
+              'mean_stock_short':'Short stock', 'mean_hsi_short':'Short HSI price reference',
+              'mean_excess':'Excess vs short HSI', 'missing_benchmark_events':'Events missing HSI'}
     labels.update(dict(zip(HKEX_COLUMNS, [
         'HKEX eligible at T−21', 'HKEX check date (T−21)', 'HKEX list effective',
         'HKEX list updated', 'HKEX historical list', 'HKEX check detail',
@@ -1389,7 +1459,14 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
         ws.cell(row,1,key).font=Font(name='Arial',size=10,bold=True,color=ink)
         c=ws.cell(row,2,value(x)); c.font=Font(name='Arial',size=10,color=ink)
         if row==2:c.number_format='dd-mmm-yyyy'
+    ws['L1']='Summary / charts'; ws['M1']='HKEX eligible at T−21 only'
     ws['L2']='Days'; ws['M2']='HK sessions; month = 21' if cfg.day_basis=='sessions' else 'Calendar days / calendar month'
+    ws['L4']='Detail tabs'; ws['M4']='All events retained'
+    for row in range(1,5):
+        ws.cell(row,12).font=Font(name='Arial',size=10,bold=True,color=ink)
+        ws.cell(row,13).font=Font(name='Arial',size=10,color=ink)
+    ws.column_dimensions['L'].width=23
+    ws.column_dimensions['M'].width=36
     if 'hkex_eligible_tminus21' in audit:
         counts=audit.drop_duplicates(['ticker','last_day_locked']).hkex_eligible_tminus21.value_counts()
         ws['L3']='HKEX at T−21'
@@ -1403,6 +1480,7 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
     write_table(ws,common_summary[[c for c in columns if c in common_summary]],start_row=common_start,filters=False)
     ws.column_dimensions['A'].width=38
     for col in 'BC': ws.column_dimensions[col].width=12
+    chart_row=6
     if not summary.empty:
         chart=BarChart()
         chart.type='bar'; chart.style=2; chart.title='Mean short returns'
@@ -1411,19 +1489,24 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
         chart.add_data(Reference(ws,min_col=4,max_col=4,min_row=5,max_row=last),titles_from_data=True)
         chart.set_categories(Reference(ws,min_col=1,min_row=6,max_row=last))
         chart.legend=None
-        chart.width=24; chart.height=15
+        chart.width=25; chart.height=max(15,len(summary)*.65)
         for series,color in zip(chart.series,['23745B','153954']):
             series.graphicalProperties.solidFill=color
             series.graphicalProperties.line.solidFill=color
             series.data_points=[DataPoint(idx=i,spPr=GraphicalProperties(
                 solidFill='23745B' if v>=0 else 'CB2125')) for i,v in enumerate(summary.mean_gross)]
-        ws.add_chart(chart,'L5')
+        ws.add_chart(chart,f'L{chart_row}')
+        chart_row += int(np.ceil(chart.height*2.1))+4
+    else:
+        ws['A6']='No completed HKEX-eligible events at T−21'
+    curve_start=common_start+len(common_summary)+4
+    curve_end=curve_start
     if not paths.empty:
         issuer=paths.groupby(['offset','ticker']).short_return_from_Tminus21.mean().reset_index()
         curve=issuer.groupby('offset').short_return_from_Tminus21.agg(['mean','count']).reset_index()
         curve.columns=['Session offset','Mean return','Issuers observed']
-        curve_start=common_start+len(common_summary)+4
         end=write_table(ws,curve,start_row=curve_start,filters=False)
+        curve_end=end
         chart=LineChart(); chart.title='Event study from T−21 close'; chart.style=13
         chart.y_axis.title='Short price return'; chart.y_axis.numFmt='0%'
         chart.x_axis.title='HK sessions from T0'; chart.legend=None
@@ -1434,7 +1517,34 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
         chart.smooth=False
         chart.series[0].smooth=False
         chart.width=24; chart.height=12; chart.display_blanks='gap'
-        ws.add_chart(chart,'L35')
+        ws.add_chart(chart,f'L{chart_row}')
+        chart_row += int(np.ceil(chart.height*2.1))+4
+    benchmark_start=curve_end+4
+    ws.cell(benchmark_start-1,1,'HSI comparison: matched endpoints, equal issuer weight').font=Font(name='Arial',size=10,bold=True,color=ink)
+    benchmark_columns=['strategy_label','events','issuers','mean_stock_short','mean_hsi_short',
+                       'mean_excess','missing_benchmark_events']
+    benchmark_end=write_table(ws,benchmark_summary[benchmark_columns],start_row=benchmark_start,filters=False)
+    ws.row_dimensions[benchmark_start].height=42
+    # No-pair strategies remain visible as blank returns in the table, never zero.
+    if benchmark_summary.events.gt(0).any():
+        chart=BarChart(); chart.type='bar'; chart.grouping='clustered'; chart.overlap=0
+        chart.style=2; chart.title='HSI benchmark comparison'
+        chart.y_axis.title='Price return / initial notional'; chart.y_axis.numFmt='0%'
+        chart.add_data(Reference(ws,min_col=4,max_col=5,min_row=benchmark_start,max_row=benchmark_end),titles_from_data=True)
+        chart.set_categories(Reference(ws,min_col=1,min_row=benchmark_start+1,max_row=benchmark_end))
+        chart.legend.position='b'; chart.width=25; chart.height=max(16,len(benchmark_summary)*.8)
+        chart.display_blanks='gap'
+        for series,color in zip(chart.series,['153954','9AA4AE']):
+            series.graphicalProperties.solidFill=color
+            series.graphicalProperties.line.solidFill=color
+        ws.add_chart(chart,f'L{chart_row}')
+    else:
+        ws.cell(benchmark_end+2,1,'No matched HSI observations for eligible completed trades')
+    ws.column_dimensions['A'].width=42
+    for col in 'BC': ws.column_dimensions[col].width=12
+    for col in 'DEFGHI': ws.column_dimensions[col].width=20
+    ws.print_area=f'A1:U{max(benchmark_end+3,chart_row+int(np.ceil(max(16,len(benchmark_summary)*.8)*2.1)))}'
+
 
     if not trades.empty:
         event=trades.pivot(index=['event_id','ticker','name','input_date','last_day_locked','t0'],
@@ -1465,13 +1575,77 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
             s.cell(1,list(df.columns).index('hkex_eligible_tminus21')+1).comment=Comment(
                 'Exchange designation at T0 minus 21 HK sessions. Yes/No requires a validated applicable full HKEX list. '
                 'Historical checks must all be Yes/No before export. Blank cells are current/future events outside the historical study. Actual borrow/locate is not checked. '
-                'This annotation does not filter the return study or confirm the supplied lock-up date.', 'HKEX check')
+                'Summary and all graphs include only Yes events. Detail sheets retain all events. This check does not confirm the supplied lock-up date.', 'HKEX check')
         s.sheet_properties.tabColor={'By event':'23745B','Trades':'153954','Inputs':'888888',
                                     'Prices':'888888','Cost scenarios':'BA9846'}[name]
         if name=='By event':
             s.column_dimensions['A'].hidden=True
             s.freeze_panes='D2'
     ws.sheet_properties.tabColor=red
+    from openpyxl.chart.data_source import AxDataSource, StrRef, StrData, StrVal, NumData, NumVal
+    from openpyxl.chart.text import RichText
+    from openpyxl.chart.layout import Layout, ManualLayout
+    from openpyxl.drawing.text import Paragraph, ParagraphProperties, CharacterProperties, Font as DrawingFont
+    from openpyxl.chart.axis import ChartLines
+
+    def chart_text(size=10, bold=False):
+        props=CharacterProperties(latin=DrawingFont(typeface='Arial'),sz=int(size*100),
+                                  solidFill=ink,b=bold)
+        return RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=props),endParaRPr=props)])
+
+    def source_cells(ref):
+        address=ref.split('!',1)[1]
+        cells=ws[address]
+        if not isinstance(cells,tuple):return [cells.value]
+        return [cell.value for row in cells for cell in row]
+
+    for chart in ws._charts:
+        bar=isinstance(chart,BarChart)
+        chart.style=None
+        chart.graphical_properties=GraphicalProperties(solidFill='FFFFFF')
+        chart.graphical_properties.line.solidFill='D9DDE1'
+        chart.txPr=chart_text()
+        chart.title.overlay=False
+        for paragraph in chart.title.tx.rich.p:
+            paragraph.pPr=ParagraphProperties(defRPr=CharacterProperties(
+                latin=DrawingFont(typeface='Arial'),sz=1200,b=True,solidFill=ink))
+        for axis in [chart.x_axis,chart.y_axis]:
+            axis.delete=False; axis.tickLblPos='low'; axis.txPr=chart_text(9)
+            axis.spPr=GraphicalProperties(); axis.spPr.line.solidFill='C8CDD2'
+            if axis.title is not None:axis.title.txPr=chart_text(10)
+        chart.y_axis.majorGridlines=ChartLines(spPr=GraphicalProperties())
+        chart.y_axis.majorGridlines.spPr.line.solidFill='E6E9EC'
+        chart.x_axis.axPos='l' if bar else 'b'
+        chart.y_axis.axPos='b' if bar else 'l'
+        if bar:
+            chart.y_axis.title=None
+            chart.x_axis.scaling.orientation='maxMin'
+            chart.y_axis.crosses='max'
+            chart.layout=Layout(manualLayout=ManualLayout(layoutTarget='inner',
+                xMode='edge',yMode='edge',x=.34,y=.10,w=.61,h=.76))
+        else:
+            chart.layout=Layout(manualLayout=ManualLayout(layoutTarget='inner',
+                xMode='edge',yMode='edge',x=.14,y=.12,w=.80,h=.70))
+        if chart.legend is not None:
+            chart.legend.overlay=False; chart.legend.txPr=chart_text(9)
+            chart.legend.layout=Layout(manualLayout=ManualLayout(
+                xMode='edge',yMode='edge',x=.22,y=.94,w=.74,h=.05))
+        for series in chart.series:
+            if bar:
+                series.invertIfNegative=False
+                for point in series.data_points:
+                    point.invertIfNegative=False
+                    point.spPr.line.solidFill=point.spPr.solidFill
+            cats=series.cat.numRef
+            category_values=source_cells(cats.f)
+            series.cat=AxDataSource(strRef=StrRef(f=cats.f,strCache=StrData(
+                ptCount=len(category_values),pt=[StrVal(idx=i,v=str(v)) for i,v in enumerate(category_values)])))
+            vals=source_cells(series.val.numRef.f)
+            series.val.numRef.numCache=NumData(formatCode='0.00%',ptCount=len(vals),
+                pt=[NumVal(idx=i,v=float(v)) for i,v in enumerate(vals) if v is not None and np.isfinite(v)])
+            if series.tx is not None and series.tx.strRef is not None:
+                name=source_cells(series.tx.strRef.f)[0]
+                series.tx.strRef.strCache=StrData(ptCount=1,pt=[StrVal(idx=0,v=str(name))])
     wb.active=0
     path=Path(path); path.parent.mkdir(parents=True,exist_ok=True)
     wb.save(path)
@@ -1505,20 +1679,20 @@ def write_html_report(output, audit, trades, summary, common, figures, metadata,
              f"<p class='meta'>{html.escape(str(metadata.get('data_source','')))} · {n:,} completed event–strategy observations</p>",
              f"<p>T0 is {anchor_text}. Offsets are {basis_text}. Positive returns mean the short made money.</p>",
              "<p>Gross short price returns only. No assumed costs are deducted. Dividends, borrow, fees and execution constraints are outside this price study. Returns use initial short notional, not margin capital.</p>",
-             "<h2>Strategy comparison</h2><div class='table'>",
+             "<h2>Strategy comparison — HKEX eligible at T−21 only</h2><div class='table'>",
              table(s[cols], ["Mean price return","After assumed costs","Win rate","Worst event"]), "</div>",
-             "<p>Each issuer has one weight; repeated expiry events are averaged within issuer. Strategies can have different samples. The common-cohort CSV is provided for a like-for-like comparison. Testing many timings is exploratory and does not establish an out-of-sample trading edge.</p>"]
+             "<p>Each issuer has one weight; repeated expiry events are averaged within issuer. Strategies can have different samples. The eligible_common_sample_summary.csv provides a like-for-like comparison. All charts use the same HKEX Yes filter. Testing many timings is exploratory and does not establish an out-of-sample trading edge.</p>"]
     for name, fig in figures.items():
         buffer = io.BytesIO()
         fig.savefig(buffer, format="png", dpi=130, bbox_inches="tight")
         parts.append(f"<img alt='{html.escape(name)}' src='data:image/png;base64,{base64.b64encode(buffer.getvalue()).decode()}'>")
     counts = audit.status.value_counts().rename_axis("Input review status").reset_index(name="Dates")
     parts += ["<h2>Coverage</h2><div class='table'>", table(counts), "</div>",
-              "<p>Input rows are a supplied snapshot. The admitted subset has primary-reviewed cornerstone dates and completed ±30-session endpoints. This retrospective selection can introduce survivorship and look-ahead selection effects; it is not every IPO.</p>"]
+              "<p>Input rows are a supplied snapshot. Your v2 admits supplied historical dates regardless of review status. Summary and charts include only events marked HKEX eligible at T−21. All events remain in the Excel detail tabs.</p>"]
     if not trades.empty:
         skipped = trades.loc[~trades.status.eq("Completed"),"reason"].value_counts().rename_axis("Skipped reason").reset_index(name="Event–strategy rows")
         parts += ["<details><summary>Skipped observations</summary><div class='table'>",table(skipped),"</div></details>"]
-    parts += ["<p>Open the companion notebook to inspect each event, change settings, pull Bloomberg data, and export the full audit and trade ledger.</p></body></html>"]
+    parts += ["<p>HK_IPO_Lockup_Backtest.xlsx is the main report, with native strategy, event-study and HSI comparison charts. Rerun the single Python cell to refresh it.</p></body></html>"]
     Path(output).write_text("\n".join(parts), encoding="utf-8")
 
 # Embedded source snapshot: date/ticker rows and primary-review decisions only.
@@ -3638,7 +3812,8 @@ def run_lockup_backtest():
     def show_returns(frame):
         view=frame.copy()
         for col in {"mean_gross","median_issuer_gross","win_rate","worst_event","gross_return",
-                    "ci_low","ci_high","benchmark_return","short_plus_hsi_return"}.intersection(view.columns):
+                    "ci_low","ci_high","benchmark_return","short_plus_hsi_return",
+                    "mean_stock_short","mean_hsi_short","mean_excess"}.intersection(view.columns):
             view[col]=view[col].map(lambda x:f"{x:+.2%}" if pd.notna(x) else "Unavailable")
         display(view)
 
@@ -3739,7 +3914,7 @@ def run_lockup_backtest():
         checks.to_csv(OUTPUT / 'hkex_short_selling_checks.csv',index=False)
         audit.to_csv(OUTPUT / 'input_audit.csv',index=False)
         print('SOURCE: official HKEX historical designated-security CSVs. Check = T0 minus 21 HK sessions.')
-        print('Yes/No means exchange eligibility at that date. Borrow/locate is untested. Returns remain unfiltered.')
+        print('Yes/No means exchange eligibility at that date. Summary and graphs use Yes events only. Borrow/locate is untested.')
         display(checks.drop_duplicates(['ticker','last_day_locked']).hkex_eligible_tminus21
                 .value_counts().reindex(['Yes','No'],fill_value=0)
                 .rename_axis('HKEX eligible at T−21').reset_index(name='Distinct ticker/events'))
@@ -3760,14 +3935,19 @@ def run_lockup_backtest():
         completed = trades[trades.status.eq("Completed")] if not trades.empty else trades
         completed_ids = set(completed.event_id) if not completed.empty else set()
         admitted = eligible[eligible.event_id.isin(completed_ids)]
-        paths = event_paths(admitted, prices, sessions, CFG)
+        paths = with_hkex_columns(event_paths(admitted, prices, sessions, CFG), audit, HKEX_COMPACT)
+        chart_trades, chart_paths = chart_rows(trades), chart_rows(paths)
+        chart_summary = summarize(chart_trades, CFG)
+        chart_common = summarize(chart_trades, CFG, common_sample=True)
+        benchmark_summary = summarize_benchmark(chart_trades)
         print(f"Completed: {len(completed):,} event–strategy observations, {len(completed_ids)} events, "
               f"{completed.ticker.nunique() if not completed.empty else 0} issuers.")
-        if not summary.empty:
-            show_returns(summary[["strategy_label","events","issuers","mean_gross",
+        print("SUMMARY / ALL GRAPHS: HKEX eligible at T−21 only. All events remain in Excel detail tabs.")
+        if not chart_summary.empty:
+            show_returns(chart_summary[["strategy_label","events","issuers","mean_gross",
                                   "median_issuer_gross","win_rate","worst_event","ci_low","ci_high"]])
         else:
-            print("No complete trades. The audit and skip reasons explain the missing coverage.")
+            print("No completed HKEX-eligible trades for the Summary or charts. See Inputs and Trades.")
         if not trades.empty:
             display(trades.loc[~trades.status.eq("Completed"),"reason"].value_counts()
                     .rename_axis("Skip reason").reset_index(name="Event–strategy rows"))
@@ -3778,12 +3958,18 @@ def run_lockup_backtest():
 
     heading('Charts and common sample')
     if market_ready:
-        figures = plot_results(summary, trades, paths, OUTPUT / "charts", settings=CFG)
+        figures = plot_results(chart_summary, chart_trades, chart_paths, OUTPUT / "charts", settings=CFG)
+        print("HSI chart: short stock versus short HSI price reference over identical entry/exit endpoints.")
+        print("Both series use the same matched events and equal issuer weights; missing HSI pairs are excluded.")
+        if not benchmark_summary.empty:
+            show_returns(benchmark_summary.drop(columns=['strategy']))
+        if benchmark_summary.empty or not benchmark_summary.events.gt(0).any():
+            print("No matched HSI observations for eligible completed trades; no benchmark chart drawn.")
         plt.show()
-        if not common_summary.empty:
-            print("Common completed cohort across every meaningful strategy:")
-            show_returns(common_summary[["strategy_label","events","issuers","mean_gross","win_rate"]])
-            best = common_summary.loc[common_summary.mean_gross.idxmax()]
+        if not chart_common.empty:
+            print("HKEX-eligible common completed cohort across every meaningful strategy:")
+            show_returns(chart_common[["strategy_label","events","issuers","mean_gross","win_rate"]])
+            best = chart_common.loc[chart_common.mean_gross.idxmax()]
             print(f"Highest mean within this common sample: {best.strategy_label}, {best.mean_gross:+.2%}.")
             print("This is an in-sample comparison, not a tested trading signal.")
         else:
@@ -3801,12 +3987,12 @@ def run_lockup_backtest():
             show_returns(detail[["ticker","last_day_locked","t0","hkex_eligible_tminus21","hkex_check_date",
                                  "strategy_label","entry_date","exit_date",
                                  "entry_price","exit_price","gross_return","status","reason"]])
-        if not paths.empty and SELECTED_TICKER in set(paths.ticker):
-            stock_figure = plot_stocks(paths, [SELECTED_TICKER], page=1)
+        if not chart_paths.empty and normalize_ticker(SELECTED_TICKER) in set(chart_paths.ticker):
+            stock_figure = plot_stocks(chart_paths, [SELECTED_TICKER], page=1)
             stock_figure.savefig(OUTPUT / "charts" / "selected_stock.png", dpi=160, bbox_inches="tight")
             plt.show()
         else:
-            print("No admitted price path for this ticker; see its input audit and skip reasons.")
+            print("No HKEX-eligible T−21 path for this ticker. Its graph is omitted; see Inputs and Trades.")
     else:
         print("Individual trades waiting for Bloomberg data.")
 
@@ -3814,6 +4000,9 @@ def run_lockup_backtest():
     if market_ready:
         run_metadata = {
             "hkex_short_selling":hkex_metadata,
+            "summary_and_chart_scope":"HKEX eligible at T−21 = Yes, by ticker and event date",
+            "benchmark_basis":"Short stock versus short HSI price return, matched endpoints and issuer weights",
+            "eligible_chart_events":int(chart_trades.loc[chart_trades.status.eq('Completed'),'event_id'].nunique()) if not chart_trades.empty else 0,
             "data_source":source_description, "input_sha256":input_hash,
             "review_sha256":hashlib.sha256(embedded["event_review.csv"].encode()).hexdigest(),
             "actual_price_last_date":str(pd.to_datetime(prices.date).max().date()),
@@ -3823,13 +4012,18 @@ def run_lockup_backtest():
             "return_basis":"Gross short price P&L / initial notional; no assumed cost deduction",
         }
         export_results(OUTPUT,audit,trades,summary,common_summary,paths,CFG,run_metadata)
+        for name,frame in [('eligible_strategy_summary',chart_summary),('eligible_common_sample_summary',chart_common),
+                           ('eligible_event_paths',chart_paths),('hsi_benchmark_summary',benchmark_summary)]:
+            price_only_columns(frame).to_csv(OUTPUT / (name+'.csv'),index=False,float_format='%.12g')
         excel_path = export_excel(OUTPUT / "HK_IPO_Lockup_Backtest.xlsx",audit,trades,summary,
                                  common_summary,prices,paths,CFG,run_metadata)
-        write_html_report(OUTPUT / "backtest_report.html",audit,trades,summary,common_summary,
+        write_html_report(OUTPUT / "backtest_report.html",audit,trades,chart_summary,chart_common,
                           figures,run_metadata,settings=CFG)
         saved_manifest = json.loads((OUTPUT / "run_manifest.json").read_text())
         saved_manifest["excel_sha256"] = hashlib.sha256(excel_path.read_bytes()).hexdigest()
+        saved_manifest["csv_sha256"] = {p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(OUTPUT.glob('*.csv'))}
         (OUTPUT / "run_manifest.json").write_text(json.dumps(saved_manifest,indent=2,default=str))
+        print("MAIN REPORT: HK_IPO_Lockup_Backtest.xlsx — eligible Summary, native strategy/event/HSI charts, and full detail tabs.")
         print("FINISHED: Excel, HTML, full trade ledger, audit, input prices, charts and hashes saved.")
         for filename in ["HK_IPO_Lockup_Backtest.xlsx","backtest_report.html","trades.csv","input_audit.csv","hkex_short_selling_checks.csv"]:
             file = OUTPUT / filename
@@ -3844,7 +4038,9 @@ def run_lockup_backtest():
 
     return {"output_folder":OUTPUT, "audit":audit, "market_ready":market_ready,"report_ready":market_ready,
             "short_selling_checks":checks,
-            "trades":trades if market_ready else None, "summary":summary if market_ready else None}
+            "trades":trades if market_ready else None, "summary":summary if market_ready else None,
+            "eligible_summary":chart_summary if market_ready else None,
+            "benchmark_summary":benchmark_summary if market_ready else None}
 
 
 if __name__ == "__main__":
