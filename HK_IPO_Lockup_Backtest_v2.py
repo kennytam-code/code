@@ -8,7 +8,10 @@ HKEX historical full lists mark exchange short-sale eligibility at T0 minus 21
 HK sessions. Verified HKEX history is embedded; online refresh extends coverage.
 Historical checks must all resolve to Yes/No before final export. No borrow availability is inferred.
 Charts and the main Excel Summary include only HKEX-eligible events at T−21.
-HSI benchmark charts compare matched short-stock and short-index price returns.
+HSI and CSI 300 charts compare matched short-stock and short-index price returns.
+CSI 300 alpha is beta=1 excess, using local CNY index returns without FX conversion.
+Before/after cohorts meet at T0 open. Best closes/lows are hindsight extrema.
+Always-losing best marks retain the actual least-negative observation.
 All event detail remains in the Excel By event, Trades and Inputs sheets.
 The current Hong Kong daily bar is excluded. No substitute price provider.
 Live Bloomberg transport/entitlements require verification on your workstation.
@@ -47,8 +50,10 @@ from datetime import datetime, date
 import numpy as np
 import pandas as pd
 
-VERSION = "2.3.0"
-PRICE_FIELDS = ("PX_OPEN", "PX_LAST", "PX_VOLUME")
+VERSION = "2.4.0"
+PRICE_FIELDS = ("PX_OPEN", "PX_LAST", "PX_LOW", "PX_VOLUME")
+CSI300_TICKER = "SHSZ300 Index"
+CSI300_SOURCE = "https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/detail/files/en/000300factsheeten.pdf"
 
 
 @dataclass(frozen=True)
@@ -221,10 +226,12 @@ def select_events(inputs, review, settings):
 
 
 def validate_prices(prices):
-    required = {"ticker", "date", *PRICE_FIELDS}
+    required = {"ticker", "date", "PX_OPEN", "PX_LAST", "PX_VOLUME"}
     if not required <= set(prices.columns):
         raise ValueError(f"Prices missing columns: {sorted(required - set(prices.columns))}")
     p = prices.copy()
+    if "PX_LOW" not in p:
+        p["PX_LOW"] = np.nan  # Missing lows do not disable the closing-price study.
     p["ticker"] = p.ticker.map(normalize_ticker)
     p["date"] = pd.to_datetime(p.date, errors="raise").dt.normalize()
     if p.date.isna().any() or p.duplicated(["ticker", "date"]).any():
@@ -236,7 +243,7 @@ def validate_prices(prices):
         if (p[field].dropna() < 0).any():
             raise ValueError(f"Negative {field}")
     # Zero and NaN prices stay missing. Repeated real closes are NOT presumed stale.
-    for field in ("PX_OPEN", "PX_LAST"):
+    for field in ("PX_OPEN", "PX_LAST", "PX_LOW"):
         p.loc[p[field].eq(0), field] = np.nan
     return p.sort_values(["ticker", "date"]).reset_index(drop=True)
 
@@ -364,8 +371,15 @@ def backtest(events, prices, sessions, strategies=None, settings=None,
                        after_cost_price_return=np.nan, net_return=np.nan,
                        borrow_cost=np.nan, transaction_cost=np.nan, dividend_cost=np.nan,
                        benchmark_return=np.nan, short_plus_hsi_return=np.nan,
+                       csi300_entry_price=np.nan, csi300_exit_price=np.nan,
+                       csi300_return=np.nan, csi300_alpha=np.nan,
+                       csi300_status="Trade not completed",
                        calendar_days=np.nan, sessions_held=np.nan, path_missing_sessions=np.nan,
                        worst_mark_return=np.nan, best_mark_return=np.nan,
+                       best_mark_date=pd.NaT, best_low_return=np.nan, best_low_date=pd.NaT,
+                       mark_expected_sessions=np.nan, mark_observations=np.nan,
+                       low_missing_sessions=np.nan, low_observations=np.nan,
+                       close_mark_status="Trade not completed", low_mark_status="Trade not completed",
                        borrow_rate_used=cfg.borrow_rate, locate_status="Not verified",
                        source_url=e.source_url)
             if event_problem:
@@ -408,11 +422,10 @@ def backtest(events, prices, sessions, strategies=None, settings=None,
                 # Fees are charged on both traded notionals, not twice initial notional.
                 fee = cfg.fee_bps_per_leg / 10000 * (1 + pz / pa)
                 gross = 1 - pz / pa
-                path = g.reindex(days[i:j + 1])
-                missing = int((~path.PX_LAST.map(_positive) | ~path.PX_VOLUME.map(_positive)).sum())
-                marks = 1 - path.PX_LAST / pa
-                worst = min(0.0, float(marks.min())) if missing == 0 else np.nan
-                best = max(0.0, float(marks.max())) if missing == 0 else np.nan
+                # Never include a low before entry or a close after an open exit.
+                first_mark = i if s.entry_field == "PX_OPEN" else i+1
+                last_mark = j if s.exit_field == "PX_LAST" else j-1
+                mark_stats = holding_marks(g.reindex(days[first_mark:last_mark+1]), pa)
                 divcost, net = np.nan, np.nan
                 covered = coverage is not None and ((coverage.ticker == e.ticker)
                            & (coverage.start <= entry) & (coverage.end >= end)).any()
@@ -428,11 +441,21 @@ def backtest(events, prices, sessions, strategies=None, settings=None,
                     ba, bz = b.loc[entry].get(s.entry_field), b.loc[end].get(s.exit_field)
                     if _positive(ba) and _positive(bz):
                         benchret = bz / ba - 1
+                csi_a, csi_z, csi_ret = np.nan, np.nan, np.nan
+                csi_status = "Missing exact CSI 300 endpoint (holiday, missing price or provider error)"
+                if b is not None and entry in b.index and end in b.index:
+                    csi_a = b.loc[entry].get("csi300_"+s.entry_field, np.nan)
+                    csi_z = b.loc[end].get("csi300_"+s.exit_field, np.nan)
+                    if _positive(csi_a) and _positive(csi_z):
+                        csi_ret = csi_z/csi_a-1
+                        csi_status = "Matched exact dates and fields"
+                row.update(mark_stats)
                 row.update(status="Completed", reason="", entry_price=float(pa), exit_price=float(pz),
                            gross_return=float(gross), after_cost_price_return=float(gross-fee-borrow),
                            borrow_cost=float(borrow), transaction_cost=float(fee), dividend_cost=divcost,
                            net_return=net, calendar_days=held, sessions_held=j-i,
-                           path_missing_sessions=missing, worst_mark_return=worst, best_mark_return=best,
+                           csi300_entry_price=csi_a, csi300_exit_price=csi_z,
+                           csi300_return=csi_ret, csi300_alpha=gross+csi_ret, csi300_status=csi_status,
                            benchmark_return=benchret, short_plus_hsi_return=gross+benchret,
                            borrow_rate_used=rate)
             except ValueError as exc:
@@ -572,6 +595,279 @@ def summarize_benchmark(trades):
     return pd.DataFrame(out, columns=columns)
 
 
+def holding_marks(path, entry_price):
+    """Path contains only sessions observable AFTER entry and before/on exit.
+
+    A close entry excludes that day's close and low. An open exit excludes
+    that day's close and low. Missing/nontraded sessions invalidate extrema.
+    No artificial entry-time zero is inserted and no maximum is floored at zero.
+    """
+    expected = len(path)
+    close_ok = path.PX_LAST.map(_positive) & path.PX_VOLUME.map(_positive)
+    close_missing = int((~close_ok).sum())
+    result = dict(path_missing_sessions=close_missing, mark_expected_sessions=expected,
+                  mark_observations=int(close_ok.sum()), best_mark_return=np.nan,
+                  worst_mark_return=np.nan, best_mark_date=pd.NaT,
+                  best_low_return=np.nan, best_low_date=pd.NaT,
+                  low_missing_sessions=expected, low_observations=0,
+                  close_mark_status="No daily observations inside holding interval",
+                  low_mark_status="No daily observations inside holding interval")
+    if not expected:
+        return result
+    result['close_mark_status'] = (f"Missing/nontraded closes: {close_missing}/{expected}"
+                                   if close_missing else "Complete")
+    if not close_missing:
+        marks = 1 - path.PX_LAST / entry_price
+        result.update(best_mark_return=float(marks.max()), best_mark_date=marks.idxmax(),
+                      worst_mark_return=min(0.0, float(marks.min())))
+    low = path.get('PX_LOW', pd.Series(np.nan, index=path.index))
+    # Daily low must not exceed a supplied positive open or close. No repair/fill.
+    low_ok = low.map(_positive) & path.PX_VOLUME.map(_positive)
+    for field in ('PX_OPEN', 'PX_LAST'):
+        value = path[field]
+        low_ok &= ~value.map(_positive) | low.le(value + value.abs()*1e-10)
+    low_missing = int((~low_ok).sum())
+    result.update(low_missing_sessions=low_missing, low_observations=int(low_ok.sum()),
+                  low_mark_status=f"Missing/invalid/nontraded lows: {low_missing}/{expected}"
+                                  if low_missing else "Complete")
+    if not low_missing:
+        marks = 1 - low / entry_price
+        result.update(best_low_return=float(marks.max()), best_low_date=marks.idxmax())
+    return result
+
+
+def summarize_csi300(trades):
+    """Exact-date, same-field local-price comparison; no holiday carry-forward.
+
+    Alpha here is beta=1 excess: short stock minus short CSI 300. It is not a
+    fitted regression intercept, an FX-adjusted hedge, or a futures return.
+    """
+    columns = ['strategy', 'strategy_label', 'events', 'issuers', 'mean_stock_short',
+               'mean_csi300_short', 'mean_csi300_alpha', 'positive_alpha_events',
+               'positive_alpha_rate', 'missing_benchmark_events']
+    t = chart_rows(trades)
+    out = []
+    if t.empty:
+        return pd.DataFrame(columns=columns)
+    for key, g in t.loc[t.status.eq('Completed')].groupby('strategy', sort=False):
+        stock = pd.to_numeric(g.gross_return, errors='coerce')
+        index = pd.to_numeric(g.get('csi300_return', pd.Series(np.nan, index=g.index)), errors='coerce')
+        valid = np.isfinite(stock) & np.isfinite(index)
+        paired = pd.DataFrame({'ticker':g.loc[valid, 'ticker'], 'stock':stock[valid],
+                               'index':-index[valid]})
+        issuer = paired.groupby('ticker')[['stock','index']].mean()
+        n = len(paired)
+        positive = int((paired.stock - paired['index'] > 1e-12).sum())
+        out.append(dict(strategy=key, strategy_label=g.strategy_label.iloc[0], events=n,
+                        issuers=len(issuer), mean_stock_short=float(issuer.stock.mean()),
+                        mean_csi300_short=float(issuer['index'].mean()),
+                        mean_csi300_alpha=float((issuer.stock-issuer['index']).mean()),
+                        positive_alpha_events=positive,
+                        positive_alpha_rate=positive/n if n else np.nan,
+                        missing_benchmark_events=int((~valid).sum())))
+    return pd.DataFrame(out, columns=columns)
+
+
+def pre_post_analysis(trades):
+    """Match one event to itself. Main split is T0 OPEN, with no overlapping day.
+
+    Both existing pre_21_0 and post_open_21 trades must be completed. The pre
+    close result is also retained, explicitly identifying the T0-day overlap.
+    Percentages count events; returns are averaged within issuer before issuers.
+    """
+    base = ['event_id','ticker','name','last_day_locked','t0','hkex_eligible_tminus21']
+    extra = ['pair_status','pre_entry_date','pre_entry_price','t0_open_price','t0_close_price',
+             'post_exit_date','post_exit_price','pre_open_short_return','pre_close_short_return',
+             'post_short_return','pre_stock_return','post_stock_return','pre_result','post_result']
+    details = []
+    t = chart_rows(trades)
+    if not t.empty:
+        if t.duplicated(['event_id','strategy']).any():
+            raise ValueError('Duplicate event/strategy rows in before/after analysis')
+        for event_id, g in t.groupby('event_id', sort=False):
+            row = {col:g.iloc[0].get(col, '') for col in base}
+            row.update({col:np.nan for col in extra})
+            row.update(pair_status='Missing completed pre/post pair', pre_result='', post_result='')
+            by_strategy = g.set_index('strategy')
+            if {'pre_21_0','post_open_21'} <= set(by_strategy.index):
+                a, b = by_strategy.loc['pre_21_0'], by_strategy.loc['post_open_21']
+                if a.status == 'Completed' and b.status == 'Completed':
+                    if pd.Timestamp(a.exit_date) != pd.Timestamp(b.entry_date):
+                        raise ValueError('Pre/post trades do not meet on the same T0 session')
+                    if not (a.entry_field == a.exit_field == b.exit_field == 'PX_LAST'
+                            and b.entry_field == 'PX_OPEN'):
+                        raise ValueError('Unexpected pre/post endpoint fields')
+                    if not all(_positive(x) for x in (a.entry_price, a.exit_price, b.entry_price, b.exit_price)):
+                        raise ValueError('Invalid completed pre/post prices')
+                    before = 1 - b.entry_price/a.entry_price
+                    after = 1 - b.exit_price/b.entry_price
+                    def result(value):
+                        return 'Flat' if abs(value) <= 1e-12 else 'Profit' if value > 0 else 'Loss'
+                    row.update(pair_status='Complete', pre_entry_date=a.entry_date,
+                               pre_entry_price=a.entry_price, t0_open_price=b.entry_price,
+                               t0_close_price=a.exit_price, post_exit_date=b.exit_date,
+                               post_exit_price=b.exit_price, pre_open_short_return=before,
+                               pre_close_short_return=1-a.exit_price/a.entry_price,
+                               post_short_return=after, pre_stock_return=-before, post_stock_return=-after,
+                               pre_result=result(before), post_result=result(after))
+            details.append(row)
+    detail = pd.DataFrame(details, columns=base+extra)
+    good = detail.loc[detail.pair_status.eq('Complete')]
+    columns = ['direction','condition','events','issuers','profit_events','loss_events','flat_events',
+               'profit_rate','loss_rate','flat_rate','mean_pre_short','mean_post_short']
+    rows = []
+    for direction, condition_col, outcome_col, names in [
+        ('Before given after', 'post_result', 'pre_result',
+         [('Loss','Post stock rose'),('Profit','Post stock fell'),('Flat','Post stock flat')]),
+        ('After given before', 'pre_result', 'post_result',
+         [('Profit','Pre short profitable'),('Loss','Pre short lost'),('Flat','Pre short flat')])]:
+        for state, label in names:
+            cohort = good.loc[good[condition_col].eq(state)]
+            n = len(cohort)
+            counts = cohort[outcome_col].value_counts()
+            issuer = cohort.groupby('ticker')[['pre_open_short_return','post_short_return']].mean()
+            row = dict(direction=direction, condition=label, events=n, issuers=len(issuer),
+                       mean_pre_short=float(issuer.pre_open_short_return.mean()),
+                       mean_post_short=float(issuer.post_short_return.mean()))
+            for state in ['Profit','Loss','Flat']:
+                count = int(counts.get(state, 0))
+                row[state.lower()+'_events'] = count
+                row[state.lower()+'_rate'] = count/n if n else np.nan
+            rows.append(row)
+    return detail, pd.DataFrame(rows, columns=columns)
+
+
+def summarize_best_marks(trades):
+    """Hindsight extrema, with actual negative maxima preserved.
+
+    Each basis uses only fully observed paths and compares the fixed exit on
+    that SAME sample. Hit percentages count event-strategy windows, not issuers.
+    """
+    columns = ['strategy','strategy_label','mark_basis','events','issuers','missing_path_events',
+               'mean_fixed_return','mean_best_return','median_best_return','ever_positive_events',
+               'ever_positive_rate','fixed_profit_events','fixed_profit_rate','gave_back_events',
+               'gave_back_rate','hit_1pct_rate','hit_3pct_rate','hit_5pct_rate','hit_10pct_rate']
+    t = chart_rows(trades)
+    rows = []
+    if t.empty:
+        return pd.DataFrame(columns=columns)
+    for basis, col in [('Daily close','best_mark_return'),('Daily low','best_low_return')]:
+        for key, g in t.loc[t.status.eq('Completed')].groupby('strategy', sort=False):
+            best = pd.to_numeric(g.get(col, pd.Series(np.nan,index=g.index)), errors='coerce')
+            valid = np.isfinite(best) & np.isfinite(g.gross_return)
+            paired = g.loc[valid, ['ticker','gross_return']].copy()
+            paired['best'] = best[valid]
+            issuer = paired.groupby('ticker')[['gross_return','best']].mean()
+            n = len(paired)
+            positive = paired.best.gt(1e-12)
+            fixed_profit = paired.gross_return.gt(1e-12)
+            gave_back = int((positive & ~fixed_profit).sum())
+            row = dict(strategy=key, strategy_label=g.strategy_label.iloc[0], mark_basis=basis,
+                       events=n, issuers=len(issuer), missing_path_events=int((~valid).sum()),
+                       mean_fixed_return=float(issuer.gross_return.mean()), mean_best_return=float(issuer.best.mean()),
+                       median_best_return=float(issuer.best.median()), ever_positive_events=int(positive.sum()),
+                       ever_positive_rate=float(positive.mean()) if n else np.nan,
+                       fixed_profit_events=int(fixed_profit.sum()),
+                       fixed_profit_rate=float(fixed_profit.mean()) if n else np.nan,
+                       gave_back_events=gave_back,
+                       gave_back_rate=gave_back/int(positive.sum()) if positive.any() else np.nan)
+            for percent in [1,3,5,10]:
+                row[f'hit_{percent}pct_rate'] = float(paired.best.ge(percent/100-1e-12).mean()) if n else np.nan
+            rows.append(row)
+    return pd.DataFrame(rows, columns=columns)
+
+
+def plot_additional_analysis(trades, settings=None):
+    """Only HKEX Yes events enter any graph, including conditional cohorts."""
+    import matplotlib.pyplot as plt
+    from matplotlib.ticker import PercentFormatter
+    cfg = settings or Settings()
+    before_label = 'T−21' if cfg.day_basis == 'sessions' else 'T−1m'
+    after_label = 'T+21' if cfg.day_basis == 'sessions' else 'T+1m'
+    figures = {}
+    csi = summarize_csi300(trades)
+    paired = csi.loc[csi.events.gt(0)].iloc[::-1]
+    if not paired.empty:
+        fig, axes = plt.subplots(1,2,figsize=(15,max(6,len(paired)*.43)),
+                                 sharey=True,layout='constrained',gridspec_kw={'width_ratios':[1.5,1]})
+        y = np.arange(len(paired))
+        axes[0].barh(y+.18,paired.mean_stock_short,height=.32,color='#153954',label='Short stock')
+        axes[0].barh(y-.18,paired.mean_csi300_short,height=.32,color='#9aa4ae',label='Short CSI 300 price reference')
+        axes[0].set_yticks(y,[f'{r.strategy_label} (n={r.issuers})' for r in paired.itertuples()])
+        axes[0].set_title('CSI 300 comparison',loc='left',fontweight='bold')
+        axes[0].legend(frameon=False,loc='upper center',bbox_to_anchor=(.5,-.12),fontsize=9)
+        axes[1].barh(y,paired.mean_csi300_alpha,height=.6,
+                    color=np.where(paired.mean_csi300_alpha>=0,'#23745b','#CB2125'))
+        axes[1].set_title('Excess return / alpha (beta = 1)',loc='left',fontweight='bold')
+        axes[1].set_xlabel('Short stock minus short CSI 300')
+        axes[0].set_xlabel('Price P&L / initial notional')
+        for ax in axes:
+            ax.axvline(0,color='#999999',lw=.7)
+            ax.xaxis.set_major_formatter(PercentFormatter(1));ax.grid(axis='x',alpha=.15)
+        fig.suptitle('Matched dates and fields; equal issuer weight. CSI 300 in CNY, without FX conversion.',fontsize=10,color='#626970')
+        figures['csi300_alpha'] = fig
+    detail, transitions = pre_post_analysis(trades)
+    good = detail.loc[detail.pair_status.eq('Complete')]
+    if not good.empty:
+        fig, ax = plt.subplots(figsize=(9,6),layout='constrained')
+        for state, color in [('Profit','#23745b'),('Loss','#CB2125'),('Flat','#808890')]:
+            subset = good.loc[good.post_result.eq(state)]
+            if len(subset):
+                ax.scatter(subset.pre_open_short_return,subset.post_short_return,s=23,alpha=.65,
+                           color=color,label=f'Post short {state.lower()} (events={len(subset)})')
+        ax.axhline(0,color='#999999',lw=.8);ax.axvline(0,color='#999999',lw=.8)
+        ax.xaxis.set_major_formatter(PercentFormatter(1));ax.yaxis.set_major_formatter(PercentFormatter(1))
+        ax.set_xlabel(f'Before: short from {before_label} close to T0 open')
+        ax.set_ylabel(f'After: short from T0 open to {after_label} close')
+        ax.set_title('Did pre-lock-up short profits continue?',loc='left',fontweight='bold')
+        ax.legend(frameon=False,fontsize=9);ax.grid(alpha=.15)
+        fig.suptitle(f'{len(good)} matched events; {good.ticker.nunique()} issuers. Each dot is one event.',fontsize=10,color='#626970')
+        figures['before_after_scatter'] = fig
+        fig, axes = plt.subplots(1,2,figsize=(13,4.8),layout='constrained')
+        for ax, direction, title in zip(axes,['Before given after','After given before'],
+                                       ['How did post-lock-up risers/fallers behave before?',
+                                        'Did profitable pre-lock-up shorts stay profitable?']):
+            part = transitions.loc[transitions.direction.eq(direction)].reset_index(drop=True)
+            left = np.zeros(len(part))
+            for col, label, color in [('profit_rate','Short profit','#23745b'),
+                                      ('loss_rate','Short loss','#CB2125'),('flat_rate','Flat','#b5bbc2')]:
+                values = part[col].fillna(0).to_numpy()
+                ax.barh(np.arange(len(part)),values,left=left,color=color,label=label,height=.6)
+                for j, val in enumerate(values):
+                    if val >= .08:ax.text(left[j]+val/2,j,f'{val:.1%}',ha='center',va='center',color='white',fontsize=9)
+                left += values
+            ax.set_yticks(np.arange(len(part)),[f'{r.condition} (n={r.events})' for r in part.itertuples()])
+            ax.invert_yaxis();ax.set_xlim(0,1);ax.xaxis.set_major_formatter(PercentFormatter(1))
+            ax.set_title(title,loc='left',fontweight='bold',fontsize=10)
+            ax.set_xlabel('Prior short result' if direction=='Before given after' else 'Subsequent short result')
+            ax.legend(frameon=False,loc='upper center',bbox_to_anchor=(.5,-.18),ncol=3,fontsize=9)
+        fig.suptitle('Percent of matched events in each row; n=0 means no sample. Split at T0 open.',fontsize=10,color='#626970')
+        figures['before_after_percentages'] = fig
+    marks = summarize_best_marks(trades)
+    for basis, key in [('Daily close','best_close_returns'),('Daily low','best_low_returns')]:
+        part = marks.loc[marks.mark_basis.eq(basis) & marks.events.gt(0)].iloc[::-1]
+        if part.empty:
+            continue
+        fig, axes = plt.subplots(1,2,figsize=(15,max(6,len(part)*.43)),sharey=True,layout='constrained')
+        y = np.arange(len(part))
+        axes[0].barh(y+.18,part.mean_fixed_return,height=.32,color='#9aa4ae',label='Fixed exit')
+        axes[0].barh(y-.18,part.mean_best_return,height=.32,color='#153954',label='Best observed mark')
+        axes[0].set_yticks(y,[f'{r.strategy_label} (n={r.events})' for r in part.itertuples()])
+        axes[0].set_title(f'Best mark versus fixed exit: {basis.lower()}',loc='left',fontweight='bold',fontsize=11)
+        axes[0].set_xlabel('Mean short return; equal issuer weight')
+        axes[1].barh(y+.18,part.fixed_profit_rate,height=.32,color='#9aa4ae',label='Profitable at fixed exit')
+        axes[1].barh(y-.18,part.ever_positive_rate,height=.32,color='#23745b',label='Profitable at any mark')
+        axes[1].set_xlim(0,1);axes[1].set_title('How often was profit available?',loc='left',fontweight='bold',fontsize=11)
+        axes[1].set_xlabel('Percentage of fully observed event windows')
+        for ax in axes:
+            ax.axvline(0,color='#999999',lw=.7);ax.xaxis.set_major_formatter(PercentFormatter(1))
+            ax.grid(axis='x',alpha=.15)
+            ax.legend(frameon=False,loc='upper center',bbox_to_anchor=(.5,-.12),fontsize=9)
+        fig.suptitle('Hindsight extrema, not a tested take-profit rule. Missing paths excluded; negative best returns retained.',fontsize=10,color='#626970')
+        figures[key] = fig
+    return figures
+
+
 def plot_results(summary, trades, paths, output_dir=None, settings=None, audit=None):
     """Eligible-only figures, including an HSI comparison on matched endpoints."""
     import matplotlib.pyplot as plt
@@ -671,11 +967,23 @@ def plot_results(summary, trades, paths, output_dir=None, settings=None, audit=N
         figures["hsi_benchmark"] = fig
     for fig in figures.values():
         fig.suptitle("HKEX eligible at T−21 only", fontsize=10, color="#626970")
+    additions = plot_additional_analysis(trades, cfg)
+    for fig in additions.values():
+        title = fig._suptitle.get_text() if fig._suptitle else ""
+        fig.suptitle("HKEX eligible at T−21 only\n"+title,fontsize=10,color="#626970")
+    figures.update(additions)
     if output_dir:
         d = Path(output_dir)
         d.mkdir(parents=True, exist_ok=True)
         for name, fig in figures.items():
             fig.savefig(d / f"{name}.png", dpi=160, facecolor="white", bbox_inches="tight")
+            # Keep editable Figure objects, but release their large raster buffers.
+            # Jupyter and HTML reuse this exact saved PNG instead of rendering twice.
+            plt.close(fig)
+            from matplotlib.backends.backend_agg import FigureCanvasAgg
+            FigureCanvasAgg(fig)
+            import gc
+            gc.collect()
     return figures
 
 
@@ -863,6 +1171,32 @@ def download_bloomberg(events, settings, cache_dir, refresh=False):
         if not bench.PX_LAST.map(_positive).all():
             raise ValueError("HSI calendar has missing/invalid observations")
         sessions = validate_sessions(bench.sort_values("date").date)
+        # CSI 300 uses actual Mainland observations. Preserve HK dates without filling holidays.
+        try:
+            csi, csi_errors = client.history([CSI300_TICKER], oldest, latest,
+                                             fields=("PX_OPEN","PX_LAST"), refresh=refresh)
+        except (RuntimeError, TimeoutError, OSError) as exc:
+            csi = pd.DataFrame(columns=["ticker","date","PX_OPEN","PX_LAST"])
+            csi_errors = pd.DataFrame([dict(ticker=CSI300_TICKER,field="*",error=str(exc))])
+        if not csi_errors.empty:
+            error_frames.append(csi_errors)
+            # Security/field exceptions invalidate affected values, including partial replies.
+            bad_fields = set(csi_errors.field)
+            for field in ("PX_OPEN","PX_LAST"):
+                if "*" in bad_fields or field in bad_fields:
+                    csi[field] = np.nan
+        csi = csi.copy()
+        csi['date'] = pd.to_datetime(csi.date, errors='raise').dt.normalize()
+        if csi.date.isna().any() or csi.date.duplicated().any():
+            raise ValueError("Missing or duplicate CSI 300 dates")
+        for field in ("PX_OPEN","PX_LAST"):
+            csi[field] = pd.to_numeric(csi[field],errors='raise')
+            if np.isinf(csi[field]).any() or csi[field].lt(0).any():
+                raise ValueError("Invalid CSI 300 "+field)
+            csi.loc[csi[field].eq(0),field] = np.nan
+        bench = bench.merge(csi[['date','PX_OPEN','PX_LAST']].rename(columns={
+            'PX_OPEN':'csi300_PX_OPEN','PX_LAST':'csi300_PX_LAST'}),on='date',how='left',validate='one_to_one')
+        print("CSI 300: SHSZ300 Index, local CNY price returns; missing Mainland dates remain missing.")
         # Dated session source is exportable and can be compared with an approved HK calendar.
         for n, (ticker, g) in enumerate(events.groupby("ticker"), 1):
             first = pd.to_datetime(g.last_day_locked).min()-pd.Timedelta(days=130)
@@ -1325,6 +1659,9 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
     summary = summarize(chart_trades, cfg)
     common_summary = summarize(chart_trades, cfg, common_sample=True)
     benchmark_summary = summarize_benchmark(chart_trades)
+    csi_summary = summarize_csi300(chart_trades)
+    pair_detail, pair_summary = pre_post_analysis(chart_trades)
+    mark_summary = summarize_best_marks(chart_trades)
     wb = Workbook()
     ws = wb.active
     ws.title = 'Summary'
@@ -1352,10 +1689,39 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
               'fee_bps_per_leg':'Fee per leg (bps)',
               'mean_stock_short':'Short stock', 'mean_hsi_short':'Short HSI price reference',
               'mean_excess':'Excess vs short HSI', 'missing_benchmark_events':'Events missing HSI'}
+    rate_columns.update({'csi300_return','csi300_alpha','mean_csi300_short','mean_csi300_alpha',
+                         'positive_alpha_rate','pre_open_short_return','pre_close_short_return',
+                         'post_short_return','pre_stock_return','post_stock_return','mean_pre_short','mean_post_short',
+                         'profit_rate','loss_rate','flat_rate','best_low_return','mean_fixed_return','mean_best_return',
+                         'median_best_return','ever_positive_rate','fixed_profit_rate','gave_back_rate',
+                         'hit_1pct_rate','hit_3pct_rate','hit_5pct_rate','hit_10pct_rate'})
+    before_label = 'T−21' if cfg.day_basis=='sessions' else 'T−1m'
+    after_label = 'T+21' if cfg.day_basis=='sessions' else 'T+1m'
+    labels.update({'PX_LOW':'Daily low','csi300_return':'CSI 300 long price return',
+                   'csi300_alpha':'CSI 300 excess / alpha (β=1)',
+                   'mean_csi300_short':'Short CSI 300 price reference',
+                   'mean_csi300_alpha':'CSI 300 excess / alpha (β=1)',
+                   'positive_alpha_rate':'Events with positive alpha',
+                   'pre_open_short_return':f'Pre short: {before_label} close to T0 open',
+                   'pre_close_short_return':f'Pre short: {before_label} close to T0 close (overlaps)',
+                   'post_short_return':f'Post short: T0 open to {after_label} close',
+                   'pre_stock_return':'Pre stock price change','post_stock_return':'Post stock price change',
+                   'mean_pre_short':'Mean pre short return','mean_post_short':'Mean post short return',
+                   'profit_rate':'Short profit %','loss_rate':'Short loss %','flat_rate':'Flat %',
+                   'best_mark_return':'Best close return','best_mark_date':'Best close date',
+                   'best_low_return':'Best daily-low return','best_low_date':'Best low date',
+                   'mean_fixed_return':'Mean fixed-exit return','mean_best_return':'Mean best-mark return',
+                   'median_best_return':'Median issuer best return','ever_positive_rate':'Ever profitable %',
+                   'fixed_profit_rate':'Profitable at exit %','gave_back_rate':'Lost profit by exit / ever profitable',
+                   'hit_1pct_rate':'Reached +1%','hit_3pct_rate':'Reached +3%',
+                   'hit_5pct_rate':'Reached +5%','hit_10pct_rate':'Reached +10%',
+                   'pair_status':'Pair coverage','csi300_status':'CSI 300 coverage'})
+
     labels.update(dict(zip(HKEX_COLUMNS, [
         'HKEX eligible at T−21', 'HKEX check date (T−21)', 'HKEX list effective',
         'HKEX list updated', 'HKEX historical list', 'HKEX check detail',
         'Name on HKEX list', 'Securities in list', 'HKEX source SHA-256', 'HKEX retrieved (UTC)'])))
+    strategy_keys = set(trades.strategy) if not trades.empty else set()
     if not trades.empty:
         labels.update(trades.drop_duplicates('strategy').set_index('strategy').strategy_label.to_dict())
 
@@ -1390,7 +1756,7 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
             cell.alignment=Alignment(horizontal='left',vertical='center',wrap_text=True)
             cell.border=Border(bottom=thin)
             width=42 if col in {'strategy_label','name','reason','status'} else 17
-            if col.startswith(('pre_','post_','cross_','expiry_')):
+            if col in strategy_keys:
                 width=24
             if col in {'hkex_eligible_tminus21','hkex_source_url'}:
                 width=23
@@ -1398,13 +1764,17 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
                 width=42
             if col=='hkex_retrieved_utc':
                 width=30
+            if col in {'condition','pair_status','pre_result','post_result'}:
+                width=32
             if col in {'source_url','event_id','input_id'}:
                 width=38
             s.column_dimensions[get_column_letter(j)].width=width
-        s.row_dimensions[start_row].height=32
+        s.row_dimensions[start_row].height=44
         for i,row in enumerate(df.itertuples(index=False,name=None),start_row+1):
             for j,(col,x) in enumerate(zip(df.columns,row),start_col):
                 x=value(x)
+                if x is None:
+                    continue  # Do not allocate styled empty cells for skipped trades.
                 cell=s.cell(i,j,x)
                 if isinstance(x,str):
                     cell.data_type='s'  # Literal strings cannot become executable formulas.
@@ -1412,7 +1782,7 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
                 cell.alignment=Alignment(vertical='center',horizontal='left' if isinstance(x,str) else 'right')
                 if isinstance(x,(datetime,date)):
                     cell.number_format='dd-mmm-yyyy'
-                elif col in rate_columns or col.startswith(('pre_','post_','cross_','expiry_')):
+                elif col in rate_columns or col in strategy_keys:
                     cell.number_format=pct
                 elif col=='PX_VOLUME':
                     cell.number_format='#,##0'
@@ -1434,17 +1804,19 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
             s.auto_filter.ref=f'{get_column_letter(start_col)}{start_row}:{get_column_letter(start_col+len(df.columns)-1)}{last}'
             s.print_title_rows=f'{start_row}:{start_row}'
         for j,col in enumerate(df.columns,start_col):
-            if col in rate_columns or col.startswith(('pre_','post_','cross_','expiry_')):
+            if col in rate_columns or col in strategy_keys:
                 area=f'{get_column_letter(j)}{start_row+1}:{get_column_letter(j)}{max(last,start_row+1)}'
                 s.conditional_formatting.add(area,CellIsRule(operator='lessThan',formula=['0'],font=Font(color=red)))
-                s.conditional_formatting.add(area,CellIsRule(operator='greaterThan',formula=['0'],font=Font(color=green)))
+                s.conditional_formatting.add(area,CellIsRule(operator='greaterThan',formula=['0'],font=Font(
+                    color=red if col in {'loss_rate','gave_back_rate'} else ink if col=='flat_rate' else green)))
         return last
 
     def dates(df):
         d=df.copy()
         for col in d.columns:
             if col in {'input_date','last_day_locked','t0','entry_date','exit_date','date',
-                       'hkex_check_date','hkex_effective_date','hkex_update_date'}:
+                       'hkex_check_date','hkex_effective_date','hkex_update_date',
+                       'best_mark_date','best_low_date','pre_entry_date','post_exit_date'}:
                 d[col]=pd.to_datetime(d[col],errors='coerce')
         return d
 
@@ -1540,10 +1912,113 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
         ws.add_chart(chart,f'L{chart_row}')
     else:
         ws.cell(benchmark_end+2,1,'No matched HSI observations for eligible completed trades')
+    # Keep new analyses in the main workbook, with direct navigation from Summary.
+    ws['L4']='Analysis views'
+    for cell, title in [('M4','Before after'),('P4','Best marks')]:
+        ws[cell]=title;ws[cell].hyperlink=f"#'{title}'!A1"
+        ws[cell].font=Font(name='Arial',size=10,color='245577',underline='single')
+
+    def add_bar(s, title, row, end, value_cols, category_col, anchor, colors,
+                height=None, stacked=False):
+        c=BarChart();c.type='bar';c.grouping='stacked' if stacked else 'clustered'
+        c.overlap=100 if stacked else 0;c.title=title;c.y_axis.numFmt='0%'
+        for col in value_cols:
+            c.add_data(Reference(s,min_col=col,max_col=col,min_row=row,max_row=end),titles_from_data=True)
+        c.set_categories(Reference(s,min_col=category_col,min_row=row+1,max_row=end))
+        c.legend.position='b';c.width=25;c.height=height or max(16,(end-row)*.8)
+        c.display_blanks='gap'
+        for series,color in zip(c.series,colors):
+            series.graphicalProperties.solidFill=color
+            series.graphicalProperties.line.solidFill=color
+        s.add_chart(c,anchor)
+        return c
+
+    chart_row += int(np.ceil(max(16,len(benchmark_summary)*.8)*2.1))+4
+    csi_start=benchmark_end+5
+    ws.cell(csi_start-2,1,'CSI 300: matched local-price returns').font=Font(name='Arial',size=10,bold=True,color=ink)
+    ws.merge_cells(start_row=csi_start-1,start_column=1,end_row=csi_start-1,end_column=9)
+    ws.cell(csi_start-1,1,'Alpha = short stock − short CSI 300 (β=1). CNY index, no FX conversion. Exact dates only.').font=Font(name='Arial',size=10,color=ink)
+    csi_columns=['strategy_label','events','issuers','mean_stock_short','mean_csi300_short',
+                 'mean_csi300_alpha','positive_alpha_rate','missing_benchmark_events']
+    labels['missing_benchmark_events']='Events missing CSI 300'
+    csi_end=write_table(ws,csi_summary[csi_columns],start_row=csi_start,filters=False)
+    if csi_summary.events.gt(0).any():
+        c=add_bar(ws,'Short stock versus short CSI 300',csi_start,csi_end,[4,5],1,
+                  f'L{chart_row}',['153954','9AA4AE'])
+        chart_row+=int(np.ceil(c.height*2.1))+4
+        c=add_bar(ws,'CSI 300 excess return / alpha (β=1)',csi_start,csi_end,[6],1,
+                  f'L{chart_row}',['23745B'])
+        c.legend=None
+        c.series[0].data_points=[DataPoint(idx=i,spPr=GraphicalProperties(
+            solidFill=green if v>=0 else red)) for i,v in enumerate(csi_summary.mean_csi300_alpha) if pd.notna(v)]
+        chart_row+=int(np.ceil(c.height*2.1))+4
+    else:
+        ws.cell(csi_end+2,1,'No matched CSI 300 observations; see provider errors and Trades coverage')
+
+    s=wb.create_sheet('Before after');sheet_style(s);s.freeze_panes='B6';s.sheet_properties.tabColor='153954'
+    for row,(key,text) in enumerate([
+        ('Before',f'Short {before_label} close to T0 open'),
+        ('After',f'Short T0 open to {after_label} close'),
+        ('Sample','HKEX Yes at T−21. Percentages count matched events. Means give each issuer one weight.')],1):
+        s.cell(row,1,key).font=Font(name='Arial',size=10,bold=True,color=ink)
+        s.merge_cells(start_row=row,start_column=2,end_row=row,end_column=8)
+        s.cell(row,2,text).font=Font(name='Arial',size=10,color=ink)
+    pair_columns=['condition','events','issuers','profit_rate','loss_rate','flat_rate',
+                  'mean_pre_short','mean_post_short']
+    for row,direction,title in [(5,'Before given after','Prior short result, grouped by post-lock-up stock move'),
+                                (12,'After given before','Subsequent short result, grouped by pre-lock-up short result')]:
+        s.merge_cells(start_row=row-1,start_column=1,end_row=row-1,end_column=8)
+        s.cell(row-1,1,title).font=Font(name='Arial',size=10,bold=True,color=ink)
+        frame=pair_summary.loc[pair_summary.direction.eq(direction),pair_columns]
+        end=write_table(s,frame,start_row=row,filters=False)
+        if frame.events.gt(0).any():
+            add_bar(s,'Prior short outcome (%)' if row==5 else 'Subsequent short outcome (%)',
+                    row,end,[4,5,6],1,'A23' if row==5 else 'A52',
+                    [green,red,'B5BBC2'],height=12,stacked=True)
+    for row,text in [(18,f"Complete pairs: {int(pair_detail.pair_status.eq('Complete').sum())}; missing pairs: {int(pair_detail.pair_status.ne('Complete').sum())}"),
+                     (19,'Profit = stock fell; loss = stock rose. Blank % means no events in that cohort.'),
+                     (20,'Per-event prices and returns are in By event; the T0-close pre-return is retained there.')]:
+        s.merge_cells(start_row=row,start_column=1,end_row=row,end_column=8)
+        s.cell(row,1,text).font=Font(name='Arial',size=10,color=ink)
+    s.column_dimensions['A'].width=31
+    for col in 'BC':s.column_dimensions[col].width=10
+    for col in 'DEFGH':s.column_dimensions[col].width=18
+    s.print_area='A1:H80'
+
+    s=wb.create_sheet('Best marks');sheet_style(s);s.freeze_panes='B6';s.sheet_properties.tabColor=green
+    for row,text in enumerate([
+        'HKEX Yes at T−21. Best = highest observed return after entry; negative maxima are preserved.',
+        'Hindsight, not a tested take-profit rule. Daily lows do not establish executable fills.',
+        'Means: equal issuer weight. Hit rates: complete event windows. Fixed exits use the same sample.',
+        'Lost profit % = profitable at some point but flat/loss at exit / all ever-profitable events.'],1):
+        s.merge_cells(start_row=row,start_column=1,end_row=row,end_column=12)
+        s.cell(row,1,text).font=Font(name='Arial',size=10,color=ink)
+    mark_columns=['strategy_label','events','missing_path_events','mean_fixed_return','mean_best_return',
+                  'ever_positive_rate','fixed_profit_rate','gave_back_rate','hit_1pct_rate',
+                  'hit_3pct_rate','hit_5pct_rate','hit_10pct_rate']
+    start=6;plot_row=6
+    for basis in ['Daily close','Daily low']:
+        s.cell(start-1,1,basis).font=Font(name='Arial',size=10,bold=True,color=ink)
+        frame=mark_summary.loc[mark_summary.mark_basis.eq(basis),mark_columns]
+        end=write_table(s,frame,start_row=start,filters=False)
+        if frame.events.gt(0).any():
+            c=add_bar(s,basis+': fixed exit and best return',start,end,[4,5],1,
+                      f'N{plot_row}',['9AA4AE','153954'])
+            plot_row+=int(np.ceil(c.height*2.1))+4
+            c=add_bar(s,basis+': profitable at exit or at any mark',start,end,[7,6],1,
+                      f'N{plot_row}',['9AA4AE',green])
+            c.y_axis.scaling.min=0;c.y_axis.scaling.max=1
+            plot_row+=int(np.ceil(c.height*2.1))+4
+        start=end+5
+    s.column_dimensions['A'].width=42
+    for col in 'BC':s.column_dimensions[col].width=12
+    for col in 'DEFGHIJKL':s.column_dimensions[col].width=18
+    s.print_area=f'A1:W{max(start+2,plot_row+2)}'
+
     ws.column_dimensions['A'].width=42
     for col in 'BC': ws.column_dimensions[col].width=12
     for col in 'DEFGHI': ws.column_dimensions[col].width=20
-    ws.print_area=f'A1:U{max(benchmark_end+3,chart_row+int(np.ceil(max(16,len(benchmark_summary)*.8)*2.1)))}'
+    ws.print_area=f'A1:U{max(csi_end+3,chart_row+4)}'
 
 
     if not trades.empty:
@@ -1553,6 +2028,9 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
         event=event[event.event_id.isin(trades.loc[trades.status.eq('Completed'),'event_id'])]
     else:
         event=pd.DataFrame()
+    if not event.empty and not pair_detail.empty:
+        added=['event_id']+[c for c in pair_detail if c not in event.columns]
+        event=event.merge(pair_detail[added],on='event_id',how='left',validate='one_to_one')
     event=with_hkex_columns(event,audit,HKEX_COMPACT)
     if not event.empty and 'hkex_eligible_tminus21' in event:
         front=['event_id','ticker','name','input_date','last_day_locked','t0']
@@ -1562,6 +2040,9 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
                 'entry_date','exit_date','entry_price','exit_price','gross_return',
                 'after_cost_price_return','net_return','borrow_cost','transaction_cost','dividend_cost',
                 'calendar_days','sessions_held','path_missing_sessions','worst_mark_return','best_mark_return',
+                'best_mark_date','close_mark_status','mark_expected_sessions','mark_observations',
+                'best_low_return','best_low_date','low_mark_status','low_missing_sessions','low_observations',
+                'csi300_entry_price','csi300_exit_price','csi300_return','csi300_alpha','csi300_status',
                 'benchmark_return','short_plus_hsi_return','locate_status','borrow_rate_used',
                 'input_date','entry_field','exit_field','event_id','source_url']
     datasets=[('By event',event),('Trades',trades[[c for c in trade_cols if c in trades]]),
@@ -1594,12 +2075,13 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
         return RichText(p=[Paragraph(pPr=ParagraphProperties(defRPr=props),endParaRPr=props)])
 
     def source_cells(ref):
-        address=ref.split('!',1)[1]
-        cells=ws[address]
+        sheet_name,address=ref.rsplit('!',1)
+        sheet_name=sheet_name.strip("'").replace("''","'")
+        cells=wb[sheet_name][address]
         if not isinstance(cells,tuple):return [cells.value]
         return [cell.value for row in cells for cell in row]
 
-    for chart in ws._charts:
+    for chart in [c for sheet in wb for c in sheet._charts]:
         bar=isinstance(chart,BarChart)
         chart.style=None
         chart.graphical_properties=GraphicalProperties(solidFill='FFFFFF')
@@ -1615,7 +2097,9 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
             if axis.title is not None:axis.title.txPr=chart_text(10)
         chart.y_axis.majorGridlines=ChartLines(spPr=GraphicalProperties())
         chart.y_axis.majorGridlines.spPr.line.solidFill='E6E9EC'
-        chart.x_axis.axPos='l' if bar else 'b'
+        if bar and chart.grouping == 'stacked':
+            chart.y_axis.scaling.min=0;chart.y_axis.scaling.max=1
+        chart.x_axis.axPos='l' if bar else 'b' 
         chart.y_axis.axPos='b' if bar else 'l'
         if bar:
             chart.y_axis.title=None
@@ -1683,16 +2167,21 @@ def write_html_report(output, audit, trades, summary, common, figures, metadata,
              table(s[cols], ["Mean price return","After assumed costs","Win rate","Worst event"]), "</div>",
              "<p>Each issuer has one weight; repeated expiry events are averaged within issuer. Strategies can have different samples. The eligible_common_sample_summary.csv provides a like-for-like comparison. All charts use the same HKEX Yes filter. Testing many timings is exploratory and does not establish an out-of-sample trading edge.</p>"]
     for name, fig in figures.items():
-        buffer = io.BytesIO()
-        fig.savefig(buffer, format="png", dpi=130, bbox_inches="tight")
-        parts.append(f"<img alt='{html.escape(name)}' src='data:image/png;base64,{base64.b64encode(buffer.getvalue()).decode()}'>")
+        saved_png = Path(output).parent / "charts" / (name+".png")
+        if saved_png.is_file():
+            image_bytes = saved_png.read_bytes()
+        else:
+            buffer = io.BytesIO()
+            fig.savefig(buffer, format="png", dpi=130, bbox_inches="tight")
+            image_bytes = buffer.getvalue()
+        parts.append(f"<img alt='{html.escape(name)}' src='data:image/png;base64,{base64.b64encode(image_bytes).decode()}'>")
     counts = audit.status.value_counts().rename_axis("Input review status").reset_index(name="Dates")
     parts += ["<h2>Coverage</h2><div class='table'>", table(counts), "</div>",
               "<p>Input rows are a supplied snapshot. Your v2 admits supplied historical dates regardless of review status. Summary and charts include only events marked HKEX eligible at T−21. All events remain in the Excel detail tabs.</p>"]
     if not trades.empty:
         skipped = trades.loc[~trades.status.eq("Completed"),"reason"].value_counts().rename_axis("Skipped reason").reset_index(name="Event–strategy rows")
         parts += ["<details><summary>Skipped observations</summary><div class='table'>",table(skipped),"</div></details>"]
-    parts += ["<p>HK_IPO_Lockup_Backtest.xlsx is the main report, with native strategy, event-study and HSI comparison charts. Rerun the single Python cell to refresh it.</p></body></html>"]
+    parts += ["<p>HK_IPO_Lockup_Backtest.xlsx is the main report, with native HSI/CSI 300 comparisons, alpha, before/after cohorts and best-mark charts. Rerun the single Python cell to refresh it.</p></body></html>"]
     Path(output).write_text("\n".join(parts), encoding="utf-8")
 
 # Embedded source snapshot: date/ticker rows and primary-review decisions only.
@@ -3783,7 +4272,7 @@ def run_lockup_backtest():
     import matplotlib.pyplot as plt
     plt.close("all")
     try:
-        from IPython.display import display, FileLink, HTML
+        from IPython.display import display, FileLink, HTML, Image as NotebookImage
         from IPython import get_ipython
         if get_ipython() is not None:
             get_ipython().run_line_magic("matplotlib", "inline")
@@ -3792,6 +4281,7 @@ def run_lockup_backtest():
             print(value.to_string(index=False) if isinstance(value,pd.DataFrame) else value)
         FileLink = None
         HTML = None
+        NotebookImage = None
 
     embedded = _read_embedded_inputs()
     def data_file(name):
@@ -3813,7 +4303,12 @@ def run_lockup_backtest():
         view=frame.copy()
         for col in {"mean_gross","median_issuer_gross","win_rate","worst_event","gross_return",
                     "ci_low","ci_high","benchmark_return","short_plus_hsi_return",
-                    "mean_stock_short","mean_hsi_short","mean_excess"}.intersection(view.columns):
+                    "mean_stock_short","mean_hsi_short","mean_excess","mean_csi300_short","mean_csi300_alpha",
+                    "positive_alpha_rate","profit_rate","loss_rate","flat_rate","mean_pre_short","mean_post_short",
+                    "pre_open_short_return","pre_close_short_return","post_short_return","pre_stock_return","post_stock_return",
+                    "mean_fixed_return","mean_best_return","median_best_return","ever_positive_rate","fixed_profit_rate",
+                    "gave_back_rate","hit_1pct_rate","hit_3pct_rate","hit_5pct_rate","hit_10pct_rate",
+                    "best_mark_return","best_low_return","csi300_alpha"}.intersection(view.columns):
             view[col]=view[col].map(lambda x:f"{x:+.2%}" if pd.notna(x) else "Unavailable")
         display(view)
 
@@ -3940,6 +4435,9 @@ def run_lockup_backtest():
         chart_summary = summarize(chart_trades, CFG)
         chart_common = summarize(chart_trades, CFG, common_sample=True)
         benchmark_summary = summarize_benchmark(chart_trades)
+        csi_summary = summarize_csi300(chart_trades)
+        pair_detail, pair_summary = pre_post_analysis(chart_trades)
+        mark_summary = summarize_best_marks(chart_trades)
         print(f"Completed: {len(completed):,} event–strategy observations, {len(completed_ids)} events, "
               f"{completed.ticker.nunique() if not completed.empty else 0} issuers.")
         print("SUMMARY / ALL GRAPHS: HKEX eligible at T−21 only. All events remain in Excel detail tabs.")
@@ -3956,6 +4454,47 @@ def run_lockup_backtest():
 
     print("Missing prices are never filled or shifted. Your v2 does not require complete ±30-session endpoints.")
 
+    heading('CSI 300 short benchmark and excess return')
+    if market_ready:
+        print('Bloomberg SHSZ300 Index. Alpha = short-stock return minus short-CSI 300 return (beta = 1).')
+        print('This is benchmark-adjusted excess, not fitted regression alpha. CSI 300 is a broad A-share index, in CNY; no FX conversion.')
+        print('Only exact entry/exit dates and price fields are paired. Missing Mainland dates/prices reduce both comparison samples.')
+        show_returns(csi_summary.drop(columns=['strategy']))
+        if not csi_summary.events.gt(0).any():
+            print('No matched CSI 300 observations. Check provider_errors.csv and CSI 300 coverage in Trades; no CSI graph drawn.')
+
+    heading('Before and after lock-up: reversals and continuation')
+    if market_ready:
+        complete_pairs = pair_detail.pair_status.eq('Complete')
+        print(f'{int(complete_pairs.sum())} paired eligible events; {int((~complete_pairs).sum())} without both completed windows.')
+        month_before='T−21' if CFG.day_basis=='sessions' else 'T−1m'
+        month_after='T+21' if CFG.day_basis=='sessions' else 'T+1m'
+        print(f'BEFORE: {month_before} close → T0 open. AFTER: T0 open → {month_after} close. The windows do not overlap.')
+        print('The existing pre-window ending at T0 close is retained in the event detail, labelled as overlapping the post-window.')
+        print('Each percentage is an event count / matched events in that row. A stock rise is a short loss; a stock fall is a short profit.')
+        for direction in ['Before given after','After given before']:
+            print('Prior short result among post-lock-up risers/fallers:' if direction=='Before given after' else
+                  'Subsequent short result among pre-lock-up short winners/losers:')
+            show_returns(pair_summary.loc[pair_summary.direction.eq(direction),
+                         ['condition','events','issuers','profit_events','loss_events','flat_events',
+                          'profit_rate','loss_rate','flat_rate','mean_pre_short','mean_post_short']])
+        show_returns(pair_detail.loc[complete_pairs,['ticker','last_day_locked','pre_stock_return','post_stock_return',
+                     'pre_open_short_return','post_short_return','pre_result','post_result']].head(30))
+
+    heading('Best mark: was there an opportunity to take profit?')
+    if market_ready:
+        print('Best mark = maximum observed short return inside each holding window. Always-negative paths keep their least-negative return.')
+        print('Close entries exclude that day\'s close/low. Open entries include that day. Incomplete paths are excluded, not filled.')
+        print('Daily closes and daily lows are shown separately. Lows are hindsight intraday opportunities; they do not establish executable fills.')
+        print('Fixed-exit and best-mark averages use the same complete-path sample, with equal issuer weight. Hit rates count event windows.')
+        print('Lost profit % uses ever-profitable events as denominator. Reached +1/3/5/10% are observed hit rates, not backtested order rules.')
+        for basis in ['Daily close','Daily low']:
+            print(basis)
+            show_returns(mark_summary.loc[mark_summary.mark_basis.eq(basis),
+                ['strategy_label','events','issuers','missing_path_events','mean_fixed_return','mean_best_return',
+                 'ever_positive_rate','fixed_profit_rate','gave_back_rate','hit_1pct_rate','hit_3pct_rate',
+                 'hit_5pct_rate','hit_10pct_rate']])
+
     heading('Charts and common sample')
     if market_ready:
         figures = plot_results(chart_summary, chart_trades, chart_paths, OUTPUT / "charts", settings=CFG)
@@ -3965,7 +4504,9 @@ def run_lockup_backtest():
             show_returns(benchmark_summary.drop(columns=['strategy']))
         if benchmark_summary.empty or not benchmark_summary.events.gt(0).any():
             print("No matched HSI observations for eligible completed trades; no benchmark chart drawn.")
-        plt.show()
+        for name in figures:
+            if NotebookImage is not None:
+                display(NotebookImage(filename=str(OUTPUT / "charts" / (name+".png")),width=1200))
         if not chart_common.empty:
             print("HKEX-eligible common completed cohort across every meaningful strategy:")
             show_returns(chart_common[["strategy_label","events","issuers","mean_gross","win_rate"]])
@@ -4001,7 +4542,12 @@ def run_lockup_backtest():
         run_metadata = {
             "hkex_short_selling":hkex_metadata,
             "summary_and_chart_scope":"HKEX eligible at T−21 = Yes, by ticker and event date",
-            "benchmark_basis":"Short stock versus short HSI price return, matched endpoints and issuer weights",
+            "benchmark_basis":"Short stock versus short HSI and CSI 300 price returns, matched dates/fields and issuer weights",
+            "csi300":dict(ticker=CSI300_TICKER,source=CSI300_SOURCE,currency="CNY",fx_conversion=False,
+                          alpha="Short stock minus short CSI 300; beta=1 excess, not regression alpha",
+                          missing_dates="Excluded, never filled"),
+            "before_after_basis":f"{month_before} close to T0 open; T0 open to {month_after} close; percentages count matched events",
+            "best_marks_basis":"Fully observed post-entry closes/lows; no zero floor; hindsight extrema, not executable fills",
             "eligible_chart_events":int(chart_trades.loc[chart_trades.status.eq('Completed'),'event_id'].nunique()) if not chart_trades.empty else 0,
             "data_source":source_description, "input_sha256":input_hash,
             "review_sha256":hashlib.sha256(embedded["event_review.csv"].encode()).hexdigest(),
@@ -4013,7 +4559,9 @@ def run_lockup_backtest():
         }
         export_results(OUTPUT,audit,trades,summary,common_summary,paths,CFG,run_metadata)
         for name,frame in [('eligible_strategy_summary',chart_summary),('eligible_common_sample_summary',chart_common),
-                           ('eligible_event_paths',chart_paths),('hsi_benchmark_summary',benchmark_summary)]:
+                           ('eligible_event_paths',chart_paths),('hsi_benchmark_summary',benchmark_summary),
+                           ('csi300_benchmark_summary',csi_summary),('before_after_events',pair_detail),
+                           ('before_after_summary',pair_summary),('best_mark_summary',mark_summary)]:
             price_only_columns(frame).to_csv(OUTPUT / (name+'.csv'),index=False,float_format='%.12g')
         excel_path = export_excel(OUTPUT / "HK_IPO_Lockup_Backtest.xlsx",audit,trades,summary,
                                  common_summary,prices,paths,CFG,run_metadata)
@@ -4023,7 +4571,7 @@ def run_lockup_backtest():
         saved_manifest["excel_sha256"] = hashlib.sha256(excel_path.read_bytes()).hexdigest()
         saved_manifest["csv_sha256"] = {p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(OUTPUT.glob('*.csv'))}
         (OUTPUT / "run_manifest.json").write_text(json.dumps(saved_manifest,indent=2,default=str))
-        print("MAIN REPORT: HK_IPO_Lockup_Backtest.xlsx — eligible Summary, native strategy/event/HSI charts, and full detail tabs.")
+        print("MAIN REPORT: HK_IPO_Lockup_Backtest.xlsx — eligible Summary with HSI/CSI 300 alpha, Before after, Best marks, and full detail tabs.")
         print("FINISHED: Excel, HTML, full trade ledger, audit, input prices, charts and hashes saved.")
         for filename in ["HK_IPO_Lockup_Backtest.xlsx","backtest_report.html","trades.csv","input_audit.csv","hkex_short_selling_checks.csv"]:
             file = OUTPUT / filename
@@ -4040,7 +4588,11 @@ def run_lockup_backtest():
             "short_selling_checks":checks,
             "trades":trades if market_ready else None, "summary":summary if market_ready else None,
             "eligible_summary":chart_summary if market_ready else None,
-            "benchmark_summary":benchmark_summary if market_ready else None}
+            "benchmark_summary":benchmark_summary if market_ready else None,
+            "csi300_summary":csi_summary if market_ready else None,
+            "before_after_events":pair_detail if market_ready else None,
+            "before_after_summary":pair_summary if market_ready else None,
+            "best_mark_summary":mark_summary if market_ready else None}
 
 
 if __name__ == "__main__":
