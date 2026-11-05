@@ -1,0 +1,127 @@
+{
+  "research_date": "2026-11-06 HKT",
+  "tencent_query": "https://qt.gtimg.cn/q=hk01045,hk01725,hk00031,sh600118,sh688568,usPL,usBKSY",
+  "sina_query": "https://hq.sinajs.cn/list=rt_hk01045,rt_hk00031,rt_hk01725,sh600118,sh688568",
+  "crosschecks": [
+    {
+      "code": "1045 HK",
+      "provider_key": "hk01045",
+      "tencent": {
+        "price": 1.825,
+        "feed_time": "2026/11/05 16:08:23",
+        "vendor_market_cap_m": 1694.64
+      },
+      "used_price": 1.825,
+      "used_total_shares": 928572500,
+      "recalculated_equity_m": 1694.6448125,
+      "sina": {
+        "price": 1.825,
+        "feed_date": "2026/11/05",
+        "feed_time": "16:08:22"
+      },
+      "independent_price_match": true
+    },
+    {
+      "code": "0031 HK",
+      "provider_key": "hk00031",
+      "tencent": {
+        "price": 0.395,
+        "feed_time": "2026/11/05 16:08:20",
+        "vendor_market_cap_m": 1218.58
+      },
+      "used_price": 0.395,
+      "used_total_shares": 3085021882,
+      "recalculated_equity_m": 1218.5836433900001,
+      "sina": {
+        "price": 0.395,
+        "feed_date": "2026/11/05",
+        "feed_time": "16:08:20"
+      },
+      "independent_price_match": true
+    },
+    {
+      "code": "600118 A",
+      "provider_key": "sh600118",
+      "tencent": {
+        "price": 56.89,
+        "feed_time": "20261105161455",
+        "vendor_market_cap_m": 67272.0
+      },
+      "used_price": 56.89,
+      "used_total_shares": 1182489135,
+      "recalculated_equity_m": 67271.80689015001,
+      "sina": {
+        "price": 56.89,
+        "feed_date": "2026-11-05",
+        "feed_time": "15:34:59"
+      },
+      "independent_price_match": true
+    },
+    {
+      "code": "688568 A",
+      "provider_key": "sh688568",
+      "tencent": {
+        "price": 31.79,
+        "feed_time": "20261105161450",
+        "vendor_market_cap_m": 25689.0
+      },
+      "used_price": 31.79,
+      "used_total_shares": 808078912,
+      "recalculated_equity_m": 25688.82861248,
+      "sina": {
+        "price": 31.79,
+        "feed_date": "2026-11-05",
+        "feed_time": "15:34:59"
+      },
+      "independent_price_match": true
+    },
+    {
+      "code": "PL US",
+      "provider_key": "usPL",
+      "tencent": {
+        "price": 11.23,
+        "feed_time": "2026-11-05 12:04:38",
+        "vendor_market_cap_m": 4086.013
+      },
+      "used_price": 11.23,
+      "used_total_shares": 363847989,
+      "recalculated_equity_m": 4086.01291647,
+      "independent_price_match": null,
+      "limitation": "US intraday price and basic shares from Tencent only; no independent same-second quote."
+    },
+    {
+      "code": "BKSY US",
+      "provider_key": "usBKSY",
+      "tencent": {
+        "price": 17.73,
+        "feed_time": "2026-11-05 12:04:36",
+        "vendor_market_cap_m": 725.393
+      },
+      "used_price": 17.73,
+      "used_total_shares": 40924846,
+      "recalculated_equity_m": 725.59751958,
+      "independent_price_match": null,
+      "limitation": "US intraday price and basic shares from Tencent only; no independent same-second quote."
+    }
+  ],
+  "HK_A_independent_matches": 4,
+  "US_intraday_quotes": 2,
+  "excluded_1725": {
+    "tencent": {
+      "price": 0.239,
+      "feed_time": "2026/11/05 16:08:23",
+      "vendor_market_cap_m": 195.6
+    },
+    "sina": {
+      "price": 0.239,
+      "feed_date": "2026/11/05",
+      "feed_time": "16:08:22"
+    },
+    "reason": "FY25 continuing revenue from EMS; not a clean satellite peer"
+  },
+  "local_capture_sha256": {
+    "quotes_raw.txt": "22791fdf881161ff629e1d60b7021bf8efbaba0a226e22f089d268707d8efae4",
+    "sina_cross.txt": "96ac39586eb6f673214b32b4e806c36a63d64fd5d6715899a79f2f18cf70a37d"
+  },
+  "note": "Equity values recomputed as price times total shares; BlackSky vendor market-cap discrepancy not carried into valuation."
+}

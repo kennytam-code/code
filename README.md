@@ -1,5 +1,13 @@
 # HK IPO desk files
 
+## 國星宇航 / Adaspace IPO — 6 November 2026
+
+**[Download the Word trader briefing — 06935 HK](https://github.com/kennytam-code/code/raw/refs/heads/main/Adaspace_IPO_Trader_Brief_2026-11-06.docx)**
+
+Five pages following the Word template: **good points, risks, AI business potential, earnings and cash quality, H-first peer valuations, cornerstones, offer supply and conditional Southbound catalysts**. The final prospectus corrects the supplied reallocation, cash and margin claims. Forward sales guidance and explicit revenue scenarios are included; unverified forward P/E is left unavailable. **HK/A prices: 5 November close; US: 5 November 12:04 ET intraday.**
+
+[Sources and valuation audit](_ipo_db/research/adaspace_20261106/source_and_valuation_audit.json) · [Price cross-checks](_ipo_db/research/adaspace_20261106/price_crosscheck.json)
+
 ## November IPO and lockup brief — 3 November 2026
 
 **[Download the Word briefing — 新荷花 / 芯德 / 登臨 / 宏芯宇 / 2687 / 1333](https://github.com/kennytam-code/code/raw/refs/heads/main/IPO_and_Lockup_Trader_Brief_2026-11-03.docx)**
