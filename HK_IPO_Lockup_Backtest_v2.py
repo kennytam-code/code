@@ -12,6 +12,8 @@ HSI and CSI 300 charts compare matched short-stock and short-index price returns
 CSI 300 alpha is beta=1 excess, using local CNY index returns without FX conversion.
 Before/after cohorts meet at T0 open. Best closes/lows are hindsight extrema.
 Always-losing best marks retain the actual least-negative observation.
+First/second lock-ups are ranked by distinct effective expiry dates in the supplied input.
+Matched first/second comparisons use the same stocks with both events HKEX eligible.
 All event detail remains in the Excel By event, Trades and Inputs sheets.
 The current Hong Kong daily bar is excluded. No substitute price provider.
 Live Bloomberg transport/entitlements require verification on your workstation.
@@ -50,7 +52,7 @@ from datetime import datetime, date
 import numpy as np
 import pandas as pd
 
-VERSION = "2.4.0"
+VERSION = "2.5.0"
 PRICE_FIELDS = ("PX_OPEN", "PX_LAST", "PX_LOW", "PX_VOLUME")
 CSI300_TICKER = "SHSZ300 Index"
 CSI300_SOURCE = "https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/detail/files/en/000300factsheeten.pdf"
@@ -212,6 +214,7 @@ def select_events(inputs, review, settings):
     audit["publication_date"] = pd.to_datetime(audit.publication_date, errors="coerce").fillna(
         pd.Timestamp("1990-01-01")
     )
+    audit = number_lockups(audit)
     audit["status"] = "Eligible date"
     future = audit.last_day_locked.ge(pd.Timestamp(settings.asof))
     audit.loc[future, "status"] = "Future or current-day restriction"
@@ -301,6 +304,7 @@ def backtest(events, prices, sessions, strategies=None, settings=None,
     strategies = make_strategies() if strategies is None else list(strategies)
     if len({s.key for s in strategies}) != len(strategies):
         raise ValueError("Strategy keys must be unique")
+    events = number_lockups(events)
     p = validate_prices(prices)
     days = validate_sessions(sessions)
     asof = pd.Timestamp(cfg.asof)
@@ -362,6 +366,8 @@ def backtest(events, prices, sessions, strategies=None, settings=None,
             event_problem = str(exc)
         for s in strategies:
             row = dict(event_id=e.event_id, ticker=e.ticker, name=e.name,
+                       lockup_number=e.lockup_number, lockup_label=e.lockup_label,
+                       lockup_dates_in_input=e.lockup_dates_in_input,
                        input_date=e.input_date, last_day_locked=locked,
                        t0=days[anchor] if anchor is not None else pd.NaT,
                        strategy=s.key, strategy_label=s.label_for(cfg.day_basis), entry_offset=s.entry_offset,
@@ -527,6 +533,7 @@ def sensitivity(trades, rates=(0, .05, .10, .20), fees=(0, 10, 25), settings=Non
 
 def event_paths(events, prices, sessions, settings=None, half_window=21):
     cfg = settings or Settings()
+    events = number_lockups(events)
     days, p = validate_sessions(sessions), validate_prices(prices)
     groups = {t: g.set_index("date") for t, g in p.groupby("ticker")}
     records = []
@@ -551,6 +558,8 @@ def event_paths(events, prices, sessions, settings=None, half_window=21):
             value = 1-close/base if _positive(close) else np.nan
             records.append(dict(event_id=e.event_id, ticker=e.ticker, name=e.name,
                                 last_day_locked=e.last_day_locked, offset=offset, date=d,
+                                lockup_number=e.lockup_number, lockup_label=e.lockup_label,
+                                lockup_dates_in_input=e.lockup_dates_in_input,
                                 short_return_from_Tminus21=value))
     return pd.DataFrame(records)
 
@@ -676,6 +685,7 @@ def pre_post_analysis(trades):
     Percentages count events; returns are averaged within issuer before issuers.
     """
     base = ['event_id','ticker','name','last_day_locked','t0','hkex_eligible_tminus21']
+    base += [c for c in ['lockup_number','lockup_label','lockup_dates_in_input'] if c in trades]
     extra = ['pair_status','pre_entry_date','pre_entry_price','t0_open_price','t0_close_price',
              'post_exit_date','post_exit_price','pre_open_short_return','pre_close_short_return',
              'post_short_return','pre_stock_return','post_stock_return','pre_result','post_result']
@@ -775,6 +785,142 @@ def summarize_best_marks(trades):
                 row[f'hit_{percent}pct_rate'] = float(paired.best.ge(percent/100-1e-12).mean()) if n else np.nan
             rows.append(row)
     return pd.DataFrame(rows, columns=columns)
+
+
+def number_lockups(frame):
+    """Distinct effective expiry dates in the supplied dataset, before any filters.
+
+    These ordinals do not claim the dataset contains every legal holder lock-up.
+    Preserve precomputed numbers when an admitted subset reaches the backtest.
+    """
+    out = frame.copy()
+    if 'lockup_number' not in out:
+        dates = pd.to_datetime(out.last_day_locked, errors='raise')
+        if dates.isna().any():
+            raise ValueError('Cannot number a missing lock-up date')
+        out['lockup_number'] = dates.groupby(out.ticker).rank(method='dense').astype('int64')
+        out['lockup_dates_in_input'] = dates.groupby(out.ticker).transform('nunique').astype('int64')
+    out['lockup_label'] = out.lockup_number.map(
+        lambda n: {1:'First',2:'Second',3:'Third'}.get(int(n),f'#{int(n)}'))
+    return out
+
+
+def lockup_order_comparison(trades):
+    """Same ticker, same strategy, first versus second distinct input expiry.
+
+    Both events must be HKEX Yes and completed; each metric needs both values.
+    Unpaired rows remain visible with a coverage reason. Never pair the second
+    with the third, or substitute another issuer for a missing first event.
+    """
+    base = ['ticker','name','strategy','strategy_label']
+    detail_cols = base + ['first_date','second_date','pair_status']
+    metrics = [('gross_return','Fixed exit'),('csi300_alpha','CSI 300 alpha'),
+               ('best_mark_return','Best daily close'),('best_low_return','Best daily low')]
+    for col, _ in metrics:
+        detail_cols += ['first_'+col,'second_'+col]
+    summary_cols = ['strategy','strategy_label','metric','paired_issuers','excluded_issuers',
+                    'first_mean','second_mean','second_minus_first','first_win_rate','second_win_rate']
+    if trades.empty or 'lockup_number' not in trades:
+        return pd.DataFrame(columns=detail_cols), pd.DataFrame(columns=summary_cols)
+    t = trades.loc[trades.lockup_number.isin([1,2])]
+    if t.duplicated(['ticker','lockup_number','strategy']).any():
+        raise ValueError('Multiple events for one ticker/lock-up number/strategy')
+    details = []
+    for (ticker, key), g in t.groupby(['ticker','strategy'],sort=False):
+        row = dict(ticker=ticker,name=g.iloc[0]['name'],strategy=key,
+                   strategy_label=g.iloc[0].strategy_label,first_date=pd.NaT,
+                   second_date=pd.NaT,pair_status='Complete')
+        by_number = g.set_index('lockup_number')
+        problems = []
+        for num, side in [(1,'first'),(2,'second')]:
+            for col, _ in metrics: row[side+'_'+col] = np.nan
+            if num not in by_number.index:
+                problems.append(side.capitalize()+' event absent from historical trades')
+                continue
+            event = by_number.loc[num]
+            row[side+'_date'] = event.last_day_locked
+            if event.get('hkex_eligible_tminus21') != 'Yes':
+                problems.append(side.capitalize()+' event not HKEX Yes at T−21')
+            elif event.status != 'Completed':
+                problems.append(side.capitalize()+' trade incomplete: '+str(event.get('reason','')))
+            else:
+                for col, _ in metrics:
+                    value = event.get(col,np.nan)
+                    row[side+'_'+col] = float(value) if pd.notna(value) and np.isfinite(value) else np.nan
+        if problems: row['pair_status'] = '; '.join(problems)
+        details.append(row)
+    detail = pd.DataFrame(details,columns=detail_cols)
+    summaries = []
+    for key, g in detail.groupby('strategy',sort=False):
+        for col, label in metrics:
+            good = g.loc[g.pair_status.eq('Complete') & g['first_'+col].notna() & g['second_'+col].notna()]
+            a, b = good['first_'+col], good['second_'+col]
+            summaries.append(dict(strategy=key,strategy_label=g.strategy_label.iloc[0],metric=label,
+                paired_issuers=len(good),excluded_issuers=len(g)-len(good),
+                first_mean=a.mean(),second_mean=b.mean(),second_minus_first=(b-a).mean(),
+                first_win_rate=a.gt(1e-12).mean() if len(good) else np.nan,
+                second_win_rate=b.gt(1e-12).mean() if len(good) else np.nan))
+    return detail, pd.DataFrame(summaries,columns=summary_cols)
+
+
+def lockup_order_paths(paths):
+    """Two means on the same issuers with fully observed ±21-session paths."""
+    columns = ['offset','paired_issuers','first_mean','second_mean']
+    if paths.empty or 'lockup_number' not in paths:
+        return pd.DataFrame(columns=columns)
+    t = chart_rows(paths)
+    t = t.loc[t.lockup_number.isin([1,2]) & t.offset.between(-21,21)]
+    if t.duplicated(['ticker','lockup_number','offset']).any():
+        raise ValueError('Duplicate lock-up path observations')
+    expected = set(range(-21,22))
+    valid = []
+    for (ticker, num), g in t.groupby(['ticker','lockup_number']):
+        if set(g.offset) == expected and np.isfinite(g.short_return_from_Tminus21).all():
+            valid.append((ticker,num))
+    first = {ticker for ticker,num in valid if num==1}
+    second = {ticker for ticker,num in valid if num==2}
+    matched = first & second
+    if not matched: return pd.DataFrame(columns=columns)
+    means = t.loc[t.ticker.isin(matched)].groupby(['offset','lockup_number']).short_return_from_Tminus21.mean().unstack()
+    return pd.DataFrame({'offset':means.index,'paired_issuers':len(matched),
+                         'first_mean':means[1].to_numpy(),'second_mean':means[2].to_numpy()},columns=columns)
+
+
+def plot_lockup_order(trades, paths):
+    import matplotlib.pyplot as plt
+    from matplotlib.ticker import PercentFormatter
+    _, summary = lockup_order_comparison(trades)
+    figures = {}
+    part = summary.loc[summary.metric.eq('Fixed exit') & summary.paired_issuers.gt(0)].iloc[::-1]
+    if not part.empty:
+        fig, axes = plt.subplots(1,2,figsize=(15,max(6,len(part)*.43)),sharey=True,layout='constrained')
+        y = np.arange(len(part))
+        for ax, cols in zip(axes,[('first_mean','second_mean'),('first_win_rate','second_win_rate')]):
+            for col, shift, color, label in zip(cols,[.18,-.18],['#153954','#9aa4ae'],['First lock-up','Second lock-up']):
+                ax.barh(y+shift,part[col],height=.32,color=color,label=label)
+            ax.axvline(0,color='#999999',lw=.7);ax.xaxis.set_major_formatter(PercentFormatter(1))
+            ax.grid(axis='x',alpha=.15)
+            ax.legend(frameon=False,loc='upper center',bbox_to_anchor=(.5,-.12),ncol=2,fontsize=9)
+        axes[0].set_yticks(y,[f'{r.strategy_label} (pairs={r.paired_issuers})' for r in part.itertuples()])
+        axes[0].set_title('First versus second: mean short return',loc='left',fontweight='bold',fontsize=11)
+        axes[0].set_xlabel('Fixed-exit short price return; equal issuer weight')
+        axes[1].set_title('First versus second: profitable at exit',loc='left',fontweight='bold',fontsize=11)
+        axes[1].set_xlabel('Percentage of paired issuers');axes[1].set_xlim(0,1)
+        fig.suptitle('Same stocks within each strategy; both events HKEX Yes at T−21. Order uses distinct input expiry dates.',fontsize=10,color='#626970')
+        figures['first_second_returns'] = fig
+    series = lockup_order_paths(paths)
+    if not series.empty:
+        fig, ax = plt.subplots(figsize=(10,5.5),layout='constrained')
+        for col, label, color in [('first_mean','First lock-up','#153954'),('second_mean','Second lock-up','#888f97')]:
+            ax.plot(series.offset,series[col],label=label,color=color,lw=2)
+        ax.axvline(0,color='#CB2125',lw=1,ls='--');ax.axhline(0,color='#aaa',lw=.7)
+        ax.yaxis.set_major_formatter(PercentFormatter(1));ax.grid(alpha=.15)
+        ax.set_title('First versus second: matched event paths',loc='left',fontweight='bold')
+        ax.set_xlabel('HK trading sessions from T0');ax.set_ylabel('Short return from T−21 close')
+        ax.legend(frameon=False)
+        fig.suptitle(f'{int(series.paired_issuers.iloc[0])} paired issuers; complete ±21-session paths for both eligible events.',fontsize=10,color='#626970')
+        figures['first_second_paths'] = fig
+    return figures
 
 
 def plot_additional_analysis(trades, settings=None):
@@ -968,6 +1114,7 @@ def plot_results(summary, trades, paths, output_dir=None, settings=None, audit=N
     for fig in figures.values():
         fig.suptitle("HKEX eligible at T−21 only", fontsize=10, color="#626970")
     additions = plot_additional_analysis(trades, cfg)
+    additions.update(plot_lockup_order(trades, paths))
     for fig in additions.values():
         title = fig._suptitle.get_text() if fig._suptitle else ""
         fig.suptitle("HKEX eligible at T−21 only\n"+title,fontsize=10,color="#626970")
@@ -1005,6 +1152,7 @@ def plot_stocks(paths, tickers, page=1, audit=None):
         g = p[p.event_id.eq(event_id)].sort_values("offset")
         r = g.iloc[0]
         label = f"{r.ticker} · {r['name']} · locked through {pd.Timestamp(r.last_day_locked):%d %b %Y}"
+        if "lockup_number" in r: label += f" · {r.lockup_label} lock-up"
         ax.plot(g.offset, g.short_return_from_Tminus21, lw=1.7, label=label)
     ax.axvline(0, color="#999999", ls="--", lw=.8)
     ax.axhline(0, color="#bbbbbb", lw=.7)
@@ -1603,6 +1751,7 @@ def check_hkex_shortability(audit, sessions, settings, cache_dir, output_dir=Non
 def with_hkex_columns(frame, audit, columns=None):
     """Join by ticker AND event date, never ticker alone; preserve row count/order."""
     columns = HKEX_COLUMNS if columns is None else columns
+    columns = list(dict.fromkeys(list(columns)+["lockup_number","lockup_label","lockup_dates_in_input"]))
     columns = [c for c in columns if c in audit]
     if not columns or frame.empty:
         return frame
@@ -1662,6 +1811,8 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
     csi_summary = summarize_csi300(chart_trades)
     pair_detail, pair_summary = pre_post_analysis(chart_trades)
     mark_summary = summarize_best_marks(chart_trades)
+    order_detail, order_summary = lockup_order_comparison(with_hkex_columns(trades,audit))
+    order_paths = lockup_order_paths(paths)
     wb = Workbook()
     ws = wb.active
     ws.title = 'Summary'
@@ -1695,6 +1846,12 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
                          'profit_rate','loss_rate','flat_rate','best_low_return','mean_fixed_return','mean_best_return',
                          'median_best_return','ever_positive_rate','fixed_profit_rate','gave_back_rate',
                          'hit_1pct_rate','hit_3pct_rate','hit_5pct_rate','hit_10pct_rate'})
+    rate_columns.update({'first_mean','second_mean','second_minus_first','first_win_rate','second_win_rate'})
+    rate_columns.update({side+'_'+col for side in ['first','second'] for col in ['gross_return','csi300_alpha','best_mark_return','best_low_return']})
+    labels.update({'lockup_number':'Lock-up #','lockup_label':'Lock-up order','lockup_dates_in_input':'Distinct input dates',
+                   'first_mean':'First lock-up','second_mean':'Second lock-up','second_minus_first':'Second minus first',
+                   'first_win_rate':'First win rate','second_win_rate':'Second win rate','paired_issuers':'Paired stocks',
+                   'excluded_issuers':'Unpaired / missing','first_date':'First expiry date','second_date':'Second expiry date'})
     before_label = 'T−21' if cfg.day_basis=='sessions' else 'T−1m'
     after_label = 'T+21' if cfg.day_basis=='sessions' else 'T+1m'
     labels.update({'PX_LOW':'Daily low','csi300_return':'CSI 300 long price return',
@@ -1955,6 +2112,54 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
     else:
         ws.cell(csi_end+2,1,'No matched CSI 300 observations; see provider errors and Trades coverage')
 
+    s=wb.create_sheet('First vs second');sheet_style(s);s.freeze_panes='B5';s.sheet_properties.tabColor='153954'
+    for row,text in enumerate([
+        'Order: distinct effective expiry dates per ticker in the full supplied input, before any filters.',
+        'Matched stocks only: both first and second completed and HKEX Yes at T−21. Each metric has its own sample.',
+        'Order is within this dataset. Repeated dates share a number; third and later dates remain in detail.'],1):
+        s.merge_cells(start_row=row,start_column=1,end_row=row,end_column=8)
+        s.cell(row,1,text).font=Font(name='Arial',size=10,color=ink)
+    cols=['strategy_label','paired_issuers','excluded_issuers','first_mean','second_mean',
+          'second_minus_first','first_win_rate','second_win_rate']
+    start=5;chart_row_order=5
+    for metric in ['Fixed exit','CSI 300 alpha','Best daily close','Best daily low']:
+        s.cell(start-1,1,metric).font=Font(name='Arial',size=10,bold=True,color=ink)
+        frame=order_summary.loc[order_summary.metric.eq(metric),cols]
+        end=write_table(s,frame,start_row=start,filters=False)
+        if metric=='Fixed exit' and frame.paired_issuers.gt(0).any():
+            c=add_bar(s,'First versus second: mean short return',start,end,[4,5],1,'J5',['153954','9AA4AE'])
+            chart_row_order+=int(np.ceil(c.height*2.1))+4
+            c=add_bar(s,'First versus second: profitable at exit',start,end,[7,8],1,f'J{chart_row_order}',['153954','9AA4AE'])
+            c.y_axis.scaling.min=0;c.y_axis.scaling.max=1
+            chart_row_order+=int(np.ceil(c.height*2.1))+4
+        start=end+4
+    s.cell(start-1,1,'Matched event paths — short return from T−21 close').font=Font(name='Arial',size=10,bold=True,color=ink)
+    end=write_table(s,order_paths,start_row=start,filters=False)
+    if not order_paths.empty:
+        c=LineChart();c.title='First versus second: matched ±21-session paths'
+        c.y_axis.numFmt='0%';c.x_axis.title='HK sessions from T0';c.height=12;c.width=24
+        c.add_data(Reference(s,min_col=3,max_col=4,min_row=start,max_row=end),titles_from_data=True)
+        c.set_categories(Reference(s,min_col=1,min_row=start+1,max_row=end))
+        for series,color in zip(c.series,['153954','888F97']):series.graphicalProperties.line.solidFill=color
+        s.add_chart(c,f'J{chart_row_order}');chart_row_order+=30
+    start=end+4
+    s.cell(start-1,1,'Stock pairs and coverage (including excluded pairs)').font=Font(name='Arial',size=10,bold=True,color=ink)
+    detail_cols=['strategy_label','ticker','name','first_date','second_date','pair_status']
+    detail_cols += [side+'_'+col for col in ['gross_return','csi300_alpha','best_mark_return','best_low_return'] for side in ['first','second']]
+    # Place the long audit below the chart area so tables never run behind charts.
+    start=max(start,chart_row_order+2)
+    write_table(s,order_detail[detail_cols],start_row=start,filters=False)
+    s.column_dimensions['A'].width=42
+    s.column_dimensions['B'].width=16
+    s.column_dimensions['C'].width=30
+    import textwrap
+    for row in s.iter_rows(min_row=start+1,max_row=s.max_row):
+        lines=max(len(textwrap.wrap(str(row[idx].value or ''),width=width))
+                  for idx,width in [(0,34),(2,24),(5,18)])
+        s.row_dimensions[row[0].row].height=max(36,13*lines)
+        for idx in [0,2,5]:row[idx].alignment=Alignment(vertical='center',wrap_text=True)
+    for col in 'DEFGH':s.column_dimensions[col].width=22
+
     s=wb.create_sheet('Before after');sheet_style(s);s.freeze_panes='B6';s.sheet_properties.tabColor='153954'
     for row,(key,text) in enumerate([
         ('Before',f'Short {before_label} close to T0 open'),
@@ -2045,6 +2250,12 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
                 'csi300_entry_price','csi300_exit_price','csi300_return','csi300_alpha','csi300_status',
                 'benchmark_return','short_plus_hsi_return','locate_status','borrow_rate_used',
                 'input_date','entry_field','exit_field','event_id','source_url']
+    order_cols=['lockup_number','lockup_label','lockup_dates_in_input']
+    input_cols=input_cols[:2]+order_cols+input_cols[2:]
+    trade_cols=trade_cols[:2]+order_cols+trade_cols[2:]
+    if not event.empty:
+        cols=list(event.columns);idx=cols.index('name')+1
+        event=event[[c for c in cols[:idx] if c not in order_cols]+order_cols+[c for c in cols[idx:] if c not in order_cols]]
     datasets=[('By event',event),('Trades',trades[[c for c in trade_cols if c in trades]]),
               ('Inputs',audit[[c for c in input_cols if c in audit]]),
               ('Prices',prices)]
@@ -2166,6 +2377,10 @@ def write_html_report(output, audit, trades, summary, common, figures, metadata,
              "<h2>Strategy comparison — HKEX eligible at T−21 only</h2><div class='table'>",
              table(s[cols], ["Mean price return","After assumed costs","Win rate","Worst event"]), "</div>",
              "<p>Each issuer has one weight; repeated expiry events are averaged within issuer. Strategies can have different samples. The eligible_common_sample_summary.csv provides a like-for-like comparison. All charts use the same HKEX Yes filter. Testing many timings is exploratory and does not establish an out-of-sample trading edge.</p>"]
+    _, order_summary = lockup_order_comparison(trades)
+    cols=['strategy_label','paired_issuers','excluded_issuers','first_mean','second_mean','second_minus_first','first_win_rate','second_win_rate']
+    parts += ['<h2>First versus second lock-up</h2><p>Distinct expiry dates in the supplied dataset, before filters. Same stocks within each strategy; both events must be HKEX Yes and completed. Third and later dates remain in detail.</p><div class="table">',
+              table(order_summary.loc[order_summary.metric.eq('Fixed exit'),cols],cols[3:]),'</div>']
     for name, fig in figures.items():
         saved_png = Path(output).parent / "charts" / (name+".png")
         if saved_png.is_file():
@@ -4308,7 +4523,8 @@ def run_lockup_backtest():
                     "pre_open_short_return","pre_close_short_return","post_short_return","pre_stock_return","post_stock_return",
                     "mean_fixed_return","mean_best_return","median_best_return","ever_positive_rate","fixed_profit_rate",
                     "gave_back_rate","hit_1pct_rate","hit_3pct_rate","hit_5pct_rate","hit_10pct_rate",
-                    "best_mark_return","best_low_return","csi300_alpha"}.intersection(view.columns):
+                    "best_mark_return","best_low_return","csi300_alpha",
+                    "first_mean","second_mean","second_minus_first","first_win_rate","second_win_rate"}.intersection(view.columns):
             view[col]=view[col].map(lambda x:f"{x:+.2%}" if pd.notna(x) else "Unavailable")
         display(view)
 
@@ -4454,6 +4670,17 @@ def run_lockup_backtest():
 
     print("Missing prices are never filled or shifted. Your v2 does not require complete ±30-session endpoints.")
 
+    heading('First versus second lock-up')
+    if market_ready:
+        order_detail, order_summary = lockup_order_comparison(trades)
+        order_paths = lockup_order_paths(paths)
+        print('Order = distinct effective expiry dates per ticker in all supplied inputs, before date, price or HKEX filtering.')
+        print('Same-date rows share one number; third and later dates stay in the detail. Order is within this dataset, not proof of every legal lock-up.')
+        print('Both first and second must be completed and HKEX Yes at T−21. Each strategy/metric uses matched stocks only.')
+        show_returns(order_summary.loc[order_summary.metric.eq('Fixed exit')].drop(columns=['strategy','metric']))
+        if not order_summary.paired_issuers.gt(0).any():
+            print('No matched first/second sample. See pair coverage in First vs second; no comparison graph drawn.')
+
     heading('CSI 300 short benchmark and excess return')
     if market_ready:
         print('Bloomberg SHSZ300 Index. Alpha = short-stock return minus short-CSI 300 return (beta = 1).')
@@ -4547,6 +4774,7 @@ def run_lockup_backtest():
                           alpha="Short stock minus short CSI 300; beta=1 excess, not regression alpha",
                           missing_dates="Excluded, never filled"),
             "before_after_basis":f"{month_before} close to T0 open; T0 open to {month_after} close; percentages count matched events",
+            "lockup_order_basis":"Distinct effective expiry dates per ticker in full input before filters; same-stock paired comparisons",
             "best_marks_basis":"Fully observed post-entry closes/lows; no zero floor; hindsight extrema, not executable fills",
             "eligible_chart_events":int(chart_trades.loc[chart_trades.status.eq('Completed'),'event_id'].nunique()) if not chart_trades.empty else 0,
             "data_source":source_description, "input_sha256":input_hash,
@@ -4561,7 +4789,9 @@ def run_lockup_backtest():
         for name,frame in [('eligible_strategy_summary',chart_summary),('eligible_common_sample_summary',chart_common),
                            ('eligible_event_paths',chart_paths),('hsi_benchmark_summary',benchmark_summary),
                            ('csi300_benchmark_summary',csi_summary),('before_after_events',pair_detail),
-                           ('before_after_summary',pair_summary),('best_mark_summary',mark_summary)]:
+                           ('before_after_summary',pair_summary),('best_mark_summary',mark_summary),
+                           ('first_second_pairs',order_detail),('first_second_summary',order_summary),
+                           ('first_second_paths',order_paths)]:
             price_only_columns(frame).to_csv(OUTPUT / (name+'.csv'),index=False,float_format='%.12g')
         excel_path = export_excel(OUTPUT / "HK_IPO_Lockup_Backtest.xlsx",audit,trades,summary,
                                  common_summary,prices,paths,CFG,run_metadata)
@@ -4571,7 +4801,7 @@ def run_lockup_backtest():
         saved_manifest["excel_sha256"] = hashlib.sha256(excel_path.read_bytes()).hexdigest()
         saved_manifest["csv_sha256"] = {p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(OUTPUT.glob('*.csv'))}
         (OUTPUT / "run_manifest.json").write_text(json.dumps(saved_manifest,indent=2,default=str))
-        print("MAIN REPORT: HK_IPO_Lockup_Backtest.xlsx — eligible Summary with HSI/CSI 300 alpha, Before after, Best marks, and full detail tabs.")
+        print("MAIN REPORT: HK_IPO_Lockup_Backtest.xlsx — eligible Summary with HSI/CSI 300 alpha, First vs second, Before after, Best marks, and full detail tabs.")
         print("FINISHED: Excel, HTML, full trade ledger, audit, input prices, charts and hashes saved.")
         for filename in ["HK_IPO_Lockup_Backtest.xlsx","backtest_report.html","trades.csv","input_audit.csv","hkex_short_selling_checks.csv"]:
             file = OUTPUT / filename
@@ -4592,7 +4822,9 @@ def run_lockup_backtest():
             "csi300_summary":csi_summary if market_ready else None,
             "before_after_events":pair_detail if market_ready else None,
             "before_after_summary":pair_summary if market_ready else None,
-            "best_mark_summary":mark_summary if market_ready else None}
+            "best_mark_summary":mark_summary if market_ready else None,
+            "first_second_pairs":order_detail if market_ready else None,
+            "first_second_summary":order_summary if market_ready else None}
 
 
 if __name__ == "__main__":
