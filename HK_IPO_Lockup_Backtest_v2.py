@@ -14,6 +14,10 @@ Before/after cohorts meet at T0 open. Best closes/lows are hindsight extrema.
 Always-losing best marks retain the actual least-negative observation.
 First/second lock-ups are ranked by distinct effective expiry dates in the supplied input.
 Matched first/second comparisons use the same stocks with both events HKEX eligible.
+IPO comparison: entry premium/discount, issue-price bands, win rates and returns.
+Final HK offer prices have embedded source links; trading prices come from Bloomberg.
+Raw and capital-adjusted IPO-day closes put the issue and entry prices on one basis.
+Missing offer references or exact-date anchors are excluded with coverage counts.
 All event detail remains in the Excel By event, Trades and Inputs sheets.
 The current Hong Kong daily bar is excluded. No substitute price provider.
 Live Bloomberg transport/entitlements require verification on your workstation.
@@ -30,6 +34,12 @@ REFRESH_BLOOMBERG = False        # True ignores the exact-request Bloomberg cach
 SELECTED_TICKER = "3750 HK Equity"
 WORKBOOK_PATH = None             # Optional path to an updated .xlsm; never executes macros
 OUTPUT_ROOT = "lockup_backtest_results"
+# Optional additions for a new HK listing: final HK$ offer price, HK listing date,
+# documented HTTPS source; never enter an indicative cap or an overseas IPO price.
+# Example structure (no invented defaults):
+# {"1234 HK Equity": {"ipo_issue_price_hkd": ..., "ipo_listing_date": "YYYY-MM-DD",
+#                     "ipo_source_url": "https://..."}}
+IPO_REFERENCE_OVERRIDES = {}
 
 import sys, importlib.util, subprocess
 _packages = {"pandas":"pandas>=2.2,<3", "numpy":"numpy>=1.26,<3",
@@ -52,7 +62,8 @@ from datetime import datetime, date
 import numpy as np
 import pandas as pd
 
-VERSION = "2.5.0"
+VERSION = "2.6.0"
+_BLOOMBERG_CACHE_VINTAGE = pd.Timestamp.now(tz="Asia/Hong_Kong").date().isoformat()
 PRICE_FIELDS = ("PX_OPEN", "PX_LAST", "PX_LOW", "PX_VOLUME")
 CSI300_TICKER = "SHSZ300 Index"
 CSI300_SOURCE = "https://oss-ch.csindex.com.cn/static/html/csindex/public/uploads/indices/detail/files/en/000300factsheeten.pdf"
@@ -923,6 +934,256 @@ def plot_lockup_order(trades, paths):
     return figures
 
 
+# Embedded references contain final HK offer prices, never indicative caps or
+# overseas IPO prices. The build inserts the compressed, checksummed registry.
+IPO_REFERENCE_B64 = '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'
+IPO_REFERENCE_SHA256 = 'c59908feffc058b7feee3d6def234602e720392376d4e5988cfd9498984af6fa'
+IPO_REFERENCE_ASOF = '2026-10-28'
+IPO_POSITION_GROUPS = ('Below IPO', 'At IPO', 'Above IPO')
+IPO_PREMIUM_BANDS = ('Below -50%', '-50% to <-20%', '-20% to <0%', 'At IPO',
+                     '>0% to <20%', '20% to <50%', '50% or more')
+IPO_NOMINAL_BANDS = ('HK$5 or less', '>HK$5 to HK$20', '>HK$20 to HK$50', 'Above HK$50')
+IPO_ORDER_SCOPES = ('All lock-ups', 'First lock-up', 'Second lock-up')
+IPO_DETAIL_COLUMNS = ['ipo_issue_price_hkd','ipo_listing_date','ipo_anchor_date','ipo_source_url',
+    'ipo_source_basis','ipo_capital_factor','ipo_anchor_raw_close','ipo_anchor_adjusted_close',
+    'ipo_issue_price_adjusted','entry_vs_ipo','ipo_position','ipo_premium_band',
+    'ipo_nominal_band','ipo_comparison_status']
+IPO_SUMMARY_COLUMNS = ['order_scope','grouping','strategy','strategy_label','cohort','events','issuers',
+    'win_events','loss_events','flat_events','win_rate','mean_gross','median_issuer_gross','worst_event',
+    'alpha_events','alpha_issuers','mean_csi300_alpha','mark_events','mark_issuers',
+    'mean_best_return','ever_positive_rate']
+
+
+def load_ipo_reference():
+    """Dated HK offer-price snapshot, with documented optional user additions."""
+    import base64, zlib
+    raw = zlib.decompress(base64.b64decode(IPO_REFERENCE_B64))
+    if hashlib.sha256(raw).hexdigest() != IPO_REFERENCE_SHA256:
+        raise ValueError('Embedded HK issue-price reference checksum failed')
+    records = {r['ticker']:r for r in json.loads(raw)}
+    for ticker, override in IPO_REFERENCE_OVERRIDES.items():
+        ticker = normalize_ticker(ticker)
+        needed = {'ipo_issue_price_hkd','ipo_listing_date','ipo_source_url'}
+        if not needed <= set(override):
+            raise ValueError('IPO override requires price in HKD, HK listing date and source URL: '+ticker)
+        row = dict(ticker=ticker,ipo_source_basis='User-supplied final HK offer price',**override)
+        row.setdefault('ipo_anchor_date',row['ipo_listing_date'])
+        records[ticker]=row
+    result = pd.DataFrame(records.values())
+    result['ticker'] = result.ticker.map(normalize_ticker)
+    result['ipo_issue_price_hkd'] = pd.to_numeric(result.ipo_issue_price_hkd,errors='raise')
+    if result.ticker.duplicated().any() or not result.ipo_issue_price_hkd.map(_positive).all():
+        raise ValueError('Invalid or duplicate HK issue-price reference')
+    for col in ['ipo_listing_date','ipo_anchor_date']:
+        result[col] = pd.to_datetime(result[col],errors='raise').dt.normalize()
+        if result[col].isna().any():raise ValueError('Missing '+col)
+    delta=(result.ipo_anchor_date-result.ipo_listing_date).dt.days
+    if not delta.between(0,10).all():
+        raise ValueError('IPO price anchor must be the documented first trading session, within ten days of listing')
+    if not result.ipo_source_url.str.startswith('https://',na=False).all():
+        raise ValueError('Every HK issue price needs its documented HTTPS source')
+    return result.sort_values('ticker').reset_index(drop=True)
+
+
+def ipo_groups(premium, nominal):
+    """Fixed bands; only numerical equality (1e-10 tolerance) counts as at issue."""
+    if not np.isfinite(premium) or premium <= -1 or not _positive(nominal):
+        raise ValueError('Invalid entry premium or IPO issue price')
+    if abs(premium)<=1e-10:position,band='At IPO','At IPO'
+    else:
+        position='Below IPO' if premium<0 else 'Above IPO'
+        band=(IPO_PREMIUM_BANDS[0] if premium < -.5 else IPO_PREMIUM_BANDS[1] if premium < -.2
+              else IPO_PREMIUM_BANDS[2] if premium < 0 else IPO_PREMIUM_BANDS[4] if premium < .2
+              else IPO_PREMIUM_BANDS[5] if premium < .5 else IPO_PREMIUM_BANDS[6])
+    nominal_band=(IPO_NOMINAL_BANDS[0] if nominal<=5 else IPO_NOMINAL_BANDS[1] if nominal<=20
+                  else IPO_NOMINAL_BANDS[2] if nominal<=50 else IPO_NOMINAL_BANDS[3])
+    return position,band,nominal_band
+
+
+def download_ipo_anchors(trades, reference, cache_dir, refresh=False):
+    """Same-day raw/adjusted Bloomberg closes put the offer on the trade-price basis.
+
+    Only completed HKEX-eligible tickers need extra data. No substitute IPO price
+    or approximate adjustment factor is manufactured when the anchor is missing.
+    """
+    cols=['ticker','ipo_anchor_date','ipo_anchor_raw_close','ipo_anchor_adjusted_close',
+          'ipo_capital_factor','ipo_anchor_status']
+    if trades.empty:return pd.DataFrame(columns=cols)
+    eligible=chart_rows(trades)
+    tickers=set(eligible.loc[eligible.status.eq('Completed'),'ticker'])
+    selected=reference[reference.ticker.isin(tickers)]
+    rows=[]
+    if selected.empty:return pd.DataFrame(columns=cols)
+    try:
+        with BloombergClient(cache_dir) as client:
+            for r in selected.itertuples():
+                out=dict(ticker=r.ticker,ipo_anchor_date=r.ipo_anchor_date,
+                         ipo_anchor_raw_close=np.nan,ipo_anchor_adjusted_close=np.nan,
+                         ipo_capital_factor=np.nan,ipo_anchor_status='')
+                try:
+                    for adjusted,column in [(True,'ipo_anchor_adjusted_close'),(False,'ipo_anchor_raw_close')]:
+                        frame,errors=client.history([r.ticker],r.ipo_anchor_date,r.ipo_anchor_date,
+                            fields=('PX_LAST',),refresh=refresh,capital_adjusted=adjusted)
+                        dates=pd.to_datetime(frame.date,errors='raise').dt.normalize()
+                        if (not errors.empty or len(frame)!=1 or not frame.ticker.eq(r.ticker).all()
+                                or not dates.eq(r.ipo_anchor_date).all()
+                                or not frame.PX_LAST.map(_positive).all()):
+                            raise ValueError('Missing/invalid exact-date '+('adjusted' if adjusted else 'raw')+' IPO anchor')
+                        out[column]=float(frame.PX_LAST.iloc[0])
+                    factor=out['ipo_anchor_adjusted_close']/out['ipo_anchor_raw_close']
+                    if not _positive(factor):raise ValueError('Invalid capital-adjustment factor')
+                    out.update(ipo_capital_factor=factor,ipo_anchor_status='Ready')
+                except (RuntimeError,TimeoutError,OSError,ValueError) as exc:
+                    out['ipo_anchor_status']=str(exc)
+                rows.append(out)
+    except (RuntimeError,TimeoutError,OSError,ImportError) as exc:
+        present={r['ticker'] for r in rows}
+        rows += [dict(ticker=r.ticker,ipo_anchor_date=r.ipo_anchor_date,
+                       ipo_anchor_status='Bloomberg IPO anchor unavailable: '+str(exc))
+                 for r in selected.itertuples() if r.ticker not in present]
+    return pd.DataFrame(rows).reindex(columns=cols)
+
+
+def with_ipo_comparison(trades, reference, anchors):
+    """Entry-time classification, independent of later outcomes and exit dates."""
+    if reference.ticker.duplicated().any() or anchors.ticker.duplicated().any():
+        raise ValueError('Duplicate IPO reference or anchor ticker')
+    check=anchors[['ticker','ipo_anchor_date']].merge(reference[['ticker','ipo_anchor_date']],
+                    on='ticker',suffixes=('_actual','_expected'),validate='one_to_one')
+    if not pd.to_datetime(check.ipo_anchor_date_actual).eq(pd.to_datetime(check.ipo_anchor_date_expected)).all():
+        raise ValueError('IPO anchor date differs from the documented reference')
+    t=trades.drop(columns=[c for c in IPO_DETAIL_COLUMNS if c in trades],errors='ignore').copy()
+    if t.empty:
+        for c in IPO_DETAIL_COLUMNS:t[c]=pd.Series(dtype='object')
+        return t
+    t=t.merge(reference,on='ticker',how='left',validate='many_to_one')
+    t=t.merge(anchors.drop(columns=['ipo_anchor_date']),on='ticker',how='left',validate='many_to_one')
+    t['ipo_issue_price_adjusted']=np.nan;t['entry_vs_ipo']=np.nan
+    valid_basis=t.ipo_issue_price_hkd.map(_positive)&t.ipo_capital_factor.map(_positive)&t.ipo_anchor_status.eq('Ready')
+    t.loc[valid_basis,'ipo_issue_price_adjusted']=t.loc[valid_basis,'ipo_issue_price_hkd']*t.loc[valid_basis,'ipo_capital_factor']
+    for c in ['ipo_position','ipo_premium_band','ipo_nominal_band','ipo_comparison_status']:t[c]=''
+    for i,r in t.iterrows():
+        reason=''
+        if r.status!='Completed':reason='Trade not completed'
+        elif r.get('hkex_eligible_tminus21')!='Yes':reason='Outside HKEX-eligible analysis'
+        elif not _positive(r.ipo_issue_price_hkd):reason='No documented HK offer price in reference'
+        elif pd.isna(r.ipo_listing_date) or pd.isna(r.ipo_anchor_date):reason='Missing HK listing/anchor date'
+        elif pd.Timestamp(r.entry_date)<max(r.ipo_listing_date,r.ipo_anchor_date):reason='Entry precedes HK IPO price anchor'
+        elif r.ipo_anchor_status!='Ready' or not _positive(r.ipo_capital_factor):
+            reason=str(r.ipo_anchor_status) if pd.notna(r.ipo_anchor_status) else 'IPO anchor unavailable'
+        else:
+            adjusted=r.ipo_issue_price_hkd*r.ipo_capital_factor
+            if not _positive(adjusted) or not _positive(r.entry_price):reason='Invalid price basis'
+            else:
+                premium=float(r.entry_price/adjusted-1)
+                position,band,nominal=ipo_groups(premium,r.ipo_issue_price_hkd)
+                t.loc[i,['ipo_issue_price_adjusted','entry_vs_ipo']]=[adjusted,premium]
+                t.loc[i,['ipo_position','ipo_premium_band','ipo_nominal_band']]=[position,band,nominal]
+        t.at[i,'ipo_comparison_status']=reason or 'Included'
+    return t.drop(columns='ipo_anchor_status')
+
+
+def issue_price_analysis(trades):
+    """Each row is a separate strategy/cohort; never pool overlapping strategies."""
+    summary=pd.DataFrame(columns=IPO_SUMMARY_COLUMNS)
+    coverage_cols=['strategy','strategy_label','eligible_events','covered_events','missing_events','covered_issuers']
+    coverage=pd.DataFrame(columns=coverage_cols)
+    if trades.empty or 'ipo_comparison_status' not in trades:return summary,coverage
+    g=chart_rows(trades)
+    g=g.loc[g.status.eq('Completed')].copy()
+    if g.duplicated(['event_id','strategy']).any():raise ValueError('Duplicate event/strategy in IPO analysis')
+    rows=[];counts=[]
+    dimensions=[('Above / below','ipo_position',IPO_POSITION_GROUPS),
+                ('Premium / discount','ipo_premium_band',IPO_PREMIUM_BANDS),
+                ('Offer price (HKD)','ipo_nominal_band',IPO_NOMINAL_BANDS)]
+    for key,all_g in g.groupby('strategy',sort=False):
+        covered=all_g[all_g.ipo_comparison_status.eq('Included')]
+        counts.append(dict(strategy=key,strategy_label=all_g.strategy_label.iloc[0],eligible_events=len(all_g),
+            covered_events=len(covered),missing_events=len(all_g)-len(covered),covered_issuers=covered.ticker.nunique()))
+        for scope in IPO_ORDER_SCOPES:
+            scoped=(covered if scope=='All lock-ups' else
+                    covered.loc[covered.lockup_number.eq(1 if scope=='First lock-up' else 2)])
+            for grouping,column,groups in dimensions:
+                for cohort in groups:
+                    part=scoped.loc[scoped[column].eq(cohort)]
+                    n=len(part);issuer=part.groupby('ticker').gross_return.mean()
+                    row=dict(order_scope=scope,grouping=grouping,strategy=key,strategy_label=all_g.strategy_label.iloc[0],
+                        cohort=cohort,events=n,issuers=len(issuer),win_events=int(part.gross_return.gt(1e-12).sum()),
+                        loss_events=int(part.gross_return.lt(-1e-12).sum()),flat_events=int(part.gross_return.abs().le(1e-12).sum()),
+                        win_rate=float(part.gross_return.gt(1e-12).mean()) if n else np.nan,
+                        mean_gross=issuer.mean(),median_issuer_gross=issuer.median(),worst_event=part.gross_return.min())
+                    for metric,prefix,mean_col in [('csi300_alpha','alpha','mean_csi300_alpha'),
+                                                    ('best_mark_return','mark','mean_best_return')]:
+                        values=pd.to_numeric(part.get(metric,pd.Series(index=part.index,dtype=float)),errors='coerce')
+                        sample=part[np.isfinite(values)].copy();sample[metric]=values.loc[sample.index]
+                        means=sample.groupby('ticker')[metric].mean()
+                        row[prefix+'_events']=len(sample);row[prefix+'_issuers']=len(means);row[mean_col]=means.mean()
+                        if prefix=='mark':row['ever_positive_rate']=sample[metric].gt(1e-12).mean() if len(sample) else np.nan
+                    rows.append(row)
+    return pd.DataFrame(rows,columns=IPO_SUMMARY_COLUMNS),pd.DataFrame(counts,columns=coverage_cols)
+
+
+def plot_issue_price(trades):
+    import matplotlib.pyplot as plt
+    from matplotlib.ticker import PercentFormatter
+    summary,_=issue_price_analysis(trades)
+    if summary.empty or not summary.events.gt(0).any():return {}
+    figures={};all_s=summary[summary.order_scope.eq('All lock-ups')]
+    position=all_s[all_s.grouping.eq('Above / below')]
+    strategies=position.drop_duplicates('strategy').set_index('strategy').strategy_label
+    fig,axes=plt.subplots(1,2,figsize=(13,max(6,len(strategies)*.42)),layout='constrained')
+    for ax,col,title in zip(axes,['mean_gross','win_rate'],['Mean short return','Short win rate']):
+        matrix=position.pivot(index='strategy',columns='cohort',values=col).reindex(index=strategies.index,columns=IPO_POSITION_GROUPS)
+        counts=position.pivot(index='strategy',columns='cohort',values='events').reindex_like(matrix)
+        limit=max(.01,float(np.nanmax(np.abs(matrix.to_numpy(dtype=float)))))
+        cmap=plt.get_cmap('RdYlGn' if col=='mean_gross' else 'Blues').with_extremes(bad='#eeeeee')
+        im=ax.imshow(matrix.to_numpy(dtype=float),aspect='auto',cmap=cmap,vmin=-limit if col=='mean_gross' else 0,vmax=limit if col=='mean_gross' else 1)
+        ax.set_xticks(range(3),IPO_POSITION_GROUPS);ax.set_yticks(range(len(strategies)),strategies.values if ax is axes[0] else ['']*len(strategies))
+        for i in range(len(matrix)):
+            for j in range(3):
+                value=matrix.iloc[i,j];n=int(counts.iloc[i,j])
+                ax.text(j,i,f'{value:.1%}\nn={n}' if n else 'No sample',ha='center',va='center',fontsize=8,
+                        color='white' if pd.notna(value) and ((col=='win_rate' and value>.6) or (col=='mean_gross' and abs(value)>limit*.75)) else '#24282b')
+        ax.set_title(title,fontweight='bold');fig.colorbar(im,ax=ax,format=PercentFormatter(1),shrink=.7)
+    fig.suptitle('Entry price versus IPO issue price · n = event windows\nMean: equal issuer weight within cohort; win rate: profitable events / events',fontsize=10)
+    figures['ipo_position_returns_win_rate']=fig
+    focuses=[k for k in ['pre_21_0','post_open_21'] if k in set(strategies.index)]
+    colors=['#153954','#8996a3']
+    for dimension,groups,filename in [('Premium / discount',IPO_PREMIUM_BANDS,'ipo_premium_bands'),
+                                      ('Offer price (HKD)',IPO_NOMINAL_BANDS,'ipo_nominal_price')]:
+        if not focuses:continue
+        fig,axes=plt.subplots(1,2,figsize=(14,6),layout='constrained')
+        for ax,col,title in zip(axes,['mean_gross','win_rate'],['Mean short return','Short win rate']):
+            for k,(key,color) in enumerate(zip(focuses,colors)):
+                p=all_s[all_s.grouping.eq(dimension)&all_s.strategy.eq(key)].set_index('cohort').reindex(groups)
+                y=np.arange(len(groups))+(k-(len(focuses)-1)/2)*.36
+                ax.barh(y,p[col].to_numpy(dtype=float),height=.30,color=color,label=strategies[key])
+                for yy,value,n in zip(y,p[col],p.events):
+                    if n:ax.annotate(f'  {value:.1%} (n={int(n)})',(value,yy),ha='left' if value>=0 else 'right',va='center',fontsize=8)
+            ax.set_yticks(range(len(groups)),groups);ax.invert_yaxis();ax.axvline(0,color='#999999',lw=.6)
+            ax.xaxis.set_major_formatter(PercentFormatter(1));ax.set_title(title,fontweight='bold');ax.grid(axis='x',alpha=.12)
+            ax.margins(x=.35);ax.legend(frameon=False,loc='upper center',bbox_to_anchor=(.5,-.09),fontsize=8)
+            if col=='win_rate':ax.set_xlim(0,1.5);ax.set_xticks([0,.25,.5,.75,1])
+        fig.suptitle(dimension+' · missing groups are blank, not zero\nEntry-time groups; separate strategy samples; n = event windows',fontsize=10)
+        figures[filename]=fig
+    eligible=chart_rows(trades)
+    g=eligible[eligible.status.eq('Completed')&eligible.ipo_comparison_status.eq('Included')]
+    if focuses:
+        fig,axes=plt.subplots(1,len(focuses),figsize=(13,5),layout='constrained',squeeze=False)
+        for ax,key in zip(axes[0],focuses):
+            p=g[g.strategy.eq(key)]
+            for name,mask,color in [('First',p.lockup_number.eq(1),'#153954'),('Second',p.lockup_number.eq(2),'#23745b'),('Third+',p.lockup_number.gt(2),'#9aa4ae')]:
+                part=p[mask]
+                if len(part):ax.scatter(part.entry_vs_ipo,part.gross_return,s=24,alpha=.65,color=color,label=f'{name} (n={len(part)})')
+            ax.axvline(0,color='#999',lw=.7);ax.axhline(0,color='#999',lw=.7)
+            ax.xaxis.set_major_formatter(PercentFormatter(1));ax.yaxis.set_major_formatter(PercentFormatter(1))
+            ax.set_xlabel('Entry premium / discount to adjusted HK IPO price');ax.set_ylabel('Fixed-exit short return')
+            ax.set_title(strategies[key],fontsize=11);ax.legend(frameon=False,fontsize=8)
+        fig.suptitle('IPO premium versus subsequent short return · all observations retained',fontsize=11)
+        figures['ipo_premium_scatter']=fig
+    return figures
+
+
 def plot_additional_analysis(trades, settings=None):
     """Only HKEX Yes events enter any graph, including conditional cohorts."""
     import matplotlib.pyplot as plt
@@ -1115,6 +1376,7 @@ def plot_results(summary, trades, paths, output_dir=None, settings=None, audit=N
         fig.suptitle("HKEX eligible at T−21 only", fontsize=10, color="#626970")
     additions = plot_additional_analysis(trades, cfg)
     additions.update(plot_lockup_order(trades, paths))
+    additions.update(plot_issue_price(trades))
     for fig in additions.values():
         title = fig._suptitle.get_text() if fig._suptitle else ""
         fig.suptitle("HKEX eligible at T−21 only\n"+title,fontsize=10,color="#626970")
@@ -1228,7 +1490,7 @@ class BloombergClient:
                 rows.append(row)
         return rows, errors
 
-    def history(self, tickers, start, end, fields=PRICE_FIELDS, refresh=False):
+    def history(self, tickers, start, end, fields=PRICE_FIELDS, refresh=False, capital_adjusted=True):
         if not self.session:
             raise RuntimeError("Use BloombergClient inside a with block")
         securities = sorted(set(tickers))
@@ -1237,9 +1499,13 @@ class BloombergClient:
         start, end = pd.Timestamp(start).strftime("%Y%m%d"), pd.Timestamp(end).strftime("%Y%m%d")
         params = dict(periodicitySelection="DAILY", periodicityAdjustment="ACTUAL",
                       nonTradingDayFillOption="ACTIVE_DAYS_ONLY", nonTradingDayFillMethod="NIL_VALUE",
-                      adjustmentFollowDPDF=False, adjustmentSplit=True,
+                      adjustmentFollowDPDF=False, adjustmentSplit=bool(capital_adjusted),
                       adjustmentNormal=False, adjustmentAbnormal=False)
-        signature = dict(version=VERSION, securities=securities, fields=list(fields), start=start, end=end, options=params)
+        if all(t.endswith(' HK Equity') for t in securities):params['currency']='HKD'
+        # Capital-adjusted histories and IPO anchors must not reuse different daily vintages.
+        vintage=_BLOOMBERG_CACHE_VINTAGE
+        signature = dict(version=VERSION, securities=securities, fields=list(fields), start=start, end=end,
+                         options=params,capital_adjustment_vintage=vintage)
         key = hashlib.sha256(json.dumps(signature, sort_keys=True).encode()).hexdigest()
         csv, meta = self.cache_dir / (key+".csv"), self.cache_dir / (key+".json")
         if not refresh and csv.exists() and meta.exists():
@@ -1874,6 +2140,20 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
                    'hit_5pct_rate':'Reached +5%','hit_10pct_rate':'Reached +10%',
                    'pair_status':'Pair coverage','csi300_status':'CSI 300 coverage'})
 
+    rate_columns.update({'entry_vs_ipo','pre21_entry_vs_ipo','t0_open_vs_ipo'})
+    labels.update({'cohort':'IPO price group','order_scope':'Lock-up cohort','grouping':'Grouping',
+        'eligible_events':'Eligible completed events','covered_events':'With IPO comparison',
+        'missing_events':'Missing IPO comparison','covered_issuers':'Covered stocks',
+        'alpha_events':'CSI paired events','alpha_issuers':'CSI paired stocks',
+        'mark_events':'Complete close paths','mark_issuers':'Close-path stocks',
+        'ipo_issue_price_hkd':'Final HK issue price (HK$)', 'ipo_listing_date':'HK listing date',
+        'ipo_anchor_date':'IPO anchor date','ipo_source_url':'HK offer-price source',
+        'ipo_source_basis':'Issue-price evidence','ipo_capital_factor':'Capital adjustment factor',
+        'ipo_anchor_raw_close':'IPO-day raw close (HK$)','ipo_anchor_adjusted_close':'IPO-day adjusted close (HK$)',
+        'ipo_issue_price_adjusted':'IPO price on trade basis','entry_vs_ipo':'Entry vs IPO (%)',
+        'ipo_position':'Above / below IPO','ipo_premium_band':'Entry premium band',
+        'ipo_nominal_band':'Nominal issue-price band','ipo_comparison_status':'IPO comparison coverage',
+        'pre21_entry_vs_ipo':'T-21 entry vs IPO (%)','t0_open_vs_ipo':'T0 open vs IPO (%)'})
     labels.update(dict(zip(HKEX_COLUMNS, [
         'HKEX eligible at T−21', 'HKEX check date (T−21)', 'HKEX list effective',
         'HKEX list updated', 'HKEX historical list', 'HKEX check detail',
@@ -1921,6 +2201,9 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
                 width=42
             if col=='hkex_retrieved_utc':
                 width=30
+            if col in {'ipo_comparison_status','ipo_source_basis'}:
+                width=54
+            if col=='ipo_source_url':width=25
             if col in {'condition','pair_status','pre_result','post_result'}:
                 width=32
             if col in {'source_url','event_id','input_id'}:
@@ -1941,13 +2224,17 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
                     cell.number_format='dd-mmm-yyyy'
                 elif col in rate_columns or col in strategy_keys:
                     cell.number_format=pct
+                elif col=='ipo_capital_factor':
+                    cell.number_format='0.0000000000'
+                elif col in {'ipo_issue_price_hkd','ipo_issue_price_adjusted'}:
+                    cell.number_format='#,##0.000000'
                 elif col=='PX_VOLUME':
                     cell.number_format='#,##0'
                 elif isinstance(x,(float,np.floating)):
                     cell.number_format='#,##0.0000'
                 elif isinstance(x,(int,np.integer)):
                     cell.number_format='#,##0'
-                if col in {'source_url','hkex_source_url'} and isinstance(x,str) and x.startswith('https://'):
+                if col in {'source_url','hkex_source_url','ipo_source_url'} and isinstance(x,str) and x.startswith('https://'):
                     cell.hyperlink=x
                     cell.value=('HKEX dated list' if col=='hkex_source_url' else
                                 'HKEX filing' if 'hkexnews.hk/' in x else 'Primary filing')
@@ -1972,7 +2259,7 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
         d=df.copy()
         for col in d.columns:
             if col in {'input_date','last_day_locked','t0','entry_date','exit_date','date',
-                       'hkex_check_date','hkex_effective_date','hkex_update_date',
+                       'hkex_check_date','hkex_effective_date','hkex_update_date','ipo_listing_date','ipo_anchor_date',
                        'best_mark_date','best_low_date','pre_entry_date','post_exit_date'}:
                 d[col]=pd.to_datetime(d[col],errors='coerce')
         return d
@@ -2112,6 +2399,66 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
     else:
         ws.cell(csi_end+2,1,'No matched CSI 300 observations; see provider errors and Trades coverage')
 
+    s=wb.create_sheet('Issue price');sheet_style(s);s.freeze_panes='C6';s.sheet_properties.tabColor='153954'
+    issue_summary,issue_coverage=issue_price_analysis(trades)
+    context=[
+        'Entry price versus final Hong Kong IPO offer price; completed HKEX-eligible events only.',
+        'Mean / median: equal issuer weight within each group. Win rate: profitable event windows / events.',
+        'Offer and entry prices share Bloomberg capital adjustments. Raw HK$ offer prices appear in Trades / Inputs.',
+        'Each strategy has its own sample. First / second cohorts below are descriptive, not matched stock pairs.']
+    for row,text in enumerate(context,1):
+        s.merge_cells(start_row=row,start_column=1,end_row=row,end_column=8)
+        s.cell(row,1,text).font=Font(name='Arial',size=10,color=ink)
+        s.cell(row,1).alignment=Alignment(wrap_text=True,vertical='center')
+        s.row_dimensions[row].height=28
+    core=['strategy_label','cohort','events','issuers','win_rate','mean_gross','median_issuer_gross','worst_event']
+    all_issue=issue_summary[issue_summary.order_scope.eq('All lock-ups')]
+    top=all_issue[all_issue.grouping.eq('Above / below') & all_issue.events.gt(0)]
+    end=write_table(s,top[core],start_row=5,filters=False)
+    if top.empty:s.cell(6,1,'No covered IPO comparison sample. See coverage and Trades for the exact missing input.')
+    start=max(end+4,10)
+    s.cell(start-1,1,'IPO comparison coverage by strategy').font=Font(name='Arial',size=10,bold=True,color=ink)
+    end=write_table(s,issue_coverage.drop(columns='strategy'),start_row=start,filters=False)
+    chart_at=6
+    for key in ['pre_21_0','post_open_21']:
+        for dimension in ['Premium / discount','Offer price (HKD)']:
+            frame=all_issue[all_issue.strategy.eq(key)&all_issue.grouping.eq(dimension)]
+            if frame.empty or not frame.events.gt(0).any():continue
+            label=frame.strategy_label.iloc[0]
+            start=end+4
+            s.cell(start-1,1,label+' · '+dimension).font=Font(name='Arial',size=10,bold=True,color=ink)
+            end=write_table(s,frame[core],start_row=start,filters=False)
+            if dimension=='Premium / discount':
+                for col,title,color in [(6,'Mean return','153954'),(5,'Win rate','23745B')]:
+                    c=add_bar(s,title+' by entry premium: '+label,start,end,[col],2,f'J{chart_at}',[color],height=13)
+                    c.legend=None
+                    if col==5:c.y_axis.scaling.min=0;c.y_axis.scaling.max=1
+                    chart_at+=34
+    start=end+4
+    s.cell(start-1,1,'First and second separately · entry price versus IPO').font=Font(name='Arial',size=10,bold=True,color=ink)
+    first_second=issue_summary[issue_summary.order_scope.ne('All lock-ups') &
+                               issue_summary.grouping.eq('Above / below') & issue_summary.events.gt(0)]
+    end=write_table(s,first_second[['order_scope']+core],start_row=start,filters=False)
+    start=max(end+4,chart_at+3)
+    s.cell(start-1,1,'CSI 300 excess and best daily close · matched metric coverage').font=Font(name='Arial',size=10,bold=True,color=ink)
+    metric_cols=['strategy_label','cohort','alpha_events','alpha_issuers','mean_csi300_alpha',
+                 'mark_events','mark_issuers','mean_best_return','ever_positive_rate']
+    end=write_table(s,top[metric_cols],start_row=start,filters=False)
+    start=end+4
+    s.cell(start-1,1,'Full cohort data · filter by group, lock-up order and strategy').font=Font(name='Arial',size=10,bold=True,color=ink)
+    full=issue_summary.loc[issue_summary.events.gt(0)].drop(columns='strategy')
+    end=write_table(s,full,start_row=start,filters=True)
+    # The full data table is below all charts, so the extra fields never overlap them.
+    for col,width in [('A',42),('B',26),('C',16),('D',16),('E',20),('F',21),('G',21),('H',21),('I',21)]:
+        s.column_dimensions[col].width=width
+    for row in s.iter_rows():
+        for cell in row:
+            if cell.value is not None and isinstance(cell.value,str):
+                cell.alignment=Alignment(wrap_text=True,vertical='center')
+        s.row_dimensions[row[0].row].height=max(s.row_dimensions[row[0].row].height or 18,32)
+    s.print_area=f'A1:U{max(end,chart_at)}'
+
+
     s=wb.create_sheet('First vs second');sheet_style(s);s.freeze_panes='B5';s.sheet_properties.tabColor='153954'
     for row,text in enumerate([
         'Order: distinct effective expiry dates per ticker in the full supplied input, before any filters.',
@@ -2236,6 +2583,13 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
     if not event.empty and not pair_detail.empty:
         added=['event_id']+[c for c in pair_detail if c not in event.columns]
         event=event.merge(pair_detail[added],on='event_id',how='left',validate='one_to_one')
+    if not event.empty and 'ipo_issue_price_hkd' in trades:
+        refs=trades.drop_duplicates('event_id')[['event_id','ipo_issue_price_hkd','ipo_listing_date',
+              'ipo_issue_price_adjusted','ipo_source_url']]
+        event=event.merge(refs,on='event_id',how='left',validate='one_to_one')
+        for key,col in [('pre_21_0','pre21_entry_vs_ipo'),('post_open_21','t0_open_vs_ipo')]:
+            observations=trades.loc[trades.strategy.eq(key),['event_id','entry_vs_ipo']].rename(columns={'entry_vs_ipo':col})
+            event=event.merge(observations,on='event_id',how='left',validate='one_to_one')
     event=with_hkex_columns(event,audit,HKEX_COMPACT)
     if not event.empty and 'hkex_eligible_tminus21' in event:
         front=['event_id','ticker','name','input_date','last_day_locked','t0']
@@ -2251,6 +2605,8 @@ def export_excel(path, audit, trades, summary, common_summary, prices, paths, se
                 'benchmark_return','short_plus_hsi_return','locate_status','borrow_rate_used',
                 'input_date','entry_field','exit_field','event_id','source_url']
     order_cols=['lockup_number','lockup_label','lockup_dates_in_input']
+    input_cols += [c for c in IPO_DETAIL_COLUMNS if c in audit]
+    trade_cols += IPO_DETAIL_COLUMNS
     input_cols=input_cols[:2]+order_cols+input_cols[2:]
     trade_cols=trade_cols[:2]+order_cols+trade_cols[2:]
     if not event.empty:
@@ -2396,7 +2752,7 @@ def write_html_report(output, audit, trades, summary, common, figures, metadata,
     if not trades.empty:
         skipped = trades.loc[~trades.status.eq("Completed"),"reason"].value_counts().rename_axis("Skipped reason").reset_index(name="Event–strategy rows")
         parts += ["<details><summary>Skipped observations</summary><div class='table'>",table(skipped),"</div></details>"]
-    parts += ["<p>HK_IPO_Lockup_Backtest.xlsx is the main report, with native HSI/CSI 300 comparisons, alpha, before/after cohorts and best-mark charts. Rerun the single Python cell to refresh it.</p></body></html>"]
+    parts += ["<p>HK_IPO_Lockup_Backtest.xlsx is the main report, with native HSI/CSI 300 comparisons, IPO issue-price groups, alpha, before/after cohorts and best-mark charts. Rerun the single Python cell to refresh it.</p></body></html>"]
     Path(output).write_text("\n".join(parts), encoding="utf-8")
 
 # Embedded source snapshot: date/ticker rows and primary-review decisions only.
@@ -4524,7 +4880,7 @@ def run_lockup_backtest():
                     "mean_fixed_return","mean_best_return","median_best_return","ever_positive_rate","fixed_profit_rate",
                     "gave_back_rate","hit_1pct_rate","hit_3pct_rate","hit_5pct_rate","hit_10pct_rate",
                     "best_mark_return","best_low_return","csi300_alpha",
-                    "first_mean","second_mean","second_minus_first","first_win_rate","second_win_rate"}.intersection(view.columns):
+                    "first_mean","second_mean","second_minus_first","first_win_rate","second_win_rate","entry_vs_ipo"}.intersection(view.columns):
             view[col]=view[col].map(lambda x:f"{x:+.2%}" if pd.notna(x) else "Unavailable")
         display(view)
 
@@ -4670,6 +5026,35 @@ def run_lockup_backtest():
 
     print("Missing prices are never filled or shifted. Your v2 does not require complete ±30-session endpoints.")
 
+    heading('IPO issue price versus short performance')
+    if market_ready:
+        reference=load_ipo_reference()
+        print('ISSUE PRICE: final Hong Kong offer prices from the embedded filing reference (snapshot '+IPO_REFERENCE_ASOF+').')
+        print('Market prices / capital adjustments: Bloomberg Desktop API. No first-day price or overseas IPO price substitutes.')
+        print('Extra Bloomberg requests: raw and capital-adjusted close on the exact HK IPO anchor date, for eligible completed stocks only.')
+        anchors=download_ipo_anchors(trades,reference,BASE / OUTPUT_ROOT / 'bloomberg_cache',refresh=REFRESH_BLOOMBERG)
+        trades=with_ipo_comparison(trades,reference,anchors)
+        chart_trades=chart_rows(trades)
+        audit=audit.merge(reference,on='ticker',how='left',validate='many_to_one')
+        audit.to_csv(OUTPUT / 'input_audit.csv',index=False)
+        issue_summary,issue_coverage=issue_price_analysis(trades)
+        print('Entry premium = adjusted entry / (HK offer price × IPO-day adjusted-close / raw-close) − 1.')
+        print('Groups use each strategy entry date and price field; no future return is used for grouping.')
+        print('Mean / median returns give each issuer one weight within each cohort; win rates count profitable event windows.')
+        print('CSI 300 excess and best-close returns have their own coverage counts. Zero returns are not wins.')
+        print('First / second cohort splits are descriptive, not matched pairs. Strategies are never pooled together.')
+        display(issue_coverage.drop(columns='strategy'))
+        missing=chart_trades[chart_trades.status.eq('Completed')&chart_trades.ipo_comparison_status.ne('Included')]
+        if not missing.empty:
+            print('Excluded from the IPO comparison only; the original backtest is retained:')
+            display(missing.groupby('ipo_comparison_status').agg(event_windows=('event_id','size'),stocks=('ticker','nunique')).reset_index())
+        issue_view=issue_summary[issue_summary.order_scope.eq('All lock-ups')&issue_summary.grouping.eq('Above / below')&issue_summary.events.gt(0)]
+        show_returns(issue_view[['strategy_label','cohort','events','issuers','win_rate','mean_gross','median_issuer_gross',
+                                'alpha_events','mean_csi300_alpha','mark_events','mean_best_return']])
+        if issue_view.empty:print('No covered IPO comparison sample; see IPO comparison coverage in Trades.')
+        reference.to_csv(OUTPUT / 'ipo_issue_price_reference.csv',index=False)
+        anchors.to_csv(OUTPUT / 'ipo_bloomberg_anchors.csv',index=False)
+
     heading('First versus second lock-up')
     if market_ready:
         order_detail, order_summary = lockup_order_comparison(trades)
@@ -4774,6 +5159,14 @@ def run_lockup_backtest():
                           alpha="Short stock minus short CSI 300; beta=1 excess, not regression alpha",
                           missing_dates="Excluded, never filled"),
             "before_after_basis":f"{month_before} close to T0 open; T0 open to {month_after} close; percentages count matched events",
+            "ipo_comparison":dict(reference_asof=IPO_REFERENCE_ASOF,reference_sha256=IPO_REFERENCE_SHA256,
+                references=len(reference),covered_event_strategies=int(issue_coverage.covered_events.sum()),
+                missing_event_strategies=int(issue_coverage.missing_events.sum()),
+                source='Embedded final HK offer-price filings; Bloomberg raw and capital-adjusted IPO-day closes',
+                formula='Entry / (final HK offer price * adjusted IPO-day close / raw IPO-day close) - 1',
+                missing='Excluded from IPO comparison only; coverage by strategy exported',
+                group_timing='Each strategy entry; no exit-price grouping',
+                weighting='Equal issuer means within cohort; event-window win rates; metric-specific alpha/mark samples'),
             "lockup_order_basis":"Distinct effective expiry dates per ticker in full input before filters; same-stock paired comparisons",
             "best_marks_basis":"Fully observed post-entry closes/lows; no zero floor; hindsight extrema, not executable fills",
             "eligible_chart_events":int(chart_trades.loc[chart_trades.status.eq('Completed'),'event_id'].nunique()) if not chart_trades.empty else 0,
@@ -4791,7 +5184,8 @@ def run_lockup_backtest():
                            ('csi300_benchmark_summary',csi_summary),('before_after_events',pair_detail),
                            ('before_after_summary',pair_summary),('best_mark_summary',mark_summary),
                            ('first_second_pairs',order_detail),('first_second_summary',order_summary),
-                           ('first_second_paths',order_paths)]:
+                           ('first_second_paths',order_paths),('ipo_issue_price_summary',issue_summary),
+                           ('ipo_issue_price_coverage',issue_coverage)]:
             price_only_columns(frame).to_csv(OUTPUT / (name+'.csv'),index=False,float_format='%.12g')
         excel_path = export_excel(OUTPUT / "HK_IPO_Lockup_Backtest.xlsx",audit,trades,summary,
                                  common_summary,prices,paths,CFG,run_metadata)
@@ -4801,7 +5195,7 @@ def run_lockup_backtest():
         saved_manifest["excel_sha256"] = hashlib.sha256(excel_path.read_bytes()).hexdigest()
         saved_manifest["csv_sha256"] = {p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in sorted(OUTPUT.glob('*.csv'))}
         (OUTPUT / "run_manifest.json").write_text(json.dumps(saved_manifest,indent=2,default=str))
-        print("MAIN REPORT: HK_IPO_Lockup_Backtest.xlsx — eligible Summary with HSI/CSI 300 alpha, First vs second, Before after, Best marks, and full detail tabs.")
+        print("MAIN REPORT: HK_IPO_Lockup_Backtest.xlsx — eligible Summary with HSI/CSI 300 alpha, Issue price, First vs second, Before after, Best marks, and full detail tabs.")
         print("FINISHED: Excel, HTML, full trade ledger, audit, input prices, charts and hashes saved.")
         for filename in ["HK_IPO_Lockup_Backtest.xlsx","backtest_report.html","trades.csv","input_audit.csv","hkex_short_selling_checks.csv"]:
             file = OUTPUT / filename
@@ -4824,7 +5218,9 @@ def run_lockup_backtest():
             "before_after_summary":pair_summary if market_ready else None,
             "best_mark_summary":mark_summary if market_ready else None,
             "first_second_pairs":order_detail if market_ready else None,
-            "first_second_summary":order_summary if market_ready else None}
+            "first_second_summary":order_summary if market_ready else None,
+            "ipo_issue_price_summary":issue_summary if market_ready else None,
+            "ipo_issue_price_coverage":issue_coverage if market_ready else None}
 
 
 if __name__ == "__main__":
