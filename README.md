@@ -1,5 +1,13 @@
 # HK IPO desk files
 
+## Trapped Cash Outlook export
+
+**[Open the Jupyter notebook](trapped_cash_export.ipynb)** · **[Download notebook](https://github.com/kennytam-code/code/raw/refs/heads/main/trapped_cash_export.ipynb)** · [Python source](trapped_cash_export.py) · [Setup and usage](trapped_cash/README.md)
+
+Export daily `Trapped Cash` email tables from **1 April 2026 through today** into Excel with `Trading Book`, `Notional`, `EffectiveDate`, and `MaturityDate`. Runs locally on Windows with classic Outlook. Includes a per-date extraction log and automated parser/export tests; a live Outlook mailbox still needs to be verified on the user's computer.
+
+[![Trapped Cash validation](https://github.com/kennytam-code/code/actions/workflows/trapped-cash-validation.yml/badge.svg?branch=main)](https://github.com/kennytam-code/code/actions/workflows/trapped-cash-validation.yml)
+
 ## 國星宇航 / Adaspace IPO — 6 November 2026
 
 **[Download the Word trader briefing — 06935 HK](https://github.com/kennytam-code/code/raw/refs/heads/main/Adaspace_IPO_Trader_Brief_2026-11-06.docx)**
