@@ -1,6 +1,6 @@
 # Trapped Cash Outlook export
 
-[Open the Jupyter notebook](../trapped_cash_export.ipynb) · [Download notebook](https://github.com/kennytam-code/code/raw/refs/heads/main/trapped_cash_export.ipynb) · [Python source](../trapped_cash_export.py) · [Automated checks](https://github.com/kennytam-code/code/actions/workflows/trapped-cash-validation.yml)
+[Copy and paste two cells](COPY_PASTE.md) · [Open the Jupyter notebook](../trapped_cash_export.ipynb) · [Download notebook](https://github.com/kennytam-code/code/raw/refs/heads/main/trapped_cash_export.ipynb) · [Python source](../trapped_cash_export.py) · [Automated checks](https://github.com/kennytam-code/code/actions/workflows/trapped-cash-validation.yml)
 
 Extract `Trading Book`, `Notional`, `EffectiveDate`, and `MaturityDate` from daily HTML email tables into one Excel workbook, starting **1 April 2026** and ending on the computer's current date when the settings cell runs.
 
@@ -8,8 +8,8 @@ Extract `Trading Book`, `Notional`, `EffectiveDate`, and `MaturityDate` from dai
 
 1. Use Jupyter locally on **Windows with classic Outlook installed and signed in**. Remote Jupyter, Colab, new Outlook, and Outlook for Mac cannot use this COM connector.
 2. Open Outlook and synchronize the history back to April 2026.
-3. Download the notebook and open it in Jupyter. Run the installation cell once, then run all remaining cells in order.
-4. Check the `Settings` cell: the default is your default mailbox's **Inbox and all its subfolders**. Use `MAILBOX_NAME` for another mailbox by its exact Outlook display name and `FOLDER_PATH = ["Reports", "Trapped Cash"]` for a folder beneath its Inbox. Archive folders and other stores are not searched automatically.
+3. Copy the two cells from the [copy-and-paste guide](COPY_PASTE.md) into a blank notebook, or download the ready-made notebook. Run cell 1 once to install packages, then run cell 2 to export. Cell 2 contains the entire program; no external script is needed.
+4. Check the settings at the top of cell 2: the default is your default mailbox's **Inbox and all its subfolders**. Use `MAILBOX_NAME` for another mailbox by its exact Outlook display name and `FOLDER_PATH = ["Reports", "Trapped Cash"]` for a folder beneath its Inbox. Archive folders and other stores are not searched automatically.
 5. The result is a fresh, timestamped `.xlsx` in Jupyter's current working directory. The notebook prints its full path.
 
 Alternatively, install dependencies and run the script from a terminal:

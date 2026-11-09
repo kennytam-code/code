@@ -231,20 +231,21 @@ class ExportTests(unittest.TestCase):
     def test_notebook_has_same_definitions_as_script(self):
         notebook = json.loads((ROOT / "trapped_cash_export.ipynb").read_text(encoding="utf-8"))
         self.assertEqual(notebook["nbformat"], 4)
+        self.assertEqual(sum(c["cell_type"] == "code" for c in notebook["cells"]), 2)
         definitions = []
         for cell in notebook["cells"]:
             if cell["cell_type"] != "code":
                 continue
             self.assertEqual(cell["outputs"], [])
             source = "".join(cell["source"])
-            if source.startswith("%") or source.startswith("data, extraction_log, output_file ="):
+            if source.startswith("%"):
                 continue
             compile(source, "notebook", "exec")
             definitions.extend(ast.parse(source).body)
         script = ast.parse((ROOT / "trapped_cash_export.py").read_text(encoding="utf-8"))
-        # Remove the script's module docstring and main-entry guard.
+        # The complete second cell can be copied directly into a blank notebook.
         self.assertEqual([ast.dump(node) for node in definitions],
-                         [ast.dump(node) for node in script.body[1:-1]])
+                         [ast.dump(node) for node in script.body])
 
     def test_complete_export_with_simulated_outlook(self):
         namespace, _, _ = mailbox()

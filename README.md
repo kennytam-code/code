@@ -2,7 +2,7 @@
 
 ## Trapped Cash Outlook export
 
-**[Open the Jupyter notebook](trapped_cash_export.ipynb)** · **[Download notebook](https://github.com/kennytam-code/code/raw/refs/heads/main/trapped_cash_export.ipynb)** · [Python source](trapped_cash_export.py) · [Setup and usage](trapped_cash/README.md)
+**[Copy and paste these two Jupyter cells](trapped_cash/COPY_PASTE.md)** · **[Open the Jupyter notebook](trapped_cash_export.ipynb)** · **[Download notebook](https://github.com/kennytam-code/code/raw/refs/heads/main/trapped_cash_export.ipynb)** · [Python source](trapped_cash_export.py) · [Setup and usage](trapped_cash/README.md)
 
 Export daily `Trapped Cash` email tables from **1 April 2026 through today** into Excel with `Trading Book`, `Notional`, `EffectiveDate`, and `MaturityDate`. Runs locally on Windows with classic Outlook. Includes a per-date extraction log and automated parser/export tests; a live Outlook mailbox still needs to be verified on the user's computer.
 
