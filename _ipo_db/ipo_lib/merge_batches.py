@@ -780,20 +780,8 @@ def main():
             put(c, "reallocated_from_intl", r.get("reallocated_from_intl"), "hkex-pdf:allotment", 45)
             put(c, "public_shares_final", r.get("public_shares_final"), "hkex-pdf:allotment final split", 45)
             put(c, "public_pct_initial", r.get("public_pct_initial"), "hkex-pdf:allotment", 45)
-            # the allocation mechanism, from the notice: pre-reform deals ran
-            # under PN18; from Aug-2025 a 5% initial tranche is Mechanism A
-            # (clawback to 35%, conditional on a covered placing) and 10%+ with
-            # no clawback line is Mechanism B (fixed, no clawback)
-            listed = (deals[c].get("ipo_date") or r.get("listing_date") or "")[:10]
-            pi = r.get("public_pct_initial")
-            if listed and pi is not None:
-                if listed < "2025-08-04":
-                    mech = "PN18 (pre-Aug-2025)"
-                elif pi <= 6:
-                    mech = "A (5% start, clawback to 35%)"
-                else:
-                    mech = "B (fixed, no clawback)"
-                put(c, "alloc_mechanism", mech, "derived:initial public tranche vs listing date", 40)
+            # Mechanism A/B/18C needs the issuer's filed allocation terms.
+            # Neither listing date nor initial public percentage proves it.
             if r.get("is_18c") and not deals[c].get("listing_regime_18c"):
                 put(c, "listing_regime_18c", True, "hkex-pdf:allotment cites Rule 18C", 45)
             n_al += 1
@@ -2316,25 +2304,8 @@ def main():
         elif x.get("day1_vol_x_retail") is None:
             x["tape_note"] = ("volume on file; the retail multiple needs the final "
                               "public split, which this notice does not state")
-        if x.get("clawback") is None and x.get("public_alloc_pct") is not None:
-            # The final split is stated but the trigger line is not (pre-2025
-            # notices). Derive only where the split is unambiguous: a PN18
-            # clawback lands retail at 30/40/50% (old rules) or 15/25/35%
-            # (Mechanism A), while a placing SHORTFALL passed to retail lands
-            # it at 12-20% - so >=28% is a clawback and <=12% is none, and
-            # the band between stays unstated rather than guessed.
-            pa = x["public_alloc_pct"]
-            if pa >= 28:
-                x["clawback"] = "YES"
-            elif pa <= 12:
-                x["clawback"] = "NO"
-            if x.get("clawback"):
-                prov[c]["clawback"] = {"src": "derived:final public split", "prio": 20,
-                                       "status": "estimated"}
-            else:
-                x["alloc_note"] = (x.get("alloc_note") or
-                                   "clawback line not in this notice; a 12-28% split is "
-                                   "consistent with either a tier-1 clawback or a placing shortfall")
+        # Do not infer a clawback trigger from the final public split: permitted
+        # reallocation and issuer-specific waivers can produce the same split.
         # A DEAL LISTED THIS WEEK has no 1-week return yet, and a blank with no
         # reason is a defect by the explained-absence contract. Ingenic (listed
         # 2026-08-25) was the first row young enough to hit this. Calendar days
@@ -2430,6 +2401,14 @@ def main():
                                                        for k, v in prov[x["code"]].items()}}
                   for x in sorted(deals.values(), key=lambda d: d.get("ipo_date") or "")],
     }
+    from demand_review import apply_records
+    apply_records(out['deals'],ROOT)
+    from capital_review import apply_records as apply_capital
+    apply_capital(out['deals'],ROOT)
+    from metric_source_review import apply_records as apply_metrics
+    apply_metrics(out['deals'],ROOT)
+    from retail_float_review import apply_records as apply_retail
+    apply_retail(out['deals'],ROOT)
     (ROOT / "data" / "deals.json").write_text(json.dumps(out, ensure_ascii=False, indent=1))
     (ROOT / "data" / "conflicts.json").write_text(json.dumps(conflicts, ensure_ascii=False, indent=1))
 

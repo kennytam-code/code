@@ -97,6 +97,8 @@ def transform(source,dest,root,module,function):
  print('Applied',module,flush=True)
 
 def build(root,dest):
+ from market_universe import validate_ah_coverage
+ validate_ah_coverage(root)
  root=Path(root);dest=Path(dest);dest.parent.mkdir(parents=True,exist_ok=True);core=dest.with_suffix('.core.tmp.xlsx');mon=dest.with_suffix('.monitor.tmp.xlsx');peer=dest.with_suffix('.peer.tmp.xlsx');staged=dest.with_suffix('.presentation.tmp.xlsx')
  env=dict(os.environ);env['PYTHONPATH']=str(root/'ipo_lib')+os.pathsep+env.get('PYTHONPATH','')
  def run(code):subprocess.run([sys.executable,'-c',code],cwd=root,env=env,check=True)
@@ -104,9 +106,11 @@ def build(root,dest):
  run(f'from pathlib import Path;from openpyxl import Workbook;from build_xlsx import load;from build_market_views import build;w=Workbook();w.remove(w.active);build(w,load()[0],Path({str(root)!r}),defer_peer_history=True);w.save({str(mon)!r});print("Saved monitor stage")')
  join(core,mon,dest)
  run(f'from patch_peer_workbook import patch;patch({str(dest)!r},{str(peer)!r},{str(root)!r})');peer.replace(dest)
- run(f'from apply_desk_styles import apply;apply({str(dest)!r},{str(root)!r})')
+ # Release style XML trees before parsing the separate monitor cache builds.
+ run(f'from apply_desk_styles import apply;apply({str(dest)!r},{str(root)!r},cache=False)')
+ run(f'from staged_native_build import transform;transform({str(dest)!r},{str(staged)!r},{str(root)!r},"cache_desk_monitors","add_caches")');staged.replace(dest)
  run(f'from pathlib import Path;from patch_presentation_workbook import patch;patch(Path({str(dest)!r}),Path({str(staged)!r}),Path({str(root)!r}),finish=False)');staged.replace(dest)
- for mod,fn in [('reflow_monitors','reflow'),('fix_monitor_requests','apply'),('adjust_ah_charts','apply'),('combine_ah_benchmark','apply'),('desk_release','apply'),('sector_monitor_release','apply'),('final_polish','apply'),('desk_theme','apply'),('remove_notes','apply'),('ah_chart_style','apply'),('screener_code_selector','apply'),('request_efficiency','apply'),('screener_desk','apply'),('ah_desk_update','apply'),('excel_chart_refresh','apply'),('ah_live_requests','apply'),('bloomberg_mode_repair','apply'),('pipeline_peer_inputs','apply')]:
+ for mod,fn in [('reflow_monitors','reflow'),('fix_monitor_requests','apply'),('adjust_ah_charts','apply'),('combine_ah_benchmark','apply'),('desk_release','apply'),('sector_monitor_release','apply'),('final_polish','apply'),('desk_theme','apply'),('remove_notes','apply'),('ah_chart_style','apply'),('screener_code_selector','apply'),('request_efficiency','apply'),('screener_desk','apply'),('ah_desk_update','apply'),('excel_chart_refresh','apply'),('ah_live_requests','apply'),('bloomberg_mode_repair','apply'),('pipeline_peer_inputs','apply'),('ah_identity_caps','apply'),('ah_database_links','apply'),('database_desk','apply'),('remove_cell_notes','apply')]:
   if os.environ.get('IPO_QA_BASELINES')=='1' and mod in ['sector_monitor_release','final_polish','desk_theme','remove_notes']:
    (root/'out').mkdir(exist_ok=True)
    baseline={'sector_monitor_release':'_sector_baseline_20261015.xlsx','final_polish':'_polish_baseline_20261015.xlsx','desk_theme':'_theme_baseline_20261015.xlsx','remove_notes':'_notes_baseline_20261016.xlsx'}[mod]

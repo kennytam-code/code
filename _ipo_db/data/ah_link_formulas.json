@@ -1,0 +1,5 @@
+{
+  "database": "IF($BQ{row}=\"\",\"N/A\",IFERROR(INDEX(AH!$I$8:$I${end},MATCH(TEXT(VALUE($A{row}),\"0000\"),AH!$C$8:$C${end},0)),\"Pair missing\"))",
+  "h_quote": "IF(AH!$E$4=\"Bloomberg\",IF('IPO Live'!$B$4=\"Bloomberg\",INDEX('IPO Live'!$D$8:$D${lend},MATCH(Q{row},'IPO Live'!$A$8:$A${lend},0)),BDP(Q{row},\"LAST_PRICE\")),IF(AH!$E$4=\"Stored\",AG{row},\"No source\"))",
+  "ah_current": "IF(ISNUMBER('Market Data'!AE{row}),'Market Data'!AE{row},IF('Market Data'!AE{row}=\"\",\"No quote\",'Market Data'!AE{row}))"
+}

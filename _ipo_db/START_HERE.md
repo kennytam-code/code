@@ -4,6 +4,123 @@ Read this file, then `data/release_state.json`. The latest instruction wins over
 older dated entries in `MAINTENANCE.md`. This file is intended for the next AI or
 analyst, including a session with no conversation history.
 
+## 10 November: source review, A/H IPO references and Database presentation
+
+Read data/demand_review_20261109/REVIEW.md and validation.json for this release.
+32 IPO caps corrected/filled from 34 reviewed capital records; dependent IPO
+valuations follow the accepted capital. All 524 populated institutional multiples
+reconcile to retained filing evidence; three legitimate non-numeric cases remain.
+Clawback now has 526 supported outcomes and one held blank (2550). 2636 changed
+No to filed N/A. 145 Mechanism B rows explicitly show B / N/A; two A and 20 18C.
+Do not infer mechanisms/outcomes from final percentages or dates. Internal
+Unconfirmed status is audit metadata only; never put it back into desk cells.
+
+168 final public-allocation counts and four missing listing tapes/fields were
+recovered; all 527 Day-1 volume / retail-allocation ratios have inputs. Exclude
+separately reserved employees where the source separates them; respect HDR units.
+Five A/H IPO premiums corrected for dated FX inputs: 3308,3223,9976,9607,2636.
+All 75 roster cap formulas checked for ticker/field/units wiring. Keep scalar
+CURRENT_MARKET_CAP_SHARE_CLASS, not issuer-wide CUR_MKT_CAP. Terminal response
+units/entitlements remain untested. Four IPO premiums are legitimately absent:
+three A-after-H listings plus 6690 without an H offer price.
+
+Accepted batches: allocation_source_review, capital_source_review,
+retail_float_review, day1_source_recovery and ah_offer_reference_review.
+End-of-merge passes: demand_review, capital_review, metric_source_review,
+retail_float_review. Corrected historical AH offer inputs also reside in
+ah_ipo/ah_study. Preserve exact sources/dates and the field-level change audit.
+
+IPO Live public snapshot is 9 November (702 quotes/717 universe); historical
+Database returns/AH/peer chart histories retain their recorded dates. Do not
+stamp an old observation current. Database header is now Returns as of.
+Database is compact with muted section bands. Eff. free float (shares) is
+hidden without shifting backing formulas and removed from HTML detail. All
+Excel cell notes/red markers are removed by the final remove_cell_notes stage
+after database_desk. Eleven W_* inputs and native charts remain. No new BBG
+requests. No Notes/Lock-up Excel sheets. Keep one heavy process at a time and
+512 MiB Python/384 MiB Node limits. Updater must include new modules/batches.
+Publication authorized on 10 November. See data/release_state.json for the
+GitHub commit and downloaded-file verification. Earlier local-only entries below
+describe their original sessions; the cumulative checked release is authorized.
+
+## 9 November: Database premium links and restored A/H coverage
+
+Database BT5:BT531 now uses bounded INDEX/MATCH against AH C/I. It follows
+AH E4 Quotes (Stored/Bloomberg), with no additional Bloomberg requests.
+Database BQ2 links to that source switch; BP2 says Quotes. Sorting AH rows
+must not break the code-based lookup. Empty current prices cannot become zero.
+AH E4 and H4 stay independent and default Stored; Database B2 remains All.
+For live table values without long chart history, use E4 Bloomberg/H4 Stored.
+
+AH now has 75 pairs. Restored 3228 KINWONG -> 603228.SS, 6727 TRANSWARP ->
+688031.SS and 3757 ROBOTECHNIK -> 300757.SZ. Issuer filings confirm each map;
+see data/update_20261109/mapping_sources.json and PDFs. All three had absent
+canonical mappings even though the retained A/H snapshot knew them. The 717
+monitor stocks were checked against that 208-pair snapshot, with no other
+known omissions/conflicts. This is not a fresh all-market listing census.
+New stored histories stop at 2 October to align the retained snapshot; the
+prior 72 pairs and existing chart series are unchanged. Other financial inputs
+were not refreshed. Keep provenance/date distinctions; do not call this live.
+
+AH current H prices reuse IPO Live D by ticker when both quote switches are
+Bloomberg; otherwise AH requests its own scalar LAST_PRICE. Stored values
+are never substituted into a live branch. New pairs add six necessary short
+history calls: totals are 151 short histories and 16 separately gated long
+chart histories. Database adds none. Terminal speed/RAM are not measured.
+
+The old monitor template stopped seeding AH Delta metadata after 68 pairs.
+fix_monitor_requests now seeds identity/cache/date/entitlement metadata for
+every pair and supplies display placeholders beyond the template extent.
+Do not put ticker text in Cache start/Cache rows. Coverage validation in
+market_universe rejects known missing/conflicting identities or absent history
+records before a native build; source review is required to repair them.
+
+Final native stage: ah_database_links after ah_identity_caps. Formula controls
+are data/ah_link_formulas.json, authored and recalculated in a bounded Artifact
+fixture. All changed sources and required inputs are in the standalone updater.
+Checks: tools/test_ah_database_links.py, tools/test_ah_coverage_20261109.mjs,
+plus native_desk, presentation_package and update_20261103. The dated link test
+uses the Nov4 baseline saved in its parent staging folder; keep a before-copy
+for future regression runs. Review: data/update_20261109/validation.json.
+Native Excel opened without repair; no terminal Bloomberg test. Local only.
+
+## 4 November: AH identities, class caps and live M60 checker
+
+Excel AH now has A Company, B A code, C H code, D Sector, E Subsector,
+F A share-class market cap (CNY millions), G H share-class market cap (HKD
+millions), H IPO premium, I current premium, J/K/L 1D/7D/1M changes in pp.
+Company names reuse Market Data, without extra Bloomberg name queries.
+The 144 cap cells use BDP CURRENT_MARKET_CAP_SHARE_CLASS, gated by E4
+Bloomberg; Stored displays a dash because no cap snapshots are available.
+Do not substitute issuer-wide CUR_MKT_CAP for these class columns. RR233
+coverage/units and live Bloomberg responses remain untested on a terminal.
+
+M60 remains the independent checker's H code. O60 is the A-code override,
+Q60 the IPO-price override. Known pairs resolve from the full AH list,
+Database and Pipeline. P67/P70 are live A/H quotes, P68 FX, P72 current
+premium and P73 A price versus H IPO price. The checker always uses live
+scalar BDP calls, independently of E4, reusing roster live results when
+available. No new BDH calls or preallocated add-in array ranges. Old M61,
+M62 and M68/M72 addresses no longer apply; named outputs were rebound.
+
+The roster, its table/filter, sector summaries, all AH-dependent references,
+existing cell notes and three comparison-series title references moved together. Chart series,
+observations and all unrelated database inputs are unchanged. Chart panels
+are M:R, helpers S:X hidden. Company and both codes are frozen together.
+External Bloomberg failures say BBG unavailable (caps: Unavailable); they
+never become zero prices/caps or stored prices labelled as current.
+No Notes or Excel Lock-up sheet was added.
+
+Final native stage: ah_identity_caps.apply, after pipeline_peer_inputs.
+Style and monitor cache passes now run in separate processes: the old
+combined pass exceeded the 512 MiB guard during this release test. Do not
+raise that limit. Both source changes and the new AH stage are embedded in
+the standalone updater; full native rebuild passed under the same guard.
+Use tools/test_ah_identity_caps.py plus Nov3 mode/native/package checks.
+The Oct28 test hardcodes superseded AH coordinates; do not use it unchanged.
+Review details: data/update_20261104. Historical data/HTML unchanged.
+This release is local only; no GitHub publication was requested this turn.
+
 ## 3 November: Bloomberg modes and new offerings
 
 This section supersedes the October defaults/array instructions below.

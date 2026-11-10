@@ -1,0 +1,548 @@
+{
+  "date": "2026-11-10",
+  "published": false,
+  "all_installed_hashes_verified": true,
+  "backup_blobs": "/private/tmp/hkipo_demand_20261109/before_blobs",
+  "files": [
+    {
+      "path": "ipo_lib/capital_review.py",
+      "before_sha256": null,
+      "sha256": "4c6ba927672fcc0d680b0fd134334b3b5c929b58e05b48f87d354fc7ccd7d02e",
+      "bytes": 2330
+    },
+    {
+      "path": "ipo_lib/database_desk.py",
+      "before_sha256": null,
+      "sha256": "c602359740274fcb7a490f7dba65eecd191dfd60b8a8ab32aae2a89b0ba8b4e2",
+      "bytes": 4546
+    },
+    {
+      "path": "ipo_lib/demand_review.py",
+      "before_sha256": null,
+      "sha256": "a9f5737d31dc0636402c4ce3de3b80f3d5c22668776f4b637f93866eaf1a9b04",
+      "bytes": 2260
+    },
+    {
+      "path": "ipo_lib/remove_cell_notes.py",
+      "before_sha256": null,
+      "sha256": "3949e187019210534b6ea3e3e9e815c269b4c2e037058e8b8ad6098dc861e97b",
+      "bytes": 2330
+    },
+    {
+      "path": "ipo_lib/metric_source_review.py",
+      "before_sha256": null,
+      "sha256": "ee9b758d953365fa78c29a4e03ea1ce04cc4f6c780fad12509831876d35c4ef9",
+      "bytes": 1170
+    },
+    {
+      "path": "ipo_lib/retail_float_review.py",
+      "before_sha256": null,
+      "sha256": "5225ec7f9789f11778141bb5482c93e963e66d81b5bab3f63bcf719972766146",
+      "bytes": 796
+    },
+    {
+      "path": "ipo_lib/merge_batches.py",
+      "before_sha256": "4c13115f3dd157119832ee23346c1dcd9b459b0eafc94e44bc5bbd27c4ba4c86",
+      "sha256": "bdcc5fc7bb07c6b995df4068438119753e58074dbd27f6a75b8db8dc8d4a675a",
+      "bytes": 140042
+    },
+    {
+      "path": "ipo_lib/build_xlsx.py",
+      "before_sha256": "b37dd33a442bc5a5771e4278b8e0adb794371e18f2afeefdb2e24744246f79bc",
+      "sha256": "70565a3f260cc9cc8768f340f8aadc94659c50da1344daa1bcaa2629d317d835",
+      "bytes": 158092
+    },
+    {
+      "path": "ipo_lib/build_dashboard.py",
+      "before_sha256": "16c5e7d04d4a6aa889c13ddbbac176464a0b86a9f77bf275ee41ad96962a14a4",
+      "sha256": "8acf1e56f0e4ff8e6be93fa6adf7069049dddb7c8a27ee8aeb734eaa4cec572b",
+      "bytes": 223005
+    },
+    {
+      "path": "ipo_lib/staged_native_build.py",
+      "before_sha256": "80ec066e4f11df3cbc6d98b55bf8057161d961cd85820a415decbcb16e128144",
+      "sha256": "4763181c5e895cc8b12129a6b5f34f89a1574b88c47c0ff1a7f3576a25b3346d",
+      "bytes": 9129
+    },
+    {
+      "path": "ipo_lib/make_bundle.py",
+      "before_sha256": "f6a9023638f36701cd5ecbe0a3acc50ba8644e79c6e4f69442b21df0d665f3ef",
+      "sha256": "383791f1cbf738285601fe3f6d3278e2abd5c16403f66c5c1e3bc84da1354d45",
+      "bytes": 22946
+    },
+    {
+      "path": "data/deals.json",
+      "before_sha256": "9b38f9388bce66fdad9a97c9c99c87565c8a84066de9b3f5d28235bf3ff2dc01",
+      "sha256": "8ab687900bb60fee806f1389c1f4268d79072b62c19875b511f242c5a89d5ebb",
+      "bytes": 16679482
+    },
+    {
+      "path": "data/database_desk_style.json",
+      "before_sha256": null,
+      "sha256": "b2c7f5b078c69109f33f965d4e2552d4a70885015d14238ee7ceacb61d6bc886",
+      "bytes": 5591
+    },
+    {
+      "path": "data/live_snapshot.json",
+      "before_sha256": "c00ad145fd0c5d12687b4fe3c68acb8d5af1ba314f750e60ff5ad648b303fc39",
+      "sha256": "5c0f3ea4dcc06c62f50c7f8f2c7c6e3d5040695e026e626342b9325e1d65c2ae",
+      "bytes": 75296
+    },
+    {
+      "path": "data/batches/ah_ipo.json",
+      "before_sha256": "69434382e906bda36b6308159be990ca93de47fc6dc0a62db2697bcf5ab8946b",
+      "sha256": "fc8510a4296f8257f16b9a48c8b884592a588675b4e57027eaceaa409b0d5ad4",
+      "bytes": 21585
+    },
+    {
+      "path": "data/batches/ah_study.json",
+      "before_sha256": "17afa78ea2f1bdbfadda722f99a9d9d4b14bc8ce57e22227b01b1a13ffd2beea",
+      "sha256": "1050acd72aafdc6566c569064f5b71ff107d0dd2c95f38d649679fefc9c9afe2",
+      "bytes": 4503467
+    },
+    {
+      "path": "START_HERE.md",
+      "before_sha256": "600ce3c6c121428201295d241d7be609b600a9a227cc7ce578f85c43292d0a4d",
+      "sha256": "0fa253de3ca7303836af3bd1f497da9201cd6870f8c729a1535fdc05ab4ea720",
+      "bytes": 36749
+    },
+    {
+      "path": "data/release_state.json",
+      "before_sha256": "13bea0928dd7a28a68ed0e0d60327e9450da04426c819c4b0cdedf93ba35b639",
+      "sha256": "1a3cf7f29baa2f4e557654475225030815f6a6d9e87d8305d160099c273562c8",
+      "bytes": 33819
+    },
+    {
+      "path": "data/batches/allocation_source_review.json",
+      "before_sha256": null,
+      "sha256": "765203372623b461f521cbc8173e255a42f28e9d765870518057fecd51f191fc",
+      "bytes": 1403242
+    },
+    {
+      "path": "data/batches/capital_source_review.json",
+      "before_sha256": null,
+      "sha256": "eefc49b127d56eb19e0e8c05008277088f10300d73cccb438139786ce2155c9b",
+      "bytes": 40442
+    },
+    {
+      "path": "data/batches/retail_float_review.json",
+      "before_sha256": null,
+      "sha256": "27c62f99e9a15ca073baa14e1f2bc426cbb44bf2b9bc2af2e306c748ebe9549d",
+      "bytes": 145254
+    },
+    {
+      "path": "data/batches/ah_offer_reference_review.json",
+      "before_sha256": null,
+      "sha256": "50b94c04959b367f319b30835e134a1d72e5d54c914685f07bd9e6ffee6545f5",
+      "bytes": 3133
+    },
+    {
+      "path": "data/batches/day1_source_recovery.json",
+      "before_sha256": null,
+      "sha256": "dd27ee0f2a0556171de134d124a8c904d0ad55ed973c748acd6c545ff96d532c",
+      "bytes": 2727
+    },
+    {
+      "path": "tools/create_database_desk.mjs",
+      "before_sha256": null,
+      "sha256": "c8caaaa0a35f9f0ea344d252096144d7b541a6c0dc71016cc83d9cd15e064ce6",
+      "bytes": 1922
+    },
+    {
+      "path": "tools/test_database_review.py",
+      "before_sha256": null,
+      "sha256": "fc8ef36b801390cf6e55197219a7721b4c9734f42a95358ca867cd41c31b8144",
+      "bytes": 7003
+    },
+    {
+      "path": "tools/review_capital_parts.py",
+      "before_sha256": null,
+      "sha256": "ff3d494344374be10c29856f0dcf39eef17fd65ae61fd33fd5e90fe29e38f6e5",
+      "bytes": 1965
+    },
+    {
+      "path": "tools/review_clawback_conditions.py",
+      "before_sha256": null,
+      "sha256": "3d68e7329c8e48edb74e41e5a47fb411931eb039938896bb20e911b66d861063",
+      "bytes": 1714
+    },
+    {
+      "path": "tools/review_clawback_outcomes.py",
+      "before_sha256": null,
+      "sha256": "c5d8f440174a7811386ced2546843a0f848af8f3d057b0211659779b4146be4a",
+      "bytes": 2388
+    },
+    {
+      "path": "tools/review_demand_20261109.py",
+      "before_sha256": null,
+      "sha256": "90008ebacff6eb19e10bdd4d9fa1959a9b391e36e2734cd5f5d311947a8b9d37",
+      "bytes": 3454
+    },
+    {
+      "path": "tools/review_final_prices.py",
+      "before_sha256": null,
+      "sha256": "da477dec72f333f0006b6d51a724090c25d22e07d8797c7cd804eff319040a0d",
+      "bytes": 1475
+    },
+    {
+      "path": "tools/review_remaining_outcomes.py",
+      "before_sha256": null,
+      "sha256": "1d6a6c2e149121292bf1fecb6e9070090ea909a441ed398e3a4e74e385357d0b",
+      "bytes": 1521
+    },
+    {
+      "path": "tools/extend_outcome_evidence.py",
+      "before_sha256": null,
+      "sha256": "18c1e90180d14a90e5a57d1e072af8d2fac754983a785b23a9b7fd7577797024",
+      "bytes": 1864
+    },
+    {
+      "path": "tools/prepare_outcome_decisions.py",
+      "before_sha256": null,
+      "sha256": "8dede2dc4b173b8fd026002a3c8d3e33f2449e29a395dbfb11e4d0d9cefefd03",
+      "bytes": 2706
+    },
+    {
+      "path": "tools/accept_remaining_outcomes.py",
+      "before_sha256": null,
+      "sha256": "b4e0a11a10179a414221b8c882229464e9b9aca8598e80165863cb2c14954950",
+      "bytes": 4387
+    },
+    {
+      "path": "tools/verify_existing_outcomes.py",
+      "before_sha256": null,
+      "sha256": "05d0a8990dfefa2ba916baad8cbe7ad1c165817fe669a7de9613b0308d7e1389",
+      "bytes": 2095
+    },
+    {
+      "path": "tools/finalize_source_review.py",
+      "before_sha256": null,
+      "sha256": "451eef91d77c3623824462f86cf3034ea23c0dc104bb3dcd195d72644f015d3c",
+      "bytes": 1608
+    },
+    {
+      "path": "tools/recover_retail_float.py",
+      "before_sha256": null,
+      "sha256": "6a6d22bd8b980df71747fea61e5769944bcfe0c272009b8780cd3d686d7ea0fc",
+      "bytes": 3207
+    },
+    {
+      "path": "tools/accept_retail_float.py",
+      "before_sha256": null,
+      "sha256": "7d993a4830bd298935e7cbe7517299809abbc153c002c2c38e9f350dcf2d0529",
+      "bytes": 2703
+    },
+    {
+      "path": "tools/audit_ah_ipo_caps.py",
+      "before_sha256": null,
+      "sha256": "3762f2205f1736cfbce3c371dce4871c770e2ed95984a90e87fc6b84e3a521dd",
+      "bytes": 3922
+    },
+    {
+      "path": "tools/verify_ah_and_missing_tape.py",
+      "before_sha256": null,
+      "sha256": "dcf7660a850d129e68f301404e354808bf28243088d4175d1edba0f6dc4d621e",
+      "bytes": 2470
+    },
+    {
+      "path": "tools/accept_metric_inputs.py",
+      "before_sha256": null,
+      "sha256": "850f5d5c937e4a763b007fca0e654f9b791d25be628e64be527a49b3e5afa305",
+      "bytes": 2324
+    },
+    {
+      "path": "tools/audit_ah_offer_terms.py",
+      "before_sha256": null,
+      "sha256": "614b90834a54f30388960822fe80105d40c64d4d3769ed79b77e105c3f898153",
+      "bytes": 1461
+    },
+    {
+      "path": "tools/check_ah_final_offers.py",
+      "before_sha256": null,
+      "sha256": "43cca5129f94acb8080da11d2dfac5bd346801fc30ade3963474be3ec4c1fb54",
+      "bytes": 1902
+    },
+    {
+      "path": "data/demand_review_20261109/candidates.json",
+      "before_sha256": null,
+      "sha256": "abd2c1e7db3918fef7b308c459b40b0e1705d56c3e85f6d0c809b2f07cbfdceb",
+      "bytes": 602988
+    },
+    {
+      "path": "data/demand_review_20261109/ah_offer_term_checks.json",
+      "before_sha256": null,
+      "sha256": "c5efc5685a7621f048b3ecc19208e3329086e97e435e1c84b2b073055d8b6001",
+      "bytes": 40401
+    },
+    {
+      "path": "data/demand_review_20261109/test_presentation_package.log",
+      "before_sha256": null,
+      "sha256": "592d5557c63925ca98e98d9d89fb384e49582e8ff86de7c6cc34ee24de2d8bdb",
+      "bytes": 248
+    },
+    {
+      "path": "data/demand_review_20261109/ah_offer_fresh_quotes.json",
+      "before_sha256": null,
+      "sha256": "7e10a77e5b731f7b18b8e3820f8cb1a4058b250eed447655c5b12580c1a27ae1",
+      "bytes": 1907
+    },
+    {
+      "path": "data/demand_review_20261109/capital_chapters.json",
+      "before_sha256": null,
+      "sha256": "8654dc123e5601996bdb51c2925a32addd1dffab8005ad201d95dff7c1029785",
+      "bytes": 285704
+    },
+    {
+      "path": "data/demand_review_20261109/test_native_desk.log",
+      "before_sha256": null,
+      "sha256": "29fc58ba3096d62847eb73e5d2a8c5a978fa3b03790a5bd51456d3b92cf6a454",
+      "bytes": 332
+    },
+    {
+      "path": "data/demand_review_20261109/existing_outcome_targets.json",
+      "before_sha256": null,
+      "sha256": "ec6489700905262a6b80108d5351f7f1f7fb46bb91425c9596600969d3071556",
+      "bytes": 1216
+    },
+    {
+      "path": "data/demand_review_20261109/a_after_h_sources.json",
+      "before_sha256": null,
+      "sha256": "02f0251a23e41dfacb130eb4b1428b64c257a0d51f4344af7a30fa4d73beb3fc",
+      "bytes": 382
+    },
+    {
+      "path": "data/demand_review_20261109/audit_formulas.log",
+      "before_sha256": null,
+      "sha256": "e252f5f33494fb512adc2bbcf538f0e62a9d3dc2d2fc3960f811de47daf8a1ca",
+      "bytes": 1613
+    },
+    {
+      "path": "data/demand_review_20261109/build_dashboard.log",
+      "before_sha256": null,
+      "sha256": "6d99c3f61ed3b42b3c90bb7e32967cacf7aa23b445416521226947e62c6efaa9",
+      "bytes": 183
+    },
+    {
+      "path": "data/demand_review_20261109/retail_float_prose.json",
+      "before_sha256": null,
+      "sha256": "8967cb59b29e30804f3d30c7f13367b57efadc894fa2df33416f264332da4fa5",
+      "bytes": 3237449
+    },
+    {
+      "path": "data/demand_review_20261109/outcome_review_decisions.json",
+      "before_sha256": null,
+      "sha256": "363ee2735c3034cc5df4bf2319905c0839f97daf6ec69edbfe5fabbc071c5018",
+      "bytes": 4498
+    },
+    {
+      "path": "data/demand_review_20261109/check_results.json",
+      "before_sha256": null,
+      "sha256": "6ce94b5a6eb4c0a11c25f4f834be780240f27f8a5943815741c478a1a1e83665",
+      "bytes": 900
+    },
+    {
+      "path": "data/demand_review_20261109/clawback_outcomes.json",
+      "before_sha256": null,
+      "sha256": "592acf188ee632884038045c9af3fee2671e02f6f8a0ce0236bcb1f3cc9e3d87",
+      "bytes": 117706
+    },
+    {
+      "path": "data/demand_review_20261109/test_update_20261103.log",
+      "before_sha256": null,
+      "sha256": "8dc1381adf371e9472fa974f85673bd10f0cf502d66d506427d007609d797116",
+      "bytes": 443
+    },
+    {
+      "path": "data/demand_review_20261109/workbook_validation.json",
+      "before_sha256": null,
+      "sha256": "8d30b03421f9b2979c55e0fde63a4401780a354118584ffbaabc346f0406b82b",
+      "bytes": 508
+    },
+    {
+      "path": "data/demand_review_20261109/day1_tape_recovery.json",
+      "before_sha256": null,
+      "sha256": "c4aefa847ea0367ad847ea62c850e9a7f4f69f67c6982d1bc6e67b716dec46e1",
+      "bytes": 1492
+    },
+    {
+      "path": "data/demand_review_20261109/ah_offer_fx_response.json",
+      "before_sha256": null,
+      "sha256": "126da2304a7fb7fcdad5cc6281e8f85a78e933b274f7c94ba91872bb2d8236fd",
+      "bytes": 12289
+    },
+    {
+      "path": "data/demand_review_20261109/accepted_changes.json",
+      "before_sha256": null,
+      "sha256": "542e65d4fac0b1c3649b9c6ef432765d6aa9b0a5fbe8d8623799cc81efd36964",
+      "bytes": 314244
+    },
+    {
+      "path": "data/demand_review_20261109/existing_outcome_decisions.json",
+      "before_sha256": null,
+      "sha256": "6f3602dafd4a56e50b8c2a23a4af1ba75ff284645d1e6c10c1079f35fbd794df",
+      "bytes": 229081
+    },
+    {
+      "path": "data/demand_review_20261109/retail_float_candidates.json",
+      "before_sha256": null,
+      "sha256": "661641d455cd41d8ac494f4d509fe41917a1114ee47a6235fdb2c692bb8cfe29",
+      "bytes": 97163
+    },
+    {
+      "path": "data/demand_review_20261109/primary_terms.json",
+      "before_sha256": null,
+      "sha256": "bbdbe10c61ebc5c7d2e9351563e837c890402e334be97f1c8f31cd2984ac3dae",
+      "bytes": 204149
+    },
+    {
+      "path": "data/demand_review_20261109/before_deals.json",
+      "before_sha256": null,
+      "sha256": "4cd26e30872d3da48cdbba27dab77eeb02339a5fea18349a72ec51c75fdd648a",
+      "bytes": 17091070
+    },
+    {
+      "path": "data/demand_review_20261109/audit_ah_ipo_caps.log",
+      "before_sha256": null,
+      "sha256": "a71dd8565732c8a5791fc735f7ef8dedda0b502bb47221668d56cd44aad1fbd3",
+      "bytes": 38
+    },
+    {
+      "path": "data/demand_review_20261109/clawback_conditions.json",
+      "before_sha256": null,
+      "sha256": "5422fe235d88b7374eb364df46d835b82504af8b575cd1d3eae4383bd0af1ad3",
+      "bytes": 111359
+    },
+    {
+      "path": "data/demand_review_20261109/REVIEW.md",
+      "before_sha256": null,
+      "sha256": "d8405c6d4afebefa80891042e1a018bb2f8c084ceb5d86723ca29f0f8e5f6581",
+      "bytes": 5749
+    },
+    {
+      "path": "data/demand_review_20261109/remaining_outcome_prose.json",
+      "before_sha256": null,
+      "sha256": "fbb888660b48e0fa479aae51a911571612000f8dfa07745f3f7b75f30cea62c5",
+      "bytes": 5606737
+    },
+    {
+      "path": "data/demand_review_20261109/existing_outcome_prose.json",
+      "before_sha256": null,
+      "sha256": "52f7bae3a59a312c6b25f58f4bd91a33e734bfd5ce03d41e8872e5b50a300470",
+      "bytes": 5673494
+    },
+    {
+      "path": "data/demand_review_20261109/final_prices.json",
+      "before_sha256": null,
+      "sha256": "506e9e2570bc89eb94325c58285a3afcc17dceb3270844ae7349285328b96b69",
+      "bytes": 205187
+    },
+    {
+      "path": "data/demand_review_20261109/ah_final_offers.json",
+      "before_sha256": null,
+      "sha256": "37c66946d7f94853c470f43092d0dc712d32ef8533ace949260fdca9700e1560",
+      "bytes": 530913
+    },
+    {
+      "path": "data/demand_review_20261109/remaining_outcome_decisions.json",
+      "before_sha256": null,
+      "sha256": "d5bad983c2e85e5b94fe065892bc08af40b1767876d733ad16f390bb35c3c425",
+      "bytes": 389124
+    },
+    {
+      "path": "data/demand_review_20261109/ah_ipo_cap_audit.json",
+      "before_sha256": null,
+      "sha256": "1c165c5823e548f68d79bb29ee09089e9c61a77e6db0c9d46253d73ef0f6fd1c",
+      "bytes": 35292
+    },
+    {
+      "path": "data/demand_review_20261109/fundamental_completeness.json",
+      "before_sha256": null,
+      "sha256": "564ebf842745282271c99278ee9a481376637a6f547693bff3354d74671a2ecf",
+      "bytes": 4982
+    },
+    {
+      "path": "data/demand_review_20261109/validation.json",
+      "before_sha256": null,
+      "sha256": "de2785928775196e2d3aaef92170646af723d22a83918399b5e8b78c5bdbb9a6",
+      "bytes": 4234
+    },
+    {
+      "path": "data/demand_review_20261109/bundle_validation.json",
+      "before_sha256": null,
+      "sha256": "1975621c60f722248a30408f9aa2e29429c378e2a24597bd9804d9688b38ee0a",
+      "bytes": 259
+    },
+    {
+      "path": "TO_NOMURA/HK_IPO_Database_v1.xlsx",
+      "before_sha256": "76b73ab2bef75a9de401d7e721839004d484f295b8c40c4badec3ba8660630bf",
+      "sha256": "ab5e947f4dced4f0e91d8566d143af174eab46f2a0bbd753771e5a7b4051e4e0",
+      "bytes": 7650873
+    },
+    {
+      "path": "TO_NOMURA/hk_ipo.py",
+      "before_sha256": "2cd334f373083f6a06eb0982c3c465e6660e4cf0a9424b819eee8cf46c959e78",
+      "sha256": "964b64d06a910f0aea35d027ae7066ce974c7847bb29dd9ebf02160222f1b6c5",
+      "bytes": 16189120
+    },
+    {
+      "path": "TO_NOMURA/hk_ipo_dashboard.html",
+      "before_sha256": "17b16a510bb39edf887b30722849e9b928930fe9663dfe807654dd7272bfc592",
+      "sha256": "ad85f2f24ccd1d7f19bf017b5cdc33b273a59d27ab7f4b3f1279d0c0b52e6083",
+      "bytes": 2883314
+    },
+    {
+      "path": "TO_NOMURA/hk_ipo_dashboard.zip",
+      "before_sha256": "5ec5c0ffe37315745c1ee04415f8fd30e8c1809ea0676b036c9b57ff5fb7471c",
+      "sha256": "d9fd790a3e3bca6213dd390c946698ebbd66aed5885837c2a77458cf8c3668ac",
+      "bytes": 2063838
+    },
+    {
+      "path": "TO_NOMURA/READ_ME_FIRST.txt",
+      "before_sha256": "72ce18b407516eb63a657bac6575ea23facf8eb838a544970f68217c2dfa5596",
+      "sha256": "5cc9e38ae2418214e37eedbb18cd92dedca49178ffabb96573f3ee93d32ff1d9",
+      "bytes": 5312
+    },
+    {
+      "path": "export/HK_IPO_Database_v1.xlsx",
+      "before_sha256": "76b73ab2bef75a9de401d7e721839004d484f295b8c40c4badec3ba8660630bf",
+      "sha256": "ab5e947f4dced4f0e91d8566d143af174eab46f2a0bbd753771e5a7b4051e4e0",
+      "bytes": 7650873
+    },
+    {
+      "path": "export/hk_ipo.py",
+      "before_sha256": "2cd334f373083f6a06eb0982c3c465e6660e4cf0a9424b819eee8cf46c959e78",
+      "sha256": "964b64d06a910f0aea35d027ae7066ce974c7847bb29dd9ebf02160222f1b6c5",
+      "bytes": 16189120
+    },
+    {
+      "path": "export/hk_ipo_dashboard.html",
+      "before_sha256": "17b16a510bb39edf887b30722849e9b928930fe9663dfe807654dd7272bfc592",
+      "sha256": "ad85f2f24ccd1d7f19bf017b5cdc33b273a59d27ab7f4b3f1279d0c0b52e6083",
+      "bytes": 2883314
+    },
+    {
+      "path": "export/hk_ipo_dashboard.zip",
+      "before_sha256": "5ec5c0ffe37315745c1ee04415f8fd30e8c1809ea0676b036c9b57ff5fb7471c",
+      "sha256": "d9fd790a3e3bca6213dd390c946698ebbd66aed5885837c2a77458cf8c3668ac",
+      "bytes": 2063838
+    },
+    {
+      "path": "export/READ_ME_FIRST.txt",
+      "before_sha256": "72ce18b407516eb63a657bac6575ea23facf8eb838a544970f68217c2dfa5596",
+      "sha256": "5cc9e38ae2418214e37eedbb18cd92dedca49178ffabb96573f3ee93d32ff1d9",
+      "bytes": 5312
+    },
+    {
+      "path": "out/HK_IPO_Database_v1.xlsx",
+      "before_sha256": "76b73ab2bef75a9de401d7e721839004d484f295b8c40c4badec3ba8660630bf",
+      "sha256": "ab5e947f4dced4f0e91d8566d143af174eab46f2a0bbd753771e5a7b4051e4e0",
+      "bytes": 7650873
+    },
+    {
+      "path": "out/hk_ipo_dashboard.html",
+      "before_sha256": "17b16a510bb39edf887b30722849e9b928930fe9663dfe807654dd7272bfc592",
+      "sha256": "ad85f2f24ccd1d7f19bf017b5cdc33b273a59d27ab7f4b3f1279d0c0b52e6083",
+      "bytes": 2883314
+    }
+  ]
+}

@@ -1,0 +1,2626 @@
+[
+ {
+  "code": "9600",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0105/9570270/2021010500022.pdf",
+  "existing": null,
+  "sha256": "33df96ded2979f77e89f5bf46f0b0da07aea12e74572d92f020a8754afd23782",
+  "evidence": []
+ },
+ {
+  "code": "1855",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0105/9570272/2021010500040.pdf",
+  "existing": null,
+  "sha256": "3626a1c3a5496e3f078870eca351356468154a9997ebb452b2fae5f4017d0ca2",
+  "evidence": []
+ },
+ {
+  "code": "1440",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0112/9580806/2021011200010.pdf",
+  "existing": null,
+  "sha256": "95a07e3168308427bfa65c21f5288bbad05edd409ac7101d64c68ddf5a79c8bf",
+  "evidence": []
+ },
+ {
+  "code": "2129",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0112/9580810/2021011200026.pdf",
+  "existing": null,
+  "sha256": "e2789b73c87f2ca1d42ae1df8de969c9f7e09260d69df23500f8b67a03867302",
+  "evidence": []
+ },
+ {
+  "code": "2153",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0112/9580848/2021011200088.pdf",
+  "existing": null,
+  "sha256": "de5467649628c809f0751eada57ee9847a8a4eae7f323dc565c62b102ff70ba8",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "able for subscription under the Hong Kong Public Offering. As the over-subscription in the Hong Kong Public Offering is less than 15 times, no reallocation procedure as disclosed in the section headed “Structure and Conditions of the Global Offering – The Hong Kong Public Offering ” in the Prospectus has been applied and no International Offer Shares have been reallocated from the International Offering to the Hong"
+   },
+   {
+    "clawback": "NO",
+    "page": 2,
+    "snippet": "mes of the total number of 335,448,000 International Offer Shares initially available for subscription under the International Offering. As no reallocation procedure has been applied, the final number of Offer Shares allocated to the placees under the International Offering is 335,"
+   },
+   {
+    "clawback": "NO",
+    "page": 6,
+    "snippet": "an 18,636,000 Hong Kong Offer Shares) has been identified. As the over-subscription in the Hong Kong Public Offering is less than 15 times, no reallocation procedure as disclosed in the section headed “Structure and Conditions of the Global Offering – The Hong Kong Public Offering ” in the Prospectus has been applied and no International Offer Shares have been reallocated from the International Offering to the Hong"
+   },
+   {
+    "clawback": "NO",
+    "page": 7,
+    "snippet": "mes of the total number of 335,448,000 International Offer Shares initially available for subscription under the International Offering. As no reallocation procedure has been applied, the final number of Offer Shares allocated to the placees under the International Offering is 335,"
+   }
+  ]
+ },
+ {
+  "code": "1643",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0114/9583297/2021011400024.pdf",
+  "existing": null,
+  "sha256": "8703c347fe9c7e841109b164019df155af0da5c36f89d82aa390c48e874861a1",
+  "evidence": []
+ },
+ {
+  "code": "2146",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0114/9583301/2021011400040.pdf",
+  "existing": null,
+  "sha256": "0a986ed9a7c1f1de3bcd1d047a0ffa852bccadce806ec053a5244c0273c69df2",
+  "evidence": [
+   {
+    "clawback": "YES",
+    "page": 1,
+    "snippet": "ong Kong Public Offering, no reallocation procedure as disclosed in the section headed “Structure of the Global Offering – Reallocation and Clawback ” in the Prospectus has been applied. The final number of Offer Shares under the Hong Kong Public Offering is 9,400,000 Offer Shares, re"
+   },
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "ong Kong Public Offering is less than 15 times of the total number of Offer Shares initially available under the Hong Kong Public Offering, no reallocation procedure as disclosed in the section headed “Structure of the Global Offering – Reallocation and Clawback ” in the Prospectus has been applied. The final number of Offer Shares under the Hong Kong Public Offering is 9,400,000 Offer Shares, re"
+   },
+   {
+    "clawback": "YES",
+    "page": 8,
+    "snippet": "ong Kong Public Offering, no reallocation procedure as disclosed in the section headed “Structure of the Global Offering – Reallocation and Clawback ” in the Prospectus has been applied. The final number of Offer Shares under the Hong Kong Public Offering is 9,400,000 Offer Shares, re"
+   },
+   {
+    "clawback": "NO",
+    "page": 8,
+    "snippet": "ong Kong Public Offering is less than 15 times of the total number of Offer Shares initially available under the Hong Kong Public Offering, no reallocation procedure as disclosed in the section headed “Structure of the Global Offering – Reallocation and Clawback ” in the Prospectus has been applied. The final number of Offer Shares under the Hong Kong Public Offering is 9,400,000 Offer Shares, re"
+   }
+  ]
+ },
+ {
+  "code": "2125",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0114/9583317/2021011400090.pdf",
+  "existing": "YES",
+  "sha256": "6f2df35842a1245f5bbbeddd3af13174e9c3c76ef713d255af4fa478b5b4d7f4",
+  "evidence": []
+ },
+ {
+  "code": "2158",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0114/9583315/2021011400066.pdf",
+  "existing": "YES",
+  "sha256": "2d5ff149f083b49669a882f14db76e4fc16095a64b0c6ca3476c2188275210f7",
+  "evidence": []
+ },
+ {
+  "code": "1490",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0114/9583323/2021011400108.pdf",
+  "existing": "YES",
+  "sha256": "6f36c8b1bf03f1b5d43b976c04b58d2e7722afbb25ac642e78a9c102254172f1",
+  "evidence": []
+ },
+ {
+  "code": "9608",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0115/9584488/2021011500022.pdf",
+  "existing": "YES",
+  "sha256": "e9a2644382da2eee5c90051e2028142b54593a20e403b68df82107f82f2abf45",
+  "evidence": []
+ },
+ {
+  "code": "2159",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0118/9586198/2021011800015.pdf",
+  "existing": "YES",
+  "sha256": "f18f540a93422cf52d7ac66ad345e03c9ecf50882f012fbd00dfd999ebc687ed",
+  "evidence": []
+ },
+ {
+  "code": "6668",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0125/9595413/2021012500006.pdf",
+  "existing": "YES",
+  "sha256": "8ae3e98598b5c1bdc4cd4b2c39fcdf9e28ac85f790a7b1f5828a2c3016c8e94d",
+  "evidence": []
+ },
+ {
+  "code": "2160",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0203/9611945/2021020300022.pdf",
+  "existing": null,
+  "sha256": "5f8e23682714e6939f36b7bcbf6a2165edccf70472fbd0988b89894f1e4a09f4",
+  "evidence": []
+ },
+ {
+  "code": "2161",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0204/9614142/2021020400014.pdf",
+  "existing": null,
+  "sha256": "6be374a720a898250507a7442c1f8691a86c3de7210dedd7cb10be7de7af05f6",
+  "evidence": []
+ },
+ {
+  "code": "1024",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0204/9614152/2021020400036.pdf",
+  "existing": null,
+  "sha256": "80088c1ca8e0e782e7b6827dbcfd4bd2ec0c1000b412b7f5d9e9c5322aac6308",
+  "evidence": []
+ },
+ {
+  "code": "2170",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0205/9616048/2021020500042.pdf",
+  "existing": "YES",
+  "sha256": "eb0d68309123a82d1516b54efd773c67711fd9af44a9b28df25da1ab7b1e3e44",
+  "evidence": []
+ },
+ {
+  "code": "1473",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0218/9625821/2021021800018.pdf",
+  "existing": null,
+  "sha256": "fc6c1500bcf02b978f29bd765fe159cc2b0dc9d8b78e813470a27197e015ffdc",
+  "evidence": []
+ },
+ {
+  "code": "6601",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0309/9649052/2021030900024.pdf",
+  "existing": "YES",
+  "sha256": "18d7ba45e55a00fa79da251a1e7c1da828b272b2513a1e81940bc170be64ef23",
+  "evidence": []
+ },
+ {
+  "code": "1413",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0310/9650640/2021031000016.pdf",
+  "existing": "YES",
+  "sha256": "0907e1fec518c5b55aaf5aa195217e26987329310bc5ed5b05f76b406590a152",
+  "evidence": []
+ },
+ {
+  "code": "2518",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0312/9654001/2021031200030.pdf",
+  "existing": null,
+  "sha256": "74a917ed51e78d1b699d35142d31edade507f7f23a2ca004eb7ed20ac22124f5",
+  "evidence": [
+   {
+    "clawback": "YES",
+    "page": 1,
+    "snippet": "ng represents approximately 10.71 times of the total number of the Offer Shares initially available under the Hong Kong Public Offering, no clawback mechanism has been effected. The final number of Offer Shares under the Hong Kong Public Offering is 3,029,200 Offer Shares, re"
+   },
+   {
+    "clawback": "YES",
+    "page": 6,
+    "snippet": "ng represents approximately 10.71 times of the total number of the Offer Shares initially available under the Hong Kong Public Offering, no clawback mechanism has been effected. The final number of Offer Shares under the Hong Kong Public Offering is 3,029,200 Offer Shares, re"
+   }
+  ]
+ },
+ {
+  "code": "1927",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0315/9655973/2021031500020.pdf",
+  "existing": null,
+  "sha256": "c196ce3b2376a682c802be7b709fee70c185c8cfd46a3fd2b1bb0c498659abc7",
+  "evidence": []
+ },
+ {
+  "code": "9888",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0322/9665993/2021032200018.pdf",
+  "existing": null,
+  "sha256": "c5a247ef74e68aec01201e1044ede7a489b28bf98c9248e4c6fcf9f54f09ac52",
+  "evidence": []
+ },
+ {
+  "code": "2187",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0325/9671029/2021032500102.pdf",
+  "existing": null,
+  "sha256": "f21aaf9e8eae14750a37afa1fe246fca1c6a81407893c01fa37b21700b3f3eb3",
+  "evidence": []
+ },
+ {
+  "code": "9626",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0326/9673477/2021032600076.pdf",
+  "existing": null,
+  "sha256": "69ac93472fd02205f87f2e0c60528192729ee9bac7e29da1f6d00820a683149b",
+  "evidence": []
+ },
+ {
+  "code": "6939",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0330/9679952/2021033000150.pdf",
+  "existing": "YES",
+  "sha256": "ffcc49e7a40152f1a1cd6f008b6288735d9cfeec02c2a84d200ebf0c44c5b2c4",
+  "evidence": [
+   {
+    "clawback": "YES",
+    "page": 2,
+    "snippet": " reallocation procedure as described in the section headed “Structure of the Global Offering – Hong Kong Public Offering – Reallocation and Clawback” in the Prospectus has been applied. As the number of the Offer Shares validly applied for under the Hong Kong Public Offering represen"
+   }
+  ]
+ },
+ {
+  "code": "6608",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0330/9679994/2021033000206.pdf",
+  "existing": null,
+  "sha256": "96917b97006e00f6d5ef4547937a14e92abeec9bbbdc1c763a8e158016ba6e58",
+  "evidence": []
+ },
+ {
+  "code": "2195",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0330/9680010/2021033000232.pdf",
+  "existing": "YES",
+  "sha256": "b8fc3228ca696600de41ec206e806156aab267e5c35bab723ab4842a189bf822",
+  "evidence": []
+ },
+ {
+  "code": "9959",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0408/9709262/2021040800098.pdf",
+  "existing": null,
+  "sha256": "9e7823dacea19fa5614c5c1fcd7b150d1e800cb47f955c26e3874baade8a9f3c",
+  "evidence": []
+ },
+ {
+  "code": "9961",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0416/9720449/2021041600030.pdf",
+  "existing": null,
+  "sha256": "25a73dd617d48482e329392186b0baa0c059a2c90aad08aea0957e98afcad6a3",
+  "evidence": []
+ },
+ {
+  "code": "6622",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0428/9738452/2021042800068.pdf",
+  "existing": null,
+  "sha256": "01c77c3ad112d9faed27b7ab542b3bdbd1da83ececcae7a2d9037ebc22ce991c",
+  "evidence": []
+ },
+ {
+  "code": "2191",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0514/9766080/2021051400094.pdf",
+  "existing": null,
+  "sha256": "d24a60023080508436617aabee072b68a08646da1947be4a06c05bc52a25c44e",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "Hong Kong Public Offering is less than 15 times of the total number of Offer Units initially available under the Hong Kong Public Offering, no reallocation procedure as disclosed in the section headed “ Structure of the Global Offering – The Hong Kong Public Offering – Reallocation ” in the Offering Circular has been applied and no Units have been reallocated from the International Offering to the Hong Kong Public Offering"
+   },
+   {
+    "clawback": "NO",
+    "page": 8,
+    "snippet": "Hong Kong Public Offering is less than 15 times of the total number of Offer Units initially available under the Hong Kong Public Offering, no reallocation procedure as disclosed in the section headed “ Structure of the Global Offering – The Hong Kong Public Offering – Reallocation ” in the Offering Circular has been applied and no Offer Units have been reallocated from the International Offering to the Hong Kong Public Of"
+   }
+  ]
+ },
+ {
+  "code": "3658",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0524/9774215/2021052400012.pdf",
+  "existing": null,
+  "sha256": "027999e23c6f770be68c0f271943031bddb3c2ac336b03ce959a8a560438dbd8",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "ng Public Offering have been moderately over-subscribed. • As the over-subscription in the Hong Kong Public Offering is less than 15 times, no reallocation of Offer Shares has been effected from the International Offering to the Hong Kong Public Offering. The final number of Offer Shares "
+   },
+   {
+    "clawback": "NO",
+    "page": 7,
+    "snippet": "s initially available under the Hong Kong Public Offering. As the over-subscription in the Hong Kong Public Offering is less than 15 times, no reallocation of Offer Shares has been effected from the International Offering to the Hong Kong Public Offering. The final number of Offer Shares "
+   },
+   {
+    "clawback": "NO",
+    "page": 8,
+    "snippet": " of Allotment under the Hong Kong Public Offering ” below. As the over-subscription in the Hong Kong Public Offering is less than 15 times, no reallocation of Offer Shares has been effected from the International Offering to the Hong Kong Public Offering. The final number of Offer Shares "
+   }
+  ]
+ },
+ {
+  "code": "2618",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0527/9778625/2021052700016.pdf",
+  "existing": "NO",
+  "sha256": "7f28a5f6169d74f0b267528a5b7734f912eab8844dbc299e691cc8c6c73a1bfb",
+  "evidence": []
+ },
+ {
+  "code": "9982",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0528/9780356/2021052800050.pdf",
+  "existing": null,
+  "sha256": "a435c9269c4b8639fdea0f354932bc9986dd554b7606391cc6c9f01b0dad3065",
+  "evidence": []
+ },
+ {
+  "code": "6699",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0615/9802785/2021061500012.pdf",
+  "existing": null,
+  "sha256": "547de47865cb3edefc6688ce19c55807b852d1f20ef0f5e6a47ac1283f535ad8",
+  "evidence": [
+   {
+    "clawback": "YES",
+    "page": 1,
+    "snippet": "dure as disclosed in the section headed “Structure and Conditions of the Global Offering – The Hong Kong Public Offering – Reallocation and clawback ” in the Prospectus has been applied and 6,731,800 Offer Shares have been reallocated from the International Offering to the Hong Kong P"
+   }
+  ]
+ },
+ {
+  "code": "2171",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0617/9805606/2021061700008.pdf",
+  "existing": "YES",
+  "sha256": "7c6fffb7ed6bc3786b68df464727576263b270a20f5dc78b8b8b177c8ece94cf",
+  "evidence": []
+ },
+ {
+  "code": "9858",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0617/9805624/2021061700036.pdf",
+  "existing": null,
+  "sha256": "ce9762f31ab1369157d405107e64ebb02689dd909185464f9ea48ebab6fabfbb",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "ong Kong Public Offering is less than 15 times of the total number of Offer Shares initially available under the Hong Kong Public Offering, no reallocation procedure as disclosed in the section headed “Structure of the Global Offering – Reallocation ” in the Prospectus has been applied. The final number of Offer Shares under the Hong Kong Public Offering is 71,544,000 Offer Shares, r"
+   },
+   {
+    "clawback": "NO",
+    "page": 7,
+    "snippet": "ong Kong Public Offering is less than 15 times of the total number of Offer Shares initially available under the Hong Kong Public Offering, no reallocation procedure as disclosed in the section headed “Structure of the Global Offering – Reallocation ” in the Prospectus has been applied. The final number of Offer Shares under the Hong Kong Public Offering is 71,544,000 Offer Shares, r"
+   }
+  ]
+ },
+ {
+  "code": "2155",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0625/9815315/2021062500066.pdf",
+  "existing": "YES",
+  "sha256": "0a4a8c1d92c5c52bbcb0f75e018672318bf76f893da7867875bb29551ccc5363",
+  "evidence": []
+ },
+ {
+  "code": "6626",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0625/9815347/2021062500180.pdf",
+  "existing": null,
+  "sha256": "e6e7583f7672ec2c98b463de95129750e10d2e0201c3d4488e41b84f532e7ade",
+  "evidence": []
+ },
+ {
+  "code": "0013",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0629/9819609/2021062900054.pdf",
+  "existing": null,
+  "sha256": "40988fb5350e5afc999b0d187a5afb5e2427b8f411ddc5911f2f46df49cf0375",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "llocation procedure as disclosed in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and Clawback ” in the Prospectus has not been applied. • The final number of Offer Shares under the Hong Kong Public Offering is 13,000,000 Offer Shares,"
+   },
+   {
+    "clawback": "NO",
+    "page": 7,
+    "snippet": "llocation procedure as disclosed in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and Clawback ” in the Prospectus has not been applied. The final number of Offer Shares under the Hong Kong Public Offering is 13,000,000 Offer Shares, r"
+   }
+  ]
+ },
+ {
+  "code": "2150",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0629/9819617/2021062900076.pdf",
+  "existing": null,
+  "sha256": "47733ce1188723b62a5973aff5990dfaed3f5a902fc527649f061486cd3150fd",
+  "evidence": []
+ },
+ {
+  "code": "0606",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0630/9822274/2021063000310.pdf",
+  "existing": null,
+  "sha256": "b48cc79f43378ac19024997f9fa2e3c66fa6e643db98a98e5491cd8ada4cb624",
+  "evidence": []
+ },
+ {
+  "code": "2190",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0702/9829817/2021070200030.pdf",
+  "existing": "YES",
+  "sha256": "d2fabc941af150f2e48ade5aecf904f58cb63c3de5df551ef8ca108bfa06dbd6",
+  "evidence": [
+   {
+    "clawback": "YES",
+    "page": 1,
+    "snippet": "llocation procedure as disclosed in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and Clawback ” in the Prospectus has been applied and 24,000,000 Offer Shares have been reallocated from the International Offering to the Hong Kong "
+   },
+   {
+    "clawback": "YES",
+    "page": 8,
+    "snippet": "llocation procedure as disclosed in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and Clawback ” in the Prospectus has been applied and 24,000,000 Offer Shares have been reallocated from the International Offering to the Hong Kong "
+   }
+  ]
+ },
+ {
+  "code": "2219",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0706/9839896/2021070600018.pdf",
+  "existing": "YES",
+  "sha256": "dbd527e5dd1cd95069b75499dcb5efb20cfe3899e010479625ffc4114b99c8cd",
+  "evidence": []
+ },
+ {
+  "code": "9868",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0706/9839900/2021070600034.pdf",
+  "existing": null,
+  "sha256": "ca93295b64011932dfbc2bc2e601c386499b3d1ba830a3029be3902cd8403ccf",
+  "evidence": [
+   {
+    "clawback": "YES",
+    "page": 1,
+    "snippet": "roximately 14.73 times of the total number of the Offer Shares initially available for subscription under the Hong Kong Public Offering, no clawback mechanism has been effected. • The final number of Offer Shares under the Hong Kong Public Offering is 4,250,000 Offer Shares, "
+   },
+   {
+    "clawback": "YES",
+    "page": 7,
+    "snippet": "roximately 14.73 times of the total number of the Offer Shares initially available for subscription under the Hong Kong Public Offering, no clawback mechanism has been effected. The final number of Offer Shares under the Hong Kong Public Offering is 4,250,000 Offer Shares, re"
+   }
+  ]
+ },
+ {
+  "code": "1965",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0707/9841751/2021070700024.pdf",
+  "existing": null,
+  "sha256": "4d9d97026b2146bb516a7c0a8b0002b27df8b82feb6a8a4dd88dff9147574f17",
+  "evidence": []
+ },
+ {
+  "code": "2162",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0707/9841773/2021070700056.pdf",
+  "existing": "YES",
+  "sha256": "5a5f03b9f84d3c130708e434e9eafa0cc8a13f89ba1552136af99fd98b1d18a6",
+  "evidence": []
+ },
+ {
+  "code": "2209",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0708/9843377/2021070800028.pdf",
+  "existing": null,
+  "sha256": "b48e57e7c27e5cb7d67519966f4365129f0088a73bb9f675df825188b4a08c3e",
+  "evidence": [
+   {
+    "clawback": "YES",
+    "page": 2,
+    "snippet": "e a s disclosed in the section headed ‘‘Structure and Conditions o f the Global Offering — The Hong Kong Public Offering — Reallocation and clawback’’ in the Prospectus has been applied and 15,816,000 Offer Shares have been real located from the International Offering to the Hong Kong"
+   }
+  ]
+ },
+ {
+  "code": "2165",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0709/9845062/2021070900022.pdf",
+  "existing": null,
+  "sha256": "518cf18ac9b271a849c0481ba26e2f76472f7a49afb7bd60dd8a3dfcc93f0441",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": " Public Offering represents less than 15 times of the total number of Offer Shares initially available under the Hong Kong Public Offering, no reallocation procedure as disclosed in the paragraph headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation ” in the Prospectus has been applied and no International Offer Share has been reallocated from the International Offering to the Hong K"
+   },
+   {
+    "clawback": "NO",
+    "page": 7,
+    "snippet": " Public Offering represents less than 15 times of the total number of Offer Shares initially available under the Hong Kong Public Offering, no reallocation procedure as disclosed in the paragraph headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation ” in the Prospectus has been applied and no International Offer Share has been reallocated from the International Offering to the Hong K"
+   }
+  ]
+ },
+ {
+  "code": "2177",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0709/9845076/2021070900050.pdf",
+  "existing": "YES",
+  "sha256": "716b7b363126a16ee7ee14ffc2c198965c4da77d99a3e4b4b28a1849cc68c1af",
+  "evidence": []
+ },
+ {
+  "code": "6913",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0712/9846809/2021071200024.pdf",
+  "existing": null,
+  "sha256": "f43d0c48ee1a271dee05b2b8d703f67323dbfcb86d9ad209f65f4b9445f93fad",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "ong Kong Public Offering have been well over-subscribed. • As the over-subscription in the Hong Kong Public Offering is less than 15 times, no reallocation of Offer Shares has been effected from the International Placing to the Hong Kong Public Offering. The final number of Offer Shares u"
+   },
+   {
+    "clawback": "NO",
+    "page": 7,
+    "snippet": "ng (i.e. more than 16,700,000 Shares) has been identified. As the over-subscription in the Hong Kong Public Offering is less than 15 times, no reallocation of Offer Shares has been effected from the International Placing to the Hong Kong Public Offering. The final number of Offer Shares u"
+   }
+  ]
+ },
+ {
+  "code": "6909",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0714/9850116/2021071400042.pdf",
+  "existing": "YES",
+  "sha256": "669b458cacd656439a33b78cd4bd12004e25ac1d5e362fc1e66c004473f22539",
+  "evidence": [
+   {
+    "clawback": "YES",
+    "page": 1,
+    "snippet": " reallocation procedure as disclosed in the section headed “Structure of the Global Offering – Hong Kong Public Offering – Reallocation and clawback ” in the Prospectus has been applied and 30,000,000 Offer Shares have been reallocated from the International Offering to the Hong Kong "
+   },
+   {
+    "clawback": "YES",
+    "page": 7,
+    "snippet": " reallocation procedure as disclosed in the section headed “Structure of the Global Offering – Hong Kong Public Offering – Reallocation and clawback ” in the Prospectus has been applied and 30,000,000 Offer Shares have been reallocated from the International Offering to the Hong Kong "
+   }
+  ]
+ },
+ {
+  "code": "2215",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0714/9850438/2021071400261.pdf",
+  "existing": null,
+  "sha256": "e4536219e87e81a381dc792352328765bda63c409374886ceaf6df4ecd8407a3",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": " Public Offering represents less than 15 times of the total number of Offer Shares initially available under the Hong Kong Public Offering, no reallocation procedure as disclosed in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation ” in the Prospectus has been applied and no International Offer Share has been reallocated from the International Offering to the Hong K"
+   }
+  ]
+ },
+ {
+  "code": "9960",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0715/9851364/2021071500010.pdf",
+  "existing": "YES",
+  "sha256": "eb8da06a131ff3365bfa348773ac9dfcefe29486cfcf8a5ec15c4ea0f35e6383",
+  "evidence": []
+ },
+ {
+  "code": "2175",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0715/9851368/2021071500036.pdf",
+  "existing": null,
+  "sha256": "feb87ca459237a0a897bb31a4f8e1152244a283c81399d0be7f7e5a6e69c6d2b",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "70 of which have been allocated one board lot of Shares. • As the over-subscription is less than 15 times in the Hong Kong Public Offering, no reallocation of Offer Shares from the International Offering to the Hong Kong Public Offering has been effected. The final number of Offer Shares under the Hong Kong Public Offering is 12,500,000 Offer Shares, r"
+   }
+  ]
+ },
+ {
+  "code": "2205",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0715/9851404/2021071500082.pdf",
+  "existing": "YES",
+  "sha256": "d028ce67ab08a117cbe264946a55fa62b95a29eb75d5a98b381db0d54ab230f4",
+  "evidence": []
+ },
+ {
+  "code": "6616",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0715/9851426/2021071500122.pdf",
+  "existing": null,
+  "sha256": "ba063081f42c2dfe1fd530ca7fe0880b886ddcb7aa8b41d196af6fa4d52053c9",
+  "evidence": []
+ },
+ {
+  "code": "6611",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0716/9853038/2021071600046.pdf",
+  "existing": null,
+  "sha256": "28a63d297e6ff73a8e8ec75409fb260fdfc114b62e4abd282fb46d85082b357c",
+  "evidence": []
+ },
+ {
+  "code": "2015",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0811/9889132/2021081100022.pdf",
+  "existing": null,
+  "sha256": "6272723c0688171fd68b421ddada9afcc6832147bf374e9382bf5d1985f4f472",
+  "evidence": [
+   {
+    "clawback": "YES",
+    "page": 1,
+    "snippet": "proximately 5.50 times of the total number of the Offer Shares initially available for subscription under the Hong Kong Public Offering, no clawback mechanism has been effected. • The final number of Offer Shares under the Hong Kong Public Offering is 10,000,000 Offer Shares,"
+   },
+   {
+    "clawback": "YES",
+    "page": 6,
+    "snippet": "proximately 5.50 times of the total number of the Offer Shares initially available for subscription under the Hong Kong Public Offering, no clawback mechanism has been effected. The final number of Offer Shares under the Hong Kong Public Offering is 10,000,000 Offer Shares, r"
+   }
+  ]
+ },
+ {
+  "code": "6609",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0819/9899716/2021081900016.pdf",
+  "existing": "YES",
+  "sha256": "4a980ece03c5325ff479d9fa7bfb69773d222d50c465a677dbea81d13d22d788",
+  "evidence": []
+ },
+ {
+  "code": "6669",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0823/9903476/2021082300016.pdf",
+  "existing": "YES",
+  "sha256": "f1a315737e3161ac1d5b149b50610cd7e516e57591bb5611f85ce8fcbdcbf5ae",
+  "evidence": []
+ },
+ {
+  "code": "9869",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0909/9931288/2021090900012.pdf",
+  "existing": null,
+  "sha256": "9999edca37da18be23297e379ccdfcbe4cc8f73ef6fb6c164174bcbf1f9fcc98",
+  "evidence": [
+   {
+    "clawback": "YES",
+    "page": 1,
+    "snippet": "ocation procedure as disclosed in the paragraph headed “Structure of the Global Offering { The Hong Kong Public Offering { Reallocation and Clawback ” in the Prospectus has been applied and 26,930,000 Offer Shares have been reallocated from the International Offering to the Hong Kong "
+   },
+   {
+    "clawback": "YES",
+    "page": 8,
+    "snippet": "ocation procedure as disclosed in the paragraph headed “Structure of the Global Offering { The Hong Kong Public Offering { Reallocation and Clawback ” in the Prospectus has been applied and 26,930,000 Offer Shares have been reallocated from the International Offering to the Hong Kong "
+   }
+  ]
+ },
+ {
+  "code": "2216",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0923/9944990/2021092300022.pdf",
+  "existing": null,
+  "sha256": "24c6c6cc2c71103cd0a0b8d1c6bb08cb212955efb4541adb7722e269e0180627",
+  "evidence": []
+ },
+ {
+  "code": "9889",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0928/9950496/2021092800012.pdf",
+  "existing": "NO",
+  "sha256": "d592dbac554cc55442b29d48ac6ab637e47fd15c3fde719ac0c83e0e7ec88aed",
+  "evidence": []
+ },
+ {
+  "code": "2378",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0930/9954129/2021093000122.pdf",
+  "existing": null,
+  "sha256": "2c2ccebb74de2928f4469e3bf108c33a01e04a829db46b9aff88e2b4a680ebb5",
+  "evidence": [
+   {
+    "clawback": "YES",
+    "page": 1,
+    "snippet": "lable under the Public Offer, no reallocation procedure as described in the section headed “Structure of the Share Offer — Reallocation and Clawback” in the Prospectus has been applied and no Offer Shares have been reallocated from the Placing to the Public Offer. The final number of"
+   },
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": " over-subscription in the Public Offer is less than 3 times of the total number of Offer Shares initially available under the Public Offer, no reallocation procedure as described in the section headed “Structure of the Share Offer — Reallocation and Clawback” in the Prospectus has been applied and no Offer Shares have been reallocated from the Placing to the Public Offer. The final number of"
+   },
+   {
+    "clawback": "YES",
+    "page": 2,
+    "snippet": "lable under the Public Offer, no reallocation procedure as disclosed in the section headed “Structure of the Share Offer — Reallocation and Clawback” in the Prospectus has been applied and no Offer Shares have been reallocated from the Placing to the Public Offer. The final number of"
+   },
+   {
+    "clawback": "NO",
+    "page": 2,
+    "snippet": " over-subscription in the Public Offer is less than 3 times of the total number of Offer Shares initially available under the Public Offer, no reallocation procedure as disclosed in the section headed “Structure of the Share Offer — Reallocation and Clawback” in the Prospectus has been applied and no Offer Shares have been reallocated from the Placing to the Public Offer. The final number of"
+   }
+  ]
+ },
+ {
+  "code": "2256",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1012/9972720/2021101200010.pdf",
+  "existing": null,
+  "sha256": "d80ddc03ecd041b0fa4ff3a492fd737d282ea08f8c977db25172257f88054cef",
+  "evidence": []
+ },
+ {
+  "code": "2235",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1018/9976354/2021101800010.pdf",
+  "existing": null,
+  "sha256": "c3b26dbf9b9ca4807ca24936d21b72d902c9ec0e6351ee324e015c4e2523d695",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "le for subscription under the Hong Kong Public Offering. • As the over-subscription in the Hong Kong Public Offering is less than 15 times, no reallocation of Offer Shares has been effected from the International Offering to the Hong Kong Public Offering. • The final number of Offer Share"
+   },
+   {
+    "clawback": "NO",
+    "page": 8,
+    "snippet": "lable under the Hong Kong Public Offering) was identified. As the over-subscription in the Hong Kong Public Offering is less than 15 times, no reallocation of Offer Shares has been effected from the International Offering to the Hong Kong Public Offering. The final number of Offer Shares "
+   }
+  ]
+ },
+ {
+  "code": "2252",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1101/9991945/2021110100014.pdf",
+  "existing": null,
+  "sha256": "4face32249e165da6aa1bc478f76ea39397eac9b646c28719fb64c485fdb5488",
+  "evidence": []
+ },
+ {
+  "code": "2251",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1104/9999922/2021110400024.pdf",
+  "existing": null,
+  "sha256": "b61ebc1ceee7a6ee5f4a0126cedd1c0d66d077ff7c4607871adcb40c1978f532",
+  "evidence": []
+ },
+ {
+  "code": "2197",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1104/9999926/2021110400038.pdf",
+  "existing": null,
+  "sha256": "d7821475e0e2381b4eaa4378016d27bd525a925e428e225f9bbc4c86a06bd5f9",
+  "evidence": []
+ },
+ {
+  "code": "1948",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1105/10002082/2021110500014.pdf",
+  "existing": null,
+  "sha256": "2657132e069d27289cb5016989c059e463fb17781838132f39bdccf13ab837db",
+  "evidence": []
+ },
+ {
+  "code": "2210",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1109/10005464/2021110900032.pdf",
+  "existing": null,
+  "sha256": "20eca2e13e617ced1ada91cb194dc97dee4316b0fb201c6776b294529d31d8d5",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 8,
+    "snippet": "lable under the Hong Kong Public Offering) was identified. As the over-subscription in the Hong Kong Public Offering is less than 15 times, no reallocation of Offer Shares has been effected from the International Offering to the Hong Kong Public Offering. The final number of Offer Shares "
+   }
+  ]
+ },
+ {
+  "code": "2265",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1111/10008388/2021111100012.pdf",
+  "existing": "YES",
+  "sha256": "be96d7e30ac53ec74a1041be635152d95daa30791e348c04ea6a08fd81c3ccca",
+  "evidence": []
+ },
+ {
+  "code": "9899",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1201/10031712/2021120100044.pdf",
+  "existing": null,
+  "sha256": "0f4f0f76328055276b8ddbd899763f3b4f1b69511195cc53d1c61fa1538fa625",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "fering represents approximately 8.92 times of the total number of Offer Shares initially available under the Hong Kong Public Offering, and no reallocation procedure as described in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation ” in the Prospectus has been applied and no Offer Shares have been reallocated from the International Offering to the Hong Kong Public O"
+   },
+   {
+    "clawback": "NO",
+    "page": 6,
+    "snippet": "er Shares initially available under the Hong Kong Public Offering) has been identified. At the discretion of the Joint Global Coordinators, no reallocation procedure as described in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation ” in the Prospectus has been applied and no Offer Shares have been reallocated from the International Offering to the Hong Kong Public O"
+   }
+  ]
+ },
+ {
+  "code": "9898",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1207/10043002/2021120700022.pdf",
+  "existing": null,
+  "sha256": "11e77a496857bc39e17ee0addaaa76c5293a35bcaee218a41b7ae8db497ec0fa",
+  "evidence": [
+   {
+    "clawback": "YES",
+    "page": 1,
+    "snippet": "ing represents approximately 2.67 times of the total number of the Offer Shares initially available under the Hong Kong Public Offering, no clawback mechanism has been effected. The final number of Offer Shares under the Hong Kong Public Offering is 1,100,000 Offer Shares, re"
+   },
+   {
+    "clawback": "YES",
+    "page": 6,
+    "snippet": "ing represents approximately 2.67 times of the total number of the Offer Shares initially available under the Hong Kong Public Offering, no clawback mechanism has been effected. The final number of Offer Shares under the Hong Kong Public Offering is 1,100,000 Offer Shares, re"
+   }
+  ]
+ },
+ {
+  "code": "1228",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1209/10045667/2021120900012.pdf",
+  "existing": null,
+  "sha256": "e836bc886b58d5d09ee4b5c56cfac9cf46f05d171e6589ed28da8bf69948a6e5",
+  "evidence": []
+ },
+ {
+  "code": "2273",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1209/10045687/2021120900042.pdf",
+  "existing": null,
+  "sha256": "57f86cb48ac98f60423b5dd6598f0b20c11b8080b1a22e0214200bddd54d96c1",
+  "evidence": []
+ },
+ {
+  "code": "6821",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1209/10045693/2021120900058.pdf",
+  "existing": null,
+  "sha256": "72df7f014db8c6411b3bd1d08f2f5a60763adc977dfbcf41e2c9459653f6000d",
+  "evidence": []
+ },
+ {
+  "code": "2279",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1210/10047595/2021121000064.pdf",
+  "existing": "YES",
+  "sha256": "dd0e6d0d60c9ef8a957b7e9d9457f6d84767146393c61740db22317c02f11f9c",
+  "evidence": [
+   {
+    "clawback": "YES",
+    "page": 1,
+    "snippet": "location procedures as described in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and Clawback” in the Prospectus have been applied. A total number of 37,769,000 Offer Shares have been reallocated to the Hong Kong Public Offering f"
+   }
+  ]
+ },
+ {
+  "code": "9699",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1213/10049174/2021121300012.pdf",
+  "existing": null,
+  "sha256": "fcffe57afa1cdc515b68c12c018397a1068556784679bc0b231206b9ce8aa934",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 2,
+    "snippet": "location procedures as disclosed in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and Clawback ” in the Prospectus have not been applied. The final number of H Shares under the Hong Kong Public Offering is 13,118,200 H Shares, represent"
+   },
+   {
+    "clawback": "NO",
+    "page": 8,
+    "snippet": "location procedures as disclosed in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and Clawback ” in the Prospectus have not been applied. The final number of H Shares under the Hong Kong Public Offering is 13,118,200 H Shares, represent"
+   }
+  ]
+ },
+ {
+  "code": "2276",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1215/10051691/2021121500016.pdf",
+  "existing": null,
+  "sha256": "8edef60a324b88df9f1c13766cacb6120a6c1bf192dcf3b8677f5ff8fed35582",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "di nt h es e c t i o nh e a d e d‘ ‘ S t r u c t u r ea n d Condition of the Global Offering — Hong Kong Public Offering — Reallocation and Clawback’’ in the Prospectus have not been applied. The final number of Offer Shares under the Hong Kong Public Offering is 12,160,000 Offer Shares, r"
+   },
+   {
+    "clawback": "NO",
+    "page": 7,
+    "snippet": "edures as disclosed in the section headed ‘‘Structure and Conditions of the Global Offering — Hong Kong Public Offeri ng — Reallocation and Clawback’’ in the Prospectus have not been applied. The fin al number of Offer Shares under the Hong Kong Public Offering is 12,160,000 Offer Shares, "
+   }
+  ]
+ },
+ {
+  "code": "6633",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1215/10051699/2021121500034.pdf",
+  "existing": null,
+  "sha256": "42a1ae1af0dad3136d1c4f222b63123440a372f61d4d21af4a71b51b21b80de7",
+  "evidence": [
+   {
+    "clawback": "YES",
+    "page": 1,
+    "snippet": "epresents less than 15 times of the number of the Offer Shares initially available for subscription under the Hong Kong Public Offering, no clawback mechanism has been effected. The final number of Offer Shares under the Hong Kong Public Offering is 8,500,000 Shares, represen"
+   },
+   {
+    "clawback": "YES",
+    "page": 7,
+    "snippet": "epresents less than 15 times of the number of the Offer Shares initially available for subscription under the Hong Kong Public Offering, no clawback mechanism has been effected. The final number of Offer Shares under the Hong Kong Public Offering is 8,500,000 Offer Shares, re"
+   }
+  ]
+ },
+ {
+  "code": "2270",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1216/10053283/2021121600024.pdf",
+  "existing": null,
+  "sha256": "7b013413ec1d18f5c7c7b7c65827b9975f59c4d04d504532b1a5e984dfd23183",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "le for subscription under the Hong Kong Public Offering. • As the over-subscription is less than 15 times in the Hong Kong Public Offering, no reallocation of Offer Shares from the International Offering to the Hong Kong Public Offering has been effected. The final number of Offer Shares under the Hong Kong Public Offering is 15,000,000 Offer Shares, r"
+   },
+   {
+    "clawback": "NO",
+    "page": 8,
+    "snippet": " under the Hong Kong Public Offering) has been identified. As the over-subscription is less than 15 times in the Hong Kong Public Offering, no reallocation of Offer Shares from the International Offering to the Hong Kong Public Offering has been effected."
+   }
+  ]
+ },
+ {
+  "code": "2185",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1222/10060242/2021122200012.pdf",
+  "existing": null,
+  "sha256": "1816e18e2704228ba1d5945070cf4301e7f655d45028e2d4fb5a94baa1dfb7a1",
+  "evidence": []
+ },
+ {
+  "code": "2285",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1229/10065849/2021122900022.pdf",
+  "existing": null,
+  "sha256": "753bfa68c71f169f7fbe3952895c9f040ca2c5a681f10e9bb1938323a5d0542b",
+  "evidence": []
+ },
+ {
+  "code": "2257",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1229/10065865/2021122900048.pdf",
+  "existing": null,
+  "sha256": "12198c78b030fd78cd7eacc2b0f867634bb8ca6fcff84a6c010c653a5067616b",
+  "evidence": []
+ },
+ {
+  "code": "0020",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1229/10065867/2021122900060.pdf",
+  "existing": null,
+  "sha256": "d95ca7d55ee7e708d64fddd57b231328c8a90a30addc85ec580d0e970b4a3fb1",
+  "evidence": []
+ },
+ {
+  "code": "2260",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0110/10084589/2022011000036.pdf",
+  "existing": null,
+  "sha256": "47a9a4103913c2775d455339ff2dc217058bea3bbb8cbf7d2c7ea4d31e90e011",
+  "evidence": []
+ },
+ {
+  "code": "6680",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0113/10088793/2022011300012.pdf",
+  "existing": null,
+  "sha256": "00dd8a1967f0dbc8c165c923199762f057eca392e92379c7c9a648fee0625fec",
+  "evidence": []
+ },
+ {
+  "code": "2250",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0114/10090342/2022011400004.pdf",
+  "existing": null,
+  "sha256": "28a80e0be07e1d2aba645f787651525f54f9ea4e8a8a4a643383c1c98ff45652",
+  "evidence": []
+ },
+ {
+  "code": "2121",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0126/10101395/2022012600014.pdf",
+  "existing": null,
+  "sha256": "075a67b5a32c57b0c87e3680dc30bc030d97188f40cbe247cbdf783a724e9564",
+  "evidence": []
+ },
+ {
+  "code": "9878",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0217/10123534/2022021700016.pdf",
+  "existing": null,
+  "sha256": "b508455de0b54c1c9794112d10a71e567b34cbc24fab7ca17c35f399eb47c2fd",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "llocation procedure as disclosed in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and Clawback ” in the Prospectus has not been applied. The final number of Offer Shares under the Hong Kong Public Offering is 5,160,700 H Shares, repres"
+   }
+  ]
+ },
+ {
+  "code": "1406",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0217/10123538/2022021700030.pdf",
+  "existing": null,
+  "sha256": "4eb7f8af0dbbb8da76a78b4cc34bcecb41b729b3fe1350688cf34baac434121d",
+  "evidence": []
+ },
+ {
+  "code": "2157",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0222/10126755/2022022200014.pdf",
+  "existing": null,
+  "sha256": "71f817ce5fa82bba450fb93e20f3c6113509879ad62eaf87ee2396f291364dc1",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "location procedures as described in the section headed “Structure of the Global Offering { The Hong Kong Public Offering { Reallocation and Clawback ” in the Prospectus have not been applied. The final number of Offer Shares comprised in the Hong Kong Public Offering is 12,688,000 Offer Sh"
+   }
+  ]
+ },
+ {
+  "code": "6639",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0321/10163606/2022032100096.pdf",
+  "existing": null,
+  "sha256": "ff30241f6df3d3688e50e0a34ae0475e0d34d5e00acb14d2e501eb864e4c7420",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "ures as described in the section headed “Structure and Conditions of the Global Offering – The Hong Kong Public Offering – Reallocation and Clawback ” in the Prospectus have not been applied. The final number of Offer Shares comprised in the Hong Kong Public Offering is 4,653,000 Offer Sha"
+   },
+   {
+    "clawback": "NO",
+    "page": 8,
+    "snippet": "ures as described in the section headed “Structure and Conditions of the Global Offering – The Hong Kong Public Offering – Reallocation and Clawback ” in the Prospectus have not been applied. The final number of Offer Shares comprised in the Hong Kong Public Offering is 4,653,000 Offer Sha"
+   }
+  ]
+ },
+ {
+  "code": "9638",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0330/10180512/2022033000052.pdf",
+  "existing": null,
+  "sha256": "fd27411d429ce5f9b4bddac3316f3ed208f8f497d86b8457f27d8410e305a1af",
+  "evidence": []
+ },
+ {
+  "code": "2179",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0330/10180540/2022033000088.pdf",
+  "existing": null,
+  "sha256": "9a3b51f3c22966a55ba18bbf16649ddb8187aa88cc309bc6c67298e7926e4715",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "le for subscription under the Hong Kong Public Offering. • As the over-subscription in the Hong Kong Public Offering is less than 15 times, no reallocation of Offer Shares has been effected from the International Offering to the Hong Kong Public Offering. • The final number of Offer Share"
+   }
+  ]
+ },
+ {
+  "code": "2370",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0330/10180592/2022033000154.pdf",
+  "existing": null,
+  "sha256": "9f3cbe6a905f614f84b0d467ef5060b43de52dbb86173c89a63544f183008548",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 2,
+    "snippet": "location procedures as disclosed in the section headed “Structure of the Global Offering — The Hong Kong Public Offering — Reallocation and Clawback” in the Prospectus have not been applied. The final number of Offer Shares under the Hong Kong Public Offering is 5,000,000 Offer Shares, re"
+   }
+  ]
+ },
+ {
+  "code": "2390",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0421/10218927/2022042100022.pdf",
+  "existing": null,
+  "sha256": "a9172a35393978b6ece45f0202986f09be9ec68414405110b196bc286828d417",
+  "evidence": [
+   {
+    "clawback": "YES",
+    "page": 1,
+    "snippet": " is less than 15 times of the total number of the Offer Shares initially available for subscription under the Hong Kong Public Offering, no clawback mechanism has been effected. • The final number of Offer Shares under the Hong Kong Public Offering is 2,600,000 Offer Shares, "
+   },
+   {
+    "clawback": "YES",
+    "page": 7,
+    "snippet": " is less than 15 times of the total number of the Offer Shares initially available for subscription under the Hong Kong Public Offering, no clawback mechanism has been effected. The final number of Offer Shares under the Hong Kong Public Offering is 2,600,000 Offer Shares, re"
+   }
+  ]
+ },
+ {
+  "code": "2352",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0428/10233312/2022042800073.pdf",
+  "existing": null,
+  "sha256": "ec90638ef07e742588f89ffe0a3f7f8328fa58b314a4a6ee97313b89663901b8",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "llocation procedure as disclosed in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and clawback ” in the Prospectus has not been applied. The final number of Offer Shares under the Hong Kong Public Offering is 1,666,800 H Shares, repres"
+   }
+  ]
+ },
+ {
+  "code": "2325",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0517/10262597/2022051700034.pdf",
+  "existing": null,
+  "sha256": "e2fc6dad1a3584c374eaa246a6f3a99ccaa24d99912322b2fbec64474a748456",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": " the Hong Kong Public Offering is less than 15 times of the number of Offer Shares initially available under the Hong Kong Public Offering, no reallocation procedure as described in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation ” in the Prospectus has been applied. The final number of Offer Shares under the Hong Kong Public Offering is 13,819,000, representing a"
+   }
+  ]
+ },
+ {
+  "code": "2347",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0609/10296881/2022060900034.pdf",
+  "existing": null,
+  "sha256": "a4c940401e6b318db4dfce9aa55c202f3f60a517b1b2d066fdf995d8ea33febf",
+  "evidence": []
+ },
+ {
+  "code": "6667",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0621/10309651/2022062100032.pdf",
+  "existing": null,
+  "sha256": "cac90d51c6cb336ef6284d66c87b2730e5f0d563e643c16b8a18cb9b553939c7",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "blic Offering is less than 15 times of the number of Offer Shares initially available for subscription under the Hong Kong Public Offering, no reallocation procedures as described in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation ” in the Prospectus has been applied. The final number of Hong Kong Offer Shares available under the Hong Kong Public Offering is 1,196,"
+   }
+  ]
+ },
+ {
+  "code": "2246",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0623/10312454/2022062300036.pdf",
+  "existing": null,
+  "sha256": "4a7454f02adb075fed48a51dab81909c5eaa2dd5152d166c9b36d5914de78d4d",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": " Public Offering represents less than 15 times of the total number of Offer Shares initially available under the Hong Kong Public Offering, no reallocation procedure as disclosed in the section headed “Structure of the Global Offering – the Hong Kong Public Offering – Reallocation ” in the Prospectus has been applied and no International Offer Shares have been reallocated from the International Offering to the Hong"
+   }
+  ]
+ },
+ {
+  "code": "2167",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0629/10319899/2022062900094.pdf",
+  "existing": null,
+  "sha256": "deb31466a62683997a61156c6eec89d5dd90629436d17459086436d734a7b6d7",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": " Public Offering represents less than 15 times of the total number of Offer Shares initially available under the Hong Kong Public Offering, no reallocation procedure as described in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation ” in the Prospectus has been applied and no International Offer Shares have been reallocated from the International Offering to the Hong"
+   },
+   {
+    "clawback": "NO",
+    "page": 8,
+    "snippet": "blic Offering is less than 15 times of the number of Offer Shares initially available for subscription under the Hong Kong Public Offering, no reallocation procedures as described in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation ” in the Prospectus has been applied. The final number of Hong Kong Offer Shares available under the Hong Kong Public Offering is 4,353,"
+   }
+  ]
+ },
+ {
+  "code": "2372",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0629/10319907/2022062900110.pdf",
+  "existing": null,
+  "sha256": "4053602208e43a5fb63003982bce98514fe7b1fc953d47b57fd2c8503c9d33b5",
+  "evidence": []
+ },
+ {
+  "code": "2391",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0704/10326113/2022070400034.pdf",
+  "existing": null,
+  "sha256": "eae7114bf7b1b9c708409fcd8f79970f82c905e35de6ed8f32ffcdfbe9b88a32",
+  "evidence": [
+   {
+    "clawback": "YES",
+    "page": 1,
+    "snippet": "nts less than 15 times of the total number of the Offer Shares initially available for subscription under the Hong Kong Public Offering, no clawback mechanism has been effected. • The final number of Offer Shares under the Hong Kong Public Offering is 730,000 Offer Shares, re"
+   },
+   {
+    "clawback": "YES",
+    "page": 7,
+    "snippet": "nts less than 15 times of the total number of the Offer Shares initially available for subscription under the Hong Kong Public Offering, no clawback mechanism has been effected. The final number of Offer Shares under the Hong Kong Public Offering is 730,000 Offer Shares, repr"
+   }
+  ]
+ },
+ {
+  "code": "9955",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0705/10330833/2022070500014.pdf",
+  "existing": null,
+  "sha256": "4e76ad5c84094b9717b00d3ab9f8c4ca8fe3018f42a249927f139594b9978b2c",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "g represents less than 15 times of the number of the Offer Shares initially available for subscription under the Hong Kong Public Offering, no reallocation procedures as described in the section headed “Structure of the Global Offering — The Hong Kong Public Offering — Reallocation” in the Prospectus has been applied. The final number of Offer Shares under the Hong Kong Public Offering is 1,900,000 Offer Shares, re"
+   }
+  ]
+ },
+ {
+  "code": "2376",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0707/10334865/2022070700022.pdf",
+  "existing": null,
+  "sha256": "02ab901cc32be66a269a553c7dc2188551e930afa4b19d03e6850ced298e4166",
+  "evidence": [
+   {
+    "clawback": "YES",
+    "page": 1,
+    "snippet": "ocation procedure as disclosed in the paragraph headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and Clawback ” in the Prospectus has been applied. The final number of Offer Shares under the Hong Kong Public Offering is 3,334,000 Offer Shares, re"
+   },
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": " Public Offering represents less than 15 times of the total number of Offer Shares initially available under the Hong Kong Public Offering, no reallocation procedure as disclosed in the paragraph headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and Clawback ” in the Prospectus has been applied. The final number of Offer Shares under the Hong Kong Public Offering is 3,334,000 Offer Shares, re"
+   },
+   {
+    "clawback": "YES",
+    "page": 8,
+    "snippet": "ocation procedure as disclosed in the paragraph headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and Clawback ” in the Prospectus has been applied. The final number of Offer Shares under the Hong Kong Public Offering is 3,334,000 Offer Shares, re"
+   },
+   {
+    "clawback": "NO",
+    "page": 8,
+    "snippet": " Public Offering represents less than 15 times of the total number of Offer Shares initially available under the Hong Kong Public Offering, no reallocation procedure as disclosed in the paragraph headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and Clawback ” in the Prospectus has been applied. The final number of Offer Shares under the Hong Kong Public Offering is 3,334,000 Offer Shares, re"
+   }
+  ]
+ },
+ {
+  "code": "2392",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0707/10334867/2022070700034.pdf",
+  "existing": "YES",
+  "sha256": "4cd7e12d4130d826baa32dece9681de0f4399339d0635988568d78d52be4cd79",
+  "evidence": [
+   {
+    "clawback": "YES",
+    "page": 1,
+    "snippet": "llocation procedure as disclosed in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and clawback” in the Prospectus has been applied and 6,877,500 International Offer Shares have been reallocated from the International Offering to t"
+   }
+  ]
+ },
+ {
+  "code": "2297",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0707/10334888/2022070700058.pdf",
+  "existing": null,
+  "sha256": "ec936f00285c6a77559fc10e997b2ea09af8ba6b298972c53c9ed237e3a11675",
+  "evidence": []
+ },
+ {
+  "code": "2361",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0711/10337963/2022071100012.pdf",
+  "existing": null,
+  "sha256": "41c300d262948ca11b553072d984382104f38d6d3c1a17b9d6f25476adfab9cd",
+  "evidence": []
+ },
+ {
+  "code": "2385",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0711/10337967/2022071100026.pdf",
+  "existing": null,
+  "sha256": "1ac6a6161307f0c09ffaba5a464c3ace9c178df6cb7707a9fe29556d726a1a11",
+  "evidence": []
+ },
+ {
+  "code": "9896",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0712/10339833/2022071200018.pdf",
+  "existing": null,
+  "sha256": "dda31e647ec16afc1631704803732e82815061f07782e648a01183ae9eae67b9",
+  "evidence": [
+   {
+    "clawback": "YES",
+    "page": 1,
+    "snippet": "for subscription under the Hong Kong Public Offering. • As the over-subscription in the Hong Kong Public Offering is less than 15 times, no clawback mechanism has been effected. • The final number of Offer Shares under the Hong Kong Public Offering is 4,110,000 Offer Shares, "
+   },
+   {
+    "clawback": "YES",
+    "page": 6,
+    "snippet": " 2,055,000 Hong Kong Offer Shares) has been identified. As the over-subscription in the Hong Kong Public Offering is less than 15 times, no clawback mechanism has been effected. The final number of Offer Shares under the Hong Kong Public Offering is 4,110,000 Offer Shares, re"
+   }
+  ]
+ },
+ {
+  "code": "6661",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0712/10339839/2022071200044.pdf",
+  "existing": null,
+  "sha256": "22a765966206ab2d2f7a41d04cd77b88991209ab40effd51893c4a990b9826b0",
+  "evidence": []
+ },
+ {
+  "code": "6686",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0712/10339835/2022071200030.pdf",
+  "existing": null,
+  "sha256": "43a749d8d424dc495349d5a107cff02fdd7ea2d83feb1e583ddaef409d202299",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "ong Kong Public Offering is less than 15 times of the total number of Offer Shares initially available under the Hong Kong Public Offering, no reallocation procedure as disclosed in the section headed “Structure of the Global Offering – the Hong Kong Public Offering – Reallocation ” in the Prospectus has been applied and no International Offer Shares have been reallocated from the International Offering to the Hong"
+   },
+   {
+    "clawback": "NO",
+    "page": 6,
+    "snippet": "ong Kong Public Offering is less than 15 times of the total number of Offer Shares initially available under the Hong Kong Public Offering, no reallocation procedure as disclosed in the section headed “Structure of the Global Offering – the Hong Kong Public Offering – Reallocation ” in the Prospectus has been applied and no International Offer Shares have been reallocated from the International Offering to the Hong"
+   }
+  ]
+ },
+ {
+  "code": "9696",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0712/10339849/2022071200064.pdf",
+  "existing": null,
+  "sha256": "cb8b6898a60c7f26d48791e62826cc97f2715e3fd26984dfc05f82ad717eb6b1",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "le for subscription under the Hong Kong Public Offering. • As the over-subscription in the Hong Kong Public Offering is less than 15 times, no reallocation of Offer Shares has been effected from the International Offering to the Hong Kong Public Offering. • The final number of Offer Share"
+   }
+  ]
+ },
+ {
+  "code": "2418",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0714/10342446/2022071400008.pdf",
+  "existing": null,
+  "sha256": "299c402351ce1e37074f96880bf5d0f3ab580c45e02bfef36a6c96a18173cea4",
+  "evidence": []
+ },
+ {
+  "code": "1204",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0714/10342456/2022071400028.pdf",
+  "existing": null,
+  "sha256": "e7883799583116d221a4a5328196368ea8df5ba2e04340671005fa5623cf5e10",
+  "evidence": []
+ },
+ {
+  "code": "2172",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0714/10342480/2022071400062.pdf",
+  "existing": null,
+  "sha256": "142aca3e88646c66827476d5e996df13aa63b7c89294a66cb24a364da033fbe9",
+  "evidence": []
+ },
+ {
+  "code": "2237",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0715/10344171/2022071500018.pdf",
+  "existing": null,
+  "sha256": "830be5a4b2e394dc13d26b0451b96c716849749e6071f0f2fb7a94a704c7f58f",
+  "evidence": []
+ },
+ {
+  "code": "9857",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0809/10376442/2022080900038.pdf",
+  "existing": "NO",
+  "sha256": "b5124a60f930ee7b86e354eaedba19eaa882cf2d889745a41b60bd1f7e610198",
+  "evidence": []
+ },
+ {
+  "code": "2321",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0818/10390154/2022081800020.pdf",
+  "existing": "YES",
+  "sha256": "18d0b642baee0eed427ee27bdd661f376c15c594499fb99db8135c6a47fe30f2",
+  "evidence": []
+ },
+ {
+  "code": "2152",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0823/10395645/2022082300020.pdf",
+  "existing": "NO",
+  "sha256": "6605d5eb7f38a39c4088adfe574129433844211b5b219def79277745b629e209",
+  "evidence": []
+ },
+ {
+  "code": "1880",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0824/10396891/2022082400026.pdf",
+  "existing": null,
+  "sha256": "f73ff41d36a916f0aae3f533ea7c53a3ea1fa848f9711a5b6285f040434e1ed1",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "le for subscription under the Hong Kong Public Offering. • As the over-subscription in the Hong Kong Public Offering is less than 15 times, no reallocation of Offer Shares has been effected from the International Offering to the Hong Kong Public Offering. • The final number of Offer Share"
+   },
+   {
+    "clawback": "NO",
+    "page": 8,
+    "snippet": "10 As the over-subscription in the Hong Kong Public Offering is less than 15 times, no reallocation of Offer Shares has been effected from the International Offering to the Hong Kong Public Offering. The final number of Offer Shares "
+   }
+  ]
+ },
+ {
+  "code": "2315",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0831/10408639/2022083100062.pdf",
+  "existing": null,
+  "sha256": "ca83f23b1f57457dc22581c7ddaa5535a0693f22fdc189f73479431fc651a04e",
+  "evidence": []
+ },
+ {
+  "code": "9886",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0913/10427566/2022091300008.pdf",
+  "existing": null,
+  "sha256": "41af0c40c85101200195df44d32bb7b9a844bbe4a9881ed2504c1d3f8d931abd",
+  "evidence": []
+ },
+ {
+  "code": "2350",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0923/10440975/2022092300214.pdf",
+  "existing": null,
+  "sha256": "afa3de64d660254da8ab4317d9e7e97adcd9dd8796f54c5839dbd084fdd93710",
+  "evidence": []
+ },
+ {
+  "code": "9863",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0928/10445565/2022092800022.pdf",
+  "existing": null,
+  "sha256": "caa604222656f7a0fed11fcc76720a39b71b8636e523bc1216a5a8611446a2a1",
+  "evidence": []
+ },
+ {
+  "code": "2602",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0928/10445577/2022092800044.pdf",
+  "existing": "NO",
+  "sha256": "0006a6fd497bf72dab39fa8cb9a87e0f4828637d856c28331b76c7f7c344a2fb",
+  "evidence": []
+ },
+ {
+  "code": "6660",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1005/10457749/2022100500008.pdf",
+  "existing": null,
+  "sha256": "27b5f68dccff5ac7eef213c9577926e170fdcc89f54395d988c4881663559d74",
+  "evidence": []
+ },
+ {
+  "code": "3931",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1005/10457761/2022100500030.pdf",
+  "existing": "NO",
+  "sha256": "5010fb51f8c39afb576472fea8764194df0a7519b564ab6c410cd56b9a992012",
+  "evidence": []
+ },
+ {
+  "code": "9877",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1007/10461466/2022100700015.pdf",
+  "existing": null,
+  "sha256": "9cabe5cdc32f7db3a9ac51c23b43934f870ed8cee732a8e6019f75d521043505",
+  "evidence": []
+ },
+ {
+  "code": "1489",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1007/10461506/2022100700044.pdf",
+  "existing": null,
+  "sha256": "c40b9f655173d49b15fd0aa104c861019cda7eedee2ae5993dc4d42f49d9a179",
+  "evidence": []
+ },
+ {
+  "code": "2422",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1014/10468675/2022101400044.pdf",
+  "existing": null,
+  "sha256": "a7f074dc9f2a3687d775d27803f1f5ff0d9990e921818102e65f2551e8b6600a",
+  "evidence": []
+ },
+ {
+  "code": "6610",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1017/10470187/2022101700014.pdf",
+  "existing": null,
+  "sha256": "cf724a4c96d5691adafc4cbc369497dac712dd1f1f6ea9fd7074e12e6542470e",
+  "evidence": []
+ },
+ {
+  "code": "2367",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1103/10492119/2022110300026.pdf",
+  "existing": null,
+  "sha256": "770aa4676cf9b6d3dc589211d8ed108945173ff2c1f5bbf890884817c862120a",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "fering represents approximately 2.08 times of the total number of Offer Shares initially available under the Hong Kong Public Offering, and no reallocation procedure as described in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation ” in the Prospectus has been applied and no Offer Shares have been reallocated from the International Offering to the Hong Kong Public O"
+   },
+   {
+    "clawback": "NO",
+    "page": 7,
+    "snippet": "er Shares initially available under the Hong Kong Public Offering) has been identified. At the discretion of the Joint Global Coordinators, no reallocation procedure as described in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation ” in the Prospectus has been applied and no Offer Shares have been reallocated from the International Offering to the Hong Kong Public O"
+   }
+  ]
+ },
+ {
+  "code": "2291",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1107/10496791/2022110700012.pdf",
+  "existing": null,
+  "sha256": "ba884c6b3b76521de830c626cfd02f81407a6a0d04fa01e6ebb493e7d6d2b140",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "location procedures as described in the section headed “Structure of the Global Offering { The Hong Kong Public Offering { Reallocation and Clawback ” in the Prospectus have not been applied. The final number of Offer Shares comprised in the Hong Kong Public Offering is 2,246,000 Offer Sha"
+   }
+  ]
+ },
+ {
+  "code": "6696",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1108/10498314/2022110800014.pdf",
+  "existing": null,
+  "sha256": "79781e6afcb462f6cfdaba0b346915f3889293e729d9de8ed462164e3b4ab768",
+  "evidence": []
+ },
+ {
+  "code": "2420",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1110/10500767/2022111000036.pdf",
+  "existing": null,
+  "sha256": "1c39166dad6c89d86aaf80d47edc6af6597f936b7aea41b3c0e32f8171bdd62e",
+  "evidence": [
+   {
+    "clawback": "YES",
+    "page": 1,
+    "snippet": "epresents less than 15 times of the number of the Offer Shares initially available for subscription under the Hong Kong Public Offering, no clawback mechanism has been effected. The final number of Offer Shares under the Hong Kong Public Offering is 2,925,000 Shares, represen"
+   }
+  ]
+ },
+ {
+  "code": "1407",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1115/10506457/2022111500162.pdf",
+  "existing": null,
+  "sha256": "11dc87988446d32cb1d8a7129feb9cbc536e393563ce35ac7263983e606cabf9",
+  "evidence": []
+ },
+ {
+  "code": "2436",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1123/10515049/2022112300040.pdf",
+  "existing": null,
+  "sha256": "282da45dba302fcbcd47805103f0878aa6ecb43252b0648dc90e5d11af6b11ac",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "llocation procedure as disclosed in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and Clawback ” in the Prospectus has not been applied. The final number of Offer Shares under the Hong Kong Public Offering is 5,325,900 Offer Shares, re"
+   },
+   {
+    "clawback": "NO",
+    "page": 8,
+    "snippet": "llocation procedure as disclosed in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and Clawback ” in the Prospectus has not been applied. The final number of Offer Shares under the Hong Kong Public Offering is 5,325,900 Offer Shares, re"
+   }
+  ]
+ },
+ {
+  "code": "3660",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1128/10519016/2022112800018.pdf",
+  "existing": null,
+  "sha256": "e2b033017e90b2180f00f8c5e825c862fc10bc7b8ff40342121b5603c9b2f78d",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "ong Kong Public Offering is less than 15 times of the total number of Offer Shares initially available under the Hong Kong Public Offering, no reallocation procedure as disclosed in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation ” in the Prospectus has been applied and no International Offer Shares have been reallocated from the International Offering to the Hong"
+   },
+   {
+    "clawback": "NO",
+    "page": 6,
+    "snippet": "ong Kong Public Offering is less than 15 times of the total number of Offer Shares initially available under the Hong Kong Public Offering, no reallocation procedure as disclosed in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation ” in the Prospectus has been applied and no International Offer Shares have been reallocated from the International Offering to the Hong"
+   }
+  ]
+ },
+ {
+  "code": "2245",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1130/10522180/2022113000306.pdf",
+  "existing": null,
+  "sha256": "7a4d541573648fc8ba47b8e4d1c4bc85cb56a6c06f851e1b539266968213041c",
+  "evidence": [
+   {
+    "clawback": "YES",
+    "page": 2,
+    "snippet": "llocation procedure as disclosed in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and Clawback” in the Prospectus has been applied and no International Offer Shares have been reallocated from the International Offering to the Hong"
+   },
+   {
+    "clawback": "NO",
+    "page": 2,
+    "snippet": " Public Offering represents less than 15 times of the total number of Offer Shares initially available under the Hong Kong Public Offering, no reallocation procedure as disclosed in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and Clawback” in the Prospectus has been applied and no International Offer Shares have been reallocated from the International Offering to the Hong"
+   }
+  ]
+ },
+ {
+  "code": "6963",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1208/10536241/2022120800050.pdf",
+  "existing": "NO",
+  "sha256": "43d6b8840c8cb1814565092ba025d851fc36a55b97b689228d2ffb7eaed6ed77",
+  "evidence": []
+ },
+ {
+  "code": "2407",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1209/10537343/2022120900014.pdf",
+  "existing": null,
+  "sha256": "978a02bbc82faa92feeb7c3970b68ad15e08e53ef61232d9ddb4578d5ff1a375",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "ong Kong Public Offering is less than 15 times of the total number of Offer Shares initially available under the Hong Kong Public Offering, no reallocation procedure as described in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation” in the Prospectus has been applied and no Offer Shares have been reallocated from the International Offering to the Hong Kong Public O"
+   }
+  ]
+ },
+ {
+  "code": "2440",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1209/10537393/2022120900150.pdf",
+  "existing": "YES",
+  "sha256": "06af4ce9b15b6f15e3951684580c128084990ac584bacddbdcad95b1476d91e3",
+  "evidence": []
+ },
+ {
+  "code": "1947",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1213/10540070/2022121300030.pdf",
+  "existing": "YES",
+  "sha256": "7fb79fe9e49832020b12aaa8017da16077a970e0c3a390d90f2b5c6c5ac041f9",
+  "evidence": []
+ },
+ {
+  "code": "1244",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1214/10541461/2022121400038.pdf",
+  "existing": null,
+  "sha256": "6bea5033d3d59a7f5fd111f7e966bb049bf0398459b2923d5d2ff79b9c628f3b",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": " Public Offering represents less than 15 times of the total number of Offer Shares initially available under the Hong Kong Public Offering, no reallocation procedure as disclosed in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation ” in the Prospectus has been applied and no International Offer Shares have been reallocated from the International Offering to the Hong"
+   }
+  ]
+ },
+ {
+  "code": "9985",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1214/10541497/2022121400096.pdf",
+  "existing": "YES",
+  "sha256": "a930ea218e6f646a74b5196c1c3dab110cc334d5ddfff865ca6471d5811099f1",
+  "evidence": []
+ },
+ {
+  "code": "2457",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1214/10541499/2022121400108.pdf",
+  "existing": "YES",
+  "sha256": "f59eb60adec8a43ce264af4758ea0636e12b2eb5ebb17309c3091a5c1fdfee9b",
+  "evidence": []
+ },
+ {
+  "code": "2145",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1221/10548467/2022122100052.pdf",
+  "existing": null,
+  "sha256": "2a2e5a070bd10769c689b92042b61b9520417312422ca65059f2439055f301b5",
+  "evidence": []
+ },
+ {
+  "code": "0314",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1222/10549619/2022122200020.pdf",
+  "existing": null,
+  "sha256": "237fd1b5e096abc3e7494ad7e91f54f2a83efb436514e31f82ac827ccdcad1e0",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "le for subscription under the Hong Kong Public Offering. • As the over-subscription in the Hong Kong Public Offering is less than 15 times, no reallocation of Offer Shares as described in the paragraph headed “Structure of the Global Offering — The Hong Kong Public Offering — Reallocation” in the Prospectus has been effected from the International Offering to the Hong Kong Public Offering. • The final number of Offer Share"
+   },
+   {
+    "clawback": "NO",
+    "page": 8,
+    "snippet": " under the Hong Kong Public Offering) has been identified. As the over-subscription in the Hong Kong Public Offering is less than 15 times, no reallocation of Offer Shares as described in the paragraph headed “Structure of the Global Offering — The Hong Kong Public Offering — Reallocation” in the Prospectus has been effected from the International Offering to the Hong Kong Public Offering. The final number of Offer Shares "
+   }
+  ]
+ },
+ {
+  "code": "6929",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1222/10549625/2022122200036.pdf",
+  "existing": null,
+  "sha256": "a8ff34bd40fa5f735a5e5221c1a0bdcb0308275f413ef37665472a9120e96ef6",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "location procedures as disclosed in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and clawback ” in the Prospectus has not been applied. The final number of Offer Shares under the Hong Kong Public Offering is 5,464,000 Offer Shares, re"
+   },
+   {
+    "clawback": "NO",
+    "page": 8,
+    "snippet": "llocation procedure as disclosed in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and clawback ” in the Prospectus has not been applied. The final number of Offer Shares under the Hong Kong Public Offering is 5,464,000 Shares, represen"
+   }
+  ]
+ },
+ {
+  "code": "2427",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1228/10552447/2022122800006.pdf",
+  "existing": null,
+  "sha256": "727de97464b2fc5b589ca08ec4679a2ef87aee7d9527c1a7864254413a020f3a",
+  "evidence": []
+ },
+ {
+  "code": "6698",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1228/10552457/2022122800024.pdf",
+  "existing": null,
+  "sha256": "0749015def99d9f723eae6bf7cbb8b30a2b5a8448125ad90975fd6bc83d59754",
+  "evidence": [
+   {
+    "clawback": "YES",
+    "page": 1,
+    "snippet": "llocation procedure as disclosed in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and Clawback ” in the Prospectus has been applied and no International Offer Shares have been reallocated from the International Offering to the Hong"
+   },
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": " Public Offering represents less than 15 times of the total number of Offer Shares initially available under the Hong Kong Public Offering, no reallocation procedure as disclosed in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and Clawback ” in the Prospectus has been applied and no International Offer Shares have been reallocated from the International Offering to the Hong"
+   }
+  ]
+ },
+ {
+  "code": "2425",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1229/10554320/2022122900096.pdf",
+  "existing": null,
+  "sha256": "77a9bb955c0d99f89dd653d274a678646c1eaa6a7c6d74bbc5bb5265d52b1e03",
+  "evidence": []
+ },
+ {
+  "code": "6922",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1229/10554330/2022122900116.pdf",
+  "existing": null,
+  "sha256": "a9dfd24a5418de1853a66a7fe3fc8f825b9965213e6a2b5e1d827aba6f2eb870",
+  "evidence": []
+ },
+ {
+  "code": "6955",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1229/10554377/2022122900322.pdf",
+  "existing": null,
+  "sha256": "269a0627813aba9a3e2c3b56f63abbee369a1df06f34247b402837bdefbe4fd9",
+  "evidence": []
+ },
+ {
+  "code": "2469",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0106/10569217/2023010600012.pdf",
+  "existing": "YES",
+  "sha256": "aee1977ba8594c203986600707662b3b02cae5c221fa87ca6ef84e73839c02fe",
+  "evidence": []
+ },
+ {
+  "code": "2402",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0111/10573259/2023011100008.pdf",
+  "existing": "NO",
+  "sha256": "7c72bd37dc55f93ea0e790b9042e66497e12f81d6ced687c0a559028746bc668",
+  "evidence": []
+ },
+ {
+  "code": "2147",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0112/10574338/2023011200016.pdf",
+  "existing": "YES",
+  "sha256": "d11b5efd072d73b107aaedbd34c5f6c5784e2130fa0cce75fffec66e80cd08b4",
+  "evidence": []
+ },
+ {
+  "code": "2411",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0113/10575581/2023011300020.pdf",
+  "existing": null,
+  "sha256": "fc37eb9e0aab5bd323a7b7ba901fb8f726660d88de4823ec09aa3326a25a6043",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": " Public Offering represents less than 15 times of the total number of Offer Shares initially available under the Hong Kong Public Offering, no reallocation procedures as described in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation ” in the Prospectus have been applied and no International Offer Shares have been reallocated from the International Offering to the Hong"
+   },
+   {
+    "clawback": "NO",
+    "page": 8,
+    "snippet": "lic Offering represents less than 15 times of the total number of the Offer Shares initially available under the Hong Kong Public Offering, no reallocation procedures as described in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation ” in the Prospectus have been applied and no International Offer Shares have been reallocated from the International Offering to the Hong"
+   }
+  ]
+ },
+ {
+  "code": "2373",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0113/10575585/2023011300034.pdf",
+  "existing": null,
+  "sha256": "24da4b66aa68abae4f5fd59d27c6e30083e3cc5ddf58cc1ecd9dc4bcd804851a",
+  "evidence": [
+   {
+    "clawback": "YES",
+    "page": 1,
+    "snippet": "llocation procedure as disclosed in the section headed “Structure of the Global Offering — The Hong Kong Public Offering — Reallocation and Clawback” in the Prospectus has been applied and 8,107,000 Offer Shares have been reallocated from the International Offering to the Hong Kong P"
+   }
+  ]
+ },
+ {
+  "code": "2458",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0113/10575643/2023011300080.pdf",
+  "existing": null,
+  "sha256": "dc6ac3c79f01e5af9082f90e71d692eeb67ee8e036b1435928097877b48e176c",
+  "evidence": []
+ },
+ {
+  "code": "2459",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0116/10577021/2023011600010.pdf",
+  "existing": null,
+  "sha256": "8300b9c273bddc5e98ead2b9377c716334adeeb7e1d5797ad6473ac6b7169ed5",
+  "evidence": []
+ },
+ {
+  "code": "2455",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0116/10577027/2023011600026.pdf",
+  "existing": null,
+  "sha256": "92eb18eec32b6cfb09fd2b38e6ff5544316c405930ee16ebd74a2071fbc98d4f",
+  "evidence": []
+ },
+ {
+  "code": "2306",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0118/10579262/2023011800044.pdf",
+  "existing": "YES",
+  "sha256": "8d7ab9e10c85ece073e1f2f234acdcd27a68f84a452dd388e2fc3fe96de1e6df",
+  "evidence": []
+ },
+ {
+  "code": "2450",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0119/10580437/2023011900020.pdf",
+  "existing": null,
+  "sha256": "6f80e0619a96e724ce54866720d85333ad9fadc7ff102f21c8dea60c928dd5ef",
+  "evidence": []
+ },
+ {
+  "code": "2482",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0308/10624749/2023030800010.pdf",
+  "existing": null,
+  "sha256": "77564bdfdcaa532b9d5f9297f4b1383c547e7241cbad22a75812f516f236546a",
+  "evidence": [
+   {
+    "clawback": "YES",
+    "page": 1,
+    "snippet": "llocation procedure as disclosed in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and clawback ” in the Prospectus has been applied. The final number of Offer Shares under the Hong Kong Public Offering is 12,964,000 H Shares, repre"
+   }
+  ]
+ },
+ {
+  "code": "9636",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0309/10625859/2023030900010.pdf",
+  "existing": null,
+  "sha256": "33a9718e58e73fe27de0e5bb701525ec62a13f474df5b81fde7a9c4a6cd1b9a6",
+  "evidence": []
+ },
+ {
+  "code": "1405",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0327/10646031/2023032700032.pdf",
+  "existing": null,
+  "sha256": "87bc401419a5622cc51a8d9969925728d82bedc954cd617cc71f3122d2d30f4d",
+  "evidence": []
+ },
+ {
+  "code": "2409",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0328/10648100/2023032800040.pdf",
+  "existing": null,
+  "sha256": "72f55e661be64eb7993174bc7188d902ae75d4098734f3fbead60d3fbacfb366",
+  "evidence": []
+ },
+ {
+  "code": "2433",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0329/10650645/2023032900044.pdf",
+  "existing": null,
+  "sha256": "8242029a431c7115909c7eb7169f5e251def074b8407e8f00c9a10aa0f9023d7",
+  "evidence": []
+ },
+ {
+  "code": "2405",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0330/10653526/2023033000100.pdf",
+  "existing": null,
+  "sha256": "792c5ca5950f5bd6c5ba80bbcec47027b86270d1c7757faeba809bf3f3a2e8f2",
+  "evidence": []
+ },
+ {
+  "code": "2439",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0330/10653650/2023033000222.pdf",
+  "existing": null,
+  "sha256": "fc6caf0495b420f89c80280edcb68a48bc4d832b310fce9f634224ebfa1a4ba2",
+  "evidence": []
+ },
+ {
+  "code": "9669",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0412/10684679/2023041200012.pdf",
+  "existing": "YES",
+  "sha256": "f26b596d02bc82cb0fa7a19ffe1e95a3eb622bdd77af8f4c698b01eced7e6c43",
+  "evidence": []
+ },
+ {
+  "code": "6979",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0426/10705031/2023042600064.pdf",
+  "existing": null,
+  "sha256": "468bddd0ec571302e9a5d033ccff9caf5c2946ad4f3f2784572457917e8ab58c",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "g represents less than 15 times of the number of the Offer Shares initially available for subscription under the Hong Kong Public Offering, no reallocation procedures as described in the section headed “Structure of the Global Offering — The Hong Kong Public Offering — Reallocation” in the Prospectus has been applied. The final number of Offer Shares under the Hong Kong Public Offering is 49,070,000 Offer Shares, r"
+   },
+   {
+    "clawback": "NO",
+    "page": 8,
+    "snippet": "g represents less than 15 times of the number of the Offer Shares initially available for subscription under the Hong Kong Public Offering, no reallocation procedures as described in the section headed “Structure of the Global Offering — The Hong Kong Public Offering — Reallocation” in the Prospectus has been applied. The final number of Offer Shares under the Hong Kong Public Offering is 49,070,000 Offer Shares, r"
+   }
+  ]
+ },
+ {
+  "code": "2415",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0426/10705025/2023042600048.pdf",
+  "existing": null,
+  "sha256": "d3ea4c9f4f37daf78db3d37da51caa5e5fd6ab899bd5b30ad0f1840780658e17",
+  "evidence": []
+ },
+ {
+  "code": "2480",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0505/10727095/2023050500010.pdf",
+  "existing": null,
+  "sha256": "cbc5355702790422d066fedb9adde6e9508bb5a3ed1dbe4839229d2376abe9da",
+  "evidence": []
+ },
+ {
+  "code": "2442",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0508/10729328/2023050800006.pdf",
+  "existing": "YES",
+  "sha256": "7888bc286cb1271260b7f0b47a3d13a32ae8c3574b3076dd83755c973fb05a29",
+  "evidence": []
+ },
+ {
+  "code": "2486",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0510/10731979/2023051000026.pdf",
+  "existing": null,
+  "sha256": "133584508bf600a43eb4d0902c8ec7813673b487dcdf16ba93e869ab6ffa222c",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 2,
+    "snippet": "lic Offering is less than 15 times of the number of Offer Shares initially avai lable for subscription under the Hong Kong Public Offering, no reallocation p rocedures as described in the section headed ‘‘Structure of the Global Offe ring — The Hong Kong Public Offering — Reallocation’’ in the Prospectus has been applied. The final number of Offer Shares under the Hong Kong Public Of fering is 2,500,000 Offer Shares, r"
+   }
+  ]
+ },
+ {
+  "code": "9930",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0524/10746038/2023052400048.pdf",
+  "existing": "NO",
+  "sha256": "52a044bb0f9d3e3cf1a14e7bafa0a281a2656dbf50636b492402d6d79ee2eb23",
+  "evidence": [
+   {
+    "clawback": "YES",
+    "page": 1,
+    "snippet": "location procedures as described in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and Clawback ” in the Prospectus have been applied, and a total number of 31,984,000 unsubscribed Hong Kong Offer Shares have been reallocated to the "
+   }
+  ]
+ },
+ {
+  "code": "2416",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0524/10746040/2023052400062.pdf",
+  "existing": null,
+  "sha256": "8a21c89bcf0bafd49496965d94e2ffdd617c5ed8a22cb045f62175a9f622edd7",
+  "evidence": [
+   {
+    "clawback": "YES",
+    "page": 1,
+    "snippet": "edure as disclosed in the section headed “Structure and Condition of the Global Offering – The Hong Kong Public Offering – Reallocation and clawback ” in the Prospectus has been applied and 3,799,500 Hong Kong Offer Shares have been reallocated from the Hong Kong Public Offering to th"
+   },
+   {
+    "clawback": "YES",
+    "page": 2,
+    "snippet": "edure as disclosed in the section headed “Structure and Condition of the Global Offering – The Hong Kong Public Offering – Reallocation and clawback ” in the Prospectus has been applied, and 3,799,500 Hong Kong Offer Shares have been reallocated from the Hong Kong Public Offering to t"
+   }
+  ]
+ },
+ {
+  "code": "2487",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0609/10768739/2023060900018.pdf",
+  "existing": null,
+  "sha256": "22a915ad8c7eda6a0b25122daf183e7868b134e199458b439ea6fa0e0ceec9c4",
+  "evidence": []
+ },
+ {
+  "code": "9885",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0627/10785563/2023062700056.pdf",
+  "existing": null,
+  "sha256": "69e5e5824b777669c0b23254a40681016b70f8ce6158d8b1bae2aa741606d18d",
+  "evidence": []
+ },
+ {
+  "code": "2105",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0628/10787145/2023062800054.pdf",
+  "existing": null,
+  "sha256": "bce211807d816215d8c600a3c745af79b2daa3ee09cc6190b40b5a7c4b30a1d7",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "location procedures as described in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and Clawback ” in the Prospectus have not been applied and no International Offer Shares have been reallocated from the International Offering to the Hong"
+   }
+  ]
+ },
+ {
+  "code": "9860",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0629/10789237/2023062900126.pdf",
+  "existing": null,
+  "sha256": "25cb7d9cf66f8fabe10fe7c21ac55d4f870dc59cc9c65c62b678de195fa49395",
+  "evidence": []
+ },
+ {
+  "code": "2481",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0707/10809436/2023070700064.pdf",
+  "existing": null,
+  "sha256": "4419ef9bede89642522481d302e93977c7217fa651eb33f0482c3191541e792f",
+  "evidence": []
+ },
+ {
+  "code": "6990",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0710/10810765/2023071000010.pdf",
+  "existing": null,
+  "sha256": "efc5c31ba889dee0e879901cce5dc0d732b2183b00df185aeaeb90f1095c38a1",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "le for subscription under the Hong Kong Public Offering. • As the over-subscription in the Hong Kong Public Offering is less than 15 times, no reallocation of Offer Shares has been effected from the International Offering to the Hong Kong Public Offering. • The final number of Offer Share"
+   }
+  ]
+ },
+ {
+  "code": "3650",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0711/10811913/2023071100050.pdf",
+  "existing": null,
+  "sha256": "abd27369bf28074ad9c94e9303e50cedd24b4b5c075ee7d8da0f97d0b097229c",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "location procedures as described in the section headed “Structure of the Global Offering — The Hong Kong Public Offering — Reallocation and Clawback” in the Prospectus have not been applied. The final number of Offer Shares under the Hong Kong Public Offering is 1,083,900 Offer Shares, re"
+   }
+  ]
+ },
+ {
+  "code": "6683",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0712/10812959/2023071200012.pdf",
+  "existing": null,
+  "sha256": "e17dfa2a5ea5b63ef1458d682e83958a82eba6dd6705af71beef3e87f8cb78d3",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 2,
+    "snippet": "blic Offering is less than 15 times of the number of Offer Shares initially available for subscription under the Hong Kong Public Offering, no reallocation procedures as described in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation” in the Prospectus has been applied. The final number of Offer Shares under the Hong Kong Public Offering is 12,664,000 Offer Shares, r"
+   }
+  ]
+ },
+ {
+  "code": "1284",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0714/10815137/2023071400018.pdf",
+  "existing": null,
+  "sha256": "5216a0c9c580e5350a29d5e19afb00ad90f3b4acf2ba7fbf9a371fb0c764b46d",
+  "evidence": []
+ },
+ {
+  "code": "2271",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0717/10816647/2023071700008.pdf",
+  "existing": null,
+  "sha256": "1a8bbb582255d06cbf0d0b37b4e36ffbbd875a01ce287b598270920da4a14185",
+  "evidence": []
+ },
+ {
+  "code": "1541",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0904/10879720/2023090400008.pdf",
+  "existing": null,
+  "sha256": "0ff9cb408e2ab0227694a18276f09613565928114e161dca79483b90ff990d0a",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 2,
+    "snippet": "– 4 – • As the over-subscription in the Hong Kong Public Offering is less than 15 times, no reallocation of Offer Shares has been effected from the International Offering to the Hong Kong Public Offering. • The final number of Offer Share"
+   }
+  ]
+ },
+ {
+  "code": "2496",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0922/10905695/2023092200026.pdf",
+  "existing": null,
+  "sha256": "56ff7355e10b496b41eafb8969ee89d27fe61c9d630e622ceae4f84f544fe0cb",
+  "evidence": []
+ },
+ {
+  "code": "2490",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0922/10905719/2023092200058.pdf",
+  "existing": null,
+  "sha256": "c9a2c9e65eaf4ee9df445d2c716e207003d6ae3aaec7e21a1049d986a6abf52e",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "ble for subscription under the Hong Kong Public Offering. • As the oversubscription in the Hong Kong Public Offering is less than 15 times, no reallocation of Offer Shares has been effected from the International Offering to the Hong Kong Public Offering. • The final number of Offer Share"
+   }
+  ]
+ },
+ {
+  "code": "9690",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0925/10907481/2023092500014.pdf",
+  "existing": null,
+  "sha256": "680754d3543c06fa3e596b4202a79d825dfda23b083caf876233bce50ac14b0a",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 2,
+    "snippet": "location procedures as described in the section headed “Structure of the Global Offering — The Hong Kong Public Offering — Reallocation and Clawback” in the Prospectus have not been applied. • Due to the partial exercise of the Offer Size Adjustment Option, the final number of Offer Share"
+   }
+  ]
+ },
+ {
+  "code": "9686",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0927/10910713/2023092700032.pdf",
+  "existing": "NO",
+  "sha256": "3e9ee4ed72c4f018737b663e0e3e24fc8086208974f36b24a9753cbbf86b2a13",
+  "evidence": []
+ },
+ {
+  "code": "9890",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0927/10910719/2023092700048.pdf",
+  "existing": null,
+  "sha256": "84c474566a29b578ead0275c55ca5b8cc6a9180a43859f5428bdff83bccd8bc7",
+  "evidence": []
+ },
+ {
+  "code": "6682",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0927/10910735/2023092700072.pdf",
+  "existing": null,
+  "sha256": "c7efb0284c98c568f756a5727af1876f404a146f70132dda14d7ca6b8d2c36ae",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": " Public Offering represents less than 15 times of the total number of Offer Shares initially available under the Hong Kong Public Offering, no reallocation procedure as disclosed in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation ” in the Prospectus has been applied and no H Shares have been reallocated from the International Offering to the Hong Kong Public Offer"
+   }
+  ]
+ },
+ {
+  "code": "1973",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/1005/10924572/2023100500008.pdf",
+  "existing": "NO",
+  "sha256": "1c862751415fba131f70af7b776a0f92df185ad5e889f55d8dea1c190026217f",
+  "evidence": [
+   {
+    "clawback": "YES",
+    "page": 2,
+    "snippet": "location procedures as described in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and Clawback ” in the Prospectus have been applied, and a total number of 12,776,400 unsubscribed Hong Kong Offer Shares have been reallocated to the "
+   }
+  ]
+ },
+ {
+  "code": "2501",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/1010/10929076/2023101000018.pdf",
+  "existing": null,
+  "sha256": "2970a1c1bed5927cbc19f206939b64be4a7d680cef90bc33f79695f67662c29c",
+  "evidence": []
+ },
+ {
+  "code": "9676",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/1011/10929976/2023101100012.pdf",
+  "existing": null,
+  "sha256": "8805a671d4cf5ded63ea85946f3e6a4ac31ac176d6a585c2f34b16b7db2447c2",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": " Public Offering represents less than 15 times of the total number of Offer Shares initially available under the Hong Kong Public Offering, no reallocation procedure as disclosed in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation ” in the Prospectus has been applied and no H Shares have been reallocated from the International Offering to the Hong Kong Public Offer"
+   }
+  ]
+ },
+ {
+  "code": "2451",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/1011/10930000/2023101100036.pdf",
+  "existing": null,
+  "sha256": "84266126f950eb7fa458f6f2b35145c5b91fd60c4406037265692a5652ac04a4",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "ring represents less than 15 times the number of the Offer Shares initially available for subscription under the Hong Kong Public Offering, no reallocation procedure as disclosed in the section headed “Structure of the Global Offering { The Hong Kong Public Offering { Reallocation ” in the Prospectus has been applied and no Offer Shares have been reallocated from the International Offering to the Hong Kong Public O"
+   }
+  ]
+ },
+ {
+  "code": "1519",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/1026/10942025/2023102600030.pdf",
+  "existing": null,
+  "sha256": "f4892b560891fef1a4148b3cb3c284875d8e6a017959b5d7bf91b53571e95ad1",
+  "evidence": []
+ },
+ {
+  "code": "2517",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/1101/10949463/2023110100020.pdf",
+  "existing": null,
+  "sha256": "fb3759aa1a024cfd28769918d07f404c775e939dd556e0093d40d71db4c513dd",
+  "evidence": []
+ },
+ {
+  "code": "2429",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/1102/10953297/2023110200034.pdf",
+  "existing": null,
+  "sha256": "c2c8bc10aea665bfeda3633f779a48472c6fe0a00e52f0235ef59b04417459c2",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "location procedures as described in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and Clawback ” in the Prospectus have not been applied and no International Offer Shares have been reallocated from the International Offering to the Hong"
+   },
+   {
+    "clawback": "NO",
+    "page": 8,
+    "snippet": "location procedures as described in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and clawback ” in the Prospectus have not been applied and no International Offer Shares have been reallocated from the International Offering to the Hong"
+   }
+  ]
+ },
+ {
+  "code": "2473",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/1108/10961531/2023110800018.pdf",
+  "existing": null,
+  "sha256": "76830340da702bbbba887531f51aeb43530a369ecee3f54ea60e921f6041f62d",
+  "evidence": []
+ },
+ {
+  "code": "1111",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/1109/10962661/2023110900028.pdf",
+  "existing": null,
+  "sha256": "77796e2edd12ddfe43fa39412b0f15bd438812287c810dfccd73bd3689a956a7",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": " the Public Offer represents less than 15 times the number of the Offer Shares initially available for subscription under the Public Offer, no reallocation procedure as disclosed in the section headed “Structure and Conditions of the Global Offering – The Public Offer – Reallocation ” in the Prospectus has been applied and no Offer Shares have been reallocated from the Placing to the Public Offer. The final number of"
+   },
+   {
+    "clawback": "NO",
+    "page": 8,
+    "snippet": " the Public Offer represents less than 15 times the number of the Offer Shares initially available for subscription under the Public Offer, no reallocation procedure as disclosed in the section headed “Structure and Conditions of the Global Offering – The Public Offer – Reallocation ” in the Prospectus has been applied and no Offer Shares have been reallocated from the Placing to the Public Offer. The final number of"
+   }
+  ]
+ },
+ {
+  "code": "2499",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/1109/10962681/2023110900054.pdf",
+  "existing": null,
+  "sha256": "26ab130d970ecd4b18b13f8bed6d3d8d69339ab36c45b9ba254e2cf6d3577341",
+  "evidence": [
+   {
+    "clawback": "NO",
+    "page": 1,
+    "snippet": "llocation procedure as disclosed in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and Clawback ” in the Prospectus has not been applied. The final number of Offer Shares under the Hong Kong Public Offering is 1,213,600 H Shares, repres"
+   }
+  ]
+ },
+ {
+  "code": "2268",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/1116/10970095/2023111600010.pdf",
+  "existing": "YES",
+  "sha256": "de278238ad6d5d0b3096549816cd2a1e86b7046eb0d53333b5cec5c82c0594df",
+  "evidence": [
+   {
+    "clawback": "YES",
+    "page": 1,
+    "snippet": "llocation procedure as described in the section headed “Structure of the Global Offering – The Hong Kong Public Offering – Reallocation and Clawback ” in the Prospectus has been applied and 35,689,000 Offer Shares have been reallocated from the International Offering to the Hong Kong "
+   }
+  ]
+ },
+ {
+  "code": "2520",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/1121/10974308/2023112100016.pdf",
+  "existing": "NO",
+  "sha256": "10025112d6e8a37514a5443470037c5d0d0ca21776e98c365172fc1fcfd7abef",
+  "evidence": []
+ },
+ {
+  "code": "2509",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2024/0319/2024031901351.pdf",
+  "existing": null,
+  "sha256": "13e66247bf2a864797d2b7786babf1071cd12a2b4020a96bf78bf8d01e99db68",
+  "evidence": []
+ },
+ {
+  "code": "2497",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2024/0327/2024032702279.pdf",
+  "existing": null,
+  "sha256": "eff7ab43841090b3fde161352074b09244f476e827d715ad5febc599af55c8b4",
+  "evidence": []
+ },
+ {
+  "code": "2505",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2024/0527/2024052701491.pdf",
+  "existing": null,
+  "sha256": "1b0b94b887f4cde44d19c42e2c2bfe1d603ea160a8f3bdfdb5003bd7fc56643d",
+  "evidence": []
+ },
+ {
+  "code": "2443",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2024/0530/2024053001320.pdf",
+  "existing": null,
+  "sha256": "c8881d3c057055a1e858ed40c4923cc00e08a4d9deb2a4d63d91ebb2af0054e9",
+  "evidence": []
+ },
+ {
+  "code": "2550",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2024/0606/2024060602135.pdf",
+  "existing": null,
+  "sha256": "ca30dd930d8f667baf6e12a9a012e8048ec71626128ddb74b81176a193aba429",
+  "evidence": []
+ },
+ {
+  "code": "2881",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2024/0617/2024061701156.pdf",
+  "existing": null,
+  "sha256": "041f19d4e19c85783d1d8a0818e30821b5d033648a2ee71641cc1310ddd99c50",
+  "evidence": []
+ },
+ {
+  "code": "1334",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2024/0709/2024070901007.pdf",
+  "existing": null,
+  "sha256": "a1b45117e21dd69cae2aa4c5b76924477dd5806f118deac9ba1827863fc2c3b8",
+  "evidence": []
+ },
+ {
+  "code": "2410",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2024/0819/2024081901642.pdf",
+  "existing": "NO",
+  "sha256": "0a36471af812266fe69ac51f987e8827e5e364e5caef89651b160fa8938a280e",
+  "evidence": []
+ },
+ {
+  "code": "2585",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2024/1128/2024112801779.pdf",
+  "existing": null,
+  "sha256": "13f32d2c38700e8e30bc6d323a366f2f9bd1f3832dd8c3bd866d3d3b2c4e0cf8",
+  "evidence": []
+ },
+ {
+  "code": "2613",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0108/2025010801098.pdf",
+  "existing": null,
+  "sha256": "89a4f676655feed8fd892a618d4b64ac92194c5c755901ef8b171dadfa888ac3",
+  "evidence": []
+ },
+ {
+  "code": "2651",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0708/2025070801104.pdf",
+  "existing": null,
+  "sha256": "97de27d19781f93c1ca444c8fbd45c0d9585eb79831ab00856e5b8130e567bf0",
+  "evidence": []
+ },
+ {
+  "code": "6960",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0825/2025082502151.pdf",
+  "existing": "NO",
+  "sha256": "92c80b28ea14eb1408a3b77b7715881c3c3dc2bd2412e9508852dc603d016cad",
+  "evidence": []
+ },
+ {
+  "code": "2543",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0908/2025090801334.pdf",
+  "existing": "NO",
+  "sha256": "2c7058359849a839f750a0c4b6a75e0c63cbf597547615b69fec288e329ea11f",
+  "evidence": []
+ },
+ {
+  "code": "2583",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0929/2025092902274.pdf",
+  "existing": "NO",
+  "sha256": "d057f5261fa79b601674dc1bfab9e6e250e3d6be2696535803e039aabe01e550",
+  "evidence": []
+ },
+ {
+  "code": "2259",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0929/2025092903788.pdf",
+  "existing": "NO",
+  "sha256": "9ebef58d99379b298a5441719f6a1d6c9ef1d4c00d37c32d1d97a9ab557dd621",
+  "evidence": []
+ },
+ {
+  "code": "2637",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1017/2025101701654.pdf",
+  "existing": "NO",
+  "sha256": "60a100fa8898353bbd60f886f3e63d6d59c9c1ce88fc651d264c290f59824790",
+  "evidence": []
+ },
+ {
+  "code": "6166",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1027/2025102701698.pdf",
+  "existing": "NO",
+  "sha256": "b4bbdc66cd109059908f02d501aaab22a5a101d9f1e2bf9af0d0e2dfc0e56e31",
+  "evidence": []
+ },
+ {
+  "code": "6980",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1027/2025102701732.pdf",
+  "existing": "NO",
+  "sha256": "b64bfcfd108518a4de63f0510c91190b2023ca854c9bee45f1432f98aa6773a4",
+  "evidence": []
+ },
+ {
+  "code": "2698",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1107/2025110701708.pdf",
+  "existing": "NO",
+  "sha256": "a2da45b59a86a3c2382b97ef96877b399e2bd1bb543fca9ddce963597f96c26f",
+  "evidence": []
+ },
+ {
+  "code": "2685",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1126/2025112601522.pdf",
+  "existing": "NO",
+  "sha256": "b4c64f8ed707dcba78a7a4c340a5bb78b424c1fc2e9c225824610c1b9b3fbce7",
+  "evidence": []
+ },
+ {
+  "code": "2408",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1204/2025120402156.pdf",
+  "existing": "NO",
+  "sha256": "a40c1a14d33277f300b4870035bbc81866524a69e36ad4eb6e7456c91632b094",
+  "evidence": []
+ },
+ {
+  "code": "3887",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1216/2025121601390.pdf",
+  "existing": "NO",
+  "sha256": "46124dc161da6633e42181cb19fd97887d79364255f4a9ca17fdde5500ef54b5",
+  "evidence": []
+ },
+ {
+  "code": "2546",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1218/2025121801566.pdf",
+  "existing": "NO",
+  "sha256": "313d1debe2847b14dce47f37c81da103c44376492b3f13f5dd33599da17f9cfc",
+  "evidence": []
+ },
+ {
+  "code": "2691",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1219/2025121902017.pdf",
+  "existing": null,
+  "sha256": "debf30f97dd40e53f116e9acbed566f795b6ba2260c317619e1714dff7918375",
+  "evidence": []
+ },
+ {
+  "code": "2661",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1222/2025122201716.pdf",
+  "existing": "NO",
+  "sha256": "0ebd25e6a4167416da04c11d777a7e37c4bd7eeca9170c40eec17bd3d1fce628",
+  "evidence": []
+ },
+ {
+  "code": "3378",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1222/2025122201726.pdf",
+  "existing": "NO",
+  "sha256": "89cd552835875239004af3c781c2a4b6b82e50267bcb29ce534d9c1193d48e7f",
+  "evidence": []
+ },
+ {
+  "code": "3317",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1229/2025122902057.pdf",
+  "existing": "NO",
+  "sha256": "ed5e413fba1146490710d350d84256e0090ef8d28fd879866e7f9ed065b5bb04",
+  "evidence": []
+ },
+ {
+  "code": "2657",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1229/2025122902127.pdf",
+  "existing": "NO",
+  "sha256": "54e5e6ab68377e0879050aee4335d92fd0672c3baab46c4a0d6ba93ffc86fb63",
+  "evidence": []
+ },
+ {
+  "code": "9611",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0121/2026012101145.pdf",
+  "existing": "NO",
+  "sha256": "d89190f54bb56f84906e4e3d7bca9660aef74f7bf9cb00f21294e7f5f90a3529",
+  "evidence": []
+ },
+ {
+  "code": "9980",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0202/2026020203212.pdf",
+  "existing": "NO",
+  "sha256": "89c5fdce9ce4bcd6502762d86c8e0984c8ef39a0189dc11f9cb65ecc2b7b2988",
+  "evidence": []
+ },
+ {
+  "code": "2768",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0203/2026020302602.pdf",
+  "existing": "NO",
+  "sha256": "dc52dd3969c86c39ee9d13ceebcf9e9de5e2c8a7e46bb1778ba4bed722a49bca",
+  "evidence": []
+ },
+ {
+  "code": "2677",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0205/2026020501800.pdf",
+  "existing": "NO",
+  "sha256": "9a880706117766fb5ed73cd3aa5f243cf6bc90bd4cc8ccd02addd092ef79431b",
+  "evidence": []
+ },
+ {
+  "code": "2720",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0209/2026020901096.pdf",
+  "existing": "NO",
+  "sha256": "52ce39fb859df7454b837a79a38ac44dac06abf9bb9454e8eb432d43e7a7f70c",
+  "evidence": []
+ },
+ {
+  "code": "2729",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0323/2026032301408.pdf",
+  "existing": "NO",
+  "sha256": "532688111f80a4ce3ae4a4b269340d286f4077cff326758569826ac3dc0f77cb",
+  "evidence": []
+ },
+ {
+  "code": "2632",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0323/2026032301630.pdf",
+  "existing": "NO",
+  "sha256": "0e3fd8773ed87b7e2bf9400f2dcdd558b46e55d3d6a52ac1923aeb81a4279e07",
+  "evidence": []
+ },
+ {
+  "code": "2526",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0327/2026032702330.pdf",
+  "existing": "NO",
+  "sha256": "ca64f1dbfff09a4f5442f0f511762bf5b6570ac539da14c39473623a4b6daa80",
+  "evidence": []
+ },
+ {
+  "code": "0664",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0330/2026033003120.pdf",
+  "existing": null,
+  "sha256": "9f78cf95bdb4f09ac2ccb24b2ba3f17440f279f4ac37ef412e86939b19047d5b",
+  "evidence": []
+ },
+ {
+  "code": "0068",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0416/2026041601684.pdf",
+  "existing": "NO",
+  "sha256": "1ab1f8832897eae7325556c0cd66da56d64728975ab7124346a35f8e56548d02",
+  "evidence": []
+ },
+ {
+  "code": "2493",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0427/2026042703128.pdf",
+  "existing": "NO",
+  "sha256": "a8bd6f46b44830e8766387c6e1ff6ec066fda27f17fb965f837be76f0c2f812f",
+  "evidence": []
+ },
+ {
+  "code": "1236",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0508/2026050801854.pdf",
+  "existing": "NO",
+  "sha256": "65891e52419f59a3f3b6ebb638d371519c70a2adc58682b35a84c0547e5d7ceb",
+  "evidence": []
+ },
+ {
+  "code": "7688",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0519/2026051901261.pdf",
+  "existing": "NO",
+  "sha256": "37f683bfbb2bfc79cb00c449662ad09a7d41ef10c55714f53402039bb517063f",
+  "evidence": []
+ },
+ {
+  "code": "2723",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0526/2026052602298.pdf",
+  "existing": null,
+  "sha256": "9bbbc039a623c6f714cb26ffe0bd5832045fcf83e5c05093a9cd1c019f855fed",
+  "evidence": []
+ },
+ {
+  "code": "0901",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0526/2026052602392.pdf",
+  "existing": null,
+  "sha256": "6c068f7943e6c6913745172915ec81293810590d0051af38e4c6accb4e349696",
+  "evidence": []
+ },
+ {
+  "code": "2290",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0604/2026060402521.pdf",
+  "existing": "NO",
+  "sha256": "85190f97977be8dd38dfbdd252cb2145fdcc1eab907f19bb48fcd841caaa226f",
+  "evidence": []
+ },
+ {
+  "code": "1779",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0604/2026060402923.pdf",
+  "existing": "NO",
+  "sha256": "7af48176c182598c438b84b2c41684297bb6e10978a2f742d2c07b8cc7319648",
+  "evidence": []
+ },
+ {
+  "code": "6132",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0622/2026062201627.pdf",
+  "existing": "NO",
+  "sha256": "5f0f64542dd19742c4892c9451b3ffa17828142f111f4d3b8e91a2ca61d79f49",
+  "evidence": []
+ },
+ {
+  "code": "9630",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0625/2026062502296.pdf",
+  "existing": "NO",
+  "sha256": "f6127aac9745ea613ecf7aa0335f3a70a54a0f70fec898fbaa6050179fd0a2e9",
+  "evidence": []
+ },
+ {
+  "code": "2697",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0629/2026062901959.pdf",
+  "existing": "NO",
+  "sha256": "8c788c821010e2cc84ccc0659717247a4ce2849cf37f3d735b5f4294859787a3",
+  "evidence": []
+ },
+ {
+  "code": "2667",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0706/2026070602117.pdf",
+  "existing": "NO",
+  "sha256": "c292eb3b9186284256254a45f41682edee8e951ccf5926662cbdc8c17068ad8b",
+  "evidence": []
+ },
+ {
+  "code": "2797",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0708/2026070801132.pdf",
+  "existing": "NO",
+  "sha256": "aeeeccf6c681ec649fd6cf4f6a304f929c4bba42603ff970eba587c6344bec0b",
+  "evidence": []
+ },
+ {
+  "code": "1770",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0708/2026070801214.pdf",
+  "existing": "NO",
+  "sha256": "684fe008fb812834ef3df049f1941bab3ee9348ad8426560e0c596aedb2c216f",
+  "evidence": []
+ },
+ {
+  "code": "3752",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0708/2026070801234.pdf",
+  "existing": "NO",
+  "sha256": "060be54aa913bffdf74057c866621146e1aed713f3a82da7fd643c2654430bd7",
+  "evidence": []
+ },
+ {
+  "code": "2261",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0806/2026080602047.pdf",
+  "existing": "NO",
+  "sha256": "78c91aec582ed8f61c91be4c90aaf36a00c30a537cc0aa5ced5512d0c86300d6",
+  "evidence": []
+ },
+ {
+  "code": "6727",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0918/2026091801414.pdf",
+  "existing": null,
+  "sha256": "9570949f199ed075ac751224223f240128f44952b816b6fb393525b1c13d4b0e",
+  "evidence": []
+ },
+ {
+  "code": "3228",
+  "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0928/2026092801965.pdf",
+  "existing": "NO",
+  "sha256": "aa4e6278cd7e51009d2fd7ed6e7d33168b108891b956f3ab1935e664ea15db51",
+  "evidence": []
+ }
+]

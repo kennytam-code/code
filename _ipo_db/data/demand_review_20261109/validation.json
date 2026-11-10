@@ -1,0 +1,171 @@
+{
+  "passed": true,
+  "database_rows": 527,
+  "reviewed_capital_records": 34,
+  "changed_market_caps": 32,
+  "formula_count": 169540,
+  "business_formulas_unchanged": true,
+  "snapshot_label_formula_updated": 1,
+  "added_bloomberg_requests": 0,
+  "bloomberg_formula_counts": {
+    "BDP": 6569,
+    "BDH": 2402,
+    "BQL": 2642
+  },
+  "charts_byte_identical": 10,
+  "unrelated_data_preserved": true,
+  "terminal_tested": false,
+  "sha256": "ab5e947f4dced4f0e91d8566d143af174eab46f2a0bbd753771e5a7b4051e4e0",
+  "date": "2026-11-10",
+  "scope": "IPO capital, institutional reconciliation, filed clawback, retail-volume gaps, A/H offer references, dated Live quotes and Database presentation",
+  "clawback": {
+    "supported_outcomes": 526,
+    "held": [
+      "2550"
+    ],
+    "yes": 155,
+    "no": 221,
+    "na": 150,
+    "Mechanism B": 145,
+    "Mechanism A": 2,
+    "18C": 20,
+    "filled_previous_unknowns": 163,
+    "corrected_existing_outcome": [
+      "2636"
+    ]
+  },
+  "retail": {
+    "recovered_counts": 168,
+    "recovered_listing_tapes": 4,
+    "complete_volume_ratios": 527
+  },
+  "ah": {
+    "pairs": 75,
+    "applicable_ipo_premiums": 71,
+    "primary_h_offer_price_checks": 71,
+    "corrected_fx_anchors": [
+      "3308",
+      "3223",
+      "9976",
+      "9607",
+      "2636"
+    ],
+    "scalar_class_cap_formulas": 150,
+    "added_requests": 0,
+    "live_terminal_tested": false
+  },
+  "notes_removed": 7232,
+  "effective_float_share_column_hidden": true,
+  "native_excel": {
+    "opened_without_repair": true,
+    "reviewed": [
+      "IPO Live dated snapshot and sector bars",
+      "AH roster, premium charts and cap headers",
+      "Database compact layout and no comment markers"
+    ],
+    "view_only": true,
+    "closed_without_saving": true,
+    "live_terminal_tested": false,
+    "sha256": "ab5e947f4dced4f0e91d8566d143af174eab46f2a0bbd753771e5a7b4051e4e0"
+  },
+  "artifact": {
+    "bounded_projection": "Database A3:X13",
+    "visually_reviewed": true
+  },
+  "html": {
+    "shipped_svg_render_cases": 450,
+    "detail_control_cases": 30,
+    "code_search_cases": 2108,
+    "full_browser": false
+  },
+  "checks": [
+    {
+      "test": "ipo_lib/build_dashboard.py",
+      "exit": 0,
+      "seconds": 2.91,
+      "required_gate": true
+    },
+    {
+      "test": "tools/audit_ah_ipo_caps.py",
+      "exit": 0,
+      "seconds": 0.39,
+      "required_gate": true
+    },
+    {
+      "test": "tools/test_native_desk.py",
+      "exit": 0,
+      "seconds": 9.6,
+      "required_gate": true
+    },
+    {
+      "test": "tools/test_presentation_package.py",
+      "exit": 0,
+      "seconds": 4.28,
+      "required_gate": true
+    },
+    {
+      "test": "tools/test_update_20261103.py",
+      "exit": 0,
+      "seconds": 3.01,
+      "required_gate": true
+    },
+    {
+      "test": "ipo_lib/audit_formulas.py",
+      "exit": 1,
+      "seconds": 1.14,
+      "disposition": "Legacy script assumes moved A-share calculator still in Screener and requires absent historical ipo.py; superseded by current native/package/mode tests. Not a current workbook regression.",
+      "required_gate": false
+    }
+  ],
+  "bundle": {
+    "embedded_data_files": 275,
+    "embedded_source_modules": 110,
+    "all_data_and_sources_match": true,
+    "verification": "One embedded data file at a time under 512 MiB guard",
+    "sha256": "964b64d06a910f0aea35d027ae7066ce974c7847bb29dd9ebf02160222f1b6c5"
+  },
+  "performance": {
+    "python_mib": 512,
+    "node_heap_mib": 384,
+    "one_heavy_operation_at_a_time": true,
+    "terminal_latency_or_ram_measured": false
+  },
+  "remaining_financial_missing": {
+    "public_shares_final": {
+      "present": 527,
+      "missing": 0
+    },
+    "day1_volume": {
+      "present": 527,
+      "missing": 0
+    },
+    "day1_vol_x_retail": {
+      "present": 527,
+      "missing": 0
+    },
+    "day1_range_pct": {
+      "present": 527,
+      "missing": 0
+    },
+    "rev_latest": {
+      "present": 519,
+      "missing": 8
+    },
+    "ni_latest": {
+      "present": 510,
+      "missing": 17
+    },
+    "mktcap_ipo_hkdm": {
+      "present": 526,
+      "missing": 1
+    },
+    "pe_ipo": {
+      "present": 310,
+      "missing": 217
+    },
+    "ps_ipo": {
+      "present": 500,
+      "missing": 27
+    }
+  }
+}

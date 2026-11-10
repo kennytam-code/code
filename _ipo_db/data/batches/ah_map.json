@@ -654,6 +654,39 @@
     "HKEX prospectus definitions",
     "HKEX prospectus Shanghai listing section"
    ]
+  },
+  {
+   "code": "3228",
+   "name": "KINWONG",
+   "a_share_code": "603228.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1104/2026110400744.pdf"
+   ],
+   "h_over_a_note": "",
+   "reviewed_on": "2026-11-09"
+  },
+  {
+   "code": "6727",
+   "name": "TRANSWARP",
+   "a_share_code": "688031.SS",
+   "a_share_exchange": "SS",
+   "verified_by": [
+    "https://static.cninfo.com.cn/finalpage/2026-10-08/1225595449.PDF"
+   ],
+   "h_over_a_note": "",
+   "reviewed_on": "2026-11-09"
+  },
+  {
+   "code": "3757",
+   "name": "ROBOTECHNIK",
+   "a_share_code": "300757.SZ",
+   "a_share_exchange": "SZ",
+   "verified_by": [
+    "https://static.cninfo.com.cn/finalpage/2026-10-26/1225621924.PDF"
+   ],
+   "h_over_a_note": "",
+   "reviewed_on": "2026-11-09"
   }
  ],
  "proxy_for_no_a": [
@@ -748,5 +781,6 @@
    "proxy_a_name": "Rockchip Electronics",
    "rationale": "A-share edge-AI SoC designer — nearest listed comp to Axera's smart-vision/edge inference chips."
   }
- ]
+ ],
+ "mapping_reviewed_on": "2026-11-09"
 }

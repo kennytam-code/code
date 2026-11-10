@@ -1,0 +1,98 @@
+{
+  "terminal_tested": false,
+  "pairs": 75,
+  "restored_pairs": {
+    "3228": "603228.SS",
+    "6727": "688031.SS",
+    "3757": "300757.SZ"
+  },
+  "formula_fixtures": 2023,
+  "prior_pair_histories_unchanged": true,
+  "database_links": 527,
+  "ah_quote_reuse": 75,
+  "short_history_calls": 151,
+  "existing_chart_series_preserved": true,
+  "workbook_sha256": "76b73ab2bef75a9de401d7e721839004d484f295b8c40c4badec3ba8660630bf",
+  "date": "2026-11-09",
+  "scope": "Database premium links, missing A/H mappings and quote reuse; no full market refresh",
+  "html": {
+    "passed": true,
+    "render_cases": 450,
+    "detail_control_cases": 30,
+    "html_code_search_cases": 2108,
+    "refreshed_dataset": true,
+    "all_observations_and_gaps_preserved": true,
+    "actual_svg_function": true,
+    "browser": false
+  },
+  "stored_new_pair_last_date": "2026-10-02",
+  "all_other_canonical_issuers_unchanged": true,
+  "known_roster_crosscheck": {
+    "monitor_stocks": 717,
+    "retained_ah_snapshot_pairs": 208,
+    "omitted_pairs": 3,
+    "mapping_conflicts": 0
+  },
+  "native_excel": {
+    "opened_without_repair": true,
+    "reviewed": [
+      "75-pair roster",
+      "3228/6727/3757 identities and premiums",
+      "Database BT525 formula and value",
+      "source-mode header"
+    ],
+    "view_only": true,
+    "live_bloomberg_tested": false,
+    "closed_without_saving": true,
+    "reviewed_sha256": "f133f5e39f107cc5de697ad466918005893ee4fa825bfd10e54996738c0c5edc",
+    "final_difference": "BP2 label shortened to Quotes after native visual review; formula/package checks repeated"
+  },
+  "artifact": {
+    "formula_recalculation": true,
+    "fixtures": [
+      "numeric and padded codes",
+      "zero",
+      "missing quote",
+      "missing pair",
+      "non-pair",
+      "sorted rows"
+    ],
+    "bounded_views": [
+      "AH A74:L84",
+      "Database BP2:BU12"
+    ]
+  },
+  "checks_passed": [
+    "2023 linkage, mapping, range and mode assertions",
+    "native worksheet/valuation fixtures",
+    "105 Bloomberg-mode fixtures;167 unlocked history anchors",
+    "169540 formula structures;19882 historical numeric source checks",
+    "450 shipped SVG renders;30 detail controls;2108 code searches",
+    "full staged native rebuild"
+  ],
+  "performance": {
+    "python_limit_mib": 512,
+    "node_heap_limit_mib": 384,
+    "one_heavy_operation_at_a_time": true,
+    "database_added_bloomberg_requests": 0,
+    "h_price_calls_reused_when_both_live": 75,
+    "short_history_calls": 151,
+    "long_chart_history_calls": 16,
+    "extra_short_calls_for_three_new_pairs": 6,
+    "terminal_speed_or_memory_measured": false
+  },
+  "limitations": [
+    "No live Bloomberg terminal execution or latency measurement",
+    "All-mode fundamentals remain enabled per user preference",
+    "Known roster consistency guard is not a new exhaustive HK-market listing census",
+    "Added stored histories stop at 2 October; existing histories retain their dates",
+    "Source-level validation is separate from formula arithmetic"
+  ],
+  "bundle": {
+    "embedded_data_files": 269,
+    "embedded_source_modules": 104,
+    "all_data_and_sources_match": true,
+    "verification": "One embedded data file at a time under 512 MiB guard",
+    "sha256": "2cd334f373083f6a06eb0982c3c465e6660e4cf0a9424b819eee8cf46c959e78"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-04",
+  "scope": "Excel AH identity, class market caps, independent live checker",
+  "requests": {
+    "table": "Two BDP CURRENT_MARKET_CAP_SHARE_CLASS fields per pair, gated by AH E4 Bloomberg; pricing currencies CNY and HKD; field default millions. No stored cap snapshots exist.",
+    "checker": "Always-live scalar LAST_PRICE for the numeric M60 H code and resolved/overridden A code; reuse existing Market Data quotes/FX only when E4 is Bloomberg. No BDH added.",
+    "terminal_verification": false
+  },
+  "controls": {
+    "H_code": "M60",
+    "A_code_override": "O60",
+    "IPO_price_override": "Q60",
+    "A_code": "P64",
+    "IPO_price": "P65",
+    "A_price_CNY": "P67",
+    "CNYHKD": "P68",
+    "A_price_HKD": "P69",
+    "H_price_HKD": "P70",
+    "premium_now": "P72",
+    "premium_vs_IPO": "P73"
+  },
+  "capitalization_basis": "Share-class field RR233, not issuer-wide CUR_MKT_CAP. Public Bloomberg methodology defines CUR_MKT_CAP as company-wide. Actual RR233 coverage, units and entitlement must be checked on an entitled terminal; no terminal claim is made.",
+  "sources": [
+    {
+      "url": "https://data.bloomberglp.com/professional/sites/10/Bloomberg-US-Equity-Index-Methodology3.pdf",
+      "use": "Official definition of company-wide CUR_MKT_CAP; does not verify live RR233 responses."
+    }
+  ],
+  "data_changes": "None; all saved prices, histories, financials, IPO terms and HTML unchanged.",
+  "publication": "Local deliverable only. New-session publication authorization not yet given.",
+  "request_failure_display": "Text BBG unavailable for the checker; Unavailable for cap fields; never zero. Source fixture tests cannot certify terminal entitlement or response semantics.",
+  "layout": "A:L roster; multiline headers with room for filter buttons; three identifier columns frozen; chart panels M:R; M60 code preserved; 18 original premium notes and VML anchors relocated to H:I."
+}

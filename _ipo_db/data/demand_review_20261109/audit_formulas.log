@@ -1,0 +1,19 @@
+  FAIL Screener: live-panel row 'A price now' is missing — a block written below it overwrote the row
+  FAIL Screener: live-panel row 'A P/E (TTM)' is missing — a block written below it overwrote the row
+  FAIL Screener: live-panel row 'H P/E now' is missing — a block written below it overwrote the row
+  FAIL Screener: live-panel row 'H P/S now' is missing — a block written below it overwrote the row
+  FAIL Screener: live-panel row 'A-line company mkt cap' is missing — a block written below it overwrote the row
+  FAIL Screener: live-panel row 'A premium vs H' is missing — a block written below it overwrote the row
+Traceback (most recent call last):
+  File "/private/tmp/hkipo_demand_20261109/_ipo_db/ipo_lib/audit_formulas.py", line 198, in <module>
+    main()
+  File "/private/tmp/hkipo_demand_20261109/_ipo_db/ipo_lib/audit_formulas.py", line 176, in main
+    ipo_src = (ROOT / "ipo.py").read_text()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lemon/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py", line 1027, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/lemon/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/private/tmp/hkipo_demand_20261109/_ipo_db/ipo.py'

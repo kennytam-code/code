@@ -1,0 +1,50 @@
+{
+  "live_bloomberg_tested": false,
+  "fixtures": 637,
+  "pairs": 72,
+  "added_market_cap_requests": 144,
+  "added_historical_requests": 0,
+  "changed_package_parts": [
+    "xl/styles.xml",
+    "xl/workbook.xml",
+    "xl/worksheets/monitor_sheet2.xml",
+    "xl/drawings/monitor_drawing2.xml",
+    "xl/comments/monitor_comment1.xml",
+    "xl/drawings/monitor_commentsDrawing1.vml",
+    "xl/tables/monitor_table2.xml",
+    "xl/worksheets/monitor_sheet4.xml",
+    "xl/worksheets/monitor_sheet8.xml",
+    "xl/worksheets/monitor_sheet19.xml",
+    "xl/charts/monitor_chart4.xml",
+    "xl/worksheets/sheetAHReference.xml"
+  ],
+  "all_existing_chart_series_unchanged": true,
+  "unrelated_data_unchanged": true,
+  "workbook_sha256": "7dd995831e047dd90bd4f625df7897c01a1f9d92c9a2afe27c17fcf97db9ab86",
+  "native_excel": {
+    "date": "2026-11-04",
+    "opened_without_repair": true,
+    "roster_names_and_caps_reviewed": true,
+    "header_filter_spacing_reviewed": true,
+    "premium_note_positions_reviewed": true,
+    "current_and_comparison_charts_rendered": true,
+    "checker_BBG_unavailable_handling_verified": true,
+    "view_only": true,
+    "closed_without_saving": true,
+    "live_bloomberg_tested": false
+  },
+  "final_full_rebuild_AH_formulas_values_match_delivery": true,
+  "full_native_rebuild_passed": true,
+  "python_rss_limit_mib": 512,
+  "node_heap_limit_mib": 384,
+  "all_updater_input_data_unchanged": true,
+  "embedded_sources_verified": true,
+  "checks_passed": [
+    "637 identity/current-price/formula/note fixtures",
+    "Native worksheet sequences, valuation fixtures and W inputs",
+    "168851 formula structures and 19944 historical numeric source cells",
+    "105 mode/BDH-output/valuation fixtures",
+    "Bounded Artifact roster and calculator renders",
+    "Native Excel open and AH roster/calculator/charts review"
+  ]
+}

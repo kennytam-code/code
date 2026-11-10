@@ -351,14 +351,14 @@ DB_COLS = [
     ("DEAL TERMS", "Mkt cap at IPO (HK$m)", "mktcap_ipo_hkdm", MONEY, 12),
     ("DEAL TERMS", "Mkt cap basis", "mktcap_basis", None, 26),
     ("DEMAND", "Public sub (x)", "oversub_public_mult", "#,##0.00#", 12),
-    ("DEMAND", "Intl sub (x)", "oversub_intl_mult", "0.00#", 10),
+    ("DEMAND", "Institutional sub (x)", "oversub_intl_mult", "0.00#", 14),
     ("DEMAND", "Cornerstone (% of offer)", "cornerstone_pct", '0.0"%";;"none"', 11),
     # the allocation OUTCOME: placee count in the international book, the
     # public tranche's final share of the deal, and whether the PN18 clawback
     # fired - read from each allotment notice's own tables (v31)
     ("DEMAND", "Intl placees", "intl_placees", "0", 8),
     ("DEMAND", "Public alloc % (final)", "public_alloc_pct", '0.0"%"', 10),
-    ("DEMAND", "Clawback", "clawback", None, 8),
+    ("DEMAND", "Mechanism / clawback", "clawback", None, 24),
     # The float THREE ways, all off one identity: offer less the locked-up
     # cornerstone take. The money and share columns need no market cap, so they
     # survive the two deals whose cap is not derivable; the % is the same
@@ -411,7 +411,7 @@ DB_COLS = [
     ("PERFORMANCE", "Index, day-1 to 1m", "bench_1m_expop_pct", '+0.0"%";-0.0"%"', 11),
     ("PERFORMANCE", "Benchmark", "benchmark", None, 22),
     ("PERFORMANCE", "Since IPO", "since_ipo_pct", '+0.0"%";-0.0"%"', 10),
-    ("PERFORMANCE", "Prices as of", "price_asof", DATEF, 11),
+    ("PERFORMANCE", "Returns as of", "price_asof", DATEF, 11),
     ("FUNDAMENTALS", "Latest FY rev (HK$m)", "rev_latest", MONEY, 11),
     ("FUNDAMENTALS", "Latest FY NI (HK$m)", "ni_latest", MONEY, 11),
     ("FUNDAMENTALS", "Profitable", "profitable_at_ipo", None, 8),
@@ -573,6 +573,8 @@ def sheet_database(wb, deals, n):
                 v = plain(listify(d.get(f)))
             else:
                 v = listify(d.get(f))
+            if f == 'clawback':
+                v = d.get('clawback_display','')
             # the flag is set only where an A line was found, so an empty cell
             # is the answer "no pair" — write it rather than leaving a blank
             if f == "is_h_share" and v in (None, ""):

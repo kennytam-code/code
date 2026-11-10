@@ -1236,9 +1236,51 @@
    "stored_1m": null,
    "latest_date": "2026-10-28",
    "review": null
+  },
+  {
+   "code": "3228",
+   "name": "KINWONG",
+   "a_ticker": "603228 CH Equity",
+   "h_ticker": "3228 HK Equity",
+   "ipo_date": "2026-09-29",
+   "raw_debut": 77.05,
+   "cache_start": 27277,
+   "cache_rows": 3,
+   "stored_7": null,
+   "stored_1m": null,
+   "latest_date": "2026-10-02",
+   "review": null
+  },
+  {
+   "code": "6727",
+   "name": "TRANSWARP",
+   "a_ticker": "688031 CH Equity",
+   "h_ticker": "6727 HK Equity",
+   "ipo_date": "2026-09-21",
+   "raw_debut": 44.5,
+   "cache_start": 27280,
+   "cache_rows": 9,
+   "stored_7": 2.186890317351488,
+   "stored_1m": null,
+   "latest_date": "2026-10-02",
+   "review": null
+  },
+  {
+   "code": "3757",
+   "name": "ROBOTECHNIK",
+   "a_ticker": "300757 CH Equity",
+   "h_ticker": "3757 HK Equity",
+   "ipo_date": "2026-09-29",
+   "raw_debut": 414.4,
+   "cache_start": 27289,
+   "cache_rows": 3,
+   "stored_7": null,
+   "stored_1m": null,
+   "latest_date": "2026-10-02",
+   "review": null
   }
  ],
- "ah_cache_end": 27276,
+ "ah_cache_end": 27291,
  "peer": {
   "asof": "2026-10-02",
   "pairs": [

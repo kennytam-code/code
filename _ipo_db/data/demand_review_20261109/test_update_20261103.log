@@ -1,0 +1,20 @@
+  pipeline: 5 row(s) dropped — now listed, so they live in the Database
+{
+  "terminal_tested": false,
+  "fixtures": 105,
+  "ipo_rows": 527,
+  "pipeline_rows": 23,
+  "new_pipeline_codes": [
+    "0054",
+    "9621",
+    "7672",
+    "9917",
+    "2206",
+    "2065",
+    "2681",
+    "1821"
+  ],
+  "unlocked_bdh_anchors": 167,
+  "default_valuations": "All",
+  "workbook_sha256": "ab5e947f4dced4f0e91d8566d143af174eab46f2a0bbd753771e5a7b4051e4e0"
+}

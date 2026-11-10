@@ -73,9 +73,12 @@ DATA_FILES += ['data/ah_chart_style.json','data/screener_code_layout.json','data
 DATA_FILES += ['data/lockup_date_review.json','data/lockup_amendments.json']
 DATA_FILES += ['data/batches/pipeline_review.json']
 DATA_FILES += ['data/pipeline_peers.json']
+DATA_FILES += ['data/ah_link_formulas.json']
+DATA_FILES += ['data/database_desk_style.json','data/batches/allocation_source_review.json']
+DATA_FILES += ['data/batches/capital_source_review.json','data/batches/retail_float_review.json','data/batches/ah_offer_reference_review.json','data/batches/day1_source_recovery.json']
 DATA_FILES += ['data/presentation_template.json','data/ah_reference.json','data/csi300_prices.json','data/live_snapshot.json']
 # every pipeline module, so the ONE file can also refresh — not just rebuild
-LIB_MODULES = ["staged_native_build", "review_quote_guard", "sector_monitor_release", "final_polish", "desk_theme", "remove_notes", "historical_lockups", "ah_chart_style", "screener_code_selector", "request_efficiency", "screener_desk", "ah_desk_update", "excel_chart_refresh", "ah_live_requests", "bloomberg_mode_repair", "pipeline_peer_inputs",
+LIB_MODULES = ["metric_source_review", "retail_float_review", "remove_cell_notes", "capital_review", "database_desk", "demand_review", "staged_native_build", "review_quote_guard", "sector_monitor_release", "final_polish", "desk_theme", "remove_notes", "historical_lockups", "ah_chart_style", "screener_code_selector", "request_efficiency", "screener_desk", "ah_desk_update", "excel_chart_refresh", "ah_live_requests", "bloomberg_mode_repair", "pipeline_peer_inputs", "ah_identity_caps", "ah_database_links",
     "accept_option_capacity", "filing_review", "review_offer_numbers", "review_financial_numbers", "review_cornerstones", "review_lockups", "audit_numbers", "refresh_filing_reviews", "refresh_lockup_windows",
     "incremental", "extract_allocation", "fetch_day1_tape", "analyse_clawback", "make_clawback_note",
     "fill_cornerstones", "fill_banks", "fetch_etnet_ipo", "test_screener_formulas",

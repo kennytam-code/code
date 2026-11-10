@@ -19,7 +19,7 @@ def q(n): return '{'+NS+'}'+n
 def c(n): return '{'+CNS+'}'+n
 def serial(dt): return (date.fromisoformat(dt)-date(1899,12,30)).days
 
-def apply(path, root=None):
+def apply(path, root=None, cache=True):
     root=Path(root or ROOT)
     palette=json.loads((root/'data/desk_colours.json').read_text())
     with zipfile.ZipFile(io.BytesIO(base64.b64decode(palette['xlsx_base64']))) as z:
@@ -238,8 +238,9 @@ def apply(path, root=None):
                     for i,value in enumerate(values):
                         if value is not None:ET.SubElement(ET.SubElement(cache,c('pt'),{'idx':str(i)}),c('v')).text=str(value)
             parts[name]=ET.tostring(native,encoding='utf-8')
-    from cache_desk_monitors import add_caches
-    add_caches(parts,sheets,root)
+    if cache:
+        from cache_desk_monitors import add_caches
+        add_caches(parts,sheets,root)
     temp=Path(str(path)+'.styled.tmp')
     with zipfile.ZipFile(temp,'w',zipfile.ZIP_DEFLATED) as z:
         for name,raw in parts.items():z.writestr(name,raw)

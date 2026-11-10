@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "database_rows": 527,
+  "reviewed_capital_records": 34,
+  "changed_market_caps": 32,
+  "formula_count": 169540,
+  "business_formulas_unchanged": true,
+  "snapshot_label_formula_updated": 1,
+  "added_bloomberg_requests": 0,
+  "bloomberg_formula_counts": {
+    "BDP": 6569,
+    "BDH": 2402,
+    "BQL": 2642
+  },
+  "charts_byte_identical": 10,
+  "unrelated_data_preserved": true,
+  "terminal_tested": false,
+  "sha256": "ab5e947f4dced4f0e91d8566d143af174eab46f2a0bbd753771e5a7b4051e4e0"
+}

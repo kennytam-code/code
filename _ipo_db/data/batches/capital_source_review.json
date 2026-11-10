@@ -1,0 +1,586 @@
+{
+  "review_date": "2026-11-09",
+  "method": "Manual selection of issued/outstanding post-offer shares, excluding shoe and authorised/pre-offer counts; final price checked against allocation cover. TUHU uses actual partial offer-size adjustment.",
+  "deals": [
+    {
+      "code": "1855",
+      "shares_outstanding": 275000000,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2020/1222/9555432/2020122200072.pdf",
+        "page": 1,
+        "sha256": "0fc3125c8288915482db0c0699391b831e71971cace56f1312a48eb9e2299010",
+        "snippet": "is prospectus 821.028 219,178,972 Shares to be allotted and issued pursuant to the Capitalisation Issue 219,178.972 55,000,000 Shares to be issued under the Global Offering 55,000 275,000,000 Shares in total 275,000 SHARE CAPITAL – 473 –"
+      },
+      "final_offer_evidence": {
+        "price": 2.0,
+        "page": 2,
+        "snippet": "cation) (comprising 34,374,000 new Shares and 13,750,000 Sale Shares) Final Offer Price : HK$2.00 per Offer Share, plus brokerage of 1%, SFC transaction levy of 0.0027% and Stock Exchange trading fee of 0.005% Nominal",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0105/9570272/2021010500039.pdf",
+        "sha256": "79f4ad54cf12d2f23c9c21aae6d676f1f0799c890e4fa3d65cf81ae7097a2735"
+      }
+    },
+    {
+      "code": "1490",
+      "shares_outstanding": 1204000000,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2020/1231/9563996/2020123100303.pdf",
+        "page": 1,
+        "sha256": "a7c1017bf7a8a4acd4295de0583d6f6b1c6314d8fb7fb9076f68537d1af68fd8",
+        "snippet": "ully paid or credited as fully paid: 1,000,000,000 Shares in issue as of the date of this prospectus 100,000 204,000,000 Shares to be issued pursuant to the Global Offering 20,400 1,204,000,000 Shares in total 120,400 ASSUMPTIONS The above table assumes that the Global Offering becomes unconditional and is completed in accordance with the relevant terms and con"
+      },
+      "final_offer_evidence": {
+        "price": 1.23,
+        "page": 2,
+        "snippet": "adjusted after reallocation and subject to the Over-allotment Option) Offer Price : HK$1.23 per Offer Share plus brokerage of 1.0%, SFC transaction levy of 0.0027% and Hong Kong Stock Exchange trading fee of 0.0",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0114/9583323/2021011400107.pdf",
+        "sha256": "bf0523d32d024719c33066fe312404a9fd0982eef53d44a06a1471670583d2df"
+      }
+    },
+    {
+      "code": "2160",
+      "shares_outstanding": 2366167020,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0126/9597262/2021012600192.pdf",
+        "page": 1,
+        "sha256": "1314ac13f5d56351c354280fb396a3c931059ae17942384eb7193b66bd94eac5",
+        "snippet": "ares on a one-for-one basis .................................. U S $ 1,197.05 10.12% 205,620,000 Shares to be issued pursuant to the Global Offering ......... U S $ 1,028.10 8.69% 2,366,167,020 Shares in issue immediately following the Global Offering . . . US$11,830.84 100.00% ASSUMPTIONS The above table assumes that the Global Offering becomes unconditional a"
+      },
+      "final_offer_evidence": {
+        "price": 12.2,
+        "page": 2,
+        "snippet": "der the Preferential Offering) (subject to the Over-allotment Option) Offer Price : HK$12.20 per Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027% and the Stock Exchange trading fee of 0.005% Nominal",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0203/9611945/2021020300021.pdf",
+        "sha256": "76cb0667215a976472403bdd13d8aee15b0664ef06a575c9c909da2c473696e5"
+      }
+    },
+    {
+      "code": "1024",
+      "shares_outstanding": 4108194737,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0126/9597258/2021012600115.pdf",
+        "page": 3,
+        "sha256": "9769e7101827992749c504ee8708efdebaeea88e31996339b6b928b920d7c528",
+        "snippet": "o be issued pursuant to the exercised options under the Pre-IPO ESOP 1,924.68 365,218,600 Class B Shares of US$0.0000053 each to be issued pursuant to the Global Offering 1,935.66 4,108,194,737 Total 21,773.43 SHARE CAPITAL – 399 –"
+      },
+      "final_offer_evidence": {
+        "price": 115.0,
+        "page": 2,
+        "snippet": "eallocation and adjustment, and subject to the Over-allotment Option) Final Offer Price : HK$115.00 per Offer Share, plus brokerage of 1%, SFC transaction levy of 0.0027% and Stock Exchange trading fee of 0.005% Nominal",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0204/9614152/2021020400035.pdf",
+        "sha256": "a1d95bb70581018c7a645cae234e9613775a6ba595963f7a2c85ec54b16f1c40"
+      }
+    },
+    {
+      "code": "2170",
+      "shares_outstanding": 266667000,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0127/9598437/2021012700059.pdf",
+        "page": 1,
+        "sha256": "408d46e097b507a77ca07fd06085417542e96af9bfc73add34a8dd8aa7c7e60b",
+        "snippet": "% Unlisted Foreign Shares (1) 9,410,765 3.53% H Shares converted from Unlisted Foreign Shares (2) 7,407,418 2.78% H Shares issued under the Global Offering 66,667,000 25.00% Total 266,667,000 100% Immediately following completion of the Global Offering, assuming the Over-allotment Option is fully exercised, the share capital of our Company will be as follows:"
+      },
+      "final_offer_evidence": {
+        "price": 27.36,
+        "page": 2,
+        "snippet": "adjusted after reallocation and subject to the Over-allotment Option) Final Offer Price : HK$27.36 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027% and Stock Exchange trading fee of 0.005% Nominal v",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0205/9616048/2021020500041.pdf",
+        "sha256": "6d37bbac12e2730dfc2e4423ca0b80a51d28b19e97a584a98f1e36a066acf028"
+      }
+    },
+    {
+      "code": "2195",
+      "shares_outstanding": 1000000000,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0319/9664136/2021031900057.pdf",
+        "page": 1,
+        "sha256": "21610c2cb858d602e3d44d130cd4b3ce9e1206f06ddb8880fbebbb51e95f96d5",
+        "snippet": " the Latest Practicable Date 1 749,999,900 Shares to be issued pursuant to the Capitalisation Issue 7,499,999 250,000,000 Shares to be issued pursuant to the Share Offer 2,500,000 1,000,000,000 Total 10,000,000 Assuming the Over-allotment Option is exercised in full and without taking into any Share which may be allotted and issued upon the exercise of any opti"
+      },
+      "final_offer_evidence": {
+        "price": 0.56,
+        "page": 2,
+        "snippet": " Placing Shares : 175,000,000 Shares (as adjusted after reallocation) Final Offer Price : HK$0.56 per Offer Share, excluding brokerage of 1%, SFC transaction levy of 0.0027% and Stock Exchange trading fee of 0.005% No",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0330/9680010/2021033000231.pdf",
+        "sha256": "d43066c9be1ad0a2a01ef969f80d5ea77e20549cefe53fa21c40ad846a6b6a85"
+      }
+    },
+    {
+      "code": "9889",
+      "shares_outstanding": 6888545510,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0916/9938927/2021091600074.pdf",
+        "page": 1,
+        "sha256": "4c892a49f69f9481b4029ccd205421fafa4aa983d163b39415ddeda4e5b0e584",
+        "snippet": "r issued share capital would be as follows: Class Number of Shares Approximate percentage of share capital Domestic Shares 5,740,454,510 83.33% H Shares 1,148,091,000 16.67% Total 6,888,545,510 100.00% If the Over-allotment Option is exercised in full, assuming no other Shares are issued, our issued share capital would be as follows: Class Number of Shares Appr"
+      },
+      "final_offer_evidence": {
+        "price": 7.92,
+        "page": 2,
+        "snippet": ": 25,820,000 H Shares (as adjusted after reallocation and adjustment) Final Offer Price : HK$7.92 per H Share, plus brokerage of 1%, SFC transaction levy of 0.0027%, and Hong Kong Stock Exchange trading fee of 0.005% ",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0928/9950496/2021092800011.pdf",
+        "sha256": "d7e832e0da2ffe391e491627cc19d3cb9051a7d81a003a7eac188e89b4e99063"
+      }
+    },
+    {
+      "code": "2251",
+      "shares_outstanding": 103568013,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1026/9985006/2021102600033.pdf",
+        "page": 1,
+        "sha256": "067f9f50e65460a33a70ee82438ca8416ed4320a813fb0cc8d3891281e910491",
+        "snippet": "isted Foreign Shares (1) ........ 3,666,918 3.54% H Shares to be issued pursuant to the Global Offering ...... 22,267,200 21.50% Total ............................................ 103,568,013 100% Assuming the Over-allotment Option is exercised in full, the share capital of our Company upon completion of the Global Offering will be as follows: Description of "
+      },
+      "final_offer_evidence": {
+        "price": 75.1,
+        "page": 2,
+        "snippet": " Shares : 20,040,400 H Shares (subject to the Over- allotment Option) Final Offer Price : HK$75.10 per H Share, plus brokerage of 1%, Stock Exchange trading fee of 0.005% and SFC transaction levy of 0.0027% (payable in",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1104/9999922/2021110400023.pdf",
+        "sha256": "6885a3b6a64a920bdb540b6d0b11f16d13e071fc87af8708f8ac97ba8ff6e10d"
+      }
+    },
+    {
+      "code": "2257",
+      "shares_outstanding": 88066780,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1220/10057150/2021122000035.pdf",
+        "page": 1,
+        "sha256": "4cf75a57d0da23b4fcae575a931af760ccfff5284a1940f2d86442f38a3a71d0",
+        "snippet": "he Global Offering 80,526.78 91.44 7,540,000 Shares to be issued under the Global Offering (excluding any Shares which may be issued under the Over-allotment Option) 7,540.00 8.56 88,066,780 Shares in total 88,066.78 100.00 Immediately following the completion of the Global Offering and assuming the Over- allotment Option is exercised in full, the authorized"
+      },
+      "final_offer_evidence": {
+        "price": 65.9,
+        "page": 2,
+        "snippet": "fer Shares : 6,786,000 Shares (subject to the Over- allotment Option) Offer Price : HK$65.90 per Offer Share, plus brokerage of 1%, SFC transaction levy of 0.0027% and Stock Exchange trading fee of 0.005% Nominal",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1229/10065865/2021122900047.pdf",
+        "sha256": "20fb1a30e922c89830706151933151b4749ed4856c29dcff590c54e2646b9c18"
+      }
+    },
+    {
+      "code": "2260",
+      "shares_outstanding": 480000000,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1229/10065877/2021122900100.pdf",
+        "page": 1,
+        "sha256": "2f20cce4b6797383910388702dacd70fd7c522cc92fc24d9ae644171289c52dc",
+        "snippet": "ate of this prospectus 120 365,788,000 Shares to be issued pursuant to the Capitalisation Issue 3,657,880 114,200,000 Shares to be issued pursuant to the Global Offering 1,142,000 480,000,000 Total 4,800,000 ASSUMPTIONS The above table assumes that the Global Offering becomes unconditional and the issue of Shares pursuant thereto are made as described herein."
+      },
+      "final_offer_evidence": {
+        "price": 1.22,
+        "page": 2,
+        "snippet": "ng Shares : 102,780,000 Shares (subject to the Over-allotment Option) Final Offer Price : HK$1.22 per Offer Share (plus brokerage fee of 1%, SFC transaction levy of 0.0027%, FRC transaction levy of 0.00015% and Stock ",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0110/10084589/2022011000035.pdf",
+        "sha256": "25aa6fe315c87d1a005a993a7bae6870a485004e0a07802c36d16b17a70e888f"
+      }
+    },
+    {
+      "code": "2390",
+      "shares_outstanding": 316744432,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0411/10208028/2022041100044.pdf",
+        "page": 2,
+        "sha256": "d6142f8d5391c4d84572c854ebfd59b2ec355056961dfd9ab639c262c8ababfe",
+        "snippet": "ately before the completion of the Global Offering US$37,189.6050 19,227,592 Class B Ordinary Share in issue immediately before the completion of the Global Offering US$2,403.4490 316,744,432 Total Shares US$39,593.0540 WEIGHTED VOTING RIGHTS STRUCTURE The Company has a weighted voting rights structure. Under this structure, the Company’s share capital compri"
+      },
+      "final_offer_evidence": {
+        "price": 32.06,
+        "page": 2,
+        "snippet": "hares : 23,400,000 Sale Shares (subject to the Over-allotment Option) Offer Price : HK$32.06 per Offer Share plus brokerage of 1%, SFC transaction levy of 0.0027%, the Stock Exchange trading fee of 0.005% and FRC",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0421/10218927/2022042100021.pdf",
+        "sha256": "3413ed4152835571ccc4165e0f40367cfb6b334ad8516bee5377c287232becc4"
+      },
+      "shares_issued_on_listing": 326068295,
+      "basis": "Filed shares outstanding, excluding reserved awards, ex shoe × final offer price"
+    },
+    {
+      "code": "2372",
+      "shares_outstanding": 800000000,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0617/10306329/2022061700087.pdf",
+        "page": 1,
+        "sha256": "8bd72690710fb48bbe6d21ef8490c2ac71f9d332b0e42bb870af46f01ba3f2b9",
+        "snippet": "the Latest Practicable Date 10 599,999,000 Shares to be issued pursuant to the Capitalisation Issue 5,999,990 200,000,000 Shares to be issued pursuant to the Share Offer 2,000,000 800,000,000 Shares in total 8,000,000 Assuming the Over-allotment Option is exercised in full and without taking into account any Share that may be allotted and issued upon the exer"
+      },
+      "final_offer_evidence": {
+        "price": 0.63,
+        "page": 3,
+        "snippet": "res : 20,000,000 Shares Number of Placing Shares : 180,000,000 Shares Offer Price : HK$0.63 per Offer Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, FRC transaction levy of 0.00015% and Stock Ex",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0629/10319907/2022062900109.pdf",
+        "sha256": "587552630420b45332b903496f58ed39f8fb6370d72c40f70e60bcd33b58974a"
+      }
+    },
+    {
+      "code": "9955",
+      "shares_outstanding": 587038219,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0623/10312478/2022062300087.pdf",
+        "page": 2,
+        "sha256": "6c311e34aa08a6f10364dca98993e283f0c0cae4bb4806bdbd67e51862eb5c6e",
+        "snippet": " Shares to be issued pursuant to the Global Offering . 19,000,000 US$1,900.00 Total issued share capital on completion of the Global Offering ..................................... 587,038,219 US$58,703.82 Ranking The Offer Shares will rank equally with all Shares currently in issue or to be issued as mentioned in this document and, in particular, will rank eq"
+      },
+      "final_offer_evidence": {
+        "price": 30.5,
+        "page": 2,
+        "snippet": "fer Shares : 17,100,000 Shares (subject to the Over-allotment Option) Offer Price : HK$30.50 per Offer Share plus brokerage of 1%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.005% and FRC tra",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0705/10330833/2022070500013.pdf",
+        "sha256": "a1a548ffa92651d4214ed406638d01698b8193f4dcf2c6959f32366e065c5c45"
+      }
+    },
+    {
+      "code": "9896",
+      "shares_outstanding": 1266666355,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0630/10322542/2022063000271.pdf",
+        "page": 1,
+        "sha256": "323b7cc386627fe522e06211a5a34fd20a3b0960b971a1fc6424d5b76a003ece",
+        "snippet": "ares 1,225,566,355 ............ Shares in issue as of the date of this document US$12,255.7 41,100,000 ............... Shares to be issued pursuant to the Global Offering US$411.0 1,266,666,355 ............ Total Shares US$12,666.7 The above tables assumes (i) the Presumptions and (ii) the Global Offering becomes unconditional and Shares are issued pursuant to "
+      },
+      "final_offer_evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0712/10339833/2022071200017.pdf",
+        "page": 2,
+        "price": 13.8,
+        "basis": "Final Public Offer Price"
+      }
+    },
+    {
+      "code": "9696",
+      "shares_outstanding": 1641221583,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0630/10322528/2022063000167.pdf",
+        "page": 1,
+        "sha256": "d494ea1a98151c63f8566ed8328b2945e45151c14fad1249db92115b8e4c2091",
+        "snippet": ".................. 1,477,099,383 90 H Shares in issue ............................................... 164,122,200 10 Total ........................................................ 1,641,221,583 100 Immediately following the completion of the Global Offering, assuming that the Over- allotment Option is exercised in full, our registered and issued share capital w"
+      },
+      "final_offer_evidence": {
+        "price": 82.0,
+        "page": 2,
+        "snippet": " Shares : 147,709,800 H Shares (subject to the Over-allotment Option) Final Offer Price : HK$82.00 per H Share, plus brokerage of 1%, SFC transaction levy of 0.0027%, the FRC transaction levy of 0.00015% and Hong Kong ",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0712/10339849/2022071200063.pdf",
+        "sha256": "961141859bf0d91c0819d6f5cc5217e77442809ed684efb0208b1d3a6016093c"
+      }
+    },
+    {
+      "code": "1204",
+      "shares_outstanding": 500000000,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0629/10319939/2022062900167.pdf",
+        "page": 1,
+        "sha256": "a6b77b6aa0c9022e77112d357010f1b4cb7c105dee25a74b38eb1ffba9e8b0fb",
+        "snippet": "y be issued under the Over-allotment Option and any Shares which may be issued pursuant to the exercise of options which may be granted under the Share Option Scheme) 1,250,000.00 500,000,000 Total 5,000,000.00 Assuming that the Over-allotment Option is exercised in full, the issued share capital of our Company immediately following the completion of the Capi"
+      },
+      "final_offer_evidence": {
+        "price": 1.08,
+        "page": 2,
+        "snippet": "00 Shares Number of International Placing Shares : 112,500,000 Shares Final Offer Price : HK$1.08 per Offer Share, plus brokerage fee of 1%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.005% and Fi",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0714/10342456/2022071400027.pdf",
+        "sha256": "e2f6370405ec4854cee029134fe49a561bcc31cc62649545fbff6539c2890387"
+      }
+    },
+    {
+      "code": "2172",
+      "shares_outstanding": 582658100,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0629/10320019/2022062900341.pdf",
+        "page": 1,
+        "sha256": "ad8da692297e6e0090063110fc239754aeb70f3fc112305ea93cd152e97dc3aa",
+        "snippet": "spectus 9,227.9568 107,560,260 Series A Preferred Shares to be converted to Shares on a one-for-one basis 2,151.2052 13,700,000 Shares to be issued under the Global Offering 274.0 582,658,100 Total 11,653.1620 ASSUMPTIONS The above table assumes that the Global Offering becomes unconditional and the issue of Shares pursuant to the Global Offering are made. It"
+      },
+      "final_offer_evidence": {
+        "price": 24.64,
+        "page": 2,
+        "snippet": "adjusted after reallocation and subject to the Over-allotment Option) Offer Price : HK$24.64 per Offer Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, FRC transaction levy of 0.00015% and Stock Ex",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0714/10342480/2022071400061.pdf",
+        "sha256": "a9f8182b051d81e61a3448f50174da5ad4a5d0e9fe9b5bf75d9e69813a96ab92"
+      }
+    },
+    {
+      "code": "2350",
+      "shares_outstanding": 625000000,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0913/10427574/2022091300043.pdf",
+        "page": 1,
+        "sha256": "1fc6aa06d472d969dec76fd9cc8ee8c50da11095081f8976411945ba6fb2e8d7",
+        "snippet": "le Shares) 15,625,000 New Shares to be issued pursuant to the 156,250 Hong Kong Public Offering 109,375,000 New Shares to be issued pursuant to the 1,093,750 International Placing 625,000,000 Shares in total 6,250,000 Assuming the Over-allotment Option is exercised in full, the issued share capital of our Company immediately following the Share Offer will be "
+      },
+      "final_offer_evidence": {
+        "price": 0.85,
+        "page": 2,
+        "snippet": "ew Shares and 31,250,000 Sale Shares (as adjusted after reallocation) Offer Price : HK$0.85 per Offer Share, plus brokerage fee of 1%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.005% and Fi",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0923/10440975/2022092300213.pdf",
+        "sha256": "efd17c032b6d760583499976fc1624dca68ec5d407b37671174884b2d960a5e5"
+      }
+    },
+    {
+      "code": "1489",
+      "shares_outstanding": 1000000000,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0923/10440959/2022092300063.pdf",
+        "page": 1,
+        "sha256": "eed60de34654958d720eb94b69b55eab46d8cf23fb51230a17ca6502029b41e9",
+        "snippet": "atest Practicable Date 390,000 711,000,000 Shares to be issued pursuant to the Capitalisation Issue 7,110,000 250,000,000 Shares to be issued pursuant to the Share Offer 2,500,000 1,000,000,000 Shares in total 10,000,000 Assuming the Over-allotment Option is exercised in full and without taking into account any Share that may be allotted and issued upon the exe"
+      },
+      "final_offer_evidence": {
+        "price": 0.5,
+        "page": 2,
+        "snippet": "res : 25,000,000 Shares Number of Placing Shares : 225,000,000 Shares Final Offer Price : HK$0.50 per Offer Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, FRC transaction levy of 0.00015% and Stock Ex",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1007/10461506/2022100700043.pdf",
+        "sha256": "4baef92bb4cad62e70a698bc9b25440d7fa284f82e371c3515b0a4bb7f245006"
+      }
+    },
+    {
+      "code": "3660",
+      "shares_outstanding": 318062703,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1118/10510895/2022111800055.pdf",
+        "page": 2,
+        "sha256": "e1fe3633ae109bccca07b1d4f47a6792c78c55265a70310ed59a66a0adaab07d",
+        "snippet": "S$500 50,000,000 Undesignated US$500 Total US$50,000 (ii) Issued fully paid or credited to be fully paid Number Description of shares Approximate aggregate nominal value of shares 318,062,703 Class A ordinary shares US$3,181 Nil Class B ordinary shares – Total US$3,181 Note: * Excluding 2,910,315 Class A ordinary shares issued to our depositary and reserved f"
+      },
+      "final_offer_evidence": {
+        "price": 50.03,
+        "page": 2,
+        "snippet": "ares : 4,980,000 Offer Shares (subject to the Over- allotment Option) Offer Price : HK$50.03 per Offer Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, AFRC transaction levy of 0.00015% and Hong Ko",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1128/10519016/2022112800017.pdf",
+        "sha256": "7effa12f6c04a8756073f862b8775a7c57ffaead7b086ef91b24d4c268f88eca"
+      },
+      "shares_issued_on_listing": 320973018,
+      "basis": "Filed shares outstanding, excluding reserved awards, ex shoe × final offer price"
+    },
+    {
+      "code": "2245",
+      "shares_outstanding": 1550316350,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1121/10512524/2022112100045.pdf",
+        "page": 1,
+        "sha256": "3f0dd358f223eabebd0cd3fcc741b0aac6501db159ef5adfe55f17ce3ae728e2",
+        "snippet": "Unlisted Foreign Shares in issue .................... 263,553,750 17.00% H Shares to be issued under the Global Offering ........... 232,547,600 15.00% Total ..................... 1,550,316,350 100% CLASS OF SHARES Upon the completion of the Global Offering, our Company will have two classes of Shares, namely Unlisted Shares and H Shares, both of which are ordi"
+      },
+      "final_offer_evidence": {
+        "price": 15.8,
+        "page": 2,
+        "snippet": "er Shares : 209,292,800 Shares (subject to the Over-allotment Option) Final Offer Price : HK$15.80 per H Share plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.005% and AFRC tran",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1130/10522180/2022113000305.pdf",
+        "sha256": "90c44116355f256809cccac41dbee513afcb16fee36310cc7253d30f067e6601"
+      }
+    },
+    {
+      "code": "2457",
+      "shares_outstanding": 1000000000,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1129/10520559/2022112900043.pdf",
+        "page": 1,
+        "sha256": "fc30a41d955cd2ce652ecc06eca5c000584a042f4669cf1a94d0da98e9ae526d",
+        "snippet": "tion Issue and the Global Offering 152,000 598,000,000 Shares to be issued under the Capitalization Issue 598,000 250,000,000 Shares to be issued under the Global Offering 250,000 1,000,000,000 Total 1,000,000 Note: If the Over-allotment Option is exercised in full, then 37,500,000 additional Shares will be issued resulting in a total issued share capital of 1,"
+      },
+      "final_offer_evidence": {
+        "price": 0.5,
+        "page": 2,
+        "snippet": " Placing Shares : 150,000,000 Shares (as adjusted after reallocation) Final Offer Price : HK$0.50 per Offer Share, plus brokerage of 1%, SFC transaction levy of 0.0027%, AFRC transaction levy of 0.00015% and the Stock",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1214/10541499/2022121400107.pdf",
+        "sha256": "7c89faac945488d149e473e9a06ab8f1c3f77025396641f9f19fc33ee16aa735"
+      }
+    },
+    {
+      "code": "0314",
+      "shares_outstanding": 763025314,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1212/10538780/2022121200047.pdf",
+        "page": 1,
+        "sha256": "6b2eaae907298d65d5ef043f976cc15df636431852e61fc9a75b4a4f4914dd12",
+        "snippet": "..... Ordinary Shares to be converted from Preferred Shares US$53,657.5459 70.32% 9,919,400........ Ordinary Shares to be issued pursuant to the Global Offering US$ 991.9400 1.30% 763,025,314 US$76,302.5314 100% ASSUMPTION The above table assumes that the Global Offering has become unconditional and the Shares are issued pursuant to the Global Offering (assum"
+      },
+      "final_offer_evidence": {
+        "price": 18.6,
+        "page": 2,
+        "snippet": "ffer Shares : 8,927,400 Shares (subject to the Over-allotment Option) Offer Price : HK$18.60 per Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.005% and AFRC trans",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1222/10549619/2022122200019.pdf",
+        "sha256": "3ed42ed1b1a6b34b934deeec7992699cafc6b58365edf771c54e0121dce3020c"
+      }
+    },
+    {
+      "code": "2147",
+      "shares_outstanding": 800000000,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1230/10556116/2022123000101.pdf",
+        "page": 1,
+        "sha256": "00f03260e43b29729d51b1984ef349aa11c7e9f70b6524e40ba5923c92111ff5",
+        "snippet": "the Capitalisation Issue US$5,947,368 200,000,000 Shares to be issued under the Share Offer (excluding any Shares which may be issued under the Over-allotment Option) US$2,000,000 800,000,000 Shares in total US$8,000,000 Assuming the Over-allotment Option is exercised in full, the issued share capital of our Company immediately following the completion of the"
+      },
+      "final_offer_evidence": {
+        "price": 0.68,
+        "page": 2,
+        "snippet": " Placing Shares : 140,000,000 Shares (as adjusted after reallocation) Final Offer Price : HK$0.68 per Offer Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.00565% and AF",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0112/10574338/2023011200015.pdf",
+        "sha256": "b94db720262cd3782b80620425c35bd4fcea29be4048fdee8d31575716c3a85b"
+      }
+    },
+    {
+      "code": "2411",
+      "shares_outstanding": 1578947500,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/1229/10554362/2022122900181.pdf",
+        "page": 1,
+        "sha256": "273db8a1b4e745fe368a643283611f4493d03455ef246cd1c21f7e7f2976edf4",
+        "snippet": "927,395 Domestic Shares in issue (1) 25.71% 1,094,072,605 H Shares to be converted from Domestic Shares (2) 69.29% 78,947,500 H Shares to be issued under the Global Offering 5.00% 1,578,947,500 Total 100.00% Assuming the Over-allotment Option is exercised in full, the share capital of our Company immediately after the Global Offering will be as follows: Number "
+      },
+      "final_offer_evidence": {
+        "price": 5.6,
+        "page": 2,
+        "snippet": " Shares : 71,052,500 H Shares (subject to the Over- allotment Option) Final Offer Price : HK$5.60 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, AFRC transaction levy of 0.00015%, and Stock Exch",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0113/10575581/2023011300019.pdf",
+        "sha256": "70ab78b1bd3cf080e36795f909c59ae970f07b2b516610b769518bf80f8c3eab"
+      }
+    },
+    {
+      "code": "2433",
+      "shares_outstanding": 480000000,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0320/10636538/2023032000030.pdf",
+        "page": 1,
+        "sha256": "2555b8baa73fd94b32acbd6f34630c030b143ae6c121f2cc467ff72d62701da2",
+        "snippet": "est Practicable Date 1,011 359,898,900 Shares to be issued pursuant to the Capitalisation Issue 3,598,989 120,000,000 Shares to be issued pursuant to the Global Offering 1,200,000 480,000,000 Total 4,800,000 Assuming the Over-allotment Option is exercised in full and without taking into any Share that may be allotted and issued upon the exercise of any option"
+      },
+      "final_offer_evidence": {
+        "price": 1.18,
+        "page": 2,
+        "snippet": "00 Shares Number of International Placing Shares : 108,000,000 Shares Final Offer Price : HK$1.18 per Offer Share excluding brokerage of 1%, SFC transaction levy of 0.0027%, AFRC transaction levy of 0.00015% and Stock",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0329/10650645/2023032900043.pdf",
+        "sha256": "91cf1975e3da39ab0e94f9d2ed6c65fdb312812d5eadc446f38769de21f6a660"
+      }
+    },
+    {
+      "code": "2439",
+      "shares_outstanding": 1000000000,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0321/10638301/2023032100071.pdf",
+        "page": 1,
+        "sha256": "d2deab89627e7995ddcb126e644291e889d4ccc6838358914e23244e76bd7d65",
+        "snippet": "f this prospectus 10,000 809,000,000 Shares to be issued under the Capitalisation Issue (1) 8,090,000 190,000,000 Shares to be issued pursuant to the Global Offering (1) 1,900,000 1,000,000,000 Shares in total 10,000,000 Note: (1) The Shares referred to in the above table will be fully paid or credited as fully paid when issued. Assuming the Over-allotment Opti"
+      },
+      "final_offer_evidence": {
+        "price": 1.05,
+        "page": 2,
+        "snippet": "ong Offer Shares : 50,000,000 Shares (as adjusted after reallocation) Final Offer Price : HK$1.05 per Offer Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, AFRC transaction levy of 0.00015% and Stock E",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0330/10653650/2023033000221.pdf",
+        "sha256": "47a3a9b61ac56348fb82f1deae1226e198a9d547a1f9e68ca6a5d8b8c8b6c8de"
+      }
+    },
+    {
+      "code": "9669",
+      "shares_outstanding": 715297060,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0330/10653744/2023033000346.pdf",
+        "page": 1,
+        "sha256": "3670e28a08658ac2b3f0999b9cbb2bf1ecc33be0d9b1619429b10bd745930e28",
+        "snippet": " the Global Offering and the Share Subdivision .................................................. 23,761,790 237.61 Total ......................................................... 715,297,060 7,152.97 328"
+      },
+      "final_offer_evidence": {
+        "price": 29.7,
+        "page": 2,
+        "snippet": "djusted after re-allocation and subject to the Over-allotment Option) Offer Price : HK$29.70 per Offer Share plus brokerage of 1%, SFC transaction levy of 0.0027%, the Stock Exchange trading fee of 0.00565% and A",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0412/10684679/2023041200011.pdf",
+        "sha256": "7bd35bc1ce63618cb271ea062fe7bfeb9917854c6bed2df6507c454bb3cfc28d"
+      }
+    },
+    {
+      "code": "6979",
+      "shares_outstanding": 3271331050,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0417/10689638/2023041700065.pdf",
+        "page": 1,
+        "sha256": "894ccc1edb799f03eaa30f72c5bc94e350b2cf68652ea9931f331fe2886fd372",
+        "snippet": " Shares) . . . 2,780,631,250 5,561.2625 85.0 Shares to be issued under the Global Offering ........................... 490,699,800 981.3996 15.0 Total ............................ 3,271,331,050 6,542.6621 100 Assuming the Over-allotment Option is exercised in full, the share capital of our Company upon completion of the Global Offering will be as follows: Descr"
+      },
+      "final_offer_evidence": {
+        "price": 10.82,
+        "page": 2,
+        "snippet": "r Shares : 441,629,800 Shares (subject to the Over- allotment Option) Offer Price : HK$10.82 per Offer Share plus brokerage of 1%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.00565% and AFRC ",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0426/10705031/2023042600063.pdf",
+        "sha256": "8728456a7d04ab90e1f8c1be5efb537d9915960bc59cf094089b999f8ba8eb4d"
+      }
+    },
+    {
+      "code": "2487",
+      "shares_outstanding": 304024465,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0531/10753466/2023053100194.pdf",
+        "page": 1,
+        "sha256": "83c967b22dc1a217825f5d986afcc8a7acf11a8e8bea1eb15cd9ab9f2101d869",
+        "snippet": "S$) Shares in issue (including the Shares on re-designation of the Preferred Shares) 282,742,665 5,654.8533 Shares to be issued under the Global Offering 21,281,800 425.6360 Total 304,024,465 6,080.4893 SHARE CAPITAL – 389 –"
+      },
+      "final_offer_evidence": {
+        "price": 21.85,
+        "page": 2,
+        "snippet": "fer Shares : 19,153,400 Shares (subject to the Over-allotment Option) Final Offer Price : HK$21.85 per Offer Share, plus brokerage of 1%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.00565% and AFRC",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0609/10768739/2023060900017.pdf",
+        "sha256": "1a70b578fbe24dbf3bdc1427daf5a4d1556e9720e1739ccb8dc1eb19a8675c12"
+      }
+    },
+    {
+      "code": "9885",
+      "shares_outstanding": 632350052,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0615/10774317/2023061500070.pdf",
+        "page": 1,
+        "sha256": "00a6fa1cf6fe219218f0db7c0395b64ca4ce547fc12710b6a7156be808cbefdd",
+        "snippet": "25 each in issue as at the date of this document US$1,541.35 15,808,800........... Shares of a par value of US$0.0000025 each to be issued pursuant to the Global Offering US$39.52 632,350,052.......... Shares in issue immediately following the Global Offering and upon Listing US$1,580.88 CONVERSION OF PREFERRED SHARES UPON LISTING As at the date of this docum"
+      },
+      "final_offer_evidence": {
+        "price": 20.0,
+        "page": 2,
+        "snippet": "27,600 Shares (subject to reallocation and the Over-allotment Option) Final Offer Price : HK$20.0 per Offer Share plus brokerage of 1%, SFC transaction levy of 0.0027%, AFRC transaction levy of 0.00015% and Stock Exch",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0627/10785563/2023062700055.pdf",
+        "sha256": "0bec04511c05f6f45567a94e5611283b3ff0b1fbd1a8cc52226071f274716ab9"
+      }
+    },
+    {
+      "code": "3650",
+      "shares_outstanding": 525671987,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0630/10791492/2023063000254.pdf",
+        "page": 1,
+        "sha256": "2a3a2337384acdf7edfc228ec190e17f0949ef4b705e072a7f7395c96bc9dc13",
+        "snippet": "nal value 514,833,387 ............ Shares in issue as at date of this document US$25,741.67 10,838,600 ............. Shares to be issued pursuant to the Global Offering US$ 541.93 525,671,987 ............ Shares in issue immediately after Global Offering US$26,283.60 The above table assumes (i) the Presumptions, and (ii) the Global Offering becomes unconditio"
+      },
+      "final_offer_evidence": {
+        "price": 28.92,
+        "page": 2,
+        "snippet": "ares : 9,754,700 Offer Shares (subject to the Over- allotment Option) Final Offer Price : HK$28.92 per Offer Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, AFRC transaction levy of 0.00015% and Stock E",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0711/10811913/2023071100049.pdf",
+        "sha256": "92404944fc89f0dd49f2dcf44b3f9494bde09047e687d0ae2790c7f17394a5d6"
+      }
+    },
+    {
+      "code": "9690",
+      "shares_outstanding": 814371439,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0925/10907481/2023092500014.pdf",
+        "page": 1,
+        "snippet": "Total issued share capital upon Listing is 814,371,439 shares after partial offer-size adjustment, before shoe."
+      },
+      "final_offer_evidence": {
+        "price": 28.0,
+        "page": 2,
+        "snippet": "fer Size Adjustment Option and subject to the Over- allotment Option) Final Offer Price : HK$28.00 per Offer Share plus brokerage of 1%, SFC transaction levy of 0.0027%, AFRC transaction levy of 0.00015% and Stock Exch",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0925/10907481/2023092500013.pdf",
+        "sha256": "51fe21a568d3f5442140d05553838df22279d3a0032e81cb330ca858cd289819"
+      }
+    },
+    {
+      "code": "2501",
+      "shares_outstanding": 500000000,
+      "evidence": {
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0928/10913343/2023092800120.pdf",
+        "page": 1,
+        "sha256": "7877ecbbcdfff4d2a83444b528568718b55165db8318e8b721eaee79a9da14b7",
+        "snippet": "ate of this prospectus 100 374,990,000 Shares to be issued pursuant to the Capitalisation Issue 3,749,900 125,000,000 Shares to be issued pursuant to the Global Offering 1,250,000 500,000,000 Shares in total 5,000,000 The following table illustrates the authorised and issued share capital of our Company in issue and to be issued as fully paid or credited as f"
+      },
+      "final_offer_evidence": {
+        "price": 1.18,
+        "page": 2,
+        "snippet": "00 Shares Number of International Placing Shares : 112,500,000 Shares Offer Price : HK$1.18 per Offer Share plus brokerage fee of 1%, SFC transaction levy of 0.0027%, AFRC transaction levy of 0.00015% and Stock ",
+        "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/1010/10929076/2023101000017.pdf",
+        "sha256": "007dd9392f584984e6484ac7aa7e43298172371c84e731f6fc04f7b9c10be240"
+      }
+    }
+  ]
+}

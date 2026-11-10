@@ -1,0 +1,77 @@
+[
+ {
+  "code": "3228",
+  "a_share_code": "603228.SS",
+  "source": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1104/2026110400744.pdf",
+  "source_sha256": "d1ec3e4d40ea9a9703bbebc354dcc34474026f41d9ef999a7a86f31bc1157859",
+  "history_through": "2026-10-02",
+  "prices": [
+   {
+    "leg": "a",
+    "url": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh603228,day,2026-08-15,2026-10-02,320,",
+    "sha256": "bf04c88e9d0f6d4fe605437a6a95ddb2fc36bb10371ad22ad6a50f582011869c",
+    "rows": 32,
+    "first": "2026-08-17",
+    "last": "2026-09-30"
+   },
+   {
+    "leg": "h",
+    "url": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=hk03228,day,2026-09-29,2026-10-02,320,",
+    "sha256": "94c607e423e86df557e73c03772c8fd06b5cee75df8e61559761ff1a7aa5205b",
+    "rows": 3,
+    "first": "2026-09-29",
+    "last": "2026-10-02"
+   }
+  ]
+ },
+ {
+  "code": "6727",
+  "a_share_code": "688031.SS",
+  "source": "https://static.cninfo.com.cn/finalpage/2026-10-08/1225595449.PDF",
+  "source_sha256": "4f3300ddfac90baaf122bec3ed327b032e0bef58d80aa4eedaa19b8318d3ed06",
+  "history_through": "2026-10-02",
+  "prices": [
+   {
+    "leg": "a",
+    "url": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh688031,day,2026-08-07,2026-10-02,320,",
+    "sha256": "abafde024f47cd16a244eba3fdc2cfc15143bb6f59d4eb41cb58f42063918f33",
+    "rows": 38,
+    "first": "2026-08-07",
+    "last": "2026-09-30"
+   },
+   {
+    "leg": "h",
+    "url": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=hk06727,day,2026-09-21,2026-10-02,320,",
+    "sha256": "650b9c93b3f89ca2eb5e383fa54cbeb2cfe47773eac0b80d27575dfaa72fdcbf",
+    "rows": 9,
+    "first": "2026-09-21",
+    "last": "2026-10-02"
+   }
+  ]
+ },
+ {
+  "code": "3757",
+  "a_share_code": "300757.SZ",
+  "source": "https://static.cninfo.com.cn/finalpage/2026-10-26/1225621924.PDF",
+  "source_sha256": "21f8683060601bab46f46956ebb90ac289638e3e5cbe91f89aced3a33765088e",
+  "history_through": "2026-10-02",
+  "prices": [
+   {
+    "leg": "a",
+    "url": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sz300757,day,2026-08-15,2026-10-02,320,",
+    "sha256": "a0c2bf945e7085992540e8e8bbd37d2bb3f224bb91a7584eda15e1c2c2a48b6f",
+    "rows": 32,
+    "first": "2026-08-17",
+    "last": "2026-09-30"
+   },
+   {
+    "leg": "h",
+    "url": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=hk03757,day,2026-09-29,2026-10-02,320,",
+    "sha256": "439333718bed5e95fc2cba44dab217111b6e5a6e4bbe01a4d10b5b5093fec50c",
+    "rows": 3,
+    "first": "2026-09-29",
+    "last": "2026-10-02"
+   }
+  ]
+ }
+]

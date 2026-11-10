@@ -39,7 +39,8 @@ with zipfile.ZipFile(path) as z:
                 if other!=addr and col<=cc<=col+1 and r<=rr<=last:
                     assert cell.find(q('f')) is None and not value(cell),(name,addr,other)
             count+=1
-    eq(count,161);eq(value(db['B2']),'All')
+    pairs=len(json.loads((ROOT/'data/desk_chart_data.json').read_text())['pairs'])
+    eq(count,2*pairs+17);eq(value(db['B2']),'All')
     assert value(ah['E4'])==value(ah['H4'])=='Stored'
     # Idempotent migration does not alter controls after a user chooses a mode.
     parts={sheets[n]:z.read(sheets[n]) for n in HISTORY+['Database','Valuation Data']};original=dict(parts)

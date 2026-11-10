@@ -25,7 +25,7 @@ KEEP = ["code", "name", "name_full", "name_cn", "sector", "subsector", "ipo_date
         "cornerstone_pct", "eff_free_float_pct", "eff_free_float_hkdm",
         "eff_free_float_shares", "profitable_at_ipo", "pe_ipo", "ps_ipo",
         "is_h_share", "a_share_code", "a_premium_now", "a_share_proxy",
-        "intl_placees", "public_alloc_pct", "clawback",
+        "intl_placees", "public_alloc_pct", "clawback", "allocation_mechanism", "clawback_status", "clawback_display",
         "day1_vol_x_retail", "day1_range_pct",
         "valuation_notes", "oversub_intl_mult", "ret_1m_pct",
         "alpha_1m_pct", "benchmark", "since_ipo_pct", "greenshoe_exercised_final",
@@ -1718,8 +1718,6 @@ const METRICS = [
   // take. The money/share figures need no market cap, so they survive rows
   // whose cap is not derivable; the % is that same number over the cap.
   ["Eff. free float (HK$m)", "eff_free_float_hkdm", v => fmt.hkd(v)],
-  ["Eff. free float (shares)", "eff_free_float_shares",
-     v => v == null ? "—" : v.toLocaleString()],
   ["Eff. free float", "eff_free_float_pct", v => v == null ? "—" : v.toFixed(1) + "% of cap"],
   ["Max shoe %", "greenshoe_pct", v => v == null ? "—" : v.toFixed(0) + "%"],
   ["Greenshoe outcome", "greenshoe_exercised_final", v => v || "—"],

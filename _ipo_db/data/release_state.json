@@ -1,10 +1,10 @@
 {
-  "release_date": "2026-11-03",
+  "release_date": "2026-11-10",
   "handover": "START_HERE.md",
   "counts": {
     "database_screener": 527,
     "live_universe": 717,
-    "ah_pairs": 72,
+    "ah_pairs": 75,
     "peer_pairs": 35,
     "peer_stocks": 66,
     "pipeline_rows": 23,
@@ -13,12 +13,12 @@
   },
   "dates": {
     "pipeline_status_checked": "2026-11-03",
-    "live_fetch": "2026-10-28",
+    "live_fetch": "2026-11-09",
     "live_saved_quotes": 702,
     "live_current_quotes": 702,
-    "live_daily_returns": 701,
+    "live_daily_returns": 702,
     "ah_pair_latest_dates": {
-      "2026-10-02": 70,
+      "2026-10-02": 73,
       "2026-10-15": 1,
       "2026-10-28": 1
     },
@@ -35,7 +35,7 @@
     "numeric_entries": 39303,
     "internal_numeric_failures": 0,
     "existing_525_stock_numeric_changes": 0,
-    "native_excel_open": "3 November: opened without repair; Database,AH,Pipeline,Screener reviewed. View-only Mac; no live Bloomberg test.",
+    "native_excel_open": "10 November: final workbook opened without repair; Database, AH and IPO Live visually checked. View-only; no Bloomberg terminal.",
     "other_tabs_style_preservation": "13 sheets: business values, formulas and caches preserved, including seven relocated Screener outputs; requested titles removed; chart data, axes, drawing anchors and relationships unchanged",
     "small_projection_review": [
       "Database",
@@ -52,9 +52,9 @@
       "SizeBench",
       "Verification"
     ],
-    "fresh_browser_visual_review": true,
+    "fresh_browser_visual_review": false,
     "live_bloomberg_execution": false,
-    "bundle_parity": "All embedded source modules and existing data/template files match their inputs",
+    "bundle_parity": "275 embedded data files,110 modules and both standalone builders verified against staged sources.",
     "notes_removal": {
       "date": "2026-10-16",
       "checks": [
@@ -543,43 +543,375 @@
       },
       "artifact_projection": "Pipeline A4:L13,120 cells; rendered and visually checked",
       "terminal_speed_or_memory_measured": false
+    },
+    "update_20261104": {
+      "live_bloomberg_tested": false,
+      "fixtures": 637,
+      "pairs": 72,
+      "added_market_cap_requests": 144,
+      "added_historical_requests": 0,
+      "changed_package_parts": [
+        "xl/styles.xml",
+        "xl/workbook.xml",
+        "xl/worksheets/monitor_sheet2.xml",
+        "xl/drawings/monitor_drawing2.xml",
+        "xl/comments/monitor_comment1.xml",
+        "xl/drawings/monitor_commentsDrawing1.vml",
+        "xl/tables/monitor_table2.xml",
+        "xl/worksheets/monitor_sheet4.xml",
+        "xl/worksheets/monitor_sheet8.xml",
+        "xl/worksheets/monitor_sheet19.xml",
+        "xl/charts/monitor_chart4.xml",
+        "xl/worksheets/sheetAHReference.xml"
+      ],
+      "all_existing_chart_series_unchanged": true,
+      "unrelated_data_unchanged": true,
+      "workbook_sha256": "7dd995831e047dd90bd4f625df7897c01a1f9d92c9a2afe27c17fcf97db9ab86",
+      "native_excel": {
+        "date": "2026-11-04",
+        "opened_without_repair": true,
+        "roster_names_and_caps_reviewed": true,
+        "header_filter_spacing_reviewed": true,
+        "premium_note_positions_reviewed": true,
+        "current_and_comparison_charts_rendered": true,
+        "checker_BBG_unavailable_handling_verified": true,
+        "view_only": true,
+        "closed_without_saving": true,
+        "live_bloomberg_tested": false
+      },
+      "final_full_rebuild_AH_formulas_values_match_delivery": true,
+      "full_native_rebuild_passed": true,
+      "python_rss_limit_mib": 512,
+      "node_heap_limit_mib": 384,
+      "all_updater_input_data_unchanged": true,
+      "embedded_sources_verified": true,
+      "checks_passed": [
+        "637 identity/current-price/formula/note fixtures",
+        "Native worksheet sequences, valuation fixtures and W inputs",
+        "168851 formula structures and 19944 historical numeric source cells",
+        "105 mode/BDH-output/valuation fixtures",
+        "Bounded Artifact roster and calculator renders",
+        "Native Excel open and AH roster/calculator/charts review"
+      ]
+    },
+    "update_20261109": {
+      "terminal_tested": false,
+      "pairs": 75,
+      "restored_pairs": {
+        "3228": "603228.SS",
+        "6727": "688031.SS",
+        "3757": "300757.SZ"
+      },
+      "formula_fixtures": 2023,
+      "prior_pair_histories_unchanged": true,
+      "database_links": 527,
+      "ah_quote_reuse": 75,
+      "short_history_calls": 151,
+      "existing_chart_series_preserved": true,
+      "workbook_sha256": "76b73ab2bef75a9de401d7e721839004d484f295b8c40c4badec3ba8660630bf",
+      "date": "2026-11-09",
+      "scope": "Database premium links, missing A/H mappings and quote reuse; no full market refresh",
+      "html": {
+        "passed": true,
+        "render_cases": 450,
+        "detail_control_cases": 30,
+        "html_code_search_cases": 2108,
+        "refreshed_dataset": true,
+        "all_observations_and_gaps_preserved": true,
+        "actual_svg_function": true,
+        "browser": false
+      },
+      "stored_new_pair_last_date": "2026-10-02",
+      "all_other_canonical_issuers_unchanged": true,
+      "known_roster_crosscheck": {
+        "monitor_stocks": 717,
+        "retained_ah_snapshot_pairs": 208,
+        "omitted_pairs": 3,
+        "mapping_conflicts": 0
+      },
+      "native_excel": {
+        "opened_without_repair": true,
+        "reviewed": [
+          "75-pair roster",
+          "3228/6727/3757 identities and premiums",
+          "Database BT525 formula and value",
+          "source-mode header"
+        ],
+        "view_only": true,
+        "live_bloomberg_tested": false,
+        "closed_without_saving": true,
+        "reviewed_sha256": "f133f5e39f107cc5de697ad466918005893ee4fa825bfd10e54996738c0c5edc",
+        "final_difference": "BP2 label shortened to Quotes after native visual review; formula/package checks repeated"
+      },
+      "artifact": {
+        "formula_recalculation": true,
+        "fixtures": [
+          "numeric and padded codes",
+          "zero",
+          "missing quote",
+          "missing pair",
+          "non-pair",
+          "sorted rows"
+        ],
+        "bounded_views": [
+          "AH A74:L84",
+          "Database BP2:BU12"
+        ]
+      },
+      "checks_passed": [
+        "2023 linkage, mapping, range and mode assertions",
+        "native worksheet/valuation fixtures",
+        "105 Bloomberg-mode fixtures;167 unlocked history anchors",
+        "169540 formula structures;19882 historical numeric source checks",
+        "450 shipped SVG renders;30 detail controls;2108 code searches",
+        "full staged native rebuild"
+      ],
+      "performance": {
+        "python_limit_mib": 512,
+        "node_heap_limit_mib": 384,
+        "one_heavy_operation_at_a_time": true,
+        "database_added_bloomberg_requests": 0,
+        "h_price_calls_reused_when_both_live": 75,
+        "short_history_calls": 151,
+        "long_chart_history_calls": 16,
+        "extra_short_calls_for_three_new_pairs": 6,
+        "terminal_speed_or_memory_measured": false
+      },
+      "limitations": [
+        "No live Bloomberg terminal execution or latency measurement",
+        "All-mode fundamentals remain enabled per user preference",
+        "Known roster consistency guard is not a new exhaustive HK-market listing census",
+        "Added stored histories stop at 2 October; existing histories retain their dates",
+        "Source-level validation is separate from formula arithmetic"
+      ],
+      "bundle": {
+        "embedded_data_files": 269,
+        "embedded_source_modules": 104,
+        "all_data_and_sources_match": true,
+        "verification": "One embedded data file at a time under 512 MiB guard",
+        "sha256": "2cd334f373083f6a06eb0982c3c465e6660e4cf0a9424b819eee8cf46c959e78"
+      }
+    },
+    "database_review_20261109": {
+      "passed": true,
+      "database_rows": 527,
+      "reviewed_capital_records": 34,
+      "changed_market_caps": 32,
+      "formula_count": 169540,
+      "business_formulas_unchanged": true,
+      "snapshot_label_formula_updated": 1,
+      "added_bloomberg_requests": 0,
+      "bloomberg_formula_counts": {
+        "BDP": 6569,
+        "BDH": 2402,
+        "BQL": 2642
+      },
+      "charts_byte_identical": 10,
+      "unrelated_data_preserved": true,
+      "terminal_tested": false,
+      "sha256": "ab5e947f4dced4f0e91d8566d143af174eab46f2a0bbd753771e5a7b4051e4e0",
+      "date": "2026-11-10",
+      "scope": "IPO capital, institutional reconciliation, filed clawback, retail-volume gaps, A/H offer references, dated Live quotes and Database presentation",
+      "clawback": {
+        "supported_outcomes": 526,
+        "held": [
+          "2550"
+        ],
+        "yes": 155,
+        "no": 221,
+        "na": 150,
+        "Mechanism B": 145,
+        "Mechanism A": 2,
+        "18C": 20,
+        "filled_previous_unknowns": 163,
+        "corrected_existing_outcome": [
+          "2636"
+        ]
+      },
+      "retail": {
+        "recovered_counts": 168,
+        "recovered_listing_tapes": 4,
+        "complete_volume_ratios": 527
+      },
+      "ah": {
+        "pairs": 75,
+        "applicable_ipo_premiums": 71,
+        "primary_h_offer_price_checks": 71,
+        "corrected_fx_anchors": [
+          "3308",
+          "3223",
+          "9976",
+          "9607",
+          "2636"
+        ],
+        "scalar_class_cap_formulas": 150,
+        "added_requests": 0,
+        "live_terminal_tested": false
+      },
+      "notes_removed": 7232,
+      "effective_float_share_column_hidden": true,
+      "native_excel": {
+        "opened_without_repair": true,
+        "reviewed": [
+          "IPO Live dated snapshot and sector bars",
+          "AH roster, premium charts and cap headers",
+          "Database compact layout and no comment markers"
+        ],
+        "view_only": true,
+        "closed_without_saving": true,
+        "live_terminal_tested": false,
+        "sha256": "ab5e947f4dced4f0e91d8566d143af174eab46f2a0bbd753771e5a7b4051e4e0"
+      },
+      "artifact": {
+        "bounded_projection": "Database A3:X13",
+        "visually_reviewed": true
+      },
+      "html": {
+        "shipped_svg_render_cases": 450,
+        "detail_control_cases": 30,
+        "code_search_cases": 2108,
+        "full_browser": false
+      },
+      "checks": [
+        {
+          "test": "ipo_lib/build_dashboard.py",
+          "exit": 0,
+          "seconds": 2.91,
+          "required_gate": true
+        },
+        {
+          "test": "tools/audit_ah_ipo_caps.py",
+          "exit": 0,
+          "seconds": 0.39,
+          "required_gate": true
+        },
+        {
+          "test": "tools/test_native_desk.py",
+          "exit": 0,
+          "seconds": 9.6,
+          "required_gate": true
+        },
+        {
+          "test": "tools/test_presentation_package.py",
+          "exit": 0,
+          "seconds": 4.28,
+          "required_gate": true
+        },
+        {
+          "test": "tools/test_update_20261103.py",
+          "exit": 0,
+          "seconds": 3.01,
+          "required_gate": true
+        },
+        {
+          "test": "ipo_lib/audit_formulas.py",
+          "exit": 1,
+          "seconds": 1.14,
+          "disposition": "Legacy script assumes moved A-share calculator still in Screener and requires absent historical ipo.py; superseded by current native/package/mode tests. Not a current workbook regression.",
+          "required_gate": false
+        }
+      ],
+      "bundle": {
+        "embedded_data_files": 275,
+        "embedded_source_modules": 110,
+        "all_data_and_sources_match": true,
+        "verification": "One embedded data file at a time under 512 MiB guard",
+        "sha256": "964b64d06a910f0aea35d027ae7066ce974c7847bb29dd9ebf02160222f1b6c5"
+      },
+      "performance": {
+        "python_mib": 512,
+        "node_heap_mib": 384,
+        "one_heavy_operation_at_a_time": true,
+        "terminal_latency_or_ram_measured": false
+      },
+      "remaining_financial_missing": {
+        "public_shares_final": {
+          "present": 527,
+          "missing": 0
+        },
+        "day1_volume": {
+          "present": 527,
+          "missing": 0
+        },
+        "day1_vol_x_retail": {
+          "present": 527,
+          "missing": 0
+        },
+        "day1_range_pct": {
+          "present": 527,
+          "missing": 0
+        },
+        "rev_latest": {
+          "present": 519,
+          "missing": 8
+        },
+        "ni_latest": {
+          "present": 510,
+          "missing": 17
+        },
+        "mktcap_ipo_hkdm": {
+          "present": 526,
+          "missing": 1
+        },
+        "pe_ipo": {
+          "present": 310,
+          "missing": 217
+        },
+        "ps_ipo": {
+          "present": 500,
+          "missing": 27
+        }
+      }
     }
   },
   "known_limits": {
     "financial_cells_needing_primary_followup": 273,
     "earlier_cornerstone_aliases_unresolved": 119,
     "undated_visible_lockup_events": 0,
-    "market_dates": "IPO Live quote snapshot 28 October; 2384 A/H closes 28 October with completed FX close 27 October. Other A/H histories remain 2/15 October and peer histories 2 October. Missing remains unavailable; no full-history refresh.",
-    "browser": "Fresh Pipeline/Screener interaction review; A/H/Lock-up actual SVG and scope fixtures passed.",
+    "market_dates": "IPO Live public quote snapshot 9 November; individual dates retained. Historical Database return dates and A/H/peer/lock-up histories retain their previously recorded dates; not a full November historical refresh.",
+    "browser": "450 shipped A/H SVG renders and30 detail controls passed; no fresh full-browser run. Native Excel final visual review completed.",
     "bloomberg": "Formula fixtures passed; terminal/add-in responses remain unverified.",
     "taxonomy": "Framework reviewed and retained; confirmed assignment errors in 2477 and 2321 remain recommendations, not applied changes. See data/taxonomy_review_20261016.json.",
     "historical_lockups": "161 completed, date-confirmed events; selective sample. 21 retain interior price gaps. 70 ambiguous dates, 67 undated, 67 future, 26 incomplete/unverified price windows and six original schedules with later extensions excluded; 6911 controller row corrected. Amendment search was targeted, not exhaustive. Sources and exclusions retained outside Excel.",
     "ah_live_terminal": "Preallocated BDH multi-cell array locks removed. Native opening and formula fixtures checked; live Bloomberg mode switching and responses still require an entitled terminal.",
-    "pipeline": "Current seven offerings and one introduction checked Nov3. Other AP/PHIP membership retains Oct28 review. Final subscriptions/allocations are not yet published for the new offerings."
+    "pipeline": "Current seven offerings and one introduction checked Nov3. Other AP/PHIP membership retains Oct28 review. Final subscriptions/allocations are not yet published for the new offerings.",
+    "ah_caps": "All 150 scalar share-class cap formulas and ticker/currency labels checked; live field metadata, returned units/entitlements and latency remain unverified without a Bloomberg terminal.",
+    "ah_coverage": "75 pairs in the existing seven-year monitor universe. Three source-reviewed missing mappings restored; no exhaustive November market-universe refresh.",
+    "performance": "Database premium links add no Bloomberg requests. AH reuses IPO Live H quotes when both live. All issuer valuation loading remains on; terminal latency and RAM unmeasured.",
+    "current_review": "2550 mandatory clawback outcome held blank; Prudential listing capital remains unavailable. 8 missing revenue and17 missing income inputs remain; no fabricated multiples. Other recorded historical-source limitations remain."
   },
   "deliverables": {
     "HK_IPO_Database_v1.xlsx": {
-      "bytes": 7915544,
-      "sha256": "78c6c822a89b796d18850e2f3349567e8c8346206ab452fac5a7e46457aacb96"
+      "bytes": 7650873,
+      "sha256": "ab5e947f4dced4f0e91d8566d143af174eab46f2a0bbd753771e5a7b4051e4e0"
     },
     "hk_ipo.py": {
-      "bytes": 15433728,
-      "sha256": "a67a36ea12fae453e5e90c743cccb9cd769324f8e85d137629e7d687db6d2a52"
+      "bytes": 16189120,
+      "sha256": "964b64d06a910f0aea35d027ae7066ce974c7847bb29dd9ebf02160222f1b6c5"
     },
     "hk_ipo_dashboard.html": {
-      "bytes": 2876157,
-      "sha256": "f6e09ec3ff931422c9506688925be3164eea0d8be18296ea6f757d343f58ddde"
+      "bytes": 2883314,
+      "sha256": "ad85f2f24ccd1d7f19bf017b5cdc33b273a59d27ab7f4b3f1279d0c0b52e6083"
     },
     "hk_ipo_dashboard.zip": {
-      "bytes": 2058047,
-      "sha256": "09c002207160bf9e2d901b499930d6dbbf95e3295afc6b22828d910f9d2af2a0"
+      "bytes": 2063838,
+      "sha256": "d9fd790a3e3bca6213dd390c946698ebbd66aed5885837c2a77458cf8c3668ac"
     },
     "READ_ME_FIRST.txt": {
-      "bytes": 3230,
-      "sha256": "34d318da41e17c2d4699a9aa305881a4b3f3cd50b706d642f1d6873f7a0e3f2a"
+      "bytes": 5286,
+      "sha256": "ad68f60f5d2ad2b4400ca7c894eb35adcf6c724a06fbd3dfc86c6b6632b3c14e"
     }
   },
   "publication": {
+    "status": "ready_to_publish",
+    "github_updated_this_session": false,
+    "date": "2026-11-10",
+    "repository": "https://github.com/kennytam-code/code",
+    "branch": "main",
+    "authorization": "User: why i dont seethis in github? please push. make sure no error",
+    "base_commit": "c8a1947472f84857234e89bb83b8bc4a2e2caf9f"
+  },
+  "previous_publication": {
     "status": "published",
     "github_updated_this_session": true,
     "date": "2026-11-03",
@@ -591,19 +923,6 @@
     "downloaded_hashes_verified": true,
     "downloaded_paths": 10,
     "method": "Isolated sparse checkout, rebased onto current main; unrelated work and Word studies preserved."
-  },
-  "previous_publication": {
-    "status": "published",
-    "github_updated_this_session": true,
-    "date": "2026-10-29",
-    "repository": "https://github.com/kennytam-code/code",
-    "branch": "main",
-    "base_commit": "c229b92ed9e08e7c8f24d6ca8b1f3413c77e0277",
-    "authorization": "Explicit user request: check if no error then push to github",
-    "release_commit": "6c3119d7f2fcfe9d8217b205a6909dbaba013b5d",
-    "verified_at": "2026-10-29T23:21:47.344784+08:00",
-    "downloaded_hashes_verified": true,
-    "method": "Isolated sparse checkout based on current GitHub main; parent Git branch/index and unrelated work preserved."
   },
   "data_release_date": "2026-10-28"
 }

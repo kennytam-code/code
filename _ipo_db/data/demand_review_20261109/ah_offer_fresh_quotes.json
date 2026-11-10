@@ -1,0 +1,77 @@
+[
+  {
+    "code": "3308",
+    "a_date": "2026-07-29",
+    "a_rows": [
+      [
+        "2026-07-29",
+        951.0
+      ]
+    ],
+    "fx_date": "2026-07-29",
+    "cnyhkd": 1.1589430570602417,
+    "a_source": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get",
+    "fx_source": "https://query1.finance.yahoo.com/v8/finance/chart/CNYHKD=X",
+    "premium_pct": 12.464780333090797
+  },
+  {
+    "code": "3223",
+    "a_date": "2026-08-24",
+    "a_rows": [
+      [
+        "2026-08-24",
+        133.66
+      ]
+    ],
+    "fx_date": "2026-08-24",
+    "cnyhkd": 1.1652530431747437,
+    "a_source": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get",
+    "fx_source": "https://query1.finance.yahoo.com/v8/finance/chart/CNYHKD=X",
+    "premium_pct": 55.747721750736254
+  },
+  {
+    "code": "9976",
+    "a_date": "2026-09-07",
+    "a_rows": [
+      [
+        "2026-09-07",
+        358.22
+      ]
+    ],
+    "fx_date": "2026-09-07",
+    "cnyhkd": 1.1681150197982788,
+    "a_source": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get",
+    "fx_source": "https://query1.finance.yahoo.com/v8/finance/chart/CNYHKD=X",
+    "premium_pct": 77.30600101361841
+  },
+  {
+    "code": "9607",
+    "a_date": "2026-09-28",
+    "a_rows": [
+      [
+        "2026-09-28",
+        65.5
+      ]
+    ],
+    "fx_date": "2026-09-28",
+    "cnyhkd": 1.1688159704208374,
+    "a_source": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get",
+    "fx_source": "https://query1.finance.yahoo.com/v8/finance/chart/CNYHKD=X",
+    "premium_pct": 73.9941955967383
+  },
+  {
+    "code": "2636",
+    "a_date": "2026-10-14",
+    "a_rows": [
+      [
+        "2026-10-14",
+        48.29
+      ]
+    ],
+    "fx_date": "2026-10-14",
+    "cnyhkd": 1.172413945198059,
+    "a_source": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get",
+    "fx_source": "https://query1.finance.yahoo.com/v8/finance/chart/CNYHKD=X",
+    "premium_pct": 60.384899188709
+  }
+]

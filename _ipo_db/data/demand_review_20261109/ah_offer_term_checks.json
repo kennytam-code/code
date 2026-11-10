@@ -1,0 +1,872 @@
+[
+  {
+    "code": "6127",
+    "offer_hkd": 151.0,
+    "matched": true,
+    "evidence": {
+      "price": 151.0,
+      "page": 1,
+      "snippet": "LOTMENT RESULTS SUMMARY Offer Price The Offer Price has been determined at HK$151.00 per Offer Share (excluding brokerage of 1%, the SFC transaction levy of 0.0027% and the Stock Exchange trading fee of 0.005%). Net Proceeds from the ",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0225/9632242/2021022500022.pdf",
+      "sha256": "5ed85608703e9f13d71c91dd502376a048ca6df2ef23f85eb020e24046475f65"
+    }
+  },
+  {
+    "code": "6821",
+    "offer_hkd": 388.0,
+    "matched": true,
+    "evidence": {
+      "price": 388.0,
+      "page": 1,
+      "snippet": "TMENT RESULTS SUMMARY Offer Price \u2022 The final Offer Price has been determined at HK$388.00 per Offer Share (exclusive of brokerage of 1.0%, SFC transaction levy of 0.0027% and Stock Exchange trading fee of 0.005%). Net Proceeds from the Glo",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1209/10045693/2021120900058.pdf",
+      "sha256": "72df7f014db8c6411b3bd1d08f2f5a60763adc977dfbcf41e2c9459653f6000d"
+    }
+  },
+  {
+    "code": "6680",
+    "offer_hkd": 33.8,
+    "matched": true,
+    "evidence": {
+      "price": 33.8,
+      "page": 1,
+      "snippet": "LOTMENT RESULTS SUMMARY Offer Price The Offer Price has been determined at HK$33.80 per Offer Share (excluding brokerage of 1%, the SFC transaction levy of 0.0027%, FRC transaction levy of 0.00015% and the Stock Exchange trading fee ",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0113/10088793/2022011300012.pdf",
+      "sha256": "00dd8a1967f0dbc8c165c923199762f057eca392e92379c7c9a648fee0625fec"
+    }
+  },
+  {
+    "code": "9696",
+    "offer_hkd": 82.0,
+    "matched": true,
+    "evidence": {
+      "price": 82.0,
+      "page": 2,
+      "snippet": " Shares : 147,709,800 H Shares (subject to the Over-allotment Option) Final Offer Price : HK$82.00 per H Share, plus brokerage of 1%, SFC transaction levy of 0.0027%, the FRC transaction levy of 0.00015% and Hong Kong Stock Exchange trading fee of 0.005% (pa",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0712/10339849/2022071200063.pdf",
+      "sha256": "961141859bf0d91c0819d6f5cc5217e77442809ed684efb0208b1d3a6016093c"
+    }
+  },
+  {
+    "code": "1880",
+    "offer_hkd": 158.0,
+    "matched": true,
+    "evidence": {
+      "price": 158.0,
+      "page": 1,
+      "snippet": "TMENT RESULTS SUMMARY Offer Price \u2022 The Offer Price has been determined at HK$158.00 per Offer Share (excluding brokerage of 1.0%, SFC transaction levy of 0.0027%, FRC transaction levy of 0.00015% and Hong Kong Stock Exchange trading ",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0824/10396891/2022082400026.pdf",
+      "sha256": "f73ff41d36a916f0aae3f533ea7c53a3ea1fa848f9711a5b6285f040434e1ed1"
+    }
+  },
+  {
+    "code": "2315",
+    "offer_hkd": 25.22,
+    "matched": false,
+    "evidence": []
+  },
+  {
+    "code": "2402",
+    "offer_hkd": 60.0,
+    "matched": true,
+    "evidence": {
+      "price": 60.0,
+      "page": 1,
+      "snippet": "TMENT RESULTS SUMMARY Offer Price . The Offer Price has been determined at HK$60.00 per Offer Share (exclusive of brokerage of 1.0%, SFC transaction levy o f 0.0027%, Stock Exchange trading fee of 0.00565% and AFRC transaction levy o",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0111/10573259/2023011100008.pdf",
+      "sha256": "7c72bd37dc55f93ea0e790b9042e66497e12f81d6ced687c0a559028746bc668"
+    }
+  },
+  {
+    "code": "0300",
+    "offer_hkd": 54.8,
+    "matched": true,
+    "evidence": {
+      "price": 54.8,
+      "page": 2,
+      "snippet": "d subject to the Over-allotment Option) Final Offer Price : HK$54.80 per H Share plus brokerage of 1%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% (paya",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2024/0916/2024091600951.pdf",
+      "sha256": "7af1e064a30bdca0ab4c897fe9ef7f7e61472226997bf49d8403ecb5331c9e7f"
+    }
+  },
+  {
+    "code": "2465",
+    "offer_hkd": 5.5,
+    "matched": true,
+    "evidence": {
+      "price": 5.5,
+      "page": 3,
+      "snippet": "d subject to the Over-allotment Option) Final Offer Price : HK$5.5 per H Share plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% Nom",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2024/1029/2024102901308.pdf",
+      "sha256": "5eaf5943b925d2cafeb9849251717234cedbc0fa6bc67b638bfdd702bdbc8328"
+    }
+  },
+  {
+    "code": "6936",
+    "offer_hkd": 34.3,
+    "matched": true,
+    "evidence": {
+      "price": 34.3,
+      "page": 2,
+      "snippet": "(subject to the Over- allotment Option) Final Offer Price : HK$34.3 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Hong Kong Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2024/1126/2024112601132.pdf",
+      "sha256": "81a8a4293cf0301b8caa34da3576d18997c229d58ee528808f8016fe47526a31"
+    }
+  },
+  {
+    "code": "6693",
+    "offer_hkd": 13.72,
+    "matched": true,
+    "evidence": {
+      "price": 13.72,
+      "page": 2,
+      "snippet": " (subject to the Over-allotment Option) Final Offer Price : HK$13.72 per H Share plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Hong Kong Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0307/2025030701501.pdf",
+      "sha256": "f3cf90750660fb33357af3be65513b0858beb7b95bb59044a2b0f30c42de183e"
+    }
+  },
+  {
+    "code": "2865",
+    "offer_hkd": 22.15,
+    "matched": true,
+    "evidence": {
+      "price": 22.15,
+      "page": 2,
+      "snippet": "(subject to the Over- allotment Option) Final Offer Price : HK$22.15 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Hong Kong Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0507/2025050702202.pdf",
+      "sha256": "f9a55f42d8728e3bb1439e794f0a73ce137f51dbb5acbc01be84bf141ec8ec7b"
+    }
+  },
+  {
+    "code": "3750",
+    "offer_hkd": 263.0,
+    "matched": true,
+    "evidence": {
+      "price": 263.0,
+      "page": 1,
+      "snippet": "d of the announcement Price Information Final Offer Price HK$263.00 Maximum Offer Price HK$263.00 Offer Price Adjustment exercised N/A Offer Shares and Share Capital Number of Offer Shares 135,578,600 Number of Offer ",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0519/2025051901257.pdf",
+      "sha256": "0d58750adabce468b00f56ba23ccfb23cc18610d910150b76debdf3798b43a42"
+    }
+  },
+  {
+    "code": "1276",
+    "offer_hkd": 44.05,
+    "matched": true,
+    "evidence": {
+      "price": 44.05,
+      "page": 2,
+      "snippet": "d subject to the Over-allotment Option) Final Offer Price : HK$44.05 per H Share plus brokerage of 1%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% (paya",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0522/2025052201651.pdf",
+      "sha256": "808545495a7c94ee8c70cae68ed8ac854b4dd21a6e7b770f4248e03c47665108"
+    }
+  },
+  {
+    "code": "2603",
+    "offer_hkd": 7.68,
+    "matched": true,
+    "evidence": {
+      "price": 7.68,
+      "page": 2,
+      "snippet": "Shares (as adjusted after reallocation) Final Offer Price : HK$7.68 per H Share (plus brokerage of 1%, SFC transaction levy of 0.0027%, AFRC transaction levy of 0.00015% and the Stock Exchange trading fee of 0.00565%,",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0526/2025052601653.pdf",
+      "sha256": "86a79cbfbdaa9bb69d369b0e39b432743cfd3dd15e470d3bf74ceaa8cf15c5be"
+    }
+  },
+  {
+    "code": "3288",
+    "offer_hkd": 36.3,
+    "matched": true,
+    "evidence": {
+      "price": 36.3,
+      "page": 2,
+      "snippet": "d subject to the Over-allotment Option) Final Offer Price : HK$36.30 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Hong Kong Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0618/2025061801931.pdf",
+      "sha256": "43d3e2550744e08bb2d81130664093074d49591b7251c0192857449f80d4c3e0"
+    }
+  },
+  {
+    "code": "2050",
+    "offer_hkd": 22.53,
+    "matched": true,
+    "evidence": {
+      "price": 22.53,
+      "page": 2,
+      "snippet": "d subject to the Over-allotment Option) Final Offer Price : HK$22.53 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Hong Kong Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0620/2025062002236.pdf",
+      "sha256": "21ceac87d84b987ff31423785af011518318628c220bb7b5962ba1b946a3ddfa"
+    }
+  },
+  {
+    "code": "2648",
+    "offer_hkd": 60.0,
+    "matched": true,
+    "evidence": {
+      "price": 60.0,
+      "page": 2,
+      "snippet": " (subject to the Over-allotment Option) Final Offer Price : HK$60.00 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Hong Kong Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0703/2025070302241.pdf",
+      "sha256": "66896bdc56d562aeda574f4a1cc6ac0069a7806dc73d3dd48d85570889b56409"
+    }
+  },
+  {
+    "code": "1304",
+    "offer_hkd": 120.5,
+    "matched": true,
+    "evidence": {
+      "price": 120.5,
+      "page": 2,
+      "snippet": "d subject to the Over-allotment Option) Final Offer Price : HK$120.5 per Offer Share, plus brokerage of 1%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% ",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0708/2025070801154.pdf",
+      "sha256": "9b6626f3077a6d6de39220cd8c4028d83b537e1341f3783153c3c63b41557547"
+    }
+  },
+  {
+    "code": "6613",
+    "offer_hkd": 18.18,
+    "matched": true,
+    "evidence": {
+      "price": 18.18,
+      "page": 2,
+      "snippet": "d subject to the Over-allotment Option) Final Offer Price : HK$18.18 per H Share plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Hong Kong Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0708/2025070801180.pdf",
+      "sha256": "a85d2db2c0c7bf957937853ceb3b737286f38539217d8cca9cbf5b9d07777f37"
+    }
+  },
+  {
+    "code": "2631",
+    "offer_hkd": 42.8,
+    "matched": true,
+    "evidence": {
+      "price": 42.8,
+      "page": 2,
+      "snippet": "d subject to the Over-allotment Option) Final Offer Price : HK$42.80 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Hong Kong Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/0819/2025081901728.pdf",
+      "sha256": "1d161bdfb79f4d1e90955d1f468c68939abb619ab59ce028cde45edcafdfb05f"
+    }
+  },
+  {
+    "code": "0638",
+    "offer_hkd": 21.5,
+    "matched": true,
+    "evidence": {
+      "price": 21.5,
+      "page": 2,
+      "snippet": " Shares : 121,572,000 H Shares (subject to the Over-allotment Option) Final Offer Price : HK$21.50 per Offer Share, plus brokerage of 1%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% Nominal va",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1021/2025102101036.pdf",
+      "sha256": "5f284801f21fe6ff1767b136e2c6d97901b5ecffc5b8df3a9f27959a2c1f0f0d"
+    }
+  },
+  {
+    "code": "6031",
+    "offer_hkd": 21.3,
+    "matched": true,
+    "evidence": {
+      "price": 21.3,
+      "page": 2,
+      "snippet": "ffer Size Adjustment Option and subject to the Over-allotment Option) Final Offer Price : HK$21.30 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Hong Kong Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% (p",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1027/2025102701586.pdf",
+      "sha256": "b30edaee7c107adee2fdda1bb611d93072004203605a849964e757da6b7c4b22"
+    }
+  },
+  {
+    "code": "6166",
+    "offer_hkd": 68.88,
+    "matched": true,
+    "evidence": {
+      "price": 68.88,
+      "page": 2,
+      "snippet": "(subject to the Over- allotment Option) Final Offer Price : HK$68.88 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Hong Kong Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1027/2025102701698.pdf",
+      "sha256": "b4bbdc66cd109059908f02d501aaab22a5a101d9f1e2bf9af0d0e2dfc0e56e31"
+    }
+  },
+  {
+    "code": "9927",
+    "offer_hkd": 131.5,
+    "matched": true,
+    "evidence": {
+      "price": 131.5,
+      "page": 2,
+      "snippet": "ffer Size Adjustment Option and subject to the Over-allotment Option) Final Offer Price : HK$131.50 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Hong Kong Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% (p",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1104/2025110402282.pdf",
+      "sha256": "1df5d7f5d277a00755711a0d05a9a2a9b93f7a50f74083b450526dd1366846ee"
+    }
+  },
+  {
+    "code": "0699",
+    "offer_hkd": 22.0,
+    "matched": true,
+    "evidence": {
+      "price": 22.0,
+      "page": 2,
+      "snippet": "Shares : 139,590,000 H Shares (subject to the Over- allotment Option) Final Offer Price : HK$22.00 per Offer Share, plus brokerage of 1%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% (payable i",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1105/2025110502028.pdf",
+      "sha256": "4b3097520c817df1bbdc3769ad69dddfb7b298a24bc9895fbcfc9b6cc9eb3685"
+    }
+  },
+  {
+    "code": "2579",
+    "offer_hkd": 34.0,
+    "matched": true,
+    "evidence": {
+      "price": 34.0,
+      "page": 2,
+      "snippet": "location and the Over-allotment Option) Final Offer Price : HK$34.00 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% (p",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1116/2025111600003.pdf",
+      "sha256": "bfa0d18dea964733071e3981b3e2c8201c7aac93b45f68aeb4d7118bb6440d2d"
+    }
+  },
+  {
+    "code": "2676",
+    "offer_hkd": 116.0,
+    "matched": true,
+    "evidence": {
+      "price": 116.0,
+      "page": 3,
+      "snippet": "r Shares : 17,161,500 H Shares (subject to the Over-allotment Option) Final Offer Price : HK$116.00 per Offer Share, plus brokerage of 1%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% (payable i",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1205/2025120501747.pdf",
+      "sha256": "64f45ae02e023a8aa75ed75c17107964752e40dd3d66c763a1444f285bf2d36d"
+    }
+  },
+  {
+    "code": "2691",
+    "offer_hkd": 12.0,
+    "matched": true,
+    "evidence": {
+      "price": 12.0,
+      "page": 2,
+      "snippet": "0 H Shares Number of International Offer Shares : 91,510,500 H Shares Final Offer Price : HK$12.00 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, AFRC transaction levy of 0.00015% and Stock Exchange trading fee of 0.00565% Nominal valu",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2025/1219/2025121902017.pdf",
+      "sha256": "debf30f97dd40e53f116e9acbed566f795b6ba2260c317619e1714dff7918375"
+    }
+  },
+  {
+    "code": "0501",
+    "offer_hkd": 104.8,
+    "matched": true,
+    "evidence": {
+      "price": 104.8,
+      "page": 2,
+      "snippet": " Shares : 41,220,000 H Shares (subject to the Over- allotment Option) Final Offer Price : HK$104.80 per H Share, plus brokerage of 1%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% (payable in fu",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0109/2026010901581.pdf",
+      "sha256": "f92f31300423d87d60dd5cd94221bdcdc88d692aa72248575f683706f26f553d"
+    }
+  },
+  {
+    "code": "3986",
+    "offer_hkd": 162.0,
+    "matched": true,
+    "evidence": {
+      "price": 162.0,
+      "page": 2,
+      "snippet": "r Shares : 26,024,200 H Shares (subject to the Over-allotment Option) Final Offer Price : HK$162.00 per H Share plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% (payable in f",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0112/2026011201539.pdf",
+      "sha256": "b4178b9e4561c26497773c5d4d1852cd3a69bd430f26f26a0f737274e3b2af91"
+    }
+  },
+  {
+    "code": "9611",
+    "offer_hkd": 31.0,
+    "matched": true,
+    "evidence": {
+      "price": 31.0,
+      "page": 2,
+      "snippet": "Employee Preferential Offering, subject to the Over-allotment Option) Final Offer Price : HK$31.00 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Hong Kong Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% No",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0121/2026012101145.pdf",
+      "sha256": "d89190f54bb56f84906e4e3d7bca9660aef74f7bf9cb00f21294e7f5f90a3529"
+    }
+  },
+  {
+    "code": "9980",
+    "offer_hkd": 248.0,
+    "matched": true,
+    "evidence": {
+      "price": 248.0,
+      "page": 1,
+      "snippet": " 3, 2026* * see note at the end of the announcement Price Information Final Offer Price HK$248.00 Maximum Offer Price HK$248.00 Offer Shares and Share Capital Number of Offer Shares (Before exercise of the Over- allotment Option) 40,889,900 Final Number of ",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0202/2026020203212.pdf",
+      "sha256": "89c5fdce9ce4bcd6502762d86c8e0984c8ef39a0189dc11f9cb65ecc2b7b2988"
+    }
+  },
+  {
+    "code": "2768",
+    "offer_hkd": 36.0,
+    "matched": true,
+    "evidence": {
+      "price": 36.0,
+      "page": 2,
+      "snippet": "0 H Shares Number of International Offer Shares : 27,000,000 H Shares Final Offer Price : HK$36.00 per H Share plus brokerage of 1%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% (payable in ful",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0203/2026020302602.pdf",
+      "sha256": "dc52dd3969c86c39ee9d13ceebcf9e9de5e2c8a7e46bb1778ba4bed722a49bca"
+    }
+  },
+  {
+    "code": "3200",
+    "offer_hkd": 95.8,
+    "matched": true,
+    "evidence": {
+      "price": 95.8,
+      "page": 2,
+      "snippet": " Shares : 45,406,600 H Shares (subject to the Over- allotment Option) Final Offer Price : HK$95.80 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Hong Kong Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% (p",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0205/2026020502290.pdf",
+      "sha256": "848bd6de81cc1c7be2806088faaa8cec8ef1a97e2b19a0b085e15576dbe060e5"
+    }
+  },
+  {
+    "code": "2714",
+    "offer_hkd": 39.0,
+    "matched": true,
+    "evidence": {
+      "price": 39.0,
+      "page": 2,
+      "snippet": " Shares : 246,556,200 H Shares (subject to the Over-allotment Option) Final Offer Price : HK$39.00 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Hong Kong Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% (p",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0205/2026020502402.pdf",
+      "sha256": "ecf0e5b50469fb306ae25fc0ad7526ce48ce520c05e1f9fb98aedc1cd39a4da2"
+    }
+  },
+  {
+    "code": "6809",
+    "offer_hkd": 106.89,
+    "matched": true,
+    "evidence": {
+      "price": 106.89,
+      "page": 2,
+      "snippet": "r Shares : 59,301,000 H Shares (subject to the Over-allotment Option) Final Offer Price : HK$106.89 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, AFRC transaction levy of 0.00015% and Stock Exchange trading fee of 0.00565% Nominal valu",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0206/2026020601350.pdf",
+      "sha256": "3a1506618c90f4b99960e74beb8b6c207c5c3cff7ea11b98fc133ca26f58414b"
+    }
+  },
+  {
+    "code": "0470",
+    "offer_hkd": 45.8,
+    "matched": true,
+    "evidence": {
+      "price": 45.8,
+      "page": 2,
+      "snippet": "ffer Size Adjustment Option and subject to the Over-allotment Option) Offer Price : HK$45.80 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Hong Kong Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% (p",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0210/2026021001338.pdf",
+      "sha256": "ba7ee82a2de163fc24ab0aa263333639530e35fd22a7a04a2e9002d7a5074e4d"
+    }
+  },
+  {
+    "code": "9981",
+    "offer_hkd": 20.09,
+    "matched": true,
+    "evidence": {
+      "price": 20.09,
+      "page": 2,
+      "snippet": "nal Offer Shares : 125,989,800 H Shares Final Offer Price : HK$20.09 per Offer Share, plus brokerage of 1%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% ",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0212/2026021201492.pdf",
+      "sha256": "f34deedceef9534e118a8d49bd6657d3e946b287edc8d643101912a96fccf7b1"
+    }
+  },
+  {
+    "code": "2715",
+    "offer_hkd": 15.36,
+    "matched": true,
+    "evidence": {
+      "price": 15.36,
+      "page": 2,
+      "snippet": " Shares : 87,102,000 H Shares (subject to the Over- allotment Option) Final Offer Price : HK$15.36 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Hong Kong Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% No",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0306/2026030601391.pdf",
+      "sha256": "ba4bbff84e41bb871b6209d58fade7cc5ccf166e372c19d5b70d91b480ef05c8"
+    }
+  },
+  {
+    "code": "2692",
+    "offer_hkd": 71.28,
+    "matched": true,
+    "evidence": {
+      "price": 71.28,
+      "page": 2,
+      "snippet": "national Offer Shares : 24,073,400 H Shares (subject to reallocation) Final Offer Price : HK$71.28 per H Share, plus brokerage of 1%, SFC transaction levy of 0.0027%, AFRC transaction levy of 0.00015% and Stock Exchange trading fee of 0.00565% (payable in fu",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0306/2026030601575.pdf",
+      "sha256": "51b3dfc219b5d80598e09846398aed44df1689fee2321e5ae16d5dd5aff8f5a6"
+    }
+  },
+  {
+    "code": "3268",
+    "offer_hkd": 28.86,
+    "matched": true,
+    "evidence": {
+      "price": 28.86,
+      "page": 2,
+      "snippet": "g into account the full exercise of the Offer Size Adjustment Option) Final Offer Price : HK$28.86 per H Share, plus brokerage of 1%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% (payable in fu",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0309/2026030901426.pdf",
+      "sha256": "10dc3a02f50e1126caf91172c531f8792bcf7f01efac551e666445557af53216"
+    }
+  },
+  {
+    "code": "1989",
+    "offer_hkd": 71.88,
+    "matched": true,
+    "evidence": {
+      "price": 71.88,
+      "page": 2,
+      "snippet": "0 H Shares Number of International Offer Shares : 41,400,000 H Shares Final Offer Price : HK$71.88 per H Share, plus brokerage of 1%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% (payable in fu",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0319/2026031901556.pdf",
+      "sha256": "c8bc03acc89746103a17d8e4c55159a7af2621b3a1d5faed20b76c735253452c"
+    }
+  },
+  {
+    "code": "2701",
+    "offer_hkd": 10.8,
+    "matched": true,
+    "evidence": {
+      "price": 10.8,
+      "page": 2,
+      "snippet": "0 H Shares Number of International Offer Shares : 85,500,000 H Shares Final Offer Price : HK$10.80 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% (payable in ",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0320/2026032001594.pdf",
+      "sha256": "133ddcf92706117f70b467da110300c5ef9f27b0a3e6a41c370d626cf1777b76"
+    }
+  },
+  {
+    "code": "2476",
+    "offer_hkd": 209.88,
+    "matched": true,
+    "evidence": {
+      "price": 209.88,
+      "page": 2,
+      "snippet": "d subject to the Over-allotment Option) Final Offer Price : HK$209.88 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% No",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0420/2026042001650.pdf",
+      "sha256": "9ed12a5c34fb4c778fce3d21fc2b2cdc72238a9d5562df3526ce5478eb63aea0"
+    }
+  },
+  {
+    "code": "3296",
+    "offer_hkd": 77.7,
+    "matched": true,
+    "evidence": {
+      "price": 77.7,
+      "page": 2,
+      "snippet": " Shares : 52,693,300 H Shares (subject to the Over- allotment Option) Final Offer Price : HK$77.70 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, AFRC transaction levy of 0.00015% and Stock Exchange trading fee of 0.00565% (payable in ",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0422/2026042202072.pdf",
+      "sha256": "b794aa402d90539e4359a06c4fefcd4ee25d93a5e367fb26f6796c0f6cc50664"
+    }
+  },
+  {
+    "code": "2493",
+    "offer_hkd": 27.64,
+    "matched": true,
+    "evidence": {
+      "price": 27.64,
+      "page": 1,
+      "snippet": "d of the announcement Price Information Final Offer Price HK$27.64 Offer Price Range HK$27.64 \u2013 HK$30.71 Offer Shares and Share Capital Number of Offer Shares 47,130,200 H Shares Final Number of Offer Shares in Hong ",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0427/2026042703128.pdf",
+      "sha256": "a8bd6f46b44830e8766387c6e1ff6ec066fda27f17fb965f837be76f0c2f812f"
+    }
+  },
+  {
+    "code": "1187",
+    "offer_hkd": 39.33,
+    "matched": true,
+    "evidence": {
+      "price": 39.33,
+      "page": 2,
+      "snippet": "0 H Shares Number of International Offer Shares : 24,300,000 H Shares Final Offer Price : HK$39.33 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, AFRC transaction levy of 0.00015% and Hong Kong Stock Exchange trading fee of 0.00565% No",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0505/2026050501942.pdf",
+      "sha256": "fd02775df04b67a456969dec93170398af7c0e40b8c9309a2a26cad2e07e47b4"
+    }
+  },
+  {
+    "code": "1081",
+    "offer_hkd": 66.4,
+    "matched": true,
+    "evidence": {
+      "price": 66.4,
+      "page": 2,
+      "snippet": "ffer Size Adjustment Option and subject to the Over-allotment Option) Final Offer Price : HK$66.40 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, AFRC transaction levy of 0.00015% and Stock Exchange trading fee of 0.00565% Nominal Valu",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0604/2026060402919.pdf",
+      "sha256": "d73aeb70ca4282c5c5c50a4a11f26a3f191a6d5bba4b7a865d091ebc85b614b2"
+    }
+  },
+  {
+    "code": "6067",
+    "offer_hkd": 8.98,
+    "matched": true,
+    "evidence": {
+      "price": 8.98,
+      "page": 2,
+      "snippet": "nal Offer Shares : 134,571,000 H Shares Final Offer Price : HK$8.98 per Offer Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.00565%, and AFRC transaction levy of 0.0001",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0622/2026062202141.pdf",
+      "sha256": "4db17dd157be78baf8212e20d0565b0b20eb803064ec58e62fb7e664d76e3f3d"
+    }
+  },
+  {
+    "code": "3661",
+    "offer_hkd": 85.2,
+    "matched": true,
+    "evidence": {
+      "price": 85.2,
+      "page": 3,
+      "snippet": "d of the announcement Price Information Final Offer Price HK$85.20 Offer Shares and Share Capital Number of Offer Shares 54,001,200 Number of Offer Shares in Hong Kong Public Offering 5,400,200 Number of Offer Shares",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0625/2026062502076.pdf",
+      "sha256": "f28ec75d04761b4f54f5458bd5113c5eb792277838ad84d0177bbc92e65dbd1a"
+    }
+  },
+  {
+    "code": "1688",
+    "offer_hkd": 10.18,
+    "matched": true,
+    "evidence": {
+      "price": 10.18,
+      "page": 2,
+      "snippet": " H Shares Number of International Offer Shares : 730,630,560 H Shares Final Offer Price : HK$10.18 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, AFRC transaction levy of 0.00015% and Stock Exchange trading fee of 0.00565% (payable in ",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0625/2026062502292.pdf",
+      "sha256": "75e216a3cbb9e03079ffea17bce956a2a6939bb606e0460884df5fffe4171d50"
+    }
+  },
+  {
+    "code": "9630",
+    "offer_hkd": 252.73,
+    "matched": true,
+    "evidence": {
+      "price": 252.73,
+      "page": 1,
+      "snippet": "Price Information: Final Offer Price 252.73; issuer CFMEE 9630. The 91.7 on page 2 is listing expenses, not the offer price.",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0625/2026062502296.pdf",
+      "sha256": "f6127aac9745ea613ecf7aa0335f3a70a54a0f70fec898fbaa6050179fd0a2e9"
+    }
+  },
+  {
+    "code": "0668",
+    "offer_hkd": 99.32,
+    "matched": true,
+    "evidence": {
+      "price": 99.32,
+      "page": 2,
+      "snippet": "r Shares : 41,969,500 H Shares (subject to the Over-allotment Option) Final Offer Price : HK$99.32 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, AFRC transaction levy of 0.00015% and Stock Exchange trading fee of 0.00565% Nominal valu",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0630/2026063003481.pdf",
+      "sha256": "fc9117743f114251d3bd0f31ed161673cf94cfb82ffcf04c20f454c17b1f9c61"
+    }
+  },
+  {
+    "code": "0537",
+    "offer_hkd": 45.98,
+    "matched": true,
+    "evidence": {
+      "price": 45.98,
+      "page": 2,
+      "snippet": "0 H Shares Number of International Offer Shares : 22,321,900 H Shares Final Offer Price : HK$45.98 per H Share plus brokerage of 1%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% (payable in ful",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0708/2026070801336.pdf",
+      "sha256": "e012f2f749c21283aa523c42a9adf98e5eb439f226c604c584e6e7cbcda0caba"
+    }
+  },
+  {
+    "code": "2475",
+    "offer_hkd": 63.28,
+    "matched": true,
+    "evidence": {
+      "price": 63.28,
+      "page": 3,
+      "snippet": " Shares : 345,125,500 H Shares (subject to the Over-allotment Option) Final Offer Price : HK$63.28 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, AFRC transaction levy of 0.00015% and Stock Exchange trading fee of 0.00565% (payable in ",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0708/2026070801342.pdf",
+      "sha256": "3ce3189327ea0c422f1b85bafd548c759d6166d016b0306a67e67093da5df702"
+    }
+  },
+  {
+    "code": "6951",
+    "offer_hkd": 100.3,
+    "matched": true,
+    "evidence": {
+      "price": 100.3,
+      "page": 2,
+      "snippet": "r Shares : 64,227,800 H Shares (subject to the Over-allotment Option) Final Offer Price : HK$100.30 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, AFRC transaction levy of 0.00015% and Stock Exchange trading fee of 0.00565% Nominal valu",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0708/2026070801348.pdf",
+      "sha256": "990c304722b772531b270d69c4c813adb7a80e6d78f91b53a9e19373c95b387e"
+    }
+  },
+  {
+    "code": "1377",
+    "offer_hkd": 380.0,
+    "matched": true,
+    "evidence": {
+      "price": 380.0,
+      "page": 2,
+      "snippet": "1,136,800 PRC Employee Reserved Shares) Final Offer Price : HK$380.00 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% No",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0708/2026070801372.pdf",
+      "sha256": "994012a0f9494625de869d19cbb0864d75e56ef8dd5cd9a7aae0f9ff929e2b2d"
+    }
+  },
+  {
+    "code": "6745",
+    "offer_hkd": 3.48,
+    "matched": true,
+    "evidence": {
+      "price": 3.48,
+      "page": 2,
+      "snippet": " H Shares Number of International Offer Shares : 316,913,000 H Shares Final Offer Price : HK$3.48 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, AFRC transaction levy of 0.00015% and Stock Exchange trading fee of 0.00565% Nominal Valu",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0709/2026070901273.pdf",
+      "sha256": "c2099acc23a205a214618608ae5d631fd4c5349bd906d0973f583e10b516ea13"
+    }
+  },
+  {
+    "code": "2249",
+    "offer_hkd": 32.3,
+    "matched": true,
+    "evidence": {
+      "price": 32.3,
+      "page": 2,
+      "snippet": " Shares : 194,550,300 H Shares (subject to the Over-allotment Option) Final Offer Price : HK$32.30 per H Share, plus brokerage of 1.0%, AFRC transaction levy of 0.00015%, SFC transaction levy of 0.0027% and Stock Exchange trading fee of 0.00565% (payable in ",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0709/2026070901289.pdf",
+      "sha256": "6bd52400fd2aaaf56399b5e3733ea060f9f37fb1340ead2dd6f8e024dba2e0a0"
+    }
+  },
+  {
+    "code": "3308",
+    "offer_hkd": 980.0,
+    "matched": true,
+    "evidence": {
+      "price": 980.0,
+      "page": 1,
+      "snippet": "30, 2026* * see note at the end of the announcement Price Information Final Offer Price HK$980.00 Maximum Offer Price HK$1,010.00 Offer Price Adjustment exercised N/A Offer Shares and Share Capital Number of Offer Shares (subject to the Over-allotment Optio",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0729/2026072901629.pdf",
+      "sha256": "58e1f5c001bf40b2b2155d24e7722c5947470187bec002b5adf8ee799bf80edc"
+    }
+  },
+  {
+    "code": "3223",
+    "offer_hkd": 100.0,
+    "matched": true,
+    "evidence": {
+      "price": 100.0,
+      "page": 2,
+      "snippet": "Offer Shares : 28,158,500 H Shares (subject to Over-allotment Option) Final Offer Price : HK$100.00 per H Share plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% Nominal value",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0824/2026082401907.pdf",
+      "sha256": "1e25079bbe9a92d78212fdb01ba211e08db1518880be56cad3b88b05298bb7ee"
+    }
+  },
+  {
+    "code": "9976",
+    "offer_hkd": 236.0,
+    "matched": true,
+    "evidence": {
+      "price": 236.0,
+      "page": 2,
+      "snippet": "ffer Size Adjustment Option and subject to the Over-allotment Option) Final Offer Price : HK$236.00 per H Share plus brokerage of 1%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% Nominal value :",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0907/2026090701319.pdf",
+      "sha256": "52dfc2713ff9b0e58d7d0f75c82a2f04b63f19e304e35439ba4ff3a2d8114ed3"
+    }
+  },
+  {
+    "code": "9607",
+    "offer_hkd": 44.0,
+    "matched": true,
+    "evidence": {
+      "price": 44.0,
+      "page": 2,
+      "snippet": "0 H Shares Number of International Offer Shares : 61,306,800 H Shares Final Offer Price : HK$44.00 per H Share plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% Nominal value",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0928/2026092801809.pdf",
+      "sha256": "ae7224376f4bf4dfe8ae8e2dadc40701853c02ddc2a70238154d6ce2a70c84ac"
+    }
+  },
+  {
+    "code": "2636",
+    "offer_hkd": 35.3,
+    "matched": true,
+    "evidence": {
+      "price": 35.3,
+      "page": 2,
+      "snippet": " (subject to the Over-allotment Option) Final Offer Price : HK$35.30 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, AFRC transaction levy of 0.00015% and Hong Kong Stock Exchange trading fee of 0",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1014/2026101401159.pdf",
+      "sha256": "f8ed7d96229422d6788a17a6701dfc0ca059ed1d639e9be6c2ca1cf770f36729"
+    }
+  },
+  {
+    "code": "2384",
+    "offer_hkd": 86.8,
+    "matched": true,
+    "evidence": {
+      "price": 86.8,
+      "page": 2,
+      "snippet": "Shares : 107,877,700 H Shares (subject to the Over- allotment Option) Final Offer Price : HK$86.80 per H Share plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% (payable in f",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/1027/2026102701391.pdf",
+      "sha256": "1b5030b468df5036147182d060f24065f498221decb4413b36cad2a18718bee7"
+    }
+  },
+  {
+    "code": "3228",
+    "offer_hkd": 69.88,
+    "matched": true,
+    "evidence": {
+      "price": 69.88,
+      "page": 2,
+      "snippet": "0 H Shares Number of International Offer Shares : 65,649,800 H Shares Offer Price : HK$69.88 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, AFRC transaction levy of 0.00015% and Hong Kong Stock Exchange trading fee of 0.00565% (p",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0928/2026092801965.pdf",
+      "sha256": "aa4e6278cd7e51009d2fd7ed6e7d33168b108891b956f3ab1935e664ea15db51"
+    }
+  },
+  {
+    "code": "6727",
+    "offer_hkd": 49.0,
+    "matched": true,
+    "evidence": {
+      "price": 49.0,
+      "page": 2,
+      "snippet": "Shares (as adjusted after reallocation) Final Offer Price : HK$49.00 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% (p",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0918/2026091801414.pdf",
+      "sha256": "9570949f199ed075ac751224223f240128f44952b816b6fb393525b1c13d4b0e"
+    }
+  },
+  {
+    "code": "3757",
+    "offer_hkd": 436.0,
+    "matched": true,
+    "evidence": {
+      "price": 436.0,
+      "page": 2,
+      "snippet": " Shares : 10,688,400 H Shares (subject to the Over- allotment Option) Final Offer Price : HK$436.00 per H Share, plus brokerage of 1.0%, SFC transaction levy of 0.0027%, Stock Exchange trading fee of 0.00565% and AFRC transaction levy of 0.00015% (payable in ",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0928/2026092801977.pdf",
+      "sha256": "0c246aa18d705edf42f918c88c5488a1009a6e0987335bb0dfc44f47fdec7d21"
+    }
+  },
+  {
+    "code": "9969",
+    "offer_hkd": 8.95,
+    "matched": false,
+    "evidence": []
+  },
+  {
+    "code": "3347",
+    "offer_hkd": 100.0,
+    "matched": true,
+    "evidence": {
+      "url": "https://www.tigermedgrp.com/wp-content/uploads/2020/08/EN-Allotment-with-ID-files.pdf",
+      "price": 100,
+      "basis": "Issuer-published final offer price; primary website checked 2026-11-10"
+    }
+  },
+  {
+    "code": "9989",
+    "offer_hkd": 18.4,
+    "matched": true,
+    "evidence": {
+      "url": "https://www.hepalink.com/en/NewsSearch/index.aspx?page=13",
+      "price": 18.4,
+      "basis": "Issuer-published final offer price; primary website checked 2026-11-10"
+    }
+  },
+  {
+    "code": "3759",
+    "offer_hkd": 39.5,
+    "matched": true,
+    "evidence": {
+      "url": "https://www.pharmaron.com/about-us/latest-news/pharmaron-lists-h-shares-on-the-hong-kong-stock-exchange/",
+      "price": 39.5,
+      "basis": "Issuer-published final offer price; primary website checked 2026-11-10"
+    }
+  },
+  {
+    "code": "9995",
+    "offer_hkd": 52.1,
+    "matched": false,
+    "evidence": []
+  },
+  {
+    "code": "6690",
+    "offer_hkd": null,
+    "matched": false,
+    "evidence": []
+  }
+]

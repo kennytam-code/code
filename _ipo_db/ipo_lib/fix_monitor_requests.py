@@ -31,7 +31,7 @@ def apply(parts,sheets,root):
   for offset,(dt,h) in enumerate(hs,m['cache_start']):
    p=by.get(dt)
    for col,v in zip(['A','B','C','D','E','F'],[serial(dt),h,p[2] if p else None,p[3] if p else None,serial(p[5]) if p else None,serial(p[6]) if p else None]):put(history,col+str(offset),v=v,style=nodes(history).get(col+'2',E.Element('x')).get('s'))
-  for col,v in [('A',m['code']),('F',serial(m['ipo_date'])),('G',m['raw_debut']),('H',m['h_ticker']),('I',m['a_ticker']),('N',serial(m['latest_date']))]:put(delta,col+str(i),v=v)
+  for col,v in [('A',m['code']),('F',serial(m['ipo_date'])),('G',m['raw_debut']),('H',m['cache_start']),('I',m['cache_rows']),('N',serial(m['latest_date']))]:put(delta,col+str(i),v=v)
   for col in ['J','K','L','M','O','P']:put(delta,col+str(i),v=0)
   for col in ['R','S','T']:put(delta,col+str(i),v=1)
   # The selected recent-history build contains one 70-row reserved zone per pair.
@@ -48,6 +48,18 @@ def apply(parts,sheets,root):
  for i,m in enumerate(meta,3):
   d=next(d for d in deals if d['code']==m['code']) if any(d['code']==m['code'] for d in deals) else None
   r=records[m['code']];cn=nodes(ah)
+  # The imported template is a style exemplar, not a fixed-size security roster.
+  # Populate every helper record, including existing Market Data rows beyond
+  # the template's original 68 pairs. H/I are numeric cache offsets, not tickers.
+  dn=nodes(delta)
+  for col,v in [('A',m['code']),('B',m['stored_7']),('C',m['stored_1m']),('F',serial(m['ipo_date'])),('G',m['raw_debut']),('H',m['cache_start']),('I',m['cache_rows']),('N',serial(m['latest_date']))]:
+   put(delta,col+str(i),v=v,style=dn.get(col+'3',E.Element('x')).get('s'))
+  rv=review_for(m['code'],root);events=rv.get('events',[rv]) if rv else []
+  for k,(hc,ac) in enumerate([('J','K'),('L','M'),('O','P')]):
+   for col,key in [(hc,'h_ex_date'),(ac,'a_ex_date')]:put(delta,col+str(i),v=serial(events[k][key]) if k<len(events) else 0)
+  for col,reference in [('G','D'),('H','E')]:
+   addr=col+str(i+5)
+   if addr not in cn:put(ah,addr,v='',f=f'IFERROR(100*(F{i+5}-\'AH Delta\'!{reference}{i}),"")',style=cn[col+'8'].get('s'))
   for col,v in [('A',m['a_ticker']),('B',m['h_ticker']),('C',m['name'] and r['sector']),('D',r['subsector']),('E',r.get('offer_reference_premium_pct',0)/100 if r.get('offer_reference_premium_pct') is not None else ''),('F',r.get('latest_premium_pct',0)/100 if r.get('latest_premium_pct') is not None else '')]:
    n=cn[col+str(i+5)];f=n.find(q('f'));put(ah,col+str(i+5),v=v,f=f.text if f is not None else None,style=n.get('s'))
  for doc in [ah,history,delta,recent]:

@@ -47,7 +47,6 @@ Six-page trader brief: comparison and key dates first, then one page per stock w
 | Compressed HTML | [ZIP for shared-drive transfer](https://github.com/kennytam-code/code/raw/refs/heads/main/_ipo_db/TO_NOMURA/hk_ipo_dashboard.zip) |
 | Updater | [Standalone Python updater](https://github.com/kennytam-code/code/raw/refs/heads/main/hk_ipo.py) |
 
-29 October 2026: A/H Bloomberg 1D/7D/1M formula repair, separate Quotes/Charts switches, and shared short-history lookups to reduce repeated calculation. Data remains the 28 October release: 527 listed IPOs, 717 live-monitor stocks and 72 A/H pairs. Native Excel and formula checks passed; Bloomberg terminal execution is not certified.
-Market histories retain their displayed snapshot dates. Live Bloomberg responses still require terminal verification.
+10 November 2026: 527 IPOs, 717 live-monitor stocks and 75 A/H pairs. Reviewed IPO capital, clawback and retail-allocation inputs; restored missing A/H pairs and linked Database premiums to AH. Compact Database layout and cell-note removal. Latest saved live quotes: 9 November. Historical returns and charts retain their displayed dates. Native Excel opened without repair; live Bloomberg responses remain unverified.
 
 [Desk instructions](READ_ME_FIRST.txt) · [Maintenance handover](_ipo_db/START_HERE.md) · [Release details](_ipo_db/data/release_state.json)

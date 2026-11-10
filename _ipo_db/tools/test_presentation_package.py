@@ -78,6 +78,9 @@ with zipfile.ZipFile(ROOT/'out/HK_IPO_Database_v1.xlsx') as z:
     assert value(db['A'+str(i)])==d['code']
     for j,(_,_,field,_,_) in enumerate(DB_COLS,1):
      expected=d.get(field);addr=col(j+3 if j>=64 else j)+str(i)
+     if field=='a_premium_now':
+      assert db[addr].find(q('f')) is not None and 'AH!$I$8:' in db[addr].find(q('f')).text
+      continue  # Current premium parity is checked against AH by test_ah_database_links.
      if isinstance(expected,(int,float)) and not isinstance(expected,bool) and col(j) not in ['BJ','BL']:
       assert math.isclose(value(db.get(addr)),expected,rel_tol=1e-12,abs_tol=1e-10),(d['code'],field,addr,value(db.get(addr)),expected);numeric+=1
     assert value(db['BJ'+str(i)])=='Unavailable' and value(db['BL'+str(i)])=='Unavailable'

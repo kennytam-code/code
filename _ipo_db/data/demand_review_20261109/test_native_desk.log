@@ -1,0 +1,3 @@
+PASS all native worksheet child sequences, unique rows and unique cells
+PASS every scoring weight remains numeric and positive at its named address
+PASS all forward bindings, selected/comparison fundamentals, sparse ticker lookup, negative/zero/missing replies, peer selectors, HTML-only lock-ups and safe off-terminal live display

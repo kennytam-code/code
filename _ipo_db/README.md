@@ -1,6 +1,6 @@
 # HK IPO database
 
-**20 October 2026 Screener and A/H update; market/pipeline review dated 15 October.** [Download Excel from main](https://github.com/kennytam-code/code/raw/refs/heads/main/HK_IPO_Database_v1.xlsx). Start with [START_HERE.md](START_HERE.md) when maintaining this project. It is the current handover for an analyst or a new AI session; [data/release_state.json](data/release_state.json) records coverage, dates and validation limits. Older MAINTENANCE entries are historical.
+**10 November 2026 source review and Database release.** [Download Excel from main](https://github.com/kennytam-code/code/raw/refs/heads/main/HK_IPO_Database_v1.xlsx). Start with [START_HERE.md](START_HERE.md) when maintaining this project. It is the current handover for an analyst or a new AI session; [data/release_state.json](data/release_state.json) records coverage, dates and validation limits. Older MAINTENANCE entries are historical.
 
 Use the files in `TO_NOMURA/`:
 

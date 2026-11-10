@@ -1,0 +1,39 @@
+[
+  {
+    "test": "ipo_lib/build_dashboard.py",
+    "exit": 0,
+    "seconds": 2.91,
+    "required_gate": true
+  },
+  {
+    "test": "tools/audit_ah_ipo_caps.py",
+    "exit": 0,
+    "seconds": 0.39,
+    "required_gate": true
+  },
+  {
+    "test": "tools/test_native_desk.py",
+    "exit": 0,
+    "seconds": 9.6,
+    "required_gate": true
+  },
+  {
+    "test": "tools/test_presentation_package.py",
+    "exit": 0,
+    "seconds": 4.28,
+    "required_gate": true
+  },
+  {
+    "test": "tools/test_update_20261103.py",
+    "exit": 0,
+    "seconds": 3.01,
+    "required_gate": true
+  },
+  {
+    "test": "ipo_lib/audit_formulas.py",
+    "exit": 1,
+    "seconds": 1.14,
+    "disposition": "Legacy script assumes moved A-share calculator still in Screener and requires absent historical ipo.py; superseded by current native/package/mode tests. Not a current workbook regression.",
+    "required_gate": false
+  }
+]

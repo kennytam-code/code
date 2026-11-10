@@ -1,0 +1,58 @@
+[
+  {
+    "code": "2256",
+    "date": "2021-10-15",
+    "raw_bar": [
+      "2021-10-15",
+      "11.300",
+      "12.400",
+      "12.400",
+      "10.800",
+      "25632200.000"
+    ],
+    "url": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=hk02256,day,2021-10-15,2021-10-15,5,",
+    "sha256": "1d2ad4592ba3728ae3b7bd74ad4d5e8b9edbb88d5ef549a55aa82f563d184e67"
+  },
+  {
+    "code": "1256",
+    "date": "2026-10-09",
+    "raw_bar": [
+      "2026-10-09",
+      "1.540",
+      "1.535",
+      "1.640",
+      "1.365",
+      "172184400.000"
+    ],
+    "url": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=hk01256,day,2026-10-09,2026-10-09,5,",
+    "sha256": "bab1fc181df75837c47b57bef0efc3945afd089fc93943368159f67ee09b030e"
+  },
+  {
+    "code": "2636",
+    "date": "2026-10-15",
+    "raw_bar": [
+      "2026-10-15",
+      "34.960",
+      "33.280",
+      "34.960",
+      "32.720",
+      "11476700.000"
+    ],
+    "url": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=hk02636,day,2026-10-15,2026-10-15,5,",
+    "sha256": "e22a764efe056d96dabf0b8c18f990823086e094f0e3b3097631e4409c37c907"
+  },
+  {
+    "code": "2384",
+    "date": "2026-10-28",
+    "raw_bar": [
+      "2026-10-28",
+      "82.400",
+      "86.150",
+      "87.100",
+      "81.500",
+      "15889332.000"
+    ],
+    "url": "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=hk02384,day,2026-10-28,2026-10-28,5,",
+    "sha256": "af958b0fdbbed75abae522882643edfe6cbaaa26c8e5de0f31b151b12331b05d"
+  }
+]

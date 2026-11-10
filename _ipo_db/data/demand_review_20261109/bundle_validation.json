@@ -1,0 +1,7 @@
+{
+  "embedded_data_files": 275,
+  "embedded_source_modules": 110,
+  "all_data_and_sources_match": true,
+  "verification": "One embedded data file at a time under 512 MiB guard",
+  "sha256": "964b64d06a910f0aea35d027ae7066ce974c7847bb29dd9ebf02160222f1b6c5"
+}

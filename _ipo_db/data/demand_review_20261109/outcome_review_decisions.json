@@ -1,0 +1,143 @@
+{
+  "accepted_no": [
+    "2153",
+    "2146",
+    "2518",
+    "2191",
+    "3658",
+    "9858",
+    "0013",
+    "9868",
+    "2165",
+    "6913",
+    "2215",
+    "2175",
+    "2015",
+    "2378",
+    "2235",
+    "2210",
+    "9899",
+    "9898",
+    "9699",
+    "2276",
+    "6633",
+    "2270",
+    "9878",
+    "2157",
+    "6639",
+    "2179",
+    "2370",
+    "2390",
+    "2352",
+    "2325",
+    "6667",
+    "2246",
+    "2167",
+    "2391",
+    "9955",
+    "2376",
+    "9896",
+    "6686",
+    "9696",
+    "1880",
+    "2367",
+    "2291",
+    "2420",
+    "2436",
+    "3660",
+    "2245",
+    "2407",
+    "1244",
+    "0314",
+    "6929",
+    "6698",
+    "2411",
+    "6979",
+    "2486",
+    "2105",
+    "6990",
+    "3650",
+    "6683",
+    "1541",
+    "2490",
+    "9690",
+    "6682",
+    "9676",
+    "2451",
+    "2429",
+    "1111",
+    "2499"
+  ],
+  "positive_candidates_requiring_review": [
+    {
+      "code": "6939",
+      "reason": "Reallocation chapter heading alone does not establish mandatory clawback. Positive candidate rejected.",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0330/9679952/2021033000150.pdf"
+    },
+    {
+      "code": "6699",
+      "reason": "Reallocation chapter heading alone does not establish mandatory clawback. Positive candidate rejected.",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0615/9802785/2021061500012.pdf"
+    },
+    {
+      "code": "2190",
+      "reason": "Reallocation chapter heading alone does not establish mandatory clawback. Positive candidate rejected.",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0702/9829817/2021070200030.pdf"
+    },
+    {
+      "code": "2209",
+      "reason": "Reallocation chapter heading alone does not establish mandatory clawback. Positive candidate rejected.",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0708/9843377/2021070800028.pdf"
+    },
+    {
+      "code": "6909",
+      "reason": "Reallocation chapter heading alone does not establish mandatory clawback. Positive candidate rejected.",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0714/9850116/2021071400042.pdf"
+    },
+    {
+      "code": "9869",
+      "reason": "Reallocation chapter heading alone does not establish mandatory clawback. Positive candidate rejected.",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/0909/9931288/2021090900012.pdf"
+    },
+    {
+      "code": "2279",
+      "reason": "Reallocation chapter heading alone does not establish mandatory clawback. Positive candidate rejected.",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2021/1210/10047595/2021121000064.pdf"
+    },
+    {
+      "code": "2392",
+      "reason": "Reallocation chapter heading alone does not establish mandatory clawback. Positive candidate rejected.",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2022/0707/10334867/2022070700034.pdf"
+    },
+    {
+      "code": "2373",
+      "reason": "Reallocation chapter heading alone does not establish mandatory clawback. Positive candidate rejected.",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0113/10575585/2023011300034.pdf"
+    },
+    {
+      "code": "2482",
+      "reason": "Reallocation chapter heading alone does not establish mandatory clawback. Positive candidate rejected.",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0308/10624749/2023030800010.pdf"
+    },
+    {
+      "code": "9930",
+      "reason": "Reallocation chapter heading alone does not establish mandatory clawback. Positive candidate rejected.",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0524/10746038/2023052400048.pdf"
+    },
+    {
+      "code": "2416",
+      "reason": "Reallocation chapter heading alone does not establish mandatory clawback. Positive candidate rejected.",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/0524/10746040/2023052400062.pdf"
+    },
+    {
+      "code": "1973",
+      "reason": "Reallocation chapter heading alone does not establish mandatory clawback. Positive candidate rejected.",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/1005/10924572/2023100500008.pdf"
+    },
+    {
+      "code": "2268",
+      "reason": "Reallocation chapter heading alone does not establish mandatory clawback. Positive candidate rejected.",
+      "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/1116/10970095/2023111600010.pdf"
+    }
+  ]
+}
