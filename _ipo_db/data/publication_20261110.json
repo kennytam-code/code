@@ -1,0 +1,89 @@
+{
+  "date": "2026-11-10",
+  "release_commit": "516fcf18213a27ec909f3345bffcbc4f4f63e061",
+  "verified_at": "2026-11-10T21:45:32.219668+08:00",
+  "downloaded_paths": [
+    {
+      "path": "HK_IPO_Database_v1.xlsx",
+      "sha256": "ab5e947f4dced4f0e91d8566d143af174eab46f2a0bbd753771e5a7b4051e4e0",
+      "bytes": 7650873
+    },
+    {
+      "path": "hk_ipo.py",
+      "sha256": "964b64d06a910f0aea35d027ae7066ce974c7847bb29dd9ebf02160222f1b6c5",
+      "bytes": 16189120
+    },
+    {
+      "path": "hk_ipo_dashboard.html",
+      "sha256": "ad85f2f24ccd1d7f19bf017b5cdc33b273a59d27ab7f4b3f1279d0c0b52e6083",
+      "bytes": 2883314
+    },
+    {
+      "path": "hk_ipo_dashboard.zip",
+      "sha256": "d9fd790a3e3bca6213dd390c946698ebbd66aed5885837c2a77458cf8c3668ac",
+      "bytes": 2063838
+    },
+    {
+      "path": "READ_ME_FIRST.txt",
+      "sha256": "ad68f60f5d2ad2b4400ca7c894eb35adcf6c724a06fbd3dfc86c6b6632b3c14e",
+      "bytes": 5286
+    },
+    {
+      "path": "_ipo_db/TO_NOMURA/HK_IPO_Database_v1.xlsx",
+      "sha256": "ab5e947f4dced4f0e91d8566d143af174eab46f2a0bbd753771e5a7b4051e4e0",
+      "bytes": 7650873
+    },
+    {
+      "path": "_ipo_db/TO_NOMURA/hk_ipo.py",
+      "sha256": "964b64d06a910f0aea35d027ae7066ce974c7847bb29dd9ebf02160222f1b6c5",
+      "bytes": 16189120
+    },
+    {
+      "path": "_ipo_db/TO_NOMURA/hk_ipo_dashboard.html",
+      "sha256": "ad85f2f24ccd1d7f19bf017b5cdc33b273a59d27ab7f4b3f1279d0c0b52e6083",
+      "bytes": 2883314
+    },
+    {
+      "path": "_ipo_db/TO_NOMURA/hk_ipo_dashboard.zip",
+      "sha256": "d9fd790a3e3bca6213dd390c946698ebbd66aed5885837c2a77458cf8c3668ac",
+      "bytes": 2063838
+    },
+    {
+      "path": "_ipo_db/TO_NOMURA/READ_ME_FIRST.txt",
+      "sha256": "ad68f60f5d2ad2b4400ca7c894eb35adcf6c724a06fbd3dfc86c6b6632b3c14e",
+      "bytes": 5286
+    }
+  ],
+  "validation": {
+    "date": "2026-11-10",
+    "checks": [
+      {
+        "test": "test_native_desk.py",
+        "exit": 0,
+        "seconds": 147.4
+      },
+      {
+        "test": "test_presentation_package.py",
+        "exit": 0,
+        "seconds": 34.8
+      },
+      {
+        "test": "test_update_20261103.py",
+        "exit": 0,
+        "seconds": 58.5
+      },
+      {
+        "test": "test_ah_coverage_20261109.mjs",
+        "exit": 0,
+        "seconds": 1.7
+      }
+    ],
+    "delivery_hashes_verified": true,
+    "html_zip_parity": true,
+    "updater_compiles": true,
+    "python_limit_mib": 512,
+    "node_heap_limit_mib": 384,
+    "live_bloomberg_tested": false
+  },
+  "live_bloomberg_tested": false
+}

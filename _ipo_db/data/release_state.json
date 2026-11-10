@@ -862,6 +862,37 @@
           "missing": 27
         }
       }
+    },
+    "publication_20261110": {
+      "date": "2026-11-10",
+      "checks": [
+        {
+          "test": "test_native_desk.py",
+          "exit": 0,
+          "seconds": 147.4
+        },
+        {
+          "test": "test_presentation_package.py",
+          "exit": 0,
+          "seconds": 34.8
+        },
+        {
+          "test": "test_update_20261103.py",
+          "exit": 0,
+          "seconds": 58.5
+        },
+        {
+          "test": "test_ah_coverage_20261109.mjs",
+          "exit": 0,
+          "seconds": 1.7
+        }
+      ],
+      "delivery_hashes_verified": true,
+      "html_zip_parity": true,
+      "updater_compiles": true,
+      "python_limit_mib": 512,
+      "node_heap_limit_mib": 384,
+      "live_bloomberg_tested": false
     }
   },
   "known_limits": {
@@ -903,13 +934,18 @@
     }
   },
   "publication": {
-    "status": "ready_to_publish",
-    "github_updated_this_session": false,
+    "status": "published",
+    "github_updated_this_session": true,
     "date": "2026-11-10",
     "repository": "https://github.com/kennytam-code/code",
     "branch": "main",
     "authorization": "User: why i dont seethis in github? please push. make sure no error",
-    "base_commit": "c8a1947472f84857234e89bb83b8bc4a2e2caf9f"
+    "base_commit": "c8a1947472f84857234e89bb83b8bc4a2e2caf9f",
+    "release_commit": "516fcf18213a27ec909f3345bffcbc4f4f63e061",
+    "verified_at": "2026-11-10T21:45:32.219668+08:00",
+    "downloaded_hashes_verified": true,
+    "downloaded_paths": 10,
+    "method": "Isolated sparse checkout from current main; explicit IPO paths only; unrelated projects and Word studies preserved."
   },
   "previous_publication": {
     "status": "published",

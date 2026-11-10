@@ -39,9 +39,10 @@ Excel cell notes/red markers are removed by the final remove_cell_notes stage
 after database_desk. Eleven W_* inputs and native charts remain. No new BBG
 requests. No Notes/Lock-up Excel sheets. Keep one heavy process at a time and
 512 MiB Python/384 MiB Node limits. Updater must include new modules/batches.
-Publication authorized on 10 November. See data/release_state.json for the
-GitHub commit and downloaded-file verification. Earlier local-only entries below
-describe their original sessions; the cumulative checked release is authorized.
+Published to GitHub main on 10 November. All ten root/TO_NOMURA downloads
+matched the checked release hashes. See data/release_state.json and
+data/publication_20261110.json for the commit, checks and limits. Earlier
+local-only entries below describe their original sessions.
 
 ## 9 November: Database premium links and restored A/H coverage
 
