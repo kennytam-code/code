@@ -1,5 +1,5 @@
 {
-  "release_date": "2026-11-10",
+  "release_date": "2026-11-15",
   "handover": "START_HERE.md",
   "counts": {
     "database_screener": 527,
@@ -18,922 +18,123 @@
     "live_current_quotes": 702,
     "live_daily_returns": 702,
     "ah_pair_latest_dates": {
-      "2026-10-02": 73,
-      "2026-10-15": 1,
-      "2026-10-28": 1
+      "2026-11-13": 75
     },
     "historical_lockup_prices": "2026-10-02",
-    "pipeline_scope": "Eight new launch/introduction documents checked Nov3; other AP/PHIP membership Oct28"
+    "pipeline_scope": "Eight new launch/introduction documents checked Nov3; other AP/PHIP membership Oct28",
+    "ah_fx": "2026-11-13",
+    "csi300": "2026-11-13",
+    "peer_prices": "2026-10-02"
   },
   "validation": {
-    "python_checks_passed": 12,
-    "javascript_checks": [
-      "selected averages",
-      "sector comparisons",
-      "pipeline actual renderer"
+    "date": "2026-11-15",
+    "checks_passed": [
+      "test_ah_refresh",
+      "test_ah_workbook",
+      "test_ah_detail",
+      "test_ah_coverage",
+      "test_selected_averages",
+      "test_sector_comparisons",
+      "test_native_desk",
+      "test_presentation_package",
+      "test_ah_bundle",
+      "test_modes"
     ],
-    "numeric_entries": 39303,
-    "internal_numeric_failures": 0,
-    "existing_525_stock_numeric_changes": 0,
-    "native_excel_open": "10 November: final workbook opened without repair; Database, AH and IPO Live visually checked. View-only; no Bloomberg terminal.",
-    "other_tabs_style_preservation": "13 sheets: business values, formulas and caches preserved, including seven relocated Screener outputs; requested titles removed; chart data, axes, drawing anchors and relationships unchanged",
-    "small_projection_review": [
-      "Database",
-      "Pipeline",
-      "IPO Live",
-      "AH",
-      "Peer Trades",
-      "Screener",
-      "CS League",
-      "SM League",
-      "Taxonomy",
-      "BBG Verify",
-      "Scoring Stats",
-      "SizeBench",
-      "Verification"
-    ],
-    "fresh_browser_visual_review": false,
+    "price_source_crosschecks": 150,
+    "price_source_matches": 150,
+    "price_observations_added": 4152,
+    "aligned_premium_observations": 27657,
+    "ah_pairs_current": 75,
+    "cap_scalar_formulas_checked": 150,
+    "unchanged_bloomberg_request_counts": true,
+    "native_excel_open": "Opened final staged workbook without repair; AH table and cached charts visually checked; closed without saving.",
+    "fresh_browser_visual_review": "A/H detail controls, Ingenic/Longsys, benchmark/horizon, Technology scope and six-line pagination; no JS errors.",
+    "bounded_artifact_projection": "Actual workbook AH A7:L14 rendered and reviewed.",
+    "python_limit_mib": 512,
+    "node_heap_limit_mib": 384,
     "live_bloomberg_execution": false,
-    "bundle_parity": "275 embedded data files,110 modules and both standalone builders verified against staged sources.",
-    "notes_removal": {
-      "date": "2026-10-16",
-      "checks": [
-        {
-          "test": "tools/test_remove_notes.py",
-          "exit": 0,
-          "seconds": 1.3,
-          "log": "out/notes_review_20261016/test_remove_notes.log"
-        },
-        {
-          "test": "tools/test_native_desk.py",
-          "exit": 0,
-          "seconds": 9.2,
-          "log": "out/notes_review_20261016/test_native_desk.log"
-        },
-        {
-          "test": "tools/test_presentation_package.py",
-          "exit": 0,
-          "seconds": 4.3,
-          "log": "out/notes_review_20261016/test_presentation_package.log"
-        },
-        {
-          "test": "ipo_lib/audit_formulas.py",
-          "exit": 0,
-          "seconds": 1.0,
-          "log": "out/notes_review_20261016/audit_formulas.log"
-        },
-        {
-          "test": "tools/test_desk_theme.py",
-          "exit": 0,
-          "seconds": 1.2,
-          "log": "out/notes_review_20261016/test_desk_theme.log"
-        },
-        {
-          "test": "tools/test_desk_scoring.py",
-          "exit": 0,
-          "result": "Executed actual formulas across 526 deals for each of three selected targets; finite scores and correct leading subsector in each case."
-        }
-      ],
-      "notes_sheet_removed": true,
-      "named_inputs_preserved": 11,
-      "business_data_formulas_charts_unchanged": true,
-      "native_excel_open_without_repair": true,
-      "native_screener_rankings_rendered": true,
-      "live_bloomberg_execution": false,
-      "taxonomy_changed": false,
-      "html_changed": false
+    "bundle": {
+      "data_files": 276,
+      "modules": 111,
+      "standalone_builders": 2,
+      "compiles": true,
+      "parity": true
     },
-    "historical_lockup_review": {
-      "review_date": "2026-10-17",
-      "price_asof": "2026-10-02",
-      "primary_files": 259,
-      "historical_dates_checked": 264,
-      "date_confirmed": 193,
-      "displayed_events": 161,
-      "displayed_stocks": 158,
-      "exclusions": {
-        "Undated": 67,
-        "Exact date not confirmed": 70,
-        "Incomplete or unverified 30-session price window": 26,
-        "Subsequent extension / holder-scope review": 6,
-        "Future expiry": 67
+    "memory_validation": "Initial monolithic/AST payload validation hit the existing cap; final streaming hash check passed under the unchanged cap.",
+    "delivery_hashes_verified": true,
+    "html_zip_parity": true,
+    "deliverables": {
+      "HK_IPO_Database_v1.xlsx": {
+        "bytes": 7796912,
+        "sha256": "427231bbcaab8213717ba5d612e9323c496b04cafa7b122fe7a1ee96083e807a"
       },
-      "holder_group_corrections": [
-        {
-          "code": "6911",
-          "date": "2024-12-21",
-          "old": "Cornerstone",
-          "new": "Controller",
-          "url": "https://www1.hkexnews.hk/listedco/listconews/sehk/2023/1221/2023122101314.pdf",
-          "page": 3
-        }
-      ],
-      "displayed_source_bases": {
-        "verified explicit inclusive term": 41,
-        "verified printed date": 120
+      "hk_ipo_dashboard.html": {
+        "bytes": 2992812,
+        "sha256": "53f64f180ca437f82a9c740b14a4a15d4bbd41d7c32ba7f579a35c266f567ba8"
       },
-      "displayed_events_with_interior_gaps": 21,
-      "restored_complete_windows": 9,
-      "added_displayed_observations": 198,
-      "price_validation": "All displayed prices have consistent relative moves against overlapping stored Yahoo observations; half-day/missing closes recovered from raw Tencent daily bars. No terminal verification. No interpolation. Full-sample selection requires confirmed dates and complete endpoints; it is not an unbiased universe of every IPO."
-    },
-    "comparison_scope": {
-      "checks": [
-        {
-          "test": "tools/test_historical_lockups.py",
-          "passed": true,
-          "output": "PASS 161 historical events / 9821 session slots: filed dates, listing inputs, holder boundaries, raw prices, split factors, exact ±30 endpoints, return math, payload and unchanged Excel",
-          "browser": false
-        },
-        {
-          "test": "tools/test_comparison_scope.mjs",
-          "passed": true,
-          "output": "PASS 6773 assertions/observations across 71 A/H pairs and 161 lock-up events: scopes, both selector directions, averages, all pages, custom dates, search, clear and off-sector stale selections; unrelated embedded data unchanged.",
-          "browser": false
-        },
-        {
-          "test": "tools/test_selected_averages.mjs",
-          "passed": true,
-          "output": "PASS averages: one weight per selected stock, duplicate expiries, missing/zero/negative values; mutually exclusive stocks/selected average/sector modes; shipped JS compiles.",
-          "browser": false
-        },
-        {
-          "test": "tools/test_sector_comparisons.mjs",
-          "passed": true,
-          "output": "PASS 1909 observed sector-average points, missing/zero/negative cases, 1Y bounds and expiry-zero alignment; concise labels and all controls present",
-          "browser": false
-        },
-        {
-          "test": "tools/render_comparison_scope.mjs",
-          "passed": true,
-          "output": "PASS 5 actual SVG renders: clean numeric geometry, one path per line, full legends/tooltips, expiry reference and genuine gaps preserved; no browser launched.",
-          "browser": false
-        }
-      ],
-      "ah_pairs": 71,
-      "lockup_events": 161,
-      "unrelated_payload_unchanged": true,
-      "real_browser": false,
-      "passed": true,
-      "svg_visual_review": [
-        "A/H Technology",
-        "Lock-up individual stocks",
-        "Lock-up selected average",
-        "Single observation",
-        "Genuine gaps"
-      ],
-      "full_browser_review": false,
-      "excel_unchanged": true
-    },
-    "ah_chart_readability": {
-      "date": "2026-10-19",
-      "checks": [
-        {
-          "test": "tools/test_ah_readability.py",
-          "passed": true,
-          "seconds": 0.4,
-          "log": "out/ah_readability_20261019/test_ah_readability.log"
-        },
-        {
-          "test": "tools/test_native_desk.py",
-          "passed": true,
-          "seconds": 9.1,
-          "log": "out/ah_readability_20261019/test_native_desk.log"
-        },
-        {
-          "test": "tools/test_presentation_package.py",
-          "passed": true,
-          "seconds": 4.3,
-          "log": "out/ah_readability_20261019/test_presentation_package.log"
-        },
-        {
-          "test": "tools/test_ah_market_render.mjs",
-          "passed": true,
-          "seconds": 1.3,
-          "log": "out/ah_readability_20261019/test_ah_market_render.log"
-        },
-        {
-          "test": "tools/test_comparison_scope.mjs",
-          "passed": true,
-          "seconds": 0.6,
-          "log": "out/ah_readability_20261019/test_comparison_scope.log"
-        },
-        {
-          "test": "tools/test_selected_averages.mjs",
-          "passed": true,
-          "seconds": 0.0,
-          "log": "out/ah_readability_20261019/test_selected_averages.log"
-        }
-      ],
-      "workbook": {
-        "passed": true,
-        "changed_parts": [
-          "xl/drawings/monitor_drawing2.xml",
-          "xl/charts/monitor_chart3.xml",
-          "xl/charts/monitor_chart4.xml"
-        ],
-        "all_cells_formulas_and_caches_unchanged": true,
-        "chart_bindings_points_scales_unchanged": true,
-        "style_patch_idempotent": true,
-        "sha256": "f1addb5e2a65878a8ccc78108521a8bab2da5c463b12add0d662e04898a6ec56"
+      "hk_ipo_dashboard.zip": {
+        "bytes": 2143510,
+        "sha256": "5f48ddab2ee13acb92acc1183919a640e580c582d424f3f166f9e952cc4a81a8"
       },
-      "html": {
-        "passed": true,
-        "render_cases": 142,
-        "entire_payload_unchanged": true,
-        "all_observations_and_gaps_preserved": true,
-        "actual_svg_function": true,
-        "browser": false
+      "hk_ipo.py": {
+        "bytes": 16018196,
+        "sha256": "6f5fbf1066187a31018befa3267b2a06d64281d25387f8d0eb497c58c12db71d"
       },
-      "native_excel": {
-        "date": "2026-10-19",
-        "sha256": "f1addb5e2a65878a8ccc78108521a8bab2da5c463b12add0d662e04898a6ec56",
-        "opened_without_repair": true,
-        "combined_and_comparison_charts_reviewed": true,
-        "zoom_percent": 90,
-        "scrolling_checked": true,
-        "view_only_installation": true,
-        "live_bloomberg_execution": false
-      },
-      "market_data_refreshed": false,
-      "live_bloomberg_execution": false,
-      "bundle_existing_data_preserved": true
-    },
-    "screener_ah_controls": {
-      "date": "2026-10-20",
-      "checks": [
-        {
-          "test": "tools/test_screener_code.py",
-          "passed": true
-        },
-        {
-          "test": "tools/test_screener_ah_html.mjs",
-          "passed": true
-        },
-        {
-          "test": "tools/test_native_desk.py",
-          "passed": true
-        },
-        {
-          "test": "tools/test_presentation_package.py",
-          "passed": true
-        },
-        {
-          "test": "tools/test_comparison_scope.mjs",
-          "passed": true
-        },
-        {
-          "test": "tools/test_selected_averages.mjs",
-          "passed": true
-        }
-      ],
-      "workbook": {
-        "passed": true,
-        "lookup_cases": 1595,
-        "codes": 529,
-        "dropdown_entries": 541,
-        "changed_parts": [
-          "xl/styles.xml",
-          "xl/workbook.xml",
-          "xl/worksheets/sheet1.xml",
-          "xl/worksheets/sheet12.xml"
-        ],
-        "all_existing_business_cells_formulas_and_charts_preserved": true,
-        "live_bloomberg_execution": false,
-        "sha256": "16b40499cf7ce05741655d0a86a6bf2772b0bf606d56d4dde0a5dae534ba1588"
-      },
-      "html": {
-        "passed": true,
-        "render_cases": 426,
-        "detail_control_cases": 40,
-        "html_code_search_cases": 2104,
-        "entire_payload_unchanged": true,
-        "all_observations_and_gaps_preserved": true,
-        "actual_svg_function": true,
-        "browser": false
-      },
-      "native_excel": {
-        "date": "2026-10-20",
-        "sha256": "16b40499cf7ce05741655d0a86a6bf2772b0bf606d56d4dde0a5dae534ba1588",
-        "opened_without_repair": true,
-        "screener_selector_and_resolved_name_visually_reviewed": true,
-        "rankings_rendered": true,
-        "view_only_installation": true,
-        "native_interactive_code_edit_tested": false,
-        "live_bloomberg_execution": false
-      },
-      "market_data_refreshed": false,
-      "all_existing_updater_inputs_preserved": true
-    },
-    "request_efficiency_20261022": {
-      "checks": [
-        "request scopes, factoring and relocation",
-        "native formula/valuation fixtures",
-        "actual scoring across 526 issuers and three targets",
-        "complete native package/source parity",
-        "426 SVG cases and control/focus tests",
-        "6773 comparison scope/average observations",
-        "selected average edge cases"
-      ],
-      "workbook": {
-        "passed": true,
-        "valuation_gate_cases": 2630,
-        "guarded_verify_cells": 5385,
-        "ah_pairs": 71,
-        "recent_bdh_requests_before": 204,
-        "recent_bdh_requests_after": 143,
-        "ah_compare_count_before": 52808,
-        "ah_compare_count_after": 4,
-        "aggregate_formulas_expanded": 61620,
-        "layout_formulas_checked": 166060,
-        "historical_database_numeric_cells_unchanged": 20970,
-        "native_charts_unchanged": true,
-        "live_bloomberg_tested": false,
-        "sha256": "ee4f93448fead949e2cb353d40f0db14574289f01d86f32d9b151002234cfab2"
-      },
-      "html": {
-        "passed": true,
-        "render_cases": 426,
-        "detail_control_cases": 40,
-        "html_code_search_cases": 2104,
-        "entire_payload_unchanged": true,
-        "all_observations_and_gaps_preserved": true,
-        "actual_svg_function": true,
-        "browser": false
-      },
-      "native_excel": {
-        "date": "2026-10-22",
-        "sha256": "ee4f93448fead949e2cb353d40f0db14574289f01d86f32d9b151002234cfab2",
-        "opened_without_repair": true,
-        "screener_form_visually_reviewed": true,
-        "view_only": true,
-        "terminal_available": false,
-        "interactive_mode_switch_tested": false,
-        "scope": "Final native Excel open and Screener header/table visual review. Structural, numeric and reference checks cover the complete package separately. Excel application was in manual calculation mode; its settings were not changed."
-      },
-      "all_stored_updater_data_preserved": true,
-      "market_data_refreshed": false,
-      "terminal_speed_measured": false
-    },
-    "update_20261028": {
-      "workbook": {
-        "passed": true,
-        "ah_pairs": 72,
-        "summary_formulas": 100,
-        "chart_parts": 10,
-        "chart_ranges_and_observations_preserved": true,
-        "actual_formula_edge_cases": 18,
-        "bloomberg_live_tested": false,
-        "sha256": "a6bc29bc94040b798e7b8fa0124e358bb33f7fa9efff07f228b7789798109f8f"
-      },
-      "html": {
-        "passed": true,
-        "render_cases": 432,
-        "detail_control_cases": 40,
-        "html_code_search_cases": 2108,
-        "refreshed_dataset": true,
-        "all_observations_and_gaps_preserved": true,
-        "actual_svg_function": true,
-        "browser": false
-      },
-      "comparison_scope": {
-        "checks": 6775,
-        "ah_pairs": 72,
-        "lockup_events": 161,
-        "refreshed_dataset": true,
-        "real_browser": false,
-        "passed": true
-      },
-      "old_database_numeric_changes": 0,
-      "bundle_inputs_match": true,
-      "native_excel_open_without_repair": true,
-      "native_tabs_reviewed": [
-        "IPO Live",
-        "AH selected and comparison charts",
-        "AH independent calculator",
-        "Peer Trades",
-        "Screener valuations"
-      ],
-      "live_bloomberg_tested": false
-    },
-    "ah_live_fix_20261029": {
-      "terminal_tested": false,
-      "fixtures": 45,
-      "unchanged_package_parts": 62,
-      "stored_ah_and_market_caches": "unchanged",
-      "AH Recent_bdh": 145,
-      "Live History_bdh": 3,
-      "AH Compare Live_bdh": 12,
-      "AH Reference_bdh": 1,
-      "idempotent": true,
-      "before_delta": {
-        "formula_characters": 549947,
-        "history_range_references": 11304
-      },
-      "after_delta": {
-        "formula_characters": 358746,
-        "history_range_references": 4536
-      },
-      "workbook_sha256": "0cfca1eda3f28e398c859745c591d1132f0cfc59ced943c795864d4a4946c2ab",
-      "native_excel": {
-        "date": "2026-10-29",
-        "sha256": "0cfca1eda3f28e398c859745c591d1132f0cfc59ced943c795864d4a4946c2ab",
-        "opened_without_repair": true,
-        "reviewed": [
-          "AH controls",
-          "Stored 1D/7D/1M table",
-          "AH premium and A-share/CSI charts"
-        ],
-        "closed_without_saving": true,
-        "excel_view_only": true,
-        "bloomberg_live_tested": false,
-        "application_calculation_settings_changed": false
-      },
-      "bundle_market_inputs_unchanged": true,
-      "html_byte_identical": true,
-      "checks_passed": [
-        "test_ah_live_requests",
-        "test_native_desk",
-        "test_presentation_package",
-        "test_update_20261028"
-      ],
-      "publication_rerun": {
-        "workbook_sha256": "0cfca1eda3f28e398c859745c591d1132f0cfc59ced943c795864d4a4946c2ab",
-        "checks": [
-          {
-            "test": "tools/test_ah_live_requests.py",
-            "exit": 0
-          },
-          {
-            "test": "tools/test_native_desk.py",
-            "exit": 0
-          },
-          {
-            "test": "tools/test_presentation_package.py",
-            "exit": 0
-          },
-          {
-            "test": "tools/test_update_20261028.py",
-            "exit": 0
-          }
-        ],
-        "bloomberg_live_tested": false
+      "READ_ME_FIRST.txt": {
+        "bytes": 3428,
+        "sha256": "bdc1fe87fabb4cdfd36461f19ceeb2a3571ea5db0e903e5afc70b3b5757bbc43"
       }
-    },
-    "update_20261103": {
-      "terminal_tested": false,
-      "fixtures": 105,
-      "ipo_rows": 527,
-      "pipeline_rows": 23,
-      "new_pipeline_codes": [
-        "0054",
-        "9621",
-        "7672",
-        "9917",
-        "2206",
-        "2065",
-        "2681",
-        "1821"
-      ],
-      "unlocked_bdh_anchors": 161,
-      "default_valuations": "All",
-      "workbook_sha256": "78c6c822a89b796d18850e2f3349567e8c8346206ab452fac5a7e46457aacb96",
-      "embedded_data_files": 262,
-      "changed_data_inputs": [
-        "data/batches/newlistings.json",
-        "data/batches/pipeline_review.json"
-      ],
-      "new_data_inputs": [
-        "data/pipeline_peers.json"
-      ],
-      "unchanged_database_cells": 44268,
-      "unchanged_chart_parts": 10,
-      "historical_ah_inputs_unchanged": true,
-      "all_embedded_source_and_data_match": true,
-      "checks_passed": [
-        "test_update_20261103: 105 formula/response fixtures",
-        "test_native_desk: structure, named weights and valuation fixtures",
-        "test_presentation_package: 168630 formula structures,19944 numeric source comparisons",
-        "test_desk_scoring: 527 rows x three targets",
-        "test_pipeline_release: actual renderer and code search",
-        "test_html_update_20261028: 432 SVG /40 detail cases",
-        "test_scope_update_20261028: 6775 scope/average observations"
-      ],
-      "browser_review": {
-        "pipeline_code_search": true,
-        "hosin_compare_button": true,
-        "hosin_pinned_peers": [
-          "3986",
-          "9976"
-        ],
-        "introduction_filter": true,
-        "console_errors": 0
-      },
-      "native_excel": {
-        "opened_without_repair": true,
-        "reviewed": [
-          "Database default All",
-          "AH controls and rendered charts",
-          "Pipeline eight current listings",
-          "Screener automatic Hemay peers"
-        ],
-        "view_only": true,
-        "live_bloomberg_tested": false,
-        "closed_without_saving": true
-      },
-      "artifact_projection": "Pipeline A4:L13,120 cells; rendered and visually checked",
-      "terminal_speed_or_memory_measured": false
-    },
-    "update_20261104": {
-      "live_bloomberg_tested": false,
-      "fixtures": 637,
-      "pairs": 72,
-      "added_market_cap_requests": 144,
-      "added_historical_requests": 0,
-      "changed_package_parts": [
-        "xl/styles.xml",
-        "xl/workbook.xml",
-        "xl/worksheets/monitor_sheet2.xml",
-        "xl/drawings/monitor_drawing2.xml",
-        "xl/comments/monitor_comment1.xml",
-        "xl/drawings/monitor_commentsDrawing1.vml",
-        "xl/tables/monitor_table2.xml",
-        "xl/worksheets/monitor_sheet4.xml",
-        "xl/worksheets/monitor_sheet8.xml",
-        "xl/worksheets/monitor_sheet19.xml",
-        "xl/charts/monitor_chart4.xml",
-        "xl/worksheets/sheetAHReference.xml"
-      ],
-      "all_existing_chart_series_unchanged": true,
-      "unrelated_data_unchanged": true,
-      "workbook_sha256": "7dd995831e047dd90bd4f625df7897c01a1f9d92c9a2afe27c17fcf97db9ab86",
-      "native_excel": {
-        "date": "2026-11-04",
-        "opened_without_repair": true,
-        "roster_names_and_caps_reviewed": true,
-        "header_filter_spacing_reviewed": true,
-        "premium_note_positions_reviewed": true,
-        "current_and_comparison_charts_rendered": true,
-        "checker_BBG_unavailable_handling_verified": true,
-        "view_only": true,
-        "closed_without_saving": true,
-        "live_bloomberg_tested": false
-      },
-      "final_full_rebuild_AH_formulas_values_match_delivery": true,
-      "full_native_rebuild_passed": true,
-      "python_rss_limit_mib": 512,
-      "node_heap_limit_mib": 384,
-      "all_updater_input_data_unchanged": true,
-      "embedded_sources_verified": true,
-      "checks_passed": [
-        "637 identity/current-price/formula/note fixtures",
-        "Native worksheet sequences, valuation fixtures and W inputs",
-        "168851 formula structures and 19944 historical numeric source cells",
-        "105 mode/BDH-output/valuation fixtures",
-        "Bounded Artifact roster and calculator renders",
-        "Native Excel open and AH roster/calculator/charts review"
-      ]
-    },
-    "update_20261109": {
-      "terminal_tested": false,
-      "pairs": 75,
-      "restored_pairs": {
-        "3228": "603228.SS",
-        "6727": "688031.SS",
-        "3757": "300757.SZ"
-      },
-      "formula_fixtures": 2023,
-      "prior_pair_histories_unchanged": true,
-      "database_links": 527,
-      "ah_quote_reuse": 75,
-      "short_history_calls": 151,
-      "existing_chart_series_preserved": true,
-      "workbook_sha256": "76b73ab2bef75a9de401d7e721839004d484f295b8c40c4badec3ba8660630bf",
-      "date": "2026-11-09",
-      "scope": "Database premium links, missing A/H mappings and quote reuse; no full market refresh",
-      "html": {
-        "passed": true,
-        "render_cases": 450,
-        "detail_control_cases": 30,
-        "html_code_search_cases": 2108,
-        "refreshed_dataset": true,
-        "all_observations_and_gaps_preserved": true,
-        "actual_svg_function": true,
-        "browser": false
-      },
-      "stored_new_pair_last_date": "2026-10-02",
-      "all_other_canonical_issuers_unchanged": true,
-      "known_roster_crosscheck": {
-        "monitor_stocks": 717,
-        "retained_ah_snapshot_pairs": 208,
-        "omitted_pairs": 3,
-        "mapping_conflicts": 0
-      },
-      "native_excel": {
-        "opened_without_repair": true,
-        "reviewed": [
-          "75-pair roster",
-          "3228/6727/3757 identities and premiums",
-          "Database BT525 formula and value",
-          "source-mode header"
-        ],
-        "view_only": true,
-        "live_bloomberg_tested": false,
-        "closed_without_saving": true,
-        "reviewed_sha256": "f133f5e39f107cc5de697ad466918005893ee4fa825bfd10e54996738c0c5edc",
-        "final_difference": "BP2 label shortened to Quotes after native visual review; formula/package checks repeated"
-      },
-      "artifact": {
-        "formula_recalculation": true,
-        "fixtures": [
-          "numeric and padded codes",
-          "zero",
-          "missing quote",
-          "missing pair",
-          "non-pair",
-          "sorted rows"
-        ],
-        "bounded_views": [
-          "AH A74:L84",
-          "Database BP2:BU12"
-        ]
-      },
-      "checks_passed": [
-        "2023 linkage, mapping, range and mode assertions",
-        "native worksheet/valuation fixtures",
-        "105 Bloomberg-mode fixtures;167 unlocked history anchors",
-        "169540 formula structures;19882 historical numeric source checks",
-        "450 shipped SVG renders;30 detail controls;2108 code searches",
-        "full staged native rebuild"
-      ],
-      "performance": {
-        "python_limit_mib": 512,
-        "node_heap_limit_mib": 384,
-        "one_heavy_operation_at_a_time": true,
-        "database_added_bloomberg_requests": 0,
-        "h_price_calls_reused_when_both_live": 75,
-        "short_history_calls": 151,
-        "long_chart_history_calls": 16,
-        "extra_short_calls_for_three_new_pairs": 6,
-        "terminal_speed_or_memory_measured": false
-      },
-      "limitations": [
-        "No live Bloomberg terminal execution or latency measurement",
-        "All-mode fundamentals remain enabled per user preference",
-        "Known roster consistency guard is not a new exhaustive HK-market listing census",
-        "Added stored histories stop at 2 October; existing histories retain their dates",
-        "Source-level validation is separate from formula arithmetic"
-      ],
-      "bundle": {
-        "embedded_data_files": 269,
-        "embedded_source_modules": 104,
-        "all_data_and_sources_match": true,
-        "verification": "One embedded data file at a time under 512 MiB guard",
-        "sha256": "2cd334f373083f6a06eb0982c3c465e6660e4cf0a9424b819eee8cf46c959e78"
-      }
-    },
-    "database_review_20261109": {
-      "passed": true,
-      "database_rows": 527,
-      "reviewed_capital_records": 34,
-      "changed_market_caps": 32,
-      "formula_count": 169540,
-      "business_formulas_unchanged": true,
-      "snapshot_label_formula_updated": 1,
-      "added_bloomberg_requests": 0,
-      "bloomberg_formula_counts": {
-        "BDP": 6569,
-        "BDH": 2402,
-        "BQL": 2642
-      },
-      "charts_byte_identical": 10,
-      "unrelated_data_preserved": true,
-      "terminal_tested": false,
-      "sha256": "ab5e947f4dced4f0e91d8566d143af174eab46f2a0bbd753771e5a7b4051e4e0",
-      "date": "2026-11-10",
-      "scope": "IPO capital, institutional reconciliation, filed clawback, retail-volume gaps, A/H offer references, dated Live quotes and Database presentation",
-      "clawback": {
-        "supported_outcomes": 526,
-        "held": [
-          "2550"
-        ],
-        "yes": 155,
-        "no": 221,
-        "na": 150,
-        "Mechanism B": 145,
-        "Mechanism A": 2,
-        "18C": 20,
-        "filled_previous_unknowns": 163,
-        "corrected_existing_outcome": [
-          "2636"
-        ]
-      },
-      "retail": {
-        "recovered_counts": 168,
-        "recovered_listing_tapes": 4,
-        "complete_volume_ratios": 527
-      },
-      "ah": {
-        "pairs": 75,
-        "applicable_ipo_premiums": 71,
-        "primary_h_offer_price_checks": 71,
-        "corrected_fx_anchors": [
-          "3308",
-          "3223",
-          "9976",
-          "9607",
-          "2636"
-        ],
-        "scalar_class_cap_formulas": 150,
-        "added_requests": 0,
-        "live_terminal_tested": false
-      },
-      "notes_removed": 7232,
-      "effective_float_share_column_hidden": true,
-      "native_excel": {
-        "opened_without_repair": true,
-        "reviewed": [
-          "IPO Live dated snapshot and sector bars",
-          "AH roster, premium charts and cap headers",
-          "Database compact layout and no comment markers"
-        ],
-        "view_only": true,
-        "closed_without_saving": true,
-        "live_terminal_tested": false,
-        "sha256": "ab5e947f4dced4f0e91d8566d143af174eab46f2a0bbd753771e5a7b4051e4e0"
-      },
-      "artifact": {
-        "bounded_projection": "Database A3:X13",
-        "visually_reviewed": true
-      },
-      "html": {
-        "shipped_svg_render_cases": 450,
-        "detail_control_cases": 30,
-        "code_search_cases": 2108,
-        "full_browser": false
-      },
-      "checks": [
-        {
-          "test": "ipo_lib/build_dashboard.py",
-          "exit": 0,
-          "seconds": 2.91,
-          "required_gate": true
-        },
-        {
-          "test": "tools/audit_ah_ipo_caps.py",
-          "exit": 0,
-          "seconds": 0.39,
-          "required_gate": true
-        },
-        {
-          "test": "tools/test_native_desk.py",
-          "exit": 0,
-          "seconds": 9.6,
-          "required_gate": true
-        },
-        {
-          "test": "tools/test_presentation_package.py",
-          "exit": 0,
-          "seconds": 4.28,
-          "required_gate": true
-        },
-        {
-          "test": "tools/test_update_20261103.py",
-          "exit": 0,
-          "seconds": 3.01,
-          "required_gate": true
-        },
-        {
-          "test": "ipo_lib/audit_formulas.py",
-          "exit": 1,
-          "seconds": 1.14,
-          "disposition": "Legacy script assumes moved A-share calculator still in Screener and requires absent historical ipo.py; superseded by current native/package/mode tests. Not a current workbook regression.",
-          "required_gate": false
-        }
-      ],
-      "bundle": {
-        "embedded_data_files": 275,
-        "embedded_source_modules": 110,
-        "all_data_and_sources_match": true,
-        "verification": "One embedded data file at a time under 512 MiB guard",
-        "sha256": "964b64d06a910f0aea35d027ae7066ce974c7847bb29dd9ebf02160222f1b6c5"
-      },
-      "performance": {
-        "python_mib": 512,
-        "node_heap_mib": 384,
-        "one_heavy_operation_at_a_time": true,
-        "terminal_latency_or_ram_measured": false
-      },
-      "remaining_financial_missing": {
-        "public_shares_final": {
-          "present": 527,
-          "missing": 0
-        },
-        "day1_volume": {
-          "present": 527,
-          "missing": 0
-        },
-        "day1_vol_x_retail": {
-          "present": 527,
-          "missing": 0
-        },
-        "day1_range_pct": {
-          "present": 527,
-          "missing": 0
-        },
-        "rev_latest": {
-          "present": 519,
-          "missing": 8
-        },
-        "ni_latest": {
-          "present": 510,
-          "missing": 17
-        },
-        "mktcap_ipo_hkdm": {
-          "present": 526,
-          "missing": 1
-        },
-        "pe_ipo": {
-          "present": 310,
-          "missing": 217
-        },
-        "ps_ipo": {
-          "present": 500,
-          "missing": 27
-        }
-      }
-    },
-    "publication_20261110": {
-      "date": "2026-11-10",
-      "checks": [
-        {
-          "test": "test_native_desk.py",
-          "exit": 0,
-          "seconds": 147.4
-        },
-        {
-          "test": "test_presentation_package.py",
-          "exit": 0,
-          "seconds": 34.8
-        },
-        {
-          "test": "test_update_20261103.py",
-          "exit": 0,
-          "seconds": 58.5
-        },
-        {
-          "test": "test_ah_coverage_20261109.mjs",
-          "exit": 0,
-          "seconds": 1.7
-        }
-      ],
-      "delivery_hashes_verified": true,
-      "html_zip_parity": true,
-      "updater_compiles": true,
-      "python_limit_mib": 512,
-      "node_heap_limit_mib": 384,
-      "live_bloomberg_tested": false
     }
   },
   "known_limits": {
     "financial_cells_needing_primary_followup": 273,
     "earlier_cornerstone_aliases_unresolved": 119,
     "undated_visible_lockup_events": 0,
-    "market_dates": "IPO Live public quote snapshot 9 November; individual dates retained. Historical Database return dates and A/H/peer/lock-up histories retain their previously recorded dates; not a full November historical refresh.",
-    "browser": "450 shipped A/H SVG renders and30 detail controls passed; no fresh full-browser run. Native Excel final visual review completed.",
+    "market_dates": "A/H, FX and CSI through 13 November; IPO Live 9 November; peer and lock-up histories 2 October. Historical Database return dates retained. Pipeline status 3 November and other membership 28 October.",
+    "browser": "Fresh browser review and 6750 shipped detail/Screener SVG renders passed.",
     "bloomberg": "Formula fixtures passed; terminal/add-in responses remain unverified.",
     "taxonomy": "Framework reviewed and retained; confirmed assignment errors in 2477 and 2321 remain recommendations, not applied changes. See data/taxonomy_review_20261016.json.",
     "historical_lockups": "161 completed, date-confirmed events; selective sample. 21 retain interior price gaps. 70 ambiguous dates, 67 undated, 67 future, 26 incomplete/unverified price windows and six original schedules with later extensions excluded; 6911 controller row corrected. Amendment search was targeted, not exhaustive. Sources and exclusions retained outside Excel.",
     "ah_live_terminal": "Preallocated BDH multi-cell array locks removed. Native opening and formula fixtures checked; live Bloomberg mode switching and responses still require an entitled terminal.",
     "pipeline": "Current seven offerings and one introduction checked Nov3. Other AP/PHIP membership retains Oct28 review. Final subscriptions/allocations are not yet published for the new offerings.",
-    "ah_caps": "All 150 scalar share-class cap formulas and ticker/currency labels checked; live field metadata, returned units/entitlements and latency remain unverified without a Bloomberg terminal.",
+    "ah_caps": "150 existing scalar formulas preserved; labels clarified as class cap / CNY m and HKD m. Two HKEX class-share examples checked. User live error not reproduced; field metadata, returned units and entitlements remain terminal-unverified.",
     "ah_coverage": "75 pairs in the existing seven-year monitor universe. Three source-reviewed missing mappings restored; no exhaustive November market-universe refresh.",
     "performance": "Database premium links add no Bloomberg requests. AH reuses IPO Live H quotes when both live. All issuer valuation loading remains on; terminal latency and RAM unmeasured.",
-    "current_review": "2550 mandatory clawback outcome held blank; Prudential listing capital remains unavailable. 8 missing revenue and17 missing income inputs remain; no fabricated multiples. Other recorded historical-source limitations remain."
+    "current_review": "2550 mandatory clawback outcome held blank; Prudential listing capital remains unavailable. 8 missing revenue and17 missing income inputs remain; no fabricated multiples. Other recorded historical-source limitations remain.",
+    "ah_refresh": "Existing 75 pairs refreshed; no new listing census. Provider close checks do not certify every historical exchange price. Overlap conflicts fail; gaps exceeding one year require dated backfill."
   },
   "deliverables": {
     "HK_IPO_Database_v1.xlsx": {
-      "bytes": 7650873,
-      "sha256": "ab5e947f4dced4f0e91d8566d143af174eab46f2a0bbd753771e5a7b4051e4e0"
-    },
-    "hk_ipo.py": {
-      "bytes": 16189120,
-      "sha256": "964b64d06a910f0aea35d027ae7066ce974c7847bb29dd9ebf02160222f1b6c5"
+      "bytes": 7796912,
+      "sha256": "427231bbcaab8213717ba5d612e9323c496b04cafa7b122fe7a1ee96083e807a"
     },
     "hk_ipo_dashboard.html": {
-      "bytes": 2883314,
-      "sha256": "ad85f2f24ccd1d7f19bf017b5cdc33b273a59d27ab7f4b3f1279d0c0b52e6083"
+      "bytes": 2992812,
+      "sha256": "53f64f180ca437f82a9c740b14a4a15d4bbd41d7c32ba7f579a35c266f567ba8"
     },
     "hk_ipo_dashboard.zip": {
-      "bytes": 2063838,
-      "sha256": "d9fd790a3e3bca6213dd390c946698ebbd66aed5885837c2a77458cf8c3668ac"
+      "bytes": 2143510,
+      "sha256": "5f48ddab2ee13acb92acc1183919a640e580c582d424f3f166f9e952cc4a81a8"
+    },
+    "hk_ipo.py": {
+      "bytes": 16018196,
+      "sha256": "6f5fbf1066187a31018befa3267b2a06d64281d25387f8d0eb497c58c12db71d"
     },
     "READ_ME_FIRST.txt": {
-      "bytes": 5286,
-      "sha256": "ad68f60f5d2ad2b4400ca7c894eb35adcf6c724a06fbd3dfc86c6b6632b3c14e"
+      "bytes": 3428,
+      "sha256": "bdc1fe87fabb4cdfd36461f19ceeb2a3571ea5db0e903e5afc70b3b5757bbc43"
     }
   },
   "publication": {
+    "status": "ready_to_publish",
+    "github_updated_this_session": false,
+    "date": "2026-11-15",
+    "repository": "https://github.com/kennytam-code/code",
+    "branch": "main",
+    "authorization": "User: push to github. make sure its visible",
+    "base_commit": "96424c9b04859d871cc133ba49887c5b00b27b0d"
+  },
+  "previous_publication": {
     "status": "published",
     "github_updated_this_session": true,
     "date": "2026-11-10",
@@ -946,19 +147,6 @@
     "downloaded_hashes_verified": true,
     "downloaded_paths": 10,
     "method": "Isolated sparse checkout from current main; explicit IPO paths only; unrelated projects and Word studies preserved."
-  },
-  "previous_publication": {
-    "status": "published",
-    "github_updated_this_session": true,
-    "date": "2026-11-03",
-    "repository": "https://github.com/kennytam-code/code",
-    "branch": "main",
-    "authorization": "User: push to github once done",
-    "release_commit": "8f8f6e7693d4490eac386ec08f7cdc8e7ec94c6a",
-    "verified_at": "2026-11-03T01:13:43.391757+08:00",
-    "downloaded_hashes_verified": true,
-    "downloaded_paths": 10,
-    "method": "Isolated sparse checkout, rebased onto current main; unrelated work and Word studies preserved."
   },
   "data_release_date": "2026-10-28"
 }

@@ -4,6 +4,41 @@ Read this file, then `data/release_state.json`. The latest instruction wins over
 older dated entries in `MAINTENANCE.md`. This file is intended for the next AI or
 analyst, including a session with no conversation history.
 
+## 15 November: A/H refresh, two HTML chart panels and cap review
+
+Read data/ah_review_20261115/REVIEW.md and validation.json first. All 75 existing
+A/H pairs and CSI/FX now end on 13 November. 4,152 raw closes appended; all 150
+latest A/H prices match a second provider. This does not refresh Database
+historical returns, pipeline, peer or IPO Live prices; their dates are retained.
+
+HTML detail now shows A/H prices above premium on aligned date axes, with an
+optional indexed CSI 300 comparison. Retain actual latest observation dates
+in the embed: the H-share corporate-action factors require them. Preserve gaps,
+separate comparison modes, active scope and six-line pagination. Peer snapshot
+date must come from peer_pairs, not the A/H snapshot.
+
+Excel F:G headers now explicitly say A-class cap / CNY m and H-class cap /
+HKD m. All 150 scalar CURRENT_MARKET_CAP_SHARE_CLASS formulas remain unchanged.
+Two HKEX class-share examples are documented in market_cap_sources.json. They
+are month-end reference arithmetic, not live caps. The reported Bloomberg
+error could not be reproduced without the user's values/terminal. Actual field
+units, coverage and entitlements remain unverified; do not claim otherwise.
+No extra Bloomberg calls. Stored defaults and the Database code-based link remain.
+
+Both update entry points include refresh_ah_history after ah-study and before
+monitor-data. The new sequential refresh is independent of the IPO-return date;
+build remains offline. Overlap conflicts fail, weekend dates stay actual and
+gaps over a year require a dated backfill. prepare_ah_reference now writes
+ah_chart_review_latest.json without replacing the old dated chart audit.
+
+Native Excel opened without repair; refreshed AH table/charts inspected.
+Browser controls, 6,300 detail renders, 450 Screener chart renders, arithmetic,
+package/formula checks and bounded Artifact projection passed. No live terminal
+test. Final files are in TO_NOMURA/export. User authorised publication on
+15 November; see release_state.json for actual publication/verification status.
+The release includes the new refresh module, all changed A/H caches/reference
+batches, cap-label config and checked downloads at repository root and TO_NOMURA.
+
 ## 10 November: source review, A/H IPO references and Database presentation
 
 Read data/demand_review_20261109/REVIEW.md and validation.json for this release.

@@ -1,0 +1,60 @@
+{
+  "date": "2026-11-15",
+  "checks_passed": [
+    "test_ah_refresh",
+    "test_ah_workbook",
+    "test_ah_detail",
+    "test_ah_coverage",
+    "test_selected_averages",
+    "test_sector_comparisons",
+    "test_native_desk",
+    "test_presentation_package",
+    "test_ah_bundle",
+    "test_modes"
+  ],
+  "price_source_crosschecks": 150,
+  "price_source_matches": 150,
+  "price_observations_added": 4152,
+  "aligned_premium_observations": 27657,
+  "ah_pairs_current": 75,
+  "cap_scalar_formulas_checked": 150,
+  "unchanged_bloomberg_request_counts": true,
+  "native_excel_open": "Opened final staged workbook without repair; AH table and cached charts visually checked; closed without saving.",
+  "fresh_browser_visual_review": "A/H detail controls, Ingenic/Longsys, benchmark/horizon, Technology scope and six-line pagination; no JS errors.",
+  "bounded_artifact_projection": "Actual workbook AH A7:L14 rendered and reviewed.",
+  "python_limit_mib": 512,
+  "node_heap_limit_mib": 384,
+  "live_bloomberg_execution": false,
+  "bundle": {
+    "data_files": 276,
+    "modules": 111,
+    "standalone_builders": 2,
+    "compiles": true,
+    "parity": true
+  },
+  "memory_validation": "Initial monolithic/AST payload validation hit the existing cap; final streaming hash check passed under the unchanged cap.",
+  "delivery_hashes_verified": true,
+  "html_zip_parity": true,
+  "deliverables": {
+    "HK_IPO_Database_v1.xlsx": {
+      "bytes": 7796912,
+      "sha256": "427231bbcaab8213717ba5d612e9323c496b04cafa7b122fe7a1ee96083e807a"
+    },
+    "hk_ipo_dashboard.html": {
+      "bytes": 2992812,
+      "sha256": "53f64f180ca437f82a9c740b14a4a15d4bbd41d7c32ba7f579a35c266f567ba8"
+    },
+    "hk_ipo_dashboard.zip": {
+      "bytes": 2143510,
+      "sha256": "5f48ddab2ee13acb92acc1183919a640e580c582d424f3f166f9e952cc4a81a8"
+    },
+    "hk_ipo.py": {
+      "bytes": 16018196,
+      "sha256": "6f5fbf1066187a31018befa3267b2a06d64281d25387f8d0eb497c58c12db71d"
+    },
+    "READ_ME_FIRST.txt": {
+      "bytes": 3428,
+      "sha256": "bdc1fe87fabb4cdfd36461f19ceeb2a3571ea5db0e903e5afc70b3b5757bbc43"
+    }
+  }
+}

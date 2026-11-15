@@ -1,0 +1,14 @@
+import fs from 'node:fs/promises';
+import {FileBlob,SpreadsheetFile} from '@oai/artifact-tool';
+const root=new URL('../',import.meta.url);
+const wb=await SpreadsheetFile.importXlsx(await FileBlob.load(new URL('../before_projection.xlsx',root).pathname));
+const ah=wb.worksheets.getItem('AH');
+ah.getRange('F7:G7').values=[['A-class cap\nCNY m','H-class cap\nHKD m']];
+wb.recalculate();
+const labels=ah.getRange('F7:G7').values[0];
+if(labels.length!==2||!labels.every(x=>typeof x==='string'&&x.includes('class cap')))throw Error('Cap labels');
+await fs.writeFile(new URL('data/ah_cap_labels.json',root),JSON.stringify({A:labels[0],H:labels[1]},null,2)+'\n');
+await (await SpreadsheetFile.exportXlsx(wb)).save(new URL('out/ah_cap_label_projection.xlsx',root).pathname);
+const png=await wb.render({sheetName:'AH',range:'A7:L14',scale:1.2,format:'png'});
+await fs.writeFile(new URL('out/ah_cap_label_projection.png',root),new Uint8Array(await png.arrayBuffer()));
+console.log((await wb.inspect({kind:'table',range:'AH!F7:G8',include:'values,formulas',tableMaxRows:2,tableMaxCols:2})).ndjson);

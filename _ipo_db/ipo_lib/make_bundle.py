@@ -74,6 +74,7 @@ DATA_FILES += ['data/lockup_date_review.json','data/lockup_amendments.json']
 DATA_FILES += ['data/batches/pipeline_review.json']
 DATA_FILES += ['data/pipeline_peers.json']
 DATA_FILES += ['data/ah_link_formulas.json']
+DATA_FILES += ['data/ah_cap_labels.json']
 DATA_FILES += ['data/database_desk_style.json','data/batches/allocation_source_review.json']
 DATA_FILES += ['data/batches/capital_source_review.json','data/batches/retail_float_review.json','data/batches/ah_offer_reference_review.json','data/batches/day1_source_recovery.json']
 DATA_FILES += ['data/presentation_template.json','data/ah_reference.json','data/csi300_prices.json','data/live_snapshot.json']
@@ -94,7 +95,7 @@ LIB_MODULES = ["metric_source_review", "retail_float_review", "remove_cell_notes
     "fetch_h_paths", "ingest_bbg", "audit_formulas", "lint_bbg", "audit_opens",
     "audit_identities", "audit_visual", "audit_prices", "audit_bbg_verify", "audit_fresh",
     "corp_actions", "benchmark_windows", "ah_basis",
-    "desk_release", "fetch_live_snapshot", "refresh_monitor_data", "prepare_monitor_data", "prepare_ah_reference", "reflow_monitors", "adjust_ah_charts", "fix_monitor_requests", "combine_ah_benchmark", "market_universe", "cache_desk_monitors", "build_market_views", "apply_desk_styles", "patch_peer_workbook", "patch_presentation_workbook", "analyse_ah_study", "make_ah_study",
+    "desk_release", "fetch_live_snapshot", "refresh_ah_history", "refresh_monitor_data", "prepare_monitor_data", "prepare_ah_reference", "reflow_monitors", "adjust_ah_charts", "fix_monitor_requests", "combine_ah_benchmark", "market_universe", "cache_desk_monitors", "build_market_views", "apply_desk_styles", "patch_peer_workbook", "patch_presentation_workbook", "analyse_ah_study", "make_ah_study",
     "merge_batches", "build_xlsx", "build_dashboard", "make_ah_notebook", "checks",
     "make_weekly_email",
 ]
@@ -259,6 +260,7 @@ STAGES = [
     ("lockup-windows", "refresh_lockup_windows", [], "prices"),
     ("merge", "merge_batches", [], "local"),
     ("ah-study", "analyse_ah_study", ["--refresh"], "prices"),
+    ("ah-history", "refresh_ah_history", [], "prices"),
     ("monitor-data", "refresh_monitor_data", [], "prices"),
 ]
 

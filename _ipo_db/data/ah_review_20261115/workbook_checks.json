@@ -1,0 +1,20 @@
+{
+  "cap_formulas": 150,
+  "stored_pairs": 75,
+  "preserved_sheets": [
+    "IPO Live",
+    "Peer Trades",
+    "Screener",
+    "Pipeline",
+    "CS League",
+    "SM League",
+    "Taxonomy",
+    "Valuation Data"
+  ],
+  "external_formula_occurrences": {
+    "BDP(": 6569,
+    "BDH(": 2402,
+    "BQL(": 2642
+  },
+  "terminal_tested": false
+}

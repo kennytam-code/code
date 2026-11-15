@@ -4,6 +4,7 @@ Native package edit: preserve chart series, Bloomberg-owned reply areas and
 all unrelated worksheets. M60 remains the user's H-code input.
 """
 import re
+import json
 from copy import deepcopy
 import xml.etree.ElementTree as E
 from openpyxl.formula.tokenizer import Tokenizer
@@ -126,7 +127,8 @@ def apply(parts,sheets,root):
     if ha is None:ha=E.SubElement(head,q('alignment'))
     ha.set('wrapText','1');ha.set('vertical','center');hs=len(xfs);xfs.append(head)
     xfs.set('count',str(len(xfs)));parts['xl/styles.xml']=E.tostring(styles)
-    headers=['Company','A code','H code','Sector','Subsector','A cap\nCNY m','H cap\nHKD m','IPO\nprem.','Now\nprem.','1D Δ\n(pp)','7D Δ\n(pp)','1M Δ\n(pp)']
+    cap_labels=json.loads((root/'data/ah_cap_labels.json').read_text())
+    headers=['Company','A code','H code','Sector','Subsector',cap_labels['A'],cap_labels['H'],'IPO\nprem.','Now\nprem.','1D Δ\n(pp)','7D Δ\n(pp)','1M Δ\n(pp)']
     market=nodes(E.fromstring(parts[sheets['Market Data']]))
     for i,title in enumerate(headers,1):put(ah,ec(i)+'7',v=title,style=hs)
     for r in range(8,end+1):

@@ -570,6 +570,14 @@ table.labtbl thead th .dot { vertical-align: 1px; }
 .ah-market-legend { display:flex; flex-wrap:wrap; gap:10px 26px; align-items:center; margin:0 0 12px; font-size:12px; }
 .ah-market-legend span { display:inline-flex; align-items:center; gap:7px; }
 .ah-market-legend i { display:inline-block; width:26px; height:0; border-top:3px solid; }
+.ah-linked-panels { display:grid; gap:18px; margin:14px 0 4px; }
+.ah-linked-panel { min-width:0; border:1px solid #DFE4EA; border-radius:6px; padding:14px 18px 8px; background:#fff; }
+.ah-panel-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:8px; }
+.ah-panel-heading h4 { margin:0; color:#253341; font-size:14px; font-weight:600; }
+.ah-panel-heading>span { color:#626E7B; font-size:11px; }
+.ah-linked-panel .ah-market-legend { margin:0 0 4px; font-size:11px; gap:10px 20px; }
+.ah-linked-panel svg { display:block; width:100%; height:auto; }
+@media(max-width:650px){.ah-linked-panel{padding:12px 8px 4px}.ah-linked-panels{gap:12px}}
 .ah-market-base { margin-left:auto; color:var(--text-secondary); font-size:11px; }
 @media(max-width:760px){.ahpane.ah-market{padding:14px 10px 8px}.ah-market-base{margin-left:0}}
 .ahpane.withpop, .ahpane.expop { background: var(--surface-1); }
@@ -1065,7 +1073,7 @@ function renderSelectedAH() {
   const stat=(label,v,unit,change=false)=>`<div><span>${label}</span><strong class="${change&&v>0?'up':change&&v<0?'down':''}">${Number.isFinite(v)?(change&&v>0?'+':'')+v.toFixed(1)+unit:'—'}</strong></div>`;
   $('#ah-selected-metrics').innerHTML=stat('Premium',d.a_premium_now==null?null:100*d.a_premium_now,'%')+stat('7 days',d.delta7,' pp',true)+stat('1 month',d.delta1m,' pp',true)+`<div><span>H listing</span><strong>${d.ipo_date}</strong></div>`;
   $("#ah-horizon").disabled=$("#ah-detail-mode").value==="around";
-  renderAH([d], {host:"#ah-history",note:"#ah-history-note",full:$("#ah-horizon").value==="Max",deskMode:$("#ah-detail-mode").value});
+  renderAHDetail(d,$("#ah-horizon").value,$("#ah-detail-mode").value);
 }
 function ahMode() { const el = document.querySelector("#ah-when"); return el ? el.value : "now"; }
 function redrawAHTab() {
@@ -1084,11 +1092,11 @@ function redrawAHTab() {
   $("#ah-stock").innerHTML = rows.map(d => `<option value="${d.code}">${d.name} (${d.code})</option>`).join("");
   if (!rows.some(d => d.code === selectedAhCode)) selectedAhCode = rows.length ? rows[0].code : "";
   $("#ah-tbl").innerHTML = `<table class="tbl"><thead><tr><th>Compare</th><th>Name</th><th>H</th><th>A</th>
-    <th>Sector</th><th>Subsector</th><th class="num">Premium at IPO</th><th class="num">Premium at snapshot</th><th class="num">7-day Δ (pp)</th><th class="num">1-month Δ (pp)</th></tr></thead><tbody>` +
+    <th>Sector</th><th>Subsector</th><th class="num">Premium at IPO</th><th class="num">Premium at snapshot</th><th class="num">7-day Δ (pp)</th><th class="num">1-month Δ (pp)</th><th>As of</th></tr></thead><tbody>` +
     rows.sort((a, b) => (pick(b) || 0) - (pick(a) || 0)).map(d =>
       `<tr data-code="${d.code}"><td><input type="checkbox" class="ah-compare-pick" data-code="${d.code}" aria-label="Compare ${d.code}"></td><td><button type="button" class="ah-select" data-code="${d.code}">${d.name}</button></td><td>${d.code}</td><td>${d.a_share_code}</td><td>${d.sector}</td><td>${d.subsector || "—"}</td>
        <td class="num">${d.classReview ? "Class ratio review" : d.a_premium_ipo_pct == null ? "—" : fmt.pct(d.a_premium_ipo_pct)}</td>
-       <td class="num">${d.classReview ? "Class ratio review" : d.a_premium_now == null ? "—" : fmt.pct(100 * d.a_premium_now)}</td><td class="num ${d.delta7>0?'up':d.delta7<0?'down':''}">${Number.isFinite(d.delta7)?d.delta7.toFixed(1):'—'}</td><td class="num ${d.delta1m>0?'up':d.delta1m<0?'down':''}">${Number.isFinite(d.delta1m)?d.delta1m.toFixed(1):'—'}</td></tr>`).join("") +
+       <td class="num">${d.classReview ? "Class ratio review" : d.a_premium_now == null ? "—" : fmt.pct(100 * d.a_premium_now)}</td><td class="num ${d.delta7>0?'up':d.delta7<0?'down':''}">${Number.isFinite(d.delta7)?d.delta7.toFixed(1):'—'}</td><td class="num ${d.delta1m>0?'up':d.delta1m<0?'down':''}">${Number.isFinite(d.delta1m)?d.delta1m.toFixed(1):'—'}</td><td>${AHST[d.code]?.latest_date||'—'}</td></tr>`).join("") +
     `</tbody></table>`;
   renderSelectedAH();
 }
@@ -2273,6 +2281,69 @@ function fullAHPath(d) {
   }
   return out;
 }
+function ahDetailData(d,horizon,mode) {
+  const P=fullAHPath(d),ref=DATA.ah_reference?.pairs[d.code],ms=86400000;
+  const iso=n=>new Date(n).toISOString().slice(0,10);
+  const last=P.dates.at(-1)||P.ipo,monthOffset=(day,n)=>{const v=new Date(day+'T00:00:00Z'),dd=v.getUTCDate();v.setUTCDate(1);v.setUTCMonth(v.getUTCMonth()-n);v.setUTCDate(Math.min(dd,new Date(Date.UTC(v.getUTCFullYear(),v.getUTCMonth()+1,0)).getUTCDate()));return iso(+v);};
+  let from=P.ipo,to=last;
+  if(mode==='around'){from=iso(Date.parse(P.ipo)-31*ms);to=iso(Math.min(Date.parse(last),Date.parse(P.ipo)+31*ms));}
+  else if(horizon==='First3M')to=iso(Math.min(Date.parse(last),Date.parse(P.ipo)+92*ms));
+  else if(horizon!=='Max')from=[P.ipo,monthOffset(last,{'1M':1,'3M':3,'6M':6,'1Y':12,'3Y':36}[horizon]||0)].sort().at(-1);
+  const keep=P.dates.map((dt,i)=>({dt,i})).filter(x=>x.dt>=from&&x.dt<=to),days=keep.map(x=>P.days[x.i]);
+  const series=(name,color,ys,dd=days,dash=null)=>({name,color,ys,days:dd,dash});
+  const prem=[series('A/H premium',AHCHART.premium,keep.map(x=>P.prem[x.i]))];
+  let prices,unit,title,base='';
+  if(mode==='hkd'){
+    prices=[series('H shares · HKD',AHCHART.premium,keep.map(x=>P.h[x.i])),series('A shares · HKD equivalent',AHCHART.a,keep.map(x=>P.a_hkd[x.i]))];
+    title='A / H prices';unit='HKD';base='Split-adjusted prices';
+  }else{
+    const market=(ref?.trend_rows||[]).filter(x=>x[0]>=from&&x[0]<=to),hmap=new Map(keep.map(x=>[x.dt,P.h[x.i]]));
+    const anchor=mode==='around'?market[0]:market.find(x=>hmap.has(x[0]));
+    const start=anchor?.[0],hbase=mode==='around'?keep.find(x=>Number.isFinite(P.h[x.i])):keep.find(x=>x.dt===start);
+    const m=market.filter(x=>!start||x[0]>=start),k=keep.filter(x=>mode==='around'||!start||x.dt>=start);
+    const mday=m.map(x=>Math.round((Date.parse(x[0])-Date.parse(P.ipo))/ms));
+    prices=[series('H shares · HKD',AHCHART.premium,k.map(x=>hbase?100*P.h[x.i]/P.h[hbase.i]:null),k.map(x=>P.days[x.i])),
+      series('A shares · CNY',AHCHART.a,m.map(x=>anchor?100*x[1]/anchor[1]:null),mday),
+      series('CSI 300',AHCHART.csi,m.map(x=>anchor?100*x[2]/anchor[2]:null),mday,'6 4')];
+    title=mode==='around'?'Price action around H listing':'A / H price action and CSI 300';unit='idx';
+    base=start?`Close on ${start} = 100`:'No common close available';
+    if(mode==='around'&&hbase)base+=` · H starts ${hbase.dt}`;
+  }
+  return {P,from,to,prices,prem,unit,title,base};
+}
+function drawAHDetailPanel(svg,W,H,M,series,view,unit) {
+  const ms=86400000,begin=(Date.parse(view.from)-Date.parse(view.P.ipo))/ms,end=(Date.parse(view.to)-Date.parse(view.P.ipo))/ms;
+  const X=v=>M.l+(W-M.l-M.r)*(v-begin)/Math.max(1,end-begin);
+  const values=series.flatMap(s=>s.ys.filter(Number.isFinite)),Y=scaleFor(values.length?values:[0,1],H,M,.09);
+  svg.dataset.ipo=view.P.ipo;svg.dataset.first=view.from;svg.dataset.last=view.to;svg.dataset.unit=unit;
+  pathYAxis(svg,Y,W,H,M,unit==='%'?'%':'');
+  if(unit==='idx'&&Y(100)>=M.t&&Y(100)<=H-M.b)el('line',{x1:M.l,x2:W-M.r,y1:Y(100),y2:Y(100),stroke:'#AAB3BD','stroke-dasharray':'3 4'},svg);
+  for(let i=0,n=W<650?3:5;i<n;i++){
+    const day=begin+(end-begin)*i/(n-1),t=el('text',{x:X(day),y:H-9,'text-anchor':i===0?'start':i===n-1?'end':'middle',class:'axlabel'},svg);
+    t.textContent=new Date(Date.parse(view.P.ipo)+day*ms).toISOString().slice(0,10);
+  }
+  if(begin<0&&end>0){el('line',{x1:X(0),x2:X(0),y1:M.t,y2:H-M.b,stroke:'#AAB3BD','stroke-dasharray':'3 4'},svg);const t=el('text',{x:X(0)+5,y:M.t+11,class:'axlabel'},svg);t.textContent='H listing';}
+  for(const s of series){
+    const p=pathline(svg,s.days,s.ys,X,Y,s.color,2.2);p.setAttribute('data-name',s.name);p.setAttribute('stroke-linejoin','round');p.setAttribute('stroke-linecap','round');if(s.dash)p.setAttribute('stroke-dasharray',s.dash);
+    const connected=(i,j)=>j>=0&&j<s.days.length&&Number.isFinite(s.ys[j])&&Math.abs(s.days[i]-s.days[j])<=10;
+    s.ys.forEach((v,i)=>{if(Number.isFinite(v)&&!connected(i,i-1)&&!connected(i,i+1))el('circle',{cx:X(s.days[i]),cy:Y(v),r:2.8,fill:s.color},svg);});
+  }
+  if(!values.length){const t=el('text',{x:W/2,y:H/2,'text-anchor':'middle',class:'axlabel'},svg);t.textContent='No observations in this period';}
+  addXhair(svg,W,H,M,X,series,unit==='HKD'?'px':unit);
+}
+function renderAHDetail(d,horizon,mode) {
+  const host=$('#ah-history');host.innerHTML='';const view=ahDetailData(d,horizon,mode);
+  host.className='ah-linked-panels';
+  for(const [title,series,unit,base] of [[view.title,view.prices,view.unit,view.base],['A/H premium',view.prem,'%', '']]){
+    const card=document.createElement('div');card.className='ah-linked-panel';
+    card.innerHTML=`<div class="ah-panel-heading"><h4>${title}</h4><span>${unit==='HKD'?'HKD':unit==='idx'?'Indexed price':'%'}</span></div><div class="ah-market-legend">${series.map(s=>`<span><i style="border-color:${s.color};${s.dash?'border-top-style:dashed':''}"></i>${s.name}</span>`).join('')}<span class="ah-market-base">${base}</span></div>`;
+    host.appendChild(card);const W=fitW(card,1080),H=W<650?260:270,M={l:58,r:22,t:22,b:35};
+    const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':title},card);
+    drawAHDetailPanel(svg,W,H,M,series,view,unit);
+  }
+  const r=AHST[d.code],dated=[r.latest_h_date||r.latest_date,r.latest_a_date,r.latest_fx_date];
+  $('#ah-history-note').textContent=`${view.from} to ${view.to}`+(new Set(dated).size>1?` · H ${dated[0]} · A ${dated[1]} · FX ${dated[2]}`:'');
+}
 let labAHFocus=null,labAHMode="premium";
 function renderAH(chosen, options={}) {
   const host = $(options.host || "#lab-ah"); host.innerHTML="";
@@ -2304,7 +2375,7 @@ function renderAH(chosen, options={}) {
   const AHP=paths, RED=AHCHART.a,BLUE=AHCHART.premium,GOLD="#a18347";
   pairs.forEach(d => {
     const source=options.full?fullAHPath(d):AHP[d.code], take=source.days.map((v,i)=>[v,i]).filter(x=>options.full||x[0]<=92).map(x=>x[1]);
-    const P={...source};for(const key of ["days","h","a_cny","a_hkd","prem","h_perf","a_perf_hkd"])P[key]=take.map(i=>source[key][i]);
+    const P={...source};for(const key of ["days","dates","h","a_cny","a_hkd","prem","h_perf","a_perf_hkd"])P[key]=take.map(i=>source[key][i]);
     const span=options.full?Math.max(1,P.days.at(-1)||1):92;
     const LEAD=source.offer_date?Math.min(0,Math.round((Date.parse(source.offer_date)-Date.parse(P.ipo))/86400000)):0;
     const X=(W,M)=>v=>M.l+(W-M.l-M.r)*v/span;
@@ -2312,13 +2383,13 @@ function renderAH(chosen, options={}) {
     const daymarks=(svg,Xs,M,H)=>{
       const marks=span<=100?[[7,"1w"],[30,"1M"],[61,"2M"],[92,"3M"]]:Array.from({length:5},(_,i)=>{const n=Math.round(span*i/4);return[n,new Date(Date.parse(P.ipo)+n*86400000).toISOString().slice(0,7)];});
       marks.filter(x=>x[0]<=span).forEach(([n,label])=>{el("line",{x1:Xs(n),x2:Xs(n),y1:M.t,y2:H-M.b,class:"gridline"},svg);const t=el("text",{x:Xs(n),y:H-8,"text-anchor":"middle",class:"axlabel"},svg);t.textContent=label;});
-      svg.setAttribute("data-ipo",P.ipo);svg.setAttribute("data-first",P.ipo);svg.setAttribute("data-last",P.dates[take.at(-1)]||P.ipo);
+      svg.setAttribute("data-ipo",P.ipo);svg.setAttribute("data-first",P.ipo);svg.setAttribute("data-last",P.dates.at(-1)||P.ipo);
     };
     const wrap=document.createElement("div");wrap.className="ahstock"+(mode?" ah-desk-detail":"");
     wrap.innerHTML=`<div class="ovleg"><span><i class="sw" style="background:${BLUE}"></i>H shares (HKD)</span><span><i class="sw" style="background:${RED}"></i>A shares</span><span><i class="sw" style="background:${AHCHART.csi}"></i>CSI 300</span><span>H listed ${P.ipo} · offer HK$${P.offer}</span></div><div class="ahwrap"><div class="ahgrid"></div></div>`;
     host.appendChild(wrap);const g=wrap.querySelector(".ahgrid");
     const ref=(DATA.ah_reference?.pairs||{})[d.code],common=ref?.rows||[];
-    if(mode)$(options.note||"#lab-ah-note").textContent=mode==='around'&&common.length?`${common[0][0]} to ${common.at(-1)[0]} · first common close = 100`:`${P.ipo} to ${P.dates?.[take.at(-1)]||AHST[d.code]?.latest_date||DATA.ah_asof} · saved daily closes`;
+    if(mode)$(options.note||"#lab-ah-note").textContent=mode==='around'&&common.length?`${common[0][0]} to ${common.at(-1)[0]} · first common close = 100`:`${P.ipo} to ${P.dates?.at(-1)||AHST[d.code]?.latest_date||DATA.ah_asof} · saved daily closes`;
     if(common.length>1 && ref.pre_from){
       const days=common.map(x=>Math.round((Date.parse(x[0])-Date.parse(P.ipo))/86400000));
       const a=common.map(x=>100*x[1]/common[0][1]),b=common.map(x=>100*x[2]/common[0][2]);
@@ -3105,7 +3176,7 @@ HTML = """<!doctype html>
   <nav id="tabs">
     <a data-tab="screener" class="active">Screener</a><a data-tab="market">Market</a><a data-tab="ah">A / H</a><a data-tab="lockup">Lock-up</a><a data-tab="peers">Peer trades</a><a data-tab="cs">Cornerstones</a><a data-tab="sm">Stabilisers</a><a data-tab="pipeline">Pipeline</a><a data-tab="table">All deals</a>
   </nav>
-  <span class="asof">Main Board IPOs · updated %%ASOF%% · A/H &amp; peer snapshot %%AHSNAPSHOT%% · Bloomberg live: Excel</span>
+  <span class="asof">IPOs %%ASOF%% · A/H %%AHSNAPSHOT%% · peers %%PEERSNAPSHOT%% · Bloomberg live: Excel</span>
   <button class="theme" id="theme">◐ theme</button>
 </header>
 
@@ -3144,7 +3215,7 @@ HTML = """<!doctype html>
       <option value="ipo">A premium — at IPO (vs H offer)</option></select></label>
     <label>sector <select id="ah-sec"></select></label>
     <label>subsector <select id="ah-sub"></select></label></div>
-  <div class="filters"><label>Company <select id="ah-stock"></select></label><label>History <select id="ah-horizon"><option value="Max">Listing to snapshot</option><option value="3M">First 3 months</option></select></label><label>Chart <select id="ah-detail-mode"><option value="premium">Premium</option><option value="market">Premium + CSI 300</option><option value="around">A-share vs CSI 300 · around IPO</option><option value="hkd">A / H prices in HKD</option><option value="open">A / H performance from first open</option></select></label></div>
+  <div class="filters"><label>Company <select id="ah-stock"></select></label><label>History <select id="ah-horizon"><option value="Max">Listing to snapshot</option><option value="1M">Last month</option><option value="3M">Last 3 months</option><option value="6M">Last 6 months</option><option value="1Y">Last year</option><option value="3Y">Last 3 years</option><option value="First3M">First 3 months</option></select></label><label>Price view <select id="ah-detail-mode"><option value="hkd">A / H prices in HKD</option><option value="performance">A / H price action + CSI 300</option><option value="around">Around H listing + CSI 300</option></select></label></div>
   <h3 id="ah-history-title"></h3>
   <div id="ah-selected-metrics" class="ah-desk-metrics"></div>
   <div id="ah-history"></div><p class="note" id="ah-history-note"></p>
@@ -3179,7 +3250,7 @@ HTML = """<!doctype html>
 </section>
 
 <section id="peers">
- <h2>Hong Kong product peers</h2><p class="sub">Prices through %%AHSNAPSHOT%% · live Bloomberg mode in Excel</p>
+ <h2>Hong Kong product peers</h2><p class="sub">Prices through %%PEERSNAPSHOT%% · live Bloomberg mode in Excel</p>
  <div class="filters"><label>Peer pair <select id="peer-pair"></select></label><label>Horizon <select id="peer-horizon"><option>1M</option><option>3M</option><option>6M</option><option selected>1Y</option><option>3Y</option><option>5Y</option><option>Max</option><option>Custom</option></select></label><label class="peer-custom">From <input id="peer-from" type="date"></label><label class="peer-custom">To <input id="peer-to" type="date"></label></div><h3 id="peer-title"></h3><p class="sub" id="peer-watch"></p><p class="monitor-status" id="peer-coverage"></p><div id="peer-summary" class="monitor-metrics"></div>
  <div class="row"><div class="chart"><h3>Price return · common start = 0%</h3><div id="peer-performance"></div></div><div class="chart"><h3>A − B return spread · percentage points</h3><div id="peer-spread"></div></div></div>
  <div class="scroll" id="peer-table"></div>
@@ -3423,7 +3494,7 @@ def main():
     as_of = json.loads((ROOT / 'data/deals.json').read_text())['as_of']
     from market_universe import histories as market_histories, load as market_deals
     study = market_histories(ROOT)
-    ahstudy = {r['code']: {k: r.get(k) for k in ('history', 'h_history', 'exclusion', 'latest_premium_pct', 'offer_reference_premium_pct', 'latest_h_date', 'latest_a_date')} for r in study['pairs']}
+    ahstudy = {r['code']: {k: r.get(k) for k in ('history', 'h_history', 'exclusion', 'latest_premium_pct', 'offer_reference_premium_pct', 'latest_date', 'latest_h_date', 'latest_a_date', 'latest_fx_date')} for r in study['pairs']}
     chartmeta = {r['code']:r for r in json.loads((ROOT/'data/desk_chart_data.json').read_text())['pairs']}
     for code, record in ahstudy.items():
         meta=chartmeta[code];latest=record.get('latest_premium_pct')
@@ -3545,6 +3616,7 @@ def main():
     js = JS + BODY_JS + (ROOT / "assets/desk_monitors.js").read_text()
     html = (HTML.replace("%%CSS%%", CSS).replace("%%JS%%", js)
                 .replace("%%ASOF%%", as_of).replace("%%AHSNAPSHOT%%", study['asof']).replace("%%LOCKUPSNAPSHOT%%", lockup_batch['price_asof'])
+                .replace("%%PEERSNAPSHOT%%", raw['peer_pairs']['asof'])
                 .replace("%%DECODER%%", (ROOT / 'assets/fflate.min.js').read_text())
                 .replace("%%PAYLOAD%%", payload))
     OUT.parent.mkdir(exist_ok=True)

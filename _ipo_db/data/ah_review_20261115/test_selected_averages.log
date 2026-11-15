@@ -1,0 +1,1 @@
+PASS averages: one weight per selected stock, duplicate expiries, missing/zero/negative values; mutually exclusive stocks/selected average/sector modes; shipped JS compiles.

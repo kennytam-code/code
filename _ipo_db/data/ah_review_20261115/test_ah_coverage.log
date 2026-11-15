@@ -1,0 +1,1 @@
+PASS 450 actual SVG render cases and 30 detail control cases: every A/H pair at desktop/mobile widths, complete points, real gaps, consistent lines, axes, tooltip; refreshed dataset checked.

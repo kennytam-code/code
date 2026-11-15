@@ -51,7 +51,7 @@ def main():
    incompatible_entitlement_dates=mismatch,pre_common_sessions=len(pre),pre_reference_available=len(pre)>1))
  ref=dict(asof=asof,benchmark=benchmark['name'],pairs=pairs)
  (ROOT/'data/ah_reference.json').write_text(json.dumps(ref,ensure_ascii=False,indent=1))
- (ROOT/'data/batches/ah_chart_review_20261013.json').write_text(json.dumps(dict(asof=asof,pair_count=len(records),premium_math='passed',no_lookahead='passed',pairs=audit),indent=1))
+ (ROOT/'data/batches/ah_chart_review_latest.json').write_text(json.dumps(dict(asof=asof,pair_count=len(records),premium_math='passed',no_lookahead='passed',pairs=audit),indent=1))
  print('PASS',len(records),'pairs;',sum(len(x['rows'])>1 for x in pairs.values()),'benchmark windows;',sum(x['pre_reference_available'] for x in audit),'pre-IPO windows',flush=True)
  for x in audit:
   if x['missing_aligned_dates']:print(x['code'],'H sessions',x['h_sessions'],'aligned',x['aligned_sessions'],'first A',x['first_a'])
