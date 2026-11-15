@@ -126,13 +126,19 @@
     }
   },
   "publication": {
-    "status": "ready_to_publish",
-    "github_updated_this_session": false,
+    "status": "published",
+    "github_updated_this_session": true,
     "date": "2026-11-15",
     "repository": "https://github.com/kennytam-code/code",
     "branch": "main",
     "authorization": "User: push to github. make sure its visible",
-    "base_commit": "96424c9b04859d871cc133ba49887c5b00b27b0d"
+    "base_commit": "96424c9b04859d871cc133ba49887c5b00b27b0d",
+    "release_commit": "79c1242c45dc0027c4f033329250491528fc8120",
+    "verified_at": "2026-11-15T22:11:57.894725+08:00",
+    "downloaded_hashes_verified": true,
+    "downloaded_paths": 10,
+    "root_files_visible": true,
+    "method": "Isolated sparse checkout; full Git trees confirm zero deleted files, 778 unrelated files unchanged and all Word studies preserved; 10 main-branch downloads verified."
   },
   "previous_publication": {
     "status": "published",
