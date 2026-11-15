@@ -1,0 +1,22 @@
+{
+  "desktop": {
+    "width": 1440,
+    "scrollWidth": 1440,
+    "headers": [
+      "Expiry",
+      "Stock / holders",
+      "Unlock",
+      "Liquidity ratios",
+      "IPO price",
+      "Last price",
+      "vs IPO %",
+      "7D %",
+      "1M %",
+      "Shortable"
+    ]
+  },
+  "compact": {
+    "width": 1100,
+    "scrollWidth": 1100
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "run": 29,
+  "failures": 0,
+  "errors": 0,
+  "peak_rss_mib": 75.3,
+  "python_rss_guard_mib": 512,
+  "source_document_unchanged": null,
+  "notebook_cells_match_sources": true,
+  "python_38_syntax_pass": true,
+  "live_bloomberg_tested": false,
+  "live_outlook_tested": false
+}

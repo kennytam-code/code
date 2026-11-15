@@ -1,0 +1,26 @@
+{
+  "holiday_calendar.json": {
+    "passed": true,
+    "result": [
+      "2026-11-09",
+      "2026-11-10",
+      "2026-11-11",
+      "2026-11-12",
+      "2026-11-13"
+    ]
+  },
+  "short_20261110.html": {
+    "passed": true,
+    "result": {
+      "effective": "2026-11-10",
+      "count": 1267
+    }
+  },
+  "short_20261106.html": {
+    "passed": true,
+    "result": {
+      "effective": "2026-11-06",
+      "count": 1267
+    }
+  }
+}

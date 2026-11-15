@@ -1,0 +1,130 @@
+{
+  "source_document": "User-supplied code.docx (attachment not redistributed)",
+  "source_sha256": "1fe205d3a515acdb92d5bf3841d79b7f6df0e018a0fa2015aab27e62cbf01b02",
+  "source_text_matches_initial_read": true,
+  "offline_tests": {
+    "run": 29,
+    "failures": 0,
+    "errors": 0,
+    "peak_rss_mib": 75.3,
+    "python_rss_guard_mib": 512,
+    "source_document_unchanged": null,
+    "notebook_cells_match_sources": true,
+    "python_38_syntax_pass": true,
+    "live_bloomberg_tested": false,
+    "live_outlook_tested": false
+  },
+  "browser_preview": {
+    "synthetic_data_only": true,
+    "visual_inspection_passed": true,
+    "footnotes_present": false,
+    "width_checks": {
+      "desktop": {
+        "width": 1440,
+        "scrollWidth": 1440,
+        "headers": [
+          "Expiry",
+          "Stock / holders",
+          "Unlock",
+          "Liquidity ratios",
+          "IPO price",
+          "Last price",
+          "vs IPO %",
+          "7D %",
+          "1M %",
+          "Shortable"
+        ]
+      },
+      "compact": {
+        "width": 1100,
+        "scrollWidth": 1100
+      }
+    },
+    "unchanged_after_integration_review": true
+  },
+  "live_bloomberg_tested": false,
+  "windows_outlook_tested": false,
+  "emails_sent": 0,
+  "files": {
+    "HK_IPO_Two_Emails.ipynb": "09b387b3f3088abf4004dd8867c08cebb93e26c94b44ca187cfe9f09cb547028",
+    "README.md": "fcf631db2a322adb38f8bd8ab4da3a93638fff286cb4466623a4d744ce97fedd",
+    "browser_checks.json": "d46568e1cf19f4f75c2b7ed8048043634884d7e4358ea84f220a9868c005e6f5",
+    "build_sample.py": "14efbec6d3d2e4bb2cf5aa041064ac53fdd31b013e0ba34757432bf5db8622d9",
+    "first_cell_original.py": "3865d58796e9b78e0908d7285988deb10a209cb033000fb0af14c8ea0c103aa1",
+    "review_checks.json": "0be3fd6c727d1c64716c6f65b96a3a96e8c8ee2f7eab78ca14c0a476edcc32c7",
+    "review_sources/holiday_calendar.json": "8d797fb380825eec3f53fe456cc85ad30e2f91635675081abb671eca3bfd757d",
+    "review_sources/manifest.json": "976ea4abb3f12f7681981972e5b697f4e56a6ff15154827c734f27b1aa04406f",
+    "review_sources/parser_checks.json": "aa3fa94a07f53b99ac0953cfc10c720b6a4814b3f16720a21561c98df0aa7882",
+    "review_sources/short_20261106.html": "31f9a394c54cb4ae1e0ecd30c277a65a76faeb8ec4162bbcf9467a7ba4972680",
+    "review_sources/short_20261110.html": "f253e3cd3dd6e9e97e74579a84e4062310c235bbd77bb59cc0a198df7a68aa6d",
+    "run_checks.py": "6ec97d97a4c5bb9419f3ce2dca6deb489aeef1a886f0da48b383ce40545fdcde",
+    "sample_email.html": "f2cbee3b27a84343fbfd77310d91feb09a7bac72097cc411e8420d03043309e7",
+    "sample_email.png": "f1ed636dfde1ca2850a89f7e4ee97e878d8474729eaa246e58eeeaaaa51ab7c0",
+    "second_cell.py": "0afa5a16ab89fb4b97404f85de639d6f69ba4502e1058a4e2a44b8cb14c2f409",
+    "test_cells_integration.py": "b81a4504e687dd45bddcc28fced4564f8df858fb5c8c4d198f526a053041a869",
+    "test_results.txt": "334bb93ded166027d23dad1b65816dbfb0ff53e070564264b0a94fbcd4e3fc36",
+    "test_second_cell.py": "faf5727713cbafccf31dea8f970f317767b79a2169548fe60ee8fed7a0edde30",
+    ".gitattributes": "ef5d8c7c9b1a0205ee8e92bfab36e65bb328abf4b3e02f98b8084068091d6924"
+  },
+  "footnotes_removed": true,
+  "columns": [
+    "Expiry",
+    "Stock / holders",
+    "Unlock",
+    "Liquidity ratios",
+    "IPO price",
+    "Last price",
+    "vs IPO %",
+    "7D %",
+    "1M %",
+    "Shortable"
+  ],
+  "ipo_price_field": "EQY_INIT_PO_SH_PX",
+  "borrow_columns": false,
+  "source_document_unchanged": true,
+  "notebook_cell_1_exact_docx_match": true,
+  "notebook_cells_match_python_files": true,
+  "same_namespace_execution_tested": true,
+  "outlook_mocked_paths_tested": [
+    "COM saved draft and signature",
+    "missing pywin32",
+    "broken pywin32 DLL",
+    "COM unavailable before draft",
+    "save failure without duplicate fallback"
+  ],
+  "source_parser_checks": {
+    "holiday_calendar.json": {
+      "passed": true,
+      "result": [
+        "2026-11-09",
+        "2026-11-10",
+        "2026-11-11",
+        "2026-11-12",
+        "2026-11-13"
+      ]
+    },
+    "short_20261110.html": {
+      "passed": true,
+      "result": {
+        "effective": "2026-11-10",
+        "count": 1267
+      }
+    },
+    "short_20261106.html": {
+      "passed": true,
+      "result": {
+        "effective": "2026-11-06",
+        "count": 1267
+      }
+    }
+  },
+  "review_fixes": [
+    "Validate Bloomberg timeout before sending request",
+    "Fall back to PowerShell if pywin32 import/initial COM connection fails",
+    "Validate first-cell output path before requesting prices"
+  ],
+  "root_downloads": {
+    "HK_IPO_Two_Emails.ipynb": "09b387b3f3088abf4004dd8867c08cebb93e26c94b44ca187cfe9f09cb547028",
+    "HK_IPO_Second_Email_Cell.py": "0afa5a16ab89fb4b97404f85de639d6f69ba4502e1058a4e2a44b8cb14c2f409"
+  }
+}

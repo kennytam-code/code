@@ -1,0 +1,36 @@
+test_actual_build_new_yes_no_and_second_cell_agree (test_cells_integration.FirstCellNewTests.test_actual_build_new_yes_no_and_second_cell_agree) ... ok
+test_existing_stocks_not_all_new_on_first_run (test_cells_integration.FirstCellNewTests.test_existing_stocks_not_all_new_on_first_run) ... ok
+test_holiday_and_year_boundary (test_cells_integration.FirstCellNewTests.test_holiday_and_year_boundary) ... ok
+test_live_downloaded_hkex_and_holiday_formats (test_cells_integration.FirstCellNewTests.test_live_downloaded_hkex_and_holiday_formats) ... ok
+test_missing_baseline_and_bad_source_fail_closed (test_cells_integration.FirstCellNewTests.test_missing_baseline_and_bad_source_fail_closed) ... ok
+test_new_last_day_then_expires (test_cells_integration.FirstCellNewTests.test_new_last_day_then_expires) ... ok
+test_phip_new_distinct_from_shortable_new_and_same_day_rerun (test_cells_integration.FirstCellNewTests.test_phip_new_distinct_from_shortable_new_and_same_day_rerun) ... ok
+test_removal_readdition_and_rename (test_cells_integration.FirstCellNewTests.test_removal_readdition_and_rename) ... ok
+test_addon_with_original_bloomberg_client_and_mock_api (test_cells_integration.SameKernelTests.test_addon_with_original_bloomberg_client_and_mock_api)
+Real original connection class and add-on request parser, mock service. ... ok
+test_exact_both_cells_shared_namespace_full_draft_pipeline (test_cells_integration.SameKernelTests.test_exact_both_cells_shared_namespace_full_draft_pipeline)
+Execute the exact two sources, patching ONLY service edges before cell 1 runs. ... ok
+test_invalid_first_result_rejected_before_bloomberg (test_cells_integration.SameKernelTests.test_invalid_first_result_rejected_before_bloomberg) ... ok
+test_outlook_broken_pywin32_and_dispatch_fallback (test_cells_integration.SecondCellFailureTests.test_outlook_broken_pywin32_and_dispatch_fallback) ... ok
+test_outlook_com_saves_unsent_with_signature (test_cells_integration.SecondCellFailureTests.test_outlook_com_saves_unsent_with_signature) ... ok
+test_outlook_save_failure_does_not_duplicate (test_cells_integration.SecondCellFailureTests.test_outlook_save_failure_does_not_duplicate) ... ok
+test_timeout_cancels_after_partial_response (test_cells_integration.SecondCellFailureTests.test_timeout_cancels_after_partial_response) ... ok
+test_timeout_validation_before_submit (test_cells_integration.SecondCellFailureTests.test_timeout_validation_before_submit) ... ok
+test_calendar_targets (test_second_cell.AddonTests.test_calendar_targets) ... ok
+test_draft_outputs_and_first_report_preserved (test_second_cell.AddonTests.test_draft_outputs_and_first_report_preserved) ... ok
+test_empty_skips_bloomberg_and_stale_rejected (test_second_cell.AddonTests.test_empty_skips_bloomberg_and_stale_rejected) ... ok
+test_history_shape_and_field_error (test_second_cell.AddonTests.test_history_shape_and_field_error) ... ok
+test_invalid_ipo_keeps_valid_horizon_returns (test_second_cell.AddonTests.test_invalid_ipo_keeps_valid_horizon_returns) ... ok
+test_ipo_field_exception_is_isolated (test_second_cell.AddonTests.test_ipo_field_exception_is_isolated) ... ok
+test_ipo_price_comparison_independent_of_history (test_second_cell.AddonTests.test_ipo_price_comparison_independent_of_history) ... ok
+test_reference_multi_response_and_canonical_mapping (test_second_cell.AddonTests.test_reference_multi_response_and_canonical_mapping) ... ok
+test_render_escapes_and_empty (test_second_cell.AddonTests.test_render_escapes_and_empty) ... ok
+test_request_failure_discards_partial (test_second_cell.AddonTests.test_request_failure_discards_partial) ... ok
+test_returns_and_holiday_baseline (test_second_cell.AddonTests.test_returns_and_holiday_baseline) ... ok
+test_unavailable_stale_and_insufficient (test_second_cell.AddonTests.test_unavailable_stale_and_insufficient) ... ok
+test_window_and_preservation (test_second_cell.AddonTests.test_window_and_preservation) ... ok
+
+----------------------------------------------------------------------
+Ran 29 tests in 0.387s
+
+OK

@@ -1,0 +1,33 @@
+[
+  {
+    "url": "https://www.1823.gov.hk/common/ical/en.json",
+    "file": "holiday_calendar.json",
+    "status": "downloaded",
+    "bytes": 15520,
+    "sha256": "8d797fb380825eec3f53fe456cc85ad30e2f91635675081abb671eca3bfd757d",
+    "seconds": 0.45
+  },
+  {
+    "url": "https://www.hkex.com.hk/eng/market/sec_tradinfo/ds20261113.htm",
+    "file": "short_20261113.html",
+    "status": "unavailable",
+    "error": "HTTP Error 404: Not Found",
+    "seconds": 2.63
+  },
+  {
+    "url": "https://www.hkex.com.hk/eng/market/sec_tradinfo/ds20261110.htm",
+    "file": "short_20261110.html",
+    "status": "downloaded",
+    "bytes": 1234385,
+    "sha256": "f253e3cd3dd6e9e97e74579a84e4062310c235bbd77bb59cc0a198df7a68aa6d",
+    "seconds": 1.82
+  },
+  {
+    "url": "https://www.hkex.com.hk/eng/market/sec_tradinfo/ds20261106.htm",
+    "file": "short_20261106.html",
+    "status": "downloaded",
+    "bytes": 1234375,
+    "sha256": "31f9a394c54cb4ae1e0ecd30c277a65a76faeb8ec4162bbcf9467a7ba4972680",
+    "seconds": 1.78
+  }
+]

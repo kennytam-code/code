@@ -1,0 +1,3 @@
+# Keep downloaded parser fixtures byte-exact, including source BOM/CRLF.
+review_sources/*.html -text -diff -whitespace
+review_sources/holiday_calendar.json -text -diff -whitespace
