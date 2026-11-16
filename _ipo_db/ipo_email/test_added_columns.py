@@ -59,7 +59,7 @@ class AddedColumns(unittest.TestCase):
         client = types.SimpleNamespace(text=Mock(side_effect=TimeoutError('Fixture timeout')))
         env = {'Client': Mock(return_value=client), 'HK': HK, 'parse_html': first.parse_html}
         results = m._lu_a_shares(['00001', '00001', '00002'], env)
-        self.assertEqual(client.text.call_count, 2)
+        self.assertEqual(client.text.call_count, 3)  # one roster + two unique profiles
         self.assertEqual(env['Client'].call_count, 1)
         self.assertTrue(all(r['status'] == 'N/A' and r['error'] for r in results.values()))
         client.text.reset_mock()
@@ -76,6 +76,60 @@ class AddedColumns(unittest.TestCase):
         self.assertEqual(len(result['document_sha256']), 64)
         self.assertIn('?code=1', result['url'])
         self.assertIn('retrieved_at', result)
+
+    def test_downloaded_roster_exact_ticker_pairs(self):
+        import hashlib
+        raw = (SOURCES / 'etnet_ah.html').read_bytes()
+        record = json.loads((SOURCES / 'ah_roster_fetch.json').read_text())
+        self.assertEqual(hashlib.sha256(raw).hexdigest(), record['sha256'])
+        pairs = m._lu_a_share_roster(raw.decode('utf-8'), first.parse_html)
+        self.assertEqual(len(pairs), 211)
+        self.assertEqual(pairs['03750'], {'a_code': '300750', 'a_exchange': 'Shenzhen'})
+        self.assertEqual(pairs['00981'], {'a_code': '688981', 'a_exchange': 'Shanghai'})
+        self.assertNotIn('02551', pairs)
+        self.assertNotIn('00700', pairs)
+
+    def test_invalid_roster_rejected_without_inventing_no(self):
+        raw = (SOURCES / 'etnet_ah.html').read_text()
+        for document in (raw.replace('</html>', ''), raw.replace('code=03750', 'code=03751'),
+                         raw.replace('H股代號', 'unexpected heading'), '<html>Blocked</html>'):
+            with self.subTest(document=document[:20]), self.assertRaises(ValueError):
+                m._lu_a_share_roster(document, first.parse_html)
+
+    def test_roster_positive_can_resolve_missing_profile(self):
+        roster = (SOURCES / 'etnet_ah.html').read_text()
+        def text(url):
+            if url.endswith('/ah.php'):
+                return roster
+            raise TimeoutError('Fixture profile unavailable')
+        env = {'Client': lambda: types.SimpleNamespace(text=text), 'HK': HK, 'parse_html': first.parse_html}
+        results = m._lu_a_shares(['03750', '00700'], env)
+        self.assertEqual(results['03750']['status'], 'YES')
+        self.assertEqual(results['03750']['a_code'], '300750')
+        self.assertIsNone(results['03750']['error'])
+        self.assertIn('unavailable', results['03750']['profile_error'])
+        self.assertEqual(results['00700']['status'], 'N/A')  # absence is not No
+
+    def test_roster_profile_conflict_stays_unknown(self):
+        roster = (SOURCES / 'etnet_ah.html').read_text()
+        def text(url):
+            return roster if url.endswith('/ah.php') else profile([('H股', 100), ('發行股數', 100)], '03750')
+        env = {'Client': lambda: types.SimpleNamespace(text=text), 'HK': HK, 'parse_html': first.parse_html}
+        result = m._lu_a_shares(['03750'], env)['03750']
+        self.assertEqual(result['status'], 'N/A')
+        self.assertIn('conflicts', result['error'])
+
+    def test_roster_and_profile_real_fixtures_end_to_end(self):
+        client = first.Client()
+        # Exercise the original HTTP client interface from its in-memory source cache.
+        for record in json.loads((SOURCES / 'a_share_fetch.json').read_text()):
+            client.cache[record['url']] = (SOURCES / ('etnet_profile_' + record['code'] + '.html')).read_text()
+        client.cache['https://www.etnet.com.hk/www/tc/stocks/ah.php'] = (SOURCES / 'etnet_ah.html').read_text()
+        env = {'Client': lambda: client, 'HK': HK, 'parse_html': first.parse_html}
+        results = m._lu_a_shares(['03750', '02551', '00700'], env)
+        self.assertEqual({k: v['status'] for k, v in results.items()},
+                         {'03750': 'YES', '02551': 'NO', '00700': 'N/A'})
+        self.assertEqual(results['03750']['a_code'], '300750')
 
     def test_turnover_units_a_share_and_table_only_layout(self):
         report = fixture()

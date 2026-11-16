@@ -1,0 +1,78 @@
+{
+  "checked_at": "2026-11-16T23:39:49.624776+00:00",
+  "network": "Direct public web on this Mac; corporate proxy not tested",
+  "live_bloomberg_tested": false,
+  "live_outlook_tested": false,
+  "peak_rss_mib": 53.3,
+  "results": {
+    "00700": {
+      "status": "N/A",
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_brief.php?code=700",
+      "error": "Share classes do not provide a complete recognised capital breakdown.",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "count": 211,
+        "document_sha256": "8d6cc796fc26e8e357f6914966fe233f27c32806dde9683f4e4bedfd0a4f02d2",
+        "retrieved_at": "2026-11-17T07:39:47.135461+08:00"
+      },
+      "retrieved_at": "2026-11-17T07:39:47.753471+08:00"
+    },
+    "00981": {
+      "status": "YES",
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_brief.php?code=981",
+      "error": null,
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "count": 211,
+        "document_sha256": "8d6cc796fc26e8e357f6914966fe233f27c32806dde9683f4e4bedfd0a4f02d2",
+        "retrieved_at": "2026-11-17T07:39:47.135461+08:00"
+      },
+      "a_code": "688981",
+      "a_exchange": "Shanghai",
+      "profile_error": "Share classes do not provide a complete recognised capital breakdown.",
+      "method": "Explicit etnet A/H ticker pair; issuer capital breakdown checked when available",
+      "retrieved_at": "2026-11-17T07:39:48.304745+08:00"
+    },
+    "02551": {
+      "status": "NO",
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_brief.php?code=2551",
+      "error": null,
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "count": 211,
+        "document_sha256": "8d6cc796fc26e8e357f6914966fe233f27c32806dde9683f4e4bedfd0a4f02d2",
+        "retrieved_at": "2026-11-17T07:39:47.135461+08:00"
+      },
+      "capital": {
+        "內資股及其他": 283000066,
+        "H股": 254146643,
+        "發行股數": 537146709
+      },
+      "method": "etnet issuer capital classes; not a Bloomberg field or exchange confirmation",
+      "document_sha256": "6076a6bed7710ae2da7319d117b2d719347dc9335b183186e2ced57da46d681a",
+      "retrieved_at": "2026-11-17T07:39:48.991215+08:00"
+    },
+    "03750": {
+      "status": "YES",
+      "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_brief.php?code=3750",
+      "error": null,
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "count": 211,
+        "document_sha256": "8d6cc796fc26e8e357f6914966fe233f27c32806dde9683f4e4bedfd0a4f02d2",
+        "retrieved_at": "2026-11-17T07:39:47.135461+08:00"
+      },
+      "capital": {
+        "有限制流通A股": 148332303,
+        "無限制流通A股": 4260617083,
+        "H股": 218300300,
+        "發行股數": 4627249686
+      },
+      "method": "Explicit etnet A/H ticker pair; issuer capital breakdown checked when available",
+      "document_sha256": "ccd3f19e8255af5d1884ee3b007fa99fb30c34cee246daf285fa3d28cbeda393",
+      "a_code": "300750",
+      "a_exchange": "Shenzhen",
+      "retrieved_at": "2026-11-17T07:39:49.624709+08:00"
+    }
+  }
+}

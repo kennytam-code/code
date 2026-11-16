@@ -127,29 +127,51 @@ multiple. No extra Bloomberg request is needed. If the first cell sets
 remain N/A. The formula above has not been tested on a live terminal here.
 
 I could not verify a Bloomberg mnemonic for the existence of a mainland
-A-share line. The A-share column therefore uses etnet's issuer share-capital
-section, through the original cell's HTTP/proxy client. It is a provider-based
+A-share line. The A-share column therefore uses etnet's explicit
+[A/H ticker table](https://www.etnet.com.hk/www/tc/stocks/ah.php) together with
+its issuer share-capital section, through the original cell's HTTP/proxy client. It is a provider-based
 classification, not a Bloomberg formula or independent exchange confirmation.
 Examples of the source schema are [CATL's profile](https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_brief.php?code=3750)
 and [APT Electronics' profile](https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_brief.php?code=2551).
 
-- YES: a positive mainland A-share capital class is reported.
+- YES: an explicit A/H ticker pair or a positive mainland A-share capital
+  class is reported, with no conflicting capital evidence.
 - NO: a complete, recognised capital-class breakdown reconciles to the issued
   total and contains no positive A-share class. Unlisted domestic shares are
   not treated as A shares.
-- N/A: failed request, wrong issuer, incomplete page, unknown class label,
-  inconsistent totals, or an issued total without a class breakdown. This
+- N/A: unresolved requests, wrong issuer, incomplete page, unknown class label,
+  inconsistent totals, conflicting evidence, or an issued total without a
+  class breakdown and no explicit A/H pair. This
   deliberately includes profiles such as Tencent's, which only show an issued
   total. Missing data never becomes NO. Offshore Class A voting shares are
   not assumed to be mainland A shares.
 
-The lookup runs once per unique issuer, sequentially. Its URL, fetch timestamp,
-capital amounts, page hash, classification method and any error remain in the
+The lookup fetches the A/H table once, then one profile per unique issuer,
+sequentially. It validates table structure, ticker/link agreement and duplicate
+codes. Absence from the roster never means NO. An explicit pair can resolve a
+missing profile as YES; a pair that conflicts with a complete NO capital
+breakdown produces N/A. Its URLs, fetch timestamps, mainland ticker/exchange,
+capital amounts, page hashes, classification method and any error remain in the
 JSON audit. Provider information can lag issuer changes; a successful page
 fetch is not proof that the underlying capital table was updated that day.
 Set `LOCKUP_EMAIL_CHECK_A_SHARES = False` to disable these requests; the column
 then shows N/A. No new package is required. Downloaded profile fixtures and
 their hashes are under `review_sources/`.
+
+The actual lookup was run on the public web from this Mac on 17 November:
+CATL 03750 -> YES / Shenzhen 300750; SMIC 00981 -> YES / Shanghai 688981;
+APT Electronics 02551 -> NO; Tencent 00700 -> N/A (total only, no class breakdown).
+The 211-pair etnet table was parsed successfully. This direct-network check
+does not test the corporate proxy, Bloomberg or Windows Outlook.
+
+Primary-source spot checks support the positive pairs in
+[CATL's 2025 annual report, page 4](https://www.hkexnews.hk/listedco/listconews/sehk/2026/0311/2026031100770.pdf)
+and [SMIC's 2026 interim summary, page 3](https://star.sse.com.cn/disclosure/listedinfo/announcement/c/new/2026-08-28/688981_20260828_XAT4.pdf).
+[APT's March 2026 monthly return, pages 1–2](https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0409/2026040900796.pdf)
+documents the H and domestic classes; the unlisted domestic class is also
+identified in its [May 2026 proxy form](https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0506/2026050601642.pdf).
+These dated examples validate interpretation of the classes; they are not an
+independent current verification of every stock in the provider table.
 
 ## Files and verification
 
@@ -187,7 +209,7 @@ output, unique filenames, and preservation of the first report. These checks
 use synthetic fixtures. Bloomberg and Windows Outlook have **not** been
 tested live here; run both cells on your Bloomberg desktop to verify them.
 
-Final review: **35 tests passed, zero failures or errors**. Both source cells
+Final review: **40 tests passed, zero failures or errors**. Both source cells
 compile, the packaged notebook's cells match the source files, and cell 1
 matches the Word attachment exactly. Python's measured peak RSS stayed below 80 MiB
 under the unchanged 512 MiB guard. The updated twelve-column email is checked

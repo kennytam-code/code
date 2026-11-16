@@ -8,7 +8,7 @@
 LOCKUP_EMAIL_TO = globals().get("EMAIL_TO", "")
 LOCKUP_EMAIL_CC = globals().get("EMAIL_CC", "")
 LOCKUP_EMAIL_OPEN_OUTLOOK = globals().get("OPEN_OUTLOOK", True)
-LOCKUP_EMAIL_CHECK_A_SHARES = True  # etnet company profiles; no verified Bloomberg mnemonic
+LOCKUP_EMAIL_CHECK_A_SHARES = True  # etnet A/H pairs + company profiles; no verified Bloomberg mnemonic
 
 
 def _lu_select(report):
@@ -73,26 +73,95 @@ def _lu_a_share_profile(document, code, parse_html):
             'method': 'etnet issuer capital classes; not a Bloomberg field or exchange confirmation'}
 
 
+def _lu_a_share_roster(document, parse_html):
+    """Read exact H/A ticker pairs; absence from this roster never proves No."""
+    import re
+    from urllib.parse import urlparse, parse_qs
+
+    if not re.search(r'</html\s*>', document, re.I):
+        raise ValueError('Incomplete A/H table page.')
+    root = parse_html(document)
+    tables = []
+    for table in root.find_all('table'):
+        rows = table.find_all('tr')
+        if rows:
+            heading = rows[0].get_text(' ', strip=True)
+            if 'H股代號' in heading and 'A股代號' in heading:
+                tables.append(rows)
+    if len(tables) != 1:
+        raise ValueError('Missing or ambiguous A/H table.')
+    pairs = {}
+    for row in tables[0][1:]:
+        cells = row.find_all('td', recursive=False)
+        if len(cells) != 9:
+            raise ValueError('Unexpected A/H row shape.')
+        h_code = cells[1].get_text(strip=True)
+        a_match = re.fullmatch(r'(滬|深|京)(\d{6})', cells[5].get_text(strip=True))
+        if not re.fullmatch(r'\d{5}', h_code) or not a_match:
+            raise ValueError('Invalid A/H ticker pair.')
+        a_venue, a_code = a_match.groups()
+        for cell, path, code in ((cells[1], 'realtime/quote.php', h_code),
+                                 (cells[5], 'ashares/quote.php', a_code)):
+            anchor = cell.find('a')
+            link = urlparse(anchor.get('href', '') if anchor else '')
+            if not link.path.endswith(path) or parse_qs(link.query).get('code') != [code]:
+                raise ValueError('A/H ticker does not match its source link.')
+        if h_code in pairs:
+            raise ValueError('Duplicate H-share ticker in A/H table.')
+        pairs[h_code] = {'a_code': a_code,
+                         'a_exchange': {'滬': 'Shanghai', '深': 'Shenzhen', '京': 'Beijing'}[a_venue]}
+    if len(pairs) < 100:
+        raise ValueError('A/H table unexpectedly small; page may be incomplete.')
+    return pairs
+
+
 def _lu_a_shares(codes, env):
-    """One sequential lookup per issuer; failures remain N/A, never No."""
+    """One roster request plus one profile per issuer; unresolved cases stay N/A."""
     from datetime import datetime
     import hashlib
 
-    results = {}
-    client = None
-    for code in sorted(set(codes)):
+    results, pairs = {}, {}
+    codes = sorted(set(codes))
+    if not codes:
+        return results
+    roster = {'url': 'https://www.etnet.com.hk/www/tc/stocks/ah.php'}
+    client, setup_error = None, None
+    try:
+        if not env.get('LOCKUP_EMAIL_CHECK_A_SHARES', True):
+            raise ValueError('A-share lookup disabled.')
+        client = env['Client']()
+    except Exception as exc:
+        setup_error = str(exc)[:600]
+    try:
+        if setup_error:
+            raise ValueError(setup_error)
+        document = client.text(roster['url'])
+        pairs = _lu_a_share_roster(document, env['parse_html'])
+        roster.update(count=len(pairs), document_sha256=hashlib.sha256(document.encode('utf-8')).hexdigest())
+    except Exception as exc:
+        roster['error'] = str(exc)[:600]
+    roster['retrieved_at'] = datetime.now(env['HK']).isoformat()
+    for code in codes:
         url = 'https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_brief.php?code=' + str(int(code))
-        result = {'status': 'N/A', 'url': url, 'error': None}
+        result = {'status': 'N/A', 'url': url, 'error': None, 'roster': dict(roster)}
         try:
-            if not env.get('LOCKUP_EMAIL_CHECK_A_SHARES', True):
-                raise ValueError('A-share profile lookup disabled.')
-            if client is None:
-                client = env['Client']()
+            if setup_error:
+                raise ValueError(setup_error)
             document = client.text(url)
             result.update(_lu_a_share_profile(document, code, env['parse_html']))
             result['document_sha256'] = hashlib.sha256(document.encode('utf-8')).hexdigest()
         except Exception as exc:
             result['error'] = str(exc)[:600]
+        pair = pairs.get(str(int(code)).zfill(5))
+        if pair:
+            result.update(pair)
+            if result['status'] == 'NO':
+                result.update(status='N/A', error='A/H ticker table conflicts with the issuer capital breakdown.')
+            else:
+                if result['error']:
+                    result['profile_error'] = result['error']
+                result.update(status='YES', error=None,
+                              method='Explicit etnet A/H ticker pair; issuer capital breakdown checked when available')
         result['retrieved_at'] = datetime.now(env['HK']).isoformat()
         results[code] = result
     return results

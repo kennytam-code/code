@@ -3,10 +3,10 @@
   "source_sha256": "1fe205d3a515acdb92d5bf3841d79b7f6df0e018a0fa2015aab27e62cbf01b02",
   "source_text_matches_initial_read": true,
   "offline_tests": {
-    "run": 35,
+    "run": 40,
     "failures": 0,
     "errors": 0,
-    "peak_rss_mib": 77.4,
+    "peak_rss_mib": 77.9,
     "python_rss_guard_mib": 512,
     "source_document_unchanged": true,
     "notebook_cells_match_sources": true,
@@ -77,17 +77,20 @@
   "emails_sent": 0,
   "files": {
     ".gitattributes": "ef5d8c7c9b1a0205ee8e92bfab36e65bb328abf4b3e02f98b8084068091d6924",
-    "HK_IPO_Two_Emails.ipynb": "da4db0ec1b792765da889bd533127bab0d1aa3cc1878147f55611be26565b88c",
-    "README.md": "49afb0ac57f384199d5ee62beac4675c2f3086a4782fb02c8983391146e7f839",
+    "HK_IPO_Two_Emails.ipynb": "051601daf47b7c7e831d9ac25cc57a4963586db976f9974abcea062f84a7dbf9",
+    "README.md": "8abe01ae290fc062097f160844fda35596d9678b1d945ba45e07ad893b01810f",
     "browser_checks.json": "e2ae5012cc3f9c138293228fd3f44675cf7e5e61ce823659eeda60ec71dcd800",
     "build_sample.py": "c4833e345a67a95c33724383acde8791c7b355bac9da67e47b67c1eddaa978a4",
     "first_cell_original.py": "3865d58796e9b78e0908d7285988deb10a209cb033000fb0af14c8ea0c103aa1",
-    "review_checks.json": "09c36fead21d541d9057b0e676476db2f5987d9530f78e2462053e3b10ef18d4",
+    "review_checks.json": "fdff5162a33eadfeed29ba9ff6b8c911a16b9dc99d224d0b68b06965d6031d37",
     "review_sources/a_share_fetch.json": "e9be35f25c7bbda547cdb208e2521fdf4051f6806811761846a41ced58940ccc",
+    "review_sources/ah_roster_fetch.json": "b07c04ca47aa98d52c35c10e748b33ae6a83c95020e3f35d13494b161eb385a1",
+    "review_sources/etnet_ah.html": "751d6e73b2c1b3f63fc99ba4a44a32f9139aeb4bf96f4d5b675c6878cb0fcd06",
     "review_sources/etnet_profile_2551.html": "69dcc4c5e351b1eaaeab41e1c3a0f0f7a840998d4e0a7597d6d19482c0616317",
     "review_sources/etnet_profile_3750.html": "bf07e1d161b9f0d45b3428454a400bc142f70ca03a3ecb2035c12fa7e27f14cd",
     "review_sources/etnet_profile_700.html": "11dd0393cb522a98c479be3190a9fb3b108d0995d0d9e3d9ebdc9974384a9d70",
     "review_sources/holiday_calendar.json": "8d797fb380825eec3f53fe456cc85ad30e2f91635675081abb671eca3bfd757d",
+    "review_sources/live_a_share_check.json": "a8dde5c62dfb41675f262b585f6c8b8f55ce7989be49c0c8e61d9349ed45406c",
     "review_sources/manifest.json": "976ea4abb3f12f7681981972e5b697f4e56a6ff15154827c734f27b1aa04406f",
     "review_sources/parser_checks.json": "aa3fa94a07f53b99ac0953cfc10c720b6a4814b3f16720a21561c98df0aa7882",
     "review_sources/short_20261106.html": "31f9a394c54cb4ae1e0ecd30c277a65a76faeb8ec4162bbcf9467a7ba4972680",
@@ -96,10 +99,10 @@
     "sample_email.html": "1dab8caeda428306476d92b25d64c3b2e9051e7faa52c826aafa9deff3dfaa9a",
     "sample_email.png": "a4e9f32c3a484f1673f4e7b95e312e04f63174abda029a3829f79cbbc3ef593a",
     "sample_email_compact.png": "cffd7e4e10f36539ef4ca045068688c3fdf714e6cf4b53dde102c007783c2bb2",
-    "second_cell.py": "aff10adf134b9e1dda0d572496f72bc1c884f0502b2e301c35068884ef3b3c04",
-    "test_added_columns.py": "a6fa8d12f8bc8f0fd20194ba40d7dabdf7795126688e0382924699e634d3138d",
+    "second_cell.py": "918ce1c4e3ce2ecee1960d7bd7b0cc1b7c694114ddba7dc4c143bf991402b317",
+    "test_added_columns.py": "276c0143b18e12adeee8491fe2593f2eee7b3641dff6e46c2b103e7a1e494821",
     "test_cells_integration.py": "4ff1546417b5c0aa88269c21ef90956958cea0f73ab9a4419f9025aaea138dc8",
-    "test_results.txt": "1ffb2bdcb268d741959361e66a9b37287de5ff9b61dcfdeeba9d3091b9d4687a",
+    "test_results.txt": "d2d9354d123104a005992b4b7cec8625800fc48c56d487f5c73106f7d1425541",
     "test_second_cell.py": "faf5727713cbafccf31dea8f970f317767b79a2169548fe60ee8fed7a0edde30"
   },
   "footnotes_removed": true,
@@ -162,17 +165,112 @@
     "Validate first-cell output path before requesting prices",
     "Add average 20-day traded value in HKDm",
     "Add conservative A-share classification with audited source data",
-    "Remove email-body title and summary, retain column labels"
+    "Remove email-body title and summary, retain column labels",
+    "Validate explicit A/H ticker pairs alongside issuer capital data; conflicting evidence stays N/A"
   ],
   "review_date": "2026-11-17",
   "a_share_lookup": {
-    "source": "etnet company capital breakdown",
+    "source": "etnet explicit A/H pairs and issuer capital breakdown",
     "verified_bloomberg_mnemonic": false,
-    "incomplete_data": "N/A, never NO",
-    "source_examples_checked": [
-      "03750 YES",
-      "02551 NO",
-      "00700 N/A (total only)"
+    "missing_or_conflicting_evidence": "N/A; roster absence never means NO",
+    "downloaded_roster_pairs": 211,
+    "live_public_web_check": {
+      "checked_at": "2026-11-16T23:39:49.624776+00:00",
+      "network": "Direct public web on this Mac; corporate proxy not tested",
+      "live_bloomberg_tested": false,
+      "live_outlook_tested": false,
+      "peak_rss_mib": 53.3,
+      "results": {
+        "00700": {
+          "status": "N/A",
+          "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_brief.php?code=700",
+          "error": "Share classes do not provide a complete recognised capital breakdown.",
+          "roster": {
+            "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+            "count": 211,
+            "document_sha256": "8d6cc796fc26e8e357f6914966fe233f27c32806dde9683f4e4bedfd0a4f02d2",
+            "retrieved_at": "2026-11-17T07:39:47.135461+08:00"
+          },
+          "retrieved_at": "2026-11-17T07:39:47.753471+08:00"
+        },
+        "00981": {
+          "status": "YES",
+          "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_brief.php?code=981",
+          "error": null,
+          "roster": {
+            "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+            "count": 211,
+            "document_sha256": "8d6cc796fc26e8e357f6914966fe233f27c32806dde9683f4e4bedfd0a4f02d2",
+            "retrieved_at": "2026-11-17T07:39:47.135461+08:00"
+          },
+          "a_code": "688981",
+          "a_exchange": "Shanghai",
+          "profile_error": "Share classes do not provide a complete recognised capital breakdown.",
+          "method": "Explicit etnet A/H ticker pair; issuer capital breakdown checked when available",
+          "retrieved_at": "2026-11-17T07:39:48.304745+08:00"
+        },
+        "02551": {
+          "status": "NO",
+          "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_brief.php?code=2551",
+          "error": null,
+          "roster": {
+            "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+            "count": 211,
+            "document_sha256": "8d6cc796fc26e8e357f6914966fe233f27c32806dde9683f4e4bedfd0a4f02d2",
+            "retrieved_at": "2026-11-17T07:39:47.135461+08:00"
+          },
+          "capital": {
+            "內資股及其他": 283000066,
+            "H股": 254146643,
+            "發行股數": 537146709
+          },
+          "method": "etnet issuer capital classes; not a Bloomberg field or exchange confirmation",
+          "document_sha256": "6076a6bed7710ae2da7319d117b2d719347dc9335b183186e2ced57da46d681a",
+          "retrieved_at": "2026-11-17T07:39:48.991215+08:00"
+        },
+        "03750": {
+          "status": "YES",
+          "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_brief.php?code=3750",
+          "error": null,
+          "roster": {
+            "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+            "count": 211,
+            "document_sha256": "8d6cc796fc26e8e357f6914966fe233f27c32806dde9683f4e4bedfd0a4f02d2",
+            "retrieved_at": "2026-11-17T07:39:47.135461+08:00"
+          },
+          "capital": {
+            "有限制流通A股": 148332303,
+            "無限制流通A股": 4260617083,
+            "H股": 218300300,
+            "發行股數": 4627249686
+          },
+          "method": "Explicit etnet A/H ticker pair; issuer capital breakdown checked when available",
+          "document_sha256": "ccd3f19e8255af5d1884ee3b007fa99fb30c34cee246daf285fa3d28cbeda393",
+          "a_code": "300750",
+          "a_exchange": "Shenzhen",
+          "retrieved_at": "2026-11-17T07:39:49.624709+08:00"
+        }
+      }
+    },
+    "primary_source_spot_checks": [
+      {
+        "h_code": "03750",
+        "a_code": "300750",
+        "source": "https://www.hkexnews.hk/listedco/listconews/sehk/2026/0311/2026031100770.pdf",
+        "printed_page": 4
+      },
+      {
+        "h_code": "00981",
+        "a_code": "688981",
+        "source": "https://star.sse.com.cn/disclosure/listedinfo/announcement/c/new/2026-08-28/688981_20260828_XAT4.pdf",
+        "printed_page": 3
+      },
+      {
+        "h_code": "02551",
+        "classification": "H and unlisted domestic shares",
+        "source": "https://www1.hkexnews.hk/listedco/listconews/sehk/2026/0506/2026050601642.pdf",
+        "note": "Dated class-interpretation example, not all-market current verification"
+      }
     ]
   },
   "turnover_column": {
