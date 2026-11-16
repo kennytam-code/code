@@ -240,7 +240,8 @@ class SameKernelTests(unittest.TestCase):
         report['months'] = first.month_keys(today)
         for row in report['lockups']: row['expiry'] = today.isoformat()
         with tempfile.TemporaryDirectory() as directory, patch.dict(sys.modules, {'blpapi': api}), redirect_stdout(io.StringIO()):
-            env = dict(first.__dict__, BLOOMBERG_ENABLED=True, SHOW_NOTEBOOK_PREVIEW_IF_NO_OUTLOOK=False)
+            env = dict(first.__dict__, BLOOMBERG_ENABLED=True, SHOW_NOTEBOOK_PREVIEW_IF_NO_OUTLOOK=False,
+                       LOCKUP_EMAIL_CHECK_A_SHARES=False)
             result = second._lu_run({'report': report, 'email_html': Path(directory) / 'first.html'}, env, False)
         self.assertEqual(len(requests), 2)
         self.assertEqual(len(sessions), 1)

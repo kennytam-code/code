@@ -1,10 +1,10 @@
 # HK IPO desk files
 
-**IPO / lock-up email notebook — 15 November 2026**
+**IPO / lock-up email notebook — 17 November 2026**
 
 [Open the two-cell notebook](HK_IPO_Two_Emails.ipynb) · [Download notebook](https://github.com/kennytam-code/code/raw/refs/heads/main/HK_IPO_Two_Emails.ipynb) · [Copy cell 2 only](HK_IPO_Second_Email_Cell.py) · [Instructions and checks](_ipo_db/ipo_email/README.md)
 
-Run cell 1, then cell 2 in your Bloomberg-enabled Jupyter environment. The original first cell is unchanged. Cell 2 creates a separate unsent Outlook draft for YES/NEW shortable lock-ups with IPO price, latest price, price changes and unlock metrics. 29 offline tests pass; live Bloomberg and Windows Outlook remain unverified.
+Run cell 1, then cell 2 in your Bloomberg-enabled Jupyter environment. The original first cell is unchanged. Cell 2 creates a separate unsent Outlook draft for YES/NEW shortable lock-ups with IPO price, latest price, price changes, unlock metrics, average 20-day turnover (HKDm) and an A-share flag. The body starts directly with the table. A-share status uses etnet capital classes; uncertain cases stay N/A. 35 offline tests pass; live Bloomberg and Windows Outlook remain unverified.
 
 **[Download the Excel workbook](https://github.com/kennytam-code/code/raw/refs/heads/main/HK_IPO_Database_v1.xlsx)**
 

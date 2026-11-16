@@ -2,10 +2,13 @@
   "desktop": {
     "width": 1440,
     "scrollWidth": 1440,
+    "headings": 0,
     "headers": [
       "Expiry",
       "Stock / holders",
+      "A-share",
       "Unlock",
+      "Avg 20D\nturnover (HKDm)",
       "Liquidity ratios",
       "IPO price",
       "Last price",
@@ -13,10 +16,37 @@
       "7D %",
       "1M %",
       "Shortable"
+    ],
+    "rowCells": [
+      12,
+      12,
+      12,
+      12
     ]
   },
   "compact": {
     "width": 1100,
-    "scrollWidth": 1100
+    "scrollWidth": 1100,
+    "headings": 0,
+    "headers": [
+      "Expiry",
+      "Stock / holders",
+      "A-share",
+      "Unlock",
+      "Avg 20D\nturnover (HKDm)",
+      "Liquidity ratios",
+      "IPO price",
+      "Last price",
+      "vs IPO %",
+      "7D %",
+      "1M %",
+      "Shortable"
+    ],
+    "rowCells": [
+      12,
+      12,
+      12,
+      12
+    ]
   }
 }

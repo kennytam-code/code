@@ -8,6 +8,7 @@
 LOCKUP_EMAIL_TO = globals().get("EMAIL_TO", "")
 LOCKUP_EMAIL_CC = globals().get("EMAIL_CC", "")
 LOCKUP_EMAIL_OPEN_OUTLOOK = globals().get("OPEN_OUTLOOK", True)
+LOCKUP_EMAIL_CHECK_A_SHARES = True  # etnet company profiles; no verified Bloomberg mnemonic
 
 
 def _lu_select(report):
@@ -31,6 +32,70 @@ def _lu_select(report):
             row["shortable"] = "NEW" if row["code"] in report.get("added", {}) else "YES"
             rows.append(row)
     return sorted(rows, key=lambda r: (r["expiry"], r["code"], r["holder_type"])), start, end
+
+
+def _lu_a_share_profile(document, code, parse_html):
+    """Infer mainland A-share presence from a validated issuer capital breakdown."""
+    import re
+
+    root = parse_html(document)
+    title = root.find('title')
+    if (not title or not re.match(r'^0*' + str(int(code)) + r'\.HK\b', title.get_text(strip=True))
+            or not re.search(r'</html\s*>', document, re.I)):
+        raise ValueError('Incomplete profile or stock identity mismatch.')
+    sections = []
+    for tr in root.find_all('tr'):
+        cells = tr.find_all('td', recursive=False)
+        if len(cells) == 2 and cells[0].get_text(strip=True) == '股本':
+            sections.append(cells[1])
+    if len(sections) != 1:
+        raise ValueError('Missing or ambiguous share-capital section.')
+    amounts = {}
+    for tr in sections[0].find_all('tr'):
+        cells = tr.find_all('td', recursive=False)
+        if len(cells) < 2:
+            raise ValueError('Incomplete share-capital row.')
+        label, value = cells[0].get_text(strip=True), cells[1].get_text(strip=True)
+        if label in amounts or not re.fullmatch(r'(?:\d+|\d{1,3}(?:,\d{3})+)', value):
+            raise ValueError('Invalid or duplicate share-capital value.')
+        amounts[label] = int(value.replace(',', ''))
+    total = amounts.get('發行股數', 0)
+    classes = {k: v for k, v in amounts.items() if k != '發行股數'}
+    mainland_a = {'有限制流通A股', '無限制流通A股', 'A股'}
+    non_a = {'H股', '內資股及其他', '內資股', '非上市外資股', '普通股'}
+    # An issued total alone is not evidence of No. Unlisted domestic shares
+    # and offshore Class A voting shares are not mainland-listed A shares.
+    if (total <= 0 or not classes or not set(classes) <= mainland_a | non_a
+            or sum(classes.values()) != total):
+        raise ValueError('Share classes do not provide a complete recognised capital breakdown.')
+    return {'status': 'YES' if any(classes.get(k, 0) > 0 for k in mainland_a) else 'NO',
+            'capital': amounts, 'error': None,
+            'method': 'etnet issuer capital classes; not a Bloomberg field or exchange confirmation'}
+
+
+def _lu_a_shares(codes, env):
+    """One sequential lookup per issuer; failures remain N/A, never No."""
+    from datetime import datetime
+    import hashlib
+
+    results = {}
+    client = None
+    for code in sorted(set(codes)):
+        url = 'https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_brief.php?code=' + str(int(code))
+        result = {'status': 'N/A', 'url': url, 'error': None}
+        try:
+            if not env.get('LOCKUP_EMAIL_CHECK_A_SHARES', True):
+                raise ValueError('A-share profile lookup disabled.')
+            if client is None:
+                client = env['Client']()
+            document = client.text(url)
+            result.update(_lu_a_share_profile(document, code, env['parse_html']))
+            result['document_sha256'] = hashlib.sha256(document.encode('utf-8')).hexdigest()
+        except Exception as exc:
+            result['error'] = str(exc)[:600]
+        result['retrieved_at'] = datetime.now(env['HK']).isoformat()
+        results[code] = result
+    return results
 
 
 def _lu_horizons(day):
@@ -262,16 +327,14 @@ def _lu_render(report, rows, start, end, retrieved_at):
         return '<b style="color:' + colour + '">' + number(value, "%", signed=True) + '</b>'
 
     subject = "Shortable IPO Lock-up Expiries | " + start.strftime("%d %b %Y")
-    summary = f"{len(rows)} lock-up tranches across {len({r['code'] for r in rows})} shortable stocks"
-    scope = f"{start:%d %b %Y} to {end:%d %b %Y} · YES and NEW"
-    parts = ['<h2 style="font-size:21px;margin:0 0 8px;color:#222222">Shortable IPO lock-up expiries</h2>',
-             '<p style="margin:0 0 5px"><b>' + text(summary) + '</b></p>',
-             '<p style="margin:0 0 14px;color:#555555">' + text(scope) + '</p>']
-    plain = [subject, summary, scope]
+    # The email body starts with the table. Its subject stays on the email itself.
+    parts, plain = [], []
     if rows:
-        headers = ["Expiry", "Stock / holders", "Unlock", "Liquidity ratios", "IPO price", "Last price", "vs IPO %", "7D %", "1M %", "Shortable"]
-        parts.append('<table width="100%" cellspacing="0" cellpadding="8" style="border-collapse:collapse;font-size:13px;border-top:2px solid #CB2125"><tr>'
-                     + ''.join('<th align="left" style="background:#eeeeee;border-bottom:1px solid #cccccc">' + h + '</th>' for h in headers) + '</tr>')
+        headers = ["Expiry", "Stock / holders", "A-share", "Unlock", "Avg 20D turnover (HKDm)", "Liquidity ratios", "IPO price", "Last price", "vs IPO %", "7D %", "1M %", "Shortable"]
+        parts.append('<table width="100%" cellspacing="0" cellpadding="6" style="border-collapse:collapse;font-size:13px;border-top:2px solid #CB2125"><tr>'
+                     + ''.join('<th align="left" style="background:#eeeeee;border-bottom:1px solid #cccccc">'
+                               + (h.replace('turnover (HKDm)', '<br>turnover (HKDm)') if h.startswith('Avg 20D') else h)
+                               + '</th>' for h in headers) + '</tr>')
         for i, row in enumerate(rows):
             p = row["price_performance"]
             expiry = row["expiry"]
@@ -287,21 +350,30 @@ def _lu_render(report, rows, start, end, retrieved_at):
                 unlock += '<br><span style="font-size:11px;color:#666666">Value as of ' + text(quote_time) + ' HKT</span>'
             ratios = (number(row.get("unlock_to_float_market_cap_pct"), "%") + ' / float cap<br>'
                       + number(row.get("unlock_to_20d_avg_turnover_x"), "x") + ' / 20D turnover')
+            # Reuse the denominator already fetched by cell 1; no extra API call.
+            turnover = number(row.get("avg_turnover_20d_hkd"), divisor=1000000)
+            turnover_end = report.get("bloomberg", {}).get("turnover_end_date")
+            if turnover_end:
+                turnover += '<br><span style="font-size:11px;color:#666666">To ' + text(turnover_end) + '</span>'
+            a_share = text(row.get("a_share", {}).get("status", "N/A"))
             last = number(p["last_price"], decimals=3) + ' ' + text(p["currency"])
             last += '<br><span style="font-size:11px;color:#666666">Quote: ' + text(p["quote_date"]) + '</span>'
             ipo = number(p["ipo_price"], decimals=3) + ' ' + text(p["currency"])
             status = '<b style="color:' + ('#0759A4' if row["shortable"] == "NEW" else '#087544') + '">' + row["shortable"] + '</b>'
-            needs_review = bool(row.get("issue") or row.get("source_issue") or row.get("bloomberg_issues") or p["errors"])
+            needs_review = bool(row.get("issue") or row.get("source_issue") or row.get("bloomberg_issues") or p["errors"]
+                                or row.get("a_share", {}).get("error"))
             if needs_review:
                 status += '<br><span style="font-size:11px;color:#795b00">REVIEW</span>'
-            cells = [text(expiry) + '<br><span style="color:#666666">' + str(days) + ' days</span>',
+            cells = ['<span style="white-space:nowrap">' + text(expiry) + '</span><br><span style="color:#666666">' + str(days) + ' days</span>',
                      '<b>' + text(row["code"] + ' ' + row["name"]) + '</b><br>' + text(holders),
-                     unlock, ratios, ipo, last, change(p["ipo_change_pct"]),
+                     a_share, unlock, turnover, ratios, ipo, last, change(p["ipo_change_pct"]),
                      change(p["7D"]["change_pct"]), change(p["1M"]["change_pct"]), status]
             background = '#ffffff' if i % 2 == 0 else '#f7f7f7'
             parts.append('<tr style="background:' + background + '">' + ''.join('<td valign="top" style="border-bottom:1px solid #dddddd">' + c + '</td>' for c in cells) + '</tr>')
             # Detailed review reasons remain in the JSON audit, not email footnotes.
-            plain.append(f"{expiry} | {row['code']} {row['name']} | {holders} | Unlock {row['percent']} of issued shares / {amount} | "
+            plain.append(f"{expiry} | {row['code']} {row['name']} | {holders} | A-share {row.get('a_share', {}).get('status', 'N/A')} | Unlock {row['percent']} of issued shares / {amount} | "
+                         f"Avg 20D turnover HKDm {number(row.get('avg_turnover_20d_hkd'), divisor=1000000)}"
+                         + (f" (to {turnover_end})" if turnover_end else "") + " | "
                          f"Unlock/float cap {number(row.get('unlock_to_float_market_cap_pct'), '%')} | "
                          f"Unlock/20D turnover {number(row.get('unlock_to_20d_avg_turnover_x'), 'x')} | "
                          f"IPO price {number(p['ipo_price'], decimals=3)} {p['currency'] or 'N/A'} | "
@@ -405,8 +477,12 @@ def _lu_run(first, env, open_outlook=True):
                 histories.setdefault(security, {"errors": {"request": str(exc)[:600]}})
     retrieved = datetime.now(env["HK"]).strftime("%d %b %Y %H:%M:%S HKT")
     metrics = {s: _lu_performance(snapshots[s], histories[s], start) for s in securities}
+    if rows:
+        print("Second email: checking A-share capital classes ...", flush=True)
+    a_shares = _lu_a_shares([r['code'] for r in rows], env)
     for row in rows:
         row["price_performance"] = metrics[env["bloomberg_security"](row["code"])]
+        row['a_share'] = a_shares[row['code']]
     subject, body, plain = _lu_render(report, rows, start, end, retrieved)
     to, cc = str(env.get("LOCKUP_EMAIL_TO", "")), str(env.get("LOCKUP_EMAIL_CC", ""))
     message = EmailMessage(policy=SMTP)
@@ -429,6 +505,8 @@ def _lu_run(first, env, open_outlook=True):
              "source_asof": report.get('source_asof'), "manual_sources": report.get('manual_sources'),
              "cached_sources": report.get('cached_sources'), "original_bloomberg": report.get('bloomberg'),
              "snapshots": snapshots, "histories": histories, "rows": rows,
+             "a_share_profiles": a_shares,
+             "turnover_method": "Reuse cell 1 avg_turnover_20d_hkd / 1,000,000; INTERVAL_AVG with TURNOVER, 20D and HKD overrides.",
              "price_method": "Calendar 7D/1M; last price / observed prior close - 1. Capital changes adjusted; cash dividends excluded.",
              "ipo_price_field": "EQY_INIT_PO_SH_PX",
              "ipo_comparison_method": "(LAST_PRICE / EQY_INIT_PO_SH_PX - 1) * 100; reported offer price, no separate corporate-action adjustment or holder-cost assumption.",

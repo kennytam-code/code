@@ -11,7 +11,7 @@ Jupyter notebook. Run your original first cell, then run the new cell. Keep
 the original cell exactly as it is. The add-on reads its `LAST_DRAFT` result.
 
 The new cell creates a second editable Outlook draft with its own subject.
-It uses the first cell's To/CC settings; the three settings at the top of the
+It uses the first cell's To/CC settings; the settings at the top of the
 new cell let you change these or disable automatic draft opening. It never
 sends an email. Nothing was sent or opened in Outlook during development.
 
@@ -20,9 +20,12 @@ lock-up tranche, ordered by expiry. It shows the expiry date, days remaining,
 stock, holder category/count, unlock percentage of issued shares, unlock value,
 unlock/free-float-cap percentage, unlock/20-day-turnover multiple, Bloomberg
 IPO price, last price and quote date, price change versus IPO, and 7-day and
-1-month price changes. No borrow availability or cost columns are included.
+1-month price changes. The 17 November revision adds **average 20-day turnover
+(HKD millions)** and an **A-share YES/NO** column. No borrow availability or
+cost columns are included.
 
-The email has no footnotes, method paragraphs or source-review paragraphs.
+The email starts directly with the table: no title or summary block above it.
+Column labels remain. It has no footnotes, method paragraphs or source-review paragraphs.
 Methods and source metadata remain here and in the JSON audit. Unavailable
 values stay N/A; affected rows keep a compact REVIEW label in their existing
 status cell. The actual price/value dates remain beside their numbers.
@@ -68,6 +71,7 @@ Bloomberg wrapper. Formula correspondence:
 | vs IPO (%) | `(latest price / IPO offer price - 1) * 100` |
 | Currency | `CRNCY`, equivalent to `=BDP(ticker,"CRNCY")` |
 | Quote date | `LAST_UPDATE_DT`, equivalent to `=BDP(ticker,"LAST_UPDATE_DT")` |
+| Average 20-day turnover (HKDm) | `=BDP(ticker,"INTERVAL_AVG","MARKET_DATA_OVERRIDE","TURNOVER","CALC_INTERVAL","20D","CRNCY","HKD")/1000000` |
 | Previous observed daily closes | `HistoricalDataRequest` for `PX_LAST`, the data requested by `BDH` |
 | 7D / 1M change | `(latest price / selected historical close - 1) * 100` |
 
@@ -112,6 +116,41 @@ the unlock value. Existing review flags remain visible as compact status labels.
 independently verify etnet's expiry dates or convert them into confirmed
 primary-source dates.
 
+## Added columns
+
+Average 20-day turnover reuses `avg_turnover_20d_hkd` already fetched by the
+first cell. The override settings are exactly those in the original code;
+the new column divides the value by 1,000,000. This is daily traded **value**,
+not share volume, and it is the denominator of the existing unlock/turnover
+multiple. No extra Bloomberg request is needed. If the first cell sets
+`BLOOMBERG_TURNOVER_END_DATE`, the column shows that end date. Missing values
+remain N/A. The formula above has not been tested on a live terminal here.
+
+I could not verify a Bloomberg mnemonic for the existence of a mainland
+A-share line. The A-share column therefore uses etnet's issuer share-capital
+section, through the original cell's HTTP/proxy client. It is a provider-based
+classification, not a Bloomberg formula or independent exchange confirmation.
+Examples of the source schema are [CATL's profile](https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_brief.php?code=3750)
+and [APT Electronics' profile](https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_brief.php?code=2551).
+
+- YES: a positive mainland A-share capital class is reported.
+- NO: a complete, recognised capital-class breakdown reconciles to the issued
+  total and contains no positive A-share class. Unlisted domestic shares are
+  not treated as A shares.
+- N/A: failed request, wrong issuer, incomplete page, unknown class label,
+  inconsistent totals, or an issued total without a class breakdown. This
+  deliberately includes profiles such as Tencent's, which only show an issued
+  total. Missing data never becomes NO. Offshore Class A voting shares are
+  not assumed to be mainland A shares.
+
+The lookup runs once per unique issuer, sequentially. Its URL, fetch timestamp,
+capital amounts, page hash, classification method and any error remain in the
+JSON audit. Provider information can lag issuer changes; a successful page
+fetch is not proof that the underlying capital table was updated that day.
+Set `LOCKUP_EMAIL_CHECK_A_SHARES = False` to disable these requests; the column
+then shows N/A. No new package is required. Downloaded profile fixtures and
+their hashes are under `review_sources/`.
+
 ## Files and verification
 
 Outputs go into a new `Shortable_Lockups` subfolder beneath the original
@@ -148,12 +187,12 @@ output, unique filenames, and preservation of the first report. These checks
 use synthetic fixtures. Bloomberg and Windows Outlook have **not** been
 tested live here; run both cells on your Bloomberg desktop to verify them.
 
-Final review: **29 tests passed, zero failures or errors**. Both source cells
+Final review: **35 tests passed, zero failures or errors**. Both source cells
 compile, the packaged notebook's cells match the source files, and cell 1
 matches the Word attachment exactly. Python's measured peak RSS stayed below 80 MiB
-under the unchanged 512 MiB guard. The email renderer did not change during
-this review; its sample remains byte-identical to the previously inspected
-1440 px and 1100 px previews. `validation.json` records the delivery hashes.
+under the unchanged 512 MiB guard. The updated twelve-column email is checked
+at 1440 px and 1100 px. The sample contains fictional companies and numbers.
+`validation.json` records the delivery hashes.
 Run `python run_checks.py` from this folder to repeat the offline checks.
 The tests use the retained source snapshots; no Bloomberg/Outlook connection
 or original Word file is needed. To also recheck your Word attachment, run

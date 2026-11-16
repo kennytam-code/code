@@ -1,14 +1,14 @@
 {
-  "source_document": "User-supplied code.docx (attachment not redistributed)",
+  "source_document": "/Users/lemon/Downloads/code.docx",
   "source_sha256": "1fe205d3a515acdb92d5bf3841d79b7f6df0e018a0fa2015aab27e62cbf01b02",
   "source_text_matches_initial_read": true,
   "offline_tests": {
-    "run": 29,
+    "run": 35,
     "failures": 0,
     "errors": 0,
-    "peak_rss_mib": 75.3,
+    "peak_rss_mib": 77.4,
     "python_rss_guard_mib": 512,
-    "source_document_unchanged": null,
+    "source_document_unchanged": true,
     "notebook_cells_match_sources": true,
     "python_38_syntax_pass": true,
     "live_bloomberg_tested": false,
@@ -18,14 +18,18 @@
     "synthetic_data_only": true,
     "visual_inspection_passed": true,
     "footnotes_present": false,
+    "title_block_present": false,
     "width_checks": {
       "desktop": {
         "width": 1440,
         "scrollWidth": 1440,
+        "headings": 0,
         "headers": [
           "Expiry",
           "Stock / holders",
+          "A-share",
           "Unlock",
+          "Avg 20D\nturnover (HKDm)",
           "Liquidity ratios",
           "IPO price",
           "Last price",
@@ -33,44 +37,78 @@
           "7D %",
           "1M %",
           "Shortable"
+        ],
+        "rowCells": [
+          12,
+          12,
+          12,
+          12
         ]
       },
       "compact": {
         "width": 1100,
-        "scrollWidth": 1100
+        "scrollWidth": 1100,
+        "headings": 0,
+        "headers": [
+          "Expiry",
+          "Stock / holders",
+          "A-share",
+          "Unlock",
+          "Avg 20D\nturnover (HKDm)",
+          "Liquidity ratios",
+          "IPO price",
+          "Last price",
+          "vs IPO %",
+          "7D %",
+          "1M %",
+          "Shortable"
+        ],
+        "rowCells": [
+          12,
+          12,
+          12,
+          12
+        ]
       }
-    },
-    "unchanged_after_integration_review": true
+    }
   },
   "live_bloomberg_tested": false,
   "windows_outlook_tested": false,
   "emails_sent": 0,
   "files": {
-    "HK_IPO_Two_Emails.ipynb": "09b387b3f3088abf4004dd8867c08cebb93e26c94b44ca187cfe9f09cb547028",
-    "README.md": "fcf631db2a322adb38f8bd8ab4da3a93638fff286cb4466623a4d744ce97fedd",
-    "browser_checks.json": "d46568e1cf19f4f75c2b7ed8048043634884d7e4358ea84f220a9868c005e6f5",
-    "build_sample.py": "14efbec6d3d2e4bb2cf5aa041064ac53fdd31b013e0ba34757432bf5db8622d9",
+    ".gitattributes": "ef5d8c7c9b1a0205ee8e92bfab36e65bb328abf4b3e02f98b8084068091d6924",
+    "HK_IPO_Two_Emails.ipynb": "da4db0ec1b792765da889bd533127bab0d1aa3cc1878147f55611be26565b88c",
+    "README.md": "49afb0ac57f384199d5ee62beac4675c2f3086a4782fb02c8983391146e7f839",
+    "browser_checks.json": "e2ae5012cc3f9c138293228fd3f44675cf7e5e61ce823659eeda60ec71dcd800",
+    "build_sample.py": "c4833e345a67a95c33724383acde8791c7b355bac9da67e47b67c1eddaa978a4",
     "first_cell_original.py": "3865d58796e9b78e0908d7285988deb10a209cb033000fb0af14c8ea0c103aa1",
-    "review_checks.json": "0be3fd6c727d1c64716c6f65b96a3a96e8c8ee2f7eab78ca14c0a476edcc32c7",
+    "review_checks.json": "09c36fead21d541d9057b0e676476db2f5987d9530f78e2462053e3b10ef18d4",
+    "review_sources/a_share_fetch.json": "e9be35f25c7bbda547cdb208e2521fdf4051f6806811761846a41ced58940ccc",
+    "review_sources/etnet_profile_2551.html": "69dcc4c5e351b1eaaeab41e1c3a0f0f7a840998d4e0a7597d6d19482c0616317",
+    "review_sources/etnet_profile_3750.html": "bf07e1d161b9f0d45b3428454a400bc142f70ca03a3ecb2035c12fa7e27f14cd",
+    "review_sources/etnet_profile_700.html": "11dd0393cb522a98c479be3190a9fb3b108d0995d0d9e3d9ebdc9974384a9d70",
     "review_sources/holiday_calendar.json": "8d797fb380825eec3f53fe456cc85ad30e2f91635675081abb671eca3bfd757d",
     "review_sources/manifest.json": "976ea4abb3f12f7681981972e5b697f4e56a6ff15154827c734f27b1aa04406f",
     "review_sources/parser_checks.json": "aa3fa94a07f53b99ac0953cfc10c720b6a4814b3f16720a21561c98df0aa7882",
     "review_sources/short_20261106.html": "31f9a394c54cb4ae1e0ecd30c277a65a76faeb8ec4162bbcf9467a7ba4972680",
     "review_sources/short_20261110.html": "f253e3cd3dd6e9e97e74579a84e4062310c235bbd77bb59cc0a198df7a68aa6d",
     "run_checks.py": "6ec97d97a4c5bb9419f3ce2dca6deb489aeef1a886f0da48b383ce40545fdcde",
-    "sample_email.html": "f2cbee3b27a84343fbfd77310d91feb09a7bac72097cc411e8420d03043309e7",
-    "sample_email.png": "f1ed636dfde1ca2850a89f7e4ee97e878d8474729eaa246e58eeeaaaa51ab7c0",
-    "second_cell.py": "0afa5a16ab89fb4b97404f85de639d6f69ba4502e1058a4e2a44b8cb14c2f409",
-    "test_cells_integration.py": "b81a4504e687dd45bddcc28fced4564f8df858fb5c8c4d198f526a053041a869",
-    "test_results.txt": "334bb93ded166027d23dad1b65816dbfb0ff53e070564264b0a94fbcd4e3fc36",
-    "test_second_cell.py": "faf5727713cbafccf31dea8f970f317767b79a2169548fe60ee8fed7a0edde30",
-    ".gitattributes": "ef5d8c7c9b1a0205ee8e92bfab36e65bb328abf4b3e02f98b8084068091d6924"
+    "sample_email.html": "1dab8caeda428306476d92b25d64c3b2e9051e7faa52c826aafa9deff3dfaa9a",
+    "sample_email.png": "a4e9f32c3a484f1673f4e7b95e312e04f63174abda029a3829f79cbbc3ef593a",
+    "sample_email_compact.png": "cffd7e4e10f36539ef4ca045068688c3fdf714e6cf4b53dde102c007783c2bb2",
+    "second_cell.py": "aff10adf134b9e1dda0d572496f72bc1c884f0502b2e301c35068884ef3b3c04",
+    "test_added_columns.py": "a6fa8d12f8bc8f0fd20194ba40d7dabdf7795126688e0382924699e634d3138d",
+    "test_cells_integration.py": "4ff1546417b5c0aa88269c21ef90956958cea0f73ab9a4419f9025aaea138dc8",
+    "test_results.txt": "1ffb2bdcb268d741959361e66a9b37287de5ff9b61dcfdeeba9d3091b9d4687a",
+    "test_second_cell.py": "faf5727713cbafccf31dea8f970f317767b79a2169548fe60ee8fed7a0edde30"
   },
   "footnotes_removed": true,
   "columns": [
     "Expiry",
     "Stock / holders",
+    "A-share",
     "Unlock",
+    "Avg 20D turnover (HKDm)",
     "Liquidity ratios",
     "IPO price",
     "Last price",
@@ -121,10 +159,25 @@
   "review_fixes": [
     "Validate Bloomberg timeout before sending request",
     "Fall back to PowerShell if pywin32 import/initial COM connection fails",
-    "Validate first-cell output path before requesting prices"
+    "Validate first-cell output path before requesting prices",
+    "Add average 20-day traded value in HKDm",
+    "Add conservative A-share classification with audited source data",
+    "Remove email-body title and summary, retain column labels"
   ],
-  "root_downloads": {
-    "HK_IPO_Two_Emails.ipynb": "09b387b3f3088abf4004dd8867c08cebb93e26c94b44ca187cfe9f09cb547028",
-    "HK_IPO_Second_Email_Cell.py": "0afa5a16ab89fb4b97404f85de639d6f69ba4502e1058a4e2a44b8cb14c2f409"
+  "review_date": "2026-11-17",
+  "a_share_lookup": {
+    "source": "etnet company capital breakdown",
+    "verified_bloomberg_mnemonic": false,
+    "incomplete_data": "N/A, never NO",
+    "source_examples_checked": [
+      "03750 YES",
+      "02551 NO",
+      "00700 N/A (total only)"
+    ]
+  },
+  "turnover_column": {
+    "source": "Unchanged first-cell avg_turnover_20d_hkd",
+    "display_unit": "HKDm",
+    "extra_bloomberg_requests": 0
   }
 }

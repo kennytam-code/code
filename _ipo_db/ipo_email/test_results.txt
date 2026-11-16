@@ -1,3 +1,9 @@
+test_capital_categories_and_zero_a_shares (test_added_columns.AddedColumns.test_capital_categories_and_zero_a_shares) ... ok
+test_downloaded_profiles_and_hashes (test_added_columns.AddedColumns.test_downloaded_profiles_and_hashes) ... ok
+test_incomplete_unknown_and_wrong_issuer_never_no (test_added_columns.AddedColumns.test_incomplete_unknown_and_wrong_issuer_never_no) ... ok
+test_network_failure_disabled_lookup_and_deduplication (test_added_columns.AddedColumns.test_network_failure_disabled_lookup_and_deduplication) ... ok
+test_successful_lookup_records_evidence (test_added_columns.AddedColumns.test_successful_lookup_records_evidence) ... ok
+test_turnover_units_a_share_and_table_only_layout (test_added_columns.AddedColumns.test_turnover_units_a_share_and_table_only_layout) ... ok
 test_actual_build_new_yes_no_and_second_cell_agree (test_cells_integration.FirstCellNewTests.test_actual_build_new_yes_no_and_second_cell_agree) ... ok
 test_existing_stocks_not_all_new_on_first_run (test_cells_integration.FirstCellNewTests.test_existing_stocks_not_all_new_on_first_run) ... ok
 test_holiday_and_year_boundary (test_cells_integration.FirstCellNewTests.test_holiday_and_year_boundary) ... ok
@@ -31,6 +37,6 @@ test_unavailable_stale_and_insufficient (test_second_cell.AddonTests.test_unavai
 test_window_and_preservation (test_second_cell.AddonTests.test_window_and_preservation) ... ok
 
 ----------------------------------------------------------------------
-Ran 29 tests in 0.387s
+Ran 35 tests in 0.491s
 
 OK

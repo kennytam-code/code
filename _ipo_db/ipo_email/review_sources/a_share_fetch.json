@@ -1,0 +1,23 @@
+[
+  {
+    "code": "3750",
+    "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_brief.php?code=3750",
+    "sha256": "bf07e1d161b9f0d45b3428454a400bc142f70ca03a3ecb2035c12fa7e27f14cd",
+    "bytes": 243123,
+    "retrieved_at": "2026-11-16T18:24:28.421329+00:00"
+  },
+  {
+    "code": "700",
+    "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_brief.php?code=700",
+    "sha256": "11dd0393cb522a98c479be3190a9fb3b108d0995d0d9e3d9ebdc9974384a9d70",
+    "bytes": 242684,
+    "retrieved_at": "2026-11-16T18:24:29.360589+00:00"
+  },
+  {
+    "code": "2551",
+    "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_brief.php?code=2551",
+    "sha256": "69dcc4c5e351b1eaaeab41e1c3a0f0f7a840998d4e0a7597d6d19482c0616317",
+    "bytes": 240950,
+    "retrieved_at": "2026-11-16T18:24:30.028574+00:00"
+  }
+]
