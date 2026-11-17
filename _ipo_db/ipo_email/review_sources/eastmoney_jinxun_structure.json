@@ -1,0 +1,48 @@
+{
+  "version": "5407c918aec69702989e4910dcdaf3f9",
+  "result": {
+    "pages": 1,
+    "data": [
+      {
+        "SECUCODE": "03636.HK",
+        "SECURITY_CODE": "03636",
+        "SECURITY_NAME_ABBR": "金浔资源(五百)",
+        "CHANGE_DATE": "2026-10-27 00:00:00",
+        "SHARES_TYPE_CODE": "001",
+        "SHARES_TYPE": "已发行普通股",
+        "SHARES_NUM": 380786607
+      },
+      {
+        "SECUCODE": "03636.HK",
+        "SECURITY_CODE": "03636",
+        "SECURITY_NAME_ABBR": "金浔资源(五百)",
+        "CHANGE_DATE": "2026-10-27 00:00:00",
+        "SHARES_TYPE_CODE": "001001",
+        "SHARES_TYPE": "香港普通股",
+        "SHARES_NUM": 105045000
+      },
+      {
+        "SECUCODE": "03636.HK",
+        "SECURITY_CODE": "03636",
+        "SECURITY_NAME_ABBR": "金浔资源(五百)",
+        "CHANGE_DATE": "2026-10-27 00:00:00",
+        "SHARES_TYPE_CODE": "001002",
+        "SHARES_TYPE": "非港股",
+        "SHARES_NUM": 275741607
+      },
+      {
+        "SECUCODE": "03636.HK",
+        "SECURITY_CODE": "03636",
+        "SECURITY_NAME_ABBR": "金浔资源(五百)",
+        "CHANGE_DATE": "2026-10-27 00:00:00",
+        "SHARES_TYPE_CODE": "001002001",
+        "SHARES_TYPE": "内地上市股",
+        "SHARES_NUM": 275741607
+      }
+    ],
+    "count": 4
+  },
+  "success": true,
+  "message": "ok",
+  "code": 0
+}

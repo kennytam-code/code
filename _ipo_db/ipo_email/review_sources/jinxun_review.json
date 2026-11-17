@@ -1,0 +1,26 @@
+{
+  "source_receipts": [
+    {
+      "file": "etnet_profile_3636.html",
+      "source_url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_brief.php?code=3636",
+      "sha256": "8329451c763bedd0cc4d0468bdbf150d46fc53de19d1d613e7938f5ab05b134a",
+      "retrieved_at": "2026-11-17T00:10:17.061974+00:00",
+      "projection": false
+    },
+    {
+      "file": "eastmoney_jinxun_structure.json",
+      "source_url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+      "sha256": "0ef995cb4c95e9e04f7d1170b0e93daafdc5dc5ad65626cef7ca0f8992b37093",
+      "retrieved_at": "2026-11-17T00:10:17.542479+00:00",
+      "projection": true
+    }
+  ],
+  "h_code": "03636",
+  "neeq_code": "870844",
+  "classification": "NO",
+  "interpretation": "NEEQ domestic shares are not an exchange-listed mainland A-share line; current complete domestic/H counts agree across both providers. No hardcoded issuer override.",
+  "primary_filings": [
+    "https://www.hkexnews.hk/listedco/listconews/sehk/2026/0227/2026022700889_c.pdf",
+    "https://www.hkexnews.hk/listedco/listconews/sehk/2026/1102/2026110203435_c.pdf"
+  ]
+}

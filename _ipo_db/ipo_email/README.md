@@ -127,42 +127,62 @@ multiple. No extra Bloomberg request is needed. If the first cell sets
 remain N/A. The formula above has not been tested on a live terminal here.
 
 I could not verify a Bloomberg mnemonic for the existence of a mainland
-A-share line. The A-share column therefore uses etnet's explicit
-[A/H ticker table](https://www.etnet.com.hk/www/tc/stocks/ah.php) together with
-its issuer share-capital section, through the original cell's HTTP/proxy client. It is a provider-based
-classification, not a Bloomberg formula or independent exchange confirmation.
-Examples of the source schema are [CATL's profile](https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_brief.php?code=3750)
-and [APT Electronics' profile](https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_brief.php?code=2551).
+A-share line. This does not establish that no such field exists; terminal
+field discovery and a real response would be needed to verify one. Prices
+and turnover still use Bloomberg. The A-share lookup uses etnet's explicit
+[A/H ticker table](https://www.etnet.com.hk/www/tc/stocks/ah.php) and the complete
+ordinary-share structure behind [Eastmoney's company profiles](https://emweb.securities.eastmoney.com/PC_HKF10/pages/home/index.html?code=00700&type=web&color=w#/CompanyProfile).
+Its public endpoint is `datacenter.eastmoney.com/securities/api/data/v1/get`,
+report `RPT_HKF10_INFO_EQUITYSTR`. EtNet issuer capital classes provide a
+fallback when the two batch sources do not resolve an issuer. This is a
+provider-based classification, not a Bloomberg field or exchange certification.
 
-- YES: an explicit A/H ticker pair or a positive mainland A-share capital
-  class is reported, with no conflicting capital evidence.
-- NO: a complete, recognised capital-class breakdown reconciles to the issued
-  total and contains no positive A-share class. Unlisted domestic shares are
-  not treated as A shares.
-- N/A: unresolved requests, wrong issuer, incomplete page, unknown class label,
-  inconsistent totals, conflicting evidence, or an issued total without a
-  class breakdown and no explicit A/H pair. This
-  deliberately includes profiles such as Tencent's, which only show an issued
-  total. Missing data never becomes NO. Offshore Class A voting shares are
-  not assumed to be mainland A shares.
+- YES: an explicit A/H ticker pair or positive mainland A-share capital class.
+- NO: complete recognised classes reconcile to issued capital and establish
+  that there is no mainland A-share line. Tencent is now resolved from its
+  complete Hong Kong/issued-share structure, rather than its total-only profile.
+- A generic mainland-listed class is not automatically A: it can include NEEQ
+  domestic shares. For this case, the specific etnet domestic/H classes must
+  match Eastmoney's total, Hong Kong and domestic counts exactly.
+- Missing evidence is never converted to NO. A genuine contradiction, source
+  outage or malformed reply remains N/A, with details in the JSON audit.
+  Offshore Class A voting shares and unlisted domestic shares are not A shares.
 
-The lookup fetches the A/H table once, then one profile per unique issuer,
-sequentially. It validates table structure, ticker/link agreement and duplicate
-codes. Absence from the roster never means NO. An explicit pair can resolve a
-missing profile as YES; a pair that conflicts with a complete NO capital
-breakdown produces N/A. Its URLs, fetch timestamps, mainland ticker/exchange,
-capital amounts, page hashes, classification method and any error remain in the
-JSON audit. Provider information can lag issuer changes; a successful page
-fetch is not proof that the underlying capital table was updated that day.
-Set `LOCKUP_EMAIL_CHECK_A_SHARES = False` to disable these requests; the column
-then shows N/A. No new package is required. Downloaded profile fixtures and
-their hashes are under `review_sources/`.
+The lookup fetches the A/H table once, then share structures in batches of 40
+issuers, sequentially. Individual profiles are requested only if still needed.
+It validates issuer codes, ticker links, class labels, dates, nonnegative whole
+share counts and capital reconciliation. Absence from the roster never means
+NO. An explicit A/H pair conflicting with a complete non-A structure is still
+rejected. URLs, timestamps, response hashes, classes, methods and errors remain
+in the audit. A newly fetched page can still contain dated provider data.
 
-The actual lookup was run on the public web from this Mac on 17 November:
-CATL 03750 -> YES / Shenzhen 300750; SMIC 00981 -> YES / Shanghai 688981;
-APT Electronics 02551 -> NO; Tencent 00700 -> N/A (total only, no class breakdown).
-The 211-pair etnet table was parsed successfully. This direct-network check
-does not test the corporate proxy, Bloomberg or Windows Outlook.
+Requests reuse the original HTTP opener, proxy and TLS settings, with no added
+package. Each network operation has an 8-second timeout, responses are limited
+to 2 MB, and a 45-second budget stops further requests/reads. An in-progress
+socket operation can last until its timeout; 45 seconds is not a strict total
+wall-clock guarantee. There are no retry loops. Handled or unexpected A-share
+lookup failures do not prevent saving the second draft. The notebook console
+reports unresolved lookup counts; the email has no added notes or footnotes.
+The settings are `LOCKUP_EMAIL_WEB_TIMEOUT`, `LOCKUP_EMAIL_WEB_BUDGET` and
+`LOCKUP_EMAIL_CHECK_A_SHARES` (False disables lookup and displays N/A).
+
+On 17 November, the actual lookup resolved **all 69 unique stocks** across
+73 future tranches in the original November–January window: **13 YES, 56 NO,
+zero N/A**, in 2.36 seconds on this Mac. This coverage check precedes the
+shortability filter and does not independently verify expiry dates. It is
+recorded in `review_sources/live_window_coverage.json`. An eight-stock check
+also resolves CATL/SMIC as YES and Tencent/APT/Alibaba/Xiaomi/Meituan/JD as NO.
+The direct public-web tests do not test the corporate proxy, Bloomberg or
+Windows Outlook. Timing is an observation, not a runtime guarantee.
+
+Jinxun 03636 was the one apparent conflict: its NEEQ shares were labelled
+generically as mainland-listed by one provider. Both providers' complete
+domestic/H share counts agree. Its [2 November issuer filing](https://www.hkexnews.hk/listedco/listconews/sehk/2026/1102/2026110203435_c.pdf)
+identifies NEEQ 870844 and the post-capitalisation total; its
+[name-change filing](https://www.hkexnews.hk/listedco/listconews/sehk/2026/0227/2026022700889_c.pdf)
+identifies the NEEQ venue explicitly. The code uses the general class/count
+checks above, with no hardcoded ticker override. Retained source fixtures and
+the regression test cover both this resolution and mismatching counts.
 
 Primary-source spot checks support the positive pairs in
 [CATL's 2025 annual report, page 4](https://www.hkexnews.hk/listedco/listconews/sehk/2026/0311/2026031100770.pdf)
@@ -209,7 +229,7 @@ output, unique filenames, and preservation of the first report. These checks
 use synthetic fixtures. Bloomberg and Windows Outlook have **not** been
 tested live here; run both cells on your Bloomberg desktop to verify them.
 
-Final review: **40 tests passed, zero failures or errors**. Both source cells
+Final review: **46 tests passed, zero failures or errors**. Both source cells
 compile, the packaged notebook's cells match the source files, and cell 1
 matches the Word attachment exactly. Python's measured peak RSS stayed below 80 MiB
 under the unchanged 512 MiB guard. The updated twelve-column email is checked

@@ -8,7 +8,9 @@
 LOCKUP_EMAIL_TO = globals().get("EMAIL_TO", "")
 LOCKUP_EMAIL_CC = globals().get("EMAIL_CC", "")
 LOCKUP_EMAIL_OPEN_OUTLOOK = globals().get("OPEN_OUTLOOK", True)
-LOCKUP_EMAIL_CHECK_A_SHARES = True  # etnet A/H pairs + company profiles; no verified Bloomberg mnemonic
+LOCKUP_EMAIL_CHECK_A_SHARES = True  # etnet A/H pairs + Eastmoney share classes
+LOCKUP_EMAIL_WEB_TIMEOUT = 8        # Per network operation, seconds
+LOCKUP_EMAIL_WEB_BUDGET = 45        # Stop starting/reading requests after this budget
 
 
 def _lu_select(report):
@@ -115,55 +117,187 @@ def _lu_a_share_roster(document, parse_html):
     return pairs
 
 
-def _lu_a_shares(codes, env):
-    """One roster request plus one profile per issuer; unresolved cases stay N/A."""
-    from datetime import datetime
-    import hashlib
+def _lu_source_text(client, url, env, deadline):
+    """Reuse the original proxy/TLS opener, with bounded reads and no retry loop."""
+    import time
+    import urllib.request
 
-    results, pairs = {}, {}
-    codes = sorted(set(codes))
-    if not codes:
+    remaining = deadline - time.monotonic()
+    timeout = float(env.get('LOCKUP_EMAIL_WEB_TIMEOUT', 8))
+    if not 0 < timeout <= 30 or remaining <= 0:
+        raise TimeoutError('A-share network budget exhausted or timeout setting invalid.')
+    # In-memory source adapters used by the offline checks have only text().
+    if not hasattr(client, 'opener'):
+        return client.text(url)
+    if url in client.cache:
+        return client.cache[url]
+    request = urllib.request.Request(url, headers={
+        'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json,text/html',
+        'Accept-Encoding': 'identity', 'Connection': 'close', 'Cache-Control': 'no-cache'})
+    with client.opener.open(request, timeout=min(timeout, remaining)) as response:
+        chunks, size = [], 0
+        while True:
+            if time.monotonic() >= deadline:
+                raise TimeoutError('A-share network budget exhausted.')
+            chunk = response.read1(64 * 1024)
+            if not chunk:
+                break
+            size += len(chunk)
+            if size > 2_000_000:
+                raise ValueError('A-share response exceeds size limit.')
+            chunks.append(chunk)
+        raw = b''.join(chunks)
+        length = response.headers.get('Content-Length')
+        if length and length.isdecimal() and int(length) != size:
+            raise ValueError('Incomplete A-share response.')
+        raw = env['_decode_http_encoding'](raw, response.headers.get('Content-Encoding'), url, limit=2_000_000)
+        return env['_decode_source'](url, raw, response.headers.get_content_charset())
+
+
+def _lu_share_structure(document, codes, day):
+    """Use complete, dated ordinary-share classes; mainland-listed is not automatically A."""
+    import json
+    from datetime import date
+    from decimal import Decimal
+
+    data = json.loads(document)
+    result = data.get('result') or {}
+    rows = result.get('data')
+    if (data.get('success') is not True or not isinstance(rows, list)
+            or result.get('pages') != 1 or result.get('count') != len(rows) or len(rows) > 500):
+        raise ValueError('Incomplete or unsuccessful share-structure response.')
+    groups = {code: [] for code in codes}
+    for row in rows:
+        code = row.get('SECURITY_CODE')
+        if code not in groups or row.get('SECUCODE') != code + '.HK':
+            raise ValueError('Unexpected issuer in share-structure response.')
+        groups[code].append(row)
+    labels = {'001': '已发行普通股', '001001': '香港普通股', '001002': '非港股',
+              '001002001': '内地上市股', '001002002': '海外上市股', '001002003': '非上市流通股'}
+    output = {}
+    for code, entries in groups.items():
+        item = {'status': 'N/A', 'error': None}
+        try:
+            amounts, dates = {}, set()
+            for row in entries:
+                key = row.get('SHARES_TYPE_CODE')
+                if key not in labels or key in amounts or row.get('SHARES_TYPE') != labels[key]:
+                    raise ValueError('Unknown or duplicate share class.')
+                value = Decimal(str(row['SHARES_NUM']))
+                if not value.is_finite() or value < 0 or value != value.to_integral_value():
+                    raise ValueError('Invalid share count.')
+                amounts[key] = int(value)
+                dates.add(date.fromisoformat(row['CHANGE_DATE'][:10]))
+            if len(dates) != 1 or next(iter(dates)) > day:
+                raise ValueError('Missing, mixed or future share-structure date.')
+            total, hk = amounts.get('001'), amounts.get('001001')
+            non_hk = amounts.get('001002', 0)
+            leaves = sum(amounts.get(k, 0) for k in ('001002001', '001002002', '001002003'))
+            if (total is None or hk is None or total <= 0 or hk <= 0
+                    or total != hk + non_hk or non_hk != leaves):
+                raise ValueError('Share classes do not reconcile to the complete issued total.')
+            item.update(status='MAINLAND_LISTED' if amounts.get('001002001', 0) > 0 else 'NO',
+                        capital={labels[k]: v for k, v in amounts.items()},
+                        asof=next(iter(dates)).isoformat(),
+                        method='Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR')
+        except Exception as exc:
+            item['error'] = str(exc)[:600]
+        output[code] = item
+    return output
+
+
+def _lu_a_shares(codes, env):
+    """Batch listings and share classes; profile fallback only for unresolved issuers."""
+    from datetime import datetime
+    from urllib.parse import urlencode
+    import hashlib
+    import re
+    import time
+
+    results, pairs, structures = {}, {}, {}
+    keys = sorted(set(codes))
+    if not keys:
         return results
-    roster = {'url': 'https://www.etnet.com.hk/www/tc/stocks/ah.php'}
-    client, setup_error = None, None
+    day = datetime.now(env['HK']).date()
+    for code in keys:
+        results[code] = {'status': 'N/A', 'error': None, 'retrieved_at': datetime.now(env['HK']).isoformat()}
     try:
         if not env.get('LOCKUP_EMAIL_CHECK_A_SHARES', True):
             raise ValueError('A-share lookup disabled.')
+        budget = float(env.get('LOCKUP_EMAIL_WEB_BUDGET', 45))
+        if not 0 < budget <= 120:
+            raise ValueError('A-share network budget must be between 0 and 120 seconds.')
+        deadline = time.monotonic() + budget
         client = env['Client']()
     except Exception as exc:
-        setup_error = str(exc)[:600]
+        for result in results.values():
+            result['error'] = str(exc)[:600]
+        return results
+    valid = [c for c in keys if isinstance(c, str) and re.fullmatch(r'\d{5}', c)]
+    def fetch(url):
+        record = {'url': url, 'retrieved_at': datetime.now(env['HK']).isoformat()}
+        document = _lu_source_text(client, url, env, deadline)
+        record['document_sha256'] = hashlib.sha256(document.encode('utf-8')).hexdigest()
+        return document, record
+    roster = {'url': 'https://www.etnet.com.hk/www/tc/stocks/ah.php'}
     try:
-        if setup_error:
-            raise ValueError(setup_error)
-        document = client.text(roster['url'])
+        document, roster = fetch(roster['url'])
         pairs = _lu_a_share_roster(document, env['parse_html'])
-        roster.update(count=len(pairs), document_sha256=hashlib.sha256(document.encode('utf-8')).hexdigest())
+        roster['count'] = len(pairs)
     except Exception as exc:
         roster['error'] = str(exc)[:600]
-    roster['retrieved_at'] = datetime.now(env['HK']).isoformat()
-    for code in codes:
-        url = 'https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_brief.php?code=' + str(int(code))
-        result = {'status': 'N/A', 'url': url, 'error': None, 'roster': dict(roster)}
+    for offset in range(0, len(valid), 40):
+        batch = valid[offset:offset + 40]
+        url = 'https://datacenter.eastmoney.com/securities/api/data/v1/get?' + urlencode({
+            'reportName': 'RPT_HKF10_INFO_EQUITYSTR',
+            'columns': 'SECUCODE,SECURITY_CODE,SECURITY_NAME_ABBR,CHANGE_DATE,SHARES_TYPE_CODE,SHARES_TYPE,SHARES_NUM',
+            'filter': '(SECUCODE in ("' + '","'.join(c + '.HK' for c in batch) + '"))',
+            'pageNumber': '1', 'pageSize': '500', 'sortTypes': '1,1',
+            'sortColumns': 'SECURITY_CODE,SHARES_TYPE_CODE', 'source': 'F10', 'client': 'PC'})
+        record = {'url': url}
         try:
-            if setup_error:
-                raise ValueError(setup_error)
-            document = client.text(url)
-            result.update(_lu_a_share_profile(document, code, env['parse_html']))
-            result['document_sha256'] = hashlib.sha256(document.encode('utf-8')).hexdigest()
+            document, record = fetch(url)
+            parsed = _lu_share_structure(document, batch, day)
+            for code, item in parsed.items():
+                structures[code] = dict(item, source=record)
         except Exception as exc:
-            result['error'] = str(exc)[:600]
-        pair = pairs.get(str(int(code)).zfill(5))
-        if pair:
+            for code in batch:
+                structures[code] = {'status': 'N/A', 'error': str(exc)[:600], 'source': record}
+    for code, result in results.items():
+        if code not in valid:
+            result['error'] = 'Invalid Hong Kong stock code.'
+            continue
+        structure = structures[code]
+        pair = pairs.get(code)
+        result.update(roster=dict(roster), share_structure=structure)
+        if pair and structure['status'] == 'NO':
             result.update(pair)
-            if result['status'] == 'NO':
-                result.update(status='N/A', error='A/H ticker table conflicts with the issuer capital breakdown.')
-            else:
-                if result['error']:
-                    result['profile_error'] = result['error']
-                result.update(status='YES', error=None,
-                              method='Explicit etnet A/H ticker pair; issuer capital breakdown checked when available')
-        result['retrieved_at'] = datetime.now(env['HK']).isoformat()
-        results[code] = result
+            result['error'] = 'Explicit A/H listing conflicts with the complete share structure.'
+        elif pair:
+            result.update(pair, status='YES', method='Explicit etnet A/H ticker pair')
+        elif structure['status'] == 'NO':
+            result.update(status='NO', method=structure['method'])
+        else:
+            url = 'https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_brief.php?code=' + str(int(code))
+            try:
+                document, record = fetch(url)
+                profile = _lu_a_share_profile(document, code, env['parse_html'])
+                result['profile'] = dict(profile, source=record)
+                if profile['status'] == 'NO' and structure['status'] == 'MAINLAND_LISTED':
+                    # "Mainland listed" also includes NEEQ domestic shares.
+                    # Use the more specific capital classes only if both sources
+                    # account for exactly the same total, H and domestic shares.
+                    p, s = profile['capital'], structure['capital']
+                    domestic = sum(p.get(k, 0) for k in ('內資股及其他', '內資股'))
+                    if (p['發行股數'] != s['已发行普通股']
+                            or p.get('H股') != s['香港普通股']
+                            or domestic != s.get('内地上市股')
+                            or domestic + p['H股'] != p['發行股數']):
+                        raise ValueError('Domestic share classes disagree between sources.')
+                    profile['method'] += '; domestic/H counts reconciled to Eastmoney (mainland-listed is not necessarily A)'
+                result.update(status=profile['status'], method=profile['method'])
+            except Exception as exc:
+                result['error'] = str(exc)[:600]
     return results
 
 
@@ -548,7 +682,11 @@ def _lu_run(first, env, open_outlook=True):
     metrics = {s: _lu_performance(snapshots[s], histories[s], start) for s in securities}
     if rows:
         print("Second email: checking A-share capital classes ...", flush=True)
-    a_shares = _lu_a_shares([r['code'] for r in rows], env)
+    try:
+        a_shares = _lu_a_shares([r['code'] for r in rows], env)
+    except Exception as exc:
+        # Reference-data failures must not prevent saving the separate email.
+        a_shares = {r['code']: {'status': 'N/A', 'error': str(exc)[:600]} for r in rows}
     for row in rows:
         row["price_performance"] = metrics[env["bloomberg_security"](row["code"])]
         row['a_share'] = a_shares[row['code']]
@@ -593,6 +731,8 @@ def _lu_run(first, env, open_outlook=True):
     print("HTML preview:", paths['.html'])
     if any(r['price_performance']['errors'] for r in rows):
         print("Some Bloomberg values are unavailable or need review; see N/A in the draft and details in its JSON file.")
+    if any(r['a_share'].get('error') for r in rows):
+        print("Some A-share lookups could not be verified. The draft is saved; details are in its JSON file.")
     if not opened and env.get('SHOW_NOTEBOOK_PREVIEW_IF_NO_OUTLOOK', True):
         try:
             from IPython.display import HTML, display

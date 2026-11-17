@@ -1,14 +1,20 @@
 test_capital_categories_and_zero_a_shares (test_added_columns.AddedColumns.test_capital_categories_and_zero_a_shares) ... ok
 test_downloaded_profiles_and_hashes (test_added_columns.AddedColumns.test_downloaded_profiles_and_hashes) ... ok
 test_downloaded_roster_exact_ticker_pairs (test_added_columns.AddedColumns.test_downloaded_roster_exact_ticker_pairs) ... ok
+test_eight_examples_no_unknowns_and_no_profile_requests (test_added_columns.AddedColumns.test_eight_examples_no_unknowns_and_no_profile_requests) ... ok
 test_incomplete_unknown_and_wrong_issuer_never_no (test_added_columns.AddedColumns.test_incomplete_unknown_and_wrong_issuer_never_no) ... ok
 test_invalid_roster_rejected_without_inventing_no (test_added_columns.AddedColumns.test_invalid_roster_rejected_without_inventing_no) ... ok
+test_neeq_domestic_shares_are_not_a_shares (test_added_columns.AddedColumns.test_neeq_domestic_shares_are_not_a_shares) ... ok
 test_network_failure_disabled_lookup_and_deduplication (test_added_columns.AddedColumns.test_network_failure_disabled_lookup_and_deduplication) ... ok
 test_roster_and_profile_real_fixtures_end_to_end (test_added_columns.AddedColumns.test_roster_and_profile_real_fixtures_end_to_end) ... ok
 test_roster_positive_can_resolve_missing_profile (test_added_columns.AddedColumns.test_roster_positive_can_resolve_missing_profile) ... ok
 test_roster_profile_conflict_stays_unknown (test_added_columns.AddedColumns.test_roster_profile_conflict_stays_unknown) ... ok
+test_source_budget_stops_network_before_request (test_added_columns.AddedColumns.test_source_budget_stops_network_before_request) ... ok
+test_structure_integrity_and_mainland_not_assumed_a (test_added_columns.AddedColumns.test_structure_integrity_and_mainland_not_assumed_a) ... ok
 test_successful_lookup_records_evidence (test_added_columns.AddedColumns.test_successful_lookup_records_evidence) ... ok
+test_transport_partial_and_oversize_responses_rejected (test_added_columns.AddedColumns.test_transport_partial_and_oversize_responses_rejected) ... ok
 test_turnover_units_a_share_and_table_only_layout (test_added_columns.AddedColumns.test_turnover_units_a_share_and_table_only_layout) ... ok
+test_unexpected_lookup_failure_still_saves_email (test_added_columns.AddedColumns.test_unexpected_lookup_failure_still_saves_email) ... ok
 test_actual_build_new_yes_no_and_second_cell_agree (test_cells_integration.FirstCellNewTests.test_actual_build_new_yes_no_and_second_cell_agree) ... ok
 test_existing_stocks_not_all_new_on_first_run (test_cells_integration.FirstCellNewTests.test_existing_stocks_not_all_new_on_first_run) ... ok
 test_holiday_and_year_boundary (test_cells_integration.FirstCellNewTests.test_holiday_and_year_boundary) ... ok
@@ -42,6 +48,6 @@ test_unavailable_stale_and_insufficient (test_second_cell.AddonTests.test_unavai
 test_window_and_preservation (test_second_cell.AddonTests.test_window_and_preservation) ... ok
 
 ----------------------------------------------------------------------
-Ran 40 tests in 0.703s
+Ran 46 tests in 0.749s
 
 OK

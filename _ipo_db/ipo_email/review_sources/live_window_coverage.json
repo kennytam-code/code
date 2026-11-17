@@ -1,0 +1,2029 @@
+{
+  "checked_at": "2026-11-17T00:11:02.418921+00:00",
+  "months": [
+    "202611",
+    "202612",
+    "202701"
+  ],
+  "scope": "All future-expiry stocks in original etnet monthly window, before shortability filter; lookup coverage only, not independent expiry verification.",
+  "source_receipts": [
+    {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/ipo-free-float.php?month=202611",
+      "sha256": "3d5e3d3c83791861b3bb8535f7c4ddf4e766370ab3d062ddd3418f39ee4374b0",
+      "parsed_rows": 17
+    },
+    {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/ipo-free-float.php?month=202612",
+      "sha256": "838813a0b7bd192a4fcc60675bbd0fd2f77da80aed970f5e795944e999a146b8",
+      "parsed_rows": 38
+    },
+    {
+      "url": "https://www.etnet.com.hk/www/tc/stocks/ipo-free-float.php?month=202701",
+      "sha256": "0acdf9ae76c111884b8ca1a8ea30e6f61876ba96847c78bb3f384b3098c97ba9",
+      "parsed_rows": 28
+    }
+  ],
+  "tranches": 73,
+  "stocks": 69,
+  "elapsed_lookup_seconds": 2.36,
+  "status_counts": {
+    "NO": 56,
+    "YES": 13
+  },
+  "results": {
+    "00100": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054096+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 352480183,
+          "香港普通股": 271377649,
+          "非港股": 81102534,
+          "非上市流通股": 81102534
+        },
+        "asof": "2026-09-30",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "00537": {
+      "status": "YES",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054100+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "MAINLAND_LISTED",
+        "error": null,
+        "capital": {
+          "已发行普通股": 218578633,
+          "香港普通股": 24802200,
+          "非港股": 193776433,
+          "内地上市股": 193776433
+        },
+        "asof": "2026-10-22",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "a_code": "688337",
+      "a_exchange": "Shanghai",
+      "method": "Explicit etnet A/H ticker pair"
+    },
+    "00668": {
+      "status": "YES",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054102+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "MAINLAND_LISTED",
+        "error": null,
+        "capital": {
+          "已发行普通股": 589432159,
+          "香港普通股": 50076100,
+          "非港股": 539356059,
+          "内地上市股": 539356059
+        },
+        "asof": "2026-10-31",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "a_code": "300866",
+      "a_exchange": "Shenzhen",
+      "method": "Explicit etnet A/H ticker pair"
+    },
+    "01081": {
+      "status": "YES",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054105+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "MAINLAND_LISTED",
+        "error": null,
+        "capital": {
+          "已发行普通股": 740085849,
+          "香港普通股": 102336500,
+          "非港股": 637749349,
+          "内地上市股": 637749349
+        },
+        "asof": "2026-07-07",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "a_code": "002487",
+      "a_exchange": "Shenzhen",
+      "method": "Explicit etnet A/H ticker pair"
+    },
+    "01191": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054107+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 91556745,
+          "香港普通股": 91556745
+        },
+        "asof": "2026-07-13",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "01377": {
+      "status": "YES",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054108+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "MAINLAND_LISTED",
+        "error": null,
+        "capital": {
+          "已发行普通股": 424408114,
+          "香港普通股": 12632000,
+          "非港股": 411776114,
+          "内地上市股": 411776114
+        },
+        "asof": "2026-10-13",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "a_code": "301377",
+      "a_exchange": "Shenzhen",
+      "method": "Explicit etnet A/H ticker pair"
+    },
+    "01511": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054109+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 162485020,
+          "香港普通股": 126725450,
+          "非港股": 35759570,
+          "非上市流通股": 35759570
+        },
+        "asof": "2026-05-19",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "01641": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054110+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 98263000,
+          "香港普通股": 24566464,
+          "非港股": 73696536,
+          "非上市流通股": 73696536
+        },
+        "asof": "2026-01-12",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "01688": {
+      "status": "YES",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054111+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "MAINLAND_LISTED",
+        "error": null,
+        "capital": {
+          "已发行普通股": 8155468109,
+          "香港普通股": 793417020,
+          "非港股": 7362051089,
+          "内地上市股": 7362051089
+        },
+        "asof": "2026-11-16",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "a_code": "002600",
+      "a_exchange": "Shenzhen",
+      "method": "Explicit etnet A/H ticker pair"
+    },
+    "01768": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054112+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 217837800,
+          "香港普通股": 215917351,
+          "非港股": 1920449,
+          "非上市流通股": 1920449
+        },
+        "asof": "2026-02-13",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "01779": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054113+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 76322100,
+          "香港普通股": 75059218,
+          "非港股": 1262882,
+          "非上市流通股": 1262882
+        },
+        "asof": "2026-07-06",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "01956": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054115+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 174436207,
+          "香港普通股": 174436207
+        },
+        "asof": "2026-07-28",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "02249": {
+      "status": "YES",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054116+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "MAINLAND_LISTED",
+        "error": null,
+        "capital": {
+          "已发行普通股": 2234787210,
+          "香港普通股": 227053900,
+          "非港股": 2007733310,
+          "内地上市股": 2007733310
+        },
+        "asof": "2026-09-18",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "a_code": "688249",
+      "a_exchange": "Shanghai",
+      "method": "Explicit etnet A/H ticker pair"
+    },
+    "02335": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054117+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 331740350,
+          "香港普通股": 280071100,
+          "非港股": 51669250,
+          "非上市流通股": 51669250
+        },
+        "asof": "2026-06-23",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "02396": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054118+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 117657522,
+          "香港普通股": 83022145,
+          "非港股": 34635377,
+          "非上市流通股": 34635377
+        },
+        "asof": "2025-12-19",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "02408": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054119+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 710689300,
+          "香港普通股": 710689300
+        },
+        "asof": "2025-12-04",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "02475": {
+      "status": "YES",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054120+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "MAINLAND_LISTED",
+        "error": null,
+        "capital": {
+          "已发行普通股": 7743331706,
+          "香港普通股": 396014700,
+          "非港股": 7347317006,
+          "内地上市股": 7347317006
+        },
+        "asof": "2026-10-31",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "a_code": "002475",
+      "a_exchange": "Shenzhen",
+      "method": "Explicit etnet A/H ticker pair"
+    },
+    "02513": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054121+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 487588090,
+          "香港普通股": 263059605,
+          "非港股": 224528485,
+          "非上市流通股": 224528485
+        },
+        "asof": "2026-09-16",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "02539": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054123+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 55539800,
+          "香港普通股": 23210220,
+          "非港股": 32329580,
+          "非上市流通股": 32329580
+        },
+        "asof": "2026-11-11",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "02581": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054124+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 311945001,
+          "香港普通股": 311945001
+        },
+        "asof": "2025-12-19",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "02635": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054125+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 395154500,
+          "香港普通股": 320834280,
+          "非港股": 74320220,
+          "非上市流通股": 74320220
+        },
+        "asof": "2026-10-09",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "02655": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054126+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 517711575,
+          "香港普通股": 394689340,
+          "非港股": 123022235,
+          "非上市流通股": 123022235
+        },
+        "asof": "2026-01-09",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "02657": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054127+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 138804635,
+          "香港普通股": 105233977,
+          "非港股": 33570658,
+          "非上市流通股": 33570658
+        },
+        "asof": "2026-11-11",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "02658": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054129+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 392170511,
+          "香港普通股": 57892426,
+          "非港股": 334278085,
+          "非上市流通股": 334278085
+        },
+        "asof": "2026-11-16",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "02659": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054130+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 323190065,
+          "香港普通股": 151535850,
+          "非港股": 171654215,
+          "非上市流通股": 171654215
+        },
+        "asof": "2026-09-08",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "02661": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054131+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 206496158,
+          "香港普通股": 206496158
+        },
+        "asof": "2026-09-30",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "02671": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054133+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 120550005,
+          "香港普通股": 120550005
+        },
+        "asof": "2025-12-29",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "02675": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054134+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 387237100,
+          "香港普通股": 323117848,
+          "非港股": 64119252,
+          "非上市流通股": 64119252
+        },
+        "asof": "2026-11-03",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "02685": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054135+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 562603201,
+          "香港普通股": 562603201
+        },
+        "asof": "2026-09-28",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "02687": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054136+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 66666700,
+          "香港普通股": 61952800,
+          "非港股": 4713900,
+          "非上市流通股": 4713900
+        },
+        "asof": "2025-12-05",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "02706": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054138+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 406280752,
+          "香港普通股": 406280752
+        },
+        "asof": "2026-11-04",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "02788": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054139+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 2075000000,
+          "香港普通股": 2075000000
+        },
+        "asof": "2025-12-05",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "03308": {
+      "status": "YES",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054140+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "MAINLAND_LISTED",
+        "error": null,
+        "capital": {
+          "已发行普通股": 1177909641,
+          "香港普通股": 62675000,
+          "非港股": 1115234641,
+          "内地上市股": 1115234641
+        },
+        "asof": "2026-09-23",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "a_code": "300308",
+      "a_exchange": "Shenzhen",
+      "method": "Explicit etnet A/H ticker pair"
+    },
+    "03310": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054141+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 435707750,
+          "香港普通股": 435707750
+        },
+        "asof": "2026-06-24",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "03317": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054142+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 330835596,
+          "香港普通股": 275316702,
+          "非港股": 55518894,
+          "非上市流通股": 55518894
+        },
+        "asof": "2026-09-30",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "03378": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054143+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 134060730,
+          "香港普通股": 134060730
+        },
+        "asof": "2026-07-17",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "03388": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054144+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 477854151,
+          "香港普通股": 477854151
+        },
+        "asof": "2026-06-30",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "03636": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054145+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "MAINLAND_LISTED",
+        "error": null,
+        "capital": {
+          "已发行普通股": 380786607,
+          "香港普通股": 105045000,
+          "非港股": 275741607,
+          "内地上市股": 275741607
+        },
+        "asof": "2026-10-27",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "profile": {
+        "status": "NO",
+        "capital": {
+          "內資股及其他": 275741607,
+          "H股": 105045000,
+          "發行股數": 380786607
+        },
+        "error": null,
+        "method": "etnet issuer capital classes; not a Bloomberg field or exchange confirmation",
+        "source": {
+          "url": "https://www.etnet.com.hk/www/tc/stocks/realtime/quote_ci_brief.php?code=3636",
+          "retrieved_at": "2026-11-17T08:11:01.614602+08:00",
+          "document_sha256": "5a57928c546801208975f2b9d6299f2b1d8d6a652792b049fe75af14ec3a2393"
+        }
+      },
+      "method": "etnet issuer capital classes; not a Bloomberg field or exchange confirmation; domestic/H counts reconciled to Eastmoney (mainland-listed is not necessarily A)"
+    },
+    "03661": {
+      "status": "YES",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054146+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "MAINLAND_LISTED",
+        "error": null,
+        "capital": {
+          "已发行普通股": 687959132,
+          "香港普通股": 62101300,
+          "非港股": 625857832,
+          "内地上市股": 625857832
+        },
+        "asof": "2026-10-31",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "a_code": "300661",
+      "a_exchange": "Shenzhen",
+      "method": "Explicit etnet A/H ticker pair"
+    },
+    "03696": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054147+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 586889494,
+          "香港普通股": 586889494
+        },
+        "asof": "2026-11-16",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2200100.HK%22%2C%2200537.HK%22%2C%2200668.HK%22%2C%2201081.HK%22%2C%2201191.HK%22%2C%2201377.HK%22%2C%2201511.HK%22%2C%2201641.HK%22%2C%2201688.HK%22%2C%2201768.HK%22%2C%2201779.HK%22%2C%2201956.HK%22%2C%2202249.HK%22%2C%2202335.HK%22%2C%2202396.HK%22%2C%2202408.HK%22%2C%2202475.HK%22%2C%2202513.HK%22%2C%2202539.HK%22%2C%2202581.HK%22%2C%2202635.HK%22%2C%2202655.HK%22%2C%2202657.HK%22%2C%2202658.HK%22%2C%2202659.HK%22%2C%2202661.HK%22%2C%2202671.HK%22%2C%2202675.HK%22%2C%2202685.HK%22%2C%2202687.HK%22%2C%2202706.HK%22%2C%2202788.HK%22%2C%2203308.HK%22%2C%2203310.HK%22%2C%2203317.HK%22%2C%2203378.HK%22%2C%2203388.HK%22%2C%2203636.HK%22%2C%2203661.HK%22%2C%2203696.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:00.955939+08:00",
+          "document_sha256": "7d6854f01af1d0b90f6bd618b7f689d6a4ae7b27120f8b4c7d2dcc70761d7bf1"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "03752": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054148+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 265180890,
+          "香港普通股": 253246180,
+          "非港股": 11934710,
+          "非上市流通股": 11934710
+        },
+        "asof": "2026-08-10",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "03881": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054149+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 437893100,
+          "香港普通股": 424438920,
+          "非港股": 13454180,
+          "非上市流通股": 13454180
+        },
+        "asof": "2026-03-02",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "03887": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054150+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 2743155202,
+          "香港普通股": 2743155202
+        },
+        "asof": "2026-10-14",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "03952": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054151+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 104135187,
+          "香港普通股": 104135187
+        },
+        "asof": "2026-07-27",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "06067": {
+      "status": "YES",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054152+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "MAINLAND_LISTED",
+        "error": null,
+        "capital": {
+          "已发行普通股": 1499128639,
+          "香港普通股": 149523500,
+          "非港股": 1349605139,
+          "内地上市股": 1349605139
+        },
+        "asof": "2026-11-10",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "a_code": "300568",
+      "a_exchange": "Shenzhen",
+      "method": "Explicit etnet A/H ticker pair"
+    },
+    "06082": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054153+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 2730075650,
+          "香港普通股": 1492062574,
+          "非港股": 1238013076,
+          "非上市流通股": 1238013076
+        },
+        "asof": "2026-10-12",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "06106": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054154+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 110497300,
+          "香港普通股": 110497300
+        },
+        "asof": "2026-06-23",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "06132": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054155+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 73534605,
+          "香港普通股": 73534605
+        },
+        "asof": "2026-11-16",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "06228": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054156+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 14731366060,
+          "香港普通股": 14731366060
+        },
+        "asof": "2026-06-25",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "06600": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054157+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 225356100,
+          "香港普通股": 225356100
+        },
+        "asof": "2026-01-29",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "06636": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054158+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 112914783,
+          "香港普通股": 112352436,
+          "非港股": 562347,
+          "非上市流通股": 562347
+        },
+        "asof": "2026-03-27",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "06651": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054159+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 419469371,
+          "香港普通股": 400387563,
+          "非港股": 19081808,
+          "非上市流通股": 19081808
+        },
+        "asof": "2026-07-10",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "06675": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054160+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 381897620,
+          "香港普通股": 381897620
+        },
+        "asof": "2026-07-15",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "06715": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054161+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 108885600,
+          "香港普通股": 108885600
+        },
+        "asof": "2026-06-29",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "06745": {
+      "status": "YES",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054162+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "MAINLAND_LISTED",
+        "error": null,
+        "capital": {
+          "已发行普通股": 2408962276,
+          "香港普通股": 352126000,
+          "非港股": 2056836276,
+          "内地上市股": 2056836276
+        },
+        "asof": "2026-09-30",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "a_code": "601678",
+      "a_exchange": "Shanghai",
+      "method": "Explicit etnet A/H ticker pair"
+    },
+    "06872": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054163+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 52303776,
+          "香港普通股": 52303776
+        },
+        "asof": "2026-11-05",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "06880": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054164+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 235538011,
+          "香港普通股": 206203601,
+          "非港股": 29334410,
+          "非上市流通股": 29334410
+        },
+        "asof": "2026-07-07",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "06915": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054165+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 308377319,
+          "香港普通股": 307090319,
+          "非港股": 1287000,
+          "非上市流通股": 1287000
+        },
+        "asof": "2026-06-29",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "06938": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054166+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 169151510,
+          "香港普通股": 169151510
+        },
+        "asof": "2026-11-16",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "06951": {
+      "status": "YES",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054167+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "MAINLAND_LISTED",
+        "error": null,
+        "capital": {
+          "已发行普通股": 1996718571,
+          "香港普通股": 80221200,
+          "非港股": 1916497371,
+          "内地上市股": 1916497371
+        },
+        "asof": "2026-11-06",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "a_code": "300408",
+      "a_exchange": "Shenzhen",
+      "method": "Explicit etnet A/H ticker pair"
+    },
+    "07618": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054168+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 2714959931,
+          "香港普通股": 2714959931
+        },
+        "asof": "2026-08-31",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "07656": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054169+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 305292905,
+          "香港普通股": 273727616,
+          "非港股": 31565289,
+          "非上市流通股": 31565289
+        },
+        "asof": "2026-07-07",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "07687": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054170+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 150443969,
+          "香港普通股": 150443969
+        },
+        "asof": "2026-11-16",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "07688": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054171+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 415163290,
+          "香港普通股": 377354404,
+          "非港股": 37808886,
+          "非上市流通股": 37808886
+        },
+        "asof": "2026-11-16",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "08610": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054172+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 500000000,
+          "香港普通股": 500000000
+        },
+        "asof": "2026-01-12",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "09630": {
+      "status": "YES",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054173+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "MAINLAND_LISTED",
+        "error": null,
+        "capital": {
+          "已发行普通股": 146505116,
+          "香港普通股": 14764400,
+          "非港股": 131740716,
+          "内地上市股": 131740716
+        },
+        "asof": "2026-07-15",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "a_code": "688630",
+      "a_exchange": "Shanghai",
+      "method": "Explicit etnet A/H ticker pair"
+    },
+    "09637": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054173+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 347861631,
+          "香港普通股": 235131589,
+          "非港股": 112730042,
+          "非上市流通股": 112730042
+        },
+        "asof": "2026-11-16",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "09887": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054174+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 198891800,
+          "香港普通股": 197670289,
+          "非港股": 1221511,
+          "非上市流通股": 1221511
+        },
+        "asof": "2026-06-04",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    },
+    "09903": {
+      "status": "NO",
+      "error": null,
+      "retrieved_at": "2026-11-17T08:11:00.054175+08:00",
+      "roster": {
+        "url": "https://www.etnet.com.hk/www/tc/stocks/ah.php",
+        "retrieved_at": "2026-11-17T08:11:00.054257+08:00",
+        "document_sha256": "456a73372a8f5d2f0c239a679378a5e24077bfac65df3b8343c1892b21f18640",
+        "count": 211
+      },
+      "share_structure": {
+        "status": "NO",
+        "error": null,
+        "capital": {
+          "已发行普通股": 807524208,
+          "香港普通股": 779876895,
+          "非港股": 27647313,
+          "非上市流通股": 27647313
+        },
+        "asof": "2026-09-15",
+        "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR",
+        "source": {
+          "url": "https://datacenter.eastmoney.com/securities/api/data/v1/get?reportName=RPT_HKF10_INFO_EQUITYSTR&columns=SECUCODE%2CSECURITY_CODE%2CSECURITY_NAME_ABBR%2CCHANGE_DATE%2CSHARES_TYPE_CODE%2CSHARES_TYPE%2CSHARES_NUM&filter=%28SECUCODE+in+%28%2203752.HK%22%2C%2203881.HK%22%2C%2203887.HK%22%2C%2203952.HK%22%2C%2206067.HK%22%2C%2206082.HK%22%2C%2206106.HK%22%2C%2206132.HK%22%2C%2206228.HK%22%2C%2206600.HK%22%2C%2206636.HK%22%2C%2206651.HK%22%2C%2206675.HK%22%2C%2206715.HK%22%2C%2206745.HK%22%2C%2206872.HK%22%2C%2206880.HK%22%2C%2206915.HK%22%2C%2206938.HK%22%2C%2206951.HK%22%2C%2207618.HK%22%2C%2207656.HK%22%2C%2207687.HK%22%2C%2207688.HK%22%2C%2208610.HK%22%2C%2209630.HK%22%2C%2209637.HK%22%2C%2209887.HK%22%2C%2209903.HK%22%29%29&pageNumber=1&pageSize=500&sortTypes=1%2C1&sortColumns=SECURITY_CODE%2CSHARES_TYPE_CODE&source=F10&client=PC",
+          "retrieved_at": "2026-11-17T08:11:01.313339+08:00",
+          "document_sha256": "1be3b8c1e3fcc69a9215b14c9fc0537923f60cfd787defdb5449177a999db503"
+        }
+      },
+      "method": "Eastmoney complete ordinary-share structure, RPT_HKF10_INFO_EQUITYSTR"
+    }
+  },
+  "network": "Direct public web on this Mac; corporate proxy not tested",
+  "live_bloomberg_tested": false,
+  "live_outlook_tested": false,
+  "peak_rss_mib": 65.2
+}
