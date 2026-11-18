@@ -310,7 +310,7 @@ def _lu_horizons(day):
     return {"7D": day - timedelta(days=7), "1M": previous_month}
 
 
-def _lu_bbg_request(client, securities, day, historical=False):
+def _lu_bbg_request(client, securities, day, historical=False, reference_fields=None):
     """Bounded, sequential Bloomberg request; discard incomplete request results."""
     import time
     from datetime import date, datetime, timedelta
@@ -319,7 +319,7 @@ def _lu_bbg_request(client, securities, day, historical=False):
     timeout = float(globals().get("BLOOMBERG_REQUEST_TIMEOUT_SECONDS", 30))
     if not 0 < timeout <= 120:
         raise ValueError("Bloomberg request timeout must be between 0 and 120 seconds.")
-    fields = ["PX_LAST"] if historical else ["LAST_PRICE", "CRNCY", "LAST_UPDATE_DT", "EQY_INIT_PO_SH_PX"]
+    fields = ["PX_LAST"] if historical else (reference_fields or ["LAST_PRICE", "CRNCY", "LAST_UPDATE_DT", "EQY_INIT_PO_SH_PX"])
     request = client.service.createRequest("HistoricalDataRequest" if historical else "ReferenceDataRequest")
     for security in securities:
         request.getElement("securities").appendValue(security)
@@ -511,8 +511,36 @@ def _lu_performance(snapshot, history, day):
     return out
 
 
+def _lu_fx_rate(snapshot, day):
+    """USDHKD is HKD per USD; only a positive, dated Bloomberg quote is usable."""
+    from datetime import date
+
+    fields = snapshot.get('fields', {})
+    errors = dict(snapshot.get('errors', {}))
+    rate = _lu_number(fields.get('LAST_PRICE'))
+    observed = fields.get('LAST_UPDATE_DT')
+    if rate is None or rate <= 0:
+        errors.setdefault('LAST_PRICE', 'USD/HKD rate unavailable or invalid.')
+    try:
+        quote_date = date.fromisoformat(observed)
+        if not 0 <= (day - quote_date).days <= 10:
+            raise ValueError('Stale or future FX quote.')
+    except (TypeError, ValueError):
+        errors.setdefault('LAST_UPDATE_DT', 'USD/HKD quote date missing, stale or invalid.')
+    return {'security': 'USDHKD Curncy', 'hkd_per_usd': str(rate) if not errors else None,
+            'quote_date': observed, 'errors': errors}
+
+
+def _lu_turnover_usd(value, fx):
+    amount, rate = _lu_number(value), _lu_number(fx.get('hkd_per_usd'))
+    if amount is None or amount < 0 or rate is None or rate <= 0 or fx.get('errors'):
+        return None
+    return str(amount / rate)
+
+
 def _lu_render(report, rows, start, end, retrieved_at):
     from html import escape
+    from urllib.parse import urlsplit
 
     def text(value):
         return escape(str(value if value is not None else "N/A"))
@@ -529,14 +557,28 @@ def _lu_render(report, rows, start, end, retrieved_at):
         colour = "#087544" if n is not None and n > 0 else "#b11d2b" if n is not None and n < 0 else "#555555"
         return '<b style="color:' + colour + '">' + number(value, "%", signed=True) + '</b>'
 
+    font = "font-family:'Times New Roman',Times,serif;"
+
+    def stock_link(row):
+        # Cell 1 links the stock label to row['url']; keep that exact destination.
+        label, url = text(row['code'] + ' ' + row['name']), row.get('url')
+        try:
+            parsed = urlsplit(url or '')
+            valid = parsed.scheme.lower() in ('http', 'https') and bool(parsed.netloc)
+        except ValueError:
+            valid = False
+        if not valid:
+            return '<b>' + label + '</b>'
+        return '<a href="' + text(url) + '" style="' + font + 'color:#0759A4;font-weight:bold;text-decoration:underline">' + label + '</a>'
+
     subject = "Shortable IPO Lock-up Expiries | " + start.strftime("%d %b %Y")
     # The email body starts with the table. Its subject stays on the email itself.
     parts, plain = [], []
     if rows:
-        headers = ["Expiry", "Stock / holders", "A-share", "Unlock", "Avg 20D turnover (HKDm)", "Liquidity ratios", "IPO price", "Last price", "vs IPO %", "7D %", "1M %", "Shortable"]
-        parts.append('<table width="100%" cellspacing="0" cellpadding="6" style="border-collapse:collapse;font-size:13px;border-top:2px solid #CB2125"><tr>'
+        headers = ["Expiry", "Stock / holders", "A-share", "Unlock", "Avg 20D turnover (USDm)", "Liquidity ratios", "IPO price", "Last price", "vs IPO %", "7D %", "1M %"]
+        parts.append('<table width="100%" cellspacing="0" cellpadding="6" style="' + font + 'border-collapse:collapse;font-size:14px;border-top:2px solid #CB2125"><tr>'
                      + ''.join('<th align="left" style="background:#eeeeee;border-bottom:1px solid #cccccc">'
-                               + (h.replace('turnover (HKDm)', '<br>turnover (HKDm)') if h.startswith('Avg 20D') else h)
+                               + (h.replace('turnover (USDm)', '<br>turnover (USDm)') if h.startswith('Avg 20D') else h)
                                + '</th>' for h in headers) + '</tr>')
         for i, row in enumerate(rows):
             p = row["price_performance"]
@@ -553,8 +595,8 @@ def _lu_render(report, rows, start, end, retrieved_at):
                 unlock += '<br><span style="font-size:11px;color:#666666">Value as of ' + text(quote_time) + ' HKT</span>'
             ratios = (number(row.get("unlock_to_float_market_cap_pct"), "%") + ' / float cap<br>'
                       + number(row.get("unlock_to_20d_avg_turnover_x"), "x") + ' / 20D turnover')
-            # Reuse the denominator already fetched by cell 1; no extra API call.
-            turnover = number(row.get("avg_turnover_20d_hkd"), divisor=1000000)
+            # Convert cell 1's HKD denominator with one shared current USD/HKD quote.
+            turnover = number(row.get("avg_turnover_20d_usd"), divisor=1000000)
             turnover_end = report.get("bloomberg", {}).get("turnover_end_date")
             if turnover_end:
                 turnover += '<br><span style="font-size:11px;color:#666666">To ' + text(turnover_end) + '</span>'
@@ -562,34 +604,47 @@ def _lu_render(report, rows, start, end, retrieved_at):
             last = number(p["last_price"], decimals=3) + ' ' + text(p["currency"])
             last += '<br><span style="font-size:11px;color:#666666">Quote: ' + text(p["quote_date"]) + '</span>'
             ipo = number(p["ipo_price"], decimals=3) + ' ' + text(p["currency"])
-            status = '<b style="color:' + ('#0759A4' if row["shortable"] == "NEW" else '#087544') + '">' + row["shortable"] + '</b>'
             needs_review = bool(row.get("issue") or row.get("source_issue") or row.get("bloomberg_issues") or p["errors"]
-                                or row.get("a_share", {}).get("error"))
+                                or row.get("a_share", {}).get("error") or row.get("avg_turnover_20d_usd") is None)
+            stock = stock_link(row) + '<br>' + text(holders)
             if needs_review:
-                status += '<br><span style="font-size:11px;color:#795b00">REVIEW</span>'
+                stock += '<br><span style="font-size:11px;color:#795b00">REVIEW</span>'
             cells = ['<span style="white-space:nowrap">' + text(expiry) + '</span><br><span style="color:#666666">' + str(days) + ' days</span>',
-                     '<b>' + text(row["code"] + ' ' + row["name"]) + '</b><br>' + text(holders),
+                     stock,
                      a_share, unlock, turnover, ratios, ipo, last, change(p["ipo_change_pct"]),
-                     change(p["7D"]["change_pct"]), change(p["1M"]["change_pct"]), status]
+                     change(p["7D"]["change_pct"]), change(p["1M"]["change_pct"])]
+            percent = str(row.get('percent', '')).strip()
+            unlock_pct = _lu_number(percent[:-1].strip()) if percent.endswith('%') else None
+            highlights = {}
+            if unlock_pct is not None and unlock_pct > 30:
+                highlights[3] = ('#FFF2CC', 'color:#6B4F00;')
+            if row.get('a_share', {}).get('status') == 'YES':
+                highlights[2] = ('#E2F0D9', 'color:#245B28;font-weight:bold;')
             background = '#ffffff' if i % 2 == 0 else '#f7f7f7'
-            parts.append('<tr style="background:' + background + '">' + ''.join('<td valign="top" style="border-bottom:1px solid #dddddd">' + c + '</td>' for c in cells) + '</tr>')
+            formatted = []
+            for index, cell in enumerate(cells):
+                colour, extra = highlights.get(index, (background, ''))
+                formatted.append('<td valign="top" bgcolor="' + colour + '" style="' + font + 'background-color:' + colour
+                                 + ';border-bottom:1px solid #dddddd;' + extra + '">' + cell + '</td>')
+            parts.append('<tr>' + ''.join(formatted) + '</tr>')
             # Detailed review reasons remain in the JSON audit, not email footnotes.
             plain.append(f"{expiry} | {row['code']} {row['name']} | {holders} | A-share {row.get('a_share', {}).get('status', 'N/A')} | Unlock {row['percent']} of issued shares / {amount} | "
-                         f"Avg 20D turnover HKDm {number(row.get('avg_turnover_20d_hkd'), divisor=1000000)}"
+                         f"Avg 20D turnover USDm {number(row.get('avg_turnover_20d_usd'), divisor=1000000)}"
                          + (f" (to {turnover_end})" if turnover_end else "") + " | "
                          f"Unlock/float cap {number(row.get('unlock_to_float_market_cap_pct'), '%')} | "
                          f"Unlock/20D turnover {number(row.get('unlock_to_20d_avg_turnover_x'), 'x')} | "
                          f"IPO price {number(p['ipo_price'], decimals=3)} {p['currency'] or 'N/A'} | "
                          f"Last {number(p['last_price'], decimals=3)} {p['currency'] or 'N/A'} (quote {p['quote_date'] or 'N/A'}) | "
                          f"vs IPO {number(p['ipo_change_pct'], '%', signed=True)} | "
-                         f"7D {number(p['7D']['change_pct'], '%', signed=True)} | 1M {number(p['1M']['change_pct'], '%', signed=True)} | {row['shortable']}"
+                         f"7D {number(p['7D']['change_pct'], '%', signed=True)} | 1M {number(p['1M']['change_pct'], '%', signed=True)}"
+                         + (f" | {row['url']}" if row.get('url') else '')
                          + (" | REVIEW" if needs_review else ""))
         parts.append('</table>')
     else:
         parts.append('<p>No shortable lock-up expiries in this window.</p>')
         plain.append('No shortable lock-up expiries in this window.')
     # Methods, source metadata and detailed review notes stay outside the email.
-    body = '<!doctype html><html><head><meta charset="utf-8"></head><body style="font-family:Arial,Microsoft JhengHei,sans-serif;color:#222222"><div id="email-content" style="max-width:1320px;margin:18px auto">' + ''.join(parts) + '</div></body></html>'
+    body = '<!doctype html><html><head><meta charset="utf-8"></head><body style="' + font + 'color:#222222"><div id="email-content" style="' + font + 'max-width:1320px;margin:18px auto">' + ''.join(parts) + '</div></body></html>'
     return subject, body, '\n'.join(plain)
 
 
@@ -660,6 +715,7 @@ def _lu_run(first, env, open_outlook=True):
         raise RuntimeError("The first report is not dated today in Hong Kong. Rerun the original cell first.")
     securities = sorted({env["bloomberg_security"](r["code"]) for r in rows})
     snapshots, histories = {}, {}
+    fx_snapshot = {'errors': {'request': 'Bloomberg FX not requested.'}}
     if securities:
         print(f"Second email: fetching Bloomberg prices for {len(securities)} unique stocks ...", flush=True)
         try:
@@ -674,11 +730,18 @@ def _lu_run(first, env, open_outlook=True):
                             destination.update(_lu_bbg_request(client, batch, start, historical))
                         except Exception as exc:
                             destination.update({s: {"errors": {"request": str(exc)[:600]}} for s in batch})
+                try:
+                    fx_snapshot = _lu_bbg_request(client, ['USDHKD Curncy'], start,
+                                                 reference_fields=['LAST_PRICE', 'LAST_UPDATE_DT'])['USDHKD Curncy']
+                except Exception as exc:
+                    fx_snapshot = {'errors': {'request': str(exc)[:600]}}
         except Exception as exc:
+            fx_snapshot = {'errors': {'request': str(exc)[:600]}}
             for security in securities:
                 snapshots.setdefault(security, {"errors": {"request": str(exc)[:600]}})
                 histories.setdefault(security, {"errors": {"request": str(exc)[:600]}})
     retrieved = datetime.now(env["HK"]).strftime("%d %b %Y %H:%M:%S HKT")
+    fx = _lu_fx_rate(fx_snapshot, start)
     metrics = {s: _lu_performance(snapshots[s], histories[s], start) for s in securities}
     if rows:
         print("Second email: checking A-share capital classes ...", flush=True)
@@ -690,6 +753,7 @@ def _lu_run(first, env, open_outlook=True):
     for row in rows:
         row["price_performance"] = metrics[env["bloomberg_security"](row["code"])]
         row['a_share'] = a_shares[row['code']]
+        row['avg_turnover_20d_usd'] = _lu_turnover_usd(row.get('avg_turnover_20d_hkd'), fx)
     subject, body, plain = _lu_render(report, rows, start, end, retrieved)
     to, cc = str(env.get("LOCKUP_EMAIL_TO", "")), str(env.get("LOCKUP_EMAIL_CC", ""))
     message = EmailMessage(policy=SMTP)
@@ -713,7 +777,8 @@ def _lu_run(first, env, open_outlook=True):
              "cached_sources": report.get('cached_sources'), "original_bloomberg": report.get('bloomberg'),
              "snapshots": snapshots, "histories": histories, "rows": rows,
              "a_share_profiles": a_shares,
-             "turnover_method": "Reuse cell 1 avg_turnover_20d_hkd / 1,000,000; INTERVAL_AVG with TURNOVER, 20D and HKD overrides.",
+             "turnover_fx": fx, "turnover_fx_snapshot": fx_snapshot,
+             "turnover_method": "Reuse cell 1 avg_turnover_20d_hkd / current Bloomberg USDHKD LAST_PRICE / 1,000,000. USD millions at the shared snapshot FX rate, not daily historical FX conversion. Original HKD liquidity ratios unchanged.",
              "price_method": "Calendar 7D/1M; last price / observed prior close - 1. Capital changes adjusted; cash dividends excluded.",
              "ipo_price_field": "EQY_INIT_PO_SH_PX",
              "ipo_comparison_method": "(LAST_PRICE / EQY_INIT_PO_SH_PX - 1) * 100; reported offer price, no separate corporate-action adjustment or holder-cost assumption.",
@@ -733,6 +798,8 @@ def _lu_run(first, env, open_outlook=True):
         print("Some Bloomberg values are unavailable or need review; see N/A in the draft and details in its JSON file.")
     if any(r['a_share'].get('error') for r in rows):
         print("Some A-share lookups could not be verified. The draft is saved; details are in its JSON file.")
+    if rows and fx['errors']:
+        print("USD/HKD is unavailable or stale. USD turnover shows N/A; the draft and other values are saved.")
     if not opened and env.get('SHOW_NOTEBOOK_PREVIEW_IF_NO_OUTLOOK', True):
         try:
             from IPython.display import HTML, display

@@ -8,13 +8,13 @@ folder = Path(__file__).resolve().parent
 spec = importlib.util.spec_from_file_location('lockup_email_sample', folder / 'second_cell.py')
 m = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(m)
-start, end = date(2026, 11, 17), date(2027, 1, 31)
+start, end = date(2026, 11, 18), date(2027, 1, 31)
 report = {'short': {'effective': '2026-11-13'},
           'source_asof': {k: '13/11/2026 16:10' for k in ['202611', '202612', '202701']}}
 examples = [
     ('DEMO A', 'Fictional Technology Co.', '2026-11-20', 'Cornerstone', '5', '12.50%', '240000000', '18.4', '4.2', 'YES', '12.8', '12', '10', '8'),
-    ('DEMO B', 'Fictional Healthcare Co.', '2026-12-04', 'Cornerstone', '3', '8.00%', '180000000', '11.2', '2.8', 'NEW', '8.6', '9.2', '8', '10'),
-    ('DEMO C', 'Fictional Industrials Co.', '2027-01-15', 'Controller', '2', '25.00%', '520000000', '36.7', '9.1', 'YES', '26', '25', '28', '20'),
+    ('DEMO B', 'Fictional Healthcare Co.', '2026-12-04', 'Cornerstone', '3', '30.00%', '180000000', '11.2', '2.8', 'NEW', '8.6', '9.2', '8', '10'),
+    ('DEMO C', 'Fictional Industrials Co.', '2027-01-15', 'Controller', '2', '35.00%', '520000000', '36.7', '9.1', 'YES', '26', '25', '28', '20'),
 ]
 rows = []
 for code, name, expiry, holder, n, percent, amount, float_pct, turnover, short, last, base7, base1, ipo in examples:
@@ -25,6 +25,8 @@ for code, name, expiry, holder, n, percent, amount, float_pct, turnover, short, 
                      unlock_amount_hkd=amount, unlock_to_float_market_cap_pct=float_pct,
                      unlock_to_20d_avg_turnover_x=turnover, shortable=short, issue='', source_issue='',
                      avg_turnover_20d_hkd=str(Decimal(amount) / Decimal(turnover)),
+                     avg_turnover_20d_usd=m._lu_turnover_usd(Decimal(amount) / Decimal(turnover), {'hkd_per_usd': '7.8'}),
+                     url='https://example.com/fictional-stock/' + code.replace(' ', '-'),
                      a_share={'status': 'YES' if code == 'DEMO A' else 'NO'},
                      bloomberg_issues=[], price_performance=performance))
 subject, body, plain = m._lu_render(report, rows, start, end, 'Fictional sample')

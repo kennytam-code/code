@@ -8,20 +8,92 @@
       "Stock / holders",
       "A-share",
       "Unlock",
-      "Avg 20D\nturnover (HKDm)",
+      "Avg 20D\nturnover (USDm)",
       "Liquidity ratios",
       "IPO price",
       "Last price",
       "vs IPO %",
       "7D %",
-      "1M %",
-      "Shortable"
+      "1M %"
+    ],
+    "fonts": [
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif"
+    ],
+    "links": [
+      {
+        "label": "DEMO A Fictional Technology Co.",
+        "href": "https://example.com/fictional-stock/DEMO-A"
+      },
+      {
+        "label": "DEMO B Fictional Healthcare Co.",
+        "href": "https://example.com/fictional-stock/DEMO-B"
+      },
+      {
+        "label": "DEMO C Fictional Industrials Co.",
+        "href": "https://example.com/fictional-stock/DEMO-C"
+      }
+    ],
+    "highlighted": [
+      {
+        "text": "YES",
+        "colour": "#E2F0D9"
+      },
+      {
+        "text": "35.00% of issued shares\nHKDm 520.00\nValue as of 13/11/2026 16:10 HKT",
+        "colour": "#FFF2CC"
+      }
     ],
     "rowCells": [
-      12,
-      12,
-      12,
-      12
+      11,
+      11,
+      11,
+      11
     ]
   },
   "compact": {
@@ -33,20 +105,92 @@
       "Stock / holders",
       "A-share",
       "Unlock",
-      "Avg 20D\nturnover (HKDm)",
+      "Avg 20D\nturnover (USDm)",
       "Liquidity ratios",
       "IPO price",
       "Last price",
       "vs IPO %",
       "7D %",
-      "1M %",
-      "Shortable"
+      "1M %"
+    ],
+    "fonts": [
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif",
+      "\"Times New Roman\", Times, serif"
+    ],
+    "links": [
+      {
+        "label": "DEMO A Fictional Technology Co.",
+        "href": "https://example.com/fictional-stock/DEMO-A"
+      },
+      {
+        "label": "DEMO B Fictional Healthcare Co.",
+        "href": "https://example.com/fictional-stock/DEMO-B"
+      },
+      {
+        "label": "DEMO C Fictional Industrials Co.",
+        "href": "https://example.com/fictional-stock/DEMO-C"
+      }
+    ],
+    "highlighted": [
+      {
+        "text": "YES",
+        "colour": "#E2F0D9"
+      },
+      {
+        "text": "35.00% of issued shares\nHKDm 520.00\nValue as of 13/11/2026 16:10 HKT",
+        "colour": "#FFF2CC"
+      }
     ],
     "rowCells": [
-      12,
-      12,
-      12,
-      12
+      11,
+      11,
+      11,
+      11
     ]
   }
 }

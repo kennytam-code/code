@@ -260,25 +260,27 @@ class AddedColumns(unittest.TestCase):
         rows, start, end = m._lu_select(report)
         for row in rows:
             row['avg_turnover_20d_hkd'] = '40500000'
+            row['avg_turnover_20d_usd'] = m._lu_turnover_usd(row['avg_turnover_20d_hkd'], {'hkd_per_usd': '7.8'})
             row['a_share'] = {'status': 'YES', 'error': None}
             row['price_performance'] = m._lu_performance({}, {}, start)
         before = copy.deepcopy(rows)
         subject, html, plain = m._lu_render(report, rows, start, end, 'Fixture')
         root = first.parse_html(html)
-        self.assertEqual(len(root.find_all('th')), 12)
-        self.assertIn('Avg 20D <br>turnover (HKDm)', html)
-        self.assertIn('40.50<br>', html)
+        self.assertEqual(len(root.find_all('th')), 11)
+        self.assertIn('Avg 20D <br>turnover (USDm)', html)
+        self.assertIn('5.19<br>', html)
         self.assertIn('To 20261113', html)
         self.assertIn('A-share YES', plain)
-        self.assertIn('Avg 20D turnover HKDm 40.50', plain)
+        self.assertIn('Avg 20D turnover USDm 5.19', plain)
         self.assertFalse(root.find_all(['h1', 'h2', 'h3', 'p']))
         self.assertTrue(subject.startswith('Shortable IPO Lock-up'))
         self.assertEqual(rows, before)
         for row in rows:
             row.pop('avg_turnover_20d_hkd')
+            row.pop('avg_turnover_20d_usd')
             row['a_share'] = {'status': 'N/A', 'error': 'Missing capital breakdown'}
         _, html, plain = m._lu_render(report, rows, start, end, 'Fixture')
-        self.assertIn('Avg 20D turnover HKDm N/A', plain)
+        self.assertIn('Avg 20D turnover USDm N/A', plain)
         self.assertIn('A-share N/A', plain)
         self.assertNotIn('Missing capital breakdown', html)
 

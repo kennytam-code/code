@@ -223,10 +223,12 @@ class AddonTests(unittest.TestCase):
             def __enter__(self): return self
             def __exit__(self, *args): pass
 
-        def request(client, securities, day, historical=False):
+        def request(client, securities, day, historical=False, reference_fields=None):
             called.append((tuple(securities), historical))
             if historical:
                 return {s: {'history': {v.isoformat(): '10' for v in m._lu_horizons(day).values()}} for s in securities}
+            if securities == ['USDHKD Curncy']:
+                return {securities[0]: {'fields': {'LAST_PRICE': '7.8', 'LAST_UPDATE_DT': day.isoformat()}}}
             return {s: {'fields': {'LAST_PRICE': '12', 'LAST_UPDATE_DT': day.isoformat(), 'CRNCY': 'HKD',
                                    'EQY_INIT_PO_SH_PX': '8'}} for s in securities}
 
@@ -246,7 +248,7 @@ class AddonTests(unittest.TestCase):
             self.assertEqual(original.read_text(), 'unchanged original')
             self.assertEqual(report, before)
             self.assertEqual(called[0], (('1 HK Equity', '2 HK Equity'), False))
-            self.assertEqual(len(called), 4)  # One reference and one history batch per run.
+            self.assertEqual(len(called), 6)  # One stock reference, history and shared FX request per run.
             mail = BytesParser(policy=policy.default).parsebytes(one['eml'].read_bytes())
             self.assertEqual(mail['X-Unsent'], '1')
             self.assertEqual(mail['To'], 'review@example.com')
@@ -257,6 +259,7 @@ class AddonTests(unittest.TestCase):
             self.assertTrue(all(r['price_performance']['7D']['change_pct'] == '20.0' for r in audit['rows']))
             self.assertTrue(all(r['price_performance']['ipo_change_pct'] == '50.0' for r in audit['rows']))
             self.assertEqual(audit['ipo_price_field'], 'EQY_INIT_PO_SH_PX')
+            self.assertEqual(audit['turnover_fx']['hkd_per_usd'], '7.8')
             self.assertIn('IPO price 8.000 HKD', mail.get_body(preferencelist=('plain',)).get_content())
             self.assertIn('vs IPO +50.00%', mail.get_body(preferencelist=('plain',)).get_content())
 

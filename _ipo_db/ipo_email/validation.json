@@ -3,10 +3,10 @@
   "source_sha256": "1fe205d3a515acdb92d5bf3841d79b7f6df0e018a0fa2015aab27e62cbf01b02",
   "source_text_matches_initial_read": true,
   "offline_tests": {
-    "run": 46,
+    "run": 49,
     "failures": 0,
     "errors": 0,
-    "peak_rss_mib": 71.1,
+    "peak_rss_mib": 72.3,
     "python_rss_guard_mib": 512,
     "source_document_unchanged": true,
     "notebook_cells_match_sources": true,
@@ -29,20 +29,92 @@
           "Stock / holders",
           "A-share",
           "Unlock",
-          "Avg 20D\nturnover (HKDm)",
+          "Avg 20D\nturnover (USDm)",
           "Liquidity ratios",
           "IPO price",
           "Last price",
           "vs IPO %",
           "7D %",
-          "1M %",
-          "Shortable"
+          "1M %"
+        ],
+        "fonts": [
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif"
+        ],
+        "links": [
+          {
+            "label": "DEMO A Fictional Technology Co.",
+            "href": "https://example.com/fictional-stock/DEMO-A"
+          },
+          {
+            "label": "DEMO B Fictional Healthcare Co.",
+            "href": "https://example.com/fictional-stock/DEMO-B"
+          },
+          {
+            "label": "DEMO C Fictional Industrials Co.",
+            "href": "https://example.com/fictional-stock/DEMO-C"
+          }
+        ],
+        "highlighted": [
+          {
+            "text": "YES",
+            "colour": "#E2F0D9"
+          },
+          {
+            "text": "35.00% of issued shares\nHKDm 520.00\nValue as of 13/11/2026 16:10 HKT",
+            "colour": "#FFF2CC"
+          }
         ],
         "rowCells": [
-          12,
-          12,
-          12,
-          12
+          11,
+          11,
+          11,
+          11
         ]
       },
       "compact": {
@@ -54,24 +126,97 @@
           "Stock / holders",
           "A-share",
           "Unlock",
-          "Avg 20D\nturnover (HKDm)",
+          "Avg 20D\nturnover (USDm)",
           "Liquidity ratios",
           "IPO price",
           "Last price",
           "vs IPO %",
           "7D %",
-          "1M %",
-          "Shortable"
+          "1M %"
+        ],
+        "fonts": [
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif",
+          "\"Times New Roman\", Times, serif"
+        ],
+        "links": [
+          {
+            "label": "DEMO A Fictional Technology Co.",
+            "href": "https://example.com/fictional-stock/DEMO-A"
+          },
+          {
+            "label": "DEMO B Fictional Healthcare Co.",
+            "href": "https://example.com/fictional-stock/DEMO-B"
+          },
+          {
+            "label": "DEMO C Fictional Industrials Co.",
+            "href": "https://example.com/fictional-stock/DEMO-C"
+          }
+        ],
+        "highlighted": [
+          {
+            "text": "YES",
+            "colour": "#E2F0D9"
+          },
+          {
+            "text": "35.00% of issued shares\nHKDm 520.00\nValue as of 13/11/2026 16:10 HKT",
+            "colour": "#FFF2CC"
+          }
         ],
         "rowCells": [
-          12,
-          12,
-          12,
-          12
+          11,
+          11,
+          11,
+          11
         ]
       }
     },
-    "unchanged_from_checked_preview": true
+    "node_heap_limit_mib": 384,
+    "browser_heap_limit_mib": 128
   },
   "live_bloomberg_tested": false,
   "windows_outlook_tested": false,
@@ -82,14 +227,13 @@
     "Stock / holders",
     "A-share",
     "Unlock",
-    "Avg 20D turnover (HKDm)",
+    "Avg 20D turnover (USDm)",
     "Liquidity ratios",
     "IPO price",
     "Last price",
     "vs IPO %",
     "7D %",
-    "1M %",
-    "Shortable"
+    "1M %"
   ],
   "ipo_price_field": "EQY_INIT_PO_SH_PX",
   "borrow_columns": false,
@@ -141,9 +285,12 @@
     "Batch complete Eastmoney share structures to resolve total-only issuer profiles",
     "Bound public requests by per-operation timeout, byte limit and overall read/start budget",
     "Resolve NEEQ versus A-share class ambiguity using matching domestic/H capital counts",
-    "Unexpected A-share lookup failures still allow draft saving"
+    "Unexpected A-share lookup failures still allow draft saving",
+    "Use Times New Roman and highlight unlock percentages strictly above 30%",
+    "Highlight A-share YES, remove shortable display column and retain stock hyperlinks",
+    "Convert existing 20D turnover from HKD to USD with one shared dated Bloomberg FX quote; isolate FX errors"
   ],
-  "review_date": "2026-11-17",
+  "review_date": "2026-11-18",
   "a_share_lookup": {
     "source": "etnet explicit A/H pairs, Eastmoney complete share structures, etnet capital-class fallback",
     "verified_bloomberg_mnemonic": false,
@@ -2473,21 +2620,34 @@
       "maximum_response_bytes": 2000000,
       "automatic_retries": 0,
       "proxy": "Original opener reused; direct public web only tested here"
-    }
+    },
+    "unchanged_since_previous_revision": true,
+    "live_source_dates_note": "Retained 17 November source checks; no live A-share source refresh on 18 November."
   },
   "turnover_column": {
-    "source": "Unchanged first-cell avg_turnover_20d_hkd",
-    "display_unit": "HKDm",
-    "extra_bloomberg_requests": 0
+    "source": "Original cell 1 avg_turnover_20d_hkd divided by shared current Bloomberg USDHKD Curncy LAST_PRICE",
+    "display_unit": "USDm",
+    "extra_bloomberg_requests_per_nonempty_run": 1,
+    "fx_fields": [
+      "LAST_PRICE",
+      "LAST_UPDATE_DT"
+    ],
+    "currency_direction": "HKD per USD; divide HKD by the FX rate",
+    "historical_daily_fx_conversion": false,
+    "hardcoded_or_public_web_fx_fallback": false,
+    "max_fx_quote_age_days": 10,
+    "original_hkd_values_and_ratios_preserved": true,
+    "missing_or_invalid_fx": "N/A for USD turnover; other values and draft creation continue",
+    "live_terminal_tested": false
   },
   "artifact_sha256": {
     ".gitattributes": "ef5d8c7c9b1a0205ee8e92bfab36e65bb328abf4b3e02f98b8084068091d6924",
-    "HK_IPO_Two_Emails.ipynb": "dccae9a1d246554e3a9104176a38aec9fb8feb6ec96f0bb48f75b021d8483776",
-    "README.md": "e182402b35d268522fb54e814fb3cd85301aa54336857dba3087dd00808f4e12",
-    "browser_checks.json": "e2ae5012cc3f9c138293228fd3f44675cf7e5e61ce823659eeda60ec71dcd800",
-    "build_sample.py": "c4833e345a67a95c33724383acde8791c7b355bac9da67e47b67c1eddaa978a4",
+    "HK_IPO_Two_Emails.ipynb": "015b29f3c8831a330a7f59be7d4403a54a0c49d29b506398ce1f81b92269043f",
+    "README.md": "94f0cd68410ee3abfda8f290569b51a51934d95de6c48abf455427bdf7fe8bf1",
+    "browser_checks.json": "ac3a51e5b84e4577d9654d8f0a5f90dbc32fdbc081d05954810a04fc575a5668",
+    "build_sample.py": "6b537f70e6c7cdacb13f90494293b0846feeef6a23e040a682ac5d2eed79cd24",
     "first_cell_original.py": "3865d58796e9b78e0908d7285988deb10a209cb033000fb0af14c8ea0c103aa1",
-    "review_checks.json": "7dee58650259f1011d4c52a2f0d5ac986461776faa1d827462fb177753544e9f",
+    "review_checks.json": "5cc3a200c810549cd55d9e0bf9c595bd88e7369eff9bdb4948922aaa24e5ffd5",
     "review_sources/a_share_fetch.json": "e9be35f25c7bbda547cdb208e2521fdf4051f6806811761846a41ced58940ccc",
     "review_sources/ah_roster_fetch.json": "b07c04ca47aa98d52c35c10e748b33ae6a83c95020e3f35d13494b161eb385a1",
     "review_sources/eastmoney_fetch.json": "7b4d93224f9c4446e1e183c67aef76d7aefaf1d44d712dcd282f1138dfbcb904",
@@ -2508,13 +2668,40 @@
     "review_sources/short_20261106.html": "31f9a394c54cb4ae1e0ecd30c277a65a76faeb8ec4162bbcf9467a7ba4972680",
     "review_sources/short_20261110.html": "f253e3cd3dd6e9e97e74579a84e4062310c235bbd77bb59cc0a198df7a68aa6d",
     "run_checks.py": "6ec97d97a4c5bb9419f3ce2dca6deb489aeef1a886f0da48b383ce40545fdcde",
-    "sample_email.html": "1dab8caeda428306476d92b25d64c3b2e9051e7faa52c826aafa9deff3dfaa9a",
-    "sample_email.png": "a4e9f32c3a484f1673f4e7b95e312e04f63174abda029a3829f79cbbc3ef593a",
-    "sample_email_compact.png": "cffd7e4e10f36539ef4ca045068688c3fdf714e6cf4b53dde102c007783c2bb2",
-    "second_cell.py": "e9d7dd1620f037c7d368122be1e1a43f5d20c0d8575d14f736a15666bca60907",
-    "test_added_columns.py": "b703f0340e8caa0303d03df6f41a00738617596561d1d11b30c7bd21a3039992",
-    "test_cells_integration.py": "4ff1546417b5c0aa88269c21ef90956958cea0f73ab9a4419f9025aaea138dc8",
-    "test_results.txt": "1d64b28bd196999459e25b24370d1d9bc26ffddd6c314770991798f0ffdb17ca",
-    "test_second_cell.py": "faf5727713cbafccf31dea8f970f317767b79a2169548fe60ee8fed7a0edde30"
+    "sample_email.html": "31d0b0a48940b759a650f5f5d69a51b8a7cc3aa6f2893882cd8a438202692726",
+    "sample_email.png": "bbd3f3de6ba48a20f9c8e9763d416ff648fed7e546b1409b8bb7a6bb1f957a8d",
+    "sample_email_compact.png": "077d7d528c1869c6bf229d5891c95e57c3c9ab7ee6638f7d55e19cc33a8e642e",
+    "second_cell.py": "2b99fc4a0dcab3e60b6dd9595ccd234b72163369715f8362be3d00b03ae77b9a",
+    "test_added_columns.py": "d6f1946ddc65b442e743245a2ab475021d112fc739e06e21220b182a30a1c459",
+    "test_cells_integration.py": "e392c9553dfc587fcf146e4c0b447168b9d9c62c748e552ebc7a41df4f44d969",
+    "test_results.txt": "0e3f040472586e97b9da7aea3548d420bf70f30e7db6001ad126884a5a680bb9",
+    "test_second_cell.py": "58576ee50af8ec64d2864906120c67c0d87d42d38f7fecbebf63e2b46103bba3",
+    "test_usd_turnover.py": "8990630d6db1fea72f0aa0da999b5a14bb055d5ccc2005537f4e556e26dca27a"
+  },
+  "formatting": {
+    "font": "Times New Roman",
+    "unlock_highlight": {
+      "strictly_greater_than_pct": 30,
+      "colour": "#FFF2CC",
+      "scope": "Unlock cell"
+    },
+    "a_share_highlight": {
+      "value": "YES",
+      "colour": "#E2F0D9",
+      "scope": "A-share cell"
+    },
+    "shortable_column": false,
+    "eligibility_still_includes": [
+      "YES",
+      "NEW"
+    ],
+    "stock_hyperlinks": "Exact cell 1 row[url] destination; escaped HTTP(S) links"
+  },
+  "publication": {
+    "authorization_date": "2026-11-19",
+    "authorization": "User explicitly requested pushing this tested revision and verifying GitHub visibility.",
+    "repository": "https://github.com/kennytam-code/code",
+    "branch": "main",
+    "base_commit": "8c3c972f8530e12f1540b80c71004a3a9c469e0a"
   }
 }

@@ -46,8 +46,11 @@ test_request_failure_discards_partial (test_second_cell.AddonTests.test_request_
 test_returns_and_holiday_baseline (test_second_cell.AddonTests.test_returns_and_holiday_baseline) ... ok
 test_unavailable_stale_and_insufficient (test_second_cell.AddonTests.test_unavailable_stale_and_insufficient) ... ok
 test_window_and_preservation (test_second_cell.AddonTests.test_window_and_preservation) ... ok
+test_bad_fx_never_becomes_a_peg_or_zero (test_usd_turnover.USDTurnoverTests.test_bad_fx_never_becomes_a_peg_or_zero) ... ok
+test_conversion_units_and_valid_weekend_quote (test_usd_turnover.USDTurnoverTests.test_conversion_units_and_valid_weekend_quote) ... ok
+test_fx_failure_preserves_draft_and_stock_prices (test_usd_turnover.USDTurnoverTests.test_fx_failure_preserves_draft_and_stock_prices) ... ok
 
 ----------------------------------------------------------------------
-Ran 46 tests in 0.749s
+Ran 49 tests in 0.746s
 
 OK

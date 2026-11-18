@@ -222,7 +222,7 @@ class SameKernelTests(unittest.TestCase):
                 securities = req.value['securities']
                 if req.kind == 'ReferenceDataRequest':
                     messages = [{'securityData': [{'security': s, 'sequenceNumber': i,
-                        'fieldData': {'LAST_PRICE': 12, 'CRNCY': 'HKD', 'LAST_UPDATE_DT': today,
+                        'fieldData': {'LAST_PRICE': 7.8 if s == 'USDHKD Curncy' else 12, 'CRNCY': 'HKD', 'LAST_UPDATE_DT': today,
                                       'EQY_INIT_PO_SH_PX': 8}} for i, s in enumerate(securities)]}]
                 else:
                     messages = [{'securityData': {'security': s, 'sequenceNumber': i,
@@ -238,16 +238,22 @@ class SameKernelTests(unittest.TestCase):
         report = report_for()
         report['day'] = today.isoformat()
         report['months'] = first.month_keys(today)
-        for row in report['lockups']: row['expiry'] = today.isoformat()
+        for row in report['lockups']:
+            row['expiry'] = today.isoformat()
+            row['avg_turnover_20d_hkd'] = '39000000'
         with tempfile.TemporaryDirectory() as directory, patch.dict(sys.modules, {'blpapi': api}), redirect_stdout(io.StringIO()):
             env = dict(first.__dict__, BLOOMBERG_ENABLED=True, SHOW_NOTEBOOK_PREVIEW_IF_NO_OUTLOOK=False,
                        LOCKUP_EMAIL_CHECK_A_SHARES=False)
             result = second._lu_run({'report': report, 'email_html': Path(directory) / 'first.html'}, env, False)
-        self.assertEqual(len(requests), 2)
+        self.assertEqual(len(requests), 3)
         self.assertEqual(len(sessions), 1)
         self.assertTrue(sessions[0].stopped)
         self.assertEqual(requests[0].value['securities'], ['1 HK Equity', '2 HK Equity'])
+        self.assertEqual(requests[2].value['securities'], ['USDHKD Curncy'])
+        self.assertEqual(requests[2].value['fields'], ['LAST_PRICE', 'LAST_UPDATE_DT'])
         for row in result['rows']:
+            self.assertEqual(row['avg_turnover_20d_hkd'], '39000000')
+            self.assertEqual(row['avg_turnover_20d_usd'], '5.00000E+6')
             self.assertEqual(row['price_performance']['errors'], {})
             self.assertEqual(row['price_performance']['ipo_change_pct'], '50.0')
             self.assertEqual(row['price_performance']['7D']['change_pct'], '20.0')

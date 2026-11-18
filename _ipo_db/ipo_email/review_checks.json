@@ -1,8 +1,8 @@
 {
-  "run": 46,
+  "run": 49,
   "failures": 0,
   "errors": 0,
-  "peak_rss_mib": 71.1,
+  "peak_rss_mib": 72.3,
   "python_rss_guard_mib": 512,
   "source_document_unchanged": true,
   "notebook_cells_match_sources": true,

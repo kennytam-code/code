@@ -20,21 +20,28 @@ lock-up tranche, ordered by expiry. It shows the expiry date, days remaining,
 stock, holder category/count, unlock percentage of issued shares, unlock value,
 unlock/free-float-cap percentage, unlock/20-day-turnover multiple, Bloomberg
 IPO price, last price and quote date, price change versus IPO, and 7-day and
-1-month price changes. The 17 November revision adds **average 20-day turnover
-(HKD millions)** and an **A-share YES/NO** column. No borrow availability or
+1-month price changes, **average 20-day turnover (USD millions)** and an
+**A-share YES/NO** column. No borrow availability or
 cost columns are included.
+
+The 18 November revision uses Times New Roman throughout. Unlock cells are
+pale amber only when the reported percentage is strictly greater than 30%;
+exactly 30% is not highlighted. A-share YES cells are pale green. Stock labels
+retain the exact hyperlink destination used in cell 1 (`row['url']`).
+The shortable column is removed: both YES and NEW still qualify for inclusion,
+and their original status remains in the audit. The table now has 11 columns.
 
 The email starts directly with the table: no title or summary block above it.
 Column labels remain. It has no footnotes, method paragraphs or source-review paragraphs.
 Methods and source metadata remain here and in the JSON audit. Unavailable
-values stay N/A; affected rows keep a compact REVIEW label in their existing
-status cell. The actual price/value dates remain beside their numbers.
+values stay N/A; affected rows keep a compact REVIEW label under the stock.
+The actual price/value dates remain beside their numbers.
 
 The date window comes from the first report's actual `months` list, with past
 expiries excluded. In the supplied code, `month_keys()` returns the current
 month **plus the following two months**, despite the older comment saying
-current and next month. For a run on 15 November 2026, the actual window is
-15 November 2026 through 31 January 2027. The add-on reproduces that window
+current and next month. For a run on 18 November 2026, the actual window is
+18 November 2026 through 31 January 2027. The add-on reproduces that window
 without changing the original function.
 
 ## First-cell NEW review
@@ -71,7 +78,9 @@ Bloomberg wrapper. Formula correspondence:
 | vs IPO (%) | `(latest price / IPO offer price - 1) * 100` |
 | Currency | `CRNCY`, equivalent to `=BDP(ticker,"CRNCY")` |
 | Quote date | `LAST_UPDATE_DT`, equivalent to `=BDP(ticker,"LAST_UPDATE_DT")` |
-| Average 20-day turnover (HKDm) | `=BDP(ticker,"INTERVAL_AVG","MARKET_DATA_OVERRIDE","TURNOVER","CALC_INTERVAL","20D","CRNCY","HKD")/1000000` |
+| Original 20-day turnover input (HKD) | `=BDP(ticker,"INTERVAL_AVG","MARKET_DATA_OVERRIDE","TURNOVER","CALC_INTERVAL","20D","CRNCY","HKD")` |
+| Shared FX rate (HKD per USD) | `=BDP("USDHKD Curncy","LAST_PRICE")`, with `LAST_UPDATE_DT` checked |
+| Average 20-day turnover (USDm) | `original HKD turnover / USDHKD rate / 1000000` |
 | Previous observed daily closes | `HistoricalDataRequest` for `PX_LAST`, the data requested by `BDH` |
 | 7D / 1M change | `(latest price / selected historical close - 1) * 100` |
 
@@ -119,12 +128,22 @@ primary-source dates.
 ## Added columns
 
 Average 20-day turnover reuses `avg_turnover_20d_hkd` already fetched by the
-first cell. The override settings are exactly those in the original code;
-the new column divides the value by 1,000,000. This is daily traded **value**,
-not share volume, and it is the denominator of the existing unlock/turnover
-multiple. No extra Bloomberg request is needed. If the first cell sets
-`BLOOMBERG_TURNOVER_END_DATE`, the column shows that end date. Missing values
-remain N/A. The formula above has not been tested on a live terminal here.
+first cell. Cell 2 adds **one shared FX reference request per non-empty run**,
+on the existing connection, for `USDHKD Curncy` / `LAST_PRICE` and
+`LAST_UPDATE_DT`. The USD/HKD quote is HKD per USD; the column divides the
+HKD amount by that rate and then by 1,000,000. This is daily traded **value**,
+not share volume. It converts the existing 20-day average at the current FX
+snapshot; it does not recompute an average using each day's historical FX.
+No hardcoded peg or public-web FX fallback is used. Bloomberg identifies the
+[USD/HKD pair in its currency data](https://www.bloomberg.com/markets/currencies/asiapac_currencies.html).
+
+Original HKD amounts and the unlock/turnover multiple are preserved. If the
+first cell sets `BLOOMBERG_TURNOVER_END_DATE`, the column shows that end date;
+conversion still uses the current FX snapshot. The actual FX rate, quote date,
+raw response and errors are retained in the audit. Missing, nonpositive,
+invalid, future or more-than-10-day-old FX quotes produce N/A for USD turnover;
+valid stock prices, returns and draft creation remain available. No new
+package is needed. Bloomberg/Outlook have not been tested live here.
 
 I could not verify a Bloomberg mnemonic for the existence of a mainland
 A-share line. This does not establish that no such field exists; terminal
@@ -229,11 +248,14 @@ output, unique filenames, and preservation of the first report. These checks
 use synthetic fixtures. Bloomberg and Windows Outlook have **not** been
 tested live here; run both cells on your Bloomberg desktop to verify them.
 
-Final review: **46 tests passed, zero failures or errors**. Both source cells
+Final review: **49 tests passed, zero failures or errors**. Both source cells
 compile, the packaged notebook's cells match the source files, and cell 1
 matches the Word attachment exactly. Python's measured peak RSS stayed below 80 MiB
-under the unchanged 512 MiB guard. The updated twelve-column email is checked
-at 1440 px and 1100 px. The sample contains fictional companies and numbers.
+under the unchanged 512 MiB guard. The updated eleven-column email is checked
+at 1440 px and 1100 px, including Times New Roman, the strict 30% threshold,
+A-share highlights and stock links. FX tests cover conversion direction,
+units, invalid/missing/stale quotes and isolation of an FX timeout from the
+rest of the draft. The sample contains fictional companies, numbers and FX.
 `validation.json` records the delivery hashes.
 Run `python run_checks.py` from this folder to repeat the offline checks.
 The tests use the retained source snapshots; no Bloomberg/Outlook connection

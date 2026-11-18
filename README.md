@@ -1,12 +1,16 @@
 # HK IPO desk files
 
-**IPO / lock-up email notebook — 17 November 2026**
+**IPO / lock-up email notebook — 19 November 2026**
 
 [Open the two-cell notebook](HK_IPO_Two_Emails.ipynb) · [Download notebook](https://github.com/kennytam-code/code/raw/refs/heads/main/HK_IPO_Two_Emails.ipynb) · [Copy cell 2 only](HK_IPO_Second_Email_Cell.py) · [Instructions and checks](_ipo_db/ipo_email/README.md)
 
-Run cell 1, then cell 2 in your Bloomberg-enabled Jupyter environment. The original first cell is unchanged. Cell 2 creates a separate unsent Outlook draft for YES/NEW shortable lock-ups with IPO price, latest price, price changes, unlock metrics, average 20-day turnover (HKDm) and an A-share flag. The body starts directly with the table.
+Run cell 1, then cell 2 in your Bloomberg-enabled Jupyter environment. The original first cell is unchanged. Cell 2 creates a separate unsent Outlook draft for YES/NEW shortable lock-ups, with IPO/latest prices, price changes, unlock metrics, average 20-day turnover in **USD millions** and an A-share flag.
 
-A-share checks now combine explicit A/H ticker pairs with complete share-class data. The 17 November public-web check resolved all 69 stocks in the report window: 13 YES, 56 NO, zero unresolved. Requests use timeouts and bounded reads; an A-share source failure still allows the draft to be saved. All 46 offline tests passed. Live Bloomberg, the corporate proxy and Windows Outlook remain unverified here.
+The revised email uses **Times New Roman**, highlights unlock percentages **strictly above 30%** in amber and **A-share YES** in green, and preserves the stock hyperlinks from cell 1. The shortable column is removed. The body starts directly with the eleven-column table, without a title block or footnotes. USD turnover uses one shared Bloomberg USD/HKD quote; FX failures leave USD turnover unavailable while the draft still saves.
+
+[View the email preview — fictional data](_ipo_db/ipo_email/sample_email.png)
+
+All **49 offline tests passed**, and the preview was checked at 1440 px and 1100 px. The unchanged A-share lookup resolved all 69 stocks in its dated 17 November public-web coverage check. Live Bloomberg, the corporate proxy and Windows Outlook remain unverified here.
 
 **[Download the Excel workbook](https://github.com/kennytam-code/code/raw/refs/heads/main/HK_IPO_Database_v1.xlsx)**
 
